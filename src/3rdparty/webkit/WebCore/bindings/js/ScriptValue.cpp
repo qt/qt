@@ -29,7 +29,9 @@
 #include "config.h"
 #include "ScriptValue.h"
 
-#include "PlatformString.h"
+#include <JavaScriptCore/APICast.h>
+#include <JavaScriptCore/JSValueRef.h>
+
 #include <runtime/JSLock.h>
 #include <runtime/Protect.h>
 #include <runtime/UString.h>
@@ -44,24 +46,32 @@ bool ScriptValue::getString(String& result) const
         return false;
     JSLock lock(false);
     UString ustring;
-    if (!m_value->getString(ustring))
+    if (!m_value.get().getString(ustring))
         return false;
     result = ustring;
     return true;
+}
+
+bool ScriptValue::isEqual(ScriptState* scriptState, const ScriptValue& anotherValue) const
+{
+    if (hasNoValue())
+        return anotherValue.hasNoValue();
+
+    return JSValueIsEqual(toRef(scriptState), toRef(scriptState, jsValue()), toRef(scriptState, anotherValue.jsValue()), 0);
 }
 
 bool ScriptValue::isNull() const
 {
     if (!m_value)
         return false;
-    return m_value->isNull();
+    return m_value.get().isNull();
 }
 
 bool ScriptValue::isUndefined() const
 {
     if (!m_value)
         return false;
-    return m_value->isUndefined();
+    return m_value.get().isUndefined();
 }
 
 } // namespace WebCore

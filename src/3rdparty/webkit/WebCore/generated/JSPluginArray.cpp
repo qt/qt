@@ -19,25 +19,22 @@
 */
 
 #include "config.h"
-
 #include "JSPluginArray.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "AtomicString.h"
 #include "JSPlugin.h"
 #include "Plugin.h"
 #include "PluginArray.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSPluginArray)
+ASSERT_CLASS_FITS_IN_CELL(JSPluginArray);
 
 /* Hash table */
 
@@ -80,7 +77,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -133,7 +130,6 @@ JSPluginArray::JSPluginArray(PassRefPtr<Structure> structure, PassRefPtr<PluginA
 JSPluginArray::~JSPluginArray()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSPluginArray::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -170,13 +166,14 @@ bool JSPluginArray::getOwnPropertySlot(ExecState* exec, unsigned propertyName, P
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValuePtr jsPluginArrayLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginArrayLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     PluginArray* imp = static_cast<PluginArray*>(static_cast<JSPluginArray*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsPluginArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSPluginArray*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
@@ -187,62 +184,65 @@ void JSPluginArray::getPropertyNames(ExecState* exec, PropertyNameArray& propert
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr JSPluginArray::getConstructor(ExecState* exec)
+JSValue JSPluginArray::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSPluginArrayConstructor>(exec);
 }
 
-JSValuePtr jsPluginArrayPrototypeFunctionItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsPluginArrayPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSPluginArray::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSPluginArray::s_info))
         return throwError(exec, TypeError);
     JSPluginArray* castedThisObj = static_cast<JSPluginArray*>(asObject(thisValue));
     PluginArray* imp = static_cast<PluginArray*>(castedThisObj->impl());
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
     return result;
 }
 
-JSValuePtr jsPluginArrayPrototypeFunctionNamedItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsPluginArrayPrototypeFunctionNamedItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSPluginArray::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSPluginArray::s_info))
         return throwError(exec, TypeError);
     JSPluginArray* castedThisObj = static_cast<JSPluginArray*>(asObject(thisValue));
     PluginArray* imp = static_cast<PluginArray*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->namedItem(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->namedItem(name)));
     return result;
 }
 
-JSValuePtr jsPluginArrayPrototypeFunctionRefresh(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsPluginArrayPrototypeFunctionRefresh(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSPluginArray::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSPluginArray::s_info))
         return throwError(exec, TypeError);
     JSPluginArray* castedThisObj = static_cast<JSPluginArray*>(asObject(thisValue));
     PluginArray* imp = static_cast<PluginArray*>(castedThisObj->impl());
-    bool reload = args.at(exec, 0)->toBoolean(exec);
+    bool reload = args.at(0).toBoolean(exec);
 
     imp->refresh(reload);
     return jsUndefined();
 }
 
 
-JSValuePtr JSPluginArray::indexGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSPluginArray::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSPluginArray* thisObj = static_cast<JSPluginArray*>(asObject(slot.slotBase()));
     return toJS(exec, static_cast<PluginArray*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValuePtr toJS(JSC::ExecState* exec, PluginArray* object)
+JSC::JSValue toJS(JSC::ExecState* exec, PluginArray* object)
 {
     return getDOMObjectWrapper<JSPluginArray>(exec, object);
 }
-PluginArray* toPluginArray(JSC::JSValuePtr value)
+PluginArray* toPluginArray(JSC::JSValue value)
 {
-    return value->isObject(&JSPluginArray::s_info) ? static_cast<JSPluginArray*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSPluginArray::s_info) ? static_cast<JSPluginArray*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLHeadElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLHeadElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLHeadElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLHeadElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,28 +124,29 @@ bool JSHTMLHeadElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSHTMLHeadElement, Base>(exec, &JSHTMLHeadElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLHeadElementProfile(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHeadElementProfile(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->profile());
 }
 
-JSValuePtr jsHTMLHeadElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHeadElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLHeadElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLHeadElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLHeadElement, Base>(exec, propertyName, value, &JSHTMLHeadElementTable, this, slot);
 }
 
-void setJSHTMLHeadElementProfile(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLHeadElementProfile(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(static_cast<JSHTMLHeadElement*>(thisObject)->impl());
     imp->setProfile(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLHeadElement::getConstructor(ExecState* exec)
+JSValue JSHTMLHeadElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLHeadElementConstructor>(exec);
 }

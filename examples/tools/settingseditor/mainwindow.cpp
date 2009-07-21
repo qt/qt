@@ -122,7 +122,7 @@ void MainWindow::about()
 void MainWindow::createActions()
 {
     openSettingsAct = new QAction(tr("&Open Application Settings..."), this);
-    openSettingsAct->setShortcut(tr("Ctrl+O"));
+    openSettingsAct->setShortcuts(QKeySequence::Open);
     connect(openSettingsAct, SIGNAL(triggered()), this, SLOT(openSettings()));
 
     openIniFileAct = new QAction(tr("Open I&NI File..."), this);
@@ -146,7 +146,7 @@ void MainWindow::createActions()
     connect(refreshAct, SIGNAL(triggered()), settingsTree, SLOT(refresh()));
 
     exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcut(tr("Ctrl+Q"));
+    exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
     autoRefreshAct = new QAction(tr("&Auto-Refresh"), this);

@@ -57,6 +57,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
+#include <QtScript/qscriptvalue.h>
 
 #include "qscriptdebuggerbackend_p.h"
 
@@ -66,7 +67,6 @@ class QEvent;
 class QString;
 class QScriptContext;
 class QScriptEngine;
-class QScriptValue;
 class QScriptValueIterator;
 class QScriptObjectSnapshot;
 class QScriptDebuggerAgent;
@@ -126,6 +126,10 @@ public:
     QObject *eventReceiver;
 
     QScriptDebuggerBackend *q_ptr;
+
+    QScriptValue origTraceFunction;
+    QScriptValue origFileNameFunction;
+    QScriptValue origLineNumberFunction;
 };
 
 QT_END_NAMESPACE

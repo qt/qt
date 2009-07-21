@@ -439,12 +439,13 @@ body.console-visible #console {
 
 #console-messages {
     position: absolute;
+    z-index: 0;
     top: 0;
     left: 0;
     right: 0;
     bottom: 23px;
-    font-size: 10px;
-    font-family: Monaco, Lucida Console, monospace;
+    font-size: initial;
+    font-family: monospace;
     padding: 2px 0;
     overflow-y: overlay;
     -webkit-user-select: text;
@@ -463,11 +464,23 @@ body.console-visible #console {
     background-image: url(Images/userInputIcon.png);
 }
 
+.console-user-command-result.console-log-level::before {
+    background-image: url(Images/userInputResultIcon.png);
+}
+
 .console-message, .console-user-command {
     position: relative;
     border-bottom: 1px solid rgb(240, 240, 240);
     padding: 1px 22px 1px 24px;
     min-height: 16px;
+}
+
+.console-adjacent-user-command-result {
+    border-bottom: none;
+}
+
+.console-adjacent-user-command-result + .console-user-command-result.console-log-level::before {
+    background-image: none;
 }
 
 .console-message::before, .console-user-command::before, #console-prompt::before, .console-group-title-level::before {
@@ -561,35 +574,34 @@ body.console-visible #console {
     color: rgb(0, 128, 255);
 }
 
-.console-message-url {
-    color: rgb(33%, 33%, 33%) !important;
+#console-messages a {
+    color: rgb(33%, 33%, 33%);
     cursor: pointer;
-    float: right;
 }
 
-.console-message-url:hover {
+#console-messages a:hover {
     color: rgb(15%, 15%, 15%);
 }
 
-.console-message-url:hover::after {
-    opacity: 1;
+.console-message-url {
+    float: right;
 }
 
 .console-group-messages .section {
-    margin: 0;
+    margin: 0 0 0 12px !important;
 }
 
 .console-group-messages .section .header {
     padding: 0 8px 0 0;
     background-image: none;
     border: none;
-    min-height: 16px;
+    min-height: 0;
 }
 
 .console-group-messages .section .header::before {
     position: absolute;
     top: 1px;
-    left: 12px;
+    left: 1px;
     width: 8px;
     height: 8px;
     content: url(Images/treeRightTriangleBlack.png);
@@ -601,6 +613,21 @@ body.console-visible #console {
 
 .console-group-messages .section .header .title {
     color: black;
+    font-weight: normal;
+}
+
+.console-group-messages .section .properties li .info {
+    padding-top: 0;
+    padding-bottom: 0;
+    color: rgb(60%, 60%, 60%);
+}
+
+.console-group-messages .outline-disclosure {
+    padding-left: 0;
+}
+
+.console-group-messages .outline-disclosure > ol {
+    padding: 0 0 0 12px !important;
 }
 
 .console-group-messages .outline-disclosure, .console-group-messages .outline-disclosure ol {
@@ -608,31 +635,37 @@ body.console-visible #console {
     line-height: 1em;
 }
 
-.console-group-messages .outline-disclosure li {
-    padding-top: 2px;
-    padding-bottom: 2px;
+.console-group-messages .outline-disclosure.single-node li {
+    padding-left: 2px;
 }
 
 .console-group-messages .outline-disclosure li .selection {
-    z-index: 0;
-    margin-top: -1px;
+    margin-left: -6px;
+    margin-right: -6px;
+}
+
+.console-formatted-object, .console-formatted-node {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
 }
 
 .console-formatted-object .section, .console-formatted-node .section {
     position: static;
 }
 
+.console-formatted-object .properties, .console-formatted-node .properties {
+    padding-left: 0 !important;
+}
+
+.error-message {
+    color: red;
+}
+
 .auto-complete-text {
     color: rgb(128, 128, 128);
     -webkit-user-select: none;
     -webkit-user-modify: read-only;
-}
-
-.inspectible-node:hover {
-    background-color: rgba(56, 121, 217, 0.1);
-    -webkit-border-radius: 5px;
-    padding: 0 5px 1px;
-    margin: 0 -5px -1px;
 }
 
 .panel {
@@ -1532,7 +1565,11 @@ body.inactive .sidebar {
     content: url(Images/databaseTable.png);
 }
 
-#database-views {
+.domstorage-sidebar-tree-item .icon {
+    content: url(Images/domStorage.png);
+}
+
+#storage-views {
     position: absolute;
     top: 0;
     right: 0;
@@ -1540,7 +1577,7 @@ body.inactive .sidebar {
     bottom: 0;
 }
 
-.database-view {
+.storage-view {
     display: none;
     overflow: hidden;
     position: absolute;
@@ -1550,20 +1587,20 @@ body.inactive .sidebar {
     bottom: 0;
 }
 
-.database-view.visible {
+.storage-view.visible {
     display: block;
 }
 
-.database-view.table {
+.storage-view.table {
     overflow: hidden;
 }
 
-.database-view.table .data-grid {
+.storage-view.table .data-grid {
     border: none;
     height: 100%;
 }
 
-.database-view.table .database-table-empty, .database-view.table .database-table-error {
+.storage-view.table .storage-table-empty, .storage-view.table .storage-table-error {
     position: absolute;
     top: 0;
     bottom: 25%;
@@ -1581,7 +1618,7 @@ body.inactive .sidebar {
     white-space: pre-wrap;
 }
 
-.database-view.table .database-table-error {
+.storage-view.table .storage-table-error {
     color: rgb(66%, 33%, 33%);
 }
 
@@ -1773,9 +1810,9 @@ body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-des
     text-indent: 10px;
 }
 
-.database-view.query {
-    font-size: 10px;
-    font-family: Monaco, Lucida Console, monospace;
+.storage-view.query {
+    font-size: initial;
+    font-family: monospace;
     padding: 2px 0;
     overflow-y: overlay;
     overflow-x: hidden;
@@ -1882,6 +1919,7 @@ body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-des
     font-size: 10px;
     color: rgb(110, 116, 128);
     margin-bottom: 12px;
+    margin-left: 20px;
 }
 
 .panel-enabler-disclaimer:empty {
@@ -1917,10 +1955,8 @@ body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-des
     position: relative;
     display: block;
     text-align: left;
-    margin-left: 50px;
-    margin-bottom: 6px;
-    line-height: 18px;
     word-break: break-word;
+    margin: 0 0 5px 20px;
 }
 
 .panel-enabler-view button {
@@ -1947,6 +1983,30 @@ body.inactive .panel-enabler-view button, .panel-enabler-view button:disabled {
     border-color: rgb(212, 212, 212);
     background-color: rgb(239, 239, 239);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(250, 250, 250)), to(rgb(235, 235, 235)));
+}
+
+.panel-enabler-view input {
+    height: 17px;
+    width: 17px;
+    border: 1px solid rgb(165, 165, 165);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)));
+    -webkit-border-radius: 8px;
+    -webkit-appearance: none;
+    vertical-align: middle;
+    margin: 0 5px 5px 0;
+}
+
+.panel-enabler-view input:active {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 194)), to(rgb(239, 239, 239)));
+}
+
+.panel-enabler-view input:checked {
+    background: url(Images/radioDot.png) center no-repeat,
+                -webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)));
+}
+
+.panel-enabler-view.resources img {
+    content: url(Images/resourcesSilhouette.png);
 }
 
 .panel-enabler-view.scripts img {
@@ -2498,6 +2558,10 @@ button.enable-toggle-status-bar-item.toggled-on:active {
     padding-left: 37px;
 }
 
+.sidebar-tree > .children > .children > .sidebar-tree-item {
+    padding-left: 37px;
+}
+
 .sidebar-tree.hide-disclosure-buttons > .children {
     display: none;
 }
@@ -2889,6 +2953,14 @@ body.inactive .sidebar-tree-item.selected .bubble.search-matches {
     height: 100%;
 }
 
+.profile-view .data-grid th.average-column {
+    text-align: center;
+}
+
+.profile-view .data-grid td.average-column {
+    text-align: right;
+}
+
 .profile-view .data-grid th.self-column {
     text-align: center;
 }
@@ -2993,4 +3065,40 @@ body.inactive .sidebar-tree-item.selected .bubble.search-matches {
 
 .reset-profile-status-bar-item:active {
     background-position: 32px 0;
+}
+
+.delete-storage-status-bar-item {
+    background-image: url(Images/excludeButtons.png) !important;
+}
+
+.delete-storage-status-bar-item:active {
+    background-position: 32px 0;
+}
+
+#storage-view-status-bar-items {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 200px;
+    overflow: hidden;
+    border-left: 1px solid rgb(184, 184, 184);
+    margin-left: -1px;
+}
+
+.refresh-storage-status-bar-item {
+    background-image: url(Images/reloadButtons.png) !important;
+}
+
+.refresh-storage-status-bar-item:active {
+    background-position: 32px 0;
+}
+
+#storage-view-status-bar-items {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 200px;
+    overflow: hidden;
+    border-left: 1px solid rgb(184, 184, 184);
+    margin-left: -1px;
 }

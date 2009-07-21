@@ -653,8 +653,7 @@ QString QSimpleTextCodec::convertToUnicode(const char* chars, int len, Converter
 
     const unsigned char * c = (const unsigned char *)chars;
 
-    QString r;
-    r.resize(len);
+    QString r(len, Qt::Uninitialized);
     QChar* uc = r.data();
 
     for (int i = 0; i < len; i++) {
@@ -677,8 +676,7 @@ QByteArray QSimpleTextCodec::convertFromUnicode(const QChar *in, int length, Con
             delete tmp;
     }
 
-    QByteArray r;
-    r.resize(length);
+    QByteArray r(length, Qt::Uninitialized);
     int i = length;
     int u;
     const QChar* ucp = in;

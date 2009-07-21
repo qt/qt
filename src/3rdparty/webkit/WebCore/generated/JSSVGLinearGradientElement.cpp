@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGLinearGradientElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedLength.h"
 #include "SVGLinearGradientElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGLinearGradientElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGLinearGradientElement);
 
 /* Hash table */
 
@@ -94,29 +90,33 @@ bool JSSVGLinearGradientElement::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGLinearGradientElement, Base>(exec, &JSSVGLinearGradientElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGLinearGradientElementX1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLinearGradientElementX1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->x1Animated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGLinearGradientElementY1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLinearGradientElementY1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->y1Animated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGLinearGradientElementX2(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLinearGradientElementX2(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->x2Animated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGLinearGradientElementY2(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLinearGradientElementY2(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->y2Animated();
     return toJS(exec, obj.get(), imp);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@ module window {
     ] DOMWindow {
         // DOM Level 0
         readonly attribute Screen screen;
-        readonly attribute [DoNotCheckDomainSecurity, CustomGetter] History history;
+        readonly attribute [DoNotCheckDomainSecurity, JSCCustomGetter] History history;
         attribute [Replaceable] BarInfo locationbar;
         attribute [Replaceable] BarInfo menubar;
         attribute [Replaceable] BarInfo personalbar;
@@ -53,7 +53,11 @@ module window {
         attribute [Replaceable] BarInfo toolbar;
         attribute [Replaceable] Navigator navigator;
         attribute [Replaceable] Navigator clientInformation;
-        attribute [DoNotCheckDomainSecurity, Custom, V8DisallowShadowing] Location location;
+        attribute [DoNotCheckDomainSecurity, JSCCustom, V8CustomSetter, V8DisallowShadowing] Location location;
+
+        attribute [Replaceable, CustomGetter] Event event;
+
+        readonly attribute [Custom] Crypto crypto;
 
         DOMSelection getSelection();
 
@@ -65,6 +69,14 @@ module window {
 
         void print();
         void stop();
+
+        [Custom] DOMWindow open(in DOMString url,
+                                in DOMString name,
+                                in [Optional] DOMString options);
+
+        [Custom] DOMObject showModalDialog(in DOMString url, 
+                                           in [Optional] DOMObject dialogArgs,
+                                           in [Optional] DOMString featureArgs);
 
         void alert(in DOMString message);
         boolean confirm(in DOMString message);
@@ -110,19 +122,19 @@ module window {
 
         attribute DOMString status;
         attribute DOMString defaultStatus;
-#if defined(LANGUAGE_JAVASCRIPT)
+#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
         // This attribute is an alias of defaultStatus and is necessary for legacy uses.
         attribute DOMString defaultstatus;
 #endif
 
         // Self referential attributes
         attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow self;
-        readonly attribute [DoNotCheckDomainSecurity] DOMWindow window;
+        readonly attribute [DoNotCheckDomainSecurity, V8DisallowShadowing] DOMWindow window;
         attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow frames;
 
-        attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow opener;
-        attribute [Replaceable, DoNotCheckDomainSecurity] DOMWindow parent;
-        attribute [Replaceable, DoNotCheckDomainSecurity] DOMWindow top;
+        attribute [Replaceable, DoNotCheckDomainSecurityOnGet, V8CustomSetter] DOMWindow opener;
+        attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow parent;
+        attribute [Replaceable, DoNotCheckDomainSecurityOnGet, V8DisallowShadowing, V8ReadOnly] DOMWindow top;
 
         // DOM Level 2 AbstractView Interface
         readonly attribute Document document;
@@ -136,15 +148,18 @@ module window {
                                        in DOMString pseudoElement,
                                        in [Optional] boolean authorOnly);
         attribute [Replaceable] double devicePixelRatio;
+        
+        WebKitPoint webkitConvertPointFromPageToNode(in Node node, in WebKitPoint p);
+        WebKitPoint webkitConvertPointFromNodeToPage(in Node node, in WebKitPoint p);
 
-#if ENABLE_OFFLINE_WEB_APPLICATIONS
+#if defined(ENABLE_OFFLINE_WEB_APPLICATIONS) && ENABLE_OFFLINE_WEB_APPLICATIONS
         readonly attribute DOMApplicationCache applicationCache;
 #endif    
-#if ENABLE_DATABASE
+#if defined(ENABLE_DATABASE) && ENABLE_DATABASE
         Database openDatabase(in DOMString name, in DOMString version, in DOMString displayName, in unsigned long estimatedSize)
             raises(DOMException);
 #endif
-#if ENABLE_DOM_STORAGE
+#if defined(ENABLE_DOM_STORAGE) && ENABLE_DOM_STORAGE
         readonly attribute Storage sessionStorage;
         readonly attribute Storage localStorage;
 #endif
@@ -157,12 +172,13 @@ module window {
 
         // Timers
         [Custom] long setTimeout(in TimeoutHandler handler, in long timeout);
+        // [Custom] long setTimeout(in TimeoutHandler handler, in long timeout, arguments...);
         // [Custom] long setTimeout(in DOMString code, in long timeout);
-        [Custom] void clearTimeout(in long handle);
-
+        void clearTimeout(in long handle);
         [Custom] long setInterval(in TimeoutHandler handler, in long timeout);
+        // [Custom] long setInterval(in TimeoutHandler handler, in long timeout, arguments...);
         // [Custom] long setInterval(in DOMString code, in long timeout);
-        [Custom] void clearInterval(in long handle);
+        void clearInterval(in long handle);
 
         // Base64
         [Custom] DOMString atob(in DOMString string)
@@ -171,46 +187,98 @@ module window {
             raises(DOMException);
 
         // Events
-        attribute [ProtectedListener] EventListener onabort;
-        attribute [ProtectedListener] EventListener onblur;
-        attribute [ProtectedListener] EventListener onchange;
-        attribute [ProtectedListener] EventListener onclick;
-        attribute [ProtectedListener] EventListener ondblclick;
-        attribute [ProtectedListener] EventListener onerror;
-        attribute [ProtectedListener] EventListener onfocus;
-        attribute [ProtectedListener] EventListener onkeydown;
-        attribute [ProtectedListener] EventListener onkeypress;
-        attribute [ProtectedListener] EventListener onkeyup;
-        attribute [ProtectedListener] EventListener onload;
-        attribute [ProtectedListener] EventListener onmousedown;
-        attribute [ProtectedListener] EventListener onmousemove;
-        attribute [ProtectedListener] EventListener onmouseout;
-        attribute [ProtectedListener] EventListener onmouseover;
-        attribute [ProtectedListener] EventListener onmouseup;
-        attribute [ProtectedListener] EventListener onmousewheel;
-        attribute [ProtectedListener] EventListener onreset;
-        attribute [ProtectedListener] EventListener onresize;
-        attribute [ProtectedListener] EventListener onscroll;
-        attribute [ProtectedListener] EventListener onsearch;
-        attribute [ProtectedListener] EventListener onselect;
-        attribute [ProtectedListener] EventListener onsubmit;
-        attribute [ProtectedListener] EventListener onunload;
-        attribute [ProtectedListener] EventListener onbeforeunload;
-        attribute [ProtectedListener] EventListener onwebkitanimationstart;
-        attribute [ProtectedListener] EventListener onwebkitanimationiteration;
-        attribute [ProtectedListener] EventListener onwebkitanimationend;
-        attribute [ProtectedListener] EventListener onwebkittransitionend;
+        attribute EventListener onabort;
+        attribute EventListener onbeforeunload;
+        attribute EventListener onblur;
+        attribute EventListener oncanplay;
+        attribute EventListener oncanplaythrough;
+        attribute EventListener onchange;
+        attribute EventListener onclick;
+        attribute EventListener oncontextmenu;
+        attribute EventListener ondblclick;
+        attribute EventListener ondrag;
+        attribute EventListener ondragend;
+        attribute EventListener ondragenter;
+        attribute EventListener ondragleave;
+        attribute EventListener ondragover;
+        attribute EventListener ondragstart;
+        attribute EventListener ondrop;
+        attribute EventListener ondurationchange;
+        attribute EventListener onemptied;
+        attribute EventListener onended;
+        attribute EventListener onerror;
+        attribute EventListener onfocus;
+        attribute EventListener oninput;
+        attribute EventListener onkeydown;
+        attribute EventListener onkeypress;
+        attribute EventListener onkeyup;
+        attribute EventListener onload;
+        attribute EventListener onloadeddata;
+        attribute EventListener onloadedmetadata;
+        attribute EventListener onloadstart;
+        attribute EventListener onmessage;
+        attribute EventListener onmousedown;
+        attribute EventListener onmousemove;
+        attribute EventListener onmouseout;
+        attribute EventListener onmouseover;
+        attribute EventListener onmouseup;
+        attribute EventListener onmousewheel;
+        attribute EventListener onoffline;
+        attribute EventListener ononline;
+        attribute EventListener onpause;
+        attribute EventListener onplay;
+        attribute EventListener onplaying;
+        attribute EventListener onprogress;
+        attribute EventListener onratechange;
+        attribute EventListener onresize;
+        attribute EventListener onscroll;
+        attribute EventListener onseeked;
+        attribute EventListener onseeking;
+        attribute EventListener onselect;
+        attribute EventListener onstalled;
+        attribute EventListener onstorage;
+        attribute EventListener onsubmit;
+        attribute EventListener onsuspend;
+        attribute EventListener ontimeupdate;
+        attribute EventListener onunload;
+        attribute EventListener onvolumechange;
+        attribute EventListener onwaiting;
+
+        // Not implemented yet.
+        // attribute EventListener onafterprint;
+        // attribute EventListener onbeforeprint;
+        // attribute EventListener onformchange;
+        // attribute EventListener onforminput;
+        // attribute EventListener onhashchange;
+        // attribute EventListener oninvalid;
+        // attribute EventListener onpopstate;
+        // attribute EventListener onreadystatechange;
+        // attribute EventListener onredo;
+        // attribute EventListener onshow;
+        // attribute EventListener onundo;
+
+        // Webkit extensions
+        attribute EventListener onreset;
+        attribute EventListener onsearch;
+        attribute EventListener onwebkitanimationend;
+        attribute EventListener onwebkitanimationiteration;
+        attribute EventListener onwebkitanimationstart;
+        attribute EventListener onwebkittransitionend;
 
         // EventTarget interface
-        [Custom] void addEventListener(in DOMString type, 
-                                      in EventListener listener, 
+        [Custom] void addEventListener(in DOMString type,
+                                      in EventListener listener,
                                       in boolean useCapture);
-        [Custom] void removeEventListener(in DOMString type, 
-                                          in EventListener listener, 
+        [Custom] void removeEventListener(in DOMString type,
+                                          in EventListener listener,
                                           in boolean useCapture);
-        // FIXME: Implement dispatchEvent
+        boolean dispatchEvent(in Event evt)
+            raises(EventException);
 
-#if defined(LANGUAGE_JAVASCRIPT)
+        [V8Custom=DOMWindowNOP] void captureEvents(/*in long eventFlags*/);
+        [V8Custom=DOMWindowNOP] void releaseEvents(/*in long eventFlags*/);
+
+#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
         // Global constructors
         attribute StyleSheetConstructor StyleSheet;
         attribute CSSStyleSheetConstructor CSSStyleSheet;
@@ -240,7 +308,7 @@ module window {
 
         // FIXME: Implement the commented-out global constructors for interfaces listed in DOM Level 3 Core specification.
         attribute DOMCoreExceptionConstructor DOMException;
-        attribute DOMStringListConstructor DOMStringList;
+//        attribute DOMStringListConstructor DOMStringList;
 //        attribute NameListConstructor NameList;
 //        attribute DOMImplementationListConstructor DOMImplementationList;
 //        attribute DOMImplementationSourceConstructor DOMImplementationSource;
@@ -281,6 +349,8 @@ module window {
         attribute HTMLBodyElementConstructor HTMLBodyElement;
         attribute HTMLButtonElementConstructor HTMLButtonElement;
         attribute HTMLCanvasElementConstructor HTMLCanvasElement;
+        attribute HTMLDataGridElementConstructor HTMLDataGridElement;
+        attribute HTMLDataGridColElementConstructor HTMLDataGridColElement;
         attribute HTMLDListElementConstructor HTMLDListElement;
         attribute HTMLDirectoryElementConstructor HTMLDirectoryElement;
         attribute HTMLDivElementConstructor HTMLDivElement;
@@ -330,6 +400,9 @@ module window {
 
         attribute HTMLCollectionConstructor HTMLCollection;
 
+        attribute [CustomGetter] HTMLImageElementConstructor Image; // Usable with new operator
+        attribute [CustomGetter] HTMLOptionElementConstructor Option; // Usable with new operator
+
         attribute CanvasRenderingContext2DConstructor CanvasRenderingContext2D;
         attribute TextMetricsConstructor TextMetrics;
 
@@ -350,9 +423,9 @@ module window {
         attribute WebKitCSSKeyframeRuleConstructor WebKitCSSKeyframeRule;
         attribute WebKitCSSKeyframesRuleConstructor WebKitCSSKeyframesRule;
 
-#if ENABLE_CHANNEL_MESSAGING
-        attribute MessagePortConstructor MessagePort;
-#endif
+        attribute [JSCCustomGetter] WebKitCSSMatrixConstructor WebKitCSSMatrix; // Usable with the new operator
+
+        attribute [JSCCustomGetter] WebKitPointConstructor WebKitPoint; // Usable with new the operator
 
         attribute ClipboardConstructor Clipboard;
 
@@ -370,8 +443,22 @@ module window {
         attribute DOMParserConstructor DOMParser;
         attribute XMLSerializerConstructor XMLSerializer;
 
+        attribute [JSCCustomGetter] XMLHttpRequestConstructor XMLHttpRequest; // Usable with the new operator
         attribute XMLHttpRequestUploadConstructor XMLHttpRequestUpload;
         attribute XMLHttpRequestExceptionConstructor XMLHttpRequestException;
+
+#if defined(ENABLE_XSLT) && ENABLE_XSLT
+        attribute [JSCCustomGetter] XSLTProcessorConstructor XSLTProcessor; // Usable with the new operator
+#endif
+
+#if defined(ENABLE_CHANNEL_MESSAGING) && ENABLE_CHANNEL_MESSAGING
+        attribute MessagePortConstructor MessagePort;
+        attribute [JSCCustomGetter] MessageChannelConstructor MessageChannel; // Usable with the new operator
+#endif
+
+#if defined(ENABLE_WORKERS) && ENABLE_WORKERS
+        attribute [JSCCustomGetter] WorkerConstructor Worker; // Usable with the new operator
+#endif
 
         attribute PluginConstructor Plugin;
         attribute PluginArrayConstructor PluginArray;
@@ -379,23 +466,27 @@ module window {
         attribute MimeTypeConstructor MimeType;
         attribute MimeTypeArrayConstructor MimeTypeArray;
 
-#if ENABLE_DOM_STORAGE
+        attribute ClientRectConstructor ClientRect;
+        attribute ClientRectListConstructor ClientRectList;
+
+#if defined(ENABLE_DOM_STORAGE) && ENABLE_DOM_STORAGE
         attribute StorageConstructor Storage;
         attribute StorageEventConstructor StorageEvent;
 #endif
 
+        attribute [CustomGetter,Conditional=VIDEO] HTMLAudioElementConstructor Audio; // Usable with the new operator
         attribute [Conditional=VIDEO] HTMLAudioElementConstructor HTMLAudioElement;
         attribute [Conditional=VIDEO] HTMLMediaElementConstructor HTMLMediaElement;
         attribute [Conditional=VIDEO] HTMLVideoElementConstructor HTMLVideoElement;
         attribute [Conditional=VIDEO] MediaErrorConstructor MediaError;
 
-#if ENABLE_XPATH
+#if defined(ENABLE_XPATH) && ENABLE_XPATH
         attribute XPathEvaluatorConstructor XPathEvaluator;
         attribute XPathResultConstructor XPathResult;
         attribute XPathExceptionConstructor XPathException;
 #endif
 
-#if ENABLE_SVG
+#if defined(ENABLE_SVG) && ENABLE_SVG
         attribute SVGAngleConstructor SVGAngle;
         attribute SVGColorConstructor SVGColor;
 //      attribute SVGCSSRuleConstructor SVGCSSRule;
@@ -412,9 +503,8 @@ module window {
         attribute SVGTransformConstructor SVGTransform;
         attribute SVGUnitTypesConstructor SVGUnitTypes;
 //      attribute SVGZoomAndPanConstructor SVGZoomAndPan;
-#endif
 
-#if ENABLE_SVG_FILTERS
+#if defined(ENABLE_FILTERS) && ENABLE_FILTERS
         attribute SVGComponentTransferFunctionElementConstructor SVGComponentTransferFunctionElement;
         attribute SVGFEBlendElementConstructor SVGFEBlendElement;
         attribute SVGFEColorMatrixElementConstructor SVGFEColorMatrixElement;
@@ -424,8 +514,14 @@ module window {
 //      attribute SVGFEMorphologyElementConstructor SVGFEMorphologyElement;
         attribute SVGFETurbulenceElementConstructor SVGFETurbulenceElement;
 #endif
+#endif
 
 #endif // defined(LANGUAGE_JAVASCRIPT)
+
+#if defined(V8_BINDING) && V8_BINDING
+        // window.toString() requires special handling in V8
+        [V8DoNotCheckSignature, DoNotCheckDomainSecurity, Custom, DontEnum] DOMString toString();
+#endif // defined(V8_BINDING)
     };
 
 }

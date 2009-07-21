@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,20 +28,6 @@
 
 #include "IntPoint.h"
 
-#if PLATFORM(MAC)
-#ifdef __OBJC__
-@class NSEvent;
-#else
-class NSEvent;
-#endif
-#endif
-
-#if PLATFORM(WIN)
-typedef struct HWND__* HWND;
-typedef unsigned WPARAM;
-typedef long LPARAM;
-#endif
-
 #if PLATFORM(GTK)
 typedef struct _GdkEventScroll GdkEventScroll;
 #endif
@@ -52,6 +38,12 @@ class QWheelEvent;
 QT_END_NAMESPACE
 #endif
 
+#if PLATFORM(WIN)
+typedef struct HWND__* HWND;
+typedef unsigned WPARAM;
+typedef long LPARAM;
+#endif
+
 #if PLATFORM(WX)
 class wxMouseEvent;
 class wxPoint;
@@ -59,23 +51,16 @@ class wxPoint;
 
 namespace WebCore {
 
-    // Wheel events come in three flavors:
-    // The ScrollByPixelWheelEvent is a fine-grained event that specifies the precise number of pixels to scroll.  It is sent by MacBook touchpads on OS X.
-    // For ScrollByPixelWheelEvents, the delta values contain the precise number of pixels to scroll.
-    // The ScrollByLineWheelEvent (the normal wheel event) sends a delta that can be corrected by a line multiplier to determine how many lines to scroll.
-    //      If the platform has configurable line sensitivity (Windows), then the number of lines to scroll is used in order to behave like the platform.
-    //      If the platform does not have configurable line sensitivity, then WebCore's default behavior is used (which scrolls 3 * the wheel line delta).
-    // For ScrollByLineWheelEvents, the delta values represent the number of lines to scroll.
-    // The ScrollByPageWheelEvent indicates that the wheel event should scroll an entire page instead.  In this case WebCore's built in paging behavior is used to page
-    // up and down (you get the same behavior as if the user was clicking in a scrollbar track to page up or page down).  Page scrolling only works in the vertical direction.
-    enum PlatformWheelEventGranularity { ScrollByLineWheelEvent, ScrollByPageWheelEvent, ScrollByPixelWheelEvent };
-    
-    // WebCore uses a line multiple of ~3 (40px per line step) when doing arrowing with a scrollbar or line stepping via the arrow keys.  The delta for wheeling is expressed
-    // as a # of actual lines (40 / 3 = 1 wheel line).  We use the horizontalLineMultiplier and verticalLineMultiplier methods to incorporate the line multiplier into the deltas.  On
-    // platforms that do not support wheel sensitivity, we use this hardcoded constant value of 3 to ensure that wheeling by default matches the WebCore multiplier you
-    // get when doing other kinds of line stepping.
-    const int cLineMultiplier = 3;
+    class FloatPoint;
+    class FloatSize;
 
+    // Wheel events come in two flavors:
+    // The ScrollByPixelWheelEvent is a fine-grained event that specifies the precise number of pixels to scroll.  It is sent directly by MacBook touchpads on OS X,
+    // and synthesized in other cases where platforms generate line-by-line scrolling events.
+    // The ScrollByPageWheelEvent indicates that the wheel event should scroll an entire page.  In this case WebCore's built in paging behavior is used to page
+    // up and down (you get the same behavior as if the user was clicking in a scrollbar track to page up or page down).  Page scrolling only works in the vertical direction.
+    enum PlatformWheelEventGranularity { ScrollByPageWheelEvent, ScrollByPixelWheelEvent };
+    
     class PlatformWheelEvent {
     public:
         const IntPoint& pos() const { return m_position; } // PlatformWindow coordinates.
@@ -83,6 +68,9 @@ namespace WebCore {
 
         float deltaX() const { return m_deltaX; }
         float deltaY() const { return m_deltaY; }
+
+        float wheelTicksX() const { return m_wheelTicksX; }
+        float wheelTicksY() const { return m_wheelTicksY; }
 
         PlatformWheelEventGranularity granularity() const { return m_granularity; }
 
@@ -100,35 +88,34 @@ namespace WebCore {
         void accept() { m_isAccepted = true; }
         void ignore() { m_isAccepted = false; }
 
-#if PLATFORM(MAC)
-        PlatformWheelEvent(NSEvent*);
-#endif
-#if PLATFORM(WIN)
-        PlatformWheelEvent(HWND, WPARAM, LPARAM, bool isHorizontal);
-#endif
 #if PLATFORM(GTK)
         PlatformWheelEvent(GdkEventScroll*);
 #endif
+
+#if PLATFORM(MAC) && defined(__OBJC__)
+        PlatformWheelEvent(NSEvent *, NSView *windowView);
+#endif
+
 #if PLATFORM(QT)
         PlatformWheelEvent(QWheelEvent*);
 #endif
+
+#if PLATFORM(WIN)
+        PlatformWheelEvent(HWND, WPARAM, LPARAM, bool isMouseHWheel);
+        PlatformWheelEvent(HWND, const FloatSize& delta, const FloatPoint& location);
+#endif
+
 #if PLATFORM(WX)
         PlatformWheelEvent(const wxMouseEvent&, const wxPoint&);
 #endif
 
     protected:
-#if !PLATFORM(WIN)
-        int horizontalLineMultiplier() const { return cLineMultiplier; }
-        int verticalLineMultiplier() const { return cLineMultiplier; }
-#else
-        int horizontalLineMultiplier() const;
-        int verticalLineMultiplier() const;
-#endif
-
         IntPoint m_position;
         IntPoint m_globalPosition;
         float m_deltaX;
         float m_deltaY;
+        float m_wheelTicksX;
+        float m_wheelTicksY;
         PlatformWheelEventGranularity m_granularity;
         bool m_isAccepted;
         bool m_shiftKey;

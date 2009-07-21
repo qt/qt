@@ -56,7 +56,7 @@
     \section1 Requirements for Declaring Properties
 
     To declare a property, use the \l {Q_PROPERTY()} {Q_PROPERTY()}
-    macro in a class that inherits QObject. 
+    macro in a class that inherits QObject.
 
     \snippet doc/src/snippets/code/doc_src_properties.qdoc 0
 
@@ -71,10 +71,10 @@
     \list 
 
     \o A \c READ accessor function is required. It is for reading the
-    property value. It must be const and must return either the
-    property's type or a pointer or reference to that type. e.g.,
-    QWidget::focus is a read-only property with \c READ function
-    QWidget::hasFocus().
+    property value. Ideally, a const function is used for this purpose,
+    and it must return either the property's type or a pointer or
+    reference to that type. e.g., QWidget::focus is a read-only property
+    with \c READ function, QWidget::hasFocus().
 
     \o A \c WRITE accessor function is optional. It is for setting the
     property value. It must return void and must take exactly one

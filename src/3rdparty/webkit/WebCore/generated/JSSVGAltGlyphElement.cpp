@@ -20,25 +20,21 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGAltGlyphElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedString.h"
 #include "KURL.h"
 #include "SVGAltGlyphElement.h"
-
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAltGlyphElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAltGlyphElement);
 
 /* Hash table */
 
@@ -95,43 +91,46 @@ bool JSSVGAltGlyphElement::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSSVGAltGlyphElement, Base>(exec, &JSSVGAltGlyphElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGAltGlyphElementGlyphRef(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAltGlyphElementGlyphRef(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->glyphRef());
 }
 
-JSValuePtr jsSVGAltGlyphElementFormat(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAltGlyphElementFormat(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->format());
 }
 
-JSValuePtr jsSVGAltGlyphElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAltGlyphElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-void JSSVGAltGlyphElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGAltGlyphElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGAltGlyphElement, Base>(exec, propertyName, value, &JSSVGAltGlyphElementTable, this, slot);
 }
 
-void setJSSVGAltGlyphElementGlyphRef(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAltGlyphElementGlyphRef(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
-    imp->setGlyphRef(value->toString(exec), ec);
+    imp->setGlyphRef(value.toString(exec), ec);
     setDOMException(exec, ec);
 }
 
-void setJSSVGAltGlyphElementFormat(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAltGlyphElementFormat(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
-    imp->setFormat(value->toString(exec), ec);
+    imp->setFormat(value.toString(exec), ec);
     setDOMException(exec, ec);
 }
 

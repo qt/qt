@@ -21,10 +21,10 @@
 #ifndef JSSVGMissingGlyphElement_h
 #define JSSVGMissingGlyphElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -42,6 +42,7 @@ public:
 
 
 class JSSVGMissingGlyphElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

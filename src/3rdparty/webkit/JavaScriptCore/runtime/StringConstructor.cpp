@@ -21,26 +21,27 @@
 #include "config.h"
 #include "StringConstructor.h"
 
+#include "JSFunction.h"
 #include "JSGlobalObject.h"
 #include "PrototypeFunction.h"
 #include "StringPrototype.h"
 
 namespace JSC {
 
-static NEVER_INLINE JSValuePtr stringFromCharCodeSlowCase(ExecState* exec, const ArgList& args)
+static NEVER_INLINE JSValue stringFromCharCodeSlowCase(ExecState* exec, const ArgList& args)
 {
     UChar* buf = static_cast<UChar*>(fastMalloc(args.size() * sizeof(UChar)));
     UChar* p = buf;
     ArgList::const_iterator end = args.end();
     for (ArgList::const_iterator it = args.begin(); it != end; ++it)
-        *p++ = static_cast<UChar>((*it).jsValue(exec)->toUInt32(exec));
+        *p++ = static_cast<UChar>((*it).toUInt32(exec));
     return jsString(exec, UString(buf, p - buf, false));
 }
 
-static JSValuePtr stringFromCharCode(ExecState* exec, JSObject*, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL stringFromCharCode(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     if (LIKELY(args.size() == 1))
-        return jsSingleCharacterString(exec, args.at(exec, 0)->toUInt32(exec));
+        return jsSingleCharacterString(exec, args.at(0).toUInt32(exec));
     return stringFromCharCodeSlowCase(exec, args);
 }
 
@@ -53,7 +54,7 @@ StringConstructor::StringConstructor(ExecState* exec, PassRefPtr<Structure> stru
     putDirectWithoutTransition(exec->propertyNames().prototype, stringPrototype, ReadOnly | DontEnum | DontDelete);
 
     // ECMA 15.5.3.2 fromCharCode()
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 1, exec->propertyNames().fromCharCode, stringFromCharCode), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().fromCharCode, stringFromCharCode), DontEnum);
 
     // no. of arguments for constructor
     putDirectWithoutTransition(exec->propertyNames().length, jsNumber(exec, 1), ReadOnly | DontEnum | DontDelete);
@@ -64,7 +65,7 @@ static JSObject* constructWithStringConstructor(ExecState* exec, JSObject*, cons
 {
     if (args.isEmpty())
         return new (exec) StringObject(exec, exec->lexicalGlobalObject()->stringObjectStructure());
-    return new (exec) StringObject(exec, exec->lexicalGlobalObject()->stringObjectStructure(), args.at(exec, 0)->toString(exec));
+    return new (exec) StringObject(exec, exec->lexicalGlobalObject()->stringObjectStructure(), args.at(0).toString(exec));
 }
 
 ConstructType StringConstructor::getConstructData(ConstructData& constructData)
@@ -74,11 +75,11 @@ ConstructType StringConstructor::getConstructData(ConstructData& constructData)
 }
 
 // ECMA 15.5.1
-static JSValuePtr callStringConstructor(ExecState* exec, JSObject*, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL callStringConstructor(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     if (args.isEmpty())
         return jsEmptyString(exec);
-    return jsString(exec, args.at(exec, 0)->toString(exec));
+    return jsString(exec, args.at(0).toString(exec));
 }
 
 CallType StringConstructor::getCallData(CallData& callData)

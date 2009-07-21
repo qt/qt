@@ -20,24 +20,20 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGStyleElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "SVGStyleElement.h"
-
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGStyleElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGStyleElement);
 
 /* Hash table */
 
@@ -95,64 +91,68 @@ bool JSSVGStyleElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSSVGStyleElement, Base>(exec, &JSSVGStyleElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGStyleElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStyleElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlspace());
 }
 
-JSValuePtr jsSVGStyleElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStyleElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsSVGStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->media());
 }
 
-JSValuePtr jsSVGStyleElementTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStyleElementTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->title());
 }
 
-void JSSVGStyleElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGStyleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGStyleElement, Base>(exec, propertyName, value, &JSSVGStyleElementTable, this, slot);
 }
 
-void setJSSVGStyleElementXmlspace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGStyleElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
-    imp->setXmlspace(value->toString(exec), ec);
+    imp->setXmlspace(value.toString(exec), ec);
     setDOMException(exec, ec);
 }
 
-void setJSSVGStyleElementType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGStyleElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
-    imp->setType(value->toString(exec), ec);
+    imp->setType(value.toString(exec), ec);
     setDOMException(exec, ec);
 }
 
-void setJSSVGStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
-    imp->setMedia(value->toString(exec), ec);
+    imp->setMedia(value.toString(exec), ec);
     setDOMException(exec, ec);
 }
 
-void setJSSVGStyleElementTitle(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGStyleElementTitle(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
-    imp->setTitle(value->toString(exec), ec);
+    imp->setTitle(value.toString(exec), ec);
     setDOMException(exec, ec);
 }
 

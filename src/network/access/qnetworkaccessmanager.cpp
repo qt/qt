@@ -147,6 +147,9 @@ static void ensureInitialized()
     \value PostOperation        send the contents of an HTML form for
     processing via HTTP POST (created with post())
 
+    \value DeleteOperation      delete contents operation (created with
+    deleteResource())
+
     \omitvalue UnknownOperation
 
     \sa QNetworkReply::operation()
@@ -554,7 +557,7 @@ QNetworkReply *QNetworkAccessManager::head(const QNetworkRequest &request)
     a new QNetworkReply object opened for reading which emits its
     QIODevice::readyRead() signal whenever new data arrives.
 
-    \sa post(), put()
+    \sa post(), put(), deleteResource()
 */
 QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
 {
@@ -576,7 +579,7 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
     Note: sending a POST request on protocols other than HTTP and
     HTTPS is undefined and will probably fail.
 
-    \sa get(), put()
+    \sa get(), put(), deleteResource()
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QIODevice *data)
 {
@@ -641,6 +644,20 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 }
 
 /*!
+    \since 4.6
+
+    This function is used to send a request to delete the resource
+    identified by the URL of \a request.
+    This feature is currently available for HTTP only, performing an HTTP DELETE request.
+
+    \sa get(), post(), put()
+*/
+QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &request)
+{
+    return d_func()->postProcess(createRequest(QNetworkAccessManager::DeleteOperation, request));
+}
+
+/*!
     Returns a new QNetworkReply object to handle the operation \a op
     and request \a req. The device \a outgoingData is always 0 for Get and
     Head requests, but is the value passed to post() and put() in
@@ -685,7 +702,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->urlForLastAuthentication = url;
     }
 
-    // third step: setup the reply
+    // third step: find a backend
+    priv->backend = d->findBackend(op, request);
+
+    // fourth step: setup the reply
     priv->setup(op, request, outgoingData);
     if (request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt() !=
         QNetworkRequest::AlwaysNetwork)
@@ -694,9 +714,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
     priv->proxyList = proxyList;
 #endif
-
-    // fourth step: find a backend
-    priv->backend = d->findBackend(op, request);
     if (priv->backend) {
         priv->backend->setParent(reply);
         priv->backend->reply = priv;
@@ -818,7 +835,7 @@ void QNetworkAccessManagerPrivate::addCredentials(const QNetworkProxy &p,
 
             QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
             auth->insert(QString(), authenticator->user(), authenticator->password());
-            cache.addEntry(cacheKey, auth); // replace the existing one, if there's any
+            objectCache.addEntry(cacheKey, auth); // replace the existing one, if there's any
 
             if (realm.isEmpty()) {
                 break;
@@ -852,13 +869,13 @@ QNetworkAccessManagerPrivate::fetchCachedCredentials(const QNetworkProxy &p,
     QByteArray cacheKey = proxyAuthenticationKey(proxy, realm);
     if (cacheKey.isEmpty())
         return 0;
-    if (!cache.hasEntry(cacheKey))
+    if (!objectCache.hasEntry(cacheKey))
         return 0;
 
     QNetworkAuthenticationCache *auth =
-        static_cast<QNetworkAuthenticationCache *>(cache.requestEntryNow(cacheKey));
+        static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
     QNetworkAuthenticationCredential *cred = auth->findClosestMatch(QString());
-    cache.releaseEntry(cacheKey);
+    objectCache.releaseEntry(cacheKey);
 
     // proxy cache credentials always have exactly one item
     Q_ASSERT_X(cred, "QNetworkAccessManager",
@@ -899,15 +916,15 @@ void QNetworkAccessManagerPrivate::addCredentials(const QUrl &url,
     copy.setUserName(authenticator->user());
     do {
         QByteArray cacheKey = authenticationKey(copy, realm);
-        if (cache.hasEntry(cacheKey)) {
+        if (objectCache.hasEntry(cacheKey)) {
             QNetworkAuthenticationCache *auth =
-                static_cast<QNetworkAuthenticationCache *>(cache.requestEntryNow(cacheKey));
+                static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
             auth->insert(domain, authenticator->user(), authenticator->password());
-            cache.releaseEntry(cacheKey);
+            objectCache.releaseEntry(cacheKey);
         } else {
             QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
             auth->insert(domain, authenticator->user(), authenticator->password());
-            cache.addEntry(cacheKey, auth);
+            objectCache.addEntry(cacheKey, auth);
         }
 
         if (copy.userName().isEmpty()) {
@@ -941,19 +958,19 @@ QNetworkAccessManagerPrivate::fetchCachedCredentials(const QUrl &url,
         realm = authentication->realm();
 
     QByteArray cacheKey = authenticationKey(url, realm);
-    if (!cache.hasEntry(cacheKey))
+    if (!objectCache.hasEntry(cacheKey))
         return 0;
 
     QNetworkAuthenticationCache *auth =
-        static_cast<QNetworkAuthenticationCache *>(cache.requestEntryNow(cacheKey));
+        static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
     QNetworkAuthenticationCredential *cred = auth->findClosestMatch(url.path());
-    cache.releaseEntry(cacheKey);
+    objectCache.releaseEntry(cacheKey);
     return cred;
 }
 
 void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
 {
-    manager->d_func()->cache.clear();
+    manager->d_func()->objectCache.clear();
 }
 
 QT_END_NAMESPACE

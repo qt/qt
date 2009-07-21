@@ -856,6 +856,7 @@ public:
 
     QStyleOptionGraphicsItem();
     QStyleOptionGraphicsItem(const QStyleOptionGraphicsItem &other) : QStyleOption(Version, Type) { *this = other; }
+    static qreal levelOfDetailFromTransform(const QTransform &worldTransform);
 protected:
     QStyleOptionGraphicsItem(int version);
 };

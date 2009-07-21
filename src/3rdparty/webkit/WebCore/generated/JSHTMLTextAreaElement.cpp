@@ -19,25 +19,22 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLTextAreaElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLFormElement.h"
 #include "HTMLTextAreaElement.h"
 #include "JSHTMLFormElement.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLTextAreaElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLTextAreaElement);
 
 /* Hash table */
 
@@ -93,7 +90,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -151,173 +148,188 @@ bool JSHTMLTextAreaElement::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSHTMLTextAreaElement, Base>(exec, &JSHTMLTextAreaElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLTextAreaElementDefaultValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementDefaultValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->defaultValue());
 }
 
-JSValuePtr jsHTMLTextAreaElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->form()));
 }
 
-JSValuePtr jsHTMLTextAreaElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->accessKey());
 }
 
-JSValuePtr jsHTMLTextAreaElementCols(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementCols(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->cols());
 }
 
-JSValuePtr jsHTMLTextAreaElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->disabled());
 }
 
-JSValuePtr jsHTMLTextAreaElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->autofocus());
 }
 
-JSValuePtr jsHTMLTextAreaElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsHTMLTextAreaElementReadOnly(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementReadOnly(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->readOnly());
 }
 
-JSValuePtr jsHTMLTextAreaElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->rows());
 }
 
-JSValuePtr jsHTMLTextAreaElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsHTMLTextAreaElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->value());
 }
 
-JSValuePtr jsHTMLTextAreaElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->willValidate());
 }
 
-JSValuePtr jsHTMLTextAreaElementSelectionStart(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementSelectionStart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->selectionStart());
 }
 
-JSValuePtr jsHTMLTextAreaElementSelectionEnd(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementSelectionEnd(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->selectionEnd());
 }
 
-JSValuePtr jsHTMLTextAreaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTextAreaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLTextAreaElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLTextAreaElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLTextAreaElement, Base>(exec, propertyName, value, &JSHTMLTextAreaElementTable, this, slot);
 }
 
-void setJSHTMLTextAreaElementDefaultValue(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementDefaultValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
     imp->setDefaultValue(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTextAreaElementAccessKey(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementAccessKey(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
     imp->setAccessKey(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTextAreaElementCols(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementCols(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setCols(value->toInt32(exec));
+    imp->setCols(value.toInt32(exec));
 }
 
-void setJSHTMLTextAreaElementDisabled(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setDisabled(value->toBoolean(exec));
+    imp->setDisabled(value.toBoolean(exec));
 }
 
-void setJSHTMLTextAreaElementAutofocus(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementAutofocus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setAutofocus(value->toBoolean(exec));
+    imp->setAutofocus(value.toBoolean(exec));
 }
 
-void setJSHTMLTextAreaElementName(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTextAreaElementReadOnly(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementReadOnly(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setReadOnly(value->toBoolean(exec));
+    imp->setReadOnly(value.toBoolean(exec));
 }
 
-void setJSHTMLTextAreaElementRows(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementRows(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setRows(value->toInt32(exec));
+    imp->setRows(value.toInt32(exec));
 }
 
-void setJSHTMLTextAreaElementValue(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
     imp->setValue(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTextAreaElementSelectionStart(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementSelectionStart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setSelectionStart(value->toInt32(exec));
+    imp->setSelectionStart(value.toInt32(exec));
 }
 
-void setJSHTMLTextAreaElementSelectionEnd(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTextAreaElementSelectionEnd(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setSelectionEnd(value->toInt32(exec));
+    imp->setSelectionEnd(value.toInt32(exec));
 }
 
-JSValuePtr JSHTMLTextAreaElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTextAreaElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLTextAreaElementConstructor>(exec);
 }
 
-JSValuePtr jsHTMLTextAreaElementPrototypeFunctionSelect(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTextAreaElementPrototypeFunctionSelect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTextAreaElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTextAreaElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTextAreaElement* castedThisObj = static_cast<JSHTMLTextAreaElement*>(asObject(thisValue));
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(castedThisObj->impl());
@@ -326,14 +338,15 @@ JSValuePtr jsHTMLTextAreaElementPrototypeFunctionSelect(ExecState* exec, JSObjec
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLTextAreaElementPrototypeFunctionSetSelectionRange(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTextAreaElementPrototypeFunctionSetSelectionRange(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTextAreaElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTextAreaElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTextAreaElement* castedThisObj = static_cast<JSHTMLTextAreaElement*>(asObject(thisValue));
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(castedThisObj->impl());
-    int start = args.at(exec, 0)->toInt32(exec);
-    int end = args.at(exec, 1)->toInt32(exec);
+    int start = args.at(0).toInt32(exec);
+    int end = args.at(1).toInt32(exec);
 
     imp->setSelectionRange(start, end);
     return jsUndefined();

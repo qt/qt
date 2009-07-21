@@ -324,7 +324,7 @@ QList<QNetworkProxy> QGlobalNetworkProxy::proxyForQuery(const QNetworkProxyQuery
     return result;
 }
 
-Q_GLOBAL_STATIC(QGlobalNetworkProxy, globalNetworkProxy);
+Q_GLOBAL_STATIC(QGlobalNetworkProxy, globalNetworkProxy)
 
 namespace {
     template<bool> struct StaticAssertTest;
@@ -366,7 +366,7 @@ static QNetworkProxy::Capabilities defaultCapabilitiesForType(QNetworkProxy::Pro
          int(QNetworkProxy::HostNameLookupCapability)),
     };
 
-    if (int(type) < 0 && int(type) > int(QNetworkProxy::FtpCachingProxy))
+    if (int(type) < 0 || int(type) > int(QNetworkProxy::FtpCachingProxy))
         type = QNetworkProxy::DefaultProxy;
     return QNetworkProxy::Capabilities(defaults[int(type)]);
 }

@@ -33,12 +33,14 @@ namespace JSC {
 
 class RuntimeObjectImp : public JSObject {
 public:
+    RuntimeObjectImp(ExecState*, PassRefPtr<Bindings::Instance>);
+
     virtual ~RuntimeObjectImp();
 
     virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
-    virtual void put(ExecState*, const Identifier& propertyName, JSValuePtr, PutPropertySlot&);
+    virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
     virtual bool deleteProperty(ExecState* , const Identifier& propertyName);
-    virtual JSValuePtr defaultValue(ExecState*, PreferredPrimitiveType) const;
+    virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const;
     virtual CallType getCallData(CallData&);
     virtual ConstructType getConstructData(ConstructData&);
     
@@ -56,7 +58,7 @@ public:
         return globalObject->objectPrototype();
     }
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr prototype)
+    static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
         return Structure::create(prototype, TypeInfo(ObjectType));
     }
@@ -65,14 +67,11 @@ protected:
     RuntimeObjectImp(ExecState*, PassRefPtr<Structure>, PassRefPtr<Bindings::Instance>);
 
 private:
-    friend class Bindings::Instance;
-    RuntimeObjectImp(ExecState*, PassRefPtr<Bindings::Instance>);
-
     virtual const ClassInfo* classInfo() const { return &s_info; }
     
-    static JSValuePtr fallbackObjectGetter(ExecState*, const Identifier&, const PropertySlot&);
-    static JSValuePtr fieldGetter(ExecState*, const Identifier&, const PropertySlot&);
-    static JSValuePtr methodGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue fallbackObjectGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue fieldGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue methodGetter(ExecState*, const Identifier&, const PropertySlot&);
 
     RefPtr<Bindings::Instance> instance;
 };

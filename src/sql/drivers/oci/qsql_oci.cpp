@@ -148,7 +148,6 @@ struct QOCIResultPrivate
     bool transaction;
     int serverVersion;
     int prefetchRows, prefetchMem;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 
     void setCharset(OCIBind* hbnd);
     void setStatementAttributes();
@@ -405,7 +404,6 @@ struct QOCIDriverPrivate
     int serverVersion;
     ub4 prefetchRows;
     ub2 prefetchMem;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
     QString user;
 
     void allocErrorHandle();
@@ -413,7 +411,7 @@ struct QOCIDriverPrivate
 
 QOCIDriverPrivate::QOCIDriverPrivate()
     : env(0), svc(0), srvhp(0), authp(0), err(0), transaction(false), serverVersion(-1),
-      prefetchRows(-1), prefetchMem(QOCI_PREFETCH_MEM), precisionPolicy(QSql::HighPrecision)
+      prefetchRows(-1), prefetchMem(QOCI_PREFETCH_MEM)
 {
 }
 
@@ -611,7 +609,7 @@ static QSqlField qFromOraInf(const OraFieldInfo &ofi)
     QSqlField f(ofi.name, ofi.type);
     f.setRequired(ofi.oraIsNull == 0);
 
-    if (ofi.type == QVariant::String)
+    if (ofi.type == QVariant::String && ofi.oraType != SQLT_NUM && ofi.oraType != SQLT_VNU)
         f.setLength(ofi.oraFieldLength);
     else
         f.setLength(ofi.oraPrecision == 0 ? 38 : int(ofi.oraPrecision));
@@ -620,136 +618,6 @@ static QSqlField qFromOraInf(const OraFieldInfo &ofi)
     f.setSqlType(int(ofi.oraType));
     return f;
 }
-
-static OraFieldInfo qMakeOraField(const QOCIResultPrivate* p, OCIParam* param)
-{
-    OraFieldInfo ofi;
-    ub2 colType(0);
-    text *colName = 0;
-    ub4 colNameLen(0);
-    sb1 colScale(0);
-    ub2 colLength(0);
-    ub2 colFieldLength(0);
-    sb2 colPrecision(0);
-    ub1 colIsNull(0);
-    int r(0);
-    QVariant::Type type(QVariant::Invalid);
-
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colType,
-                   0,
-                   OCI_ATTR_DATA_TYPE,
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colName,
-                   &colNameLen,
-                   OCI_ATTR_NAME,
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colLength,
-                   0,
-                   OCI_ATTR_DATA_SIZE, /* in bytes */
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-
-#ifdef OCI_ATTR_CHAR_SIZE
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colFieldLength,
-                   0,
-                   OCI_ATTR_CHAR_SIZE,
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-#else
-    // for Oracle8.
-    colFieldLength = colLength;
-#endif
-
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colPrecision,
-                   0,
-                   OCI_ATTR_PRECISION,
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colScale,
-                   0,
-                   OCI_ATTR_SCALE,
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colType,
-                   0,
-                   OCI_ATTR_DATA_TYPE,
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-    r = OCIAttrGet(param,
-                   OCI_DTYPE_PARAM,
-                   &colIsNull,
-                   0,
-                   OCI_ATTR_IS_NULL,
-                   p->err);
-    if (r != 0)
-        qOraWarning("qMakeOraField:", p->err);
-
-    type = qDecodeOCIType(colType, p->precisionPolicy);
-
-    if (type == QVariant::Int) {
-        if (colLength == 22 && colPrecision == 0 && colScale == 0)
-            type = QVariant::String;
-        if (colScale > 0)
-            type = QVariant::String;
-    }
-
-    // bind as double if the precision policy asks for it
-    if (((colType == SQLT_FLT) || (colType == SQLT_NUM))
-            && (p->precisionPolicy == QSql::LowPrecisionDouble)) {
-        type = QVariant::Double;
-    }
-
-    // bind as int32 or int64 if the precision policy asks for it
-    if ((colType == SQLT_NUM) || (colType == SQLT_VNU) || (colType == SQLT_UIN)
-            || (colType == SQLT_INT)) {
-        if (p->precisionPolicy == QSql::LowPrecisionInt64)
-            type = QVariant::LongLong;
-        else if (p->precisionPolicy == QSql::LowPrecisionInt32)
-            type = QVariant::Int;
-    }
-
-    if (colType == SQLT_BLOB)
-        colLength = 0;
-
-    // colNameLen is length in bytes
-    ofi.name = QString(reinterpret_cast<const QChar*>(colName), colNameLen / 2);
-    ofi.type = type;
-    ofi.oraType = colType;
-    ofi.oraFieldLength = colFieldLength;
-    ofi.oraLength = colLength;
-    ofi.oraScale = colScale;
-    ofi.oraPrecision = colPrecision;
-    ofi.oraIsNull = colIsNull;
-
-    return ofi;
-}
-
 
 /*!
     \internal
@@ -806,6 +674,7 @@ public:
 private:
     char* create(int position, int size);
     OCILobLocator ** createLobLocator(int position, OCIEnv* env);
+    OraFieldInfo qMakeOraField(const QOCIResultPrivate* p, OCIParam* param) const;
 
     class OraFieldInf
     {
@@ -1135,6 +1004,135 @@ int QOCICols::readPiecewise(QVector<QVariant> &values, int index)
         }
     } while (status == OCI_SUCCESS_WITH_INFO || status == OCI_NEED_DATA);
     return r;
+}
+
+OraFieldInfo QOCICols::qMakeOraField(const QOCIResultPrivate* p, OCIParam* param) const
+{
+    OraFieldInfo ofi;
+    ub2 colType(0);
+    text *colName = 0;
+    ub4 colNameLen(0);
+    sb1 colScale(0);
+    ub2 colLength(0);
+    ub2 colFieldLength(0);
+    sb2 colPrecision(0);
+    ub1 colIsNull(0);
+    int r(0);
+    QVariant::Type type(QVariant::Invalid);
+
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colType,
+                   0,
+                   OCI_ATTR_DATA_TYPE,
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colName,
+                   &colNameLen,
+                   OCI_ATTR_NAME,
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colLength,
+                   0,
+                   OCI_ATTR_DATA_SIZE, /* in bytes */
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+
+#ifdef OCI_ATTR_CHAR_SIZE
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colFieldLength,
+                   0,
+                   OCI_ATTR_CHAR_SIZE,
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+#else
+    // for Oracle8.
+    colFieldLength = colLength;
+#endif
+
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colPrecision,
+                   0,
+                   OCI_ATTR_PRECISION,
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colScale,
+                   0,
+                   OCI_ATTR_SCALE,
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colType,
+                   0,
+                   OCI_ATTR_DATA_TYPE,
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+    r = OCIAttrGet(param,
+                   OCI_DTYPE_PARAM,
+                   &colIsNull,
+                   0,
+                   OCI_ATTR_IS_NULL,
+                   p->err);
+    if (r != 0)
+        qOraWarning("qMakeOraField:", p->err);
+
+    type = qDecodeOCIType(colType, p->q->numericalPrecisionPolicy());
+
+    if (type == QVariant::Int) {
+        if (colLength == 22 && colPrecision == 0 && colScale == 0)
+            type = QVariant::String;
+        if (colScale > 0)
+            type = QVariant::String;
+    }
+
+    // bind as double if the precision policy asks for it
+    if (((colType == SQLT_FLT) || (colType == SQLT_NUM))
+            && (p->q->numericalPrecisionPolicy() == QSql::LowPrecisionDouble)) {
+        type = QVariant::Double;
+    }
+
+    // bind as int32 or int64 if the precision policy asks for it
+    if ((colType == SQLT_NUM) || (colType == SQLT_VNU) || (colType == SQLT_UIN)
+            || (colType == SQLT_INT)) {
+        if (p->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
+            type = QVariant::LongLong;
+        else if (p->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
+            type = QVariant::Int;
+    }
+
+    if (colType == SQLT_BLOB)
+        colLength = 0;
+
+    // colNameLen is length in bytes
+    ofi.name = QString(reinterpret_cast<const QChar*>(colName), colNameLen / 2);
+    ofi.type = type;
+    ofi.oraType = colType;
+    ofi.oraFieldLength = colFieldLength;
+    ofi.oraLength = colLength;
+    ofi.oraScale = colScale;
+    ofi.oraPrecision = colPrecision;
+    ofi.oraIsNull = colIsNull;
+
+    return ofi;
 }
 
 struct QOCIBatchColumn
@@ -1580,19 +1578,22 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
         case QVariant::Double:
         case QVariant::Int:
         case QVariant::LongLong:
-            if (d->precisionPolicy != QSql::HighPrecision) {
-                if ((d->precisionPolicy == QSql::LowPrecisionDouble)
+            if (d->q->numericalPrecisionPolicy() != QSql::HighPrecision) {
+                if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
                         && (fld.typ == QVariant::Double)) {
                     v[index + i] = *reinterpret_cast<double *>(fld.data);
                     break;
-                } else if ((d->precisionPolicy == QSql::LowPrecisionInt64)
+                } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
                         && (fld.typ == QVariant::LongLong)) {
                     qint64 qll = 0;
-                    OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
+                    int r = OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
                                    OCI_NUMBER_SIGNED, &qll);
-                    v[index + i] = qll;
+                    if(r == OCI_SUCCESS)
+                        v[index + i] = qll;
+                    else
+                        v[index + i] = QVariant();
                     break;
-                } else if ((d->precisionPolicy == QSql::LowPrecisionInt32)
+                } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
                         && (fld.typ == QVariant::Int)) {
                     v[index + i] = *reinterpret_cast<int *>(fld.data);
                     break;
@@ -1618,8 +1619,7 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
 QOCIResultPrivate::QOCIResultPrivate(QOCIResult *result, const QOCIDriverPrivate *driver)
     : cols(0), q(result), env(driver->env), err(0), svc(const_cast<OCISvcCtx*&>(driver->svc)),
       sql(0), transaction(driver->transaction), serverVersion(driver->serverVersion),
-      prefetchRows(driver->prefetchRows), prefetchMem(driver->prefetchMem),
-      precisionPolicy(driver->precisionPolicy)
+      prefetchRows(driver->prefetchRows), prefetchMem(driver->prefetchMem)
 {
     int r = OCIHandleAlloc(env,
                            reinterpret_cast<void **>(&err),
@@ -1901,11 +1901,8 @@ void QOCIResult::virtual_hook(int id, void *data)
     case QSqlResult::BatchOperation:
         QOCICols::execBatch(d, boundValues(), *reinterpret_cast<bool *>(data));
         break;
-    case QSqlResult::SetNumericalPrecision:
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
-        break;
     default:
-        QSqlResult::virtual_hook(id, data);
+        QSqlCachedResult::virtual_hook(id, data);
     }
 }
 
@@ -2040,8 +2037,8 @@ bool QOCIDriver::open(const QString & db,
     QString connectionString = db;
     if (!hostname.isEmpty())
         connectionString = 
-            QString(QLatin1String("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=%1)(Port=%2))"
-                "(CONNECT_DATA=(SID=%3)))")).arg(hostname).arg((port > -1 ? port : 1521)).arg(db);
+        QString::fromLatin1("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=%1)(Port=%2))"
+                "(CONNECT_DATA=(SID=%3)))").arg(hostname).arg((port > -1 ? port : 1521)).arg(db);
 
     r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->srvhp), OCI_HTYPE_SERVER, 0, 0);
     if (r == OCI_SUCCESS)
@@ -2108,7 +2105,7 @@ bool QOCIDriver::open(const QString & db,
 
     setOpen(true);
     setOpenError(false);
-    d->user = user.toUpper();
+    d->user = user;
 
     return true;
 }
@@ -2210,9 +2207,16 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
                 "and owner != 'WKSYS'"
                 "and owner != 'CTXSYS'"
                 "and owner != 'WMSYS'"));
+
+        QString user = d->user;
+        if ( isIdentifierEscaped(user, QSqlDriver::TableName))
+            user = stripDelimiters(user, QSqlDriver::TableName);
+        else
+            user = user.toUpper();
+
         while (t.next()) {
-            if (t.value(0).toString().toUpper() != d->user.toUpper())
-                tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
+            if (t.value(0).toString().toUpper() != user.toUpper())
+                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2228,7 +2232,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
                 "and owner != 'WMSYS'"));
         while (t.next()) {
             if (t.value(0).toString().toUpper() != d->user.toUpper())
-                tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
+                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2247,10 +2251,10 @@ void qSplitTableAndOwner(const QString & tname, QString * tbl,
 {
     int i = tname.indexOf(QLatin1Char('.')); // prefixed with owner?
     if (i != -1) {
-        *tbl = tname.right(tname.length() - i - 1).toUpper();
-        *owner = tname.left(i).toUpper();
+        *tbl = tname.right(tname.length() - i - 1);
+        *owner = tname.left(i);
     } else {
-        *tbl = tname.toUpper();
+        *tbl = tname;
     }
 }
 
@@ -2266,7 +2270,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     QString stmt(QLatin1String("select column_name, data_type, data_length, "
                   "data_precision, data_scale, nullable, data_default%1"
                   "from all_tab_columns "
-                  "where upper(table_name)=%2"));
+                  "where table_name=%2"));
     if (d->serverVersion >= 9)
         stmt = stmt.arg(QLatin1String(", char_length "));
     else
@@ -2274,11 +2278,23 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     bool buildRecordInfo = false;
     QString table, owner, tmpStmt;
     qSplitTableAndOwner(tablename, &table, &owner);
+
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
+
     tmpStmt = stmt.arg(QLatin1Char('\'') + table + QLatin1Char('\''));
     if (owner.isEmpty()) {
         owner = d->user;
     }
-    tmpStmt += QLatin1String(" and upper(owner)='") + owner + QLatin1String("'");
+
+    if (isIdentifierEscaped(owner, QSqlDriver::TableName))
+        owner = stripDelimiters(owner, QSqlDriver::TableName);
+    else
+        owner = owner.toUpper();
+
+    tmpStmt += QLatin1String(" and owner='") + owner + QLatin1Char('\'');
     t.setForwardOnly(true);
     t.exec(tmpStmt);
     if (!t.next()) { // try and see if the tablename is a synonym
@@ -2295,7 +2311,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
               << QLatin1String("BINARY_DOUBLE");
     if (buildRecordInfo) {
         do {
-            QVariant::Type ty = qDecodeOCIType(t.value(1).toString(),t.numericalPrecisionPolicy());
+            QVariant::Type ty = qDecodeOCIType(t.value(1).toString(), t.numericalPrecisionPolicy());
             QSqlField f(t.value(0).toString(), ty);
             f.setRequired(t.value(5).toString() == QLatin1String("N"));
             f.setPrecision(t.value(4).toInt());
@@ -2327,11 +2343,23 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     bool buildIndex = false;
     QString table, owner, tmpStmt;
     qSplitTableAndOwner(tablename, &table, &owner);
-    tmpStmt = stmt + QLatin1String(" and upper(a.table_name)='") + table + QLatin1String("'");
+
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
+
+    tmpStmt = stmt + QLatin1String(" and a.table_name='") + table + QLatin1Char('\'');
     if (owner.isEmpty()) {
         owner = d->user;
     }
-    tmpStmt += QLatin1String(" and upper(a.owner)='") + owner + QLatin1String("'");
+
+    if (isIdentifierEscaped(owner, QSqlDriver::TableName))
+        owner = stripDelimiters(owner, QSqlDriver::TableName);
+    else
+        owner = owner.toUpper();
+
+    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1Char('\'');
     t.setForwardOnly(true);
     t.exec(tmpStmt);
 
@@ -2355,7 +2383,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
             tt.exec(QLatin1String("select data_type from all_tab_columns where table_name='") +
                      t.value(2).toString() + QLatin1String("' and column_name='") +
                      t.value(0).toString() + QLatin1String("' and owner='") +
-                     owner +QLatin1String("'"));
+                     owner + QLatin1Char('\''));
             if (!tt.next()) {
                 return QSqlIndex();
             }
@@ -2425,13 +2453,14 @@ QVariant QOCIDriver::handle() const
     return qVariantFromValue(d->env);
 }
 
-QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType /* type */) const
+QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
     QString res = identifier;
-    res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-    if (identifier.indexOf(QLatin1Char(' ')) != -1)
+    if(!identifier.isEmpty() && !isIdentifierEscaped(identifier, type)) {
+        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-//     res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    }
     return res;
 }
 

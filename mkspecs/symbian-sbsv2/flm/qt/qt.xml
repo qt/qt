@@ -34,4 +34,9 @@
         <param name='POST_LINK_CMD' />
         <param name='LINK_TARGET' />
     </interface>
+
+    <interface name="qt.qmake_generate_temp_dirs" extends="Symbian.UserFLM"
+                flm="qmake_generate_temp_dirs.flm">
+        <param name='DIRS' />
+    </interface>
 </build>

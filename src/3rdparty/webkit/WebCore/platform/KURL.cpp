@@ -243,6 +243,14 @@ static void copyASCII(const UChar* src, int length, char* dest)
         dest[i] = static_cast<char>(src[i]);
 }
 
+static void appendASCII(const String& base, const char* rel, size_t len, CharBuffer& buffer)
+{
+    buffer.resize(base.length() + len + 1);
+    copyASCII(base.characters(), base.length(), buffer.data());
+    memcpy(buffer.data() + base.length(), rel, len);
+    buffer[buffer.size() - 1] = '\0';
+}
+
 // FIXME: Move to PlatformString.h eventually.
 // Returns the index of the first index in string |s| of any of the characters
 // in |toFind|. |toFind| should be a null-terminated string, all characters up
@@ -259,6 +267,20 @@ static int findFirstOf(const UChar* s, int sLen, int startPos, const char* toFin
     return -1;
 }
 
+#ifndef NDEBUG
+static void checkEncodedString(const String& url)
+{
+    for (unsigned i = 0; i < url.length(); ++i)
+        ASSERT(!(url[i] & ~0x7F));
+
+    ASSERT(!url.length() || isSchemeFirstChar(url[0]));
+}
+#else
+static inline void checkEncodedString(const String&)
+{
+}
+#endif
+
 inline bool KURL::protocolIs(const String& string, const char* protocol)
 {
     return WebCore::protocolIs(string, protocol);
@@ -267,6 +289,7 @@ inline bool KURL::protocolIs(const String& string, const char* protocol)
 void KURL::invalidate()
 {
     m_isValid = false;
+    m_protocolInHTTPFamily = false;
     m_schemeEnd = 0;
     m_userStart = 0;
     m_userEnd = 0;
@@ -281,39 +304,14 @@ void KURL::invalidate()
 
 KURL::KURL(const char* url)
 {
-    if (!url || url[0] != '/') {
-        parse(url, 0);
-        return;
-    }
-
-    size_t urlLength = strlen(url) + 1;
-    CharBuffer buffer(urlLength + 5); // 5 for "file:".
-    buffer[0] = 'f';
-    buffer[1] = 'i';
-    buffer[2] = 'l';
-    buffer[3] = 'e';
-    buffer[4] = ':';
-    memcpy(&buffer[5], url, urlLength);
-    parse(buffer.data(), 0);
+    parse(url, 0);
+    ASSERT(url == m_string);
 }
 
 KURL::KURL(const String& url)
 {
-    if (url[0] != '/') {
-        parse(url);
-        return;
-    }
-
-    CharBuffer buffer(url.length() + 6); // 5 for "file:", 1 for terminator.
-    buffer[0] = 'f';
-    buffer[1] = 'i';
-    buffer[2] = 'l';
-    buffer[3] = 'e';
-    buffer[4] = ':';
-    copyASCII(url.characters(), url.length(), &buffer[5]);
-    buffer[url.length() + 5] = '\0'; // Need null terminator.
-
-    parse(buffer.data(), 0);
+    parse(url);
+    ASSERT(url == m_string);
 }
 
 KURL::KURL(const KURL& base, const String& relative)
@@ -343,7 +341,7 @@ void KURL::init(const KURL& base, const String& relative, const TextEncoding& en
     // For compatibility with Win IE, treat backslashes as if they were slashes,
     // as long as we're not dealing with javascript: or data: URLs.
     String rel = relative;
-    if (rel.contains('\\') && !(protocolIs(rel, "javascript") || protocolIs(rel, "data")))
+    if (rel.contains('\\') && !(protocolIsJavaScript(rel) || protocolIs(rel, "data")))
         rel = substituteBackslashes(rel);
 
     String* originalString = &rel;
@@ -399,15 +397,18 @@ void KURL::init(const KURL& base, const String& relative, const TextEncoding& en
         }
     }
 
+    CharBuffer parseBuffer;
+
     if (absolute) {
         parse(str, originalString);
     } else {
         // If the base is empty or opaque (e.g. data: or javascript:), then the URL is invalid
         // unless the relative URL is a single fragment.
         if (!base.isHierarchical()) {
-            if (str[0] == '#')
-                parse(base.m_string.left(base.m_queryEnd) + (allASCII ? String(str) : String::fromUTF8(str)));
-            else {
+            if (str[0] == '#') {
+                appendASCII(base.m_string.left(base.m_queryEnd), str, len, parseBuffer);
+                parse(parseBuffer.data(), 0);
+            } else {
                 m_string = relative;
                 invalidate();
             }
@@ -420,22 +421,28 @@ void KURL::init(const KURL& base, const String& relative, const TextEncoding& en
             // reference to the same document
             *this = base;
             break;
-        case '#':
+        case '#': {
             // must be fragment-only reference
-            parse(base.m_string.left(base.m_queryEnd) + (allASCII ? String(str) : String::fromUTF8(str)));
+            appendASCII(base.m_string.left(base.m_queryEnd), str, len, parseBuffer);
+            parse(parseBuffer.data(), 0);
             break;
-        case '?':
+        }
+        case '?': {
             // query-only reference, special case needed for non-URL results
-            parse(base.m_string.left(base.m_pathEnd) + (allASCII ? String(str) : String::fromUTF8(str)));
+            appendASCII(base.m_string.left(base.m_pathEnd), str, len, parseBuffer);
+            parse(parseBuffer.data(), 0);
             break;
+        }
         case '/':
             // must be net-path or absolute-path reference
             if (str[1] == '/') {
                 // net-path
-                parse(base.m_string.left(base.m_schemeEnd + 1) + (allASCII ? String(str) : String::fromUTF8(str)));
+                appendASCII(base.m_string.left(base.m_schemeEnd + 1), str, len, parseBuffer);
+                parse(parseBuffer.data(), 0);
             } else {
                 // abs-path
-                parse(base.m_string.left(base.m_portEnd) + (allASCII ? String(str) : String::fromUTF8(str)));
+                appendASCII(base.m_string.left(base.m_portEnd), str, len, parseBuffer);
+                parse(parseBuffer.data(), 0);
             }
             break;
         default:
@@ -443,16 +450,15 @@ void KURL::init(const KURL& base, const String& relative, const TextEncoding& en
                 // must be relative-path reference
 
                 // Base part plus relative part plus one possible slash added in between plus terminating \0 byte.
-                CharBuffer buffer(base.m_pathEnd + 1 + len + 1);
+                parseBuffer.resize(base.m_pathEnd + 1 + len + 1);
 
-                char* bufferPos = buffer.data();
+                char* bufferPos = parseBuffer.data();
 
                 // first copy everything before the path from the base
                 unsigned baseLength = base.m_string.length();
                 const UChar* baseCharacters = base.m_string.characters();
                 CharBuffer baseStringBuffer(baseLength);
-                for (unsigned i = 0; i < baseLength; ++i)
-                    baseStringBuffer[i] = static_cast<char>(baseCharacters[i]);
+                copyASCII(baseCharacters, baseLength, baseStringBuffer.data());
                 const char* baseString = baseStringBuffer.data();
                 const char* baseStringStart = baseString;
                 const char* pathStart = baseStringStart + base.m_portEnd;
@@ -511,9 +517,9 @@ void KURL::init(const KURL& base, const String& relative, const TextEncoding& en
                 // of the relative reference; this will also add a null terminator
                 strcpy(bufferPos, relStringPos);
 
-                parse(buffer.data(), 0);
+                parse(parseBuffer.data(), 0);
 
-                ASSERT(strlen(buffer.data()) + 1 <= buffer.size());
+                ASSERT(strlen(parseBuffer.data()) + 1 <= parseBuffer.size());
                 break;
             }
         }
@@ -597,23 +603,42 @@ bool KURL::hasRef() const
     return m_fragmentEnd != m_queryEnd;
 }
 
-static inline void assertProtocolIsGood(const char* protocol)
+String KURL::baseAsString() const
 {
-#ifndef NDEBUG
+    return m_string.left(m_pathAfterLastSlash);
+}
+
+#ifdef NDEBUG
+
+static inline void assertProtocolIsGood(const char*)
+{
+}
+
+#else
+
+static void assertProtocolIsGood(const char* protocol)
+{
     const char* p = protocol;
     while (*p) {
         ASSERT(*p > ' ' && *p < 0x7F && !(*p >= 'A' && *p <= 'Z'));
         ++p;
     }
-#endif
 }
+
+#endif
 
 bool KURL::protocolIs(const char* protocol) const
 {
-    // Do the comparison without making a new string object.
     assertProtocolIsGood(protocol);
+
+    // JavaScript URLs are "valid" and should be executed even if KURL decides they are invalid.
+    // The free function protocolIsJavaScript() should be used instead. 
+    ASSERT(strcmp(protocol, "javascript") != 0);
+
     if (!m_isValid)
         return false;
+
+    // Do the comparison without making a new string object.
     for (int i = 0; i < m_schemeEnd; ++i) {
         if (!protocol[i] || toASCIILower(m_string[i]) != protocol[i])
             return false;
@@ -623,7 +648,10 @@ bool KURL::protocolIs(const char* protocol) const
 
 String KURL::query() const
 {
-    return m_string.substring(m_pathEnd, m_queryEnd - m_pathEnd); 
+    if (m_queryEnd == m_pathEnd)
+        return String();
+
+    return m_string.substring(m_pathEnd + 1, m_queryEnd - (m_pathEnd + 1)); 
 }
 
 String KURL::path() const
@@ -633,6 +661,9 @@ String KURL::path() const
 
 void KURL::setProtocol(const String& s)
 {
+    // FIXME: Non-ASCII characters must be encoded and escaped to match parse() expectations,
+    // and to avoid changing more than just the protocol.
+
     if (!m_isValid) {
         parse(s + ":" + m_string);
         return;
@@ -646,6 +677,9 @@ void KURL::setHost(const String& s)
     if (!m_isValid)
         return;
 
+    // FIXME: Non-ASCII characters must be encoded and escaped to match parse() expectations,
+    // and to avoid changing more than just the host.
+
     bool slashSlashNeeded = m_userStart == m_schemeEnd + 1;
 
     parse(m_string.left(hostStart()) + (slashSlashNeeded ? "//" : "") + s + m_string.substring(m_hostEnd));
@@ -656,16 +690,22 @@ void KURL::setPort(unsigned short i)
     if (!m_isValid)
         return;
 
-    bool colonNeeded = m_portEnd == m_hostEnd;
-    int portStart = (colonNeeded ? m_hostEnd : m_hostEnd + 1);
+    if (i) {
+        bool colonNeeded = m_portEnd == m_hostEnd;
+        int portStart = (colonNeeded ? m_hostEnd : m_hostEnd + 1);
 
-    parse(m_string.left(portStart) + (colonNeeded ? ":" : "") + String::number(i) + m_string.substring(m_portEnd));
+        parse(m_string.left(portStart) + (colonNeeded ? ":" : "") + String::number(i) + m_string.substring(m_portEnd));
+    } else
+        parse(m_string.left(m_hostEnd) + m_string.substring(m_portEnd));
 }
 
 void KURL::setHostAndPort(const String& hostAndPort)
 {
     if (!m_isValid)
         return;
+
+    // FIXME: Non-ASCII characters must be encoded and escaped to match parse() expectations,
+    // and to avoid changing more than just host and port.
 
     bool slashSlashNeeded = m_userStart == m_schemeEnd + 1;
 
@@ -677,6 +717,8 @@ void KURL::setUser(const String& user)
     if (!m_isValid)
         return;
 
+    // FIXME: Non-ASCII characters must be encoded and escaped to match parse() expectations,
+    // and to avoid changing more than just the user login.
     String u;
     int end = m_userEnd;
     if (!user.isEmpty()) {
@@ -699,6 +741,8 @@ void KURL::setPass(const String& password)
     if (!m_isValid)
         return;
 
+    // FIXME: Non-ASCII characters must be encoded and escaped to match parse() expectations,
+    // and to avoid changing more than just the user password.
     String p;
     int end = m_passwordEnd;
     if (!password.isEmpty()) {
@@ -720,6 +764,8 @@ void KURL::setRef(const String& s)
 {
     if (!m_isValid)
         return;
+
+    // FIXME: Non-ASCII characters must be encoded and escaped to match parse() expectations.
     parse(m_string.left(m_queryEnd) + (s.isNull() ? "" : "#" + s));
 }
 
@@ -735,6 +781,9 @@ void KURL::setQuery(const String& query)
     if (!m_isValid)
         return;
 
+    // FIXME: '#' and non-ASCII characters must be encoded and escaped.
+    // Usually, the query is encoded using document encoding, not UTF-8, but we don't have
+    // access to the document in this function.
     if ((query.isEmpty() || query[0] != '?') && !query.isNull())
         parse(m_string.left(m_pathEnd) + "?" + query + m_string.substring(m_queryEnd));
     else
@@ -747,6 +796,8 @@ void KURL::setPath(const String& s)
     if (!m_isValid)
         return;
 
+    // FIXME: encodeWithURLEscapeSequences does not correctly escape '#' and '?', so fragment and query parts
+    // may be inadvertently affected.
     parse(m_string.left(m_portEnd) + encodeWithURLEscapeSequences(s) + m_string.substring(m_pathEnd));
 }
 
@@ -784,7 +835,11 @@ String KURL::prettyURL() const
     }
 
     append(result, path());
-    append(result, query());
+
+    if (m_pathEnd != m_queryEnd) {
+        result.append('?');
+        append(result, query());
+    }
 
     if (m_fragmentEnd != m_queryEnd) {
         result.append('#');
@@ -958,8 +1013,11 @@ static inline bool matchLetter(char c, char lowercaseLetter)
 
 void KURL::parse(const String& string)
 {
-    CharBuffer buffer;
-    encodeRelativeString(string, UTF8Encoding(), buffer);
+    checkEncodedString(string);
+
+    CharBuffer buffer(string.length() + 1);
+    copyASCII(string.characters(), string.length(), buffer.data());
+    buffer[string.length()] = '\0';
     parse(buffer.data(), &string);
 }
 
@@ -1006,7 +1064,7 @@ void KURL::parse(const char* url, const String* originalString)
         && matchLetter(url[2], 'l')
         && matchLetter(url[3], 'e');
 
-    bool isHTTPorHTTPS = matchLetter(url[0], 'h')
+    m_protocolInHTTPFamily = matchLetter(url[0], 'h')
         && matchLetter(url[1], 't')
         && matchLetter(url[2], 't')
         && matchLetter(url[3], 'p')
@@ -1088,7 +1146,7 @@ void KURL::parse(const char* url, const String* originalString)
             return;
         }
 
-        if (userStart == portEnd && !isHTTPorHTTPS && !isFile) {
+        if (userStart == portEnd && !m_protocolInHTTPFamily && !isFile) {
             // No authority found, which means that this is not a net_path, but rather an abs_path whose first two
             // path segments are empty. For file, http and https only, an empty authority is allowed.
             userStart -= 2;
@@ -1212,7 +1270,7 @@ void KURL::parse(const char* url, const String* originalString)
 
     // For canonicalization, ensure we have a '/' for no path.
     // Only do this for http and https.
-    if (isHTTPorHTTPS && pathEnd - pathStart == 0)
+    if (m_protocolInHTTPFamily && pathEnd - pathStart == 0)
         *p++ = '/';
 
     // add path, escaping bad characters
@@ -1495,7 +1553,7 @@ static void encodeRelativeString(const String& rel, const TextEncoding& encoding
     TextEncoding pathEncoding(UTF8Encoding()); // Path is always encoded as UTF-8; other parts may depend on the scheme.
 
     int pathEnd = -1;
-    if (encoding != pathEncoding && encoding.isValid() && !protocolIs(rel, "mailto") && !protocolIs(rel, "data") && !protocolIs(rel, "javascript")) {
+    if (encoding != pathEncoding && encoding.isValid() && !protocolIs(rel, "mailto") && !protocolIs(rel, "data") && !protocolIsJavaScript(rel)) {
         // Find the first instance of either # or ?, keep pathEnd at -1 otherwise.
         pathEnd = findFirstOf(s.data(), s.size(), 0, "#?");
     }
@@ -1559,6 +1617,11 @@ bool protocolIs(const String& url, const char* protocol)
         if (toASCIILower(url[i]) != protocol[i])
             return false;
     }
+}
+
+bool protocolIsJavaScript(const String& url)
+{
+    return protocolIs(url, "javascript");
 }
 
 String mimeTypeFromDataURL(const String& url)

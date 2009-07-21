@@ -20,25 +20,22 @@
 
 #include "config.h"
 
-
 #if ENABLE(XPATH)
 
 #include "JSXPathException.h"
 
-#include <wtf/GetPtr.h>
-
 #include "KURL.h"
 #include "XPathException.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSXPathException)
+ASSERT_CLASS_FITS_IN_CELL(JSXPathException);
 
 /* Hash table */
 
@@ -85,7 +82,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -138,7 +135,6 @@ JSXPathException::JSXPathException(PassRefPtr<Structure> structure, PassRefPtr<X
 JSXPathException::~JSXPathException()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSXPathException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -151,64 +147,68 @@ bool JSXPathException::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSXPathException, Base>(exec, &JSXPathExceptionTable, this, propertyName, slot);
 }
 
-JSValuePtr jsXPathExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     XPathException* imp = static_cast<XPathException*>(static_cast<JSXPathException*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->code());
 }
 
-JSValuePtr jsXPathExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     XPathException* imp = static_cast<XPathException*>(static_cast<JSXPathException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsXPathExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     XPathException* imp = static_cast<XPathException*>(static_cast<JSXPathException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->message());
 }
 
-JSValuePtr jsXPathExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSXPathException*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSXPathException::getConstructor(ExecState* exec)
+JSValue JSXPathException::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSXPathExceptionConstructor>(exec);
 }
 
-JSValuePtr jsXPathExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsXPathExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSXPathException::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSXPathException::s_info))
         return throwError(exec, TypeError);
     JSXPathException* castedThisObj = static_cast<JSXPathException*>(asObject(thisValue));
     XPathException* imp = static_cast<XPathException*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsString(exec, imp->toString());
+    JSC::JSValue result = jsString(exec, imp->toString());
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsXPathExceptionINVALID_EXPRESSION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathExceptionINVALID_EXPRESSION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(51));
 }
 
-JSValuePtr jsXPathExceptionTYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathExceptionTYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(52));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, XPathException* object)
+JSC::JSValue toJS(JSC::ExecState* exec, XPathException* object)
 {
     return getDOMObjectWrapper<JSXPathException>(exec, object);
 }
-XPathException* toXPathException(JSC::JSValuePtr value)
+XPathException* toXPathException(JSC::JSValue value)
 {
-    return value->isObject(&JSXPathException::s_info) ? static_cast<JSXPathException*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSXPathException::s_info) ? static_cast<JSXPathException*>(asObject(value))->impl() : 0;
 }
 
 }

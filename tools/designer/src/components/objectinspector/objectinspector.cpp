@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ObjectInspector
-*/
-
 #include "objectinspector.h"
 #include "objectinspectormodel_p.h"
 #include "formwindow.h"

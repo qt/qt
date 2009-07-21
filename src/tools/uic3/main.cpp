@@ -367,7 +367,7 @@ int runUic3(int argc, char * argv[])
     }
 
     if (headerFile) {
-        out << "#include \"" << headerFile << "\"" << endl << endl;
+        out << "#include \"" << headerFile << '\"' << endl << endl;
     }
 
     QString convertedUi;

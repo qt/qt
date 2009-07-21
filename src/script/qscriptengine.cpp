@@ -583,7 +583,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
     QScriptValuePrivate *p = QScriptValuePrivate::get(scriptObject);
     if (!p || !p->value.isObject())
         return newQObject(qtObject, ownership, options);
-    if (p->value.isVariant()) {
+    if (p->value.isQObject()) {
         QScript::ExtQObject::Instance *data;
         data = d->qobjectConstructor->get(p->value);
         Q_ASSERT(data != 0);
@@ -1612,7 +1612,8 @@ bool qScriptConnect(QObject *sender, const char *signal,
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(function.engine());
     return eng_p->scriptConnect(sender, signal,
                                 eng_p->toImpl(receiver),
-                                eng_p->toImpl(function));
+                                eng_p->toImpl(function),
+                                Qt::AutoConnection);
 }
 
 /*!

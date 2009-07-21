@@ -37,17 +37,15 @@ namespace JSC {
 
     class StructureChain : public RefCounted<StructureChain> {
     public:
-        static PassRefPtr<StructureChain> create(Structure* structure) { return adoptRef(new StructureChain(structure)); }
-
+        static PassRefPtr<StructureChain> create(Structure* head) { return adoptRef(new StructureChain(head)); }
         RefPtr<Structure>* head() { return m_vector.get(); }
+        bool isCacheable() const;
 
     private:
-        StructureChain(Structure* structure);
+        StructureChain(Structure* head);
 
         OwnArrayPtr<RefPtr<Structure> > m_vector;
     };
-
-    bool structureChainsAreEqual(StructureChain*, StructureChain*);
 
 } // namespace JSC
 

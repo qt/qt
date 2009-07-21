@@ -91,13 +91,25 @@ inline T *v_cast(QVariant::Private *d, T * = 0)
 
 #endif
 
+
+//a simple template that avoids to allocate 2 memory chunks when creating a QVariant
+template <class T> class QVariantPrivateSharedEx : public QVariant::PrivateShared
+{
+public:
+    QVariantPrivateSharedEx() : QVariant::PrivateShared(&m_t) { }
+    QVariantPrivateSharedEx(const T&t) : QVariant::PrivateShared(&m_t), m_t(t) { }
+
+private:
+    T m_t;
+};
+
 // constructs a new variant if copy is 0, otherwise copy-constructs
 template <class T>
 inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 {
     if (sizeof(T) > sizeof(QVariant::Private::Data)) {
-        x->data.shared = copy ? new QVariant::PrivateShared(new T(*static_cast<const T *>(copy)))
-                              : new QVariant::PrivateShared(new T);
+        x->data.shared = copy ? new QVariantPrivateSharedEx<T>(*static_cast<const T *>(copy))
+                              : new QVariantPrivateSharedEx<T>;
         x->is_shared = true;
     } else {
         if (copy)
@@ -107,16 +119,30 @@ inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
     }
 }
 
+template <class T>
+inline void v_construct(QVariant::Private *x, const T &t)
+{
+    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+        x->data.shared = new QVariantPrivateSharedEx<T>(t);
+        x->is_shared = true;
+    } else {
+        new (&x->data.ptr) T(t);
+    }
+}
+
 // deletes the internal structures
 template <class T>
 inline void v_clear(QVariant::Private *d, T* = 0)
 {
+    
     if (sizeof(T) > sizeof(QVariant::Private::Data)) {
-        delete v_cast<T>(d);
-        delete d->data.shared;
+        //now we need to cast
+        //because QVariant::PrivateShared doesn't have a virtual destructor
+        delete static_cast<QVariantPrivateSharedEx<T>*>(d->data.shared);
     } else {
         v_cast<T>(d)->~T();
     }
+
 }
 
 QT_END_NAMESPACE

@@ -540,5 +540,5 @@
           When transforming an embedded widget, Graphics View makes sure that
           the widget is transformed resolution independently, allowing the
           fonts and style to stay crisp when zoomed in. (Note that the effect
-          of resolution independence depends on the style.) 
+          of resolution independence depends on the style.)
 */

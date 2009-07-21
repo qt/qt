@@ -48,20 +48,20 @@ namespace WebCore {
 
 #if REQUEST_MANAGEMENT_ENABLED
 // Match the parallel connection count used by the networking layer
-// FIXME should not hardcode something like this
-static const unsigned maxRequestsInFlightPerHost = 4;
+static unsigned maxRequestsInFlightPerHost;
 // Having a limit might still help getting more important resources first
 static const unsigned maxRequestsInFlightForNonHTTPProtocols = 20;
 #else
 static const unsigned maxRequestsInFlightPerHost = 10000;
 static const unsigned maxRequestsInFlightForNonHTTPProtocols = 10000;
 #endif
-    
-    
+
 Loader::Loader()
-    : m_nonHTTPProtocolHost(AtomicString(), maxRequestsInFlightForNonHTTPProtocols)
-    , m_requestTimer(this, &Loader::requestTimerFired)
+    : m_requestTimer(this, &Loader::requestTimerFired)
+    , m_isSuspendingPendingRequests(false)
 {
+    m_nonHTTPProtocolHost = Host::create(AtomicString(), maxRequestsInFlightForNonHTTPProtocols);
+    maxRequestsInFlightPerHost = initializeMaximumHTTPConnectionCountPerHost();
 }
 
 Loader::~Loader()
@@ -99,25 +99,24 @@ void Loader::load(DocLoader* docLoader, CachedResource* resource, bool increment
     ASSERT(docLoader);
     Request* request = new Request(docLoader, resource, incremental, skipCanLoadCheck, sendResourceLoadCallbacks);
 
-    Host* host;
+    RefPtr<Host> host;
     KURL url(resource->url());
-    bool isHTTP = url.protocolIs("http") || url.protocolIs("https");
-    if (isHTTP) {
+    if (url.protocolInHTTPFamily()) {
         AtomicString hostName = url.host();
         host = m_hosts.get(hostName.impl());
         if (!host) {
-            host = new Host(hostName, maxRequestsInFlightPerHost);
+            host = Host::create(hostName, maxRequestsInFlightPerHost);
             m_hosts.add(hostName.impl(), host);
         }
     } else 
-        host = &m_nonHTTPProtocolHost;
+        host = m_nonHTTPProtocolHost;
     
     bool hadRequests = host->hasRequests();
     Priority priority = determinePriority(resource);
     host->addRequest(request, priority);
     docLoader->incrementRequestCount();
 
-    if (priority > Low || !isHTTP || !hadRequests) {
+    if (priority > Low || !url.protocolInHTTPFamily() || !hadRequests) {
         // Try to request important resources immediately
         host->servePendingRequests(priority);
     } else {
@@ -139,31 +138,57 @@ void Loader::requestTimerFired(Timer<Loader>*)
 
 void Loader::servePendingRequests(Priority minimumPriority)
 {
+    if (m_isSuspendingPendingRequests)
+        return;
+
     m_requestTimer.stop();
     
-    m_nonHTTPProtocolHost.servePendingRequests(minimumPriority);
+    m_nonHTTPProtocolHost->servePendingRequests(minimumPriority);
 
     Vector<Host*> hostsToServe;
-    copyValuesToVector(m_hosts, hostsToServe);
+    HostMap::iterator i = m_hosts.begin();
+    HostMap::iterator end = m_hosts.end();
+    for (;i != end; ++i)
+        hostsToServe.append(i->second.get());
+        
     for (unsigned n = 0; n < hostsToServe.size(); ++n) {
         Host* host = hostsToServe[n];
         if (host->hasRequests())
             host->servePendingRequests(minimumPriority);
         else if (!host->processingResource()){
             AtomicString name = host->name();
-            delete host;
             m_hosts.remove(name.impl());
         }
     }
 }
-    
+
+void Loader::suspendPendingRequests()
+{
+    ASSERT(!m_isSuspendingPendingRequests);
+    m_isSuspendingPendingRequests = true;
+}
+
+void Loader::resumePendingRequests()
+{
+    ASSERT(m_isSuspendingPendingRequests);
+    m_isSuspendingPendingRequests = false;
+    if (!m_hosts.isEmpty() || m_nonHTTPProtocolHost->hasRequests())
+        scheduleServePendingRequests();
+}
+
 void Loader::cancelRequests(DocLoader* docLoader)
 {
-    if (m_nonHTTPProtocolHost.hasRequests())
-        m_nonHTTPProtocolHost.cancelRequests(docLoader);
+    docLoader->clearPendingPreloads();
+
+    if (m_nonHTTPProtocolHost->hasRequests())
+        m_nonHTTPProtocolHost->cancelRequests(docLoader);
     
     Vector<Host*> hostsToCancel;
-    copyValuesToVector(m_hosts, hostsToCancel);
+    HostMap::iterator i = m_hosts.begin();
+    HostMap::iterator end = m_hosts.end();
+    for (;i != end; ++i)
+        hostsToCancel.append(i->second.get());
+
     for (unsigned n = 0; n < hostsToCancel.size(); ++n) {
         Host* host = hostsToCancel[n];
         if (host->hasRequests())
@@ -172,12 +197,9 @@ void Loader::cancelRequests(DocLoader* docLoader)
 
     scheduleServePendingRequests();
     
-    if (docLoader->loadInProgress())
-        ASSERT(docLoader->requestCount() == 1);
-    else
-        ASSERT(docLoader->requestCount() == 0);
+    ASSERT(docLoader->requestCount() == (docLoader->loadInProgress() ? 1 : 0));
 }
-    
+
 Loader::Host::Host(const AtomicString& name, unsigned maxRequestsInFlight)
     : m_name(name)
     , m_maxRequestsInFlight(maxRequestsInFlight)
@@ -210,6 +232,9 @@ bool Loader::Host::hasRequests() const
 
 void Loader::Host::servePendingRequests(Loader::Priority minimumPriority)
 {
+    if (cache()->loader()->isSuspendingPendingRequests())
+        return;
+
     bool serveMore = true;
     for (int priority = High; priority >= minimumPriority && serveMore; --priority)
         servePendingRequests(m_requestsPending[priority], serveMore);
@@ -236,11 +261,7 @@ void Loader::Host::servePendingRequests(RequestQueue& requestsPending, bool& ser
         if (!request->cachedResource()->accept().isEmpty())
             resourceRequest.setHTTPAccept(request->cachedResource()->accept());
         
-        KURL referrer = docLoader->doc()->url();
-        if ((referrer.protocolIs("http") || referrer.protocolIs("https")) && referrer.path().isEmpty())
-            referrer.setPath("/");
-        resourceRequest.setHTTPReferrer(referrer.string());
-        FrameLoader::addHTTPOriginIfNeeded(resourceRequest, docLoader->doc()->securityOrigin()->toString());
+         // Do not set the referrer or HTTP origin here. That's handled by SubresourceLoader::create.
         
         if (resourceIsCacheValidator) {
             CachedResource* resourceToRevalidate = request->cachedResource()->resourceToRevalidate();
@@ -260,7 +281,7 @@ void Loader::Host::servePendingRequests(RequestQueue& requestsPending, bool& ser
         }
 
         RefPtr<SubresourceLoader> loader = SubresourceLoader::create(docLoader->doc()->frame(),
-                                                                     this, resourceRequest, request->shouldSkipCanLoadCheck(), request->sendResourceLoadCallbacks());
+            this, resourceRequest, request->shouldSkipCanLoadCheck(), request->sendResourceLoadCallbacks());
         if (loader) {
             m_requestsLoading.add(loader.release(), request);
             request->cachedResource()->setRequestedFromNetworkingLayer();
@@ -279,15 +300,18 @@ void Loader::Host::servePendingRequests(RequestQueue& requestsPending, bool& ser
 
 void Loader::Host::didFinishLoading(SubresourceLoader* loader)
 {
+    RefPtr<Host> myProtector(this);
+
     RequestMap::iterator i = m_requestsLoading.find(loader);
     if (i == m_requestsLoading.end())
         return;
     
-    ProcessingResource processingResource(this);
-
     Request* request = i->second;
     m_requestsLoading.remove(i);
     DocLoader* docLoader = request->docLoader();
+    // Prevent the document from being destroyed before we are done with
+    // the docLoader that it will delete when the document gets deleted.
+    DocPtr<Document> protector(docLoader->doc());
     if (!request->isMultipart())
         docLoader->decrementRequestCount();
 
@@ -322,17 +346,20 @@ void Loader::Host::didFail(SubresourceLoader* loader, const ResourceError&)
 
 void Loader::Host::didFail(SubresourceLoader* loader, bool cancelled)
 {
+    RefPtr<Host> myProtector(this);
+
     loader->clearClient();
 
     RequestMap::iterator i = m_requestsLoading.find(loader);
     if (i == m_requestsLoading.end())
         return;
-
-    ProcessingResource processingResource(this);
     
     Request* request = i->second;
     m_requestsLoading.remove(i);
     DocLoader* docLoader = request->docLoader();
+    // Prevent the document from being destroyed before we are done with
+    // the docLoader that it will delete when the document gets deleted.
+    DocPtr<Document> protector(docLoader->doc());
     if (!request->isMultipart())
         docLoader->decrementRequestCount();
 
@@ -359,6 +386,8 @@ void Loader::Host::didFail(SubresourceLoader* loader, bool cancelled)
 
 void Loader::Host::didReceiveResponse(SubresourceLoader* loader, const ResourceResponse& response)
 {
+    RefPtr<Host> protector(this);
+
     Request* request = m_requestsLoading.get(loader);
     
     // FIXME: This is a workaround for <rdar://problem/5236843>
@@ -420,6 +449,8 @@ void Loader::Host::didReceiveResponse(SubresourceLoader* loader, const ResourceR
 
 void Loader::Host::didReceiveData(SubresourceLoader* loader, const char* data, int size)
 {
+    RefPtr<Host> protector(this);
+
     Request* request = m_requestsLoading.get(loader);
     if (!request)
         return;
@@ -429,12 +460,11 @@ void Loader::Host::didReceiveData(SubresourceLoader* loader, const char* data, i
     
     if (resource->errorOccurred())
         return;
-    
-    ProcessingResource processingResource(this);
-    
+        
     if (resource->response().httpStatusCode() / 100 == 4) {
-        // Treat a 4xx response like a network error.
-        resource->error();
+        // Treat a 4xx response like a network error for all resources but images (which will ignore the error and continue to load for 
+        // legacy compatibility).
+        resource->httpStatusCodeError();
         return;
     }
 

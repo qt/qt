@@ -39,7 +39,6 @@
 #include "FrameView.h"
 #include "HTMLLinkElement.h"
 #include "HTMLNames.h"
-#include "HTMLScriptElement.h"
 #include "HTMLStyleElement.h"
 #include "ProcessingInstruction.h"
 #include "ResourceError.h"
@@ -47,6 +46,7 @@
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
 #include "ScriptController.h"
+#include "ScriptElement.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "TextResourceDecoder.h"
@@ -57,7 +57,6 @@
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
-#include "SVGScriptElement.h"
 #include "SVGStyleElement.h"
 #endif
 
@@ -65,32 +64,9 @@ using namespace std;
 
 namespace WebCore {
 
+using namespace HTMLNames;
+
 const int maxErrors = 25;
-
-bool isScriptElement(Element* element)
-{
-    return element->hasTagName(HTMLNames::scriptTag)
-#if ENABLE(SVG)
-        || element->hasTagName(SVGNames::scriptTag)
-#endif
-        ;
-}
-
-ScriptElement* castToScriptElement(Element* element)
-{
-    ASSERT(isScriptElement(element));
-
-    if (element->hasTagName(HTMLNames::scriptTag))
-        return static_cast<HTMLScriptElement*>(element);
-
-#if ENABLE(SVG)
-    if (element->hasTagName(SVGNames::scriptTag))
-        return static_cast<SVGScriptElement*>(element);
-#endif
-
-    ASSERT_NOT_REACHED();
-    return 0;
-}
 
 #if ENABLE(WML)
 bool XMLTokenizer::isWMLDocument() const
@@ -113,7 +89,7 @@ void XMLTokenizer::setCurrentNode(Node* n)
     m_currentNodeIsReferenced = nodeNeedsReference;
 }
 
-bool XMLTokenizer::write(const SegmentedString& s, bool /*appendData*/)
+void XMLTokenizer::write(const SegmentedString& s, bool /*appendData*/)
 {
     String parseString = s.toString();
     
@@ -121,15 +97,14 @@ bool XMLTokenizer::write(const SegmentedString& s, bool /*appendData*/)
         m_originalSourceForTransform += parseString;
 
     if (m_parserStopped || m_sawXSLTransform)
-        return false;
+        return;
     
     if (m_parserPaused) {
         m_pendingSrc.append(s);
-        return false;
+        return;
     }
     
     doWrite(s.toString());
-    return false;
 }
 
 void XMLTokenizer::handleError(ErrorType type, const char* m, int lineNumber, int columnNumber)
@@ -226,20 +201,20 @@ void XMLTokenizer::finish()
 
 static inline RefPtr<Element> createXHTMLParserErrorHeader(Document* doc, const String& errorMessages) 
 {
-    ExceptionCode ec = 0;
-    RefPtr<Element> reportElement = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "parsererror", ec);
-    reportElement->setAttribute(HTMLNames::styleAttr, "display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black");
+    RefPtr<Element> reportElement = doc->createElement(QualifiedName(nullAtom, "parsererror", xhtmlNamespaceURI), false);
+    reportElement->setAttribute(styleAttr, "display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black");
     
-    RefPtr<Element> h3 = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "h3", ec);
+    ExceptionCode ec = 0;
+    RefPtr<Element> h3 = doc->createElement(h3Tag, false);
     reportElement->appendChild(h3.get(), ec);
     h3->appendChild(doc->createTextNode("This page contains the following errors:"), ec);
-    
-    RefPtr<Element> fixed = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "div", ec);
+
+    RefPtr<Element> fixed = doc->createElement(divTag, false);
     reportElement->appendChild(fixed.get(), ec);
-    fixed->setAttribute(HTMLNames::styleAttr, "font-family:monospace;font-size:12px");
+    fixed->setAttribute(styleAttr, "font-family:monospace;font-size:12px");
     fixed->appendChild(doc->createTextNode(errorMessages), ec);
-    
-    h3 = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "h3", ec);
+
+    h3 = doc->createElement(h3Tag, false);
     reportElement->appendChild(h3.get(), ec);
     h3->appendChild(doc->createTextNode("Below is a rendering of the page up to the first error."), ec);
     
@@ -261,16 +236,16 @@ void XMLTokenizer::insertErrorMessageBlock()
     Document* doc = m_doc;
     Node* documentElement = doc->documentElement();
     if (!documentElement) {
-        RefPtr<Node> rootElement = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "html", ec);
+        RefPtr<Node> rootElement = doc->createElement(htmlTag, false);
         doc->appendChild(rootElement, ec);
-        RefPtr<Node> body = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "body", ec);
+        RefPtr<Node> body = doc->createElement(bodyTag, false);
         rootElement->appendChild(body, ec);
         documentElement = body.get();
     }
 #if ENABLE(SVG)
     else if (documentElement->namespaceURI() == SVGNames::svgNamespaceURI) {
-        RefPtr<Node> rootElement = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "html", ec);
-        RefPtr<Node> body = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "body", ec);
+        RefPtr<Node> rootElement = doc->createElement(htmlTag, false);
+        RefPtr<Node> body = doc->createElement(bodyTag, false);
         rootElement->appendChild(body, ec);
         body->appendChild(documentElement, ec);
         doc->appendChild(rootElement.get(), ec);
@@ -279,8 +254,8 @@ void XMLTokenizer::insertErrorMessageBlock()
 #endif
 #if ENABLE(WML)
     else if (isWMLDocument()) {
-        RefPtr<Node> rootElement = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "html", ec);
-        RefPtr<Node> body = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "body", ec);
+        RefPtr<Node> rootElement = doc->createElement(htmlTag, false);
+        RefPtr<Node> body = doc->createElement(bodyTag, false);
         rootElement->appendChild(body, ec);
         body->appendChild(documentElement, ec);
         doc->appendChild(rootElement.get(), ec);
@@ -292,18 +267,18 @@ void XMLTokenizer::insertErrorMessageBlock()
     documentElement->insertBefore(reportElement, documentElement->firstChild(), ec);
 #if ENABLE(XSLT)
     if (doc->transformSourceDocument()) {
-        RefPtr<Element> par = doc->createElementNS(HTMLNames::xhtmlNamespaceURI, "p", ec);
+        RefPtr<Element> par = doc->createElement(pTag, false);
         reportElement->appendChild(par, ec);
-        par->setAttribute(HTMLNames::styleAttr, "white-space: normal");
+        par->setAttribute(styleAttr, "white-space: normal");
         par->appendChild(doc->createTextNode("This document was created as the result of an XSL transformation. The line and column numbers given are from the transformed result."), ec);
     }
 #endif
-    doc->updateRendering();
+    doc->updateStyleIfNeeded();
 }
 
-void XMLTokenizer::notifyFinished(CachedResource* finishedObj)
+void XMLTokenizer::notifyFinished(CachedResource* unusedResource)
 {
-    ASSERT(m_pendingScript == finishedObj);
+    ASSERT_UNUSED(unusedResource, unusedResource == m_pendingScript);
     ASSERT(m_pendingScript->accessCount() > 0);
         
     ScriptSourceCode sourceCode(m_pendingScript.get());
@@ -315,7 +290,7 @@ void XMLTokenizer::notifyFinished(CachedResource* finishedObj)
     RefPtr<Element> e = m_scriptElement;
     m_scriptElement = 0;
 
-    ScriptElement* scriptElement = castToScriptElement(e.get());
+    ScriptElement* scriptElement = toScriptElement(e.get());
     ASSERT(scriptElement);
 
     if (errorOccurred) 
@@ -345,4 +320,3 @@ void XMLTokenizer::pauseParsing()
 }
 
 }
-

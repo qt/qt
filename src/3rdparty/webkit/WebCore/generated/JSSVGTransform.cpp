@@ -20,25 +20,21 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGTransform.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGMatrix.h"
 #include "SVGTransform.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGTransform)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGTransform);
 
 /* Hash table */
 
@@ -90,7 +86,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -154,7 +150,6 @@ JSSVGTransform::JSSVGTransform(PassRefPtr<Structure> structure, PassRefPtr<JSSVG
 JSSVGTransform::~JSSVGTransform()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGTransform::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -167,115 +162,124 @@ bool JSSVGTransform::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSSVGTransform, Base>(exec, &JSSVGTransformTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGTransformType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTransform imp(*static_cast<JSSVGTransform*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.type());
 }
 
-JSValuePtr jsSVGTransformMatrix(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformMatrix(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTransform imp(*static_cast<JSSVGTransform*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGStaticPODTypeWrapperWithPODTypeParent<TransformationMatrix, SVGTransform>::create(imp.matrix(), static_cast<JSSVGTransform*>(asObject(slot.slotBase()))->impl()).get(), static_cast<JSSVGTransform*>(asObject(slot.slotBase()))->context());
 }
 
-JSValuePtr jsSVGTransformAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTransform imp(*static_cast<JSSVGTransform*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.angle());
 }
 
-JSValuePtr jsSVGTransformConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGTransform*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSSVGTransform::getConstructor(ExecState* exec)
+JSValue JSSVGTransform::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGTransformConstructor>(exec);
 }
 
-JSValuePtr jsSVGTransformPrototypeFunctionSetMatrix(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetMatrix(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGTransform::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
     JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
     SVGTransform imp(*wrapper);
-    TransformationMatrix matrix = toSVGMatrix(args.at(exec, 0));
+    TransformationMatrix matrix = toSVGMatrix(args.at(0));
 
     imp.setMatrix(matrix);
     wrapper->commitChange(imp, castedThisObj->context());
     return jsUndefined();
 }
 
-JSValuePtr jsSVGTransformPrototypeFunctionSetTranslate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetTranslate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGTransform::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
     JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
     SVGTransform imp(*wrapper);
-    float tx = args.at(exec, 0)->toFloat(exec);
-    float ty = args.at(exec, 1)->toFloat(exec);
+    float tx = args.at(0).toFloat(exec);
+    float ty = args.at(1).toFloat(exec);
 
     imp.setTranslate(tx, ty);
     wrapper->commitChange(imp, castedThisObj->context());
     return jsUndefined();
 }
 
-JSValuePtr jsSVGTransformPrototypeFunctionSetScale(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetScale(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGTransform::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
     JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
     SVGTransform imp(*wrapper);
-    float sx = args.at(exec, 0)->toFloat(exec);
-    float sy = args.at(exec, 1)->toFloat(exec);
+    float sx = args.at(0).toFloat(exec);
+    float sy = args.at(1).toFloat(exec);
 
     imp.setScale(sx, sy);
     wrapper->commitChange(imp, castedThisObj->context());
     return jsUndefined();
 }
 
-JSValuePtr jsSVGTransformPrototypeFunctionSetRotate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetRotate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGTransform::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
     JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
     SVGTransform imp(*wrapper);
-    float angle = args.at(exec, 0)->toFloat(exec);
-    float cx = args.at(exec, 1)->toFloat(exec);
-    float cy = args.at(exec, 2)->toFloat(exec);
+    float angle = args.at(0).toFloat(exec);
+    float cx = args.at(1).toFloat(exec);
+    float cy = args.at(2).toFloat(exec);
 
     imp.setRotate(angle, cx, cy);
     wrapper->commitChange(imp, castedThisObj->context());
     return jsUndefined();
 }
 
-JSValuePtr jsSVGTransformPrototypeFunctionSetSkewX(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetSkewX(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGTransform::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
     JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
     SVGTransform imp(*wrapper);
-    float angle = args.at(exec, 0)->toFloat(exec);
+    float angle = args.at(0).toFloat(exec);
 
     imp.setSkewX(angle);
     wrapper->commitChange(imp, castedThisObj->context());
     return jsUndefined();
 }
 
-JSValuePtr jsSVGTransformPrototypeFunctionSetSkewY(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetSkewY(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGTransform::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
     JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
     SVGTransform imp(*wrapper);
-    float angle = args.at(exec, 0)->toFloat(exec);
+    float angle = args.at(0).toFloat(exec);
 
     imp.setSkewY(angle);
     wrapper->commitChange(imp, castedThisObj->context());
@@ -284,48 +288,48 @@ JSValuePtr jsSVGTransformPrototypeFunctionSetSkewY(ExecState* exec, JSObject*, J
 
 // Constant getters
 
-JSValuePtr jsSVGTransformSVG_TRANSFORM_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGTransformSVG_TRANSFORM_MATRIX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_MATRIX(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGTransformSVG_TRANSFORM_TRANSLATE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_TRANSLATE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsSVGTransformSVG_TRANSFORM_SCALE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_SCALE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValuePtr jsSVGTransformSVG_TRANSFORM_ROTATE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_ROTATE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValuePtr jsSVGTransformSVG_TRANSFORM_SKEWX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_SKEWX(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValuePtr jsSVGTransformSVG_TRANSFORM_SKEWY(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_SKEWY(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<SVGTransform>* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<SVGTransform>* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGTransform, JSSVGPODTypeWrapper<SVGTransform> >(exec, object, context);
 }
-SVGTransform toSVGTransform(JSC::JSValuePtr value)
+SVGTransform toSVGTransform(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGTransform::s_info) ? (SVGTransform) *static_cast<JSSVGTransform*>(asObject(value))->impl() : SVGTransform();
+    return value.isObject(&JSSVGTransform::s_info) ? (SVGTransform) *static_cast<JSSVGTransform*>(asObject(value))->impl() : SVGTransform();
 }
 
 }

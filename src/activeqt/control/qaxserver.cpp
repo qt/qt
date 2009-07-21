@@ -90,7 +90,7 @@ QAxFactory *qAxFactory()
         QStringList keys(qax_factory->featureList());
         for (int i = 0; i < keys.count(); ++i) {
             QString key(keys.at(i));
-            qRegisterMetaType((key + QLatin1String("*")).toLatin1(), (void**)0);
+            qRegisterMetaType((key + QLatin1Char('*')).toLatin1(), (void**)0);
         }
     }
     return qax_factory;
@@ -208,9 +208,9 @@ HRESULT UpdateRegistry(BOOL bRegister)
 {
     qAxIsServer = false;
     QString file = QString::fromLocal8Bit(qAxModuleFilename);
-    QString path = file.left(file.lastIndexOf(QLatin1String("\\"))+1);
+    QString path = file.left(file.lastIndexOf(QLatin1Char('\\'))+1);
     QString module = file.right(file.length() - path.length());
-    module = module.left(module.lastIndexOf(QLatin1String(".")));
+    module = module.left(module.lastIndexOf(QLatin1Char('.')));
     
     const QString appId = qAxFactory()->appID().toString().toUpper();
     const QString libId = qAxFactory()->typeLibID().toString().toUpper();
@@ -226,7 +226,7 @@ HRESULT UpdateRegistry(BOOL bRegister)
 
     DWORD major = libAttr->wMajorVerNum;
     DWORD minor = libAttr->wMinorVerNum;
-    typeLibVersion = QString::number((uint)major) + QLatin1String(".") + QString::number((uint)minor);
+    typeLibVersion = QString::number((uint)major) + QLatin1Char('.') + QString::number((uint)minor);
 
     if (bRegister)
         RegisterTypeLib(qAxTypeLibrary, (TCHAR*)libFile.utf16(), 0);
@@ -271,12 +271,12 @@ HRESULT UpdateRegistry(BOOL bRegister)
             className = qax_clean_type(className, mo);
 
             if (object) { // don't register subobject classes
-                QString classVersion = mo ? QString(QLatin1String(mo->classInfo(mo->indexOfClassInfo("Version")).value())) : QString();
+                QString classVersion = mo ? QString::fromLatin1(mo->classInfo(mo->indexOfClassInfo("Version")).value()) : QString();
                 if (classVersion.isNull())
                     classVersion = QLatin1String("1.0");
                 bool insertable = mo && !qstricmp(mo->classInfo(mo->indexOfClassInfo("Insertable")).value(), "yes");
                 bool control = object->isWidgetType();
-                const QString classMajorVersion = classVersion.left(classVersion.indexOf(QLatin1String(".")));
+                const QString classMajorVersion = classVersion.left(classVersion.indexOf(QLatin1Char('.')));
                 uint olemisc = OLEMISC_SETCLIENTSITEFIRST
                     |OLEMISC_ACTIVATEWHENVISIBLE
                     |OLEMISC_INSIDEOUT
@@ -287,17 +287,17 @@ HRESULT UpdateRegistry(BOOL bRegister)
                 else if (qFindChild<QMenuBar*>(object) && !qax_disable_inplaceframe)
                     olemisc |= OLEMISC_WANTSTOMENUMERGE;
                 
-                settings.setValue(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion + QLatin1String("/."), className + QLatin1String(" Class"));
-                settings.setValue(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion + QLatin1String("/CLSID/."), classId);
+                settings.setValue(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion + QLatin1String("/."), className + QLatin1String(" Class"));
+                settings.setValue(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion + QLatin1String("/CLSID/."), classId);
                 if (insertable)
-                    settings.setValue(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion + QLatin1String("/Insertable/."), QVariant(QLatin1String("")));
+                    settings.setValue(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion + QLatin1String("/Insertable/."), QVariant(QLatin1String("")));
                 
-                settings.setValue(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String("/."), className + QLatin1String(" Class"));
-                settings.setValue(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String("/CLSID/."), classId);
-                settings.setValue(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String("/CurVer/."), module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion);
+                settings.setValue(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1String("/."), className + QLatin1String(" Class"));
+                settings.setValue(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1String("/CLSID/."), classId);
+                settings.setValue(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1String("/CurVer/."), module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion);
                 
                 settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/."), className + QLatin1String(" Class"));
-                if (file.right(3).toLower() == QLatin1String("exe"))
+                if (file.endsWith(QLatin1String("exe"), Qt::CaseInsensitive))
                     settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/AppID"), appId);
                 if (control)
                     settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/Control/."), QVariant(QLatin1String("")));
@@ -307,15 +307,15 @@ HRESULT UpdateRegistry(BOOL bRegister)
                     settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/InProcServer32/."), file);
                 else
                     settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/LocalServer32/."),
-                                      QLatin1String("\"") + file + QLatin1String("\" -activex"));
+                                      QLatin1Char('\"') + file + QLatin1String("\" -activex"));
                 settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/MiscStatus/."), control ? QLatin1String("1") : QLatin1String("0"));
                 settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/MiscStatus/1/."), QString::number(olemisc));
                 settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/Programmable/."), QVariant(QLatin1String("")));
-                settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/ToolboxBitmap32/."), QLatin1String("\"") +
+                settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/ToolboxBitmap32/."), QLatin1Char('\"') +
                                   file + QLatin1String("\", 101"));
                 settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/TypeLib/."), libId); settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/Version/."), classVersion);
-                settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/VersionIndependentProgID/."), module + QLatin1String(".") + className);
-                settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/ProgID/."), module + QLatin1String(".") + className + QLatin1String(".") + classVersion.left(classVersion.indexOf(QLatin1Char('.'))));
+                settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/VersionIndependentProgID/."), module + QLatin1Char('.') + className);
+                settings.setValue(QLatin1String("/CLSID/") + classId + QLatin1String("/ProgID/."), module + QLatin1Char('.') + className + QLatin1Char('.') + classVersion.left(classVersion.indexOf(QLatin1Char('.'))));
 
                 QString mime = QLatin1String(mo->classInfo(mo->indexOfClassInfo("MIME")).value());
                 if (!mime.isEmpty()) {
@@ -330,15 +330,15 @@ HRESULT UpdateRegistry(BOOL bRegister)
                             mime = mime.left(mime.length() - extension.length() - 1);
                             // Prepend '.' before extension, if required.
                             extension = extension.trimmed();
-                            if (extension[0] != QChar(QLatin1Char('.')))
-                                extension = QLatin1String(".") + extension;
+                            if (extension[0] != QLatin1Char('.'))
+                                extension = QLatin1Char('.') + extension;
                         }
 
                         if (!extension.isEmpty()) {
-                            settings.setValue(QLatin1String("/") + extension + QLatin1String("/."), module + QLatin1String(".") + className);
-                            settings.setValue(QLatin1String("/") + extension + QLatin1String("/Content Type"), mime);
+                            settings.setValue(QLatin1Char('/') + extension + QLatin1String("/."), module + QLatin1Char('.') + className);
+                            settings.setValue(QLatin1Char('/') + extension + QLatin1String("/Content Type"), mime);
 
-                            mime = mime.replace(QLatin1String("/"), QLatin1String("\\"));
+                            mime = mime.replace(QLatin1Char('/'), QLatin1Char('\\'));
                             settings.setValue(QLatin1String("/MIME/Database/Content Type/") + mime + QLatin1String("/CLSID"), classId);
                             settings.setValue(QLatin1String("/MIME/Database/Content Type/") + mime + QLatin1String("/Extension"), extension);
                         }
@@ -351,6 +351,10 @@ HRESULT UpdateRegistry(BOOL bRegister)
             qAxFactory()->registerClass(*key, &settings);
         }
     } else {
+        if (qAxOutProcServer) {
+            settings.remove(QLatin1String("/AppID/") + appId + QLatin1String("/."));
+            settings.remove(QLatin1String("/AppID/") + module + QLatin1String(".EXE"));
+        }
         QStringList keys = qAxFactory()->featureList();
         for (QStringList::Iterator key = keys.begin(); key != keys.end(); ++key) {
             QString className = *key;
@@ -358,22 +362,22 @@ HRESULT UpdateRegistry(BOOL bRegister)
             const QString classId = qAxFactory()->classID(className).toString().toUpper();
             className = qax_clean_type(className, mo);
             
-            QString classVersion = mo ? QString(QLatin1String(mo->classInfo(mo->indexOfClassInfo("Version")).value())) : QString();
+            QString classVersion = mo ? QString::fromLatin1(mo->classInfo(mo->indexOfClassInfo("Version")).value()) : QString();
             if (classVersion.isNull())
                 classVersion = QLatin1String("1.0");
-            const QString classMajorVersion = classVersion.left(classVersion.indexOf(QLatin1String(".")));
+            const QString classMajorVersion = classVersion.left(classVersion.indexOf(QLatin1Char('.')));
             
             qAxFactory()->unregisterClass(*key, &settings);
             
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion + QLatin1String("/CLSID/."));
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion + QLatin1String("/Insertable/."));
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion + QLatin1String("/."));
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String(".") + classMajorVersion);
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion + QLatin1String("/CLSID/."));
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion + QLatin1String("/Insertable/."));
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion + QLatin1String("/."));
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion);
             
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String("/CLSID/."));
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String("/CurVer/."));
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className + QLatin1String("/."));
-            settings.remove(QLatin1String("/") + module + QLatin1String(".") + className);
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1String("/CLSID/."));
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1String("/CurVer/."));
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1String("/."));
+            settings.remove(QLatin1Char('/') + module + QLatin1Char('.') + className);
             
             settings.remove(QLatin1String("/CLSID/") + classId + QLatin1String("/AppID"));
             settings.remove(QLatin1String("/CLSID/") + classId + QLatin1String("/Control/."));
@@ -404,14 +408,14 @@ HRESULT UpdateRegistry(BOOL bRegister)
                         mime = mime.left(mime.length() - extension.length() - 1);
                         // Prepend '.' before extension, if required.
                         extension = extension.trimmed();
-                        if (extension[0] != QChar(QLatin1Char('.')))
-                            extension = QLatin1String(".") + extension;
+                        if (extension[0] != QLatin1Char('.'))
+                            extension.prepend(QLatin1Char('.'));
                     }
                     if (!extension.isEmpty()) {
-                        settings.remove(QLatin1String("/") + extension + QLatin1String("/Content Type"));
-                        settings.remove(QLatin1String("/") + extension + QLatin1String("/."));
-                        settings.remove(QLatin1String("/") + extension);
-                        mime = mime.replace(QLatin1String("/"), QLatin1String("\\"));
+                        settings.remove(QLatin1Char('/') + extension + QLatin1String("/Content Type"));
+                        settings.remove(QLatin1Char('/') + extension + QLatin1String("/."));
+                        settings.remove(QLatin1Char('/') + extension);
+                        mime.replace(QLatin1Char('/'), QLatin1Char('\\'));
                         settings.remove(QLatin1String("/MIME/Database/Content Type/") + mime + QLatin1String("/Extension"));
                         settings.remove(QLatin1String("/MIME/Database/Content Type/") + mime + QLatin1String("/CLSID"));
                         settings.remove(QLatin1String("/MIME/Database/Content Type/") + mime + QLatin1String("/."));
@@ -455,8 +459,8 @@ static const char* const type_map[][2] =
     { "QFont",		"IFontDisp*" },
     { "QPixmap",	"IPictureDisp*" },
     { "QVariant",	"VARIANT" },
-    { "QVariantList",	"SAFEARRAY(VARIANT)" },
-    { "QList<QVariant>","SAFEARRAY(VARIANT)" },
+    { "QVariantList",	 "SAFEARRAY(VARIANT)" },
+    { "QList<QVariant>", "SAFEARRAY(VARIANT)" },
     { "quint64",	"CY" },
     { "qint64",	        "CY" },
     { "qulonglong",	"CY" },
@@ -464,8 +468,8 @@ static const char* const type_map[][2] =
     { "QByteArray",	"SAFEARRAY(BYTE)" },
     { "QStringList",	"SAFEARRAY(BSTR)" },
     // Userdefined Qt datatypes - some not on Borland though
-    { "QCursor",        "enum MousePointer" },
-    { "Qt::FocusPolicy","enum FocusPolicy" },
+    { "QCursor",         "enum MousePointer" },
+    { "Qt::FocusPolicy", "enum FocusPolicy" },
 #ifndef Q_CC_BOR
 # if __REQUIRED_RPCNDR_H_VERSION__ >= Q_REQUIRED_RPCNDR_H_VERSION
     { "QRect",		"struct QRect" },
@@ -578,7 +582,7 @@ static QByteArray renameOverloads(const QByteArray &name)
     int n = mapping.value(name);
     if (mapping.contains(name)) {
         int n = mapping.value(name);
-        newName = name + "_" + QByteArray::number(n);
+        newName = name + '_' + QByteArray::number(n);
         mapping.insert(name, n+1);
     } else {
         mapping.insert(name, 1);
@@ -686,13 +690,13 @@ static QByteArray prototype(const QList<QByteArray> &parameterTypes, const QList
         QByteArray type(parameterTypes.at(p));
         QByteArray name(parameterNames.at(p));
         
-        if (type.endsWith("&")) {
+        if (type.endsWith('&')) {
             out = true;
             type.truncate(type.length() - 1);
         } else if (type.endsWith("**")) {
             out = true;
             type.truncate(type.length() - 1);
-        } else if (type.endsWith("*") && !subtypes.contains(type)) {
+        } else if (type.endsWith('*') && !subtypes.contains(type)) {
             type.truncate(type.length() - 1);
         }
         if (type.isEmpty()) {
@@ -701,14 +705,14 @@ static QByteArray prototype(const QList<QByteArray> &parameterTypes, const QList
         }
         type = convertTypes(type, ok);
         if (!out)
-            prototype += "[in] " + type + " ";
+            prototype += "[in] " + type + ' ';
         else
-            prototype += "[in,out] " + type + " ";
+            prototype += "[in,out] " + type + ' ';
         
         if (out)
-            prototype += "*";
+            prototype += '*';
         if (name.isEmpty())
-            prototype += "p" + QByteArray::number(p);
+            prototype += 'p' + QByteArray::number(p);
         else
             prototype += "p_" + replaceKeyword(name);
         
@@ -728,12 +732,12 @@ static QByteArray addDefaultArguments(const QByteArray &prototype, int numDefArg
     QByteArray ptype(prototype);
     int in = -1;
     while (numDefArgs) {
-        in = ptype.lastIndexOf("]", in);
+        in = ptype.lastIndexOf(']', in);
         ptype.replace(in, 1, ",optional]");
         in = ptype.indexOf(' ', in) + 1;
         QByteArray type = ptype.mid(in, ptype.indexOf(' ', in) - in);
         if (type == "enum")
-            type += " " + ptype.mid(in + 5, ptype.indexOf(' ', in + 5) - in - 5);
+            type += ' ' + ptype.mid(in + 5, ptype.indexOf(' ', in + 5) - in - 5);
         ptype.replace(in, type.length(), QByteArray("VARIANT /*was: ") + type + "*/");
         --numDefArgs;
     }
@@ -801,7 +805,7 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
         for (int j = 0; j < enumerator.keyCount(); ++j) {
             QByteArray key(enumerator.key(j));
             while (enumValues.contains(key)) {
-                key += "_";
+                key += '_';
             }
             enumValues.append(key);
             uint value = (uint)enumerator.value(j);
@@ -822,32 +826,32 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
     if (!enums.contains("MousePointer")) {
         enums.append("MousePointer");
         out << "\tenum MousePointer {" << endl;
-        out << "\t\tArrowCursor             = " << Qt::ArrowCursor << "," << endl;
-        out << "\t\tUpArrowCursor           = " << Qt::UpArrowCursor << "," << endl;
-        out << "\t\tCrossCursor             = " << Qt::CrossCursor << "," << endl;
-        out << "\t\tWaitCursor              = " << Qt::WaitCursor << "," << endl;
-        out << "\t\tIBeamCursor             = " << Qt::IBeamCursor << "," << endl;
-        out << "\t\tSizeVerCursor           = " << Qt::SizeVerCursor << "," << endl;
-        out << "\t\tSizeHorCursor           = " << Qt::SizeHorCursor << "," << endl;
-        out << "\t\tSizeBDiagCursor         = " << Qt::SizeBDiagCursor << "," << endl;
-        out << "\t\tSizeFDiagCursor         = " << Qt::SizeFDiagCursor << "," << endl;
-        out << "\t\tSizeAllCursor           = " << Qt::SizeAllCursor << "," << endl;
-        out << "\t\tBlankCursor             = " << Qt::BlankCursor << "," << endl;
-        out << "\t\tSplitVCursor            = " << Qt::SplitVCursor << "," << endl;
-        out << "\t\tSplitHCursor            = " << Qt::SplitHCursor << "," << endl;
-        out << "\t\tPointingHandCursor      = " << Qt::PointingHandCursor << "," << endl;
-        out << "\t\tForbiddenCursor         = " << Qt::ForbiddenCursor << "," << endl;
-        out << "\t\tWhatsThisCursor         = " << Qt::WhatsThisCursor << "," << endl;
+        out << "\t\tArrowCursor             = " << Qt::ArrowCursor << ',' << endl;
+        out << "\t\tUpArrowCursor           = " << Qt::UpArrowCursor << ',' << endl;
+        out << "\t\tCrossCursor             = " << Qt::CrossCursor << ',' << endl;
+        out << "\t\tWaitCursor              = " << Qt::WaitCursor << ',' << endl;
+        out << "\t\tIBeamCursor             = " << Qt::IBeamCursor << ',' << endl;
+        out << "\t\tSizeVerCursor           = " << Qt::SizeVerCursor << ',' << endl;
+        out << "\t\tSizeHorCursor           = " << Qt::SizeHorCursor << ',' << endl;
+        out << "\t\tSizeBDiagCursor         = " << Qt::SizeBDiagCursor << ',' << endl;
+        out << "\t\tSizeFDiagCursor         = " << Qt::SizeFDiagCursor << ',' << endl;
+        out << "\t\tSizeAllCursor           = " << Qt::SizeAllCursor << ',' << endl;
+        out << "\t\tBlankCursor             = " << Qt::BlankCursor << ',' << endl;
+        out << "\t\tSplitVCursor            = " << Qt::SplitVCursor << ',' << endl;
+        out << "\t\tSplitHCursor            = " << Qt::SplitHCursor << ',' << endl;
+        out << "\t\tPointingHandCursor      = " << Qt::PointingHandCursor << ',' << endl;
+        out << "\t\tForbiddenCursor         = " << Qt::ForbiddenCursor << ',' << endl;
+        out << "\t\tWhatsThisCursor         = " << Qt::WhatsThisCursor << ',' << endl;
         out << "\t\tBusyCursor\t= " << Qt::BusyCursor << endl;
         out << "\t};" << endl << endl;
     }
     if (!enums.contains("FocusPolicy")) {
         enums.append("FocusPolicy");
         out << "\tenum FocusPolicy {" << endl;
-        out << "\t\tNoFocus             = " << Qt::NoFocus << "," << endl;
-        out << "\t\tTabFocus            = " << Qt::TabFocus << "," << endl;
-        out << "\t\tClickFocus          = " << Qt::ClickFocus << "," << endl;
-        out << "\t\tStrongFocus         = " << Qt::StrongFocus << "," << endl;
+        out << "\t\tNoFocus             = " << Qt::NoFocus << ',' << endl;
+        out << "\t\tTabFocus            = " << Qt::TabFocus << ',' << endl;
+        out << "\t\tClickFocus          = " << Qt::ClickFocus << ',' << endl;
+        out << "\t\tStrongFocus         = " << Qt::StrongFocus << ',' << endl;
         out << "\t\tWheelFocus          = " << Qt::WheelFocus << endl;
         out << "\t};" << endl << endl;
     }
@@ -877,7 +881,7 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
         if (!ok)
             out << "\t/****** Property is of unsupported datatype" << endl;
         
-        out << "\t\t[id(" << id << ")";
+        out << "\t\t[id(" << id << ')';
         if (!property.isWritable())
             out << ", readonly";
         if (isBindable && property.isScriptable(o))
@@ -886,9 +890,9 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
             out << ", nonbrowsable";
         if (isBindable)
             out << ", requestedit";
-        if (defProp == QString::fromLatin1(name.constData()))
+        if (defProp == QLatin1String(name))
             out << ", uidefault";
-        out << "] " << type << " " << name << ";" << endl;
+        out << "] " << type << ' ' << name << ';' << endl;
         
         if (!ok)
             out << "\t******/" << endl;
@@ -939,7 +943,7 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
         if (!ok)
             outBuffer += "\t/****** Slot parameter uses unsupported datatype\n";
         
-        outBuffer += "\t\t[id(" + QString::number(id).toLatin1() + ")] " + type + " " + name + "(" + ptype + ");\n";
+        outBuffer += "\t\t[id(" + QString::number(id).toLatin1() + ")] " + type + ' ' + name + '(' + ptype + ");\n";
         
         if (!ok)
             outBuffer += "\t******/\n";
@@ -991,7 +995,7 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
             QList<QByteArray> parameterTypes(signal.parameterTypes());
             QList<QByteArray> parameterNames(signal.parameterNames());
             
-            bool isDefault = defSignal == QString::fromLatin1(name.constData());
+            bool isDefault = defSignal == QLatin1String(name);
             name = renameOverloads(replaceKeyword(name));
             bool ok = true;
             
@@ -1003,10 +1007,10 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
             if (!ok)
                 out << "\t/****** Signal parameter uses unsupported datatype" << endl;
             
-            out << "\t\t[id(" << id << ")";
+            out << "\t\t[id(" << id << ')';
             if (isDefault)
                 out << ", uidefault";
-            out << "] void " << name << "(" << ptype << ");" << endl;
+            out << "] void " << name << '(' << ptype << ");" << endl;
             
             if (!ok)
                 out << "\t******/" << endl;
@@ -1031,7 +1035,7 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
     const char *classVersion = mo->classInfo(mo->indexOfClassInfo("Version")).value();
     if (classVersion)
         out << "\t\tversion(" << classVersion << ")," << endl;
-    out << "\t\tuuid(" << classID << ")";
+    out << "\t\tuuid(" << classID << ')';
     if (control) {
         out << ", " << endl;
         out << "\t\tcontrol";
@@ -1043,7 +1047,7 @@ static HRESULT classIDL(QObject *o, const QMetaObject *mo, const QString &classN
     out << "\t]" << endl;
     out << "\tcoclass " << cleanClassName << endl;
     out << "\t{" << endl;
-    out << "\t\t[default] dispinterface I" << cleanClassName << ";" << endl;
+    out << "\t\t[default] dispinterface I" << cleanClassName << ';' << endl;
     if (hasEvents)
         out << "\t\t[default, source] dispinterface I" << cleanClassName << "Events;" << endl;
     out << "\t};" << endl;
@@ -1068,7 +1072,7 @@ extern "C" HRESULT __stdcall DumpIDL(const QString &outfile, const QString &ver)
     file.remove();
     
     QString filebase = QString::fromLocal8Bit(qAxModuleFilename);
-    filebase = filebase.left(filebase.lastIndexOf(QLatin1String(".")));
+    filebase = filebase.left(filebase.lastIndexOf(QLatin1Char('.')));
     
     QString appID = qAxFactory()->appID().toString().toUpper();
     if (QUuid(appID).isNull())
@@ -1103,7 +1107,7 @@ extern "C" HRESULT __stdcall DumpIDL(const QString &outfile, const QString &ver)
     out << "/****************************************************************************" << endl;
     out << "** Interface definition generated for ActiveQt project" << endl;
     out << "**" << endl;
-    out << "**     '" << qAxModuleFilename << "'" << endl;
+    out << "**     '" << qAxModuleFilename << '\'' << endl;
     out << "**" << endl;
     out << "** Created:  " << QDateTime::currentDateTime().toString() << endl;
     out << "**" << endl;
@@ -1121,13 +1125,13 @@ extern "C" HRESULT __stdcall DumpIDL(const QString &outfile, const QString &ver)
         delete_qApp = true;
     }
     
-    out << "[" << endl;
+    out << '[' << endl;
     out << "\tuuid(" << typeLibID << ")," << endl;
     out << "\tversion(" << version << ")," << endl;
-    out << "\thelpstring(\"" << typelib << " " << version << " Type Library\")" << endl;
-    out << "]" << endl;
+    out << "\thelpstring(\"" << typelib << ' ' << version << " Type Library\")" << endl;
+    out << ']' << endl;
     out << "library " << typelib << "Lib" << endl;
-    out << "{" << endl;
+    out << '{' << endl;
     out << "\timportlib(\"stdole32.tlb\");" << endl;
     out << "\timportlib(\"stdole2.tlb\");" << endl << endl;
     
@@ -1188,11 +1192,12 @@ extern "C" HRESULT __stdcall DumpIDL(const QString &outfile, const QString &ver)
         // We have meta object information for this type. Forward declare it.
         if (mo) {
             QByteArray cleanType = qax_clean_type(*key, mo).toLatin1();
-            out << "\tcoclass " << cleanType << ";" << endl;
+            out << "\tcoclass " << cleanType << ';' << endl;
             subtypes.append(cleanType);
-            subtypes.append(cleanType + "*");
             qRegisterMetaType(cleanType, (void**)0);
-            qRegisterMetaType(cleanType + "*", (void**)0);
+            cleanType += '*';
+            subtypes.append(cleanType);
+            qRegisterMetaType(cleanType, (void**)0);
         }
     }
     out << endl;
@@ -1225,7 +1230,7 @@ extern "C" HRESULT __stdcall DumpIDL(const QString &outfile, const QString &ver)
 
         QByteArray cleanType = qax_clean_type(*key, mo).toLatin1();
         subtypes.append(cleanType);
-        subtypes.append(cleanType + "*");
+        subtypes.append(cleanType + '*');
         res = classIDL(o, mo, QString::fromLatin1(className.constData()), isBindable, out);
         delete o;
         if (res != S_OK)

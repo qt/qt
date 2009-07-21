@@ -21,10 +21,10 @@
 #ifndef JSSVGAnimatedInteger_h
 #define JSSVGAnimatedInteger_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
@@ -37,11 +37,11 @@ public:
     virtual ~JSSVGAnimatedInteger();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -54,10 +54,11 @@ private:
     RefPtr<SVGAnimatedInteger > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGAnimatedInteger*, SVGElement* context);
-SVGAnimatedInteger* toSVGAnimatedInteger(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedInteger*, SVGElement* context);
+SVGAnimatedInteger* toSVGAnimatedInteger(JSC::JSValue);
 
 class JSSVGAnimatedIntegerPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -67,9 +68,9 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGAnimatedIntegerBaseVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGAnimatedIntegerBaseVal(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGAnimatedIntegerAnimVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAnimatedIntegerBaseVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGAnimatedIntegerBaseVal(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGAnimatedIntegerAnimVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

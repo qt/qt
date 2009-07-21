@@ -19,20 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSCDATASection.h"
 
-#include <wtf/GetPtr.h>
-
 #include "CDATASection.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCDATASection)
+ASSERT_CLASS_FITS_IN_CELL(JSCDATASection);
 
 /* Hash table */
 
@@ -74,7 +70,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -125,11 +121,11 @@ bool JSCDATASection::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSCDATASection, Base>(exec, &JSCDATASectionTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCDATASectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCDATASectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCDATASection*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSCDATASection::getConstructor(ExecState* exec)
+JSValue JSCDATASection::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCDATASectionConstructor>(exec);
 }

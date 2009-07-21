@@ -44,17 +44,21 @@
 #include "qstyle.h"
 #include "qdebug.h"
 #include "qwidgetaction.h"
-#include <eikmenub.h>
-#include <eikmenup.h>
 #include <private/qapplication_p.h>
 #include <private/qmenu_p.h>
 #include <private/qmenubar_p.h>
 #include <qt_s60_p.h>
+#include <QtCore/qlibrary.h>
+
+#ifdef Q_WS_S60
+#include <eikmenub.h>
+#include <eikmenup.h>
 #include <eikaufty.h>
 #include <eikbtgpc.h>
-#include <QtCore/qlibrary.h>
 #include <avkon.rsg>
-#ifndef QT_NO_MENUBAR
+#endif
+
+#if !defined(QT_NO_MENUBAR) && defined(Q_WS_S60)
 
 QT_BEGIN_NAMESPACE
 

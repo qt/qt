@@ -77,7 +77,7 @@ static String cssPropertyName(const Identifier& propertyName, bool* hadPixelOrPo
         return String();
 
     Vector<UChar> name;
-    name.reserveCapacity(length);
+    name.reserveInitialCapacity(length);
 
     unsigned i = 0;
 
@@ -125,9 +125,9 @@ bool JSCSSStyleDeclaration::canGetItemsForName(ExecState*, CSSStyleDeclaration*,
     return isCSSPropertyName(propertyName);
 }
 
-// FIXME: You can get these properties, and set them (see customPut below),
+// FIXME: You can get these properties, and set them (see putDelegate below),
 // but you should also be able to enumerate them.
-JSValuePtr JSCSSStyleDeclaration::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSCSSStyleDeclaration::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
 {
     JSCSSStyleDeclaration* thisObj = static_cast<JSCSSStyleDeclaration*>(asObject(slot.slotBase()));
 
@@ -156,7 +156,7 @@ JSValuePtr JSCSSStyleDeclaration::nameGetter(ExecState* exec, const Identifier& 
 }
 
 
-bool JSCSSStyleDeclaration::customPut(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot&)
+bool JSCSSStyleDeclaration::putDelegate(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot&)
 {
     if (!isCSSPropertyName(propertyName))
         return false;

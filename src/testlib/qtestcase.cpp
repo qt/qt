@@ -54,6 +54,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qprocess.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qlibraryinfo.h>
 
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qtesttable_p.h"
@@ -823,8 +824,10 @@ static void qParseArgs(int argc, char *argv[])
     const char *testOptions =
          " options:\n"
          " -functions : Returns a list of current testfunctions\n"
+         " -xunitxml  : Outputs results as XML XUnit document\n"
          " -xml       : Outputs results as XML document\n"
          " -lightxml  : Outputs results as stream of XML tags\n"
+         " -flush     : Flushes the resutls\n"
          " -o filename: Writes all output into a file\n"
          " -silent    : Only outputs warnings and failures\n"
          " -v1        : Print enter messages for each testfunction\n"
@@ -849,9 +852,8 @@ static void qParseArgs(int argc, char *argv[])
         " -iterations  n  : Sets the number of accumulation iterations.\n"
         " -median  n      : Sets the number of median iterations.\n"
         " -vb             : Print out verbose benchmarking information.\n"
-#ifndef QT_NO_PROCESS
-// Will be enabled when tools are integrated.
-//        " -chart          : Runs the chart generator after the test. No output is printed to the console\n"
+#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
+        " -chart          : Create chart based on the benchmark result.\n"
 #endif
          "\n"
         " -help      : This help\n";
@@ -866,10 +868,14 @@ static void qParseArgs(int argc, char *argv[])
         } else if (strcmp(argv[i], "-functions") == 0) {
             qPrintTestSlots();
             exit(0);
+        } else if(strcmp(argv[i], "-xunitxml") == 0){
+            QTestLog::setLogMode(QTestLog::XunitXML);
         } else if (strcmp(argv[i], "-xml") == 0) {
             QTestLog::setLogMode(QTestLog::XML);
         } else if (strcmp(argv[i], "-lightxml") == 0) {
             QTestLog::setLogMode(QTestLog::LightXML);
+        }else if(strcmp(argv[i], "-flush") == 0){
+            QTestLog::setFlushMode(QTestLog::FLushOn);
         } else if (strcmp(argv[i], "-silent") == 0) {
             QTestLog::setVerboseLevel(-1);
         } else if (strcmp(argv[i], "-v1") == 0) {
@@ -962,7 +968,7 @@ static void qParseArgs(int argc, char *argv[])
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-#ifndef QT_NO_PROCESS
+#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
         } else if (strcmp(argv[i], "-chart") == 0) {
             QBenchmarkGlobalData::current->createChart = true;
             QTestLog::setLogMode(QTestLog::XML);
@@ -1467,26 +1473,21 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 
-#ifndef QT_NO_PROCESS
+#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
     if (QBenchmarkGlobalData::current->createChart) {
-
-#define XSTR(s) STR(s)
-#define STR(s) #s
+        QString chartLocation = QLibraryInfo::location(QLibraryInfo::BinariesPath);
 #ifdef Q_OS_WIN
-    const char * path = XSTR(QBENCHLIB_BASE) "/tools/generatereport/generatereport.exe";
+        chartLocation += QLatin1String("/../tools/qtestlib/chart/release/chart.exe");
 #else
-    const char * path = XSTR(QBENCHLIB_BASE) "/tools/generatereport/generatereport";
+        chartLocation += QLatin1String("/../tools/qtestlib/chart/chart");
 #endif
-#undef XSTR
-#undef STR
-
-        if (QFile::exists(QLatin1String(path))) {
+        if (QFile::exists(chartLocation)) {
             QProcess p;
             p.setProcessChannelMode(QProcess::ForwardedChannels);
-            p.start(QLatin1String(path), QStringList() << QLatin1String("results.xml"));
+            p.start(chartLocation, QStringList() << QLatin1String("results.xml"));
             p.waitForFinished(-1);
         } else {
-            qWarning("Could not find %s, please make sure it is compiled.", path);
+            qDebug() << QLatin1String("Could not find the chart tool in ") + chartLocation + QLatin1String(", please make sure it is compiled.");
         }
     }
 #endif
@@ -1810,8 +1811,8 @@ COMPARE_IMPL2(quint64, %llu)
 #endif
 COMPARE_IMPL2(bool, %d)
 COMPARE_IMPL2(char, %c)
-COMPARE_IMPL2(float, %g);
-COMPARE_IMPL2(double, %lg);
+COMPARE_IMPL2(float, %g)
+COMPARE_IMPL2(double, %lg)
 
 /*! \internal
  */

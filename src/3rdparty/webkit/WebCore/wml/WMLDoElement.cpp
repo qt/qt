@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -27,6 +27,7 @@
 #include "EventNames.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
+#include "MappedAttribute.h"
 #include "Page.h"
 #include "RenderButton.h"
 #include "WMLCardElement.h"
@@ -97,8 +98,6 @@ void WMLDoElement::parseMappedAttribute(MappedAttribute* attr)
         m_type = parseValueForbiddingVariableReferences(attr->value());
     else if (attr->name() == HTMLNames::nameAttr)
         m_name = parseValueForbiddingVariableReferences(attr->value());
-    else if (attr->name() == HTMLNames::labelAttr)
-        m_label = parseValueSubstitutingVariableReferences(attr->value());
     else if (attr->name() == optionalAttr)
         m_isOptional = (attr->value() == "true");
     else
@@ -119,11 +118,8 @@ void WMLDoElement::insertedIntoDocument()
     if (!parent || !parent->isWMLElement())
         return;
 
-    WMLElement* parentElement = static_cast<WMLElement*>(parent);
-    if (!parentElement->isWMLEventHandlingElement())
-        return;
-
-    static_cast<WMLEventHandlingElement*>(parentElement)->registerDoElement(this);
+    if (WMLEventHandlingElement* eventHandlingElement = toWMLEventHandlingElement(static_cast<WMLElement*>(parent)))
+        eventHandlingElement->registerDoElement(this, document());
 }
 
 RenderObject* WMLDoElement::createRenderer(RenderArena* arena, RenderStyle* style)
@@ -145,6 +141,11 @@ void WMLDoElement::recalcStyle(StyleChange change)
 
     if (renderer())
         renderer()->updateFromElement();
+}
+
+String WMLDoElement::label() const
+{
+    return parseValueSubstitutingVariableReferences(getAttribute(HTMLNames::labelAttr));
 }
 
 }

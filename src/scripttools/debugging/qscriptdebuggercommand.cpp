@@ -45,6 +45,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qstringlist.h>
 
 Q_DECLARE_METATYPE(QScriptBreakpointData)
 Q_DECLARE_METATYPE(QScriptDebuggerValue)
@@ -554,6 +555,25 @@ QScriptDebuggerCommand QScriptDebuggerCommand::getScopeChainCommand(int contextI
 QScriptDebuggerCommand QScriptDebuggerCommand::contextsCheckpoint()
 {
     QScriptDebuggerCommand cmd(ContextsCheckpoint);
+    return cmd;
+}
+
+QScriptDebuggerCommand QScriptDebuggerCommand::getPropertyExpressionValue(
+    int contextIndex, int lineNumber, const QStringList &path)
+{
+    QScriptDebuggerCommand cmd(GetPropertyExpressionValue);
+    cmd.setContextIndex(contextIndex);
+    cmd.setLineNumber(lineNumber);
+    cmd.setAttribute(UserAttribute, path);
+    return cmd;
+}
+
+QScriptDebuggerCommand QScriptDebuggerCommand::getCompletions(
+    int contextIndex, const QStringList &path)
+{
+    QScriptDebuggerCommand cmd(GetCompletions);
+    cmd.setContextIndex(contextIndex);
+    cmd.setAttribute(UserAttribute, path);
     return cmd;
 }
 

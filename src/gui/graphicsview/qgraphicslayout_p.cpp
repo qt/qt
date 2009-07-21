@@ -120,8 +120,8 @@ static bool removeLayoutItemFromLayout(QGraphicsLayout *lay, QGraphicsLayoutItem
     if (!lay)
         return false;
 
-    QGraphicsLayoutItem *child;
-    for (int i = 0; (child = lay->itemAt(i)); ++i) {
+    for (int i = lay->count() - 1; i >= 0; --i) {
+        QGraphicsLayoutItem *child = lay->itemAt(i);
         if (child && child->isLayout()) {
             if (removeLayoutItemFromLayout(static_cast<QGraphicsLayout*>(child), layoutItem))
                 return true;

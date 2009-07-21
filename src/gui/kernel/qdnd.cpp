@@ -368,7 +368,7 @@ QDragManager::~QDragManager()
 
 QDragManager *QDragManager::self()
 {
-    if (!instance && qApp && !qApp->closingDown())
+    if (!instance && !QApplication::closingDown())
         instance = new QDragManager;
     return instance;
 }

@@ -20,23 +20,19 @@
 
 #include "config.h"
 
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
-
-#include "SVGElement.h"
 #include "JSSVGFEPointLightElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedNumber.h"
 #include "SVGFEPointLightElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEPointLightElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEPointLightElement);
 
 /* Hash table */
 
@@ -93,22 +89,25 @@ bool JSSVGFEPointLightElement::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticValueSlot<JSSVGFEPointLightElement, Base>(exec, &JSSVGFEPointLightElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEPointLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEPointLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->zAnimated();
     return toJS(exec, obj.get(), imp);
@@ -117,4 +116,4 @@ JSValuePtr jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const P
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

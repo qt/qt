@@ -65,6 +65,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_textCapabilities(TCoeInputCapabilities::EAllText),
       m_isEditing(false),
       m_inDestruction(false),
+      m_pendingInputCapabilitiesChanged(false),
       m_cursorVisibility(1),
       m_inlinePosition(0),
       m_formatRetriever(0),
@@ -101,7 +102,7 @@ void QCoeFepInputContext::reset()
 
 void QCoeFepInputContext::update()
 {
-    updateHints();
+    updateHints(false);
 
     // For pre-5.0 SDKs, we don't do text updates on S60 side.
     if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
@@ -120,7 +121,7 @@ void QCoeFepInputContext::setFocusWidget(QWidget *w)
 
     QInputContext::setFocusWidget(w);
 
-    updateHints();
+    updateHints(true);
 }
 
 void QCoeFepInputContext::widgetDestroyed(QWidget *w)
@@ -269,6 +270,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             sControl->setIgnoreFocusChanged(true);
         }
 
+        ensureInputCapabilitiesChanged();
         m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
 
         if (sControl) {
@@ -318,7 +320,7 @@ static QTextCharFormat qt_TCharFormat2QTextCharFormat(const TCharFormat &cFormat
     return qFormat;
 }
 
-void QCoeFepInputContext::updateHints()
+void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
 {
     QWidget *w = focusWidget();
     if (w) {
@@ -326,10 +328,12 @@ void QCoeFepInputContext::updateHints()
         if (hints != m_lastImHints) {
             m_lastImHints = hints;
             applyHints(hints);
+        } else if (!mustUpdateInputCapabilities) {
+            // Optimization. Return immediately if there was no change.
+            return;
         }
-    } else {
-        CCoeEnv::Static()->InputCapabilitiesChanged();
     }
+    queueInputCapabilitiesChanged();
 }
 
 void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
@@ -449,8 +453,6 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     } else {
         m_textCapabilities = TCoeInputCapabilities::EAllText;
     }
-
-    CCoeEnv::Static()->InputCapabilitiesChanged();
 }
 
 void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attributes)
@@ -482,6 +484,30 @@ void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attri
                                                         m_preeditString.size(),
                                                         standardFormat(PreeditFormat)));
     }
+}
+
+void QCoeFepInputContext::queueInputCapabilitiesChanged()
+{
+    if (m_pendingInputCapabilitiesChanged)
+        return;
+
+    // Call ensureInputCapabilitiesChanged asynchronously. This is done to improve performance
+    // by not updating input capabilities too often. The reason we don't call the Symbian
+    // asynchronous version of InputCapabilitiesChanged is because we need to ensure that it
+    // is synchronous in some specific cases. Those will call ensureInputCapabilitesChanged.
+    QMetaObject::invokeMethod(this, "ensureInputCapabilitiesChanged", Qt::QueuedConnection);
+    m_pendingInputCapabilitiesChanged = true;
+}
+
+void QCoeFepInputContext::ensureInputCapabilitiesChanged()
+{
+    if (!m_pendingInputCapabilitiesChanged)
+        return;
+
+    // The call below is essentially equivalent to InputCapabilitiesChanged(),
+    // but is synchronous, rather than asynchronous.
+    CCoeEnv::Static()->SyncNotifyFocusObserversOfChangeInFocus();
+    m_pendingInputCapabilitiesChanged = false;
 }
 
 void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
@@ -629,7 +655,7 @@ void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDoc
     aEditorContent.Copy(qt_QString2TPtrC(text.mid(aDocumentPosition, aLengthToRetrieve)));
 }
 
-void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt aDocumentPosition) const
+void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt /* aDocumentPosition */) const
 {
     QWidget *w = focusWidget();
     if (!w)
@@ -641,12 +667,10 @@ void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt aDocumentPo
     QString name = font.defaultFamily(); // TODO! FIXME! Should be the above.
     QHBufC hBufC(name);
     aFormat = TCharFormat(hBufC->Des(), metrics.height());
-
-    aDocumentPosition = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
 }
 
 void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLine, TInt& aHeight,
-        TInt& aAscent, TInt aDocumentPosition) const
+        TInt& aAscent, TInt /* aDocumentPosition */) const
 {
     QWidget *w = focusWidget();
     if (!w)
@@ -660,8 +684,6 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
     QFontMetrics metrics(font);
     aHeight = metrics.height();
     aAscent = metrics.ascent();
-
-    aDocumentPosition = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
 }
 
 void QCoeFepInputContext::DoCommitFepInlineEditL()

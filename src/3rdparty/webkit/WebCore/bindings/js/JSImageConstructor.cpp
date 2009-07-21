@@ -21,8 +21,8 @@
 #include "JSImageConstructor.h"
 
 #include "HTMLImageElement.h"
-#include "JSHTMLImageElement.h"
 #include "HTMLNames.h"
+#include "JSHTMLImageElement.h"
 #include "JSNode.h"
 #include "ScriptExecutionContext.h"
 
@@ -30,17 +30,23 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSImageConstructor)
+ASSERT_CLASS_FITS_IN_CELL(JSImageConstructor);
 
 const ClassInfo JSImageConstructor::s_info = { "ImageConstructor", 0, 0, 0 };
 
-JSImageConstructor::JSImageConstructor(ExecState* exec, ScriptExecutionContext* context)
+JSImageConstructor::JSImageConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
     : DOMObject(JSImageConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    , m_globalObject(globalObject)
 {
-    ASSERT(context->isDocument());
-    m_document = static_cast<JSDocument*>(asObject(toJS(exec, static_cast<Document*>(context))));
+    ASSERT(globalObject->scriptExecutionContext());
+    ASSERT(globalObject->scriptExecutionContext()->isDocument());
 
     putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+}
+
+Document* JSImageConstructor::document() const
+{
+    return static_cast<Document*>(m_globalObject->scriptExecutionContext());
 }
 
 static JSObject* constructImage(ExecState* exec, JSObject* constructor, const ArgList& args)
@@ -51,14 +57,16 @@ static JSObject* constructImage(ExecState* exec, JSObject* constructor, const Ar
     int height = 0;
     if (args.size() > 0) {
         widthSet = true;
-        width = args.at(exec, 0)->toInt32(exec);
+        width = args.at(0).toInt32(exec);
     }
     if (args.size() > 1) {
         heightSet = true;
-        height = args.at(exec, 1)->toInt32(exec);
+        height = args.at(1).toInt32(exec);
     }
 
     Document* document = static_cast<JSImageConstructor*>(constructor)->document();
+    if (!document)
+        return throwError(exec, ReferenceError, "Image constructor associated document is unavailable");
 
     // Calling toJS on the document causes the JS document wrapper to be
     // added to the window object. This is done to ensure that JSDocument::mark
@@ -82,8 +90,8 @@ ConstructType JSImageConstructor::getConstructData(ConstructData& constructData)
 void JSImageConstructor::mark()
 {
     DOMObject::mark();
-    if (!m_document->marked())
-        m_document->mark();
+    if (!m_globalObject->marked())
+        m_globalObject->mark();
 }
 
 } // namespace WebCore

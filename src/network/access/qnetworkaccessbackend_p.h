@@ -70,6 +70,8 @@ class QNetworkAccessManagerPrivate;
 class QNetworkReplyImplPrivate;
 class QAbstractNetworkCache;
 class QNetworkCacheMetaData;
+class QNetworkAccessBackendUploadIODevice;
+class QNonContiguousByteDevice;
 
 // Should support direct file upload from disk or download to disk.
 //
@@ -86,14 +88,13 @@ public:
     // have different names. The Connection has two streams:
     //
     // - Upstream:
-    //   Upstream is data that is being written into this connection,
-    //   from the user. Upstream operates in a "pull" mechanism: the
-    //   connection will be notified that there is more data available
-    //   by a call to "upstreamReadyRead". The number of bytes
-    //   available is given by upstreamBytesAvailable(). A call to
-    //   readUpstream() always yields the entire upstream buffer. When
-    //   the connection has processed a certain amount of bytes from
-    //   that buffer, it should call upstreamBytesConsumed().
+    //   The upstream uses a QNonContiguousByteDevice provided
+    //   by the backend. This device emits the usual readyRead()
+    //   signal when the backend has data available for the connection
+    //   to write. The different backends can listen on this signal
+    //   and then pull upload data from the QNonContiguousByteDevice and
+    //   deal with it.
+    //
     //
     // - Downstream:
     //   Downstream is the data that is being read from this
@@ -111,12 +112,9 @@ public:
 
     virtual void open() = 0;
     virtual void closeDownstreamChannel() = 0;
-    virtual void closeUpstreamChannel() = 0;
     virtual bool waitForDownstreamReadyRead(int msecs) = 0;
-    virtual bool waitForUpstreamBytesWritten(int msecs) = 0;
 
     // slot-like:
-    virtual void upstreamReadyRead();
     virtual void downstreamReadyWrite();
     virtual void copyFinished(QIODevice *);
     virtual void ignoreSslErrors();
@@ -155,18 +153,23 @@ public:
     QVariant attribute(QNetworkRequest::Attribute code) const;
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
+    // return true if the QNonContiguousByteDevice of the upload
+    // data needs to support reset(). Currently needed for HTTP.
+    // This will possibly enable buffering of the upload data.
+    virtual bool needsResetableUploadData() {return false;};
+
 protected:
-    // these functions control the upstream mechanism
-    // that is, data coming into the backend and out via the connection
-    qint64 upstreamBytesAvailable() const;
-    void upstreamBytesConsumed(qint64 count);
-    QByteArray readUpstream();
+    // Create the device used for reading the upload data
+    QNonContiguousByteDevice* createUploadByteDevice();
+
 
     // these functions control the downstream mechanism
     // that is, data that has come via the connection and is going out the backend
     qint64 nextDownstreamBlockSize() const;
-    qint64 downstreamBytesToConsume() const;
     void writeDownstreamData(const QByteArray &data);
+
+public slots:
+    // for task 251801, needs to be a slot to be called asynchronously
     void writeDownstreamData(QIODevice *data);
 
 protected slots:
@@ -179,10 +182,12 @@ protected slots:
     void metaDataChanged();
     void redirectionRequested(const QUrl &destination);
     void sslErrors(const QList<QSslError> &errors);
+    void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
 private:
     friend class QNetworkAccessManager;
     friend class QNetworkAccessManagerPrivate;
+    friend class QNetworkAccessBackendUploadIODevice;
     QNetworkAccessManagerPrivate *manager;
     QNetworkReplyImplPrivate *reply;
 };

@@ -27,8 +27,8 @@
 #include "ModifySelectionListLevel.h"
 
 #include "Document.h"
-#include "Element.h"
 #include "Frame.h"
+#include "HTMLElement.h"
 #include "RenderObject.h"
 #include "SelectionController.h"
 #include "htmlediting.h"
@@ -46,7 +46,7 @@ bool ModifySelectionListLevelCommand::preservesTypingStyle() const
 }
 
 // This needs to be static so it can be called by canIncreaseSelectionListLevel and canDecreaseSelectionListLevel
-static bool getStartEndListChildren(const Selection& selection, Node*& start, Node*& end)
+static bool getStartEndListChildren(const VisibleSelection& selection, Node*& start, Node*& end)
 {
     if (selection.isNone())
         return false;
@@ -79,8 +79,8 @@ static bool getStartEndListChildren(const Selection& selection, Node*& start, No
     // if the selection ends on a list item with a sublist, include the entire sublist
     if (endListChild->renderer()->isListItem()) {
         RenderObject* r = endListChild->renderer()->nextSibling();
-        if (r && isListElement(r->element()))
-            endListChild = r->element();
+        if (r && isListElement(r->node()))
+            endListChild = r->node();
     }
 
     start = startListChild;
@@ -141,7 +141,7 @@ IncreaseSelectionListLevelCommand::IncreaseSelectionListLevelCommand(Document* d
 }
 
 // This needs to be static so it can be called by canIncreaseSelectionListLevel
-static bool canIncreaseListLevel(const Selection& selection, Node*& start, Node*& end)
+static bool canIncreaseListLevel(const VisibleSelection& selection, Node*& start, Node*& end)
 {
     if (!getStartEndListChildren(selection, start, end))
         return false;
@@ -175,7 +175,7 @@ void IncreaseSelectionListLevelCommand::doApply()
     if (!canIncreaseListLevel(endingSelection(), startListChild, endListChild))
         return;
 
-    Node* previousItem = startListChild->renderer()->previousSibling()->element();
+    Node* previousItem = startListChild->renderer()->previousSibling()->node();
     if (isListElement(previousItem)) {
         // move nodes up into preceding list
         appendSiblingNodeRange(startListChild, endListChild, static_cast<Element*>(previousItem));
@@ -187,7 +187,7 @@ void IncreaseSelectionListLevelCommand::doApply()
             case InheritedListType:
                 newParent = startListChild->parentElement();
                 if (newParent)
-                    newParent = newParent->cloneElement();
+                    newParent = newParent->cloneElementWithoutChildren();
                 break;
             case OrderedList:
                 newParent = createOrderedListElement(document());
@@ -196,9 +196,9 @@ void IncreaseSelectionListLevelCommand::doApply()
                 newParent = createUnorderedListElement(document());
                 break;
         }
-        insertNodeBefore(newParent.get(), startListChild);
+        insertNodeBefore(newParent, startListChild);
         appendSiblingNodeRange(startListChild, endListChild, newParent.get());
-        m_listElement = newParent.get();
+        m_listElement = newParent.release();
     }
 }
 
@@ -239,7 +239,7 @@ DecreaseSelectionListLevelCommand::DecreaseSelectionListLevelCommand(Document* d
 }
 
 // This needs to be static so it can be called by canDecreaseSelectionListLevel
-static bool canDecreaseListLevel(const Selection& selection, Node*& start, Node*& end)
+static bool canDecreaseListLevel(const VisibleSelection& selection, Node*& start, Node*& end)
 {
     if (!getStartEndListChildren(selection, start, end))
         return false;
@@ -258,8 +258,8 @@ void DecreaseSelectionListLevelCommand::doApply()
     if (!canDecreaseListLevel(endingSelection(), startListChild, endListChild))
         return;
 
-    Node* previousItem = startListChild->renderer()->previousSibling() ? startListChild->renderer()->previousSibling()->element() : 0;
-    Node* nextItem = endListChild->renderer()->nextSibling() ? endListChild->renderer()->nextSibling()->element() : 0;
+    Node* previousItem = startListChild->renderer()->previousSibling() ? startListChild->renderer()->previousSibling()->node() : 0;
+    Node* nextItem = endListChild->renderer()->nextSibling() ? endListChild->renderer()->nextSibling()->node() : 0;
     Element* listNode = startListChild->parentElement();
 
     if (!previousItem) {

@@ -32,6 +32,7 @@
 #include "ErrorConstructor.h"
 #include "FunctionConstructor.h"
 #include "Identifier.h"
+#include "InitializeThreading.h"
 #include "JSArray.h"
 #include "JSCallbackConstructor.h"
 #include "JSCallbackFunction.h"
@@ -52,6 +53,7 @@ using namespace JSC;
 
 JSClassRef JSClassCreate(const JSClassDefinition* definition)
 {
+    initializeThreading();
     RefPtr<OpaqueJSClass> jsClass = (definition->attributes & kJSClassAttributeNoAutomaticPrototype)
         ? OpaqueJSClass::createNoAutomaticPrototype(definition)
         : OpaqueJSClass::create(definition);
@@ -103,10 +105,10 @@ JSObjectRef JSObjectMakeConstructor(JSContextRef ctx, JSClassRef jsClass, JSObje
     exec->globalData().heap.registerThread();
     JSLock lock(exec);
 
-    JSValuePtr jsPrototype = jsClass 
-        ? jsClass->prototype(exec)
-        : exec->lexicalGlobalObject()->objectPrototype();
-    
+    JSValue jsPrototype = jsClass ? jsClass->prototype(exec) : 0;
+    if (!jsPrototype)
+        jsPrototype = exec->lexicalGlobalObject()->objectPrototype();
+
     JSCallbackConstructor* constructor = new (exec) JSCallbackConstructor(exec->lexicalGlobalObject()->callbackConstructorStructure(), jsClass, callAsConstructor);
     constructor->putDirect(exec->propertyNames().prototype, jsPrototype, DontEnum | DontDelete | ReadOnly);
     return toRef(constructor);
@@ -120,7 +122,7 @@ JSObjectRef JSObjectMakeFunction(JSContextRef ctx, JSStringRef name, unsigned pa
 
     Identifier nameID = name ? name->identifier(&exec->globalData()) : Identifier(exec, "anonymous");
     
-    ArgList args;
+    MarkedArgumentBuffer args;
     for (unsigned i = 0; i < parameterCount; i++)
         args.append(jsString(exec, parameterNames[i]->ustring()));
     args.append(jsString(exec, body->ustring()));
@@ -128,7 +130,7 @@ JSObjectRef JSObjectMakeFunction(JSContextRef ctx, JSStringRef name, unsigned pa
     JSObject* result = constructFunction(exec, args, nameID, sourceURL->ustring(), startingLineNumber);
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
         result = 0;
     }
@@ -143,9 +145,9 @@ JSObjectRef JSObjectMakeArray(JSContextRef ctx, size_t argumentCount, const JSVa
 
     JSObject* result;
     if (argumentCount) {
-        ArgList argList;
+        MarkedArgumentBuffer argList;
         for (size_t i = 0; i < argumentCount; ++i)
-            argList.append(toJS(arguments[i]));
+            argList.append(toJS(exec, arguments[i]));
 
         result = constructArray(exec, argList);
     } else
@@ -153,7 +155,7 @@ JSObjectRef JSObjectMakeArray(JSContextRef ctx, size_t argumentCount, const JSVa
 
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
         result = 0;
     }
@@ -167,14 +169,14 @@ JSObjectRef JSObjectMakeDate(JSContextRef ctx, size_t argumentCount, const JSVal
     exec->globalData().heap.registerThread();
     JSLock lock(exec);
 
-    ArgList argList;
+    MarkedArgumentBuffer argList;
     for (size_t i = 0; i < argumentCount; ++i)
-        argList.append(toJS(arguments[i]));
+        argList.append(toJS(exec, arguments[i]));
 
     JSObject* result = constructDate(exec, argList);
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
         result = 0;
     }
@@ -188,14 +190,14 @@ JSObjectRef JSObjectMakeError(JSContextRef ctx, size_t argumentCount, const JSVa
     exec->globalData().heap.registerThread();
     JSLock lock(exec);
 
-    ArgList argList;
+    MarkedArgumentBuffer argList;
     for (size_t i = 0; i < argumentCount; ++i)
-        argList.append(toJS(arguments[i]));
+        argList.append(toJS(exec, arguments[i]));
 
     JSObject* result = constructError(exec, argList);
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
         result = 0;
     }
@@ -209,14 +211,14 @@ JSObjectRef JSObjectMakeRegExp(JSContextRef ctx, size_t argumentCount, const JSV
     exec->globalData().heap.registerThread();
     JSLock lock(exec);
 
-    ArgList argList;
+    MarkedArgumentBuffer argList;
     for (size_t i = 0; i < argumentCount; ++i)
-        argList.append(toJS(arguments[i]));
+        argList.append(toJS(exec, arguments[i]));
 
     JSObject* result = constructRegExp(exec, argList);
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
         result = 0;
     }
@@ -224,18 +226,26 @@ JSObjectRef JSObjectMakeRegExp(JSContextRef ctx, size_t argumentCount, const JSV
     return toRef(result);
 }
 
-JSValueRef JSObjectGetPrototype(JSContextRef, JSObjectRef object)
+JSValueRef JSObjectGetPrototype(JSContextRef ctx, JSObjectRef object)
 {
+    ExecState* exec = toJS(ctx);
+    exec->globalData().heap.registerThread();
+    JSLock lock(exec);
+
     JSObject* jsObject = toJS(object);
-    return toRef(jsObject->prototype());
+    return toRef(exec, jsObject->prototype());
 }
 
-void JSObjectSetPrototype(JSContextRef, JSObjectRef object, JSValueRef value)
+void JSObjectSetPrototype(JSContextRef ctx, JSObjectRef object, JSValueRef value)
 {
-    JSObject* jsObject = toJS(object);
-    JSValuePtr jsValue = toJS(value);
+    ExecState* exec = toJS(ctx);
+    exec->globalData().heap.registerThread();
+    JSLock lock(exec);
 
-    jsObject->setPrototype(jsValue->isObject() ? jsValue : jsNull());
+    JSObject* jsObject = toJS(object);
+    JSValue jsValue = toJS(exec, value);
+
+    jsObject->setPrototype(jsValue.isObject() ? jsValue : jsNull());
 }
 
 bool JSObjectHasProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName)
@@ -257,13 +267,13 @@ JSValueRef JSObjectGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef
 
     JSObject* jsObject = toJS(object);
 
-    JSValuePtr jsValue = jsObject->get(exec, propertyName->identifier(&exec->globalData()));
+    JSValue jsValue = jsObject->get(exec, propertyName->identifier(&exec->globalData()));
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
     }
-    return toRef(jsValue);
+    return toRef(exec, jsValue);
 }
 
 void JSObjectSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSPropertyAttributes attributes, JSValueRef* exception)
@@ -274,7 +284,7 @@ void JSObjectSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prope
 
     JSObject* jsObject = toJS(object);
     Identifier name(propertyName->identifier(&exec->globalData()));
-    JSValuePtr jsValue = toJS(value);
+    JSValue jsValue = toJS(exec, value);
 
     if (attributes && !jsObject->hasProperty(exec, name))
         jsObject->putWithAttributes(exec, name, jsValue, attributes);
@@ -285,7 +295,7 @@ void JSObjectSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prope
 
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
     }
 }
@@ -298,13 +308,13 @@ JSValueRef JSObjectGetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsi
 
     JSObject* jsObject = toJS(object);
 
-    JSValuePtr jsValue = jsObject->get(exec, propertyIndex);
+    JSValue jsValue = jsObject->get(exec, propertyIndex);
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
     }
-    return toRef(jsValue);
+    return toRef(exec, jsValue);
 }
 
 
@@ -315,12 +325,12 @@ void JSObjectSetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned p
     JSLock lock(exec);
 
     JSObject* jsObject = toJS(object);
-    JSValuePtr jsValue = toJS(value);
+    JSValue jsValue = toJS(exec, value);
     
     jsObject->put(exec, propertyIndex, jsValue);
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
     }
 }
@@ -336,7 +346,7 @@ bool JSObjectDeleteProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
     bool result = jsObject->deleteProperty(exec, propertyName->identifier(&exec->globalData()));
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
     }
     return result;
@@ -387,19 +397,19 @@ JSValueRef JSObjectCallAsFunction(JSContextRef ctx, JSObjectRef object, JSObject
     if (!jsThisObject)
         jsThisObject = exec->globalThisValue();
 
-    ArgList argList;
+    MarkedArgumentBuffer argList;
     for (size_t i = 0; i < argumentCount; i++)
-        argList.append(toJS(arguments[i]));
+        argList.append(toJS(exec, arguments[i]));
 
     CallData callData;
     CallType callType = jsObject->getCallData(callData);
     if (callType == CallTypeNone)
         return 0;
 
-    JSValueRef result = toRef(call(exec, jsObject, callType, callData, jsThisObject, argList));
+    JSValueRef result = toRef(exec, call(exec, jsObject, callType, callData, jsThisObject, argList));
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
         result = 0;
     }
@@ -426,13 +436,13 @@ JSObjectRef JSObjectCallAsConstructor(JSContextRef ctx, JSObjectRef object, size
     if (constructType == ConstructTypeNone)
         return 0;
 
-    ArgList argList;
+    MarkedArgumentBuffer argList;
     for (size_t i = 0; i < argumentCount; i++)
-        argList.append(toJS(arguments[i]));
+        argList.append(toJS(exec, arguments[i]));
     JSObjectRef result = toRef(construct(exec, jsObject, constructType, constructData, argList));
     if (exec->hadException()) {
         if (exception)
-            *exception = toRef(exec->exception());
+            *exception = toRef(exec, exec->exception());
         exec->clearException();
         result = 0;
     }
@@ -465,7 +475,7 @@ JSPropertyNameArrayRef JSObjectCopyPropertyNames(JSContextRef ctx, JSObjectRef o
     jsObject->getPropertyNames(exec, array);
 
     size_t size = array.size();
-    propertyNames->array.reserveCapacity(size);
+    propertyNames->array.reserveInitialCapacity(size);
     for (size_t i = 0; i < size; ++i)
         propertyNames->array.append(JSRetainPtr<JSStringRef>(Adopt, OpaqueJSString::create(array[i].ustring()).releaseRef()));
     

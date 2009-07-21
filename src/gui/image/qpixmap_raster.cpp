@@ -50,12 +50,6 @@
 #include <private/qwidget_p.h>
 #include <private/qdrawhelper_p.h>
 
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-#include <private/qpaintengine_d3d_p.h>
-#include <d3d9.h>
-extern QDirect3DPaintEngine *qt_d3dEngine();
-#endif
-
 QT_BEGIN_NAMESPACE
 
 const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
@@ -63,9 +57,6 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
 
 QRasterPixmapData::QRasterPixmapData(PixelType type)
     : QPixmapData(type, RasterClass)
-#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECT3D)
-    , texture(0)
-#endif
 {
 }
 
@@ -94,6 +85,10 @@ void QRasterPixmapData::resize(int width, int height)
 #endif
 
     image = QImage(width, height, format);
+    w = width;
+    h = height;
+    d = image.depth();
+    is_null = (w <= 0 || h <= 0);
 
     if (pixelType() == BitmapType && !image.isNull()) {
         image.setNumColors(2);
@@ -177,8 +172,22 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
         }
     }
 #endif
+    w = image.d->width;
+    h = image.d->height;
+    d = image.d->depth;
+    is_null = (w <= 0 || h <= 0);
 
     setSerialNumber(image.serialNumber());
+}
+
+// from qwindowsurface.cpp
+extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+
+bool QRasterPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    if (!image.isNull())
+        qt_scrollRectInImage(image, rect, QPoint(dx, dy));
+    return true;
 }
 
 void QRasterPixmapData::fill(const QColor &color)
@@ -321,25 +330,36 @@ extern int qt_defaultDpiY();
 
 int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
+    QImageData *d = image.d;
+    if (!d)
+        return 0;
+
     // override the image dpi with the screen dpi when rendering to a pixmap
-    const int dpmX = qRound(qt_defaultDpiX() * 100 / qreal(2.54));
-    const int dpmY = qRound(qt_defaultDpiY() * 100 / qreal(2.54));
     switch (metric) {
+    case QPaintDevice::PdmWidth:
+        return w;
+    case QPaintDevice::PdmHeight:
+        return h;
     case QPaintDevice::PdmWidthMM:
-        return qRound(image.width() * 1000 / dpmX);
+        return qRound(d->width * 25.4 / qt_defaultDpiX());
     case QPaintDevice::PdmHeightMM:
-        return qRound(image.height() * 1000 / dpmY);
-    case QPaintDevice::PdmDpiX:
-        return qRound(dpmX * qreal(0.0254));
-    case QPaintDevice::PdmDpiY:
-        return qRound(dpmY * qreal(0.0254));
+        return qRound(d->width * 25.4 / qt_defaultDpiY());
+    case QPaintDevice::PdmNumColors:
+        return d->colortable.size();
+    case QPaintDevice::PdmDepth:
+        return this->d;
+    case QPaintDevice::PdmDpiX: // fall-through
     case QPaintDevice::PdmPhysicalDpiX:
-        return qRound(dpmX * qreal(0.0254));
+        return qt_defaultDpiX();
+    case QPaintDevice::PdmDpiY: // fall-through
     case QPaintDevice::PdmPhysicalDpiY:
-        return qRound(dpmY * qreal(0.0254));
+        return qt_defaultDpiY();
     default:
-        return image.metric(metric);
+        qWarning("QRasterPixmapData::metric(): Unhandled metric type %d", metric);
+        break;
     }
+
+    return 0;
 }
 
 QImage* QRasterPixmapData::buffer()

@@ -1123,6 +1123,19 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             // null value
             QVariant v;
             v.convert(qIBaseTypeName2(d->sqlda->sqlvar[i].sqltype, d->sqlda->sqlvar[i].sqlscale < 0));
+            if(v.type() == QVariant::Double) {
+                switch(numericalPrecisionPolicy()) {
+                case QSql::LowPrecisionInt32:
+                    v.convert(QVariant::Int);
+                    break;
+                case QSql::LowPrecisionInt64:
+                    v.convert(QVariant::LongLong);
+                    break;
+                case QSql::HighPrecision:
+                    v.convert(QVariant::String);
+                    break;
+                }
+            }
             row[idx] = v;
             continue;
         }
@@ -1187,6 +1200,27 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             // unknown type - don't even try to fetch
             row[idx] = QVariant();
             break;
+        }
+        if (d->sqlda->sqlvar[i].sqlscale < 0) {
+            QVariant v = row[idx];
+            switch(numericalPrecisionPolicy()) {
+            case QSql::LowPrecisionInt32:
+                if(v.convert(QVariant::Int))
+                    row[idx]=v;
+                break;
+            case QSql::LowPrecisionInt64:
+                if(v.convert(QVariant::LongLong))
+                    row[idx]=v;
+                break;
+            case QSql::LowPrecisionDouble:
+                if(v.convert(QVariant::Double))
+                    row[idx]=v;
+                break;
+            case QSql::HighPrecision:
+                if(v.convert(QVariant::String))
+                    row[idx]=v;
+                break;
+            }
         }
     }
 
@@ -1359,7 +1393,6 @@ bool QIBaseDriver::hasFeature(DriverFeature f) const
     case LastInsertId:
     case BatchOperations:
     case SimpleLocking:
-    case LowPrecisionNumbers:
     case FinishQuery:
     case MultipleResultSets:
         return false;
@@ -1369,6 +1402,7 @@ bool QIBaseDriver::hasFeature(DriverFeature f) const
     case Unicode:
     case BLOB:
     case EventNotifications:
+    case LowPrecisionNumbers:
         return true;
     }
     return false;
@@ -1578,12 +1612,16 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
 
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-
+    QString table = tablename;
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
     q.exec(QLatin1String("SELECT a.RDB$FIELD_NAME, b.RDB$FIELD_TYPE, b.RDB$FIELD_LENGTH, "
            "b.RDB$FIELD_SCALE, b.RDB$FIELD_PRECISION, a.RDB$NULL_FLAG "
            "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
            "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
-           "AND a.RDB$RELATION_NAME = '") + tablename.toUpper() + QLatin1String("' "
+           "AND a.RDB$RELATION_NAME = '") + table + QLatin1String("' "
            "ORDER BY a.RDB$FIELD_POSITION"));
 
     while (q.next()) {
@@ -1611,12 +1649,18 @@ QSqlIndex QIBaseDriver::primaryIndex(const QString &table) const
     if (!isOpen())
         return index;
 
+    QString tablename = table;
+    if (isIdentifierEscaped(tablename, QSqlDriver::TableName))
+        tablename = stripDelimiters(tablename, QSqlDriver::TableName);
+    else
+        tablename = tablename.toUpper();
+
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
     q.exec(QLatin1String("SELECT a.RDB$INDEX_NAME, b.RDB$FIELD_NAME, d.RDB$FIELD_TYPE, d.RDB$FIELD_SCALE "
            "FROM RDB$RELATION_CONSTRAINTS a, RDB$INDEX_SEGMENTS b, RDB$RELATION_FIELDS c, RDB$FIELDS d "
            "WHERE a.RDB$CONSTRAINT_TYPE = 'PRIMARY KEY' "
-           "AND a.RDB$RELATION_NAME = '") + table.toUpper() +
+           "AND a.RDB$RELATION_NAME = '") + tablename +
            QLatin1String(" 'AND a.RDB$INDEX_NAME = b.RDB$INDEX_NAME "
            "AND c.RDB$RELATION_NAME = a.RDB$RELATION_NAME "
            "AND c.RDB$FIELD_NAME = b.RDB$FIELD_NAME "
@@ -1742,7 +1786,7 @@ bool QIBaseDriver::subscribeToNotificationImplementation(const QString &name)
                    eBuffer->resultBuffer);
 
     if (status[0] == 1 && status[1]) {
-        setLastError(QSqlError(QString(QLatin1String("Could not subscribe to event notifications for %1.")).arg(name)));
+        setLastError(QSqlError(QString::fromLatin1("Could not subscribe to event notifications for %1.").arg(name)));
         d->eventBuffers.remove(name);
         qFreeEventBuffer(eBuffer);
         return false;
@@ -1770,7 +1814,7 @@ bool QIBaseDriver::unsubscribeFromNotificationImplementation(const QString &name
     isc_cancel_events(status, &d->ibase, &eBuffer->eventId);
 
     if (status[0] == 1 && status[1]) {
-        setLastError(QSqlError(QString(QLatin1String("Could not unsubscribe from event notifications for %1.")).arg(name)));
+        setLastError(QSqlError(QString::fromLatin1("Could not unsubscribe from event notifications for %1.").arg(name)));
         return false;
     }
 
@@ -1828,7 +1872,7 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
 QString QIBaseDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

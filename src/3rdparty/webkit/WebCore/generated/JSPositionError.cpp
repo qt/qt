@@ -19,22 +19,19 @@
 */
 
 #include "config.h"
-
 #include "JSPositionError.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "PositionError.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSPositionError)
+ASSERT_CLASS_FITS_IN_CELL(JSPositionError);
 
 /* Hash table */
 
@@ -82,7 +79,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -136,7 +133,6 @@ JSPositionError::JSPositionError(PassRefPtr<Structure> structure, PassRefPtr<Pos
 JSPositionError::~JSPositionError()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSPositionError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -149,56 +145,58 @@ bool JSPositionError::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSPositionError, Base>(exec, &JSPositionErrorTable, this, propertyName, slot);
 }
 
-JSValuePtr jsPositionErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPositionErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     PositionError* imp = static_cast<PositionError*>(static_cast<JSPositionError*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->code());
 }
 
-JSValuePtr jsPositionErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPositionErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     PositionError* imp = static_cast<PositionError*>(static_cast<JSPositionError*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->message());
 }
 
-JSValuePtr jsPositionErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPositionErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSPositionError*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSPositionError::getConstructor(ExecState* exec)
+JSValue JSPositionError::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSPositionErrorConstructor>(exec);
 }
 
 // Constant getters
 
-JSValuePtr jsPositionErrorUNKNOWN_ERROR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsPositionErrorUNKNOWN_ERROR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsPositionErrorPERMISSION_DENIED(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsPositionErrorPERMISSION_DENIED(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsPositionErrorPOSITION_UNAVAILABLE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsPositionErrorPOSITION_UNAVAILABLE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsPositionErrorTIMEOUT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsPositionErrorTIMEOUT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, PositionError* object)
+JSC::JSValue toJS(JSC::ExecState* exec, PositionError* object)
 {
     return getDOMObjectWrapper<JSPositionError>(exec, object);
 }
-PositionError* toPositionError(JSC::JSValuePtr value)
+PositionError* toPositionError(JSC::JSValue value)
 {
-    return value->isObject(&JSPositionError::s_info) ? static_cast<JSPositionError*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSPositionError::s_info) ? static_cast<JSPositionError*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -143,7 +143,7 @@ class QListWidgetPrivate : public QListViewPrivate
     Q_DECLARE_PUBLIC(QListWidget)
 public:
     QListWidgetPrivate() : QListViewPrivate(), sortOrder(Qt::AscendingOrder), sortingEnabled(false) {}
-    inline QListModel *model() const { return qobject_cast<QListModel*>(q_func()->model()); }
+    inline QListModel *listModel() const { return qobject_cast<QListModel*>(model); }
     void setup();
     void _q_emitItemPressed(const QModelIndex &index);
     void _q_emitItemClicked(const QModelIndex &index);

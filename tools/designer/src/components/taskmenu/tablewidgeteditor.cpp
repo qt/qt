@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::TableWidgetEditor
-*/
-
 #include "tablewidgeteditor.h"
 #include <abstractformbuilder.h>
 #include <iconloader_p.h>

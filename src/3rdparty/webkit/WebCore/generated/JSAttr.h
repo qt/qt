@@ -21,40 +21,42 @@
 #ifndef JSAttr_h
 #define JSAttr_h
 
-#include "JSEventTargetNode.h"
 #include "Attr.h"
+#include "JSNode.h"
+
 namespace WebCore {
 
 class Attr;
 
-class JSAttr : public JSEventTargetNode {
-    typedef JSEventTargetNode Base;
+class JSAttr : public JSNode {
+    typedef JSNode Base;
 public:
     JSAttr(PassRefPtr<JSC::Structure>, PassRefPtr<Attr>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
 
     // Custom attributes
-    void setValue(JSC::ExecState*, JSC::JSValuePtr);
+    void setValue(JSC::ExecState*, JSC::JSValue);
     Attr* impl() const
     {
         return static_cast<Attr*>(Base::impl());
     }
 };
 
-Attr* toAttr(JSC::JSValuePtr);
+Attr* toAttr(JSC::JSValue);
 
 class JSAttrPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -64,13 +66,13 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsAttrName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsAttrSpecified(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsAttrValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSAttrValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsAttrOwnerElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsAttrStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsAttrConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsAttrName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsAttrSpecified(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsAttrValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSAttrValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsAttrOwnerElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsAttrStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsAttrConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

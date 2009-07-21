@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPathSegLinetoVerticalRel.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGPathSegLinetoVertical.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegLinetoVerticalRel)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegLinetoVerticalRel);
 
 /* Hash table */
 
@@ -91,21 +87,22 @@ bool JSSVGPathSegLinetoVerticalRel::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticValueSlot<JSSVGPathSegLinetoVerticalRel, Base>(exec, &JSSVGPathSegLinetoVerticalRelTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPathSegLinetoVerticalRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegLinetoVerticalRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegLinetoVerticalRel* imp = static_cast<SVGPathSegLinetoVerticalRel*>(static_cast<JSSVGPathSegLinetoVerticalRel*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->y());
 }
 
-void JSSVGPathSegLinetoVerticalRel::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPathSegLinetoVerticalRel::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegLinetoVerticalRel, Base>(exec, propertyName, value, &JSSVGPathSegLinetoVerticalRelTable, this, slot);
 }
 
-void setJSSVGPathSegLinetoVerticalRelY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegLinetoVerticalRelY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegLinetoVerticalRel* imp = static_cast<SVGPathSegLinetoVerticalRel*>(static_cast<JSSVGPathSegLinetoVerticalRel*>(thisObject)->impl());
-    imp->setY(value->toFloat(exec));
+    imp->setY(value.toFloat(exec));
     if (static_cast<JSSVGPathSegLinetoVerticalRel*>(thisObject)->context())
         static_cast<JSSVGPathSegLinetoVerticalRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegLinetoVerticalRel*>(thisObject)->impl()->associatedAttributeName());
 }

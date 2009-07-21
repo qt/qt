@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPathSegClosePath.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGPathSegClosePath.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegClosePath)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegClosePath);
 
 /* Hash table for prototype */
 

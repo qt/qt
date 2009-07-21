@@ -99,9 +99,9 @@ void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
             } else if (g->coordinateMode() == QGradient::ObjectBoundingMode) {
                 QBrush copy = brush;
                 QTransform mat = copy.transform();
-                QRealRect r = path.controlPointRect();
-                mat.translate(r.x1, r.y1);
-                mat.scale(r.x2 - r.x1, r.y2 - r.y1);
+                QRectF r = path.controlPointRect();
+                mat.translate(r.x(), r.y());
+                mat.scale(r.width(), r.height());
                 copy.setTransform(mat);
                 real_engine->fill(path, copy);
                 return;
@@ -139,9 +139,9 @@ void QEmulationPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
                 return;
             } else if (g->coordinateMode() == QGradient::ObjectBoundingMode) {
                 QTransform mat = brush.transform();
-                QRealRect r = path.controlPointRect();
-                mat.translate(r.x1, r.y1);
-                mat.scale(r.x2 - r.x1, r.y2 - r.y1);
+                QRectF r = path.controlPointRect();
+                mat.translate(r.x(), r.y());
+                mat.scale(r.width(), r.height());
                 brush.setTransform(mat);
                 copy.setBrush(brush);
                 real_engine->stroke(path, copy);

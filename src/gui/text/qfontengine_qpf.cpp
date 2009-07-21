@@ -252,7 +252,7 @@ QList<QByteArray> QFontEngineQPF::cleanUpAfterClientCrash(const QList<int> &cras
     for (int i = 0; i < int(dir.count()); ++i) {
         const QByteArray fileName = QFile::encodeName(dir.absoluteFilePath(dir[i]));
 
-        int fd = ::open(fileName.constData(), O_RDONLY);
+        int fd = ::open(fileName.constData(), O_RDONLY, 0);
         if (fd >= 0) {
             void *header = ::mmap(0, sizeof(QFontEngineQPF::Header), PROT_READ, MAP_SHARED, fd, 0);
             if (header && header != MAP_FAILED) {
@@ -308,7 +308,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
     readOnly = true;
 
 #if defined(DEBUG_FONTENGINE)
-    qDebug() << "QFontEngineQPF::QFontEngineQPF( fd =" << fd << ", renderingFontEngine =" << renderingFontEngine << ")";
+    qDebug() << "QFontEngineQPF::QFontEngineQPF( fd =" << fd << ", renderingFontEngine =" << renderingFontEngine << ')';
 #endif
 
 #ifndef QT_FONTS_ARE_RESOURCES
@@ -316,9 +316,9 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
         if (!renderingFontEngine)
             return;
 
-        fileName = fontDef.family.toLower() + QLatin1String("_")
+        fileName = fontDef.family.toLower() + QLatin1Char('_')
                    + QString::number(fontDef.pixelSize)
-                   + QLatin1String("_") + QString::number(fontDef.weight)
+                   + QLatin1Char('_') + QString::number(fontDef.weight)
                    + (fontDef.style != QFont::StyleNormal ?
                       QLatin1String("_italic") : QLatin1String(""))
                    + QLatin1String(".qsf");
@@ -331,9 +331,9 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
             qDebug() << "found existing qpf:" << fileName;
 #endif
             if (::access(encodedFileName, W_OK | R_OK) == 0)
-                fd = ::open(encodedFileName, O_RDWR);
+                fd = ::open(encodedFileName, O_RDWR, 0);
             else if (::access(encodedFileName, R_OK) == 0)
-                fd = ::open(encodedFileName, O_RDONLY);
+                fd = ::open(encodedFileName, O_RDONLY, 0);
         } else {
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "creating qpf on the fly:" << fileName;
@@ -347,7 +347,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                 generator.generate();
                 buffer.close();
                 const QByteArray &data = buffer.data();
-                ::write(fd, data.constData(), data.size());
+                QT_WRITE(fd, data.constData(), data.size());
             }
         }
     }
@@ -556,7 +556,7 @@ bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
             if (!findGlyph(glyphs[glyph_pos].glyph) && !seenGlyphs.contains(c))
-                qDebug() << "glyph for character" << c << "/" << hex << uc << "is" << dec << glyphs[glyph_pos].glyph;
+                qDebug() << "glyph for character" << c << '/' << hex << uc << "is" << dec << glyphs[glyph_pos].glyph;
 
             seenGlyphs.insert(c);
 #endif
@@ -899,8 +899,8 @@ void QFontEngineQPF::loadGlyph(glyph_t glyph)
     g.y = qRound(metrics.y);
     g.advance = qRound(metrics.xoff);
 
-    ::write(fd, &g, sizeof(g));
-    ::write(fd, img.bits(), img.numBytes());
+    QT_WRITE(fd, &g, sizeof(g));
+    QT_WRITE(fd, img.bits(), img.numBytes());
 
     glyphPos = oldSize - glyphDataOffset;
 #if 0 && defined(DEBUG_FONTENGINE)

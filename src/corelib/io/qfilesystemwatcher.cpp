@@ -120,7 +120,7 @@ public:
 
     void stop();
 
-private slots:
+private Q_SLOTS:
     void timeout();
 };
 

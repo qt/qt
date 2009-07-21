@@ -36,11 +36,11 @@ public:
     virtual ~JSXMLHttpRequest();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -49,32 +49,33 @@ public:
 
 
     // Custom attributes
-    JSC::JSValuePtr responseText(JSC::ExecState*) const;
+    JSC::JSValue responseText(JSC::ExecState*) const;
 
     // Custom functions
-    JSC::JSValuePtr open(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr setRequestHeader(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr send(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr getResponseHeader(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr overrideMimeType(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr addEventListener(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr removeEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue open(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue setRequestHeader(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue send(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue getResponseHeader(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue overrideMimeType(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeEventListener(JSC::ExecState*, const JSC::ArgList&);
     XMLHttpRequest* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<XMLHttpRequest> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, XMLHttpRequest*);
-XMLHttpRequest* toXMLHttpRequest(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, XMLHttpRequest*);
+XMLHttpRequest* toXMLHttpRequest(JSC::JSValue);
 
 class JSXMLHttpRequestPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -83,43 +84,45 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionOpen(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionSetRequestHeader(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionSend(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionAbort(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionGetAllResponseHeaders(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionGetResponseHeader(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionOverrideMimeType(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXMLHttpRequestPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionOpen(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionSetRequestHeader(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionSend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionAbort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionGetAllResponseHeaders(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionGetResponseHeader(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionOverrideMimeType(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsXMLHttpRequestOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSXMLHttpRequestOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsXMLHttpRequestOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSXMLHttpRequestOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsXMLHttpRequestOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSXMLHttpRequestOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsXMLHttpRequestOnloadstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSXMLHttpRequestOnloadstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsXMLHttpRequestOnprogress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSXMLHttpRequestOnprogress(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsXMLHttpRequestOnreadystatechange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSXMLHttpRequestOnreadystatechange(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsXMLHttpRequestReadyState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestUpload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestResponseText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestResponseXML(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestStatus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestStatusText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSXMLHttpRequestOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsXMLHttpRequestOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSXMLHttpRequestOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsXMLHttpRequestOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSXMLHttpRequestOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsXMLHttpRequestOnloadstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSXMLHttpRequestOnloadstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsXMLHttpRequestOnprogress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSXMLHttpRequestOnprogress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsXMLHttpRequestOnreadystatechange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSXMLHttpRequestOnreadystatechange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsXMLHttpRequestReadyState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestWithCredentials(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSXMLHttpRequestWithCredentials(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsXMLHttpRequestUpload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestResponseText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestResponseXML(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestStatus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestStatusText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 
-JSC::JSValuePtr jsXMLHttpRequestUNSENT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestOPENED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestHEADERS_RECEIVED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestLOADING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXMLHttpRequestDONE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestUNSENT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestOPENED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestHEADERS_RECEIVED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestLOADING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestDONE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

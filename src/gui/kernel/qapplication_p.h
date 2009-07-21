@@ -55,6 +55,7 @@
 //
 
 #include "QtGui/qapplication.h"
+#include "QtGui/qevent.h"
 #include "QtGui/qfont.h"
 #include "QtGui/qcursor.h"
 #include "QtGui/qregion.h"
@@ -77,11 +78,10 @@ class QClipboard;
 class QGraphicsScene;
 class QGraphicsSystem;
 class QInputContext;
-class QKeyEvent;
-class QMouseEvent;
 class QObject;
-class QWheelEvent;
 class QWidget;
+class QGestureManager;
+class QSocketNotifier;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -190,6 +190,12 @@ extern "C" {
 }
 #endif
 
+#if defined(Q_WS_WIN)
+typedef BOOL (WINAPI *qt_RegisterTouchWindowPtr)(HWND, ULONG);
+typedef BOOL (WINAPI *qt_GetTouchInputInfoPtr)(HANDLE, UINT, PVOID, int);
+typedef BOOL (WINAPI *qt_CloseTouchInputHandlePtr)(HANDLE);
+#endif
+
 class QScopedLoopLevelCounter
 {
     QThreadData *threadData;
@@ -201,6 +207,12 @@ public:
     { --threadData->loopLevel; }
 };
 
+typedef QHash<QByteArray, QFont> FontHash;
+FontHash *qt_app_fonts_hash();
+
+typedef QHash<QByteArray, QPalette> PaletteHash;
+PaletteHash *qt_app_palettes_hash();
+
 class Q_GUI_EXPORT QApplicationPrivate : public QCoreApplicationPrivate
 {
     Q_DECLARE_PUBLIC(QApplication)
@@ -211,6 +223,7 @@ public:
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
     static QString kdeHome();
+    static QString x11_desktop_style();
     static bool x11_apply_settings();
 #endif
     static void reset_instance_pointer();
@@ -220,10 +233,11 @@ public:
 #endif
     static bool quitOnLastWindowClosed;
     static void emitLastWindowClosed();
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     static int autoMaximizeThreshold;
 #endif
     static bool autoSipEnabled;
+    static QString desktopStyleKey();
 
     static QGraphicsSystem *graphicsSystem()
 #if !defined(Q_WS_QWS)
@@ -270,6 +284,7 @@ public:
         KB_KDE = 8,
         KB_Gnome = 16,
         KB_CDE = 32,
+        KB_S60 = 64,
         KB_All = 0xffff
     };
 
@@ -359,7 +374,7 @@ public:
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     static bool inSizeMove;
 #endif
 
@@ -394,7 +409,7 @@ public:
 
     static QApplicationPrivate *instance() { return self; }
 
-    static QString *styleOverride;
+    static QString styleOverride;
 
     static int app_compile_version;
 
@@ -421,12 +436,59 @@ public:
                                       QEvent::Type type, Qt::MouseButtons buttons,
                                       QWidget *buttonDown, QWidget *alienWidget);
     static bool sendMouseEvent(QWidget *receiver, QMouseEvent *event, QWidget *alienWidget,
-                               QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver);
-#ifdef Q_WS_S60
+                               QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
+                               bool spontaneous = true);
+#ifdef Q_OS_SYMBIAN
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     void sendSyntheticEnterLeave(QWidget *widget);
+#endif
+
+    QGestureManager *gestureManager;
+    // map<gesture name -> number of widget subscribed to it>
+    QMap<QString, int> grabbedGestures;
+
+    QMap<int, QWidget *> widgetForTouchPointId;
+    QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
+    static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
+    void initializeMultitouch();
+    void initializeMultitouch_sys();
+    void cleanupMultitouch();
+    void cleanupMultitouch_sys();
+    int findClosestTouchPointId(const QPointF &screenPos);
+    void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
+    void removeTouchPoint(int touchPointId);
+    static void translateRawTouchEvent(QWidget *widget,
+                                       QTouchEvent::DeviceType deviceType,
+                                       const QList<QTouchEvent::TouchPoint> &touchPoints);
+
+#if defined(Q_WS_WIN)
+    static qt_RegisterTouchWindowPtr RegisterTouchWindow;
+    static qt_GetTouchInputInfoPtr GetTouchInputInfo;
+    static qt_CloseTouchInputHandlePtr CloseTouchInputHandle;
+
+    QHash<DWORD, int> touchInputIDToTouchPointID;
+    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
+    bool translateTouchEvent(const MSG &msg);
+#endif
+
+#ifdef QT_RX71_MULTITOUCH
+    bool hasRX71MultiTouch;
+
+    struct RX71TouchPointState {
+        QSocketNotifier *socketNotifier;
+        QTouchEvent::TouchPoint touchPoint;
+
+        int minX, maxX, scaleX;
+        int minY, maxY, scaleY;
+        int minZ, maxZ;
+    };
+    QList<RX71TouchPointState> allRX71TouchPoints;
+
+    bool readRX71MultiTouchEvents(int deviceNumber);
+    void fakeMouseEventFromRX71TouchEvent();
+    void _q_readRX71MultiTouchEvents();
 #endif
 
 private:
@@ -434,13 +496,21 @@ private:
     QMap<const QScreen*, QRect> maxWindowRects;
 #endif
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     static QHash<TInt, TUint> scanCodeCache;
 #endif
 
     static QApplicationPrivate *self;
+
+    static void giveFocusAccordingToFocusPolicy(QWidget *w,
+                                                Qt::FocusPolicy focusPolicy,
+                                                Qt::FocusReason focusReason);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
 };
+
+Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
+                                            QTouchEvent::DeviceType deviceType,
+                                            const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 QT_END_NAMESPACE
 

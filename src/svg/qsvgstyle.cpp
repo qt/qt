@@ -81,12 +81,12 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 }
 
 QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false)
+    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false), m_gradientResolved (true)
 {
 }
 
 QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false)
+    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false), m_gradientResolved (true)
 {
 }
 
@@ -107,6 +107,9 @@ static void recursivelySetFill(QSvgNode *node, Qt::FillRule f)
     if (node->type() == QSvgNode::PATH) {
         QSvgPath *path = static_cast<QSvgPath*>(node);
         path->qpath()->setFillRule(f);
+    } else if (node->type() == QSvgNode::POLYGON) {
+        QSvgPolygon *polygon = static_cast<QSvgPolygon*>(node);
+        polygon->setFillRule(f);
     } else if (node->type() == QSvgNode::G) {
         QList<QSvgNode*> renderers = static_cast<QSvgG*>(node)->renderers();
         foreach(QSvgNode *n, renderers) {

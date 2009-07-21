@@ -20,27 +20,23 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGDocument.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "JSEvent.h"
 #include "JSSVGSVGElement.h"
 #include "SVGDocument.h"
 #include "SVGSVGElement.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGDocument)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGDocument);
 
 /* Hash table */
 
@@ -101,23 +97,25 @@ bool JSSVGDocument::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSSVGDocument, Base>(exec, &JSSVGDocumentTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGDocumentRootElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGDocumentRootElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGDocument* imp = static_cast<SVGDocument*>(static_cast<JSSVGDocument*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->rootElement()));
 }
 
-JSValuePtr jsSVGDocumentPrototypeFunctionCreateEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGDocumentPrototypeFunctionCreateEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGDocument::s_info))
         return throwError(exec, TypeError);
     JSSVGDocument* castedThisObj = static_cast<JSSVGDocument*>(asObject(thisValue));
     SVGDocument* imp = static_cast<SVGDocument*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& eventType = args.at(exec, 0)->toString(exec);
+    const UString& eventType = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createEvent(eventType, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createEvent(eventType, ec)));
     setDOMException(exec, ec);
     return result;
 }

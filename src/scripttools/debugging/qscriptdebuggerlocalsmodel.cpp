@@ -136,6 +136,7 @@ public:
                      const QScriptDebuggerValuePropertyList &props);
 
     void deleteObjectSnapshots(const QList<qint64> &snapshotIds);
+    void deleteAllObjectSnapshots();
 
     QScriptDebuggerJobSchedulerInterface *jobScheduler;
     QScriptDebuggerCommandSchedulerInterface *commandScheduler;
@@ -238,6 +239,14 @@ void QScriptDebuggerLocalsModelPrivate::deleteObjectSnapshots(const QList<qint64
     QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler, 0);
     for (int i = 0; i < snapshotIds.size(); ++i)
         frontend.scheduleDeleteScriptObjectSnapshot(snapshotIds.at(i));
+}
+
+void QScriptDebuggerLocalsModelPrivate::deleteAllObjectSnapshots()
+{
+    QList<qint64> snapshotIds;
+    for (int i = 0; i < invisibleRootNode->children.count(); ++i)
+        snapshotIds += findSnapshotIdsRecursively(invisibleRootNode->children.at(i));
+    deleteObjectSnapshots(snapshotIds);
 }
 
 QScriptDebuggerLocalsModelPrivate *QScriptDebuggerLocalsModelPrivate::get(QScriptDebuggerLocalsModel *q)
@@ -442,13 +451,6 @@ QScriptDebuggerLocalsModel::QScriptDebuggerLocalsModel(
 
 QScriptDebuggerLocalsModel::~QScriptDebuggerLocalsModel()
 {
-    Q_D(QScriptDebuggerLocalsModel);
-    QList<qint64> snapshotIds;
-    for (int i = 0; i < d->invisibleRootNode->children.count(); ++i)
-        snapshotIds += findSnapshotIdsRecursively(d->invisibleRootNode->children.at(i));
-    QScriptDebuggerCommandSchedulerFrontend frontend(d->commandScheduler, 0);
-    for (int j = 0; j < snapshotIds.size(); ++j)
-        frontend.scheduleDeleteScriptObjectSnapshot(snapshotIds.at(j));
 }
 
 QModelIndex QScriptDebuggerLocalsModelPrivate::addTopLevelObject(const QString &name, const QScriptDebuggerValue &object)
@@ -807,7 +809,7 @@ QVariant QScriptDebuggerLocalsModel::data(const QModelIndex &index, int role) co
             QString str = node->property.valueAsString();
             if (node->property.value().type() == QScriptDebuggerValue::StringValue) {
                 // escape
-                str.replace(QLatin1String("\""), QLatin1String("\\\""));
+                str.replace(QLatin1Char('\"'), QLatin1String("\\\""));
                 str.prepend(QLatin1Char('\"'));
                 str.append(QLatin1Char('\"'));
             }

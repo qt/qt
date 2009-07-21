@@ -80,15 +80,15 @@ static bool variantToString(const QVariant &arg, QString &out)
     int argType = arg.userType();
 
     if (argType == QVariant::StringList) {
-        out += QLatin1String("{");
+        out += QLatin1Char('{');
         QStringList list = arg.toStringList();
         foreach (QString item, list)
             out += QLatin1Char('\"') + item + QLatin1String("\", ");
         if (!list.isEmpty())
             out.chop(2);
-        out += QLatin1String("}");
+        out += QLatin1Char('}');
     } else if (argType == QVariant::ByteArray) {
-        out += QLatin1String("{");
+        out += QLatin1Char('{');
         QByteArray list = arg.toByteArray();
         for (int i = 0; i < list.count(); ++i) {
             out += QString::number(list.at(i));
@@ -96,9 +96,9 @@ static bool variantToString(const QVariant &arg, QString &out)
         }
         if (!list.isEmpty())
             out.chop(2);
-        out += QLatin1String("}");
+        out += QLatin1Char('}');
     } else if (argType == QVariant::List) {
-        out += QLatin1String("{");
+        out += QLatin1Char('{');
         QList<QVariant> list = arg.toList();
         foreach (QVariant item, list) {
             if (!variantToString(item, out))
@@ -107,7 +107,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         }
         if (!list.isEmpty())
             out.chop(2);
-        out += QLatin1String("}");
+        out += QLatin1Char('}');
     } else if (argType == QMetaType::Char || argType == QMetaType::Short || argType == QMetaType::Int
                || argType == QMetaType::Long || argType == QMetaType::LongLong) {
         out += QString::number(arg.toLongLong());
@@ -142,7 +142,7 @@ static bool variantToString(const QVariant &arg, QString &out)
             return false;
         out += QLatin1Char(']');
     } else if (arg.canConvert(QVariant::String)) {
-        out += QLatin1String("\"") + arg.toString() + QLatin1String("\"");
+        out += QLatin1Char('\"') + arg.toString() + QLatin1Char('\"');
     } else {
         out += QLatin1Char('[');
         out += QLatin1String(arg.typeName());
@@ -226,7 +226,7 @@ bool argToString(const QDBusArgument &busArg, QString &out)
 
     if (elementType != QDBusArgument::BasicType && elementType != QDBusArgument::VariantType
             && elementType != QDBusArgument::MapEntryType)
-        out += QLatin1String("]");
+        out += QLatin1Char(']');
 
     return true;
 }

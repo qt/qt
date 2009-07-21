@@ -32,11 +32,13 @@
 
 #include "EvalCodeCache.h"
 #include "Instruction.h"
+#include "JITCode.h"
 #include "JSGlobalObject.h"
 #include "JumpTable.h"
 #include "Nodes.h"
 #include "RegExp.h"
 #include "UString.h"
+#include <wtf/FastAllocBase.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
@@ -48,7 +50,7 @@ namespace JSC {
 
     class ExecState;
 
-    enum CodeType { GlobalCode, EvalCode, FunctionCode };
+    enum CodeType { GlobalCode, EvalCode, FunctionCode, NativeCode };
 
     static ALWAYS_INLINE int missingThisObjectMarker() { return std::numeric_limits<int>::max(); }
 
@@ -58,28 +60,9 @@ namespace JSC {
         uint32_t target;
         uint32_t scopeDepth;
 #if ENABLE(JIT)
-        void* nativeCode;
+        CodeLocationLabel nativeCode;
 #endif
     };
-
-#if ENABLE(JIT)
-    // The code, and the associated pool from which it was allocated.
-    struct JITCodeRef {
-        void* code;
-        RefPtr<ExecutablePool> executablePool;
-        
-        JITCodeRef()
-            : code(0)
-        {
-        }
-        
-        JITCodeRef(void* code, PassRefPtr<ExecutablePool> executablePool)
-            : code(code)
-            , executablePool(executablePool)
-        {
-        }
-    };
-#endif
 
     struct ExpressionRangeInfo {
         enum {
@@ -108,24 +91,30 @@ namespace JSC {
 #if ENABLE(JIT)
     struct CallLinkInfo {
         CallLinkInfo()
-            : callReturnLocation(0)
-            , hotPathBegin(0)
-            , hotPathOther(0)
-            , coldPathOther(0)
-            , callee(0)
+            : callee(0)
         {
         }
     
         unsigned bytecodeIndex;
-        void* callReturnLocation;
-        void* hotPathBegin;
-        void* hotPathOther;
-        void* coldPathOther;
+        CodeLocationNearCall callReturnLocation;
+        CodeLocationDataLabelPtr hotPathBegin;
+        CodeLocationNearCall hotPathOther;
         CodeBlock* callee;
         unsigned position;
         
         void setUnlinked() { callee = 0; }
         bool isLinked() { return callee; }
+    };
+
+    struct MethodCallLinkInfo {
+        MethodCallLinkInfo()
+            : cachedStructure(0)
+        {
+        }
+
+        CodeLocationCall callReturnLocation;
+        CodeLocationDataLabelPtr structureLabel;
+        Structure* cachedStructure;
     };
 
     struct FunctionRegisterInfo {
@@ -140,24 +129,30 @@ namespace JSC {
     };
 
     struct GlobalResolveInfo {
-        GlobalResolveInfo()
+        GlobalResolveInfo(unsigned bytecodeOffset)
             : structure(0)
             , offset(0)
+            , bytecodeOffset(bytecodeOffset)
         {
         }
 
         Structure* structure;
         unsigned offset;
+        unsigned bytecodeOffset;
     };
 
-    struct PC {
-        PC(ptrdiff_t nativePCOffset, unsigned bytecodeIndex)
-            : nativePCOffset(nativePCOffset)
+    // This structure is used to map from a call return location
+    // (given as an offset in bytes into the JIT code) back to
+    // the bytecode index of the corresponding bytecode operation.
+    // This is then used to look up the corresponding handler.
+    struct CallReturnOffsetToBytecodeIndex {
+        CallReturnOffsetToBytecodeIndex(unsigned callReturnOffset, unsigned bytecodeIndex)
+            : callReturnOffset(callReturnOffset)
             , bytecodeIndex(bytecodeIndex)
         {
         }
 
-        ptrdiff_t nativePCOffset;
+        unsigned callReturnOffset;
         unsigned bytecodeIndex;
     };
 
@@ -165,17 +160,22 @@ namespace JSC {
 
     inline void* getStructureStubInfoReturnLocation(StructureStubInfo* structureStubInfo)
     {
-        return structureStubInfo->callReturnLocation;
+        return structureStubInfo->callReturnLocation.executableAddress();
     }
 
     inline void* getCallLinkInfoReturnLocation(CallLinkInfo* callLinkInfo)
     {
-        return callLinkInfo->callReturnLocation;
+        return callLinkInfo->callReturnLocation.executableAddress();
     }
 
-    inline ptrdiff_t getNativePCOffset(PC* pc)
+    inline void* getMethodCallLinkInfoReturnLocation(MethodCallLinkInfo* methodCallLinkInfo)
     {
-        return pc->nativePCOffset;
+        return methodCallLinkInfo->callReturnLocation.executableAddress();
+    }
+
+    inline unsigned getCallReturnOffset(CallReturnOffsetToBytecodeIndex* pc)
+    {
+        return pc->callReturnOffset;
     }
 
     // Binary chop algorithm, calls valueAtPosition on pre-sorted elements in array,
@@ -215,9 +215,10 @@ namespace JSC {
     }
 #endif
 
-    class CodeBlock {
+    class CodeBlock : public WTF::FastAllocBase {
         friend class JIT;
     public:
+        CodeBlock(ScopeNode* ownerNode);
         CodeBlock(ScopeNode* ownerNode, CodeType, PassRefPtr<SourceProvider>, unsigned sourceOffset);
         ~CodeBlock();
 
@@ -242,7 +243,7 @@ namespace JSC {
                 return true;
 
             if (isConstantRegisterIndex(index))
-                return !JSImmediate::isImmediate(getConstant(index));
+                return getConstant(index).isCell();
 
             return false;
         }
@@ -252,9 +253,9 @@ namespace JSC {
             return index >= m_numVars && index < m_numVars + m_numConstants;
         }
 
-        ALWAYS_INLINE JSValuePtr getConstant(int index)
+        ALWAYS_INLINE JSValue getConstant(int index)
         {
-            return m_constantRegisters[index - m_numVars].getJSValue();
+            return m_constantRegisters[index - m_numVars].jsValue();
         }
 
         ALWAYS_INLINE bool isTemporaryRegisterIndex(int index)
@@ -287,24 +288,32 @@ namespace JSC {
             m_linkedCallerList.shrink(lastPos);
         }
 
-        StructureStubInfo& getStubInfo(void* returnAddress)
+        StructureStubInfo& getStubInfo(ReturnAddressPtr returnAddress)
         {
-            return *(binaryChop<StructureStubInfo, void*, getStructureStubInfoReturnLocation>(m_structureStubInfos.begin(), m_structureStubInfos.size(), returnAddress));
+            return *(binaryChop<StructureStubInfo, void*, getStructureStubInfoReturnLocation>(m_structureStubInfos.begin(), m_structureStubInfos.size(), returnAddress.value()));
         }
 
-        CallLinkInfo& getCallLinkInfo(void* returnAddress)
+        CallLinkInfo& getCallLinkInfo(ReturnAddressPtr returnAddress)
         {
-            return *(binaryChop<CallLinkInfo, void*, getCallLinkInfoReturnLocation>(m_callLinkInfos.begin(), m_callLinkInfos.size(), returnAddress));
+            return *(binaryChop<CallLinkInfo, void*, getCallLinkInfoReturnLocation>(m_callLinkInfos.begin(), m_callLinkInfos.size(), returnAddress.value()));
         }
 
-        unsigned getBytecodeIndex(void* nativePC)
+        MethodCallLinkInfo& getMethodCallLinkInfo(ReturnAddressPtr returnAddress)
         {
-            ptrdiff_t nativePCOffset = reinterpret_cast<void**>(nativePC) - reinterpret_cast<void**>(m_jitCode.code);
-            return binaryChop<PC, ptrdiff_t, getNativePCOffset>(m_pcVector.begin(), m_pcVector.size(), nativePCOffset)->bytecodeIndex;
+            return *(binaryChop<MethodCallLinkInfo, void*, getMethodCallLinkInfoReturnLocation>(m_methodCallLinkInfos.begin(), m_methodCallLinkInfos.size(), returnAddress.value()));
         }
 
+        unsigned getBytecodeIndex(CallFrame* callFrame, ReturnAddressPtr returnAddress)
+        {
+            reparseForExceptionInfoIfNecessary(callFrame);
+            return binaryChop<CallReturnOffsetToBytecodeIndex, unsigned, getCallReturnOffset>(m_exceptionInfo->m_callReturnIndexVector.begin(), m_exceptionInfo->m_callReturnIndexVector.size(), ownerNode()->generatedJITCode().offsetOf(returnAddress.value()))->bytecodeIndex;
+        }
+        
         bool functionRegisterForBytecodeOffset(unsigned bytecodeOffset, int& functionRegisterIndex);
 #endif
+
+        void setIsNumericCompareFunction(bool isNumericCompareFunction) { m_isNumericCompareFunction = isNumericCompareFunction; }
+        bool isNumericCompareFunction() { return m_isNumericCompareFunction; }
 
         Vector<Instruction>& instructions() { return m_instructions; }
 #ifndef NDEBUG
@@ -312,9 +321,8 @@ namespace JSC {
 #endif
 
 #if ENABLE(JIT)
-        void setJITCode(JITCodeRef& jitCode);
-        void* jitCode() { return m_jitCode.code; }
-        ExecutablePool* executablePool() { return m_jitCode.executablePool.get(); }
+        void setJITCode(JITCode);
+        ExecutablePool* executablePool() { return ownerNode()->getExecutablePool(); }
 #endif
 
         ScopeNode* ownerNode() const { return m_ownerNode; }
@@ -333,8 +341,8 @@ namespace JSC {
 
         CodeType codeType() const { return m_codeType; }
 
-        SourceProvider* source() const { return m_source.get(); }
-        unsigned sourceOffset() const { return m_sourceOffset; }
+        SourceProvider* source() const { ASSERT(m_codeType != NativeCode); return m_source.get(); }
+        unsigned sourceOffset() const { ASSERT(m_codeType != NativeCode); return m_sourceOffset; }
 
         size_t numberOfJumpTargets() const { return m_jumpTargets.size(); }
         void addJumpTarget(unsigned jumpTarget) { m_jumpTargets.append(jumpTarget); }
@@ -343,22 +351,25 @@ namespace JSC {
 
 #if !ENABLE(JIT)
         void addPropertyAccessInstruction(unsigned propertyAccessInstruction) { m_propertyAccessInstructions.append(propertyAccessInstruction); }
-        void addGlobalResolveInstruction(unsigned globalResolveInstructions) { m_globalResolveInstructions.append(globalResolveInstructions); }
+        void addGlobalResolveInstruction(unsigned globalResolveInstruction) { m_globalResolveInstructions.append(globalResolveInstruction); }
+        bool hasGlobalResolveInstructionAtBytecodeOffset(unsigned bytecodeOffset);
 #else
         size_t numberOfStructureStubInfos() const { return m_structureStubInfos.size(); }
         void addStructureStubInfo(const StructureStubInfo& stubInfo) { m_structureStubInfos.append(stubInfo); }
         StructureStubInfo& structureStubInfo(int index) { return m_structureStubInfos[index]; }
 
-        void addGlobalResolveInfo() { m_globalResolveInfos.append(GlobalResolveInfo()); }
+        void addGlobalResolveInfo(unsigned globalResolveInstruction) { m_globalResolveInfos.append(GlobalResolveInfo(globalResolveInstruction)); }
         GlobalResolveInfo& globalResolveInfo(int index) { return m_globalResolveInfos[index]; }
+        bool hasGlobalResolveInfoAtBytecodeOffset(unsigned bytecodeOffset);
 
         size_t numberOfCallLinkInfos() const { return m_callLinkInfos.size(); }
         void addCallLinkInfo() { m_callLinkInfos.append(CallLinkInfo()); }
         CallLinkInfo& callLinkInfo(int index) { return m_callLinkInfos[index]; }
 
-        void addFunctionRegisterInfo(unsigned bytecodeOffset, int functionIndex) { createRareDataIfNecessary(); m_rareData->m_functionRegisterInfos.append(FunctionRegisterInfo(bytecodeOffset, functionIndex)); }
+        void addMethodCallLinkInfos(unsigned n) { m_methodCallLinkInfos.grow(n); }
+        MethodCallLinkInfo& methodCallLinkInfo(int index) { return m_methodCallLinkInfos[index]; }
 
-        Vector<PC>& pcVector() { return m_pcVector; }
+        void addFunctionRegisterInfo(unsigned bytecodeOffset, int functionIndex) { createRareDataIfNecessary(); m_rareData->m_functionRegisterInfos.append(FunctionRegisterInfo(bytecodeOffset, functionIndex)); }
 #endif
 
         // Exception handling support
@@ -367,6 +378,7 @@ namespace JSC {
         void addExceptionHandler(const HandlerInfo& hanler) { createRareDataIfNecessary(); return m_rareData->m_exceptionHandlers.append(hanler); }
         HandlerInfo& exceptionHandler(int index) { ASSERT(m_rareData); return m_rareData->m_exceptionHandlers[index]; }
 
+        bool hasExceptionInfo() const { return m_exceptionInfo; }
         void clearExceptionInfo() { m_exceptionInfo.clear(); }
 
         void addExpressionInfo(const ExpressionRangeInfo& expressionInfo) { ASSERT(m_exceptionInfo); m_exceptionInfo->m_expressionInfo.append(expressionInfo); }
@@ -375,6 +387,10 @@ namespace JSC {
         size_t numberOfLineInfos() const { ASSERT(m_exceptionInfo); return m_exceptionInfo->m_lineInfo.size(); }
         void addLineInfo(const LineInfo& lineInfo) { ASSERT(m_exceptionInfo); m_exceptionInfo->m_lineInfo.append(lineInfo); }
         LineInfo& lastLineInfo() { ASSERT(m_exceptionInfo); return m_exceptionInfo->m_lineInfo.last(); }
+
+#if ENABLE(JIT)
+        Vector<CallReturnOffsetToBytecodeIndex>& callReturnIndexVector() { ASSERT(m_exceptionInfo); return m_exceptionInfo->m_callReturnIndexVector; }
+#endif
 
         // Constant Pool
 
@@ -392,8 +408,10 @@ namespace JSC {
         unsigned addFunction(FuncDeclNode* n) { createRareDataIfNecessary(); unsigned size = m_rareData->m_functions.size(); m_rareData->m_functions.append(n); return size; }
         FuncDeclNode* function(int index) const { ASSERT(m_rareData); return m_rareData->m_functions[index].get(); }
 
-        unsigned addUnexpectedConstant(JSValuePtr v) { createRareDataIfNecessary(); unsigned size = m_rareData->m_unexpectedConstants.size(); m_rareData->m_unexpectedConstants.append(v); return size; }
-        JSValuePtr unexpectedConstant(int index) const { ASSERT(m_rareData); return m_rareData->m_unexpectedConstants[index]; }
+        bool hasFunctions() const { return m_functionExpressions.size() || (m_rareData && m_rareData->m_functions.size()); }
+
+        unsigned addUnexpectedConstant(JSValue v) { createRareDataIfNecessary(); unsigned size = m_rareData->m_unexpectedConstants.size(); m_rareData->m_unexpectedConstants.append(v); return size; }
+        JSValue unexpectedConstant(int index) const { ASSERT(m_rareData); return m_rareData->m_unexpectedConstants[index]; }
 
         unsigned addRegExp(RegExp* r) { createRareDataIfNecessary(); unsigned size = m_rareData->m_regexps.size(); m_rareData->m_regexps.append(r); return size; }
         RegExp* regexp(int index) const { ASSERT(m_rareData); return m_rareData->m_regexps[index].get(); }
@@ -416,7 +434,7 @@ namespace JSC {
 
         SymbolTable& symbolTable() { return m_symbolTable; }
 
-        EvalCodeCache& evalCodeCache() { createRareDataIfNecessary(); return m_rareData->m_evalCodeCache; }
+        EvalCodeCache& evalCodeCache() { ASSERT(m_codeType != NativeCode); createRareDataIfNecessary(); return m_rareData->m_evalCodeCache; }
 
         void shrinkToFit();
 
@@ -440,6 +458,7 @@ namespace JSC {
 
         void createRareDataIfNecessary()
         {
+            ASSERT(m_codeType != NativeCode); 
             if (!m_rareData)
                 m_rareData.set(new RareData);
         }
@@ -451,15 +470,13 @@ namespace JSC {
 #ifndef NDEBUG
         unsigned m_instructionCount;
 #endif
-#if ENABLE(JIT)
-        JITCodeRef m_jitCode;
-#endif
 
         int m_thisRegister;
 
         bool m_needsFullScopeChain;
         bool m_usesEval;
         bool m_usesArguments;
+        bool m_isNumericCompareFunction;
 
         CodeType m_codeType;
 
@@ -473,9 +490,8 @@ namespace JSC {
         Vector<StructureStubInfo> m_structureStubInfos;
         Vector<GlobalResolveInfo> m_globalResolveInfos;
         Vector<CallLinkInfo> m_callLinkInfos;
+        Vector<MethodCallLinkInfo> m_methodCallLinkInfos;
         Vector<CallLinkInfo*> m_linkedCallerList;
-
-        Vector<PC> m_pcVector;
 #endif
 
         Vector<unsigned> m_jumpTargets;
@@ -491,6 +507,10 @@ namespace JSC {
             Vector<ExpressionRangeInfo> m_expressionInfo;
             Vector<LineInfo> m_lineInfo;
             Vector<GetByIdExceptionInfo> m_getByIdExceptionInfo;
+
+#if ENABLE(JIT)
+            Vector<CallReturnOffsetToBytecodeIndex> m_callReturnIndexVector;
+#endif
         };
         OwnPtr<ExceptionInfo> m_exceptionInfo;
 
@@ -499,7 +519,7 @@ namespace JSC {
 
             // Rare Constants
             Vector<RefPtr<FuncDeclNode> > m_functions;
-            Vector<JSValuePtr> m_unexpectedConstants;
+            Vector<JSValue> m_unexpectedConstants;
             Vector<RefPtr<RegExp> > m_regexps;
 
             // Jump Tables
@@ -542,10 +562,16 @@ namespace JSC {
 
     class EvalCodeBlock : public ProgramCodeBlock {
     public:
-        EvalCodeBlock(ScopeNode* ownerNode, JSGlobalObject* globalObject, PassRefPtr<SourceProvider> sourceProvider)
+        EvalCodeBlock(ScopeNode* ownerNode, JSGlobalObject* globalObject, PassRefPtr<SourceProvider> sourceProvider, int baseScopeDepth)
             : ProgramCodeBlock(ownerNode, EvalCode, globalObject, sourceProvider)
+            , m_baseScopeDepth(baseScopeDepth)
         {
         }
+
+        int baseScopeDepth() const { return m_baseScopeDepth; }
+
+    private:
+        int m_baseScopeDepth;
     };
 
 } // namespace JSC

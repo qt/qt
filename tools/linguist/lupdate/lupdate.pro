@@ -14,9 +14,20 @@ build_all:!build_pass {
 
 include(../shared/formats.pri)
 include(../shared/proparser.pri)
-include(../shared/translatortools.pri)
 
-SOURCES += main.cpp
+SOURCES += \
+    main.cpp \
+    merge.cpp \
+    ../shared/simtexth.cpp \
+    \
+    cpp.cpp \
+    java.cpp \
+    qscript.cpp \
+    ui.cpp
+
+HEADERS += \
+    lupdate.h \
+    ../shared/simtexth.h
 
 DEFINES += QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_ASCII
 

@@ -156,6 +156,9 @@ private Q_SLOTS:
     void setFocusQIODeviceAvoidVariableClash() const;
     void setFocusQIODeviceFailure() const;
     void setFocusQIODeviceTriggerWarnings() const;
+    void setFocusQString() const;
+    void setFocusQStringFailure() const;
+    void setFocusQStringSignature() const;
     void recompilationWithEvaluateToResultFailing() const;
     void secondEvaluationWithEvaluateToResultFailing() const;
     void recompilationWithEvaluateToReceiver() const;
@@ -1893,6 +1896,55 @@ void tst_QXmlQuery::setFocusQIODeviceFailure() const
 
         QCOMPARE(query.setFocus(&input), false);
     }
+}
+
+void tst_QXmlQuery::setFocusQString() const
+{
+    QXmlQuery query;
+
+    /* Basic use of focus. */
+    {
+        QVERIFY(query.setFocus(QLatin1String("<e>textNode</e>")));
+        query.setQuery(QLatin1String("string()"));
+        QVERIFY(query.isValid());
+        QString out;
+        query.evaluateTo(&out);
+        QCOMPARE(out, QString::fromLatin1("textNode\n"));
+    }
+
+    /* Set to a new focus, make sure it changes and works. */
+    {
+        QVERIFY(query.setFocus(QLatin1String("<e>newFocus</e>")));
+        QString out;
+        query.evaluateTo(&out);
+        QCOMPARE(out, QString::fromLatin1("newFocus\n"));
+    }
+}
+
+void tst_QXmlQuery::setFocusQStringFailure() const
+{
+    QXmlQuery query;
+    MessageSilencer silencer;
+
+    query.setMessageHandler(&silencer);
+    QVERIFY(!query.setFocus(QLatin1String("<notWellformed")));
+
+    /* Let's try the slight special case of a null string. */
+    QVERIFY(!query.setFocus(QString()));
+}
+
+void tst_QXmlQuery::setFocusQStringSignature() const
+{
+    QXmlQuery query;
+    MessageSilencer silencer;
+    query.setMessageHandler(&silencer);
+
+    const QString argument;
+    /* We should take a const ref. */
+    query.setFocus(argument);
+
+    /* We should return a bool. */
+    static_cast<bool>(query.setFocus(QString()));
 }
 
 void tst_QXmlQuery::setFocusQIODeviceTriggerWarnings() const

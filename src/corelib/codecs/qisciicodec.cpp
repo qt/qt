@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 
 struct Codecs {
-    const char *name;
+    const char name[10];
     ushort base;
 };
 
@@ -186,8 +186,7 @@ QByteArray QIsciiCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     }
     int invalid = 0;
 
-    QByteArray result;
-    result.resize(2*len); //worst case
+    QByteArray result(2 * len, Qt::Uninitialized); //worst case
 
     uchar *ch = reinterpret_cast<uchar *>(result.data());
 
@@ -249,8 +248,7 @@ QString QIsciiCodec::convertToUnicode(const char* chars, int len, ConverterState
         halant = state->state_data[0];
     }
 
-    QString result;
-    result.resize(len);
+    QString result(len, Qt::Uninitialized);
     QChar *uc = result.data();
 
     const int base = codecs[idx].base;

@@ -41,8 +41,8 @@
 
 #include <QtGui>
 
-QT_BEGIN_NAMESPACE
 class QWebView;
+QT_BEGIN_NAMESPACE
 class QLineEdit;
 QT_END_NAMESPACE
 

@@ -97,8 +97,6 @@ tst_Bic::tst_Bic()
     bic.addBlacklistedClass(QLatin1String("QTypeInfo<*>"));
     bic.addBlacklistedClass(QLatin1String("QMetaTypeId<*>"));
     bic.addBlacklistedClass(QLatin1String("QVector<QGradientStop>*"));
-    bic.addBlacklistedClass(QLatin1String("QMap<*>::iterator"));
-    bic.addBlacklistedClass(QLatin1String("QMap<*>::Node"));
 
     /* this guy is never instantiated, just for compile-time checking */
     bic.addBlacklistedClass(QLatin1String("QMap<*>::PayloadNode"));
@@ -160,52 +158,55 @@ void tst_Bic::sizesAndVTables_data()
     QSKIP("Test not implemented for this compiler/platform", SkipAll);
 #else
 
-    int major = QT_VERSION >> 16;
-    if (major != 4) {
-        QFAIL("This test is for Qt 4");
-    }
-    int minor = (QT_VERSION & 0x00FF00) >> 8;
-    int patch = (QT_VERSION & 0x0000FF);
+    QString archFileName400;
+    QString archFileName410;
+    QString archFileName420;
+    QString archFileName430;
 
-    // Test every Qt 4 version up to this minor version.
-    typedef QPair<QString,bool> VersionPair;
-    QList<VersionPair> versions;
-    for (int i = 0; i <= minor; ++i) {
-        bool isPatchRelease = (i == minor && patch);
-        versions << qMakePair(QString("%1.%2").arg(major).arg(i), isPatchRelease);
-    }
-
-    QString arch;
 #if defined Q_OS_LINUX && defined Q_WS_X11
 # if defined(__powerpc__) && !defined(__powerpc64__)
-    arch = "linux-gcc-ppc32";
+    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-ppc32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.linux-gcc-ppc32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.linux-gcc-ppc32.txt";
 # elif defined(__amd64__)
-    arch = "linux-gcc-amd64";
+    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-amd64.txt";
 # elif defined(__i386__)
-    arch = "linux-gcc-ia32";
+    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-ia32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.linux-gcc-ia32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.linux-gcc-ia32.txt";
+    archFileName430 = SRCDIR "data/%1.4.3.0.linux-gcc-ia32.txt";
 # endif
 #elif defined Q_OS_AIX
-    if (sizeof(void*) == 4) {
-        arch = "aix-gcc-power32";
-    }
+    if (sizeof(void*) == 4)
+        archFileName400 = SRCDIR "data/%1.4.0.0.aix-gcc-power32.txt";
 #elif defined Q_OS_MAC && defined(__powerpc__)
-    arch = "macx-gcc-ppc32";
+    archFileName400 = SRCDIR "data/%1.4.0.0.macx-gcc-ppc32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.macx-gcc-ppc32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.macx-gcc-ppc32.txt";
 #elif defined Q_OS_MAC && defined(__i386__)
-    arch = "macx-gcc-ia32";
+    archFileName410 = SRCDIR "data/%1.4.1.0.macx-gcc-ia32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.macx-gcc-ia32.txt";
 #elif defined Q_OS_WIN && defined Q_CC_GNU
-    arch = "win32-gcc-ia32";
+    archFileName410 = SRCDIR "data/%1.4.1.0.win32-gcc-ia32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.win32-gcc-ia32.txt";
 #endif
 
-    if (arch.isEmpty())
-        QSKIP("No reference files found for this arch", SkipAll);
+    if (archFileName400.isEmpty() && archFileName410.isEmpty()
+        && archFileName420.isEmpty())
+        QSKIP("No reference files found for this platform", SkipAll);
+
+    bool isPatchRelease400 = false;
+    bool isPatchRelease410 = false;
+    bool isPatchRelease420 = false;
+    bool isPatchRelease430 = false;
 
     QTest::addColumn<QString>("oldLib");
     QTest::addColumn<bool>("isPatchRelease");
 
-    foreach (VersionPair const& version, versions) {
-        QString archFileName = QString("data/%3.%1.0.%2.txt").arg(version.first).arg(arch);
-        QTest::newRow(qPrintable(version.first)) << archFileName << version.second;
-    }
+    QTest::newRow("4.0") << archFileName400 << isPatchRelease400;
+    QTest::newRow("4.1") << archFileName410 << isPatchRelease410;
+    QTest::newRow("4.2") << archFileName420 << isPatchRelease420;
+    QTest::newRow("4.3") << archFileName430 << isPatchRelease430;
 #endif
 }
 
@@ -292,6 +293,7 @@ void tst_Bic::sizesAndVTables()
 
     bool isFailed = false;
 
+    qDebug() << oldLib.arg(libName);
     if (oldLib.isEmpty() || !QFile::exists(oldLib.arg(libName)))
         QSKIP("No platform spec found for this platform/version.", SkipSingle);
 

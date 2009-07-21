@@ -19,21 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLMarqueeElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLMarqueeElement.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLMarqueeElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLMarqueeElement);
 
 /* Hash table */
 
@@ -75,7 +71,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -133,18 +129,19 @@ bool JSHTMLMarqueeElement::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSHTMLMarqueeElement, Base>(exec, &JSHTMLMarqueeElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLMarqueeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLMarqueeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLMarqueeElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSHTMLMarqueeElement::getConstructor(ExecState* exec)
+JSValue JSHTMLMarqueeElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLMarqueeElementConstructor>(exec);
 }
 
-JSValuePtr jsHTMLMarqueeElementPrototypeFunctionStart(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLMarqueeElementPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLMarqueeElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLMarqueeElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMarqueeElement* castedThisObj = static_cast<JSHTMLMarqueeElement*>(asObject(thisValue));
     HTMLMarqueeElement* imp = static_cast<HTMLMarqueeElement*>(castedThisObj->impl());
@@ -153,9 +150,10 @@ JSValuePtr jsHTMLMarqueeElementPrototypeFunctionStart(ExecState* exec, JSObject*
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLMarqueeElementPrototypeFunctionStop(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLMarqueeElementPrototypeFunctionStop(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLMarqueeElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLMarqueeElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMarqueeElement* castedThisObj = static_cast<JSHTMLMarqueeElement*>(asObject(thisValue));
     HTMLMarqueeElement* imp = static_cast<HTMLMarqueeElement*>(castedThisObj->impl());

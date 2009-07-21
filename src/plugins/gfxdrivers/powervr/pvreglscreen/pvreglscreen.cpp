@@ -104,7 +104,7 @@ bool PvrEglScreen::connect(const QString &displaySpec)
             break;
 	case PVR2D_ARGB8888:
             d = 32;
-            setPixelFormat(QImage::Format_ARGB32);
+            setPixelFormat(QImage::Format_ARGB32_Premultiplied);
             break;
         default:
             pvrQwsDisplayClose();

@@ -30,8 +30,7 @@
 
 namespace WebCore {
 
-class HTMLBodyElement : public HTMLElement
-{
+class HTMLBodyElement : public HTMLElement {
 public:
     HTMLBodyElement(const QualifiedName&, Document*);
     ~HTMLBodyElement();
@@ -61,19 +60,47 @@ public:
     String vLink() const;
     void setVLink(const String&);
 
-    int scrollLeft() const;
-    void setScrollLeft(int scrollLeft);
+    // Event handler attributes
+    virtual EventListener* onblur() const;
+    virtual void setOnblur(PassRefPtr<EventListener>);
+    virtual EventListener* onerror() const;
+    virtual void setOnerror(PassRefPtr<EventListener>);
+    virtual EventListener* onfocus() const;
+    virtual void setOnfocus(PassRefPtr<EventListener>);
+    virtual EventListener* onload() const;
+    virtual void setOnload(PassRefPtr<EventListener>);
+
+    EventListener* onbeforeunload() const;
+    void setOnbeforeunload(PassRefPtr<EventListener>);
+    EventListener* onmessage() const;
+    void setOnmessage(PassRefPtr<EventListener>);
+    EventListener* onoffline() const;
+    void setOnoffline(PassRefPtr<EventListener>);
+    EventListener* ononline() const;
+    void setOnonline(PassRefPtr<EventListener>);
+    EventListener* onresize() const;
+    void setOnresize(PassRefPtr<EventListener>);
+    EventListener* onstorage() const;
+    void setOnstorage(PassRefPtr<EventListener>);
+    EventListener* onunload() const;
+    void setOnunload(PassRefPtr<EventListener>);
+
+    virtual int scrollLeft() const;
+    virtual void setScrollLeft(int scrollLeft);
     
-    int scrollTop() const;
-    void setScrollTop(int scrollTop);
+    virtual int scrollTop() const;
+    virtual void setScrollTop(int scrollTop);
     
-    int scrollHeight() const;
-    int scrollWidth() const;
+    virtual int scrollHeight() const;
+    virtual int scrollWidth() const;
     
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
     
 protected:
     RefPtr<CSSMutableStyleDeclaration> m_linkDecl;
+
+private:
+    virtual void didMoveToNewOwnerDocument();
 };
 
 } //namespace

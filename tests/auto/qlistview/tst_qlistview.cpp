@@ -54,6 +54,7 @@
 #include <math.h>
 #include <QtGui/QScrollBar>
 #include <QtGui/QDialog>
+#include <QtGui/QStyledItemDelegate>
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #include <windows.h>
 #endif
@@ -108,6 +109,9 @@ private slots:
     void task228566_infiniteRelayout();
     void task248430_crashWith0SizedItem();
     void task250446_scrollChanged();
+    void task196118_visualRegionForSelection();
+    void task254449_draggingItemToNegativeCoordinates();
+    void keyboardSearch();
 };
 
 // Testing get/set functions
@@ -1557,6 +1561,102 @@ void tst_QListView::task250446_scrollChanged()
     QCOMPARE(view.currentIndex(), index);
 }
 
+void tst_QListView::task196118_visualRegionForSelection()
+{
+    class MyListView : public QListView
+    {
+    public:
+        QRegion visualRegionForSelection() const
+        { return QListView::visualRegionForSelection( selectionModel()->selection()); }
+    } view;
+
+    QStandardItemModel model;
+    QStandardItem top1("top1");
+    QStandardItem sub1("sub1");
+    top1.appendRow(QList<QStandardItem*>() << &sub1);
+    model.appendColumn(QList<QStandardItem*>() << &top1);
+    view.setModel(&model);
+    view.setRootIndex(top1.index());
+
+    view.selectionModel()->select(top1.index(), QItemSelectionModel::Select);
+
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QVERIFY(view.visualRegionForSelection().isEmpty());
+}
+
+void tst_QListView::task254449_draggingItemToNegativeCoordinates()
+{
+    //we'll check that the items are painted correctly
+    class MyListView : public QListView
+    {
+    public:
+        void setPositionForIndex(const QPoint &position, const QModelIndex &index)
+        { QListView::setPositionForIndex(position, index); }
+
+    } list;
+
+    QStandardItemModel model(1,1);
+    QModelIndex index = model.index(0,0);
+    model.setData(index, QLatin1String("foo"));
+    list.setModel(&model);
+    list.setViewMode(QListView::IconMode);
+    list.show();
+    QTest::qWait(200); //makes sure the layout is done
+
+    const QPoint topLeft(-6, 0);
+
+
+    list.setPositionForIndex(topLeft, index);
+
+    class MyItemDelegate : public QStyledItemDelegate
+    {
+    public:
+        MyItemDelegate() : numPaints(0) { }
+        void paint(QPainter *painter,
+               const QStyleOptionViewItem &option, const QModelIndex &index) const
+        {
+            numPaints++;
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+
+        mutable int numPaints;
+    } delegate;
+
+    list.setItemDelegate(&delegate);
+
+    //we'll make sure the item is repainted
+    delegate.numPaints = 0;
+    list.viewport()->repaint();
+
+    QCOMPARE(list.visualRect(index).topLeft(), topLeft); 
+    QCOMPARE(delegate.numPaints, 1); 
+}
+
+
+void tst_QListView::keyboardSearch()
+{
+    QStringList items;
+    items << "AB" << "AC" << "BA" << "BB" << "BD" << "KAFEINE" << "KONQUEROR" << "KOPETE" << "KOOKA" << "OKULAR";
+    QStringListModel model(items);
+
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(30);
+//    QCOMPARE(view.currentIndex() , model.index(0,0));
+
+    QTest::keyClick(&view, Qt::Key_K);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(5,0)); //KAFEINE
+
+    QTest::keyClick(&view, Qt::Key_O);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+
+    QTest::keyClick(&view, Qt::Key_N);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

@@ -461,10 +461,10 @@ static const char * const tis_620locales[] = {
 // static const char * const tcvnlocales[] = {
 //     "vi", "vi_VN", 0 };
 
-static bool try_locale_list(const char * const locale[], const char * lang)
+static bool try_locale_list(const char * const locale[], const QByteArray &lang)
 {
     int i;
-    for(i=0; locale[i] && *locale[i] && strcmp(locale[i], lang); i++)
+    for(i=0; locale[i] && lang != locale[i]; i++)
         ;
     return locale[i] != 0;
 }
@@ -516,13 +516,12 @@ static QTextCodec * ru_RU_hack(const char * i) {
 #endif
 
 #if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
-static QTextCodec *checkForCodec(const char *name) {
+static QTextCodec *checkForCodec(const QByteArray &name) {
     QTextCodec *c = QTextCodec::codecForName(name);
     if (!c) {
-        const char *at = strchr(name, '@');
-        if (at) {
-            QByteArray n(name, at - name);
-            c = QTextCodec::codecForName(n.data());
+        const int index = name.indexOf('@');
+        if (index != -1) {
+            c = QTextCodec::codecForName(name.left(index));
         }
     }
     return c;
@@ -563,21 +562,19 @@ static void setupLocaleMapper()
         // definitely knows it, but since we cannot fully trust it, get ready
         // to fall back to environment variables.
 #if !defined(QT_NO_SETLOCALE)
-        char * ctype = qstrdup(setlocale(LC_CTYPE, 0));
+        const QByteArray ctype = setlocale(LC_CTYPE, 0);
 #else
-        char * ctype = qstrdup("");
+        const QByteArray ctype;
 #endif
 
         // Get the first nonempty value from $LC_ALL, $LC_CTYPE, and $LANG
         // environment variables.
-        char * lang = qstrdup(qgetenv("LC_ALL").constData());
-        if (!lang || lang[0] == 0 || strcmp(lang, "C") == 0) {
-            if (lang) delete [] lang;
-            lang = qstrdup(qgetenv("LC_CTYPE").constData());
+        QByteArray lang = qgetenv("LC_ALL");
+        if (lang.isEmpty() || lang == "C") {
+            lang = qgetenv("LC_CTYPE");
         }
-        if (!lang || lang[0] == 0 || strcmp(lang, "C") == 0) {
-            if (lang) delete [] lang;
-            lang = qstrdup(qgetenv("LANG").constData());
+        if (lang.isEmpty() || lang == "C") {
+            lang = qgetenv("LANG");
         }
 
         // Now try these in order:
@@ -590,35 +587,35 @@ static void setupLocaleMapper()
         // 7. guess locale from lang
 
         // 1. CODESET from ctype if it contains a .CODESET part (e.g. en_US.ISO8859-15)
-        char * codeset = ctype ? strchr(ctype, '.') : 0;
-        if (codeset && *codeset == '.')
-            localeMapper = checkForCodec(codeset + 1);
+        int indexOfDot = ctype.indexOf('.');
+        if (indexOfDot != -1)
+            localeMapper = checkForCodec( ctype.mid(indexOfDot + 1) );
 
         // 2. CODESET from lang if it contains a .CODESET part
-        codeset = lang ? strchr(lang, '.') : 0;
-        if (!localeMapper && codeset && *codeset == '.')
-            localeMapper = checkForCodec(codeset + 1);
+        if (!localeMapper) {
+            indexOfDot = lang.indexOf('.');
+            if (indexOfDot != -1)
+                localeMapper = checkForCodec( lang.mid(indexOfDot + 1) );
+        }
 
         // 3. ctype (maybe the locale is named "ISO-8859-1" or something)
-        if (!localeMapper && ctype && *ctype != 0 && strcmp (ctype, "C") != 0)
+        if (!localeMapper && !ctype.isEmpty() && ctype != "C")
             localeMapper = checkForCodec(ctype);
 
         // 4. locale (ditto)
-        if (!localeMapper && lang && *lang != 0)
+        if (!localeMapper && !lang.isEmpty())
             localeMapper = checkForCodec(lang);
 
         // 5. "@euro"
-        if ((!localeMapper && ctype && strstr(ctype, "@euro")) || (lang && strstr(lang, "@euro")))
+        if ((!localeMapper && ctype.contains("@euro")) || lang.contains("@euro"))
             localeMapper = checkForCodec("ISO 8859-15");
 
         // 6. guess locale from ctype unless ctype is "C"
         // 7. guess locale from lang
-        char * try_by_name = ctype;
-        if (ctype && *ctype != 0 && strcmp (ctype, "C") != 0)
-            try_by_name = lang;
+        const QByteArray &try_by_name = (!ctype.isEmpty() && ctype != "C") ? lang : ctype;
 
         // Now do the guessing.
-        if (lang && *lang && !localeMapper && try_by_name && *try_by_name) {
+        if (!lang.isEmpty() && !localeMapper && !try_by_name.isEmpty()) {
             if (try_locale_list(iso8859_15locales, lang))
                 localeMapper = QTextCodec::codecForName("ISO 8859-15");
             else if (try_locale_list(iso8859_2locales, lang))
@@ -651,8 +648,6 @@ static void setupLocaleMapper()
                 localeMapper = ru_RU_hack(lang);
         }
 
-        delete [] ctype;
-        delete [] lang;
     }
 
     // If everything failed, we default to 8859-1
@@ -1525,9 +1520,14 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
 /*!
     \since 4.4
 
-    Tries to detect the encoding of the provided snippet of HTML in the given byte array, \a ba,
-    and returns a QTextCodec instance that is capable of decoding the html to unicode.
-    If the codec cannot be detected from the content provided, \a defaultCodec is returned.
+    Tries to detect the encoding of the provided snippet of HTML in
+    the given byte array, \a ba, by checking the BOM (Byte Order Mark)
+    and the content-type meta header and returns a QTextCodec instance
+    that is capable of decoding the html to unicode.  If the codec
+    cannot be detected from the content provided, \a defaultCodec is
+    returned.
+
+    \sa codecForUtfText()
 */
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec)
 {
@@ -1535,15 +1535,8 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
     int pos;
     QTextCodec *c = 0;
 
-    if (ba.size() > 1 && (((uchar)ba[0] == 0xfe && (uchar)ba[1] == 0xff)
-                          || ((uchar)ba[0] == 0xff && (uchar)ba[1] == 0xfe))) {
-        c = QTextCodec::codecForMib(1015); // utf16
-    } else if (ba.size() > 2
-             && (uchar)ba[0] == 0xef
-             && (uchar)ba[1] == 0xbb
-             && (uchar)ba[2] == 0xbf) {
-        c = QTextCodec::codecForMib(106); // utf-8
-    } else {
+    c = QTextCodec::codecForUtfText(ba, c);
+    if (!c) {
         QByteArray header = ba.left(512).toLower();
         if ((pos = header.indexOf("http-equiv=")) != -1) {
             pos = header.indexOf("charset=", pos) + int(strlen("charset="));
@@ -1569,6 +1562,61 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 {
     return codecForHtml(ba, QTextCodec::codecForMib(/*Latin 1*/ 4));
+}
+
+/*!
+    \since 4.6
+
+    Tries to detect the encoding of the provided snippet \a ba by
+    using the BOM (Byte Order Mark) and returns a QTextCodec instance
+    that is capable of decoding the text to unicode.  If the codec
+    cannot be detected from the content provided, \a defaultCodec is
+    returned.
+
+    \sa codecForHtml()
+*/
+QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec)
+{
+    const int arraySize = ba.size();
+
+    if (arraySize > 3) {
+        if ((uchar)ba[0] == 0x00
+            && (uchar)ba[1] == 0x00
+            && (uchar)ba[2] == 0xFE
+            && (uchar)ba[3] == 0xFF)
+            return QTextCodec::codecForMib(1018); // utf-32 be
+        else if ((uchar)ba[0] == 0xFF
+                 && (uchar)ba[1] == 0xFE
+                 && (uchar)ba[2] == 0x00
+                 && (uchar)ba[3] == 0x00)
+            return QTextCodec::codecForMib(1019); // utf-32 le
+    }
+
+    if (arraySize < 2)
+        return defaultCodec;
+    if ((uchar)ba[0] == 0xfe && (uchar)ba[1] == 0xff)
+        return QTextCodec::codecForMib(1013); // utf16 be
+    else if ((uchar)ba[0] == 0xff && (uchar)ba[1] == 0xfe)
+        return QTextCodec::codecForMib(1014); // utf16 le
+
+    if (arraySize < 3)
+        return defaultCodec;
+    if ((uchar)ba[0] == 0xef
+        && (uchar)ba[1] == 0xbb
+        && (uchar)ba[2] == 0xbf)
+        return QTextCodec::codecForMib(106); // utf-8
+
+    return defaultCodec;
+}
+
+/*!
+  \overload
+
+  If the codec cannot be detected, this overload returns a Latin-1 QTextCodec.
+*/
+QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba)
+{
+    return codecForUtfText(ba, QTextCodec::codecForMib(/*Latin 1*/ 4));
 }
 
 

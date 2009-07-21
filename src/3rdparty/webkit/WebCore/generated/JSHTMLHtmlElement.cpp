@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLHtmlElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLHtmlElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLHtmlElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLHtmlElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,28 +124,29 @@ bool JSHTMLHtmlElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSHTMLHtmlElement, Base>(exec, &JSHTMLHtmlElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLHtmlElementVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHtmlElementVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLHtmlElement* imp = static_cast<HTMLHtmlElement*>(static_cast<JSHTMLHtmlElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->version());
 }
 
-JSValuePtr jsHTMLHtmlElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHtmlElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLHtmlElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLHtmlElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLHtmlElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLHtmlElement, Base>(exec, propertyName, value, &JSHTMLHtmlElementTable, this, slot);
 }
 
-void setJSHTMLHtmlElementVersion(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLHtmlElementVersion(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLHtmlElement* imp = static_cast<HTMLHtmlElement*>(static_cast<JSHTMLHtmlElement*>(thisObject)->impl());
     imp->setVersion(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLHtmlElement::getConstructor(ExecState* exec)
+JSValue JSHTMLHtmlElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLHtmlElementConstructor>(exec);
 }

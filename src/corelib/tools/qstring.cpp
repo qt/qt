@@ -195,6 +195,68 @@ static int ucstrnicmp(const ushort *a, const ushort *b, int l)
     return ucstricmp(a, a + l, b, b + l);
 }
 
+static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
+{
+    // Benchmarking indicates that doing memcmp is much slower than
+    // executing the comparison ourselves.
+    // To make it even faster, we do a 32-bit comparison, comparing
+    // twice the amount of data as a normal word-by-word comparison.
+    //
+    // Benchmarking results on a 2.33 GHz Core2 Duo, with a 64-QChar
+    // block of data, with 4194304 iterations (per iteration):
+    //    operation             usec            cpu ticks
+    //     memcmp                330               710
+    //     16-bit                 79             167-171
+    //  32-bit aligned            49             105-109
+    //
+    // Testing also indicates that unaligned 32-bit loads are as
+    // performant as 32-bit aligned.
+    if (a == b || !length)
+        return true;
+
+    register union {
+        const quint16 *w;
+        const quint32 *d;
+        quintptr value;
+    } sa, sb;
+    sa.w = a;
+    sb.w = b;
+
+    // check alignment
+    if ((sa.value & 2) == (sb.value & 2)) {
+        // both addresses have the same alignment
+        if (sa.value & 2) {
+            // both addresses are not aligned to 4-bytes boundaries
+            // compare the first character
+            if (*sa.w != *sb.w)
+                return false;
+            --length;
+            ++sa.w;
+            ++sb.w;
+
+            // now both addresses are 4-bytes aligned
+        }
+
+        // both addresses are 4-bytes aligned
+        // do a fast 32-bit comparison
+        register const quint32 *e = sa.d + (length >> 1);
+        for ( ; sa.d != e; ++sa.d, ++sb.d) {
+            if (*sa.d != *sb.d)
+                return false;
+        }
+
+        // do we have a tail?
+        return (length & 1) ? *sa.w == *sb.w : true;
+    } else {
+        // one of the addresses isn't 4-byte aligned but the other is
+        register const quint16 *e = sa.w + length;
+        for ( ; sa.w != e; ++sa.w, ++sb.w) {
+            if (*sa.w != *sb.w)
+                return false;
+        }
+    }
+    return true;
+}
 
 /*!
     \internal
@@ -601,6 +663,74 @@ const QString::Null QString::null = { };
     formats, the \e precision represents the maximum number of
     significant digits (trailing zeroes are omitted).
 
+    \section1 More Efficient String Construction 
+
+    Using the QString \c{'+'} operator, it is easy to construct a
+    complex string from multiple substrings. You will often write code
+    like this:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 0
+
+    There is nothing wrong with either of these string constructions,
+    but there are a few hidden inefficiencies. Beginning with Qt 4.6,
+    you can eliminate them.
+
+    First, multiple uses of the \c{'+'} operator usually means
+    multiple memory allocations. When concatenating \e{n} substrings,
+    where \e{n > 2}, there can be as many as \e{n - 1} calls to the
+    memory allocator.
+
+    Second, QLatin1String does not store its length internally but
+    calls qstrlen() when it needs to know its length.
+
+    In 4.6, an internal template class \c{QStringBuilder} has been
+    added along with a few helper functions. This class is marked
+    internal and does not appear in the documentation, because you
+    aren't meant to instantiate it in your code. Its use will be
+    automatic, as described below. The class is found in
+    \c {src/corelib/tools/qstringbuilder.cpp} if you want to have a
+    look at it.
+
+    \c{QStringBuilder} uses expression templates and reimplements the
+    \c{'%'} operator so that when you use \c{'%'} for string
+    concatenation instead of \c{'+'}, multiple substring
+    concatenations will be postponed until the final result is about
+    to be assigned to a QString. At this point, the amount of memory
+    required for the final result is known. The memory allocator is
+    then called \e{once} to get the required space, and the substrings
+    are copied into it one by one.
+
+    \c{QLatin1Literal} is a second internal class that can replace
+    QLatin1String, which can't be changed for compatibility reasons.
+    \c{QLatin1Literal} stores its length, thereby saving time when
+    \c{QStringBuilder} computes the amount of memory required for the
+    final string.
+
+    Additional efficiency is gained by inlining and reduced reference
+    counting (the QString created from a \c{QStringBuilder} typically
+    has a ref count of 1, whereas QString::append() needs an extra
+    test).
+
+    There are three ways you can access this improved method of string
+    construction. The straightforward way is to include
+    \c{QStringBuilder} wherever you want to use it, and use the
+    \c{'%'} operator instead of \c{'+'} when concatenating strings:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 5
+
+    A more global approach is to include this define:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 3
+
+    and use \c{'%'} instead of \c{'+'} for string concatenation
+    everywhere. The third approach, which is the most convenient but
+    not entirely source compatible, is to include two defines:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 4
+
+    and the \c{'+'} will automatically be performed as the
+    \c{QStringBuilder} \c{'%'} everywhere.
+
     \sa fromRawData(), QChar, QLatin1String, QByteArray, QStringRef
 */
 
@@ -882,6 +1012,22 @@ QString::QString(int size, QChar ch)
         while (i != b)
            *--i = value;
     }
+}
+
+/*! \fn QString::QString(int size, Qt::Initialization)
+  \internal
+
+  Constructs a string of the given \a size without initializing the
+  characters. This is only used in \c QStringBuilder::toString().
+*/
+QString::QString(int size, Qt::Initialization)
+{
+    d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+    d->ref = 1;
+    d->alloc = d->size = size;
+    d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+    d->data = d->array;
+    d->array[size] = '\0';
 }
 
 /*! \fn QString::QString(const QLatin1String &str)
@@ -1910,8 +2056,10 @@ QString &QString::replace(QChar c, const QLatin1String &after, Qt::CaseSensitivi
 */
 bool QString::operator==(const QString &other) const
 {
-    return (size() == other.size()) &&
-        (memcmp((char*)unicode(),(char*)other.unicode(), size()*sizeof(QChar))==0);
+    if (d->size != other.d->size)
+        return false;
+
+    return qMemEquals(d->data, other.d->data, d->size);
 }
 
 /*!
@@ -3138,7 +3286,7 @@ bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
     if (s.d->size > d->size)
         return false;
     if (cs == Qt::CaseSensitive) {
-        return memcmp((char*)d->data, (char*)s.d->data, s.d->size*sizeof(QChar)) == 0;
+        return qMemEquals(d->data, s.d->data, s.d->size);
     } else {
         uint last = 0;
         uint olast = 0;
@@ -3209,7 +3357,7 @@ bool QString::endsWith(const QString& s, Qt::CaseSensitivity cs) const
     if (pos < 0)
         return false;
     if (cs == Qt::CaseSensitive) {
-        return memcmp((char*)&d->data[pos], (char*)s.d->data, s.d->size*sizeof(QChar)) == 0;
+        return qMemEquals(d->data + pos, s.d->data, s.d->size);
     } else {
         uint last = 0;
         uint olast = 0;
@@ -3703,8 +3851,7 @@ QString QString::fromUtf8(const char *str, int size)
     if (size < 0)
         size = qstrlen(str);
 
-    QString result;
-    result.resize(size); // worst case
+    QString result(size, Qt::Uninitialized); // worst case
     ushort *qch = result.d->data;
     uint uc = 0;
     uint min_uc = 0;
@@ -3819,8 +3966,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
             ++size;
     }
 
-    QString s;
-    s.resize(size*2); // worst case
+    QString s(size * 2, Qt::Uninitialized); // worst case
     ushort *uc = s.d->data;
     for (int i = 0; i < size; ++i) {
         uint u = unicode[i];
@@ -3883,8 +4029,7 @@ QString QString::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QString result;
-    result.resize(d->size);
+    QString result(d->size, Qt::Uninitialized);
     const QChar *from = (const QChar*) d->data;
     const QChar *fromend = (const QChar*) from+d->size;
     int outc=0;
@@ -4736,8 +4881,7 @@ QString QString::toLower() const
             c = QChar::surrogateToUcs4(*(p - 1), c);
         const QUnicodeTables::Properties *prop = qGetProp(c);
         if (prop->lowerCaseDiff || prop->lowerCaseSpecial) {
-            QString s;
-            s.resize(d->size);
+            QString s(d->size, Qt::Uninitialized);
             memcpy(s.d->data, d->data, (p - d->data)*sizeof(ushort));
             ushort *pp = s.d->data + (p - d->data);
             while (p < e) {
@@ -4828,8 +4972,7 @@ QString QString::toUpper() const
             c = QChar::surrogateToUcs4(*(p - 1), c);
         const QUnicodeTables::Properties *prop = qGetProp(c);
         if (prop->upperCaseDiff || prop->upperCaseSpecial) {
-            QString s;
-            s.resize(d->size);
+            QString s(d->size, Qt::Uninitialized);
             memcpy(s.d->data, d->data, (p - d->data)*sizeof(ushort));
             ushort *pp = s.d->data + (p - d->data);
             while (p < e) {
@@ -6126,8 +6269,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
                      + d.locale_occurrences
                      *qMax(abs_field_width, larg.length());
 
-    QString result;
-    result.resize(result_len);
+    QString result(result_len, Qt::Uninitialized);
     QChar *result_buff = (QChar*) result.unicode();
 
     QChar *rc = result_buff;
@@ -7696,7 +7838,8 @@ QString QStringRef::toString() const {
 */
 bool operator==(const QStringRef &s1,const QStringRef &s2)
 { return (s1.size() == s2.size() &&
-          (memcmp((char*)s1.unicode(), (char*)s2.unicode(), s1.size()*sizeof(QChar))==0)); }
+          qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
+}
 
 /*! \relates QStringRef
 
@@ -7705,7 +7848,8 @@ bool operator==(const QStringRef &s1,const QStringRef &s2)
 */
 bool operator==(const QString &s1,const QStringRef &s2)
 { return (s1.size() == s2.size() &&
-          (memcmp((char*)s1.unicode(), (char*)s2.unicode(), s1.size()*sizeof(QChar))==0)); }
+          qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
+}
 
 /*! \relates QStringRef
 

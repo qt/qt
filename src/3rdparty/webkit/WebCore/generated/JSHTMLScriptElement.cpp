@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLScriptElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLScriptElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLScriptElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLScriptElement);
 
 /* Hash table */
 
@@ -83,7 +79,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -134,100 +130,107 @@ bool JSHTMLScriptElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSHTMLScriptElement, Base>(exec, &JSHTMLScriptElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLScriptElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->text());
 }
 
-JSValuePtr jsHTMLScriptElementHtmlFor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementHtmlFor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->htmlFor());
 }
 
-JSValuePtr jsHTMLScriptElementEvent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementEvent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->event());
 }
 
-JSValuePtr jsHTMLScriptElementCharset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementCharset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->charset());
 }
 
-JSValuePtr jsHTMLScriptElementDefer(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementDefer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->defer());
 }
 
-JSValuePtr jsHTMLScriptElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->src());
 }
 
-JSValuePtr jsHTMLScriptElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsHTMLScriptElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLScriptElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLScriptElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLScriptElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLScriptElement, Base>(exec, propertyName, value, &JSHTMLScriptElementTable, this, slot);
 }
 
-void setJSHTMLScriptElementText(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLScriptElementText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(thisObject)->impl());
     imp->setText(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLScriptElementHtmlFor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLScriptElementHtmlFor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(thisObject)->impl());
     imp->setHtmlFor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLScriptElementEvent(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLScriptElementEvent(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(thisObject)->impl());
     imp->setEvent(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLScriptElementCharset(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLScriptElementCharset(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(thisObject)->impl());
     imp->setCharset(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLScriptElementDefer(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLScriptElementDefer(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(thisObject)->impl());
-    imp->setDefer(value->toBoolean(exec));
+    imp->setDefer(value.toBoolean(exec));
 }
 
-void setJSHTMLScriptElementSrc(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLScriptElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(thisObject)->impl());
     imp->setSrc(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLScriptElementType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLScriptElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLScriptElement::getConstructor(ExecState* exec)
+JSValue JSHTMLScriptElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLScriptElementConstructor>(exec);
 }

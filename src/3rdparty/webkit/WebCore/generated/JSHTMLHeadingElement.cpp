@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLHeadingElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLHeadingElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLHeadingElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLHeadingElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,28 +124,29 @@ bool JSHTMLHeadingElement::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSHTMLHeadingElement, Base>(exec, &JSHTMLHeadingElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLHeadingElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHeadingElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLHeadingElement* imp = static_cast<HTMLHeadingElement*>(static_cast<JSHTMLHeadingElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->align());
 }
 
-JSValuePtr jsHTMLHeadingElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHeadingElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLHeadingElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLHeadingElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLHeadingElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLHeadingElement, Base>(exec, propertyName, value, &JSHTMLHeadingElementTable, this, slot);
 }
 
-void setJSHTMLHeadingElementAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLHeadingElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLHeadingElement* imp = static_cast<HTMLHeadingElement*>(static_cast<JSHTMLHeadingElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLHeadingElement::getConstructor(ExecState* exec)
+JSValue JSHTMLHeadingElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLHeadingElementConstructor>(exec);
 }

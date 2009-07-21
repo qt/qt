@@ -80,6 +80,9 @@ private:
     QTcpSocket *tcpSocket;
     QString currentFortune;
     quint16 blockSize;
+#ifdef Q_OS_SYMBIAN
+    bool isDefaultIapSet;
+#endif
 };
 //! [0]
 

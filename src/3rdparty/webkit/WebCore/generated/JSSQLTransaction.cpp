@@ -20,19 +20,19 @@
 
 #include "config.h"
 
+#if ENABLE(DATABASE)
+
 #include "JSSQLTransaction.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SQLTransaction.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSQLTransaction)
+ASSERT_CLASS_FITS_IN_CELL(JSSQLTransaction);
 
 /* Hash table for prototype */
 
@@ -72,7 +72,6 @@ JSSQLTransaction::JSSQLTransaction(PassRefPtr<Structure> structure, PassRefPtr<S
 JSSQLTransaction::~JSSQLTransaction()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSQLTransaction::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -80,21 +79,24 @@ JSObject* JSSQLTransaction::createPrototype(ExecState* exec, JSGlobalObject* glo
     return new (exec) JSSQLTransactionPrototype(JSSQLTransactionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
-JSValuePtr jsSQLTransactionPrototypeFunctionExecuteSql(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSQLTransactionPrototypeFunctionExecuteSql(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSQLTransaction::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSQLTransaction::s_info))
         return throwError(exec, TypeError);
     JSSQLTransaction* castedThisObj = static_cast<JSSQLTransaction*>(asObject(thisValue));
     return castedThisObj->executeSql(exec, args);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SQLTransaction* object)
+JSC::JSValue toJS(JSC::ExecState* exec, SQLTransaction* object)
 {
     return getDOMObjectWrapper<JSSQLTransaction>(exec, object);
 }
-SQLTransaction* toSQLTransaction(JSC::JSValuePtr value)
+SQLTransaction* toSQLTransaction(JSC::JSValue value)
 {
-    return value->isObject(&JSSQLTransaction::s_info) ? static_cast<JSSQLTransaction*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSQLTransaction::s_info) ? static_cast<JSSQLTransaction*>(asObject(value))->impl() : 0;
 }
 
 }
+
+#endif // ENABLE(DATABASE)

@@ -49,9 +49,17 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
 
 QPixmapData::QPixmapData(PixelType pixelType, int objectId)
-    : ref(0), detach_no(0), type(pixelType), id(objectId), ser_no(0), is_cached(false)
+    : w(0),
+      h(0),
+      d(0),
+      is_null(true),
+      ref(0),
+      detach_no(0),
+      type(pixelType),
+      id(objectId),
+      ser_no(0),
+      is_cached(false)
 {
-
 }
 
 QPixmapData::~QPixmapData()
@@ -71,6 +79,14 @@ void QPixmapData::fromFile(const QString &fileName, const char *format,
 void QPixmapData::copy(const QPixmapData *data, const QRect &rect)
 {
     fromImage(data->toImage().copy(rect), Qt::AutoColor);
+}
+
+bool QPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
+    Q_UNUSED(rect);
+    return false;
 }
 
 void QPixmapData::setMask(const QBitmap &mask)

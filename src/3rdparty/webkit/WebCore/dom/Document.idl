@@ -28,11 +28,11 @@ module core {
         InlineGetOwnPropertySlot,
         InterfaceUUID=48BB95FC-2D08-4c54-BE65-7558736A4CAE,
         ImplementationUUID=FF5CBE81-F817-429c-A6C2-0CCCD2328062
-    ] Document : EventTargetNode {
+    ] Document : Node {
 
         // DOM Level 1 Core
         readonly attribute DocumentType doctype;
-        readonly attribute DOMImplementation implementation;
+        readonly attribute [V8Custom] DOMImplementation implementation;
         readonly attribute Element documentElement;
 
         [ReturnsNew] Element createElement(in [ConvertNullToNullString] DOMString tagName)
@@ -81,7 +81,7 @@ module core {
 
                  attribute [ConvertNullStringTo=Null, ConvertNullToNullString] DOMString documentURI;
 
-#if !defined(LANGUAGE_COM)
+#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
         // DOM Level 2 Events (DocumentEvents interface)
 
         Event              createEvent(in DOMString eventType)
@@ -116,17 +116,17 @@ module core {
 
         [OldStyleObjC] CSSStyleDeclaration getOverrideStyle(in Element element,
                                                             in DOMString pseudoElement);
-#if ENABLE_XPATH
+#if defined(ENABLE_XPATH) && ENABLE_XPATH
         // DOM Level 3 XPath (XPathEvaluator interface)
         [OldStyleObjC] XPathExpression createExpression(in DOMString expression,
                                                         in XPathNSResolver resolver)
             raises(DOMException);
         XPathNSResolver    createNSResolver(in Node nodeResolver);
-        [OldStyleObjC] XPathResult evaluate(in DOMString expression,
-                                            in Node contextNode,
-                                            in XPathNSResolver resolver,
-                                            in unsigned short type,
-                                            in XPathResult inResult)
+        [OldStyleObjC, V8Custom] XPathResult evaluate(in DOMString expression,
+                                                      in Node contextNode,
+                                                      in XPathNSResolver resolver,
+                                                      in unsigned short type,
+                                                      in XPathResult inResult)
             raises(DOMException);
 #endif // ENABLE_XPATH
 #endif // !defined(LANGUAGE_COM)
@@ -137,7 +137,7 @@ module core {
                                        in boolean userInterface,
                                        in [ConvertUndefinedOrNullToNullString] DOMString value);
 
-#if defined(LANGUAGE_OBJECTIVE_C)
+#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
         // FIXME: remove the these two versions once [Optional] is implemented for Objective-C.
         boolean            execCommand(in DOMString command,
                                        in boolean userInterface);
@@ -154,7 +154,7 @@ module core {
 
                  attribute [ConvertNullToNullString] DOMString title;
         readonly attribute DOMString referrer;
-#if defined(LANGUAGE_JAVASCRIPT)
+#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
                  attribute [ConvertNullToNullString] DOMString domain;
 #else
         readonly attribute DOMString domain;
@@ -180,7 +180,7 @@ module core {
 
         NodeList getElementsByName(in DOMString elementName);
 
-#if defined(LANGUAGE_JAVASCRIPT)
+#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
                  attribute [Custom] Location location;
 #endif
 
@@ -193,7 +193,7 @@ module core {
         Element            elementFromPoint(in long x, in long y);
 
         // Mozilla extensions
-#if defined(LANGUAGE_JAVASCRIPT)
+#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
         DOMSelection       getSelection();
 #endif
         readonly attribute [ConvertNullStringTo=Null] DOMString characterSet;
@@ -203,13 +203,13 @@ module core {
         readonly attribute [ConvertNullStringTo=Null] DOMString preferredStylesheetSet;
                  attribute [ConvertNullStringTo=Null, ConvertNullToNullString] DOMString selectedStylesheetSet;
 
-#if !defined(LANGUAGE_COM)
-#if !defined(LANGUAGE_JAVASCRIPT)
+#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
+#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
         CSSStyleDeclaration createCSSStyleDeclaration();
 #endif
 #endif
 
-#if defined(LANGUAGE_OBJECTIVE_C)
+#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
         // DOM Level 2 Style Interface
         [OldStyleObjC, UsesView] CSSStyleDeclaration getComputedStyle(in Element element,
                                                                       in DOMString pseudoElement);
@@ -224,9 +224,9 @@ module core {
                                                   
 #endif
 
-#if !defined(LANGUAGE_COM)
-#if !defined(LANGUAGE_OBJECTIVE_C)
-        DOMObject getCSSCanvasContext(in DOMString contextId, in DOMString name, in long width, in long height);
+#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
+#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
+        [V8Custom] DOMObject getCSSCanvasContext(in DOMString contextId, in DOMString name, in long width, in long height);
 #endif
 #endif
 
@@ -234,14 +234,87 @@ module core {
         NodeList getElementsByClassName(in DOMString tagname);
 
         // NodeSelector - Selector API
-        Element querySelector(in [ConvertUndefinedOrNullToNullString] DOMString selectors)
+        Element querySelector(in DOMString selectors)
             raises(DOMException);
-        NodeList querySelectorAll(in [ConvertUndefinedOrNullToNullString] DOMString selectors)
+        NodeList querySelectorAll(in DOMString selectors)
             raises(DOMException);
 
-#if ENABLE_WML
+#if defined(ENABLE_WML) && ENABLE_WML
         // Only used from within WML layout tests, WML doesn't have JS support at all.
         void resetWMLPageState();
+        void initializeWMLPageState();
+#endif
+
+#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
+#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
+        // Event handler DOM attributes
+        attribute [DontEnum] EventListener onabort;
+        attribute [DontEnum] EventListener onblur;
+        attribute [DontEnum] EventListener onchange;
+        attribute [DontEnum] EventListener onclick;
+        attribute [DontEnum] EventListener oncontextmenu;
+        attribute [DontEnum] EventListener ondblclick;
+        attribute [DontEnum] EventListener ondrag;
+        attribute [DontEnum] EventListener ondragend;
+        attribute [DontEnum] EventListener ondragenter;
+        attribute [DontEnum] EventListener ondragleave;
+        attribute [DontEnum] EventListener ondragover;
+        attribute [DontEnum] EventListener ondragstart;
+        attribute [DontEnum] EventListener ondrop;
+        attribute [DontEnum] EventListener onerror;
+        attribute [DontEnum] EventListener onfocus;
+        attribute [DontEnum] EventListener oninput;
+        attribute [DontEnum] EventListener onkeydown;
+        attribute [DontEnum] EventListener onkeypress;
+        attribute [DontEnum] EventListener onkeyup;
+        attribute [DontEnum] EventListener onload;
+        attribute [DontEnum] EventListener onmousedown;
+        attribute [DontEnum] EventListener onmousemove;
+        attribute [DontEnum] EventListener onmouseout;
+        attribute [DontEnum] EventListener onmouseover;
+        attribute [DontEnum] EventListener onmouseup;
+        attribute [DontEnum] EventListener onmousewheel;
+        attribute [DontEnum] EventListener onscroll;
+        attribute [DontEnum] EventListener onselect;
+        attribute [DontEnum] EventListener onsubmit;
+
+        // attribute [DontEnum] EventListener oncanplay;
+        // attribute [DontEnum] EventListener oncanplaythrough;
+        // attribute [DontEnum] EventListener ondurationchange;
+        // attribute [DontEnum] EventListener onemptied;
+        // attribute [DontEnum] EventListener onended;
+        // attribute [DontEnum] EventListener onformchange;
+        // attribute [DontEnum] EventListener onforminput;
+        // attribute [DontEnum] EventListener oninvalid;
+        // attribute [DontEnum] EventListener onloadeddata;
+        // attribute [DontEnum] EventListener onloadedmetadata;
+        // attribute [DontEnum] EventListener onloadstart;
+        // attribute [DontEnum] EventListener onpause;
+        // attribute [DontEnum] EventListener onplay;
+        // attribute [DontEnum] EventListener onplaying;
+        // attribute [DontEnum] EventListener onprogress;
+        // attribute [DontEnum] EventListener onratechange;
+        // attribute [DontEnum] EventListener onreadystatechange;
+        // attribute [DontEnum] EventListener onseeked;
+        // attribute [DontEnum] EventListener onseeking;
+        // attribute [DontEnum] EventListener onshow;
+        // attribute [DontEnum] EventListener onstalled;
+        // attribute [DontEnum] EventListener onsuspend;
+        // attribute [DontEnum] EventListener ontimeupdate;
+        // attribute [DontEnum] EventListener onvolumechange;
+        // attribute [DontEnum] EventListener onwaiting;
+
+        // WebKit extensions
+        attribute [DontEnum] EventListener onbeforecut;
+        attribute [DontEnum] EventListener oncut;
+        attribute [DontEnum] EventListener onbeforecopy;
+        attribute [DontEnum] EventListener oncopy;
+        attribute [DontEnum] EventListener onbeforepaste;
+        attribute [DontEnum] EventListener onpaste;
+        attribute [DontEnum] EventListener onreset;
+        attribute [DontEnum] EventListener onsearch;
+        attribute [DontEnum] EventListener onselectstart;
+#endif
 #endif
     };
 

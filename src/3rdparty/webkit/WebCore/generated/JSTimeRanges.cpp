@@ -19,21 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSTimeRanges.h"
 
-#include <wtf/GetPtr.h>
-
 #include "TimeRanges.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSTimeRanges)
+ASSERT_CLASS_FITS_IN_CELL(JSTimeRanges);
 
 /* Hash table */
 
@@ -89,7 +86,6 @@ JSTimeRanges::JSTimeRanges(PassRefPtr<Structure> structure, PassRefPtr<TimeRange
 JSTimeRanges::~JSTimeRanges()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSTimeRanges::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -102,49 +98,52 @@ bool JSTimeRanges::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSTimeRanges, Base>(exec, &JSTimeRangesTable, this, propertyName, slot);
 }
 
-JSValuePtr jsTimeRangesLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTimeRangesLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TimeRanges* imp = static_cast<TimeRanges*>(static_cast<JSTimeRanges*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsTimeRangesPrototypeFunctionStart(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTimeRanges::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTimeRanges::s_info))
         return throwError(exec, TypeError);
     JSTimeRanges* castedThisObj = static_cast<JSTimeRanges*>(asObject(thisValue));
     TimeRanges* imp = static_cast<TimeRanges*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = jsNumber(exec, imp->start(index, ec));
+    JSC::JSValue result = jsNumber(exec, imp->start(index, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsTimeRangesPrototypeFunctionEnd(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionEnd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTimeRanges::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTimeRanges::s_info))
         return throwError(exec, TypeError);
     JSTimeRanges* castedThisObj = static_cast<JSTimeRanges*>(asObject(thisValue));
     TimeRanges* imp = static_cast<TimeRanges*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = jsNumber(exec, imp->end(index, ec));
+    JSC::JSValue result = jsNumber(exec, imp->end(index, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, TimeRanges* object)
+JSC::JSValue toJS(JSC::ExecState* exec, TimeRanges* object)
 {
     return getDOMObjectWrapper<JSTimeRanges>(exec, object);
 }
-TimeRanges* toTimeRanges(JSC::JSValuePtr value)
+TimeRanges* toTimeRanges(JSC::JSValue value)
 {
-    return value->isObject(&JSTimeRanges::s_info) ? static_cast<JSTimeRanges*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSTimeRanges::s_info) ? static_cast<JSTimeRanges*>(asObject(value))->impl() : 0;
 }
 
 }

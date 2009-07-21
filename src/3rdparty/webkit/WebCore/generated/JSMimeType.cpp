@@ -19,24 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSMimeType.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSPlugin.h"
 #include "KURL.h"
 #include "MimeType.h"
 #include "Plugin.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSMimeType)
+ASSERT_CLASS_FITS_IN_CELL(JSMimeType);
 
 /* Hash table */
 
@@ -82,7 +78,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -127,7 +123,6 @@ JSMimeType::JSMimeType(PassRefPtr<Structure> structure, PassRefPtr<MimeType> imp
 JSMimeType::~JSMimeType()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSMimeType::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -140,46 +135,50 @@ bool JSMimeType::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSMimeType, Base>(exec, &JSMimeTypeTable, this, propertyName, slot);
 }
 
-JSValuePtr jsMimeTypeType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMimeTypeType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsMimeTypeSuffixes(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMimeTypeSuffixes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->suffixes());
 }
 
-JSValuePtr jsMimeTypeDescription(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMimeTypeDescription(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->description());
 }
 
-JSValuePtr jsMimeTypeEnabledPlugin(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMimeTypeEnabledPlugin(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->enabledPlugin()));
 }
 
-JSValuePtr jsMimeTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMimeTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSMimeType*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSMimeType::getConstructor(ExecState* exec)
+JSValue JSMimeType::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSMimeTypeConstructor>(exec);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, MimeType* object)
+JSC::JSValue toJS(JSC::ExecState* exec, MimeType* object)
 {
     return getDOMObjectWrapper<JSMimeType>(exec, object);
 }
-MimeType* toMimeType(JSC::JSValuePtr value)
+MimeType* toMimeType(JSC::JSValue value)
 {
-    return value->isObject(&JSMimeType::s_info) ? static_cast<JSMimeType*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSMimeType::s_info) ? static_cast<JSMimeType*>(asObject(value))->impl() : 0;
 }
 
 }

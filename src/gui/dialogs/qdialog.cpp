@@ -55,7 +55,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include "qt_windows.h"
 #include "qmenubar.h"
 #include "qpointer.h"
@@ -64,11 +64,9 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #elif defined(Q_WS_X11)
 #  include "../kernel/qt_x11_p.h"
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
 #  include "qfiledialog.h"
-#endif
-#if defined(Q_OS_SYMBIAN)
-#include "qmenubar.h"
+#  include "qmenubar.h"
 #endif
 #ifndef SPI_GETSNAPTODEFBUTTON
 #  define SPI_GETSNAPTODEFBUTTON  95
@@ -255,7 +253,7 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
               f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
 #endif
@@ -284,7 +282,7 @@ QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags 
 QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
     : QWidget(dd, parent, f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
 #endif
@@ -372,8 +370,8 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#ifdef Q_OS_WINCE
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE
+#ifdef Q_WS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
     //Done...
@@ -481,7 +479,7 @@ int QDialog::exec()
     setResult(0);
 
 //On Windows Mobile we create an empty menu to hide the current menu
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
 #ifndef QT_NO_MENUBAR
     QMenuBar *menuBar = 0;
     if (!findChild<QMenuBar *>())
@@ -492,7 +490,7 @@ int QDialog::exec()
         connect(doneAction, SIGNAL(triggered()), this, SLOT(_q_doneAction()));
     }
 #endif //QT_NO_MENUBAR
-#endif //Q_OS_WINCE_WM
+#endif //Q_WS_WINCE_WM
 
 #ifdef Q_OS_SYMBIAN
 #ifndef QT_NO_MENUBAR
@@ -500,16 +498,13 @@ int QDialog::exec()
     if (!findChild<QMenuBar *>())
         menuBar = new QMenuBar(this);
 #endif
-#endif
-    
-#if !defined(Q_WS_S60)
-    show();
-#else
+
     if (qobject_cast<QFileDialog *>(this))
         showFullScreen();
     else
+#endif // Q_OS_SYMBIAN
+
         show();
-#endif
 
 #ifdef Q_WS_MAC
     d->mac_nativeDialogModalHelp();
@@ -528,12 +523,12 @@ int QDialog::exec()
     int res = result();
     if (deleteOnClose)
         delete this;
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
 #ifndef QT_NO_MENUBAR
     else if (menuBar)
         delete menuBar;
 #endif //QT_NO_MENUBAR
-#endif //Q_OS_WINCE_WM
+#endif //Q_WS_WINCE_WM
 #ifdef Q_OS_SYMBIAN
 #ifndef QT_NO_MENUBAR
     else if (menuBar)

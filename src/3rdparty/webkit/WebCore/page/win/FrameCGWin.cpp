@@ -28,7 +28,7 @@
 
 #include <windows.h>
 
-#include "FramePrivate.h"
+#include "BitmapInfo.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
 #include "Settings.h"
@@ -56,7 +56,7 @@ static HBITMAP imageFromRect(const Frame* frame, IntRect& ir)
     HDC hdc = CreateCompatibleDC(0);
     int w = ir.width();
     int h = ir.height();
-    BITMAPINFO bmp = { { sizeof(BITMAPINFOHEADER), w, h, 1, 32 } };
+    BitmapInfo bmp = BitmapInfo::create(IntSize(w, h));
 
     HBITMAP hbmp = CreateDIBSection(0, &bmp, DIB_RGB_COLORS, static_cast<void**>(&bits), 0, 0);
     HBITMAP hbmpOld = static_cast<HBITMAP>(SelectObject(hdc, hbmp));
@@ -101,9 +101,9 @@ HBITMAP Frame::nodeImage(Node* node) const
 
     document()->updateLayout();
 
-    d->m_view->setNodeToDraw(node); // invoke special sub-tree drawing mode
+    m_view->setNodeToDraw(node); // invoke special sub-tree drawing mode
     HBITMAP result = imageFromRect(this, paintingRect);
-    d->m_view->setNodeToDraw(0);
+    m_view->setNodeToDraw(0);
 
     return result;
 }

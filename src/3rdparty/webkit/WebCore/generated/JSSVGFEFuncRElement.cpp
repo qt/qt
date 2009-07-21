@@ -20,22 +20,18 @@
 
 #include "config.h"
 
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
-
-#include "SVGElement.h"
 #include "JSSVGFEFuncRElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGFEFuncRElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEFuncRElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEFuncRElement);
 
 /* Hash table for prototype */
 
@@ -73,4 +69,4 @@ JSObject* JSSVGFEFuncRElement::createPrototype(ExecState* exec, JSGlobalObject* 
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

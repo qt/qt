@@ -884,21 +884,22 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::Resize:
             d->layoutChildren();
             break;
-    case QEvent::Paint:
+    case QEvent::Paint: {
+        QStyleOption option;
+        option.initFrom(this);
         if (d->cornerPaintingRect.isValid()) {
-            QStyleOption option;
             option.rect = d->cornerPaintingRect;
             QPainter p(this);
             style()->drawPrimitive(QStyle::PE_PanelScrollAreaCorner, &option, &p, this);
         }
 #ifdef Q_WS_MAC
         if (d->reverseCornerPaintingRect.isValid()) {
-            QStyleOption option;
             option.rect = d->reverseCornerPaintingRect;
             QPainter p(this);
             style()->drawPrimitive(QStyle::PE_PanelScrollAreaCorner, &option, &p, this);
         }
 #endif
+        }
         QFrame::paintEvent((QPaintEvent*)e);
         break;
 #ifndef QT_NO_CONTEXTMENU
@@ -919,6 +920,7 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::DragMove:
     case QEvent::DragLeave:
 #endif
+    case QEvent::Gesture:
         return false;
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
@@ -1275,6 +1277,12 @@ QSize QAbstractScrollArea::minimumSizeHint() const
     int hsbExt = d->hbar->sizeHint().height();
     int vsbExt = d->vbar->sizeHint().width();
     int extra = 2 * d->frameWidth;
+    QStyleOption opt;
+    opt.initFrom(this);
+    if ((d->frameStyle != QFrame::NoFrame)
+        && style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, &opt, this)) {
+        extra += style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing, &opt, this);
+    }
     return QSize(d->scrollBarContainers[Qt::Horizontal]->sizeHint().width() + vsbExt + extra,
                  d->scrollBarContainers[Qt::Vertical]->sizeHint().height() + hsbExt + extra);
 }

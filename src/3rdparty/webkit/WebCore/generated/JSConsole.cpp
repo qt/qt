@@ -19,21 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSConsole.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Console.h"
 #include "ScriptCallStack.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSConsole)
+ASSERT_CLASS_FITS_IN_CELL(JSConsole);
 
 /* Hash table */
 
@@ -103,7 +100,6 @@ JSConsole::JSConsole(PassRefPtr<Structure> structure, PassRefPtr<Console> impl)
 JSConsole::~JSConsole()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSConsole::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -116,14 +112,15 @@ bool JSConsole::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSConsole, Base>(exec, &JSConsoleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsConsoleProfiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsConsoleProfiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSConsole*>(asObject(slot.slotBase()))->profiles(exec);
 }
 
-JSValuePtr jsConsolePrototypeFunctionDebug(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionDebug(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -133,9 +130,10 @@ JSValuePtr jsConsolePrototypeFunctionDebug(ExecState* exec, JSObject*, JSValuePt
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionError(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionError(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -145,9 +143,10 @@ JSValuePtr jsConsolePrototypeFunctionError(ExecState* exec, JSObject*, JSValuePt
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionInfo(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionInfo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -157,9 +156,10 @@ JSValuePtr jsConsolePrototypeFunctionInfo(ExecState* exec, JSObject*, JSValuePtr
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionLog(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionLog(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -169,9 +169,10 @@ JSValuePtr jsConsolePrototypeFunctionLog(ExecState* exec, JSObject*, JSValuePtr 
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionWarn(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionWarn(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -181,9 +182,10 @@ JSValuePtr jsConsolePrototypeFunctionWarn(ExecState* exec, JSObject*, JSValuePtr
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionDir(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionDir(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -193,9 +195,10 @@ JSValuePtr jsConsolePrototypeFunctionDir(ExecState* exec, JSObject*, JSValuePtr 
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionDirxml(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionDirxml(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -205,9 +208,10 @@ JSValuePtr jsConsolePrototypeFunctionDirxml(ExecState* exec, JSObject*, JSValueP
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionTrace(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionTrace(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -217,22 +221,24 @@ JSValuePtr jsConsolePrototypeFunctionTrace(ExecState* exec, JSObject*, JSValuePt
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionAssert(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionAssert(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
     ScriptCallStack callStack(exec, args, 1);
-    bool condition = args.at(exec, 0)->toBoolean(exec);
+    bool condition = args.at(0).toBoolean(exec);
 
     imp->assertCondition(condition, &callStack);
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionCount(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionCount(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -242,60 +248,65 @@ JSValuePtr jsConsolePrototypeFunctionCount(ExecState* exec, JSObject*, JSValuePt
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionProfile(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionProfile(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
     ScriptCallStack callStack(exec, args, 1);
-    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
+    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
 
     imp->profile(title, &callStack);
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionProfileEnd(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionProfileEnd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
     ScriptCallStack callStack(exec, args, 1);
-    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
+    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
 
     imp->profileEnd(title, &callStack);
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionTime(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionTime(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
-    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
+    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
 
     imp->time(title);
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionTimeEnd(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionTimeEnd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
     ScriptCallStack callStack(exec, args, 1);
-    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
+    const UString& title = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
 
     imp->timeEnd(title, &callStack);
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionGroup(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionGroup(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -305,9 +316,10 @@ JSValuePtr jsConsolePrototypeFunctionGroup(ExecState* exec, JSObject*, JSValuePt
     return jsUndefined();
 }
 
-JSValuePtr jsConsolePrototypeFunctionGroupEnd(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionGroupEnd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSConsole::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSConsole::s_info))
         return throwError(exec, TypeError);
     JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
     Console* imp = static_cast<Console*>(castedThisObj->impl());
@@ -316,13 +328,13 @@ JSValuePtr jsConsolePrototypeFunctionGroupEnd(ExecState* exec, JSObject*, JSValu
     return jsUndefined();
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Console* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Console* object)
 {
     return getDOMObjectWrapper<JSConsole>(exec, object);
 }
-Console* toConsole(JSC::JSValuePtr value)
+Console* toConsole(JSC::JSValue value)
 {
-    return value->isObject(&JSConsole::s_info) ? static_cast<JSConsole*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSConsole::s_info) ? static_cast<JSConsole*>(asObject(value))->impl() : 0;
 }
 
 }

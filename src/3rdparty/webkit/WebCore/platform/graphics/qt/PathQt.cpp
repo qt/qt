@@ -37,8 +37,9 @@
 #include "PlatformString.h"
 #include "StrokeStyleApplier.h"
 #include <QPainterPath>
-#include <QMatrix>
+#include <QTransform>
 #include <QString>
+#include <wtf/OwnPtr.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -85,9 +86,31 @@ bool Path::contains(const FloatPoint& point, WindRule rule) const
     return contains;
 }
 
+bool Path::strokeContains(StrokeStyleApplier* applier, const FloatPoint& point) const
+{
+    ASSERT(applier);
+
+    // FIXME: We should try to use a 'shared Context' instead of creating a new ImageBuffer
+    // on each call.
+    OwnPtr<ImageBuffer> scratchImage = ImageBuffer::create(IntSize(1, 1), false);
+    GraphicsContext* gc = scratchImage->context();
+    QPainterPathStroker stroke;
+    applier->strokeStyle(gc);
+
+    QPen pen = gc->pen();
+    stroke.setWidth(pen.widthF());
+    stroke.setCapStyle(pen.capStyle());
+    stroke.setJoinStyle(pen.joinStyle());
+    stroke.setMiterLimit(pen.miterLimit());
+    stroke.setDashPattern(pen.dashPattern());
+    stroke.setDashOffset(pen.dashOffset());
+
+    return (stroke.createStroke(*platformPath())).contains(point);
+}
+
 void Path::translate(const FloatSize& size)
 {
-    QMatrix matrix;
+    QTransform matrix;
     matrix.translate(size.width(), size.height());
     *m_path = (*m_path) * matrix;
 }
@@ -101,7 +124,7 @@ FloatRect Path::strokeBoundingRect(StrokeStyleApplier* applier)
 {
     // FIXME: We should try to use a 'shared Context' instead of creating a new ImageBuffer
     // on each call.
-    std::auto_ptr<ImageBuffer> scratchImage = ImageBuffer::create(IntSize(1, 1), false);
+    OwnPtr<ImageBuffer> scratchImage = ImageBuffer::create(IntSize(1, 1), false);
     GraphicsContext* gc = scratchImage->context();
     QPainterPathStroker stroke;
     if (applier) {
@@ -358,7 +381,7 @@ void Path::apply(void* info, PathApplierFunction function) const
 void Path::transform(const TransformationMatrix& transform)
 {
     if (m_path) {
-        QMatrix mat = transform;
+        QTransform mat = transform;
         QPainterPath temp = mat.map(*m_path);
         delete m_path;
         m_path = new QPainterPath(temp);

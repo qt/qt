@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::CodeDialog
-*/
-
 #include "codedialog_p.h"
 #include "qdesigner_utils_p.h"
 #include "iconloader_p.h"

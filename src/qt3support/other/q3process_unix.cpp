@@ -828,7 +828,7 @@ bool Q3Process::start( QStringList *env )
 #ifndef QT_NO_DIR
 			QFileInfo fileInfo( dir, command );
 #else
-			QFileInfo fileInfo( dir + "/" + command );
+			QFileInfo fileInfo( dir + QLatin1Char('/') + command );
 #endif
 			if ( fileInfo.isExecutable() ) {
 #if defined(Q_OS_MACX)

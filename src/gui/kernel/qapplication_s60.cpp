@@ -63,16 +63,15 @@
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
 
-#ifndef QT_NO_IM
+#if !defined(QT_NO_IM) && defined(Q_WS_S60)
 #include "qinputcontext.h"
 #include <private/qcoefepinputcontext_p.h>
-#endif // QT_NO_IM
+#endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
 
 #include "private/qstylesheetstyle_p.h"
 
 QT_BEGIN_NAMESPACE
 
-static WId autoGrabWindow = 0; // Not the same as QWidget::grab*()
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
 #endif
@@ -105,12 +104,12 @@ private:
     void MatoPrepareComplete(TInt aError);
     void MatoPlayComplete(TInt aError);
 private:
-    typedef enum TBeepState
+    typedef enum
         {
         EBeepNotPrepared,
         EBeepPrepared,
         EBeepPlaying
-        };
+        } TBeepState;
 private:
     CMdaAudioToneUtility* iToneUtil;
     TBeepState iState;
@@ -543,13 +542,13 @@ void QSymbianControl::sendInputEvent(QWidget *widget, QInputEvent *inputEvent)
 
 TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
 {
-#ifndef QT_NO_IM
+#if !defined(QT_NO_IM) && defined(Q_WS_S60)
     if (widget && widget->isEnabled() && widget->testAttribute(Qt::WA_InputMethodEnabled)) {
         QInputContext *qic = widget->inputContext();
         if(qic && qic->filterEvent(keyEvent))
             return EKeyWasConsumed;
     }
-#endif // QT_NO_IM
+#endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
 
     if (widget && qt_sendSpontaneousEvent(widget, keyEvent))
         if (keyEvent->isAccepted())
@@ -558,7 +557,7 @@ TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
     return EKeyWasNotConsumed;
 }
 
-#ifndef QT_NO_IM
+#if !defined(QT_NO_IM) && defined(Q_WS_S60)
 TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 {
     QWidget *w = 0;
@@ -660,20 +659,8 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
         return;
 
-    if (IsFocused()) {
-        QApplication::setActiveWindow(qwidget);
-        // If widget is fullscreen, hide status pane and button container
-        // otherwise show them.
-        CEikStatusPane* statusPane = S60->statusPane();
-        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-        bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (statusPane->IsVisible() == isFullscreen))
-            statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
-            buttonGroup->MakeVisible(!isFullscreen);
-    } else {
-        QApplication::setActiveWindow(0);
-    }
+    QEvent *deferredFocusEvent = new QEvent(QEvent::SymbianDeferredFocusChanged);
+    QApplication::postEvent(qwidget, deferredFocusEvent);
 }
 
 void QSymbianControl::HandleResourceChange(int resourceType)
@@ -685,6 +672,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
     case KUidValueCoeFontChangeEvent:
         // font change event
         break;
+#ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
     {        
         if (qwidget->isFullScreen()) {
@@ -695,6 +683,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         }
         break;
     }
+#endif
     default:
         break;
     }
@@ -821,7 +810,6 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         WId id = popup->effectiveWinId();
         id->SetPointerCapture(true);
         id->SetGloballyCapturing(true);
-        autoGrabWindow = id;
     }
 
     // popups are not focus-handled by the window system (the first
@@ -858,7 +846,6 @@ void QApplicationPrivate::closePopup(QWidget *popup)
             if (QWidgetPrivate::mouseGrabber != 0)
                 QWidgetPrivate::mouseGrabber->grabMouse();
 
-            autoGrabWindow = 0;
             if (QWidgetPrivate::keyboardGrabber != 0)
                 QWidgetPrivate::keyboardGrabber->grabKeyboard();
 
@@ -977,7 +964,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     CCoeControl* control = reinterpret_cast<CCoeControl*>(event->Handle());
     const bool controlInMap = QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control);
     switch (event->Type()) {
-#ifndef QT_NO_IM
+#if !defined(QT_NO_IM) && defined(Q_WS_S60)
     case EEventKey:
     case EEventKeyUp:
     case EEventKeyDown:
@@ -1068,7 +1055,9 @@ void QApplication::symbianHandleCommand(int command)
 {
     switch (command) {
     case EEikCmdExit:
+#ifdef Q_WS_S60
     case EAknSoftkeyExit:
+#endif
         exit();
         break;
     default:
@@ -1080,8 +1069,10 @@ void QApplication::symbianHandleCommand(int command)
             Q_ASSERT(index < softKeys.count());
             softKeys.at(index)->activate(QAction::Trigger);
         }
+#ifdef Q_WS_S60
         else
             QMenuBarPrivate::symbianCommands(command);
+#endif
         break;
     }
 }
@@ -1089,6 +1080,7 @@ void QApplication::symbianHandleCommand(int command)
 void QApplication::symbianResourceChange(int type)
 {
     switch (type) {
+#ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
         {
         if (S60)
@@ -1117,7 +1109,7 @@ void QApplication::symbianResourceChange(int type)
             s60Style->handleSkinChange();
         break; 
 #endif
-        
+#endif // Q_WS_S60
     default:
         break;
     }
@@ -1157,6 +1149,12 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
         return scanCodeCache[scanCode];
     }
 }
+
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
 
 #ifndef QT_NO_SESSIONMANAGER
 QSessionManager::QSessionManager(QApplication * /* app */, QString & /* id */, QString& /* key */)

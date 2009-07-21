@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "mainwindow.h"
+#include "globals.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QLibraryInfo>
@@ -80,22 +81,23 @@ int main(int argc, char **argv)
     }
 
     QTranslator translator;
-    translator.load(QLatin1String("linguist_") + QLocale::system().name(), resourceDir);
-    app.installTranslator(&translator);
-
     QTranslator qtTranslator;
-    qtTranslator.load(QLatin1String("qt_") + QLocale::system().name(), resourceDir);
-    app.installTranslator(&qtTranslator);
+    QString sysLocale = QLocale::system().name();
+    if (translator.load(QLatin1String("linguist_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        if (qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir))
+            app.installTranslator(&qtTranslator);
+        else
+            app.removeTranslator(&translator);
+    }
 
     app.setOrganizationName(QLatin1String("Trolltech"));
     app.setApplicationName(QLatin1String("Linguist"));
-    QString keybase(QString::number( (QT_VERSION >> 16) & 0xff ) +
-        QLatin1Char('.') + QString::number( (QT_VERSION >> 8) & 0xff ) + QLatin1Char('/') );
 
     QSettings config;
 
     QWidget tmp;
-    tmp.restoreGeometry(config.value(keybase + QLatin1String("Geometry/WindowGeometry")).toByteArray());
+    tmp.restoreGeometry(config.value(settingPath("Geometry/WindowGeometry")).toByteArray());
 
     QSplashScreen *splash = 0;
     int screenId = QApplication::desktop()->screenNumber(tmp.geometry().center());

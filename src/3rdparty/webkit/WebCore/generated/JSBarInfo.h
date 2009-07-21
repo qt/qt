@@ -39,7 +39,7 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -50,10 +50,11 @@ private:
     RefPtr<BarInfo> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, BarInfo*);
-BarInfo* toBarInfo(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, BarInfo*);
+BarInfo* toBarInfo(JSC::JSValue);
 
 class JSBarInfoPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -63,7 +64,7 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsBarInfoVisible(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsBarInfoVisible(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

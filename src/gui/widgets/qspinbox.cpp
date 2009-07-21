@@ -291,6 +291,9 @@ void QSpinBox::setPrefix(const QString &prefix)
 
     d->prefix = prefix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    updateGeometry();
 }
 
 /*!
@@ -325,6 +328,9 @@ void QSpinBox::setSuffix(const QString &suffix)
 
     d->suffix = suffix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    updateGeometry();
 }
 
 /*!
@@ -992,7 +998,7 @@ QVariant QSpinBoxPrivate::valueFromText(const QString &text) const
 
 bool QSpinBoxPrivate::isIntermediateValue(const QString &str) const
 {
-    const int num = q_func()->locale().toInt(str, 0, 10);
+    const int num = locale.toInt(str, 0, 10);
     const int min = minimum.toInt();
     const int max = maximum.toInt();
 
@@ -1039,7 +1045,7 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 {
     if (cachedText == input && !input.isEmpty()) {
         state = cachedState;
-        QSBDEBUG() << "cachedText was" << "'" << cachedText << "'" << "state was "
+        QSBDEBUG() << "cachedText was '" << cachedText << "' state was "
                    << state << " and value was " << cachedValue;
 
         return cachedValue;
@@ -1057,18 +1063,18 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                        || (min >= 0 && copy == QLatin1String("+")))) {
         state = QValidator::Intermediate;
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
-    } else if (copy.startsWith(QLatin1String("-")) && min >= 0) {
+    } else if (copy.startsWith(QLatin1Char('-')) && min >= 0) {
         state = QValidator::Invalid; // special-case -0 will be interpreted as 0 and thus not be invalid with a range from 0-100
     } else {
         bool ok = false;
         bool removedThousand = false;
-        num = q_func()->locale().toInt(copy, &ok, 10);
+        num = locale.toInt(copy, &ok, 10);
         if (!ok && copy.contains(thousand) && (max >= 1000 || min <= -1000)) {
             const int s = copy.size();
             copy.remove(thousand);
             pos = qMax(0, pos - (s - copy.size()));
             removedThousand = true;
-            num = q_func()->locale().toInt(copy, &ok, 10);
+            num = locale.toInt(copy, &ok, 10);
         }
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
         if (!ok) {
@@ -1263,9 +1269,7 @@ QVariant QDoubleSpinBoxPrivate::valueFromText(const QString &f) const
 
 double QDoubleSpinBoxPrivate::round(double value) const
 {
-    Q_Q(const QDoubleSpinBox);
-    const QString strDbl = q->locale().toString(value, 'f', decimals);
-    return q->locale().toDouble(strDbl);
+    return QString::number(value, 'f', decimals).toDouble();
 }
 
 
@@ -1280,7 +1284,7 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 {
     if (cachedText == input && !input.isEmpty()) {
         state = cachedState;
-        QSBDEBUG() << "cachedText was" << "'" << cachedText << "'" << "state was "
+        QSBDEBUG() << "cachedText was '" << cachedText << "' state was "
                    << state << " and value was " << cachedValue;
         return cachedValue;
     }
@@ -1357,9 +1361,8 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 
     {
         bool ok = false;
-        QLocale loc(q_func()->locale());
-        num = loc.toDouble(copy, &ok);
-        QSBDEBUG() << __FILE__ << __LINE__ << loc << copy << num << ok;
+        num = locale.toDouble(copy, &ok);
+        QSBDEBUG() << __FILE__ << __LINE__ << locale << copy << num << ok;
         bool notAcceptable = false;
 
         if (!ok) {
@@ -1384,7 +1387,7 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                 pos = qMax(0, pos - (s - copy.size()));
 
 
-                num = loc.toDouble(copy, &ok);
+                num = locale.toDouble(copy, &ok);
                 QSBDEBUG() << thousand << num << copy << ok;
 
                 if (!ok) {

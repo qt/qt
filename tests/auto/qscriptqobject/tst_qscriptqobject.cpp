@@ -111,6 +111,7 @@ class MyQObject : public QObject
     Q_PROPERTY(int readOnlyProperty READ readOnlyProperty)
     Q_PROPERTY(QKeySequence shortcut READ shortcut WRITE setShortcut)
     Q_PROPERTY(CustomType propWithCustomType READ propWithCustomType WRITE setPropWithCustomType)
+    Q_PROPERTY(Policy enumProperty READ enumProperty WRITE setEnumProperty)
     Q_ENUMS(Policy Strategy)
     Q_FLAGS(Ability)
 
@@ -148,6 +149,7 @@ public:
           m_hiddenValue(456.0),
           m_writeOnlyValue(789),
           m_readOnlyValue(987),
+          m_enumValue(BarPolicy),
           m_qtFunctionInvoked(-1)
         { }
 
@@ -209,6 +211,11 @@ public:
     void setPropWithCustomType(const CustomType &c)
         { m_customType = c; }
 
+    Policy enumProperty() const
+        { return m_enumValue; }
+    void setEnumProperty(Policy policy)
+        { m_enumValue = policy; }
+
     int qtFunctionInvoked() const
         { return m_qtFunctionInvoked; }
 
@@ -259,8 +266,8 @@ public:
         { m_qtFunctionInvoked = 36; m_actuals << policy; }
     Q_INVOKABLE Policy myInvokableReturningEnum()
         { m_qtFunctionInvoked = 37; return BazPolicy; }
-    Q_INVOKABLE MyQObject::Policy myInvokableReturningQualifiedEnum()
-        { m_qtFunctionInvoked = 38; return BazPolicy; }
+    Q_INVOKABLE MyQObject::Strategy myInvokableReturningQualifiedEnum()
+        { m_qtFunctionInvoked = 38; return BazStrategy; }
     Q_INVOKABLE QVector<int> myInvokableReturningVectorOfInt()
         { m_qtFunctionInvoked = 11; return QVector<int>(); }
     Q_INVOKABLE void myInvokableWithVectorOfIntArg(const QVector<int> &)
@@ -330,6 +337,10 @@ public:
         { emit mySignalWithDefaultArg(arg); }
     void emitMySignalWithDefaultArg()
         { emit mySignalWithDefaultArg(); }
+    void emitMySignalWithVariantArg(const QVariant &arg)
+        { emit mySignalWithVariantArg(arg); }
+    void emitMySignalWithScriptEngineArg(QScriptEngine *arg)
+        { emit mySignalWithScriptEngineArg(arg); }
 
 public Q_SLOTS:
     void mySlot()
@@ -392,6 +403,8 @@ Q_SIGNALS:
     void myOtherOverloadedSignal(const QString &arg);
     void myOtherOverloadedSignal(int arg);
     void mySignalWithDefaultArg(int arg = 123);
+    void mySignalWithVariantArg(const QVariant &arg);
+    void mySignalWithScriptEngineArg(QScriptEngine *arg);
 
 protected:
     void connectNotify(const char *signal) {
@@ -414,6 +427,7 @@ protected:
     int m_readOnlyValue;
     QKeySequence m_shortcut;
     CustomType m_customType;
+    Policy m_enumValue;
     int m_qtFunctionInvoked;
     QVariantList m_actuals;
     QByteArray m_connectedSignal;
@@ -421,6 +435,7 @@ protected:
 };
 
 Q_DECLARE_METATYPE(MyQObject*)
+Q_DECLARE_METATYPE(MyQObject::Policy)
 
 class MyOtherQObject : public MyQObject
 {
@@ -532,6 +547,24 @@ static QScriptValue getSetProperty(QScriptContext *ctx, QScriptEngine *)
     if (ctx->argumentCount() != 0)
         ctx->callee().setProperty("value", ctx->argument(0));
     return ctx->callee().property("value");
+}
+
+static QScriptValue policyToScriptValue(QScriptEngine *engine, const MyQObject::Policy &policy)
+{
+    return qScriptValueFromValue(engine, policy);
+}
+
+static void policyFromScriptValue(const QScriptValue &value, MyQObject::Policy &policy)
+{
+    QString str = value.toString();
+    if (str == QLatin1String("red"))
+        policy = MyQObject::FooPolicy;
+    else if (str == QLatin1String("green"))
+        policy = MyQObject::BarPolicy;
+    else if (str == QLatin1String("blue"))
+        policy = MyQObject::BazPolicy;
+    else
+        policy = (MyQObject::Policy)-1;
 }
 
 void tst_QScriptExtQObject::getSetStaticProperty()
@@ -754,6 +787,31 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QCOMPARE(mobj.propertyFlags("readOnlyProperty") & QScriptValue::ReadOnly,
                  QScriptValue::ReadOnly);
     }
+
+    // enum property
+    QCOMPARE(m_myObject->enumProperty(), MyQObject::BarPolicy);
+    {
+        QScriptValue val = m_engine->evaluate("myObject.enumProperty");
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), (int)MyQObject::BarPolicy);
+    }
+    m_engine->evaluate("myObject.enumProperty = 2");
+    QCOMPARE(m_myObject->enumProperty(), MyQObject::BazPolicy);
+    m_engine->evaluate("myObject.enumProperty = 'BarPolicy'");
+    QCOMPARE(m_myObject->enumProperty(), MyQObject::BarPolicy);
+    m_engine->evaluate("myObject.enumProperty = 'ScoobyDoo'");
+    // ### ouch! Shouldn't QMetaProperty::write() rather not change the value...?
+    QCOMPARE(m_myObject->enumProperty(), (MyQObject::Policy)-1);
+    // enum property with custom conversion
+    qScriptRegisterMetaType<MyQObject::Policy>(m_engine, policyToScriptValue, policyFromScriptValue);
+    m_engine->evaluate("myObject.enumProperty = 'red'");
+    QCOMPARE(m_myObject->enumProperty(), MyQObject::FooPolicy);
+    m_engine->evaluate("myObject.enumProperty = 'green'");
+    QCOMPARE(m_myObject->enumProperty(), MyQObject::BarPolicy);
+    m_engine->evaluate("myObject.enumProperty = 'blue'");
+    QCOMPARE(m_myObject->enumProperty(), MyQObject::BazPolicy);
+    m_engine->evaluate("myObject.enumProperty = 'nada'");
+    QCOMPARE(m_myObject->enumProperty(), (MyQObject::Policy)-1);
 
     // auto-dereferencing of pointers
     {
@@ -1505,6 +1563,29 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->emitMyOtherOverloadedSignal(123);
     QVERIFY(!m_engine->evaluate("gotSignal").toBoolean());
 
+    // signal with QVariant arg: argument conversion should work
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
+    m_engine->evaluate("gotSignal = false");
+    m_myObject->emitMySignalWithVariantArg(123);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
+
+    // signal with argument type that's unknown to the meta-type system
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithScriptEngineArg(QScriptEngine*)));
+    m_engine->evaluate("gotSignal = false");
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine: Unable to handle unregistered datatype 'QScriptEngine*' when invoking handler of signal MyQObject::mySignalWithScriptEngineArg(QScriptEngine*)");
+    m_myObject->emitMySignalWithScriptEngineArg(m_engine);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.disconnect(myHandler)").isUndefined());
+
     // connect(object, function)
     m_engine->evaluate("otherObject = { name:'foo' }");
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(otherObject, myHandler)").isUndefined());
@@ -1829,6 +1910,22 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
         QVERIFY(qScriptDisconnect(m_myObject, SIGNAL(mySignal()), QScriptValue(), fun));
         QCOMPARE(m_myObject->disconnectedSignal().constData(), SIGNAL(mySignal()));
     }
+
+    // bad args
+    QVERIFY(!qScriptConnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    QVERIFY(!qScriptDisconnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    {
+        QScriptEngine eng2;
+        QScriptValue receiverInDifferentEngine = eng2.newObject();
+        QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+        QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+    }
 }
 
 void tst_QScriptExtQObject::classEnums()
@@ -1861,7 +1958,7 @@ void tst_QScriptExtQObject::classEnums()
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.AllAbility").toInt32()),
              MyQObject::AllAbility);
 
-    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly;
+    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly | QScriptValue::Undeletable;
     QCOMPARE(myClass.propertyFlags("FooPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BarPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BazPolicy"), expectedEnumFlags);
@@ -1883,6 +1980,16 @@ void tst_QScriptExtQObject::classEnums()
     QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), int(MyQObject::BazPolicy));
 
     m_myObject->resetQtFunctionInvoked();
+    QCOMPARE(m_engine->evaluate("myObject.myInvokableWithEnumArg('BarPolicy')").isUndefined(), true);
+    QCOMPARE(m_myObject->qtFunctionInvoked(), 10);
+    QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+    QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), int(MyQObject::BarPolicy));
+
+    m_myObject->resetQtFunctionInvoked();
+    QVERIFY(m_engine->evaluate("myObject.myInvokableWithEnumArg('NoSuchPolicy')").isError());
+    QCOMPARE(m_myObject->qtFunctionInvoked(), -1);
+
+    m_myObject->resetQtFunctionInvoked();
     QCOMPARE(m_engine->evaluate("myObject.myInvokableWithQualifiedEnumArg(MyQObject.BazPolicy)").isUndefined(), true);
     QCOMPARE(m_myObject->qtFunctionInvoked(), 36);
     QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
@@ -1902,6 +2009,15 @@ void tst_QScriptExtQObject::classEnums()
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 0);
         QCOMPARE(ret.isNumber(), true);
     }
+
+    // enum properties are not deletable or writable
+    QVERIFY(!m_engine->evaluate("delete MyQObject.BazPolicy").toBool());
+    myClass.setProperty("BazPolicy", QScriptValue());
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
+    myClass.setProperty("BazPolicy", MyQObject::FooPolicy);
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
 }
 
 QT_BEGIN_NAMESPACE

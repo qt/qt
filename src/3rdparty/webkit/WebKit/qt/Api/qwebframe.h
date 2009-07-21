@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2008,2009 Nokia Corporation and/or its subsidiary(-ies)
     Copyright (C) 2007 Staikos Computing Services Inc.
 
     This library is free software; you can redistribute it and/or
@@ -49,6 +49,7 @@ class QWebPage;
 class QWebHitTestResult;
 class QWebHistoryItem;
 class QWebSecurityOrigin;
+class QWebElement;
 
 namespace WebCore {
     class WidgetPrivate;
@@ -71,12 +72,14 @@ public:
 
     QPoint pos() const;
     QRect boundingRect() const;
+    QWebElement enclosingBlockElement() const;
     QString title() const;
 
     QString linkText() const;
     QUrl linkUrl() const;
     QUrl linkTitle() const;
     QWebFrame *linkTargetFrame() const;
+    QWebElement linkElement() const;
 
     QString alternateText() const; // for img, area, input and applet
 
@@ -85,6 +88,8 @@ public:
 
     bool isContentEditable() const;
     bool isContentSelected() const;
+
+    QWebElement element() const;
 
     QWebFrame *frame() const;
 
@@ -150,6 +155,7 @@ public:
     int scrollBarValue(Qt::Orientation orientation) const;
     int scrollBarMinimum(Qt::Orientation orientation) const;
     int scrollBarMaximum(Qt::Orientation orientation) const;
+    QRect scrollBarGeometry(Qt::Orientation orientation) const;
 
     void scroll(int, int);
     QPoint scrollPosition() const;
@@ -157,6 +163,7 @@ public:
 
     void render(QPainter *painter, const QRegion &clip);
     void render(QPainter *painter);
+    void renderContents(QPainter *painter, const QRegion &contents);
 
     void setTextSizeMultiplier(qreal factor);
     qreal textSizeMultiplier() const;
@@ -167,6 +174,10 @@ public:
     QPoint pos() const;
     QRect geometry() const;
     QSize contentsSize() const;
+
+    QWebElement documentElement() const;
+    QList<QWebElement> findAllElements(const QString &selectorQuery) const;
+    QWebElement findFirstElement(const QString &selectorQuery) const;
 
     QWebHitTestResult hitTestContent(const QPoint &pos) const;
 
@@ -190,6 +201,8 @@ Q_SIGNALS:
     void initialLayoutCompleted();
 
     void iconChanged();
+
+    void contentsSizeChanged(const QSize &size);
 
 private:
     friend class QWebPage;

@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include "private/qhttpnetworkconnection_p.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 #include <QAuthenticator>
 
 #include "../network-settings.h"
@@ -311,8 +312,8 @@ void tst_QHttpNetworkConnection::put()
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Put);
 
     QByteArray array = data.toLatin1();
-    QBuffer buffer(&array);
-    request.setData(&buffer);
+    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    request.setUploadByteDevice(bd);
 
     finishedCalled = false;
     finishedWithErrorCalled = false;
@@ -401,8 +402,8 @@ void tst_QHttpNetworkConnection::post()
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Post);
 
     QByteArray array = data.toLatin1();
-    QBuffer buffer(&array);
-    request.setData(&buffer);
+    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    request.setUploadByteDevice(bd);
 
     QHttpNetworkReply *reply = connection.sendRequest(request);
 

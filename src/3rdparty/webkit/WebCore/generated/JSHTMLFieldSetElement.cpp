@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLFieldSetElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLFieldSetElement.h"
 #include "HTMLFormElement.h"
 #include "JSHTMLFormElement.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLFieldSetElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLFieldSetElement);
 
 /* Hash table */
 
@@ -78,7 +74,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -129,23 +125,25 @@ bool JSHTMLFieldSetElement::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSHTMLFieldSetElement, Base>(exec, &JSHTMLFieldSetElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLFieldSetElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFieldSetElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->form()));
 }
 
-JSValuePtr jsHTMLFieldSetElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFieldSetElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->willValidate());
 }
 
-JSValuePtr jsHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSHTMLFieldSetElement::getConstructor(ExecState* exec)
+JSValue JSHTMLFieldSetElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLFieldSetElementConstructor>(exec);
 }

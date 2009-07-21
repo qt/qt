@@ -644,15 +644,11 @@ bool QGroupBox::isChecked() const
 void QGroupBox::setChecked(bool b)
 {
     Q_D(QGroupBox);
-    if (d->checkable) {
-        if (d->checked != b)
-            update();
-        bool wasToggled = (b != d->checked);
+    if (d->checkable && b != d->checked) {
+        update();
         d->checked = b;
-        if (wasToggled) {
-            d->_q_setChildrenEnabled(b);
-            emit toggled(b);
-        }
+        d->_q_setChildrenEnabled(b);
+        emit toggled(b);
     }
 }
 

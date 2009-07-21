@@ -41,8 +41,6 @@
 
 //#define QHOSTINFO_DEBUG
 
-static const int RESOLVER_TIMEOUT = 2000;
-
 #include "qplatformdefs.h"
 
 #include "qhostinfo_p.h"

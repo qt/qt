@@ -65,7 +65,7 @@ QT_MODULE(Gui)
 
 class QPixmapData;
 
-class Q_GUI_EXPORT QPixmapDataFactory
+class QPixmapDataFactory
 {
 public:
     static QPixmapDataFactory* instance(int screen = 0);

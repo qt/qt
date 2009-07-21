@@ -93,6 +93,25 @@ struct Option
         Option::qmakespec = QString::fromLatin1(qgetenv("QMAKESPEC").data());
         Option::field_sep = QLatin1Char(' ');
     }
+
+    enum StringFixFlags {
+        FixNone                 = 0x00,
+        FixEnvVars              = 0x01,
+        FixPathCanonicalize     = 0x02,
+        FixPathToLocalSeparators  = 0x04,
+        FixPathToTargetSeparators = 0x08
+    };
+    static QString fixString(QString string, uchar flags);
+
+    inline static QString fixPathToLocalOS(const QString &in, bool fix_env = true, bool canonical = true)
+    {
+        uchar flags = FixPathToLocalSeparators;
+        if (fix_env)
+            flags |= FixEnvVars;
+        if (canonical)
+            flags |= FixPathCanonicalize;
+        return fixString(in, flags);
+    }
 };
 #if defined(Q_OS_WIN32)
 Option::TARG_MODE Option::target_mode = Option::TARG_WIN_MODE;
@@ -110,17 +129,20 @@ QString Option::dir_sep;
 QChar Option::field_sep;
 
 static void insertUnique(QHash<QString, QStringList> *map,
-    const QString &key, const QStringList &value, bool unique = true)
+    const QString &key, const QStringList &value)
 {
     QStringList &sl = (*map)[key];
-    if (!unique) {
-        sl += value;
-    } else {
-        for (int i = 0; i < value.count(); ++i) {
-            if (!sl.contains(value.at(i)))
-                sl.append(value.at(i));
-        }
-    }
+    foreach (const QString &str, value)
+        if (!sl.contains(str))
+            sl.append(str);
+}
+
+static void removeEach(QHash<QString, QStringList> *map,
+    const QString &key, const QStringList &value)
+{
+    QStringList &sl = (*map)[key];
+    foreach (const QString &str, value)
+        sl.removeAll(str);
 }
 
 /*
@@ -148,7 +170,12 @@ static QStringList replaceInList(const QStringList &varList, const QRegExp &rege
 }
 */
 
-inline QStringList splitPathList(const QString paths)
+inline QString fixEnvVariables(const QString &x)
+{
+    return Option::fixString(x, Option::FixEnvVars);
+}
+
+inline QStringList splitPathList(const QString &paths)
 {
     return paths.split(Option::dirlist_sep);
 }
@@ -255,7 +282,7 @@ static QStringList split_value_list(const QString &vals, bool do_semicolon=false
 static QStringList qmake_mkspec_paths()
 {
     QStringList ret;
-    const QString concat = QDir::separator() + QString(QLatin1String("mkspecs"));
+    const QString concat = QDir::separator() + QLatin1String("mkspecs");
     QByteArray qmakepath = qgetenv("QMAKEPATH");
     if (!qmakepath.isEmpty()) {
         const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));

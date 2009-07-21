@@ -297,4 +297,17 @@ QSqlCachedResult::ValueCache &QSqlCachedResult::cache()
     return d->cache;
 }
 
+void QSqlCachedResult::virtual_hook(int id, void *data)
+{
+    switch (id) {
+    case QSqlResult::DetachFromResultSet:
+    case QSqlResult::SetNumericalPrecision:
+        cleanup();
+        break;
+    default:
+        QSqlResult::virtual_hook(id, data);
+    }
+}
+
+
 QT_END_NAMESPACE

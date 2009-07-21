@@ -53,6 +53,8 @@ QT_MODULE(Core)
 
 #ifndef QT_NO_PROCESS
 
+template <class Key, class T> class QHash;
+
 #if (!defined(Q_OS_WIN32) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)) || defined(qdoc)
 typedef qint64 Q_PID;
 #elif defined(Q_OS_SYMBIAN)
@@ -126,6 +128,8 @@ public:
 
     void setEnvironment(const QStringList &environment);
     QStringList environment() const;
+    void setEnvironmentHash(const QHash<QString, QString> &environment);
+    QHash<QString, QString> environmentHash() const;
 
     QProcess::ProcessError error() const;
     QProcess::ProcessState state() const;
@@ -161,6 +165,7 @@ public:
     static bool startDetached(const QString &program);
 
     static QStringList systemEnvironment();
+    static QHash<QString, QString> systemEnvironmentHash();
 
 public Q_SLOTS:
     void terminate();

@@ -46,7 +46,7 @@ public:
     static void deleteKeyPressed(Document*, bool smartDelete = false, TextGranularity = CharacterGranularity, bool killRing = false);
     static void forwardDeleteKeyPressed(Document*, bool smartDelete = false, TextGranularity = CharacterGranularity, bool killRing = false);
     static void insertText(Document*, const String&, bool selectInsertedText = false, bool insertedTextIsComposition = false);
-    static void insertText(Document*, const String&, const Selection&, bool selectInsertedText = false, bool insertedTextIsComposition = false);
+    static void insertText(Document*, const String&, const VisibleSelection&, bool selectInsertedText = false, bool insertedTextIsComposition = false);
     static void insertLineBreak(Document*);
     static void insertParagraphSeparator(Document*);
     static void insertParagraphSeparatorInQuotedContent(Document*);
@@ -79,19 +79,21 @@ private:
     virtual void doApply();
     virtual EditAction editingAction() const;
     virtual bool isTypingCommand() const;
-    virtual bool preservesTypingStyle() const;
+    virtual bool preservesTypingStyle() const { return m_preservesTypingStyle; }
 
+    void updatePreservesTypingStyle(ETypingCommand);
     void markMisspellingsAfterTyping();
-    void typingAddedToOpenCommand();
+    void typingAddedToOpenCommand(ETypingCommand);
+    bool makeEditableRootEmpty();
     
     ETypingCommand m_commandType;
     String m_textToInsert;
     bool m_openForMoreTyping;
-    bool m_applyEditing;
     bool m_selectInsertedText;
     bool m_smartDelete;
     TextGranularity m_granularity;
     bool m_killRing;
+    bool m_preservesTypingStyle;
     
     // Undoing a series of backward deletes will restore a selection around all of the
     // characters that were deleted, but only if the typing command being undone

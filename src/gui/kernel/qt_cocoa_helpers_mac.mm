@@ -88,6 +88,52 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GLOBAL_STATIC(QMacWindowFader, macwindowFader);
+
+QMacWindowFader::QMacWindowFader()
+    : m_duration(0.250)
+{
+}
+
+QMacWindowFader *QMacWindowFader::currentFader()
+{
+    return macwindowFader();
+}
+
+void QMacWindowFader::registerWindowToFade(QWidget *window)
+{
+    m_windowsToFade.append(window);
+}
+
+void QMacWindowFader::performFade()
+{
+    const QWidgetList myWidgetsToFade = m_windowsToFade;
+    const int widgetCount = myWidgetsToFade.count();
+#if QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [NSAnimationContext beginGrouping];
+    [[NSAnimationContext currentContext] setDuration:NSTimeInterval(m_duration)];
+#endif
+
+    for (int i = 0; i < widgetCount; ++i) {
+        QWidget *widget = m_windowsToFade.at(i);
+        OSWindowRef window = qt_mac_window_for(widget);
+#if QT_MAC_USE_COCOA
+        [[window animator] setAlphaValue:0.0];
+        QTimer::singleShot(qRound(m_duration * 1000), widget, SLOT(hide()));
+#else
+        TransitionWindowOptions options = {0, m_duration, 0, 0};
+        TransitionWindowWithOptions(window, kWindowFadeTransitionEffect, kWindowHideTransitionAction,
+                                    0, 1, &options);
+#endif
+    }
+#if QT_MAC_USE_COCOA
+    [NSAnimationContext endGrouping];
+#endif
+    m_duration = 0.250;
+    m_windowsToFade.clear();
+}
+
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // qapplication.cpp;
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QWidget * mac_mouse_grabber;
@@ -95,28 +141,25 @@ extern QWidget * mac_mouse_grabber;
 void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds)
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
-	if( wnd ) {
+    if (wnd) {
+        QWidget *widget;
 #if QT_MAC_USE_COCOA
-        QMacCocoaAutoReleasePool pool;
-        [NSAnimationContext beginGrouping];
-        [[wnd animator] setAlphaValue:0.0];
-        if (durationSeconds > 0) {
-            [[NSAnimationContext currentContext] setDuration:NSTimeInterval(durationSeconds)];
-        } else {
-            durationSeconds = [[NSAnimationContext currentContext] duration];
-        }
-        [NSAnimationContext endGrouping];
-        QTimer::singleShot(qRound(durationSeconds * 1000), [wnd QT_MANGLE_NAMESPACE(qt_qwidget)], SLOT(hide()));
+        widget = [wnd QT_MANGLE_NAMESPACE(qt_qwidget)];
 #else
-        if (durationSeconds <= 0)
-            durationSeconds = 0.15;
-		TransitionWindowOptions options = {0, durationSeconds, 0, 0};
-		TransitionWindowWithOptions(wnd, kWindowFadeTransitionEffect, kWindowHideTransitionAction, 0, 1, &options);
+    const UInt32 kWidgetCreatorQt = kEventClassQt;
+    enum {
+        kWidgetPropertyQWidget = 'QWId' //QWidget *
+    };
+        if (GetWindowProperty(static_cast<WindowRef>(window), kWidgetCreatorQt, kWidgetPropertyQWidget, sizeof(widget), 0, &widget) != noErr)
+            widget = 0;
 #endif
-	}
+        if (widget) {
+            QMacWindowFader::currentFader()->setFadeDuration(durationSeconds);
+            QMacWindowFader::currentFader()->registerWindowToFade(widget);
+            QMacWindowFader::currentFader()->performFade();
+        }
+    }
 }
-
-
 
 bool macWindowIsTextured( void * /*OSWindowRef*/ window )
 {
@@ -851,50 +894,6 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
     QPoint qlocalPoint(localPoint.x, localPoint.y);
 
-    if (widgetToGetMouse->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-        // Simulate passing the event through since Cocoa doesn't do that for us.
-        // Start by building a tree up.
-        NSView *candidateView = [theView viewUnderTransparentForMouseView:tmpView
-                                                       widget:widgetToGetMouse
-                                                       withWindowPoint:windowPoint];
-        if (candidateView != nil) {
-            // Fast-track our views, since dispatching trough the normal ways
-            // would just end up going through here anyway.
-            if ([candidateView isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-                return qt_mac_handleMouseEvent(candidateView, theEvent, eventType, button);
-            } else {
-                switch (eventType) {
-                default:
-                    qWarning("not handled! %d", eventType);
-                    break;
-                case QEvent::MouseMove:
-                    [candidateView mouseMoved:theEvent];
-                    break;
-                case QEvent::MouseButtonPress:
-                    if (button == Qt::LeftButton)
-                        [candidateView mouseDown:theEvent];
-                    else if (button == Qt::RightButton)
-                        [candidateView rightMouseDown:theEvent];
-                    else
-                        [candidateView otherMouseDown:theEvent];
-                    break;
-                case QEvent::MouseButtonRelease:
-                    if (button == Qt::LeftButton)
-                        [candidateView mouseUp:theEvent];
-                    else if (button == Qt::RightButton)
-                        [candidateView rightMouseUp:theEvent];
-                    else
-                        [candidateView otherMouseUp:theEvent];
-                    break;
-                }
-                return true; // We've done the dispatching, no need go further.
-            }
-        }
-        // Nothing below me return false
-        return false;
-    }
-
-
     EventRef carbonEvent = static_cast<EventRef>(const_cast<void *>([theEvent eventRef]));
     if (qt_mac_sendMacEventToWidget(widgetToGetMouse, carbonEvent))
         return true;
@@ -1121,6 +1120,15 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     CGContextRef context = (CGContextRef)[[NSGraphicsContext graphicsContextWithWindow:qt_mac_window_for(widget)] graphicsPort];
 #endif
     return context;
+}
+
+CGFloat qt_mac_get_scalefactor()
+{
+#ifndef QT_MAC_USE_COCOA
+    return HIGetScaleFactor();
+#else
+    return [[NSScreen mainScreen] userSpaceScaleFactor];
+#endif
 }
 
 QT_END_NAMESPACE

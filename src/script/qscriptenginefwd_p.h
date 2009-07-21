@@ -350,6 +350,7 @@ public:
     QScriptValueImpl create(int type, const void *ptr);
     static bool convert(const QScriptValueImpl &value, int type, void *ptr,
                         QScriptEnginePrivate *eng);
+    QScriptEngine::DemarshalFunction demarshalFunction(int type) const;
 
     QScriptValueImpl arrayFromStringList(const QStringList &lst);
     static QStringList stringListFromArray(const QScriptValueImpl &arr);
@@ -384,7 +385,8 @@ public:
 
     bool scriptConnect(QObject *sender, const char *signal,
                        const QScriptValueImpl &receiver,
-                       const QScriptValueImpl &function);
+                       const QScriptValueImpl &function,
+                       Qt::ConnectionType type);
     bool scriptDisconnect(QObject *sender, const char *signal,
                           const QScriptValueImpl &receiver,
                           const QScriptValueImpl &function);
@@ -392,14 +394,16 @@ public:
     bool scriptConnect(QObject *sender, int index,
                        const QScriptValueImpl &receiver,
                        const QScriptValueImpl &function,
-                       const QScriptValueImpl &senderWrapper = QScriptValueImpl());
+                       const QScriptValueImpl &senderWrapper,
+                       Qt::ConnectionType type);
     bool scriptDisconnect(QObject *sender, int index,
                           const QScriptValueImpl &receiver,
                           const QScriptValueImpl &function);
 
     bool scriptConnect(const QScriptValueImpl &signal,
                        const QScriptValueImpl &receiver,
-                       const QScriptValueImpl &function);
+                       const QScriptValueImpl &function,
+                       Qt::ConnectionType type);
     bool scriptDisconnect(const QScriptValueImpl &signal,
                           const QScriptValueImpl &receiver,
                           const QScriptValueImpl &function);

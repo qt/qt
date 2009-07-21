@@ -150,6 +150,10 @@ class Generator
                         const Node *relative, 
                         CodeMarker *marker,
                         const Node *actualNode = 0);
+    void appendFullName(Text& text,
+                        const Node *apparentNode,
+                        const QString& fullName,
+                        const Node *actualNode);
     void appendSortedNames(Text& text, 
                            const ClassNode *classe,
                            const QList<RelatedClass> &classes,

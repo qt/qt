@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ConnectionModel
-*/
-
 #include "signalsloteditorwindow.h"
 #include "signalsloteditor_p.h"
 #include "signalsloteditor.h"

@@ -54,32 +54,18 @@ QT_BEGIN_NAMESPACE
 class QPHReader : public QXmlStreamReader
 {
 public:
-    QPHReader(QIODevice &dev, ConversionData &cd)
-      : QXmlStreamReader(&dev), m_cd(cd)
+    QPHReader(QIODevice &dev)
+      : QXmlStreamReader(&dev)
     {}
 
     // the "real thing"
     bool read(Translator &translator);
 
 private:
-    bool elementStarts(const QString &str) const
-    {
-        return isStartElement() && name() == str;
-    }
-
     bool isWhiteSpace() const
     {
         return isCharacters() && text().toString().trimmed().isEmpty();
     }
-
-    // needed to expand <byte ... />
-    QString readContents();
-    // needed to join <lengthvariant>s
-    QString readTransContents();
-
-    void handleError();
-
-    ConversionData &m_cd;
 
     enum DataField { NoField, SourceField, TargetField, DefinitionField };
     DataField m_currentField;
@@ -113,6 +99,8 @@ bool QPHReader::read(Translator &translator)
             else if (m_currentField == DefinitionField)
                 m_currentDefinition += text();
         } else if (isEndElement() && name() == QLatin1String("phrase")) {
+            m_currentTarget.replace(QChar(Translator::TextVariantSeparator),
+                                    QChar(Translator::BinaryVariantSeparator));
             TranslatorMessage msg;
             msg.setSourceText(m_currentSource);
             msg.setTranslation(m_currentTarget);
@@ -126,10 +114,10 @@ bool QPHReader::read(Translator &translator)
     return true;
 }
 
-static bool loadQPH(Translator &translator, QIODevice &dev, ConversionData &cd)
+static bool loadQPH(Translator &translator, QIODevice &dev, ConversionData &)
 {
     translator.setLocationsType(Translator::NoLocations);
-    QPHReader reader(dev, cd);
+    QPHReader reader(dev);
     return reader.read(translator);
 }
 
@@ -173,7 +161,10 @@ static bool saveQPH(const Translator &translator, QIODevice &dev, ConversionData
     foreach (const TranslatorMessage &msg, translator.messages()) {
         t << "<phrase>\n";
         t << "    <source>" << protect(msg.sourceText()) << "</source>\n";
-        t << "    <target>" << protect(msg.translations().join(QLatin1String("@")))
+        QString str = msg.translations().join(QLatin1String("@"));
+        str.replace(QChar(Translator::BinaryVariantSeparator),
+                    QChar(Translator::TextVariantSeparator));
+        t << "    <target>" << protect(str)
             << "</target>\n";
         if (!msg.context().isEmpty() || !msg.comment().isEmpty())
             t << "    <definition>" << msg.context() << msg.comment()

@@ -1,7 +1,6 @@
 /*
  *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Eric Seidel <eric@webkit.org>
- *  Copyright (C) 2008 Torch Mobile, Inc.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,13 +22,15 @@
 #include "Collector.h"
 
 #include "ArgList.h"
-#include "CollectorHeapIterator.h"
 #include "CallFrame.h"
+#include "CollectorHeapIterator.h"
+#include "Interpreter.h"
 #include "JSGlobalObject.h"
 #include "JSLock.h"
+#include "JSONObject.h"
 #include "JSString.h"
 #include "JSValue.h"
-#include "Interpreter.h"
+#include "Nodes.h"
 #include "Tracing.h"
 #include <algorithm>
 #include <setjmp.h>
@@ -37,11 +38,12 @@
 #include <wtf/FastMalloc.h>
 #include <wtf/HashCountedSet.h>
 #include <wtf/UnusedParam.h>
+#include <wtf/VMTags.h>
 
 #if PLATFORM(DARWIN)
 
-#include <mach/mach_port.h>
 #include <mach/mach_init.h>
+#include <mach/mach_port.h>
 #include <mach/task.h>
 #include <mach/thread_act.h>
 #include <mach/vm_map.h>
@@ -74,9 +76,7 @@ extern int *__libc_stack_end;
 
 #if PLATFORM(SOLARIS)
 #include <thread.h>
-#endif
-
-#if PLATFORM(OPENBSD)
+#else
 #include <pthread.h>
 #endif
 
@@ -199,7 +199,7 @@ static NEVER_INLINE CollectorBlock* allocateBlock()
 #if PLATFORM(DARWIN)
     vm_address_t address = 0;
     // FIXME: tag the region as a JavaScriptCore heap when we get a registered VM tag: <rdar://problem/6054788>.
-    vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
+    vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE | VM_TAG_FOR_COLLECTOR_MEMORY, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
 #elif PLATFORM(SYMBIAN)
     // no memory map in symbian, need to hack with fastMalloc
     void* address = fastMalloc(BLOCK_SIZE);
@@ -409,54 +409,68 @@ void* Heap::allocateNumber(size_t s)
     return heapAllocate<NumberHeap>(s);
 }
 
-#if PLATFORM(WIN_CE)
-// Return the number of bytes that are writable starting at p.
-// The pointer p is assumed to be page aligned.
-static inline DWORD numberOfWritableBytes(void* p)
+#if PLATFORM(WINCE)
+void* g_stackBase = 0;
+
+inline bool isPageWritable(void* page)
 {
-    MEMORY_BASIC_INFORMATION buf;
-    DWORD result = VirtualQuery(p, &buf, sizeof(buf));
-    ASSERT(result == sizeof(buf));
-    DWORD protect = (buf.Protect & ~(PAGE_GUARD | PAGE_NOCACHE));
+    MEMORY_BASIC_INFORMATION memoryInformation;
+    DWORD result = VirtualQuery(page, &memoryInformation, sizeof(memoryInformation));
 
-    // check if the page is writable
-    if (protect != PAGE_READWRITE && protect != PAGE_WRITECOPY &&
-        protect != PAGE_EXECUTE_READWRITE && protect != PAGE_EXECUTE_WRITECOPY)
-        return 0;
+    // return false on error, including ptr outside memory
+    if (result != sizeof(memoryInformation))
+        return false;
 
-    if (buf.State != MEM_COMMIT)
-        return 0;
-
-    return buf.RegionSize;
+    DWORD protect = memoryInformation.Protect & ~(PAGE_GUARD | PAGE_NOCACHE);
+    return protect == PAGE_READWRITE
+        || protect == PAGE_WRITECOPY
+        || protect == PAGE_EXECUTE_READWRITE
+        || protect == PAGE_EXECUTE_WRITECOPY;
 }
 
-static DWORD systemPageSize()
- {
-    SYSTEM_INFO sysInfo;
-    GetSystemInfo(&sysInfo);
-    return sysInfo.dwPageSize;
-}
-
-static inline void* currentThreadStackBaseWinCE()
+static void* getStackBase(void* previousFrame)
 {
-    static DWORD pageSize = systemPageSize();
-    int dummy;
-    void* sp = &dummy;
-    char* alignedStackPtr = reinterpret_cast<char*>((DWORD)sp & ~(pageSize - 1));
-    DWORD size = 0;
-    while (size = numberOfWritableBytes(alignedStackPtr))
-        alignedStackPtr += size;
-    return alignedStackPtr;
+    // find the address of this stack frame by taking the address of a local variable
+    bool isGrowingDownward;
+    void* thisFrame = (void*)(&isGrowingDownward);
+
+    isGrowingDownward = previousFrame < &thisFrame;
+    static DWORD pageSize = 0;
+    if (!pageSize) {
+        SYSTEM_INFO systemInfo;
+        GetSystemInfo(&systemInfo);
+        pageSize = systemInfo.dwPageSize;
+    }
+
+    // scan all of memory starting from this frame, and return the last writeable page found
+    register char* currentPage = (char*)((DWORD)thisFrame & ~(pageSize - 1));
+    if (isGrowingDownward) {
+        while (currentPage > 0) {
+            // check for underflow
+            if (currentPage >= (char*)pageSize)
+                currentPage -= pageSize;
+            else
+                currentPage = 0;
+            if (!isPageWritable(currentPage))
+                return currentPage + pageSize;
+        }
+        return 0;
+    } else {
+        while (true) {
+            // guaranteed to complete because isPageWritable returns false at end of memory
+            currentPage += pageSize;
+            if (!isPageWritable(currentPage))
+                return currentPage;
+        }
+    }
 }
-#endif // PLATFORM(WIN_CE)
+#endif
 
 static inline void* currentThreadStackBase()
 {
 #if PLATFORM(DARWIN)
     pthread_t thread = pthread_self();
     return pthread_get_stackaddr_np(thread);
-#elif PLATFORM(WIN_CE)
-    return currentThreadStackBaseWinCE();
 #elif PLATFORM(WIN_OS) && PLATFORM(X86) && COMPILER(MSVC)
     // offset 0x18 from the FS segment register gives a pointer to
     // the thread information block for the current thread
@@ -486,6 +500,15 @@ static inline void* currentThreadStackBase()
     stack_t stack;
     pthread_stackseg_np(thread, &stack);
     return stack.ss_sp;
+#elif PLATFORM(SYMBIAN)
+    static void* stackBase = 0;
+    if (stackBase == 0) {
+        TThreadStackInfo info;
+        RThread thread;
+        thread.StackInfo(info);
+        stackBase = (void*)info.iBase;
+    }
+    return (void*)stackBase;
 #elif PLATFORM(UNIX)
 #ifdef UCLIBC_USE_PROC_SELF_MAPS
     // Read /proc/self/maps and locate the line whose address
@@ -551,15 +574,13 @@ static inline void* currentThreadStackBase()
     }
     return static_cast<char*>(stackBase) + stackSize;
 #endif
-#elif PLATFORM(SYMBIAN)
-    static void* stackBase = 0;
-    if (stackBase == 0) {
-        TThreadStackInfo info;
-        RThread thread;
-        thread.StackInfo(info);
-        stackBase = (void*)info.iBase;
+#elif PLATFORM(WINCE)
+    if (g_stackBase)
+        return g_stackBase;
+    else {
+        int dummy;
+        return getStackBase(&dummy);
     }
-    return (void*)stackBase;
 #else
 #error Need a way to get the stack base on this platform
 #endif
@@ -771,7 +792,7 @@ typedef CONTEXT PlatformThreadRegisters;
 #error Need a thread register struct for this platform
 #endif
 
-size_t getPlatformThreadRegisters(const PlatformThread& platformThread, PlatformThreadRegisters& regs)
+static size_t getPlatformThreadRegisters(const PlatformThread& platformThread, PlatformThreadRegisters& regs)
 {
 #if PLATFORM(DARWIN)
 
@@ -909,45 +930,45 @@ void Heap::setGCProtectNeedsLocking()
         m_protectedValuesMutex.set(new Mutex);
 }
 
-void Heap::protect(JSValuePtr k)
+void Heap::protect(JSValue k)
 {
     ASSERT(k);
     ASSERT(JSLock::currentThreadIsHoldingLock() || !m_globalData->isSharedInstance);
 
-    if (JSImmediate::isImmediate(k))
+    if (!k.isCell())
         return;
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->lock();
 
-    m_protectedValues.add(k->asCell());
+    m_protectedValues.add(k.asCell());
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->unlock();
 }
 
-void Heap::unprotect(JSValuePtr k)
+void Heap::unprotect(JSValue k)
 {
     ASSERT(k);
     ASSERT(JSLock::currentThreadIsHoldingLock() || !m_globalData->isSharedInstance);
 
-    if (JSImmediate::isImmediate(k))
+    if (!k.isCell())
         return;
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->lock();
 
-    m_protectedValues.remove(k->asCell());
+    m_protectedValues.remove(k.asCell());
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->unlock();
 }
 
-Heap* Heap::heap(JSValuePtr v)
+Heap* Heap::heap(JSValue v)
 {
-    if (JSImmediate::isImmediate(v))
+    if (!v.isCell())
         return 0;
-    return Heap::cellBlock(v->asCell())->heap;
+    return Heap::cellBlock(v.asCell())->heap;
 }
 
 void Heap::markProtectedObjects()
@@ -1087,11 +1108,15 @@ bool Heap::collect()
     markStackObjectsConservatively();
     markProtectedObjects();
     if (m_markListSet && m_markListSet->size())
-        ArgList::markLists(*m_markListSet);
-    if (m_globalData->exception && !m_globalData->exception->marked())
-        m_globalData->exception->mark();
+        MarkedArgumentBuffer::markLists(*m_markListSet);
+    if (m_globalData->exception && !m_globalData->exception.marked())
+        m_globalData->exception.mark();
     m_globalData->interpreter->registerFile().markCallFrames(this);
     m_globalData->smallStrings.mark();
+    if (m_globalData->scopeNodeBeingReparsed)
+        m_globalData->scopeNodeBeingReparsed->mark();
+    if (m_globalData->firstStringifierToMark)
+        JSONObject::markStringifiers(m_globalData->firstStringifierToMark);
 
     JAVASCRIPTCORE_GC_MARKED();
 
@@ -1108,7 +1133,7 @@ bool Heap::collect()
 
 size_t Heap::objectCount() 
 {
-    return primaryHeap.numLiveObjects + numberHeap.numLiveObjects; 
+    return primaryHeap.numLiveObjects + numberHeap.numLiveObjects - m_globalData->smallStrings.count(); 
 }
 
 template <HeapType heapType> 
@@ -1178,16 +1203,16 @@ size_t Heap::protectedObjectCount()
     return result;
 }
 
-static const char* typeName(JSCell* val)
+static const char* typeName(JSCell* cell)
 {
-    if (val->isString())
+    if (cell->isString())
         return "string";
-    if (val->isNumber())
+    if (cell->isNumber())
         return "number";
-    if (val->isGetterSetter())
+    if (cell->isGetterSetter())
         return "gettersetter";
-    ASSERT(val->isObject());
-    const ClassInfo* info = static_cast<JSObject*>(val)->classInfo();
+    ASSERT(cell->isObject());
+    const ClassInfo* info = static_cast<JSObject*>(cell)->classInfo();
     return info ? info->className : "Object";
 }
 

@@ -128,7 +128,7 @@ void QX11WindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint 
         return;
 //         qDebug() << "XSetClipRectangles";
 //         for  (int i = 0; i < num; ++i)
-//             qDebug() << " " << i << rects[i].x << rects[i].x << rects[i].y << rects[i].width << rects[i].height;
+//             qDebug() << ' ' << i << rects[i].x << rects[i].x << rects[i].y << rects[i].width << rects[i].height;
     XSetClipRectangles(X11->display, gc, 0, 0, rects, num, YXBanded);
     XCopyArea(X11->display, d_ptr->device.handle(), widget->handle(), gc,
               br.x() + offset.x(), br.y() + offset.y(), br.width(), br.height(), wbr.x(), wbr.y());

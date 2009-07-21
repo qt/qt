@@ -425,7 +425,7 @@ static void callQtMethod(QScriptContextPrivate *context, QMetaMethod::MethodType
                             matchDistance += 10;
                         }
                     }
-                } else if (actual.isNumber()) {
+                } else if (actual.isNumber() || actual.isString()) {
                     // see if it's an enum value
                     QMetaEnum m;
                     if (argType.isMetaEnum()) {
@@ -436,11 +436,21 @@ static void callQtMethod(QScriptContextPrivate *context, QMetaMethod::MethodType
                             m = meta->enumerator(mi);
                     }
                     if (m.isValid()) {
-                        int ival = actual.toInt32();
-                        if (m.valueToKey(ival) != 0) {
-                            qVariantSetValue(v, ival);
-                            converted = true;
-                            matchDistance += 10;
+                        if (actual.isNumber()) {
+                            int ival = actual.toInt32();
+                            if (m.valueToKey(ival) != 0) {
+                                qVariantSetValue(v, ival);
+                                converted = true;
+                                matchDistance += 10;
+                            }
+                        } else {
+                            QString sval = actual.toString();
+                            int ival = m.keyToValue(sval.toLatin1());
+                            if (ival != -1) {
+                                qVariantSetValue(v, ival);
+                                converted = true;
+                                matchDistance += 10;
+                            }
                         }
                     }
                 }
@@ -1410,7 +1420,8 @@ public:
     bool addSignalHandler(QObject *sender, int signalIndex,
         const QScriptValueImpl &receiver,
         const QScriptValueImpl &slot,
-        const QScriptValueImpl &senderWrapper = QScriptValueImpl());
+        const QScriptValueImpl &senderWrapper,
+        Qt::ConnectionType type);
     bool removeSignalHandler(
         QObject *sender, int signalIndex,
         const QScriptValueImpl &receiver,
@@ -1657,12 +1668,27 @@ void QScript::QObjectConnectionManager::execute(int slotIndex, void **argv)
         activation_data->m_members[i].object(nameId, i,
                                              QScriptValue::Undeletable
                                              | QScriptValue::SkipInEnumeration);
+        QScriptValueImpl actual;
         if (i < argc) {
-            int argType = QMetaType::type(parameterTypes.at(i));
-            activation_data->m_values[i] = eng->create(argType, argv[i + 1]);
+            void *arg = argv[i + 1];
+            QByteArray typeName = parameterTypes.at(i);
+            int argType = QMetaType::type(typeName);
+            if (!argType) {
+                if (typeName == "QVariant") {
+                    actual = eng->valueFromVariant(*reinterpret_cast<QVariant*>(arg));
+                } else {
+                    qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
+                             "when invoking handler of signal %s::%s",
+                             typeName.constData(), meta->className(), method.signature());
+                    actual = eng->undefinedValue();
+                }
+            } else {
+                actual = eng->create(argType, arg);
+            }
         } else {
-            activation_data->m_values[i] = eng->undefinedValue();
+            actual = eng->undefinedValue();
         }
+        activation_data->m_values[i] = actual;
     }
 
     QScriptValueImpl senderObject;
@@ -1716,13 +1742,14 @@ void QScript::QObjectConnectionManager::mark(int generation)
 
 bool QScript::QObjectConnectionManager::addSignalHandler(
     QObject *sender, int signalIndex, const QScriptValueImpl &receiver,
-    const QScriptValueImpl &function, const QScriptValueImpl &senderWrapper)
+    const QScriptValueImpl &function, const QScriptValueImpl &senderWrapper,
+    Qt::ConnectionType type)
 {
     if (connections.size() <= signalIndex)
         connections.resize(signalIndex+1);
     QVector<QObjectConnection> &cs = connections[signalIndex];
     int absSlotIndex = m_slotCounter + metaObject()->methodOffset();
-    bool ok = QMetaObject::connect(sender, signalIndex, this, absSlotIndex);
+    bool ok = QMetaObject::connect(sender, signalIndex, this, absSlotIndex, type);
     if (ok) {
         cs.append(QScript::QObjectConnection(m_slotCounter++, receiver, function, senderWrapper));
         QMetaMethod signal = sender->metaObject()->method(signalIndex);
@@ -1809,7 +1836,16 @@ void QScript::QtPropertyFunction::execute(QScriptContextPrivate *context)
         }
     } else {
         // set
-        QVariant v = variantFromValue(eng_p, prop.userType(), context->argument(0));
+        QScriptValueImpl arg = context->argument(0);
+        QVariant v;
+        if (prop.isEnumType() && arg.isString()
+            && !eng_p->demarshalFunction(prop.userType())) {
+            // give QMetaProperty::write() a chance to convert from
+            // string to enum value
+            v = arg.toString();
+        } else {
+            v = variantFromValue(eng_p, prop.userType(), arg);
+        }
 
         QScriptable *scriptable = scriptableFromQObject(qobject);
         QScriptEngine *oldEngine = 0;
@@ -1863,8 +1899,6 @@ void QScript::QtFunction::execute(QScriptContextPrivate *context)
 #endif
         return;
     }
-
-    QScriptValueImpl result = eng_p->undefinedValue();
 
     const QMetaObject *meta = qobj->metaObject();
 
@@ -2019,12 +2053,12 @@ bool ExtQMetaObjectData::resolve(const QScriptValueImpl &object,
 
     for (int i = 0; i < meta->enumeratorCount(); ++i) {
         QMetaEnum e = meta->enumerator(i);
-
         for (int j = 0; j < e.keyCount(); ++j) {
             const char *key = e.key(j);
-
             if (! qstrcmp (key, name.constData())) {
-                member->native(nameId, e.value(j), QScriptValue::ReadOnly);
+                member->native(nameId, e.value(j),
+                               QScriptValue::ReadOnly
+                               | QScriptValue::Undeletable);
                 *base = object;
                 return true;
             }
@@ -2144,12 +2178,13 @@ bool QScriptQObjectData::addSignalHandler(QObject *sender,
                                           int signalIndex,
                                           const QScriptValueImpl &receiver,
                                           const QScriptValueImpl &slot,
-                                          const QScriptValueImpl &senderWrapper)
+                                          const QScriptValueImpl &senderWrapper,
+                                          Qt::ConnectionType type)
 {
     if (!m_connectionManager)
         m_connectionManager = new QScript::QObjectConnectionManager();
     return m_connectionManager->addSignalHandler(
-        sender, signalIndex, receiver, slot, senderWrapper);
+        sender, signalIndex, receiver, slot, senderWrapper, type);
 }
 
 bool QScriptQObjectData::removeSignalHandler(QObject *sender,

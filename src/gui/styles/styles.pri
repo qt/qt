@@ -7,13 +7,19 @@ HEADERS += \
 	styles/qstyleplugin.h \
 	styles/qcommonstylepixmaps_p.h \
 	styles/qcommonstyle.h \
+	styles/qstylehelper_p.h \
+	styles/qproxystyle.h \
+	styles/qproxystyle_p.h \
 	styles/qstylesheetstyle_p.h
+
 SOURCES += \
 	styles/qstyle.cpp \
 	styles/qstylefactory.cpp \
 	styles/qstyleoption.cpp \
 	styles/qstyleplugin.cpp \
+	styles/qstylehelper.cpp \
 	styles/qcommonstyle.cpp \
+	styles/qproxystyle.cpp \
         styles/qstylesheetstyle.cpp \
         styles/qstylesheetstyle_default.cpp
 
@@ -155,7 +161,7 @@ contains( styles, windowsmobile ) {
 	DEFINES += QT_NO_STYLE_WINDOWSMOBILE
 }
 
-contains( styles, s60 ) {
+contains( styles, s60 ):contains(QT_CONFIG, s60) {
 	HEADERS += \
 		styles/qs60style.h \
 		styles/qs60style_p.h

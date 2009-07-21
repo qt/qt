@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLTitleElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLTitleElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLTitleElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLTitleElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,28 +124,29 @@ bool JSHTMLTitleElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLTitleElement, Base>(exec, &JSHTMLTitleElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLTitleElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTitleElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->text());
 }
 
-JSValuePtr jsHTMLTitleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTitleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLTitleElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLTitleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLTitleElement, Base>(exec, propertyName, value, &JSHTMLTitleElementTable, this, slot);
 }
 
-void setJSHTMLTitleElementText(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTitleElementText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(static_cast<JSHTMLTitleElement*>(thisObject)->impl());
     imp->setText(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLTitleElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTitleElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLTitleElementConstructor>(exec);
 }

@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGAnimatedInteger.h"
 
-#include <wtf/GetPtr.h>
-
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedInteger)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedInteger);
 
 /* Hash table */
 
@@ -86,7 +82,6 @@ JSSVGAnimatedInteger::JSSVGAnimatedInteger(PassRefPtr<Structure> structure, Pass
 JSSVGAnimatedInteger::~JSSVGAnimatedInteger()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGAnimatedInteger::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -99,38 +94,40 @@ bool JSSVGAnimatedInteger::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSSVGAnimatedInteger, Base>(exec, &JSSVGAnimatedIntegerTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGAnimatedIntegerBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedIntegerBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedInteger* imp = static_cast<SVGAnimatedInteger*>(static_cast<JSSVGAnimatedInteger*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->baseVal());
 }
 
-JSValuePtr jsSVGAnimatedIntegerAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedIntegerAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedInteger* imp = static_cast<SVGAnimatedInteger*>(static_cast<JSSVGAnimatedInteger*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->animVal());
 }
 
-void JSSVGAnimatedInteger::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGAnimatedInteger::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGAnimatedInteger, Base>(exec, propertyName, value, &JSSVGAnimatedIntegerTable, this, slot);
 }
 
-void setJSSVGAnimatedIntegerBaseVal(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAnimatedIntegerBaseVal(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAnimatedInteger* imp = static_cast<SVGAnimatedInteger*>(static_cast<JSSVGAnimatedInteger*>(thisObject)->impl());
-    imp->setBaseVal(value->toInt32(exec));
+    imp->setBaseVal(value.toInt32(exec));
     if (static_cast<JSSVGAnimatedInteger*>(thisObject)->context())
         static_cast<JSSVGAnimatedInteger*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAnimatedInteger*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGAnimatedInteger* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedInteger* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGAnimatedInteger>(exec, object, context);
 }
-SVGAnimatedInteger* toSVGAnimatedInteger(JSC::JSValuePtr value)
+SVGAnimatedInteger* toSVGAnimatedInteger(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGAnimatedInteger::s_info) ? static_cast<JSSVGAnimatedInteger*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGAnimatedInteger::s_info) ? static_cast<JSSVGAnimatedInteger*>(asObject(value))->impl() : 0;
 }
 
 }

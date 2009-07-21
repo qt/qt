@@ -76,6 +76,7 @@ MainWindow::MainWindow()
 
     setCentralWidget(widget);
     setWindowTitle(tr("Diagramscene"));
+    setUnifiedTitleAndToolBarOnMac(true);
 }
 //! [0]
 
@@ -401,7 +402,7 @@ void MainWindow::createActions()
         this, SLOT(deleteItem()));
 
     exitAction = new QAction(tr("E&xit"), this);
-    exitAction->setShortcut(tr("Ctrl+X"));
+    exitAction->setShortcuts(QKeySequence::Quit);
     exitAction->setStatusTip(tr("Quit Scenediagram example"));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 

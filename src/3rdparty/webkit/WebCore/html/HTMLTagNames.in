@@ -8,7 +8,7 @@ acronym interfaceName=HTMLElement
 address interfaceName=HTMLElement
 applet
 area
-audio wrapperOnlyIfMediaIsAvailable=1,conditional=VIDEO
+audio wrapperOnlyIfMediaIsAvailable,conditional=VIDEO
 b interfaceName=HTMLElement
 base
 basefont interfaceName=HTMLBaseFontElement
@@ -17,7 +17,7 @@ big interfaceName=HTMLElement
 blockquote
 body
 br interfaceName=HTMLBRElement
-button
+button constructorNeedsFormElement
 canvas
 caption interfaceName=HTMLTableCaptionElement
 center interfaceName=HTMLElement
@@ -25,6 +25,10 @@ cite interfaceName=HTMLElement
 code interfaceName=HTMLElement
 col interfaceName=HTMLTableColElement
 colgroup interfaceName=HTMLTableColElement
+datagrid interfaceName=HTMLDataGridElement
+dcell interfaceName=HTMLDataGridCellElement
+dcol interfaceName=HTMLDataGridColElement
+drow interfaceName=HTMLDataGridRowElement
 dd interfaceName=HTMLElement
 del interfaceName=HTMLModElement
 dfn interfaceName=HTMLElement
@@ -34,10 +38,10 @@ dl interfaceName=HTMLDListElement
 dt interfaceName=HTMLElement
 em interfaceName=HTMLElement
 embed
-fieldset interfaceName=HTMLFieldSetElement
+fieldset interfaceName=HTMLFieldSetElement, constructorNeedsFormElement
 font
 form
-frame constructorNeedsCreatedByParser=1
+frame
 frameset interfaceName=HTMLFrameSetElement
 head
 h1 interfaceName=HTMLHeadingElement
@@ -49,19 +53,19 @@ h6 interfaceName=HTMLHeadingElement
 hr interfaceName=HTMLHRElement
 html
 i interfaceName=HTMLElement
-iframe interfaceName=HTMLIFrameElement, constructorNeedsCreatedByParser=1
-image
-img interfaceName=HTMLImageElement
-input
+iframe interfaceName=HTMLIFrameElement
+image mapToTagName=img
+img interfaceName=HTMLImageElement, constructorNeedsFormElement
+input constructorNeedsFormElement
 ins interfaceName=HTMLModElement
-isindex interfaceName=HTMLIsIndexElement
+isindex interfaceName=HTMLIsIndexElement, constructorNeedsFormElement
 kbd interfaceName=HTMLElement
-keygen JSInterfaceName=HTMLSelectElement
+keygen JSInterfaceName=HTMLSelectElement, constructorNeedsFormElement
 label
 layer interfaceName=HTMLElement
-legend
+legend constructorNeedsFormElement
 li interfaceName=HTMLLIElement
-link constructorNeedsCreatedByParser=1
+link constructorNeedsCreatedByParser
 listing interfaceName=HTMLPreElement
 map
 marquee
@@ -71,11 +75,15 @@ nobr interfaceName=HTMLElement
 noembed interfaceName=HTMLElement
 noframes interfaceName=HTMLElement
 nolayer interfaceName=HTMLElement
+#if ENABLE_XHTMLMP
+noscript interfaceName=HTMLNoScriptElement
+#else
 noscript interfaceName=HTMLElement
-object
+#endif
+object constructorNeedsCreatedByParser
 ol interfaceName=HTMLOListElement
-optgroup interfaceName=HTMLOptGroupElement
-option
+optgroup interfaceName=HTMLOptGroupElement, constructorNeedsFormElement
+option constructorNeedsFormElement
 p interfaceName=HTMLParagraphElement
 param
 plaintext interfaceName=HTMLElement
@@ -83,20 +91,20 @@ pre
 q interfaceName=HTMLQuoteElement
 s interfaceName=HTMLElement
 samp interfaceName=HTMLElement
-script constructorNeedsCreatedByParser=1
-select
+script constructorNeedsCreatedByParser
+select constructorNeedsFormElement
 small interfaceName=HTMLElement
-source wrapperOnlyIfMediaIsAvailable=1,conditional=VIDEO
+source wrapperOnlyIfMediaIsAvailable,conditional=VIDEO
 span interfaceName=HTMLElement
 strike interfaceName=HTMLElement
 strong interfaceName=HTMLElement
-style constructorNeedsCreatedByParser=1
+style constructorNeedsCreatedByParser
 sub interfaceName=HTMLElement
 sup interfaceName=HTMLElement
 table
 tbody interfaceName=HTMLTableSectionElement
 td interfaceName=HTMLTableCellElement
-textarea interfaceName=HTMLTextAreaElement
+textarea interfaceName=HTMLTextAreaElement, constructorNeedsFormElement
 tfoot interfaceName=HTMLTableSectionElement
 th interfaceName=HTMLTableCellElement
 thead interfaceName=HTMLTableSectionElement
@@ -106,6 +114,6 @@ tt interfaceName=HTMLElement
 u interfaceName=HTMLElement
 ul interfaceName=HTMLUListElement
 var interfaceName=HTMLElement
-video wrapperOnlyIfMediaIsAvailable=1,conditional=VIDEO
+video wrapperOnlyIfMediaIsAvailable,conditional=VIDEO
 wbr interfaceName=HTMLElement
 xmp interfaceName=HTMLPreElement

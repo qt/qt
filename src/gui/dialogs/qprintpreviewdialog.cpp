@@ -55,6 +55,9 @@
 #include <QtGui/qtoolbutton.h>
 #include <QtGui/qvalidator.h>
 #include <QtGui/qfiledialog.h>
+#include <QtGui/qmainwindow.h>
+#include <QtGui/qtoolbar.h>
+#include <QtGui/qformlayout.h>
 #include <QtCore/QCoreApplication>
 
 #include <math.h>
@@ -64,6 +67,13 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
+class QPrintPreviewMainWindow : public QMainWindow
+{
+public:
+    QPrintPreviewMainWindow(QWidget *parent) : QMainWindow(parent) {}
+    QMenu *createPopupMenu() { return 0; }
+};
+
 class ZoomFactorValidator : public QDoubleValidator
 {
 public:
@@ -197,7 +207,6 @@ public:
     QActionGroup *printerGroup;
     QAction *printAction;
     QAction *pageSetupAction;
-    QAction *closeAction;
 
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
@@ -219,26 +228,11 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     QObject::connect(preview, SIGNAL(previewChanged()), q, SLOT(_q_previewChanged()));
     setupActions();
 
-    // Navigation
-    QToolButton* nextPageButton = new QToolButton;
-    nextPageButton->setDefaultAction(nextPageAction);
-    QToolButton* prevPageButton = new QToolButton;
-    prevPageButton->setDefaultAction(prevPageAction);
-    QToolButton* firstPageButton = new QToolButton;
-    firstPageButton->setDefaultAction(firstPageAction);
-    QToolButton* lastPageButton = new QToolButton;
-    lastPageButton->setDefaultAction(lastPageAction);
-
     pageNumEdit = new LineEdit;
     pageNumEdit->setAlignment(Qt::AlignRight);
-    pageNumEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
+    pageNumEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     pageNumLabel = new QLabel;
     QObject::connect(pageNumEdit, SIGNAL(editingFinished()), q, SLOT(_q_pageNumEdited()));
-
-    QToolButton* fitWidthButton = new QToolButton;
-    fitWidthButton->setDefaultAction(fitWidthAction);
-    QToolButton* fitPageButton = new QToolButton;
-    fitPageButton->setDefaultAction(fitPageAction);
 
     zoomFactor = new QComboBox;
     zoomFactor->setEditable(true);
@@ -255,77 +249,66 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     QObject::connect(zoomFactor, SIGNAL(currentIndexChanged(int)),
                      q, SLOT(_q_zoomFactorChanged()));
 
-    QToolButton* zoomInButton = new QToolButton;
-    zoomInButton->setDefaultAction(zoomInAction);
+    QPrintPreviewMainWindow *mw = new QPrintPreviewMainWindow(q);
+    QToolBar *toolbar = new QToolBar(mw);
+    toolbar->addAction(fitWidthAction);
+    toolbar->addAction(fitPageAction);
+    toolbar->addSeparator();
+    toolbar->addWidget(zoomFactor);
+    toolbar->addAction(zoomOutAction);
+    toolbar->addAction(zoomInAction);
+    toolbar->addSeparator();
+    toolbar->addAction(portraitAction);
+    toolbar->addAction(landscapeAction);
+    toolbar->addSeparator();
+    toolbar->addAction(firstPageAction);
+    toolbar->addAction(prevPageAction);
+
+    // this is to ensure the label text and the editor text are
+    // aligned in all styles - the extra QVBoxLayout is a workaround
+    // for bug in QFormLayout
+    QWidget *pageEdit = new QWidget(toolbar);
+    QVBoxLayout *vboxLayout = new QVBoxLayout;
+    vboxLayout->setContentsMargins(0, 0, 0, 0);
+    QFormLayout *formLayout = new QFormLayout;
+    formLayout->setWidget(0, QFormLayout::LabelRole, pageNumEdit);
+    formLayout->setWidget(0, QFormLayout::FieldRole, pageNumLabel);
+    vboxLayout->addLayout(formLayout);
+    vboxLayout->setAlignment(Qt::AlignVCenter);
+    pageEdit->setLayout(vboxLayout);
+    toolbar->addWidget(pageEdit);
+
+    toolbar->addAction(nextPageAction);
+    toolbar->addAction(lastPageAction);
+    toolbar->addSeparator();
+    toolbar->addAction(singleModeAction);
+    toolbar->addAction(facingModeAction);
+    toolbar->addAction(overviewModeAction);
+    toolbar->addSeparator();
+    toolbar->addAction(pageSetupAction);
+    toolbar->addAction(printAction);
+
+    // Cannot use the actions' triggered signal here, since it doesn't autorepeat
+    QToolButton *zoomInButton = static_cast<QToolButton *>(toolbar->widgetForAction(zoomInAction));
+    QToolButton *zoomOutButton = static_cast<QToolButton *>(toolbar->widgetForAction(zoomOutAction));
     zoomInButton->setAutoRepeat(true);
     zoomInButton->setAutoRepeatInterval(200);
     zoomInButton->setAutoRepeatDelay(200);
-
-    QToolButton* zoomOutButton = new QToolButton;
-    zoomOutButton->setDefaultAction(zoomOutAction);
     zoomOutButton->setAutoRepeat(true);
     zoomOutButton->setAutoRepeatInterval(200);
     zoomOutButton->setAutoRepeatDelay(200);
-
-    //Cannot use the actions' triggered signal here, since it doesnt autorepeat
     QObject::connect(zoomInButton, SIGNAL(clicked()), q, SLOT(_q_zoomIn()));
     QObject::connect(zoomOutButton, SIGNAL(clicked()), q, SLOT(_q_zoomOut()));
 
-    QToolButton* portraitButton = new QToolButton;
-    portraitButton->setDefaultAction(portraitAction);
-    QToolButton* landscapeButton = new QToolButton;
-    landscapeButton->setDefaultAction(landscapeAction);
-
-    QToolButton* singleModeButton = new QToolButton;
-    singleModeButton->setDefaultAction(singleModeAction);
-    QToolButton* facingModeButton = new QToolButton;
-    facingModeButton->setDefaultAction(facingModeAction);
-    QToolButton* overviewModeButton = new QToolButton;
-    overviewModeButton->setDefaultAction(overviewModeAction);
-
-    QToolButton *printButton = new QToolButton;
-    printButton->setDefaultAction(printAction);
-    QToolButton *pageSetupButton = new QToolButton;
-    pageSetupButton->setDefaultAction(pageSetupAction);
-    QToolButton *closeButton = new QToolButton;
-    closeButton->setDefaultAction(closeAction);
-
-    QHBoxLayout* modeLayout = new QHBoxLayout;
-    modeLayout->setSpacing(0);
-    modeLayout->addWidget(singleModeButton);
-    modeLayout->addWidget(facingModeButton);
-    modeLayout->addWidget(overviewModeButton);
-
-    QHBoxLayout *barLayout = new QHBoxLayout;
-    barLayout->addWidget(fitWidthButton);
-    barLayout->addWidget(fitPageButton);
-    barLayout->addWidget(zoomFactor);
-    barLayout->addWidget(zoomOutButton);
-    barLayout->addWidget(zoomInButton);
-    barLayout->addWidget(portraitButton);
-    barLayout->addWidget(landscapeButton);
-    barLayout->addStretch();
-    barLayout->addWidget(firstPageButton);
-    barLayout->addWidget(prevPageButton);
-    barLayout->addWidget(pageNumEdit);
-    barLayout->addWidget(pageNumLabel);
-    barLayout->addWidget(nextPageButton);
-    barLayout->addWidget(lastPageButton);
-    barLayout->addStretch();
-    barLayout->addLayout(modeLayout);
-    barLayout->addStretch();
-    barLayout->addWidget(pageSetupButton);
-    barLayout->addWidget(printButton);
-    barLayout->addWidget(closeButton);
-
-    QWidget* buttonBar = new QWidget;
-    buttonBar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
-    barLayout->setMargin(0);
-    buttonBar->setLayout(barLayout);
+    mw->addToolBar(toolbar);
+    mw->setCentralWidget(preview);
+    // QMainWindows are always created as top levels, force it to be a
+    // plain widget
+    mw->setParent(q, Qt::Widget);
 
     QVBoxLayout *topLayout = new QVBoxLayout;
-    topLayout->addWidget(buttonBar);
-    topLayout->addWidget(preview);
+    topLayout->addWidget(mw);
+    topLayout->setMargin(0);
     q->setLayout(topLayout);
 
     QString caption = QCoreApplication::translate("QPrintPreviewDialog", "Print Preview");
@@ -338,7 +321,8 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
         || printer->outputFormat() != QPrinter::NativeFormat
 #endif
         )
-        pageSetupButton->setEnabled(false);
+        pageSetupAction->setEnabled(false);
+    preview->setFocus();
 }
 
 static inline void qt_setupActionIcon(QAction *action, const QLatin1String &name)
@@ -418,12 +402,10 @@ void QPrintPreviewDialogPrivate::setupActions()
     printerGroup = new QActionGroup(q);
     printAction = printerGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Print"));
     pageSetupAction = printerGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Page setup"));
-    closeAction = printerGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Close"));
     qt_setupActionIcon(printAction, QLatin1String("print"));
     qt_setupActionIcon(pageSetupAction, QLatin1String("page-setup"));
     QObject::connect(printAction, SIGNAL(triggered(bool)), q, SLOT(_q_print()));
     QObject::connect(pageSetupAction, SIGNAL(triggered(bool)), q, SLOT(_q_pageSetup()));
-    QObject::connect(closeAction, SIGNAL(triggered(bool)), q, SLOT(reject()));
 
     // Initial state:
     fitPageAction->setChecked(true);
@@ -478,7 +460,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
 
     int numPages = preview->numPages();
     int maxChars = QString::number(numPages).length();
-    pageNumLabel->setText(QString(QLatin1String("/ %1")).arg(numPages));
+    pageNumLabel->setText(QString::fromLatin1("/ %1").arg(numPages));
     int cyphersWidth = q->fontMetrics().width(QString().fill(QLatin1Char('8'), maxChars));
     int maxWidth = pageNumEdit->minimumSizeHint().width() + cyphersWidth;
     pageNumEdit->setMinimumWidth(maxWidth);
@@ -576,7 +558,7 @@ void QPrintPreviewDialogPrivate::_q_print()
             suffix = QLatin1String(".ps");
         }
         QString fileName = QFileDialog::getSaveFileName(q, title, printer->outputFileName(),
-                                                        QLatin1String("*") + suffix);
+                                                        QLatin1Char('*') + suffix);
         if (!fileName.isEmpty()) {
             if (QFileInfo(fileName).suffix().isEmpty())
                 fileName.append(suffix);
@@ -629,7 +611,7 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     factor = qMax(qreal(1.0), qMin(qreal(1000.0), factor));
     if (ok) {
         preview->setZoomFactor(factor/100.0);
-        zoomFactor->setEditText(QString(QLatin1String("%1%")).arg(factor));
+        zoomFactor->setEditText(QString::fromLatin1("%1%").arg(factor));
         setFitting(false);
     }
 }

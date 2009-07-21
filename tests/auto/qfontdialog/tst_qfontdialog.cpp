@@ -47,7 +47,9 @@
 #include <qfontinfo.h>
 #include <qtimer.h>
 #include <qmainwindow.h>
+#include <qlistview.h>
 #include "qfontdialog.h"
+#include <private/qfontdialog_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -74,6 +76,7 @@ public slots:
 private slots:
     void defaultOkButton();
     void setFont();
+    void task256466_wrongStyle();
 };
 
 tst_QFontDialog::tst_QFontDialog()
@@ -149,6 +152,29 @@ void tst_QFontDialog::setFont()
     QFont f2 = QFontDialog::getFont(&ok, f1);
     QCOMPARE(QFontInfo(f2).pointSize(), QFontInfo(f1).pointSize());
 }
+
+
+class FriendlyFontDialog : public QFontDialog
+{
+    friend tst_QFontDialog;
+    Q_DECLARE_PRIVATE(QFontDialog);
+};
+
+void tst_QFontDialog::task256466_wrongStyle()
+{
+    QFontDatabase fdb;
+    FriendlyFontDialog dialog;
+    QListView *familyList = reinterpret_cast<QListView*>(dialog.d_func()->familyList);
+    QListView *styleList = reinterpret_cast<QListView*>(dialog.d_func()->styleList);
+    QListView *sizeList = reinterpret_cast<QListView*>(dialog.d_func()->sizeList);
+    for (int i = 0; i < familyList->model()->rowCount(); ++i) {
+        QModelIndex currentFamily = familyList->model()->index(i, 0);
+        familyList->setCurrentIndex(currentFamily);
+        QCOMPARE(dialog.currentFont(), fdb.font(currentFamily.data().toString(), 
+            styleList->currentIndex().data().toString(), sizeList->currentIndex().data().toInt()));
+    }
+}
+
 
 
 

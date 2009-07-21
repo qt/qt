@@ -1123,7 +1123,7 @@ void tst_QItemDelegate::enterKey()
     
     if (widget == 2 || widget == 3) {
         QVERIFY(!editor.isNull());
-        QCOMPARE(editor->hasFocus(), expectedFocus);
+        QCOMPARE(editor && editor->hasFocus(), expectedFocus);
     }
 }
 

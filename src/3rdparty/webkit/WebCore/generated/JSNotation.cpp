@@ -19,21 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSNotation.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "Notation.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSNotation)
+ASSERT_CLASS_FITS_IN_CELL(JSNotation);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,23 +124,25 @@ bool JSNotation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSNotation, Base>(exec, &JSNotationTable, this, propertyName, slot);
 }
 
-JSValuePtr jsNotationPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNotationPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Notation* imp = static_cast<Notation*>(static_cast<JSNotation*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->publicId());
 }
 
-JSValuePtr jsNotationSystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNotationSystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Notation* imp = static_cast<Notation*>(static_cast<JSNotation*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->systemId());
 }
 
-JSValuePtr jsNotationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNotationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSNotation*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSNotation::getConstructor(ExecState* exec)
+JSValue JSNotation::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSNotationConstructor>(exec);
 }

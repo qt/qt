@@ -70,7 +70,7 @@
 #   include "private/qcore_mac_p.h"
 #endif
 
-#include "qfontengineglyphcache_p.h"
+#include <private/qfontengineglyphcache_p.h>
 
 struct glyph_metrics_t;
 typedef unsigned int glyph_t;
@@ -93,7 +93,6 @@ struct QGlyphLayout;
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
-    Q_OBJECT
 public:
     enum Type {
         Box,
@@ -168,7 +167,7 @@ public:
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const {}
     virtual void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_WS_S60)
+#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     virtual void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si) = 0;
 #endif
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
@@ -235,7 +234,7 @@ public:
     bool symbol;
     mutable HB_FontRec hbFont;
     mutable HB_Face hbFace;
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     struct KernPair {
         uint left_right;
         QFixed adjust;
@@ -329,7 +328,7 @@ public:
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_WS_S60)
+#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si);
 #endif
     virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
@@ -360,7 +359,7 @@ private:
     int _size;
 };
 
-class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
+class QFontEngineMulti : public QFontEngine
 {
 public:
     explicit QFontEngineMulti(int engineCount);
@@ -396,7 +395,9 @@ public:
     inline virtual const char *name() const
     { return "Multi"; }
 
-    QFontEngine *engine(int at) const;
+    QFontEngine *engine(int at) const
+    {Q_ASSERT(at < engines.size()); return engines.at(at); }
+
 
 protected:
     friend class QPSPrintEnginePrivate;
@@ -532,8 +533,11 @@ public:
     virtual Properties properties() const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
 
 private:
+    QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);
+
     ATSUFontID fontID;
     QCFType<CGFontRef> cgFont;
     ATSUStyle style;
@@ -621,7 +625,7 @@ QT_END_NAMESPACE
 #   include "private/qfontengine_win_p.h"
 #endif
 
-#if defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
 #   include "private/qfontengine_ft_p.h"
 #endif
 

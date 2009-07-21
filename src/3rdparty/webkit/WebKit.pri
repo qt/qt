@@ -2,8 +2,11 @@
 
 
 isEmpty(OUTPUT_DIR) {
-    CONFIG(release):OUTPUT_DIR=$$PWD/WebKitBuild/Release
-    CONFIG(debug):OUTPUT_DIR=$$PWD/WebKitBuild/Debug
+    CONFIG(debug, debug|release) {
+        OUTPUT_DIR=$$PWD/WebKitBuild/Debug
+    } else { # Release
+        OUTPUT_DIR=$$PWD/WebKitBuild/Release
+    }
 }
 
 DEFINES += BUILDING_QT__=1
@@ -14,13 +17,18 @@ building-libs {
         QT += webkit
     } else {
         QMAKE_LIBDIR = $$OUTPUT_DIR/lib $$QMAKE_LIBDIR
-        LIBS += -lQtWebKit
+        mac:!static:contains(QT_CONFIG, qt_framework):!CONFIG(webkit_no_framework) {
+            LIBS += -framework QtWebKit
+            QMAKE_FRAMEWORKPATH = $$OUTPUT_DIR/lib $$QMAKE_FRAMEWORKPATH
+        } else {
+            LIBS += -lQtWebKit
+        }
     }
     DEPENDPATH += $$PWD/WebKit/qt/Api
 }
 
 DEFINES += USE_SYSTEM_MALLOC
-CONFIG(release) {
+CONFIG(release, debug|release) {
     DEFINES += NDEBUG
 }
 

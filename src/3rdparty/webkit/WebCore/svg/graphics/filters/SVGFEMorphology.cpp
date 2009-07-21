@@ -21,9 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEMorphology.h"
 #include "SVGRenderTreeAsText.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -71,7 +72,7 @@ void FEMorphology::setRadiusY(float radiusY)
     m_radiusY = radiusY;
 }
 
-void FEMorphology::apply()
+void FEMorphology::apply(Filter*)
 {
 }
 
@@ -104,4 +105,4 @@ TextStream& FEMorphology::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

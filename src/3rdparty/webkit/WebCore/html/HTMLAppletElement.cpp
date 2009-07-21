@@ -27,6 +27,7 @@
 #include "Frame.h"
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "RenderApplet.h"
 #include "RenderInline.h"
 #include "Settings.h"
@@ -99,9 +100,12 @@ void HTMLAppletElement::removedFromDocument()
     HTMLPlugInElement::removedFromDocument();
 }
 
-bool HTMLAppletElement::rendererIsNeeded(RenderStyle*)
+bool HTMLAppletElement::rendererIsNeeded(RenderStyle* style)
 {
-    return !getAttribute(codeAttr).isNull();
+    if (getAttribute(codeAttr).isNull())
+        return false;
+
+    return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
 RenderObject* HTMLAppletElement::createRenderer(RenderArena*, RenderStyle* style)
@@ -116,8 +120,6 @@ RenderObject* HTMLAppletElement::createRenderer(RenderArena*, RenderStyle* style
         const AtomicString& codeBase = getAttribute(codebaseAttr);
         if (!codeBase.isNull())
             args.set("codeBase", codeBase);
-        else
-            args.set("codeBase", document()->baseURL().string());
 
         const AtomicString& name = getAttribute(document()->isHTMLDocument() ? nameAttr : idAttr);
         if (!name.isNull())

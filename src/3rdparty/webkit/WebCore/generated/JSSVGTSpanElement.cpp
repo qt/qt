@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGTSpanElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGTSpanElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGTSpanElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGTSpanElement);
 
 /* Hash table for prototype */
 

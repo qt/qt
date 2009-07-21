@@ -19,23 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSRangeException.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "RangeException.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSRangeException)
+ASSERT_CLASS_FITS_IN_CELL(JSRangeException);
 
 /* Hash table */
 
@@ -82,7 +79,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -135,7 +132,6 @@ JSRangeException::JSRangeException(PassRefPtr<Structure> structure, PassRefPtr<R
 JSRangeException::~JSRangeException()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSRangeException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -148,64 +144,68 @@ bool JSRangeException::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSRangeException, Base>(exec, &JSRangeExceptionTable, this, propertyName, slot);
 }
 
-JSValuePtr jsRangeExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(static_cast<JSRangeException*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->code());
 }
 
-JSValuePtr jsRangeExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(static_cast<JSRangeException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsRangeExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(static_cast<JSRangeException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->message());
 }
 
-JSValuePtr jsRangeExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSRangeException*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSRangeException::getConstructor(ExecState* exec)
+JSValue JSRangeException::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSRangeExceptionConstructor>(exec);
 }
 
-JSValuePtr jsRangeExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsRangeExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSRangeException::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSRangeException::s_info))
         return throwError(exec, TypeError);
     JSRangeException* castedThisObj = static_cast<JSRangeException*>(asObject(thisValue));
     RangeException* imp = static_cast<RangeException*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsString(exec, imp->toString());
+    JSC::JSValue result = jsString(exec, imp->toString());
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsRangeExceptionBAD_BOUNDARYPOINTS_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeExceptionBAD_BOUNDARYPOINTS_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsRangeExceptionINVALID_NODE_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeExceptionINVALID_NODE_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, RangeException* object)
+JSC::JSValue toJS(JSC::ExecState* exec, RangeException* object)
 {
     return getDOMObjectWrapper<JSRangeException>(exec, object);
 }
-RangeException* toRangeException(JSC::JSValuePtr value)
+RangeException* toRangeException(JSC::JSValue value)
 {
-    return value->isObject(&JSRangeException::s_info) ? static_cast<JSRangeException*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSRangeException::s_info) ? static_cast<JSRangeException*>(asObject(value))->impl() : 0;
 }
 
 }

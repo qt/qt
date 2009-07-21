@@ -21,10 +21,10 @@
 #ifndef JSSVGAnimateElement_h
 #define JSSVGAnimateElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_ANIMATION)
 
 #include "JSSVGAnimationElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -42,6 +42,7 @@ public:
 
 
 class JSSVGAnimateElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

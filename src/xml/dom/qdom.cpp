@@ -2694,7 +2694,7 @@ void QDomNode::save(QTextStream& str, int indent) const
     If the document contains invalid XML characters or characters that cannot be
     encoded in the given encoding, the result and behavior is undefined.
 
- \since 4.2
+    \since 4.2
  */
 void QDomNode::save(QTextStream& str, int indent, EncodingPolicy encodingPolicy) const
 {
@@ -4594,7 +4594,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
             qName = prefix + QLatin1Char(':') + name;
             nsDecl = QLatin1String(" xmlns:") + prefix;
         }
-        nsDecl += QLatin1String("=\"") + encodeText(namespaceURI, s) + QLatin1String("\"");
+        nsDecl += QLatin1String("=\"") + encodeText(namespaceURI, s) + QLatin1Char('\"');
     }
     s << '<' << qName << nsDecl;
 
@@ -4602,9 +4602,9 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 
     /* Write out attributes. */
     if (!m_attr->map.isEmpty()) {
-        s << ' ';
         QHash<QString, QDomNodePrivate *>::const_iterator it = m_attr->map.constBegin();
         for (; it != m_attr->map.constEnd(); ++it) {
+            s << ' ';
             if (it.value()->namespaceURI.isNull()) {
                 s << it.value()->name << "=\"" << encodeText(it.value()->value, s, true, true) << '\"';
             } else {
@@ -4627,7 +4627,6 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
                     outputtedPrefixes.insert(it.value()->prefix);
                 }
             }
-            s << ' ';
         }
     }
 

@@ -19,25 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSDocumentType.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DocumentType.h"
 #include "JSNamedNodeMap.h"
 #include "KURL.h"
-#include "NamedAttrMap.h"
 #include "NamedNodeMap.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDocumentType)
+ASSERT_CLASS_FITS_IN_CELL(JSDocumentType);
 
 /* Hash table */
 
@@ -85,7 +80,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -136,54 +131,60 @@ bool JSDocumentType::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSDocumentType, Base>(exec, &JSDocumentTypeTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDocumentTypeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentTypeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DocumentType* imp = static_cast<DocumentType*>(static_cast<JSDocumentType*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsDocumentTypeEntities(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentTypeEntities(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DocumentType* imp = static_cast<DocumentType*>(static_cast<JSDocumentType*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->entities()));
 }
 
-JSValuePtr jsDocumentTypeNotations(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentTypeNotations(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DocumentType* imp = static_cast<DocumentType*>(static_cast<JSDocumentType*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->notations()));
 }
 
-JSValuePtr jsDocumentTypePublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentTypePublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DocumentType* imp = static_cast<DocumentType*>(static_cast<JSDocumentType*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->publicId());
 }
 
-JSValuePtr jsDocumentTypeSystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentTypeSystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DocumentType* imp = static_cast<DocumentType*>(static_cast<JSDocumentType*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->systemId());
 }
 
-JSValuePtr jsDocumentTypeInternalSubset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentTypeInternalSubset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DocumentType* imp = static_cast<DocumentType*>(static_cast<JSDocumentType*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->internalSubset());
 }
 
-JSValuePtr jsDocumentTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSDocumentType*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSDocumentType::getConstructor(ExecState* exec)
+JSValue JSDocumentType::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSDocumentTypeConstructor>(exec);
 }
 
-DocumentType* toDocumentType(JSC::JSValuePtr value)
+DocumentType* toDocumentType(JSC::JSValue value)
 {
-    return value->isObject(&JSDocumentType::s_info) ? static_cast<JSDocumentType*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSDocumentType::s_info) ? static_cast<JSDocumentType*>(asObject(value))->impl() : 0;
 }
 
 }

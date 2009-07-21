@@ -108,6 +108,8 @@ private slots:
 
     void recycleServer();
 
+    void multiConnect();
+
     void debug();
 
 #ifdef Q_OS_SYMBIAN
@@ -896,6 +898,31 @@ void tst_QLocalSocket::recycleServer()
     client.connectToServer("recycletest2");
     QVERIFY(client.waitForConnected(202));
     QVERIFY(server.waitForNewConnection(202));
+    QVERIFY(server.nextPendingConnection() != 0);
+}
+
+void tst_QLocalSocket::multiConnect()
+{
+    QLocalServer server;
+    QLocalSocket client1;
+    QLocalSocket client2;
+    QLocalSocket client3;
+
+    QVERIFY(server.listen("multiconnect"));
+
+    client1.connectToServer("multiconnect");
+    client2.connectToServer("multiconnect");
+    client3.connectToServer("multiconnect");
+
+    QVERIFY(client1.waitForConnected(201));
+    QVERIFY(client2.waitForConnected(202));
+    QVERIFY(client3.waitForConnected(203));
+
+    QVERIFY(server.waitForNewConnection(201));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(202));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(203));
     QVERIFY(server.nextPendingConnection() != 0);
 }
 

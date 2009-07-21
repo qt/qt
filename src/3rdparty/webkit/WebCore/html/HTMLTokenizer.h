@@ -3,7 +3,7 @@
               (C) 1997 Torben Weis (weis@kde.org)
               (C) 1998 Waldo Bastian (bastian@kde.org)
               (C) 2001 Dirk Mueller (mueller@kde.org)
-    Copyright (C) 2003, 2004, 2005, 2006, 2007 Apple Inc. All rights reserved.
+    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -63,7 +63,7 @@ struct Token {
     { }
     ~Token() { }
 
-    void addAttribute(Document*, AtomicString& attrName, const AtomicString& v, bool viewSourceMode);
+    void addAttribute(AtomicString& attrName, const AtomicString& v, bool viewSourceMode);
 
     bool isOpenTag(const QualifiedName& fullName) const { return beginTag && fullName.localName() == tagName; }
     bool isCloseTag(const QualifiedName& fullName) const { return !beginTag && fullName.localName() == tagName; }
@@ -138,7 +138,7 @@ public:
     HTMLTokenizer(DocumentFragment*);
     virtual ~HTMLTokenizer();
 
-    virtual bool write(const SegmentedString&, bool appendData);
+    virtual void write(const SegmentedString&, bool appendData);
     virtual void finish();
     virtual void setForceSynchronous(bool force);
     virtual bool isWaitingForScripts() const;
@@ -173,7 +173,7 @@ private:
     State parseDoctype(SegmentedString&, State);
     State parseServer(SegmentedString&, State);
     State parseText(SegmentedString&, State);
-    State parseSpecial(SegmentedString&, State);
+    State parseNonHTMLText(SegmentedString&, State);
     State parseTag(SegmentedString&, State);
     State parseEntity(SegmentedString&, UChar*& dest, State, unsigned& cBufferPos, bool start, bool parsingTag);
     State parseProcessingInstruction(SegmentedString&, State);
@@ -288,7 +288,7 @@ private:
         bool forceSynchronous() const { return testBit(ForceSynchronous); }
         void setForceSynchronous(bool v) { setBit(ForceSynchronous, v); }
 
-        bool inAnySpecial() const { return m_bits & (InScript | InStyle | InXmp | InTextArea | InTitle | InIFrame); }
+        bool inAnyNonHTMLText() const { return m_bits & (InScript | InStyle | InXmp | InTextArea | InTitle | InIFrame); }
         bool hasTagState() const { return m_bits & TagMask; }
         bool hasEntityState() const { return m_bits & EntityMask; }
 

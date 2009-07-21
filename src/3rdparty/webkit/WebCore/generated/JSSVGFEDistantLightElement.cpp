@@ -20,23 +20,19 @@
 
 #include "config.h"
 
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
-
-#include "SVGElement.h"
 #include "JSSVGFEDistantLightElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedNumber.h"
 #include "SVGFEDistantLightElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEDistantLightElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEDistantLightElement);
 
 /* Hash table */
 
@@ -92,15 +88,17 @@ bool JSSVGFEDistantLightElement::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGFEDistantLightElement, Base>(exec, &JSSVGFEDistantLightElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEDistantLightElementAzimuth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDistantLightElementAzimuth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->azimuthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDistantLightElementElevation(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDistantLightElementElevation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->elevationAnimated();
     return toJS(exec, obj.get(), imp);
@@ -109,4 +107,4 @@ JSValuePtr jsSVGFEDistantLightElementElevation(ExecState* exec, const Identifier
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

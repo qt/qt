@@ -20,23 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGRenderingIntent.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGRenderingIntent.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGRenderingIntent)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGRenderingIntent);
 
 /* Hash table */
 
@@ -84,7 +79,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -141,7 +136,6 @@ JSSVGRenderingIntent::JSSVGRenderingIntent(PassRefPtr<Structure> structure, Pass
 JSSVGRenderingIntent::~JSSVGRenderingIntent()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGRenderingIntent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -154,54 +148,54 @@ bool JSSVGRenderingIntent::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSSVGRenderingIntent, Base>(exec, &JSSVGRenderingIntentTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGRenderingIntentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRenderingIntentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGRenderingIntent*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSSVGRenderingIntent::getConstructor(ExecState* exec)
+JSValue JSSVGRenderingIntent::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGRenderingIntentConstructor>(exec);
 }
 
 // Constant getters
 
-JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGRenderingIntentRENDERING_INTENT_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_AUTO(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGRenderingIntentRENDERING_INTENT_AUTO(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_PERCEPTUAL(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGRenderingIntentRENDERING_INTENT_PERCEPTUAL(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_RELATIVE_COLORIMETRIC(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGRenderingIntentRENDERING_INTENT_RELATIVE_COLORIMETRIC(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_SATURATION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGRenderingIntentRENDERING_INTENT_SATURATION(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_ABSOLUTE_COLORIMETRIC(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGRenderingIntentRENDERING_INTENT_ABSOLUTE_COLORIMETRIC(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGRenderingIntent* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGRenderingIntent* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGRenderingIntent>(exec, object, context);
 }
-SVGRenderingIntent* toSVGRenderingIntent(JSC::JSValuePtr value)
+SVGRenderingIntent* toSVGRenderingIntent(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGRenderingIntent::s_info) ? static_cast<JSSVGRenderingIntent*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGRenderingIntent::s_info) ? static_cast<JSSVGRenderingIntent*>(asObject(value))->impl() : 0;
 }
 
 }

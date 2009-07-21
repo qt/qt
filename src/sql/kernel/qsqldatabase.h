@@ -120,6 +120,8 @@ public:
     int port() const;
     QString connectOptions() const;
     QString connectionName() const;
+    void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
+    QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
 
     QSqlDriver* driver() const;
 

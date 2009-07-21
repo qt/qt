@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGStopElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -36,14 +32,14 @@
 #include "JSSVGAnimatedNumber.h"
 #include "JSSVGAnimatedString.h"
 #include "SVGStopElement.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGStopElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGStopElement);
 
 /* Hash table */
 
@@ -106,36 +102,40 @@ bool JSSVGStopElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSSVGStopElement, Base>(exec, &JSSVGStopElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGStopElementOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStopElementOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGStopElement* imp = static_cast<SVGStopElement*>(static_cast<JSSVGStopElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->offsetAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGStopElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStopElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGStopElement* imp = static_cast<SVGStopElement*>(static_cast<JSSVGStopElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGStopElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStopElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGStopElement* imp = static_cast<SVGStopElement*>(static_cast<JSSVGStopElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGStopElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGStopElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGStopElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGStopElement::s_info))
         return throwError(exec, TypeError);
     JSSVGStopElement* castedThisObj = static_cast<JSSVGStopElement*>(asObject(thisValue));
     SVGStopElement* imp = static_cast<SVGStopElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

@@ -44,10 +44,11 @@ private:
     RefPtr<CanvasPattern> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, CanvasPattern*);
-CanvasPattern* toCanvasPattern(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, CanvasPattern*);
+CanvasPattern* toCanvasPattern(JSC::JSValue);
 
 class JSCanvasPatternPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

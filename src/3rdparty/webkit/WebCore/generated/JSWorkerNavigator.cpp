@@ -20,23 +20,20 @@
 
 #include "config.h"
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorkerNavigator.h"
 
-#include <wtf/GetPtr.h>
-
 #include "KURL.h"
 #include "WorkerNavigator.h"
-
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSWorkerNavigator)
+ASSERT_CLASS_FITS_IN_CELL(JSWorkerNavigator);
 
 /* Hash table */
 
@@ -97,7 +94,6 @@ JSWorkerNavigator::JSWorkerNavigator(PassRefPtr<Structure> structure, PassRefPtr
 JSWorkerNavigator::~JSWorkerNavigator()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSWorkerNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -110,43 +106,48 @@ bool JSWorkerNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSWorkerNavigator, Base>(exec, getJSWorkerNavigatorTable(exec), this, propertyName, slot);
 }
 
-JSValuePtr jsWorkerNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->appName());
 }
 
-JSValuePtr jsWorkerNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->appVersion());
 }
 
-JSValuePtr jsWorkerNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->platform());
 }
 
-JSValuePtr jsWorkerNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->userAgent());
 }
 
-JSValuePtr jsWorkerNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->onLine());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, WorkerNavigator* object)
+JSC::JSValue toJS(JSC::ExecState* exec, WorkerNavigator* object)
 {
     return getDOMObjectWrapper<JSWorkerNavigator>(exec, object);
 }
-WorkerNavigator* toWorkerNavigator(JSC::JSValuePtr value)
+WorkerNavigator* toWorkerNavigator(JSC::JSValue value)
 {
-    return value->isObject(&JSWorkerNavigator::s_info) ? static_cast<JSWorkerNavigator*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSWorkerNavigator::s_info) ? static_cast<JSWorkerNavigator*>(asObject(value))->impl() : 0;
 }
 
 }

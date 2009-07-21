@@ -50,6 +50,7 @@
 #include "shared.h"
 
 bool runStripEnabled = true;
+int logLevel = 1;
 
 using std::cout;
 using std::endl;
@@ -61,8 +62,8 @@ bool operator==(const FrameworkInfo &a, const FrameworkInfo &b)
 
 QDebug operator<<(QDebug debug, const FrameworkInfo &info)
 {
-    debug << "Framework directory" << info.frameworkDirectory << "\n";
     debug << "Framework name" << info.frameworkName << "\n";
+    debug << "Framework directory" << info.frameworkDirectory << "\n";
     debug << "Framework path" << info.frameworkPath << "\n";
     debug << "Binary directory" << info.binaryDirectory << "\n";
     debug << "Binary name" << info.binaryName << "\n";
@@ -71,8 +72,8 @@ QDebug operator<<(QDebug debug, const FrameworkInfo &info)
     debug << "Install name" << info.installName << "\n";
     debug << "Deployed install name" << info.deployedInstallName << "\n";
     debug << "Source file Path" << info.sourceFilePath << "\n";
-    debug << "Deployed Directtory (relative to bundle)" << info.destinationDirectory << "\n";
-    
+    debug << "Deployed Directory (relative to bundle)" << info.destinationDirectory << "\n";
+
     return debug;
 }
 
@@ -89,40 +90,41 @@ inline QDebug operator<<(QDebug debug, const ApplicationBundleInfo &info)
 bool copyFilePrintStatus(const QString &from, const QString &to)
 {
     if (QFile::copy(from, to)) {
-        qDebug() << "copied" << from << "to" << to;
+        LogNormal() << " copied:" << from;
+        LogNormal() << " to" << to;
         return true;
     } else {
-        qDebug() << "ERROR: file copy failed from" << from << "to" << to;
+        LogError() << "file copy failed from" << from;
+        LogError() << " to" << to;
         return false;
     }
 }
 
-
-FrameworkInfo parseOtoolLibraryLine(const QString &line)
+FrameworkInfo parseOtoolLibraryLine(const QString &line, bool useDebugLibs)
 {
     FrameworkInfo info;
     QString trimmed = line.trimmed();
 
     if (trimmed.isEmpty())
         return info;
-        
+
     // Don't deploy system libraries.
     if (trimmed.startsWith("/System/Library/") ||
         (trimmed.startsWith("/usr/lib/") && trimmed.contains("libQt") == false) // exception for libQtuitools and libQtlucene
         || trimmed.startsWith("@executable_path"))
         return info;
-        
+
     enum State {QtPath, FrameworkName, DylibName, Version, End};
     State state = QtPath;
     int part = 0;
     QString name;
     QString qtPath;
+    QString suffix = useDebugLibs ? "_debug" : "";
 
     // Split the line into [Qt-path]/lib/qt[Module].framework/Versions/[Version]/
     QStringList parts = trimmed.split("/");
     while (part < parts.count()) {
         const QString currentPart = parts.at(part).simplified() ;
-//        qDebug() << "currentPart" << currentPart;
         ++part;
         if (currentPart == "")
             continue;
@@ -148,13 +150,13 @@ FrameworkInfo parseOtoolLibraryLine(const QString &line)
                     info.frameworkDirectory = "/usr/lib/";
                     state = DylibName;
                 }
-                
+
                 --part;
                 continue;
             }
             qtPath += (currentPart + "/");
-        
-        } if (state == FrameworkName) { 
+
+        } if (state == FrameworkName) {
             // remove ".framework"
             name = currentPart;
             name.chop(QString(".framework").length());
@@ -163,28 +165,29 @@ FrameworkInfo parseOtoolLibraryLine(const QString &line)
             ++part;
             continue;
         } if (state == DylibName) {
-            name =  currentPart.split(" (compatibility").at(0);
+            name = currentPart.split(" (compatibility").at(0);
             info.frameworkName = name;
-            info.installName += info.frameworkName;
-            info.deployedInstallName = "@executable_path/../Frameworks/" + info.frameworkName;
-            info.binaryName = name;
-            info.frameworkPath = info.frameworkDirectory + info.frameworkName;
+            info.binaryName = name.left(name.indexOf('.')) + suffix + name.mid(name.indexOf('.'));
+            info.installName += name;
+            info.deployedInstallName = "@executable_path/../Frameworks/" + info.binaryName;
+            info.frameworkPath = info.frameworkDirectory + info.binaryName;
             info.sourceFilePath = info.frameworkPath;
             info.destinationDirectory = bundleFrameworkDirectory + "/";
+            info.binaryDirectory = info.frameworkDirectory;
+            info.binaryPath = info.frameworkPath;
             state = End;
             ++part;
             continue;
         } else if (state == Version) {
             info.version = currentPart;
-            info.binaryDirectory = "Versions/" + info.version; 
-            info.binaryName = name;
+            info.binaryDirectory = "Versions/" + info.version;
+            info.binaryName = name + suffix;
             info.binaryPath = "/" + info.binaryDirectory + "/" + info.binaryName;
-            info.installName += info.frameworkName + info.binaryPath;
+            info.installName += info.frameworkName + "/" + info.binaryDirectory + "/" + name;
             info.deployedInstallName = "@executable_path/../Frameworks/" + info.frameworkName + info.binaryPath;
             info.frameworkPath = info.frameworkDirectory + info.frameworkName;
             info.sourceFilePath = info.frameworkPath + info.binaryPath;
             info.destinationDirectory = bundleFrameworkDirectory + "/" + info.frameworkName + "/" + info.binaryDirectory;
-
             state = End;
         } else if (state == End) {
             break;
@@ -198,42 +201,46 @@ QString findAppBinary(const QString &appBundlePath)
 {
     QString appName = QFileInfo(appBundlePath).completeBaseName();
     QString binaryPath = appBundlePath  + "/Contents/MacOS/" + appName;
-    
+
     if (QFile::exists(binaryPath))
         return binaryPath;
-    qDebug() << "Error: Could not find bundle binary for" << appBundlePath;
+    LogError() << "Could not find bundle binary for" << appBundlePath;
     return QString();
 }
 
-QList<FrameworkInfo> getQtFrameworks(const QStringList &otoolLines)
+QList<FrameworkInfo> getQtFrameworks(const QStringList &otoolLines, bool useDebugLibs)
 {
-    QList<FrameworkInfo> libraries; 
+    QList<FrameworkInfo> libraries;
     foreach(const QString line, otoolLines) {
-        FrameworkInfo info = parseOtoolLibraryLine(line);
+        FrameworkInfo info = parseOtoolLibraryLine(line, useDebugLibs);
         if (info.frameworkName.isEmpty() == false) {
+            LogDebug() << "Adding framework:";
+            LogDebug() << info;
             libraries.append(info);
         }
     }
     return libraries;
 }
 
-QList<FrameworkInfo> getQtFrameworks(const QString &path)
+QList<FrameworkInfo> getQtFrameworks(const QString &path, bool useDebugLibs)
 {
+    LogDebug() << "Using otool:";
+    LogDebug() << " inspecting" << path;
     QProcess otool;
     otool.start("otool", QStringList() << "-L" << path);
     otool.waitForFinished();
-    
+
     if (otool.exitCode() != 0) {
-        qDebug() << otool.readAllStandardError();
+        LogError() << otool.readAllStandardError();
     }
-    
+
     QString output = otool.readAllStandardOutput();
     QStringList outputLines = output.split("\n");
     outputLines.removeFirst(); // remove line containing the binary path
     if (path.contains(".framework") || path.contains(".dylib"))
         outputLines.removeFirst(); // frameworks and dylibs lists themselves as a dependency.
 
-    return getQtFrameworks(outputLines);
+    return getQtFrameworks(outputLines, useDebugLibs);
 }
 
 // copies everything _inside_ sourcePath to destinationPath
@@ -256,32 +263,31 @@ void recursiveCopy(const QString &sourcePath, const QString &destinationPath)
 
 QString copyFramework(const FrameworkInfo &framework, const QString path)
 {
-    const QString from = framework.sourceFilePath;
-    const QString toDir = path + "/" + framework.destinationDirectory;
-    const QString to = toDir + "/" + framework.binaryName;
+    QString from = framework.sourceFilePath;
+    QString toDir = path + "/" + framework.destinationDirectory;
+    QString to = toDir + "/" + framework.binaryName;
 
     if (QFile::exists(from) == false) {
-        qDebug() << "ERROR: no file at" << from;
+        LogError() << "no file at" << from;
         return QString();
     }
 
 
     QDir dir;
     if (dir.mkpath(toDir) == false) {
-        qDebug() << "ERROR: could not create destination directory" << to;
+        LogError() << "could not create destination directory" << to;
         return QString();
     }
-    
+
 
     if (QFile::exists(to)) {
-//        qDebug() << framework.frameworkName << "already deployed, skip";
         return QString();
     }
-    
+
     copyFilePrintStatus(from, to);
 
-    const QString resourcesSourcePath = framework.frameworkPath + "/Resources"; 
-    const QString resourcesDestianationPath = path + "/Contents/Frameworks/" + framework.frameworkName + "/Resources"; 
+    const QString resourcesSourcePath = framework.frameworkPath + "/Resources";
+    const QString resourcesDestianationPath = path + "/Contents/Frameworks/" + framework.frameworkName + "/Resources";
     recursiveCopy(resourcesSourcePath, resourcesDestianationPath);
 
     return to;
@@ -293,20 +299,25 @@ void runInstallNameTool(QStringList options)
     installNametool.start("install_name_tool", options);
     installNametool.waitForFinished();
     if (installNametool.exitCode() != 0) {
-        qDebug() << installNametool.readAllStandardError();
-        qDebug() << installNametool.readAllStandardOutput();
+        LogError() << installNametool.readAllStandardError();
+        LogError() << installNametool.readAllStandardOutput();
     }
 }
 
 void changeIdentification(const QString &id, const QString &binaryPath)
 {
-//    qDebug() << "change identification on" << binaryPath << id;
+    LogDebug() << "Using install_name_tool:";
+    LogDebug() << " change identification in" << binaryPath;
+    LogDebug() << " to" << id;
     runInstallNameTool(QStringList() << "-id" << id << binaryPath);
 }
 
 void changeInstallName(const QString &oldName, const QString &newName, const QString &binaryPath)
 {
-//    qDebug() << "change install name on" << binaryPath << oldName << newName;
+    LogDebug() << "Using install_name_tool:";
+    LogDebug() << " in" << binaryPath;
+    LogDebug() << " change reference" << oldName;
+    LogDebug() << " to" << newName;
     runInstallNameTool(QStringList() << "-change" << oldName << newName << binaryPath);
 }
 
@@ -315,14 +326,14 @@ void runStrip(const QString &binaryPath)
     if (runStripEnabled == false)
         return;
 
+    LogDebug() << "Using strip:";
+    LogDebug() << " stripped" << binaryPath;
     QProcess strip;
     strip.start("strip", QStringList() << "-x" << binaryPath);
     strip.waitForFinished();
     if (strip.exitCode() != 0) {
-        qDebug() << strip.readAllStandardError();
-        qDebug() << strip.readAllStandardOutput();
-    } else {
-        qDebug() << "stripped" << binaryPath;
+        LogError() << strip.readAllStandardError();
+        LogError() << strip.readAllStandardOutput();
     }
 }
 
@@ -333,15 +344,18 @@ void runStrip(const QString &binaryPath)
     Returns a DeploymentInfo structure containing the Qt path used and a
     a list of actually deployed frameworks.
 */
-DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks, const QString &bundlePath, const QString &binaryPath)
+DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
+        const QString &bundlePath, const QString &binaryPath, bool useDebugLibs)
 {
+    LogNormal();
+    LogNormal() << "Deploying Qt frameworks found inside:" << binaryPath;
     QStringList copiedFrameworks;
     DeploymentInfo deploymenInfo;
-    
+
     while (frameworks.isEmpty() == false) {
         const FrameworkInfo framework = frameworks.takeFirst();
         copiedFrameworks.append(framework.frameworkName);
-        
+
         // Get the qt path from one of the Qt frameworks;
         if (deploymenInfo.qtPath.isNull() && framework.frameworkName.contains("Qt") 
             && framework.frameworkDirectory.contains("/lib"))
@@ -350,14 +364,11 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks, const QString
                 deploymenInfo.qtPath.chop(5); // remove "/lib/"
         }
 
-//        qDebug() << "";
-//        qDebug() << "deploy" << framework.frameworkName;
-
         if (framework.installName.startsWith("/@executable_path/")) {
-            qDebug()  << framework.frameworkName << "already deployed, skipping.";
+            LogError()  << framework.frameworkName << "already deployed, skipping.";
             continue;
         }
-        
+
         // Install_name_tool the new id into the binary
         changeInstallName(framework.installName, framework.deployedInstallName, binaryPath);
 
@@ -366,18 +377,17 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks, const QString
         // Skip the rest if already was deployed.
         if (deployedBinaryPath.isNull())
             continue;
-        
+
         runStrip(deployedBinaryPath);
 
         // Install_name_tool it a new id.
         changeIdentification(framework.deployedInstallName, deployedBinaryPath);
         // Check for framework dependencies
-        QList<FrameworkInfo> dependencies = getQtFrameworks(deployedBinaryPath);
+        QList<FrameworkInfo> dependencies = getQtFrameworks(deployedBinaryPath, useDebugLibs);
 
         foreach (FrameworkInfo dependency, dependencies) {
-//            qDebug() << "dependent framework" << dependency.installName << deployedBinaryPath;
             changeInstallName(dependency.installName, dependency.deployedInstallName, deployedBinaryPath);
-            
+
             // Deploy framework if neccesary.
             if (copiedFrameworks.contains(dependency.frameworkName) == false && frameworks.contains(dependency) == false) {
                 frameworks.append(dependency);
@@ -388,28 +398,39 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks, const QString
     return deploymenInfo;
 }
 
-DeploymentInfo deployQtFrameworks(const QString &appBundlePath)
+DeploymentInfo deployQtFrameworks(const QString &appBundlePath, bool useDebugLibs)
 {
    ApplicationBundleInfo applicationBundle;
    applicationBundle.path = appBundlePath;
    applicationBundle.binaryPath = findAppBinary(appBundlePath);
-   return deployQtFrameworks(getQtFrameworks(applicationBundle.binaryPath), applicationBundle.path, applicationBundle.binaryPath);
+   QList<FrameworkInfo> frameworks = getQtFrameworks(applicationBundle.binaryPath, useDebugLibs);
+   if (frameworks.isEmpty()) {
+        LogWarning();
+        LogWarning() << "Could not find any external Qt frameworks to deploy in" << appBundlePath;
+        LogWarning() << "Perhaps macdeployqt was already used on" << appBundlePath << "?";
+        LogWarning() << "If so, you will need to rebuild" << appBundlePath << "before trying again.";
+        return DeploymentInfo();
+   } else {
+       return deployQtFrameworks(frameworks, applicationBundle.path, applicationBundle.binaryPath, useDebugLibs);
+   }
 }
 
-void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pluginSourcePath, const QString pluginDestinationPath, DeploymentInfo deploymentInfo)
+void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pluginSourcePath,
+        const QString pluginDestinationPath, DeploymentInfo deploymentInfo, bool useDebugLibs)
 {
+    LogNormal() << "Deploying plugins from" << pluginSourcePath;
     QStringList plugins = QDir(pluginSourcePath).entryList(QStringList() << "*.dylib");
 
     foreach (QString pluginName, plugins) {
-        
-        // Skip some Qt plugins based on what frameworks were deployed:
-        //qDebug() << pluginSourcePath << deploymentInfo.pluginPath;
-        
         if (pluginSourcePath.contains(deploymentInfo.pluginPath)) {
             QStringList deployedFrameworks = deploymentInfo.deployedFrameworks;
 
-            // Skip the debug versions of the plugins
-            if (pluginName.endsWith("_debug.dylib"))
+            // Skip the debug versions of the plugins, unless specified otherwise.
+            if (!useDebugLibs && pluginName.endsWith("_debug.dylib"))
+                continue;
+
+            // Skip the release versions of the plugins, unless specified otherwise.
+            if (useDebugLibs && !pluginName.endsWith("_debug.dylib"))
                 continue;
 
             // Skip the designer plugins
@@ -420,7 +441,7 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
             // SKip the opengl graphicssystem plugin when not in use.
             if (pluginName.contains("libqglgraphicssystem"))
                 continue;
-#endif            
+#endif
             // Deploy accessibility for Qt3Support only if the Qt3Support.framework is in use
             if (deployedFrameworks.indexOf("Qt3Support.framework") == -1 && pluginName.contains("accessiblecompatwidgets"))
                 continue;
@@ -448,28 +469,25 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
         const QString sourcePath = pluginSourcePath + "/" + pluginName;
         const QString destinationPath = pluginDestinationPath + "/" + pluginName;
         if (copyFilePrintStatus(sourcePath, destinationPath)) {
-        
-        runStrip(destinationPath);
 
-        // Special case for the phonon plugin: CoreVideo is not available as a separate framework
-        // on panther, link against the QuartzCore framework instead. (QuartzCore contians CoreVideo.)
-        if (pluginName.contains("libphonon_qt7")) {
-            changeInstallName("/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",
-                              "/System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore",
-                                destinationPath);
-        }
+            runStrip(destinationPath);
 
-//        qDebug() << "deploy plugin depedencies:";
-            QList<FrameworkInfo> frameworks = getQtFrameworks(destinationPath);
-//            qDebug() << frameworks;
-            deployQtFrameworks(frameworks, appBundleInfo.path, destinationPath);
-//        qDebug() << "deploy plugin depedencies done";
+            // Special case for the phonon plugin: CoreVideo is not available as a separate framework
+            // on panther, link against the QuartzCore framework instead. (QuartzCore contians CoreVideo.)
+            if (pluginName.contains("libphonon_qt7")) {
+                changeInstallName("/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",
+                        "/System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore",
+                        destinationPath);
+            }
+
+            QList<FrameworkInfo> frameworks = getQtFrameworks(destinationPath, useDebugLibs);
+            deployQtFrameworks(frameworks, appBundleInfo.path, destinationPath, useDebugLibs);
         }
     } // foreach plugins
 
     QStringList subdirs = QDir(pluginSourcePath).entryList(QStringList() << "*", QDir::Dirs | QDir::NoDotAndDotDot);
     foreach (const QString &subdir, subdirs)
-        deployPlugins(appBundleInfo, pluginSourcePath + "/" + subdir, pluginDestinationPath + "/" + subdir, deploymentInfo);
+        deployPlugins(appBundleInfo, pluginSourcePath + "/" + subdir, pluginDestinationPath + "/" + subdir, deploymentInfo, useDebugLibs);
 }
 
 void createQtConf(const QString &appBundlePath)
@@ -479,63 +497,64 @@ void createQtConf(const QString &appBundlePath)
     QString fileName = filePath + "qt.conf";
 
     QDir().mkpath(filePath);
-    
+
     QFile qtconf(fileName);
     if (qtconf.exists()) {
-        qDebug() << "";
-        qDebug() << "Warning:" << fileName << "already exists, will not overwrite.";
-        qDebug() << "To make sure the plugins are loaded from the correct location,";
-        qDebug() << "please make sure qt.conf contains the following lines:";
-        qDebug() << contents;
-        qDebug() << "";
+        LogWarning();
+        LogWarning() << fileName << "already exists, will not overwrite.";
+        LogWarning() << "To make sure the plugins are loaded from the correct location,";
+        LogWarning() << "please make sure qt.conf contains the following lines:";
+        LogWarning() << "[Paths]";
+        LogWarning() << "  Plugins = PlugIns";
         return;
     }
 
     qtconf.open(QIODevice::WriteOnly);
     if (qtconf.write(contents) != -1) {
-        qDebug() << "";
-        qDebug() << "Created configuration file:" << fileName;
-        qDebug() << "This file sets the plugin search path to" << appBundlePath + "/Contents/PlugIns";
-        qDebug() << "";
+        LogNormal() << "Created configuration file:" << fileName;
+        LogNormal() << "This file sets the plugin search path to" << appBundlePath + "/Contents/PlugIns";
     }
 }
 
-void deployPlugins(const QString &appBundlePath, DeploymentInfo deploymentInfo)
+void deployPlugins(const QString &appBundlePath, DeploymentInfo deploymentInfo, bool useDebugLibs)
 {
     ApplicationBundleInfo applicationBundle;
     applicationBundle.path = appBundlePath;
     applicationBundle.binaryPath = findAppBinary(appBundlePath);
-   
+
     const QString pluginDestinationPath = appBundlePath + "/" + "Contents/PlugIns";
-    
-//    qDebug() << "";
-//    qDebug() << "recursively copying plugins from" << deploymentInfo.pluginPath << "to" << pluginDestinationPath;
-    deployPlugins(applicationBundle, deploymentInfo.pluginPath, pluginDestinationPath, deploymentInfo);
+    deployPlugins(applicationBundle, deploymentInfo.pluginPath, pluginDestinationPath, deploymentInfo, useDebugLibs);
 }
 
 
 void changeQtFrameworks(const QList<FrameworkInfo> frameworks, const QString &appBinaryPath, const QString &absoluteQtPath)
 {
-    qDebug() << "Changing" << appBinaryPath << "to link against Qt in" << absoluteQtPath;
+    LogNormal() << "Changing" << appBinaryPath << "to link against";
+    LogNormal() << "Qt in" << absoluteQtPath;
     QString finalQtPath = absoluteQtPath;
 
-    if (absoluteQtPath.startsWith("/Library/Frameworks") == false)
+    if (!absoluteQtPath.startsWith("/Library/Frameworks"))
         finalQtPath += "/lib/";
 
     foreach (FrameworkInfo framework, frameworks) {
         const QString oldBinaryId = framework.installName;
         const QString newBinaryId = finalQtPath + framework.frameworkName +  framework.binaryPath;
-        qDebug() << "Changing" << oldBinaryId << "to" << newBinaryId;
         changeInstallName(oldBinaryId, newBinaryId, appBinaryPath);
     }
 }
 
-void changeQtFrameworks(const QString appPath, const QString &qtPath)
+void changeQtFrameworks(const QString appPath, const QString &qtPath, bool useDebugLibs)
 {
     const QString appBinaryPath = findAppBinary(appPath);
-    const QList<FrameworkInfo> qtFrameworks = getQtFrameworks(appBinaryPath);
-    const QString absoluteQtPath = QDir(qtPath).absolutePath();
-    changeQtFrameworks(qtFrameworks, appBinaryPath, absoluteQtPath);
+    const QList<FrameworkInfo> frameworks = getQtFrameworks(appBinaryPath, useDebugLibs);
+    if (frameworks.isEmpty()) {
+        LogWarning();
+        LogWarning() << "Could not find any _external_ Qt frameworks to change in" << appPath;
+        return;
+    } else {
+        const QString absoluteQtPath = QDir(qtPath).absolutePath();
+        changeQtFrameworks(frameworks, appBinaryPath, absoluteQtPath);
+    }
 }
 
 
@@ -543,15 +562,15 @@ void createDiskImage(const QString &appBundlePath)
 {
     QString appBaseName = appBundlePath;
     appBaseName.chop(4); // remove ".app" from end
-    
+
     QString dmgName = appBaseName + ".dmg";
 
     QFile dmg(dmgName);
 
     if (dmg.exists()) {
-        qDebug() << "Disk image already exists, skipping .dmg creation for" << dmg.fileName();
+        LogNormal() << "Disk image already exists, skipping .dmg creation for" << dmg.fileName();
     } else {
-        qDebug() << "Creating disk image (.dmg) for" << appBundlePath;
+        LogNormal() << "Creating disk image (.dmg) for" << appBundlePath;
     }
 
     // More dmg options can be found in the hdiutil man page.

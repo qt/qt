@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGAnimatedAngle.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAngle.h"
 #include "SVGAngle.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedAngle)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedAngle);
 
 /* Hash table */
 
@@ -87,7 +83,6 @@ JSSVGAnimatedAngle::JSSVGAnimatedAngle(PassRefPtr<Structure> structure, PassRefP
 JSSVGAnimatedAngle::~JSSVGAnimatedAngle()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGAnimatedAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -100,25 +95,27 @@ bool JSSVGAnimatedAngle::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSSVGAnimatedAngle, Base>(exec, &JSSVGAnimatedAngleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGAnimatedAngleBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedAngleBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedAngle* imp = static_cast<SVGAnimatedAngle*>(static_cast<JSSVGAnimatedAngle*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->baseVal()), static_cast<JSSVGAnimatedAngle*>(asObject(slot.slotBase()))->context());
 }
 
-JSValuePtr jsSVGAnimatedAngleAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedAngleAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedAngle* imp = static_cast<SVGAnimatedAngle*>(static_cast<JSSVGAnimatedAngle*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->animVal()), static_cast<JSSVGAnimatedAngle*>(asObject(slot.slotBase()))->context());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGAnimatedAngle* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedAngle* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGAnimatedAngle>(exec, object, context);
 }
-SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValuePtr value)
+SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGAnimatedAngle::s_info) ? static_cast<JSSVGAnimatedAngle*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGAnimatedAngle::s_info) ? static_cast<JSSVGAnimatedAngle*>(asObject(value))->impl() : 0;
 }
 
 }

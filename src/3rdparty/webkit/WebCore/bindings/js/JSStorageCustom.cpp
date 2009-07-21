@@ -41,7 +41,7 @@ bool JSStorage::canGetItemsForName(ExecState*, Storage* impl, const Identifier& 
     return impl->contains(propertyName);
 }
 
-JSValuePtr JSStorage::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSStorage::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
 {
     JSStorage* thisObj = static_cast<JSStorage*>(asObject(slot.slotBase()));
     return jsStringOrNull(exec, thisObj->impl()->getItem(propertyName));
@@ -56,25 +56,25 @@ bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName)
     if (getStaticValueSlot<JSStorage, Base>(exec, s_info.propHashTable(exec), this, propertyName, slot))
         return false;
         
-    JSValuePtr prototype = this->prototype();
-    if (prototype->isObject() && asObject(prototype)->hasProperty(exec, propertyName))
+    JSValue prototype = this->prototype();
+    if (prototype.isObject() && asObject(prototype)->hasProperty(exec, propertyName))
         return false;
 
     m_impl->removeItem(propertyName);
     return true;
 }
 
-bool JSStorage::customGetPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSStorage::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     ExceptionCode ec;
     unsigned length = m_impl->length();
     for (unsigned i = 0; i < length; ++i)
         propertyNames.add(Identifier(exec, m_impl->key(i, ec)));
         
-    return false;
+    Base::getPropertyNames(exec, propertyNames);
 }
 
-bool JSStorage::customPut(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot&)
+bool JSStorage::putDelegate(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot&)
 {
     // Only perform the custom put if the object doesn't have a native property by this name.
     // Since hasProperty() would end up calling canGetItemsForName() and be fooled, we need to check
@@ -83,11 +83,11 @@ bool JSStorage::customPut(ExecState* exec, const Identifier& propertyName, JSVal
     if (getStaticValueSlot<JSStorage, Base>(exec, s_info.propHashTable(exec), this, propertyName, slot))
         return false;
         
-    JSValuePtr prototype = this->prototype();
-    if (prototype->isObject() && asObject(prototype)->hasProperty(exec, propertyName))
+    JSValue prototype = this->prototype();
+    if (prototype.isObject() && asObject(prototype)->hasProperty(exec, propertyName))
         return false;
     
-    String stringValue = valueToStringWithNullCheck(exec, value);
+    String stringValue = value.toString(exec);
     if (exec->hadException())
         return true;
     

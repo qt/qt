@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,7 +44,7 @@ namespace WTF {
     template<typename T> class DequeConstReverseIterator;
 
     template<typename T>
-    class Deque {
+    class Deque : public FastAllocBase {
     public:
         typedef DequeIterator<T> iterator;
         typedef DequeConstIterator<T> const_iterator;
@@ -75,8 +76,13 @@ namespace WTF {
         template<typename U> void append(const U&);
         template<typename U> void prepend(const U&);
         void removeFirst();
+        void remove(iterator&);
+        void remove(const_iterator&);
 
         void clear();
+
+        template<typename Predicate>
+        iterator findIf(Predicate&);
 
     private:
         friend class DequeIteratorBase<T>;
@@ -85,6 +91,7 @@ namespace WTF {
         typedef VectorTypeOperations<T> TypeOperations;
         typedef DequeIteratorBase<T> IteratorBase;
 
+        void remove(size_t position);
         void invalidateIterators();
         void destroyAll();
         void checkValidity() const;
@@ -124,6 +131,7 @@ namespace WTF {
 
     private:
         void addToIteratorsList();
+        void removeFromIteratorsList();
         void checkValidity() const;
         void checkValidity(const Base&) const;
 
@@ -348,7 +356,7 @@ namespace WTF {
         destroyAll();
     }
 
-    template <typename T>
+    template<typename T>
     inline void Deque<T>::swap(Deque<T>& other)
     {
         checkValidity();
@@ -361,7 +369,7 @@ namespace WTF {
         other.checkValidity();
     }
 
-    template <typename T>
+    template<typename T>
     inline void Deque<T>::clear()
     {
         checkValidity();
@@ -370,6 +378,18 @@ namespace WTF {
         m_start = 0;
         m_end = 0;
         checkValidity();
+    }
+
+    template<typename T>
+    template<typename Predicate>
+    inline DequeIterator<T> Deque<T>::findIf(Predicate& predicate)
+    {
+        iterator end_iterator = end();
+        for (iterator it = begin(); it != end_iterator; ++it) {
+            if (predicate(*it))
+                return it;
+        }
+        return end_iterator;
     }
 
     template<typename T>
@@ -447,10 +467,48 @@ namespace WTF {
         checkValidity();
     }
 
+    template<typename T>
+    inline void Deque<T>::remove(iterator& it)
+    {
+        it.checkValidity();
+        remove(it.m_index);
+    }
+
+    template<typename T>
+    inline void Deque<T>::remove(const_iterator& it)
+    {
+        it.checkValidity();
+        remove(it.m_index);
+    }
+
+    template<typename T>
+    inline void Deque<T>::remove(size_t position)
+    {
+        if (position == m_end)
+            return;
+
+        checkValidity();
+        invalidateIterators();
+
+        T* buffer = m_buffer.buffer();
+        TypeOperations::destruct(&buffer[position], &buffer[position + 1]);
+
+        // Find which segment of the circular buffer contained the remove element, and only move elements in that part.
+        if (position >= m_start) {
+            TypeOperations::moveOverlapping(buffer + m_start, buffer + position, buffer + m_start + 1);
+            m_start = (m_start + 1) % m_buffer.capacity();
+        } else {
+            TypeOperations::moveOverlapping(buffer + position + 1, buffer + m_end, buffer + position);
+            m_end = (m_end - 1 + m_buffer.capacity()) % m_buffer.capacity();
+        }
+        checkValidity();
+    }
+
 #ifdef NDEBUG
     template<typename T> inline void DequeIteratorBase<T>::checkValidity() const { }
     template<typename T> inline void DequeIteratorBase<T>::checkValidity(const DequeIteratorBase<T>&) const { }
     template<typename T> inline void DequeIteratorBase<T>::addToIteratorsList() { }
+    template<typename T> inline void DequeIteratorBase<T>::removeFromIteratorsList() { }
 #else
     template<typename T>
     void DequeIteratorBase<T>::checkValidity() const
@@ -480,6 +538,30 @@ namespace WTF {
         }
         m_previous = 0;
     }
+
+    template<typename T>
+    void DequeIteratorBase<T>::removeFromIteratorsList()
+    {
+        if (!m_deque) {
+            ASSERT(!m_next);
+            ASSERT(!m_previous);
+        } else {
+            if (m_next) {
+                ASSERT(m_next->m_previous == this);
+                m_next->m_previous = m_previous;
+            }
+            if (m_previous) {
+                ASSERT(m_deque->m_iterators != this);
+                ASSERT(m_previous->m_next == this);
+                m_previous->m_next = m_next;
+            } else {
+                ASSERT(m_deque->m_iterators == this);
+                m_deque->m_iterators = m_next;
+            }
+        }
+        m_next = 0;
+        m_previous = 0;
+    }
 #endif
 
     template<typename T>
@@ -507,30 +589,25 @@ namespace WTF {
     }
 
     template<typename T>
+    inline DequeIteratorBase<T>& DequeIteratorBase<T>::operator=(const Base& other)
+    {
+        checkValidity();
+        other.checkValidity();
+        removeFromIteratorsList();
+
+        m_deque = other.m_deque;
+        m_index = other.m_index;
+        addToIteratorsList();
+        checkValidity();
+        return *this;
+    }
+
+    template<typename T>
     inline DequeIteratorBase<T>::~DequeIteratorBase()
     {
 #ifndef NDEBUG
-        // Delete iterator from doubly-linked list of iterators.
-        if (!m_deque) {
-            ASSERT(!m_next);
-            ASSERT(!m_previous);
-        } else {
-            if (m_next) {
-                ASSERT(m_next->m_previous == this);
-                m_next->m_previous = m_previous;
-            }
-            if (m_previous) {
-                ASSERT(m_deque->m_iterators != this);
-                ASSERT(m_previous->m_next == this);
-                m_previous->m_next = m_next;
-            } else {
-                ASSERT(m_deque->m_iterators == this);
-                m_deque->m_iterators = m_next;
-            }
-        }
+        removeFromIteratorsList();
         m_deque = 0;
-        m_next = 0;
-        m_previous = 0;
 #endif
     }
 

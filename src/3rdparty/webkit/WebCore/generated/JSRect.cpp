@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSRect.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSPrimitiveValue.h"
 #include "JSCSSPrimitiveValue.h"
 #include "Rect.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSRect)
+ASSERT_CLASS_FITS_IN_CELL(JSRect);
 
 /* Hash table */
 
@@ -80,7 +76,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -125,7 +121,6 @@ JSRect::JSRect(PassRefPtr<Structure> structure, PassRefPtr<Rect> impl)
 JSRect::~JSRect()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -138,46 +133,50 @@ bool JSRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
     return getStaticValueSlot<JSRect, Base>(exec, &JSRectTable, this, propertyName, slot);
 }
 
-JSValuePtr jsRectTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRectTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->top()));
 }
 
-JSValuePtr jsRectRight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRectRight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->right()));
 }
 
-JSValuePtr jsRectBottom(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRectBottom(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->bottom()));
 }
 
-JSValuePtr jsRectLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRectLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->left()));
 }
 
-JSValuePtr jsRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSRect*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSRect::getConstructor(ExecState* exec)
+JSValue JSRect::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSRectConstructor>(exec);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Rect* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Rect* object)
 {
     return getDOMObjectWrapper<JSRect>(exec, object);
 }
-Rect* toRect(JSC::JSValuePtr value)
+Rect* toRect(JSC::JSValue value)
 {
-    return value->isObject(&JSRect::s_info) ? static_cast<JSRect*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSRect::s_info) ? static_cast<JSRect*>(asObject(value))->impl() : 0;
 }
 
 }

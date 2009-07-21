@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSCSSImportRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSImportRule.h"
 #include "CSSStyleSheet.h"
@@ -30,14 +27,13 @@
 #include "JSMediaList.h"
 #include "KURL.h"
 #include "MediaList.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSImportRule)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSImportRule);
 
 /* Hash table */
 
@@ -82,7 +78,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -133,29 +129,32 @@ bool JSCSSImportRule::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSCSSImportRule, Base>(exec, &JSCSSImportRuleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSImportRuleHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(static_cast<JSCSSImportRule*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->href());
 }
 
-JSValuePtr jsCSSImportRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(static_cast<JSCSSImportRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->media()));
 }
 
-JSValuePtr jsCSSImportRuleStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(static_cast<JSCSSImportRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->styleSheet()));
 }
 
-JSValuePtr jsCSSImportRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSImportRule*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSCSSImportRule::getConstructor(ExecState* exec)
+JSValue JSCSSImportRule::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSImportRuleConstructor>(exec);
 }

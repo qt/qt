@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TEST_PATH=`dirname $0`
+TEST_PATH=`dirname "$0"`
 SEP_DEBUG_SUPPORT=no
 COMPILER=$1
 QMAKE_OBJCOPY=$2

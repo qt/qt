@@ -65,6 +65,7 @@
 #include <QDoubleSpinBox>
 #include <QVBoxLayout>
 #include <QKeySequence>
+#include <QStackedWidget>
 #include <QDebug>
 #include "../../shared/util.h"
 
@@ -142,6 +143,9 @@ private slots:
     
     void specialValue();
     void textFromValue();
+
+    void sizeHint();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -241,6 +245,12 @@ void tst_QSpinBox::getSetCheck()
     QCOMPARE(0.0, obj2.value());
     obj2.setValue(1.0);
     QCOMPARE(1.0, obj2.value());
+
+    // Make sure we update line edit geometry when updating
+    // buttons - see task 235747
+    QRect oldEditGeometry = obj1.childrenRect();
+    obj1.setButtonSymbols(QAbstractSpinBox::NoButtons);
+    QVERIFY(obj1.childrenRect() != oldEditGeometry);
 }
 
 tst_QSpinBox::tst_QSpinBox()
@@ -948,6 +958,46 @@ void tst_QSpinBox::textFromValue()
 {
     SpinBox spinBox;
     QCOMPARE(spinBox.textFromValue(INT_MIN), QString::number(INT_MIN));
+}
+
+class sizeHint_SpinBox : public QSpinBox
+{
+public:
+    QSize sizeHint() const
+    {
+        ++sizeHintRequests;
+        return QSpinBox::sizeHint();
+    }
+    mutable int sizeHintRequests;
+};
+
+void tst_QSpinBox::sizeHint()
+{
+    QWidget *widget = new QWidget;
+    QHBoxLayout *layout = new QHBoxLayout(widget);
+    sizeHint_SpinBox *spinBox = new sizeHint_SpinBox;
+    layout->addWidget(spinBox);
+    widget->show();
+    QTest::qWait(100);
+
+    // Prefix
+    spinBox->sizeHintRequests = 0;
+    spinBox->setPrefix(QLatin1String("abcdefghij"));
+    qApp->processEvents();
+    QVERIFY(spinBox->sizeHintRequests > 0);
+
+    // Suffix
+    spinBox->sizeHintRequests = 0; 
+    spinBox->setSuffix(QLatin1String("abcdefghij"));
+    qApp->processEvents();
+    QVERIFY(spinBox->sizeHintRequests > 0); 
+
+    // Range
+    spinBox->sizeHintRequests = 0; 
+    spinBox->setRange(0, 1234567890);
+    spinBox->setValue(spinBox->maximum());
+    qApp->processEvents();
+    QVERIFY(spinBox->sizeHintRequests > 0); 
 }
 
 QTEST_MAIN(tst_QSpinBox)

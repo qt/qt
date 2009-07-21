@@ -761,7 +761,7 @@ void QWidgetBackingStore::paintWindowDecoration()
     engine->setSystemClip(decorationRegion.translated(tlwOffset));
 
     QPainter painter(windowSurface->paintDevice());
-    painter.setFont(qApp->font());
+    painter.setFont(QApplication::font());
     painter.translate(tlwOffset);
 
     const int numDirty = managerPrivate->dirtyRegions.size();
@@ -829,6 +829,10 @@ QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
 
 QWidgetBackingStore::~QWidgetBackingStore()
 {
+    for (int c = 0; c < dirtyWidgets.size(); ++c) {
+        resetWidget(dirtyWidgets.at(c));
+    }
+
     delete windowSurface;
     windowSurface = 0;
     delete dirtyOnScreenWidgets;
@@ -1350,7 +1354,7 @@ void QWidgetBackingStore::flush(QWidget *widget, QWindowSurface *surface)
 static inline bool discardInvalidateBufferRequest(QWidget *widget, QTLWExtra *tlwExtra)
 {
     Q_ASSERT(widget);
-    if (qApp && qApp->closingDown())
+    if (QApplication::closingDown())
         return true;
 
     if (!tlwExtra || tlwExtra->inTopLevelResize || !tlwExtra->backingStore)

@@ -1671,7 +1671,7 @@ QStringList QCompleter::splitPath(const QString& path) const
         doubleSlash.clear();
 #endif
 
-    QRegExp re(QLatin1String("[") + QRegExp::escape(sep) + QLatin1String("]"));
+    QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
     QStringList parts = pathCopy.split(re);
 
 #if defined(Q_OS_SYMBIAN)

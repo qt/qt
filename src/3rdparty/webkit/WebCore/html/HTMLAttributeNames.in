@@ -1,7 +1,7 @@
 namespace="HTML"
 namespacePrefix="xhtml"
 namespaceURI="http://www.w3.org/1999/xhtml"
-attrsNullNamespace="1"
+attrsNullNamespace
 
 abbr
 accept_charset
@@ -15,13 +15,17 @@ archive
 aria-activedescendant
 aria-checked
 aria-describedby
+aria-disabled
+aria-hidden
 aria-labeledby
 aria-labelledby
 aria-level
 aria-pressed
+aria-readonly
 aria-valuemax
 aria-valuemin
 aria-valuenow
+autobuffer
 autocomplete
 autofocus
 autoplay
@@ -42,7 +46,7 @@ charset
 checked
 cellborder
 cite
-class exportString="1"
+class exportString
 classid
 clear
 code
@@ -66,7 +70,9 @@ direction
 disabled
 enctype
 end
+expanded
 face
+focused
 for
 frame
 frameborder
@@ -79,6 +85,7 @@ hspace
 http_equiv
 id
 incremental
+indeterminate
 ismap
 keytype
 label
@@ -114,6 +121,8 @@ onbeforecut
 onbeforepaste
 onbeforeunload
 onblur
+oncanplay
+oncanplaythrough
 onchange
 onclick
 oncontextmenu
@@ -127,6 +136,9 @@ ondragleave
 ondragover
 ondragstart
 ondrop
+ondurationchange
+onemptied
+onended
 onerror
 onfocus
 oninput
@@ -134,22 +146,39 @@ onkeydown
 onkeypress
 onkeyup
 onload
+onloadeddata
+onloadedmetadata
+onloadstart
 onmousedown
 onmousemove
 onmouseout
 onmouseover
 onmouseup
 onmousewheel
+ononline
+onoffline
 onpaste
+onpause
+onplay
+onplaying
+onprogress
+onratechange
 onreset
 onresize
 onscroll
 onsearch
+onseeked
+onseeking
 onselect
 onselectstart
+onstalled
 onstorage
+onsuspend
 onsubmit
+ontimeupdate
 onunload
+onvolumechange
+onwaiting
 onwebkitanimationstart
 onwebkitanimationiteration
 onwebkitanimationend
@@ -158,7 +187,9 @@ placeholder
 pluginurl
 poster
 precision
+primary
 profile
+progress
 prompt
 readonly
 rel
@@ -176,7 +207,10 @@ scrolling
 selected
 shape
 size
+sortable
+sortdirection
 span
+spellcheck
 src
 standby
 start

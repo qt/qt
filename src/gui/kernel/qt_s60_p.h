@@ -65,11 +65,14 @@
 #include <coecntrl.h>
 #include <eikenv.h>
 #include <eikappui.h>
+
+#ifdef Q_WS_S60
 #include <aknutils.h>               // AknLayoutUtils
 #include <avkon.hrh>                // EEikStatusPaneUidTitle
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
+#endif
     
 QT_BEGIN_NAMESPACE
 
@@ -102,11 +105,13 @@ public:
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
+#ifdef Q_WS_S60
     static inline CEikStatusPane* statusPane();
     static inline CCoeControl* statusPaneSubPane(TInt aPaneId);
     static inline CAknTitlePane* titlePane();
     static inline CAknContextPane* contextPane();
     static inline CEikButtonGroupContainer* buttonGroupContainer();
+#endif
 };
 
 class QAbstractLongTapObserver
@@ -129,7 +134,7 @@ public:
     void HandleResourceChange(int resourceType);
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
     TKeyResponse OfferKeyEventL(const TKeyEvent& aKeyEvent,TEventCode aType);
-#ifndef QT_NO_IM
+#if !defined(QT_NO_IM) && defined(Q_WS_S60)
     TCoeInputCapabilities InputCapabilities() const;
 #endif
     TTypeUid::Ptr MopSupplyObject(TTypeUid id);
@@ -195,6 +200,7 @@ inline CCoeAppUi* QS60Data::appUi()
     return CCoeEnv::Static()-> AppUi();
 }
 
+#ifdef Q_WS_S60
 inline CEikStatusPane* QS60Data::statusPane()
 {
     return CEikonEnv::Static()->AppUiFactory()->StatusPane();
@@ -230,6 +236,7 @@ inline CEikButtonGroupContainer* QS60Data::buttonGroupContainer()
 {
     return CEikonEnv::Static()->AppUiFactory()->Cba();
 }
+#endif // Q_WS_S60
 
 static inline QFont qt_TFontSpec2QFontL(const TFontSpec &fontSpec)
 {

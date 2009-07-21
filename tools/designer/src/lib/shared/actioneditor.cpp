@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ActionEditor
-*/
-
 #include "actioneditor_p.h"
 #include "filterwidget_p.h"
 #include "actionrepository_p.h"

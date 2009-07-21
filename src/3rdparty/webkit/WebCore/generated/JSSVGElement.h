@@ -21,11 +21,11 @@
 #ifndef JSSVGElement_h
 #define JSSVGElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSElement.h"
 #include "SVGElement.h"
+
 namespace WebCore {
 
 class SVGElement;
@@ -36,11 +36,11 @@ public:
     JSSVGElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -51,9 +51,10 @@ public:
     }
 };
 
-SVGElement* toSVGElement(JSC::JSValuePtr);
+SVGElement* toSVGElement(JSC::JSValue);
 
 class JSSVGElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -63,12 +64,12 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGElementId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementId(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementXmlbase(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementXmlbase(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementOwnerSVGElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementXmlbase(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementXmlbase(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementOwnerSVGElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGTRefElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedString.h"
 #include "SVGTRefElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGTRefElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGTRefElement);
 
 /* Hash table */
 
@@ -91,8 +87,9 @@ bool JSSVGTRefElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSSVGTRefElement, Base>(exec, &JSSVGTRefElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGTRefElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTRefElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTRefElement* imp = static_cast<SVGTRefElement*>(static_cast<JSSVGTRefElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
     return toJS(exec, obj.get(), imp);

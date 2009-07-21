@@ -21,6 +21,8 @@
 #ifndef JSSQLResultSetRowList_h
 #define JSSQLResultSetRowList_h
 
+#if ENABLE(DATABASE)
+
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -39,30 +41,31 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom functions
-    JSC::JSValuePtr item(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue item(JSC::ExecState*, const JSC::ArgList&);
     SQLResultSetRowList* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<SQLResultSetRowList> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SQLResultSetRowList*);
-SQLResultSetRowList* toSQLResultSetRowList(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SQLResultSetRowList*);
+SQLResultSetRowList* toSQLResultSetRowList(JSC::JSValue);
 
 class JSSQLResultSetRowListPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -71,11 +74,13 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSQLResultSetRowListPrototypeFunctionItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSQLResultSetRowListPrototypeFunctionItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSQLResultSetRowListLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSQLResultSetRowListLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATABASE)
 
 #endif

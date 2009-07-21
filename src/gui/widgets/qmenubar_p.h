@@ -57,12 +57,12 @@
 #include "QtGui/qstyleoption.h"
 #include <private/qmenu_p.h> // Mac needs what in this file!
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include "qguifunctions_wince.h"
 #endif
 
 #ifndef QT_NO_MENUBAR
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
 class CCoeControl;
 class CEikMenuBar;
 #endif
@@ -76,16 +76,20 @@ class QMenuBarPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMenuBar)
 public:
-    QMenuBarPrivate() : itemsDirty(0), itemsWidth(0), itemsStart(-1), currentAction(0), mouseDown(0),
-                         closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0)
+    QMenuBarPrivate() : itemsDirty(0), currentAction(0), mouseDown(0),
+                         closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
+                         nativeMenuBar(-1), doChildEffects(false)
+#ifdef QT3_SUPPORT
+                         , doAutoResize(false)
+#endif
 #ifdef Q_WS_MAC
                          , mac_menubar(0)
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
                          , wce_menubar(0), wceClassicMenu(false)
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
                          , symbian_menubar(0)
 #endif
 
@@ -95,25 +99,23 @@ public:
 #ifdef Q_WS_MAC
             delete mac_menubar;
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
             delete wce_menubar;
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
             delete symbian_menubar;
 #endif
         }
 
     void init();
-    QStyleOptionMenuItem getStyleOption(const QAction *action) const;
+    QAction *getNextAction(const int start, const int increment) const;
 
     //item calculations
     uint itemsDirty : 1;
-    int itemsWidth, itemsStart;
 
     QVector<int> shortcutIndexMap;
-    mutable QMap<QAction*, QRect> actionRects;
-    mutable QList<QAction*> actionList;
-    void calcActionRects(int max_width, int start, QMap<QAction*, QRect> &actionRects, QList<QAction*> &actionList) const;
+    mutable QVector<QRect> actionRects;
+    void calcActionRects(int max_width, int start) const;
     QRect actionRect(QAction *) const;
     void updateGeometries();
 
@@ -129,10 +131,13 @@ public:
     QPointer<QMenu> activeMenu;
 
     //keyboard mode for keyboard navigation
+    void focusFirstAction();
     void setKeyboardMode(bool);
     uint keyboardState : 1, altPressed : 1;
     QPointer<QWidget> keyboardFocusWidget;
 
+
+    int nativeMenuBar : 3;  // Only has values -1, 0, and 1
     //firing of events
     void activateAction(QAction *, QAction::ActionEvent);
 
@@ -141,7 +146,7 @@ public:
     void _q_internalShortcutActivated(int);
     void _q_updateLayout();
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void _q_updateDefaultAction();
 #endif
 
@@ -195,7 +200,7 @@ public:
     void macDestroyMenuBar();
     OSMenuRef macMenu();
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void wceCreateMenuBar(QWidget *);
     void wceDestroyMenuBar();
     struct QWceMenuBarPrivate {
@@ -234,7 +239,7 @@ public:
     void wceRefresh();
     bool wceEmitSignals(QList<QWceMenuAction*> actions, uint command);
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     void symbianCreateMenuBar(QWidget *);
     void symbianDestroyMenuBar();
     struct QSymbianMenuBarPrivate {

@@ -2548,7 +2548,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
         if(ok) { // do integer compare
             int lhs_int = lhs.toInt(&ok);
             if(ok) {
-                if(func == "greaterThan")
+                if(func_t == T_GREATERTHAN)
                     return lhs_int > rhs_int;
                 return lhs_int < rhs_int;
             }

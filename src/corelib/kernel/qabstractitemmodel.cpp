@@ -428,8 +428,8 @@ bool QPersistentModelIndex::isValid() const
 QDebug operator<<(QDebug dbg, const QModelIndex &idx)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    dbg.nospace() << "QModelIndex(" << idx.row() << "," << idx.column()
-                  << "," << idx.internalPointer() << "," << idx.model() << ")";
+    dbg.nospace() << "QModelIndex(" << idx.row() << ',' << idx.column()
+                  << ',' << idx.internalPointer() << ',' << idx.model() << ')';
     return dbg.space();
 #else
     qWarning("This compiler doesn't support streaming QModelIndex to QDebug");
@@ -465,6 +465,37 @@ Q_GLOBAL_STATIC(QEmptyItemModel, qEmptyModel)
 QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 {
     return qEmptyModel();
+}
+
+/*!
+    \internal
+    return true if \a value contains a numerical type
+
+    This function is used by our Q{Tree,Widget,Table}WidgetModel classes to sort.
+    We cannot rely on QVariant::canConvert because this would take strings as double
+    and then not sort strings correctly
+*/
+bool QAbstractItemModelPrivate::canConvertToDouble(const QVariant &value)
+{
+    switch (value.userType()) {
+        case QVariant::Bool:
+        case QVariant::Int:
+        case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong:
+        case QVariant::Double:
+        case QVariant::Char:
+        case QMetaType::Float:
+        case QMetaType::Short:
+        case QMetaType::UShort:
+        case QMetaType::UChar:
+        case QMetaType::ULong:
+        case QMetaType::Long:
+            return true;
+        default:
+            return false;
+    }
+    return false;
 }
 
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)
@@ -525,7 +556,7 @@ void QAbstractItemModelPrivate::rowsInserted(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endInsertRows:  Invalid index (" << old.row() + count << "," << old.column() << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endInsertRows:  Invalid index (" << old.row() + count << ',' << old.column() << ") in model" << q_func();
         }
     }
 }
@@ -574,7 +605,7 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endRemoveRows:  Invalid index (" << old.row() - count << "," << old.column() << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endRemoveRows:  Invalid index (" << old.row() - count << ',' << old.column() << ") in model" << q_func();
         }
     }
     QVector<QPersistentModelIndexData *> persistent_invalidated = persistent.invalidated.pop();
@@ -619,7 +650,7 @@ void QAbstractItemModelPrivate::columnsInserted(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endInsertColumns:  Invalid index (" << old.row() << "," << old.column() + count << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endInsertColumns:  Invalid index (" << old.row() << ',' << old.column() + count << ") in model" << q_func();
         }
      }
 }
@@ -669,7 +700,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endRemoveColumns:  Invalid index (" << old.row() << "," << old.column() - count << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endRemoveColumns:  Invalid index (" << old.row() << ',' << old.column() - count << ") in model" << q_func();
         }
     }
     QVector<QPersistentModelIndexData *> persistent_invalidated = persistent.invalidated.pop();

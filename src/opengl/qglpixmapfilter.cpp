@@ -45,25 +45,10 @@
 #include "qpaintengine_opengl_p.h"
 
 #include "qglpixelbuffer.h"
-#include "qglextensions_p.h"
+#include "qglshaderprogram.h"
 #include "qgl_p.h"
 
 #include "private/qapplication_p.h"
-
-
-#ifndef GL_FRAGMENT_SHADER
-#define GL_FRAGMENT_SHADER 0x8B30
-#endif
-
-#ifndef GL_COMPILE_STATUS
-#define GL_COMPILE_STATUS 0x8B81
-#endif
-
-#ifndef GL_LINK_STATUS
-#define GL_LINK_STATUS 0x8B82
-#endif
-
-
 
 
 QT_BEGIN_NAMESPACE
@@ -79,117 +64,6 @@ void QGLPixmapFilterBase::drawImpl(QPainter *painter, const QPointF &pos, const 
     processGL(painter, pos, src, source);
 }
 
-QGLSLProgram::QGLSLProgram(const QString &src)
-    : ctx(QGLContext::currentContext())
-{
-    if (!qt_resolve_glsl_extensions(const_cast<QGLContext *>(ctx))) {
-        qWarning("Failed to resolve GLSL functions");
-        m_valid = false;
-        return;
-    }
-
-    m_shader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    const QByteArray src_ba = src.toAscii();
-    const char *src_cstr = src_ba.constData();
-
-    glShaderSource(m_shader, 1, &src_cstr, 0);
-    glCompileShader(m_shader);
-    glGetShaderiv(m_shader, GL_COMPILE_STATUS, &m_valid);
-    if (!m_valid) {
-        char data[4096];
-        GLsizei len;
-        glGetShaderInfoLog(m_shader, 4096, &len, data);
-        qWarning("Failed to compile GLSL shader:\n%s\nCODE:\n%s\n", data, src_cstr);
-        return;
-    }
-
-    m_program = glCreateProgram();
-    glAttachShader(m_program, m_shader);
-    glLinkProgram(m_program);
-    glGetProgramiv(m_program, GL_LINK_STATUS, &m_valid);
-    if (!m_valid) {
-        char data[4096];
-        GLsizei len;
-        glGetShaderInfoLog(m_shader, 4096, &len, data);
-        qWarning("Failed to link GLSL program:\n%s\nCODE:\n%s\n", data, src_cstr);
-        return;
-    }
-}
-
-QGLSLProgram::~QGLSLProgram()
-{
-    glDeleteProgram(m_program);
-    glDeleteShader(m_shader);
-}
-
-bool QGLSLProgram::success() const
-{
-    return m_valid;
-}
-
-void QGLSLProgram::enable()
-{
-    glUseProgram(m_program);
-}
-
-void QGLSLProgram::disable()
-{
-    glUseProgram(0);
-}
-
-typedef GLuint (APIENTRY *_glGetUniformLocation) (GLuint, const char*);
-typedef void (APIENTRY *_glUniform4fv) (GLint, GLsizei, GLfloat *);
-typedef void (APIENTRY *_glUniform3fv) (GLint, GLsizei, GLfloat *);
-typedef void (APIENTRY *_glUniform2fv) (GLint, GLsizei, GLfloat *);
-typedef void (APIENTRY *_glUniform1fv) (GLint, GLsizei, GLfloat *);
-typedef void (APIENTRY *_glUniform1i) (GLint, GLint);
-
-int QGLSLProgram::getUniformLocation(const QString &name)
-{
-    return glGetUniformLocation(m_program, name.toAscii().constData());
-}
-
-void QGLSLProgram::setUniform(int uniform, int value)
-{
-    enable();
-    glUniform1i(uniform, value);
-}
-
-void QGLSLProgram::setUniform(int uniform, qreal value)
-{
-    enable();
-    GLfloat v[] = { value };
-    glUniform1fv(uniform, 1, v);
-}
-
-void QGLSLProgram::setUniform(int uniform, qreal v1, qreal v2)
-{
-    enable();
-    GLfloat v[] = { v1, v2 };
-    glUniform2fv(uniform, 1, v);
-}
-
-void QGLSLProgram::setUniform(int uniform, qreal v1, qreal v2, qreal v3)
-{
-    enable();
-    GLfloat v[] = { v1, v2, v3 };
-    glUniform3fv(uniform, 1, v);
-}
-
-void QGLSLProgram::setUniform(int uniform, qreal v1, qreal v2, qreal v3, qreal v4)
-{
-    enable();
-    GLfloat v[] = { v1, v2, v3, v4 };
-    glUniform4fv(uniform, 1, v);
-}
-
-void QGLSLProgram::setUniform(int uniform, int count, float *v)
-{
-    enable();
-    glUniform1fv(uniform, count, v);
-}
-
 class QGLPixmapColorizeFilter: public QGLPixmapFilter<QPixmapColorizeFilter>
 {
 public:
@@ -199,8 +73,8 @@ protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &pixmap, const QRectF &srcRect) const;
 
 private:
-    mutable QGLSLProgram m_program;
-    uint m_colorUniform;
+    mutable QGLShaderProgram m_program;
+    int m_colorUniform;
 };
 
 class QGLPixmapConvolutionFilter: public QGLPixmapFilter<QPixmapConvolutionFilter>
@@ -213,11 +87,11 @@ protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
 
 private:
-    QString generateConvolutionShader() const;
+    QByteArray generateConvolutionShader() const;
 
-    mutable QGLSLProgram *m_program;
-    mutable uint m_scaleUniform;
-    mutable uint m_matrixUniform;
+    mutable QGLShaderProgram *m_program;
+    mutable int m_scaleUniform;
+    mutable int m_matrixUniform;
 
     mutable int m_kernelWidth;
     mutable int m_kernelHeight;
@@ -242,10 +116,8 @@ QPixmapFilter *QGLContextPrivate::createPixmapFilter(int type) const
     return 0;
 }
 
-#if !defined(QT_OPENGL_ES_2)
 extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
 extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
-#endif
 
 static void qgl_drawTexture(const QRectF &rect, int tx_width, int tx_height, const QRectF & src)
 {
@@ -294,10 +166,12 @@ static const char *qt_gl_colorize_filter =
         "}";
 
 QGLPixmapColorizeFilter::QGLPixmapColorizeFilter()
-    : m_program(QLatin1String(qt_gl_colorize_filter))
 {
-    m_program.setUniform(m_program.getUniformLocation(QLatin1String("texture")), 0); // GL_TEXTURE_0
-    m_colorUniform = m_program.getUniformLocation(QLatin1String("color"));
+    m_program.addShader(QGLShader::FragmentShader, qt_gl_colorize_filter);
+    m_program.link();
+    m_program.enable();
+    m_program.setUniformValue(m_program.uniformLocation("texture"), GLint(0)); // GL_TEXTURE_0
+    m_colorUniform = m_program.uniformLocation("color");
 }
 
 bool QGLPixmapColorizeFilter::processGL(QPainter *, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const
@@ -305,10 +179,10 @@ bool QGLPixmapColorizeFilter::processGL(QPainter *, const QPointF &pos, const QP
     bindTexture(src);
 
     QColor col = color();
-    m_program.setUniform(m_colorUniform, col.redF(), col.greenF(), col.blueF());
+    m_program.enable();
+    m_program.setUniformValue(m_colorUniform, col.redF(), col.greenF(), col.blueF());
 
     QRectF target = (srcRect.isNull() ? QRectF(src.rect()) : srcRect).translated(pos);
-    m_program.enable();
     qgl_drawTexture(target, src.width(), src.height(), srcRect);
     m_program.disable();
 
@@ -316,17 +190,17 @@ bool QGLPixmapColorizeFilter::processGL(QPainter *, const QPointF &pos, const QP
 }
 
 // generates convolution filter code for arbitrary sized kernel
-QString QGLPixmapConvolutionFilter::generateConvolutionShader() const {
+QByteArray QGLPixmapConvolutionFilter::generateConvolutionShader() const {
     QByteArray code;
-    code.append("uniform sampler2D texture;\n");
-    code.append("uniform vec2 inv_texture_size;\n");
-    code.append("uniform float matrix[");
+    code.append("uniform sampler2D texture;\n"
+                "uniform vec2 inv_texture_size;\n"
+                "uniform float matrix[");
     code.append(QByteArray::number(m_kernelWidth * m_kernelHeight));
-    code.append("];\n");
-    code.append("vec2 offset[");
+    code.append("];\n"
+                "vec2 offset[");
     code.append(QByteArray::number(m_kernelWidth*m_kernelHeight));
-    code.append("];\n");
-    code.append("void main(void) {\n");
+    code.append("];\n"
+                "void main(void) {\n");
 
     for(int y = 0; y < m_kernelHeight; y++) {
         for(int x = 0; x < m_kernelWidth; x++) {
@@ -336,23 +210,22 @@ QString QGLPixmapConvolutionFilter::generateConvolutionShader() const {
             code.append(QByteArray::number(x-(int)(m_kernelWidth/2)));
             code.append(".0, inv_texture_size.y * ");
             code.append(QByteArray::number((int)(m_kernelHeight/2)-y));
-            code.append(".0)");
-            code.append(";\n");
+            code.append(".0);\n");
         }
     }
 
-    code.append("  int i = 0;\n");
-    code.append("  vec2 coords = gl_TexCoord[0].st;\n");
-    code.append("  vec4 sum = vec4(0.0);\n");
-    code.append("  for (i = 0; i < ");
+    code.append("  int i = 0;\n"
+                "  vec2 coords = gl_TexCoord[0].st;\n"
+                "  vec4 sum = vec4(0.0);\n"
+                "  for (i = 0; i < ");
     code.append(QByteArray::number(m_kernelWidth * m_kernelHeight));
-    code.append("; i++) {\n");
-    code.append("    vec4 tmp = texture2D(texture,coords+offset[i]);\n");
-    code.append("    sum += matrix[i] * tmp;\n");
-    code.append("  }\n");
-    code.append("  gl_FragColor = sum;\n");
-    code.append("}");
-    return QLatin1String(code);
+    code.append("; i++) {\n"
+                "    vec4 tmp = texture2D(texture,coords+offset[i]);\n"
+                "    sum += matrix[i] * tmp;\n"
+                "  }\n"
+                "  gl_FragColor = sum;\n"
+                "}");
+    return code;
 }
 
 QGLPixmapConvolutionFilter::QGLPixmapConvolutionFilter()
@@ -384,10 +257,12 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const
         m_kernelWidth = columns();
         m_kernelHeight = rows();
 
-        QString code = generateConvolutionShader();
-        m_program = new QGLSLProgram(code);
-        m_scaleUniform = m_program->getUniformLocation(QLatin1String("inv_texture_size"));
-        m_matrixUniform = m_program->getUniformLocation(QLatin1String("matrix"));
+        QByteArray code = generateConvolutionShader();
+        m_program = new QGLShaderProgram();
+        m_program->addShader(QGLShader::FragmentShader, code);
+        m_program->link();
+        m_scaleUniform = m_program->uniformLocation("inv_texture_size");
+        m_matrixUniform = m_program->uniformLocation("matrix");
     }
 
     const qreal *kernel = convolutionKernel();
@@ -397,10 +272,10 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const
 
     const qreal iw = 1.0 / src.width();
     const qreal ih = 1.0 / src.height();
-    m_program->setUniform(m_scaleUniform, iw, ih);
-    m_program->setUniform(m_matrixUniform, m_kernelWidth * m_kernelHeight, conv);
-
     m_program->enable();
+    m_program->setUniformValue(m_scaleUniform, iw, ih);
+    m_program->setUniformValueArray(m_matrixUniform, conv, m_kernelWidth * m_kernelHeight, 1);
+
     qgl_drawTexture(target, src.width(), src.height(), boundingRectFor(srcRect));
     m_program->disable();
     return true;

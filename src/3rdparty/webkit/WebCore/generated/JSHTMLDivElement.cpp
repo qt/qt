@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLDivElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLDivElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLDivElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLDivElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,28 +124,29 @@ bool JSHTMLDivElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSHTMLDivElement, Base>(exec, &JSHTMLDivElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLDivElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDivElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDivElement* imp = static_cast<HTMLDivElement*>(static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->align());
 }
 
-JSValuePtr jsHTMLDivElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDivElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLDivElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLDivElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLDivElement, Base>(exec, propertyName, value, &JSHTMLDivElementTable, this, slot);
 }
 
-void setJSHTMLDivElementAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDivElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDivElement* imp = static_cast<HTMLDivElement*>(static_cast<JSHTMLDivElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLDivElement::getConstructor(ExecState* exec)
+JSValue JSHTMLDivElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLDivElementConstructor>(exec);
 }

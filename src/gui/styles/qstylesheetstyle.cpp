@@ -81,6 +81,7 @@
 #include <private/qwidget_p.h>
 #include <QAbstractSpinBox>
 #include <QLabel>
+#include "qdrawutil.h"
 
 #include <limits.h>
 
@@ -312,15 +313,10 @@ struct QStyleSheetBorderImageData : public QSharedData
         for (int i = 0; i < 4; i++)
             cuts[i] = -1;
     }
-    QPixmap topEdge, bottomEdge, leftEdge, rightEdge, middle;
-    QRect topEdgeRect, bottomEdgeRect, leftEdgeRect, rightEdgeRect, middleRect;
-    QRect topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner;
     int cuts[4];
     QPixmap pixmap;
     QImage image;
     QCss::TileMode horizStretch, vertStretch;
-
-    void cutBorderImage();
 };
 
 struct QStyleSheetBackgroundData : public QSharedData
@@ -871,7 +867,7 @@ static QStyle::StandardPixmap subControlIcon(int pe)
 QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QWidget *widget)
 : features(0), hasFont(false), pal(0), b(0), bg(0), bd(0), ou(0), geo(0), p(0), img(0), clipset(0)
 {
-    QPalette palette = qApp->palette(); // ###: ideally widget's palette
+    QPalette palette = QApplication::palette(); // ###: ideally widget's palette
     ValueExtractor v(declarations, palette);
     features = v.extractStyleFeatures();
 
@@ -1122,176 +1118,27 @@ void QRenderRule::fixupBorder(int nativeWidth)
         for (int i = 0; i < 4; i++) // assume, cut = border
             bi->cuts[i] = int(border()->borders[i]);
     }
-    bi->cutBorderImage();
 }
 
-void QStyleSheetBorderImageData::cutBorderImage()
-{
-    const int w = pixmap.width();
-    const int h = pixmap.height();
-    const int &l = cuts[LeftEdge], &r = cuts[RightEdge],
-              &t = cuts[TopEdge], &b = cuts[BottomEdge];
-
-    topEdgeRect = QRect(l, 0, w - r - l, t);
-    bottomEdgeRect = QRect(l, h - b, w - l - r, b);
-    if (horizStretch != TileMode_Stretch) {
-        if (topEdgeRect.isValid())
-            topEdge = pixmap.copy(topEdgeRect).scaledToHeight(t);
-        if (bottomEdgeRect.isValid())
-            bottomEdge = pixmap.copy(bottomEdgeRect).scaledToHeight(b);
-    }
-
-    leftEdgeRect = QRect(0, t, l, h - b - t);
-    rightEdgeRect = QRect(w - r, t, r, h - t- b);
-    if (vertStretch != TileMode_Stretch) {
-        if (leftEdgeRect.isValid())
-            leftEdge = pixmap.copy(leftEdgeRect).scaledToWidth(l);
-        if (rightEdgeRect.isValid())
-            rightEdge = pixmap.copy(rightEdgeRect).scaledToWidth(r);
-    }
-
-    middleRect = QRect(l, t, w - r -l, h - t - b);
-    if (middleRect.isValid()
-        && !(horizStretch == TileMode_Stretch && vertStretch == TileMode_Stretch)) {
-        middle = pixmap.copy(middleRect);
-    }
-}
-
-static void qDrawCenterTiledPixmap(QPainter *p, const QRectF& r, const QPixmap& pix)
-{
-    p->drawTiledPixmap(r, pix, QPoint(pix.width() - int(r.width())%pix.width(),
-                                      pix.height() - int(r.height())%pix.height()));
-}
-
-// Note: Round is not supported
 void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
 {
-    setClip(p, rect);
-    const QRectF br(rect);
-    const int *borders = border()->borders;
-    const int &l = borders[LeftEdge], &r = borders[RightEdge],
-              &t = borders[TopEdge],  &b = borders[BottomEdge];
-    QRectF pr = br.adjusted(l, t, -r, -b);
+    static const Qt::TileRule tileMode2TileRule[] = {
+        Qt::Stretch, Qt::Round, Qt::Stretch, Qt::Repeat, Qt::Stretch };
+
+    const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
+    const int *targetBorders = border()->borders;
+    const int *sourceBorders = borderImageData->cuts;
+    QMargins sourceMargins(sourceBorders[TopEdge], sourceBorders[LeftEdge],
+                           sourceBorders[BottomEdge], sourceBorders[RightEdge]);
+    QMargins targetMargins(targetBorders[TopEdge], targetBorders[LeftEdge],
+                           targetBorders[BottomEdge], targetBorders[RightEdge]);
 
     bool wasSmoothPixmapTransform = p->renderHints() & QPainter::SmoothPixmapTransform;
     p->setRenderHint(QPainter::SmoothPixmapTransform);
-
-    const QStyleSheetBorderImageData *bi = border()->borderImage();
-    const QPixmap& pix = bi->pixmap;
-    const int *c = bi->cuts;
-    QRectF tlc(0, 0, c[LeftEdge], c[TopEdge]);
-    if (tlc.isValid())
-        p->drawPixmap(QRectF(br.topLeft(), QSizeF(l, t)), pix, tlc);
-    QRectF trc(pix.width() - c[RightEdge], 0, c[RightEdge], c[TopEdge]);
-    if (trc.isValid())
-        p->drawPixmap(QRectF(br.left() + br.width() - r, br.y(), r, t), pix, trc);
-    QRectF blc(0, pix.height() - c[BottomEdge], c[LeftEdge], c[BottomEdge]);
-    if (blc.isValid())
-        p->drawPixmap(QRectF(br.x(), br.y() + br.height() - b, l, b), pix, blc);
-    QRectF brc(pix.width() - c[RightEdge], pix.height() - c[BottomEdge],
-               c[RightEdge], c[BottomEdge]);
-    if (brc.isValid())
-        p->drawPixmap(QRectF(br.x() + br.width() - r, br.y() + br.height() - b, r, b),
-                      pix, brc);
-
-    QRectF topEdgeRect(br.x() + l, br.y(), pr.width(), t);
-    QRectF bottomEdgeRect(br.x() + l, br.y() + br.height() - b, pr.width(), b);
-
-    switch (bi->horizStretch) {
-    case TileMode_Stretch:
-        if (bi->topEdgeRect.isValid())
-            p->drawPixmap(topEdgeRect, pix, bi->topEdgeRect);
-        if (bi->bottomEdgeRect.isValid())
-            p->drawPixmap(bottomEdgeRect, pix, bi->bottomEdgeRect);
-        if (bi->middleRect.isValid()) {
-            if (bi->vertStretch == TileMode_Stretch)
-                p->drawPixmap(pr, pix, bi->middleRect);
-            else if (bi->vertStretch == TileMode_Repeat) {
-                QPixmap scaled = bi->middle.scaled(int(pr.width()), bi->middle.height());
-                qDrawCenterTiledPixmap(p, pr, scaled);
-            }
-        }
-        break;
-    case TileMode_Repeat:
-        if (!bi->topEdge.isNull() && !topEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->topEdge.scaled(bi->topEdge.width(), t);
-            qDrawCenterTiledPixmap(p, topEdgeRect, scaled);
-        }
-        if (!bi->bottomEdge.isNull() && !bottomEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->bottomEdge.scaled(bi->bottomEdge.width(), b);
-            qDrawCenterTiledPixmap(p, bottomEdgeRect, scaled);
-        }
-        if (bi->middleRect.isValid()) {
-            if (bi->vertStretch == TileMode_Repeat) {
-                qDrawCenterTiledPixmap(p, pr, bi->middle);
-            } else if (bi->vertStretch == TileMode_Stretch) {
-                QPixmap scaled = bi->middle.scaled(bi->middle.width(), int(pr.height()));
-                qDrawCenterTiledPixmap(p, pr, scaled);
-            }
-        }
-        break;
-    case TileMode_Round:
-        if (!bi->topEdge.isNull()) {
-            int rwh = (int)pr.width()/ceil(pr.width()/bi->topEdge.width());
-            QPixmap scaled = bi->topEdge.scaled(rwh, bi->topEdge.height());
-            int blank = int(pr.width()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x() + l + blank/2, br.y(), pr.width() - blank, t),
-                               scaled);
-        }
-        if (!bi->bottomEdge.isNull()) {
-            int rwh = (int) pr.width()/ceil(pr.width()/bi->bottomEdge.width());
-            QPixmap scaled = bi->bottomEdge.scaled(rwh, bi->bottomEdge.height());
-            int blank = int(pr.width()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x() + l+ blank/2, br.y()+br.height()-b,
-                                      pr.width() - blank, b), scaled);
-        }
-        break;
-    default:
-        break;
-    }
-
-    QRectF leftEdgeRect(br.x(), br.y() + t, l, pr.height());
-    QRectF rightEdgeRect(br.x() + br.width()- r, br.y() + t, r, pr.height());
-
-    switch (bi->vertStretch) {
-    case TileMode_Stretch:
-         if (bi->leftEdgeRect.isValid())
-              p->drawPixmap(leftEdgeRect, pix, bi->leftEdgeRect);
-        if (bi->rightEdgeRect.isValid())
-            p->drawPixmap(rightEdgeRect, pix, bi->rightEdgeRect);
-        break;
-    case TileMode_Repeat:
-        if (!bi->leftEdge.isNull() && !leftEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->leftEdge.scaled(l, bi->leftEdge.height());
-            qDrawCenterTiledPixmap(p, leftEdgeRect, scaled);
-        }
-        if (!bi->rightEdge.isNull() && !rightEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->rightEdge.scaled(r, bi->rightEdge.height());
-            qDrawCenterTiledPixmap(p, rightEdgeRect, scaled);
-        }
-        break;
-    case TileMode_Round:
-        if (!bi->leftEdge.isNull()) {
-            int rwh = (int) pr.height()/ceil(pr.height()/bi->leftEdge.height());
-            QPixmap scaled = bi->leftEdge.scaled(bi->leftEdge.width(), rwh);
-            int blank = int(pr.height()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x(), br.y() + t + blank/2, l, pr.height() - blank),
-                               scaled);
-        }
-        if (!bi->rightEdge.isNull()) {
-            int rwh = (int) pr.height()/ceil(pr.height()/bi->rightEdge.height());
-            QPixmap scaled = bi->rightEdge.scaled(bi->rightEdge.width(), rwh);
-            int blank = int(pr.height()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x() + br.width() - r, br.y()+t+blank/2, r,
-                                      pr.height() - blank), scaled);
-        }
-        break;
-    default:
-        break;
-    }
-
+    qDrawBorderPixmap(p, rect, targetMargins, borderImageData->pixmap,
+                      QRect(QPoint(), borderImageData->pixmap.size()), sourceMargins,
+                      QTileRules(tileMode2TileRule[borderImageData->horizStretch], tileMode2TileRule[borderImageData->vertStretch]));
     p->setRenderHint(QPainter::SmoothPixmapTransform, wasSmoothPixmapTransform);
-    unsetClip(p);
 }
 
 QRect QRenderRule::originRect(const QRect &rect, Origin origin) const
@@ -1525,7 +1372,7 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         /* For embedded widgets (ComboBox, SpinBox and ScrollArea) we want the embedded widget
          * to be transparent when we have a transparent background or border image */
         if ((hasBackground() && background()->isTransparent())
-            || (hasBorder() && border()->hasBorderImage() && border()->borderImage()->middleRect.isValid()))
+            || (hasBorder() && border()->hasBorderImage() && !border()->borderImage()->pixmap.isNull()))
             p->setBrush(cg, w->backgroundRole(), Qt::NoBrush);
     }
 
@@ -1708,7 +1555,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
         if (widCacheIt == styleSheetCache->constEnd()) {
             parser.init(wid->styleSheet());
             if (!parser.parse(&ss)) {
-                parser.init(QLatin1String("* {") + wid->styleSheet() + QLatin1String("}"));
+                parser.init(QLatin1String("* {") + wid->styleSheet() + QLatin1Char('}'));
                 if (!parser.parse(&ss))
                    qWarning("Could not parse stylesheet of widget %p", wid);
             }
@@ -2737,7 +2584,7 @@ static void updateWidgets(const QList<const QWidget *>& widgets)
             continue;
         widget->style()->polish(widget);
         QEvent event(QEvent::StyleChange);
-        qApp->sendEvent(widget, &event);
+        QApplication::sendEvent(widget, &event);
         widget->update();
         widget->updateGeometry();
     }
@@ -2783,9 +2630,9 @@ QStyle *QStyleSheetStyle::baseStyle() const
 {
     if (base)
         return base;
-    if (QStyleSheetStyle *me = qobject_cast<QStyleSheetStyle *>(qApp->style()))
+    if (QStyleSheetStyle *me = qobject_cast<QStyleSheetStyle *>(QApplication::style()))
         return me->base;
-    return qApp->style();
+    return QApplication::style();
 }
 
 void QStyleSheetStyle::widgetDestroyed(QObject *o)
@@ -2855,14 +2702,10 @@ void QStyleSheetStyle::polish(QWidget *w)
         QRenderRule rule = renderRule(sa, PseudoElement_None, PseudoClass_Enabled);
         if ((rule.hasBorder() && rule.border()->hasBorderImage())
             || (rule.hasBackground() && !rule.background()->pixmap.isNull())) {
-            QObject::disconnect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
-            QObject::disconnect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
             QObject::connect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
             QObject::connect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
         }
     }
 #endif
@@ -2876,12 +2719,6 @@ void QStyleSheetStyle::polish(QWidget *w)
     QRenderRule rule = renderRule(w, PseudoElement_None, PseudoClass_Any);
     if (rule.hasDrawable() || rule.hasBox()) {
         if (w->metaObject() == &QWidget::staticMetaObject
-#ifndef QT_NO_MENUBAR
-              || qobject_cast<QMenuBar *>(w)
-#endif
-#ifndef QT_NO_MENU
-              || qobject_cast<QMenu *>(w)
-#endif
 #ifndef QT_NO_ITEMVIEWS
               || qobject_cast<QHeaderView *>(w)
 #endif
@@ -3013,7 +2850,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 rule.drawBackgroundImage(p, cmbOpt.rect);
                 rule.configurePalette(&cmbOpt.palette, QPalette::ButtonText, QPalette::Button);
                 bool customDropDown = (opt->subControls & QStyle::SC_ComboBoxArrow)
-                                      && hasStyleRule(w, PseudoElement_ComboBoxDropDown);
+                                && (hasStyleRule(w, PseudoElement_ComboBoxDropDown) || hasStyleRule(w, PseudoElement_ComboBoxArrow));
                 if (customDropDown)
                     cmbOpt.subControls &= ~QStyle::SC_ComboBoxArrow;
                 if (rule.baseStyleCanDraw()) {
@@ -3059,11 +2896,11 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             if (rule.hasNativeBorder() && !upRuleMatch && !downRuleMatch) {
                 rule.drawBackgroundImage(p, spinOpt.rect);
                 customUp = (opt->subControls & QStyle::SC_SpinBoxUp)
-                           && hasStyleRule(w, PseudoElement_SpinBoxUpButton);
+                        && (hasStyleRule(w, PseudoElement_SpinBoxUpButton) || hasStyleRule(w, PseudoElement_UpArrow));
                 if (customUp)
                     spinOpt.subControls &= ~QStyle::SC_SpinBoxUp;
                 customDown = (opt->subControls & QStyle::SC_SpinBoxDown)
-                             && hasStyleRule(w, PseudoElement_SpinBoxDownButton);
+                        && (hasStyleRule(w, PseudoElement_SpinBoxDownButton) || hasStyleRule(w, PseudoElement_DownArrow));
                 if (customDown)
                     spinOpt.subControls &= ~QStyle::SC_SpinBoxDown;
                 if (rule.baseStyleCanDraw()) {
@@ -3189,6 +3026,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionToolButton *tool = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton toolOpt(*tool);
             rule.configurePalette(&toolOpt.palette, QPalette::ButtonText, QPalette::Button);
+            toolOpt.font = rule.font.resolve(toolOpt.font);
             toolOpt.rect = rule.borderRect(opt->rect);
             bool customArrow = (tool->features & (QStyleOptionToolButton::HasMenu | QStyleOptionToolButton::MenuButtonPopup));
             bool customDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
@@ -3735,7 +3573,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     mi.rect = positionRect(w, subRule, subRule2, PseudoElement_MenuRightArrow, opt->rect, mi.direction);
                     drawPrimitive(arrow, &mi, p, w);
                 }
-            } else if (hasStyleRule(w, PseudoElement_MenuCheckMark)) {
+            } else if (hasStyleRule(w, PseudoElement_MenuCheckMark) || hasStyleRule(w, PseudoElement_MenuRightArrow)) {
                 QWindowsStyle::drawControl(ce, &mi, p, w);
             } else {
                 if (rule.hasDrawable() && !subRule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
@@ -4164,9 +4002,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 rule.configurePalette(&frmOpt.palette, QPalette::Text, QPalette::Base);
                 frmOpt.rect = rule.borderRect(frmOpt.rect);
                 baseStyle()->drawControl(ce, &frmOpt, p, w);
-            } else {
-                rule.drawBorder(p, rule.borderRect(opt->rect));
             }
+            // else, borders are already drawn in PE_Widget
         }
         return;
 
@@ -4220,12 +4057,6 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     QRect rect = opt->rect;
 
     switch (pe) {
-    case PE_PanelStatusBar:
-        if (rule.hasDrawable()) {
-            rule.drawRule(p, opt->rect);
-            return;
-        }
-        break;
 
     case PE_FrameStatusBar: {
         QRenderRule subRule = renderRule(w->parentWidget(), opt, PseudoElement_Item);
@@ -4337,36 +4168,34 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         return;
 
     case PE_Widget:
-        if (!rule.hasBackground()) {
+        if (!rule.hasDrawable()) {
             QWidget *container = containerWidget(w);
             if (autoFillDisabledWidgets->contains(container)
-                && (container == w || !renderRule(container, opt).hasBackground())) {
+                && (container == w || !renderRule(container, opt).hasDrawable())) {
                 //we do not have a background, but we disabled the autofillbackground anyway. so fill the background now.
                 // (this may happen if we have rules like :focus)
                 p->fillRect(opt->rect, opt->palette.brush(w->backgroundRole()));
             }
             break;
         }
-
 #ifndef QT_NO_SCROLLAREA
         if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w)) {
             const QAbstractScrollAreaPrivate *sap = sa->d_func();
             rule.drawBackground(p, opt->rect, sap->contentsOffset());
-        } else
-#endif
-        {
-            rule.drawBackground(p, opt->rect);
+            if (rule.hasBorder())
+                rule.drawBorder(p, rule.borderRect(opt->rect));
+            break;
         }
-
-        return;
-
-    case PE_FrameMenu:
+#endif
+    //fall tghought
+    case PE_PanelMenu:
     case PE_PanelMenuBar:
-        if (!rule.hasNativeBorder()) {
-            rule.drawBorder(p, rule.borderRect(opt->rect));
+    case PE_PanelStatusBar:
+        if(rule.hasDrawable()) {
+            rule.drawRule(p, opt->rect);
             return;
         }
-        break;
+    break;
 
     case PE_IndicatorToolBarSeparator:
     case PE_IndicatorToolBarHandle: {
@@ -4508,6 +4337,16 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 
     case PE_PanelScrollAreaCorner:
         pseudoElement = PseudoElement_ScrollAreaCorner;
+        break;
+
+    case PE_IndicatorSpinDown:
+    case PE_IndicatorSpinMinus:
+        pseudoElement = PseudoElement_SpinBoxDownArrow;
+        break;
+
+    case PE_IndicatorSpinUp:
+    case PE_IndicatorSpinPlus:
+        pseudoElement = PseudoElement_SpinBoxUpArrow;
         break;
 
     default:
@@ -4973,13 +4812,10 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             if ((pe == PseudoElement_MenuSeparator) && subRule.hasContentsSize()) {
                 return QSize(sz.width(), subRule.size().height());
             } else if ((pe == PseudoElement_Item) && (subRule.hasBox() || subRule.hasBorder())) {
-                int width = csz.width(), height = qMax(csz.height(), mi->fontMetrics.height());
-                if (!mi->icon.isNull()) {
-                    int iconExtent = pixelMetric(PM_SmallIconSize);
-                    height = qMax(height, mi->icon.actualSize(QSize(iconExtent, iconExtent)).height());
-                }
-                width += mi->tabWidth;
-               return subRule.boxSize(csz.expandedTo(subRule.minimumContentsSize()));
+                int width = csz.width();
+                if (mi->text.contains(QLatin1Char('\t')))
+                    width += 12; //as in QCommonStyle
+                return subRule.boxSize(subRule.adjustSize(QSize(width, csz.height())));
             }
         }
         break;
@@ -5890,13 +5726,11 @@ void QStyleSheetStyle::clearWidgetFont(QWidget* w) const
     w->setProperty("_q_styleSheetWidgetFont", QVariant(QVariant::Invalid));
 }
 
-// Returns the palette that should be used when the particular widget is focused.
-// This needs to be called by some widgets that do drawing themselves instead
-// of through the style.
-// ### This should be removed ideally by Qt 4.5, and at least by Qt 5, and fixed
-// for good by letting the style draw everything.
+// Polish palette that should be used for a particular widget, with particular states
+// (eg. :focus, :hover, ...)
+// this is called by widgets that paint themself in their paint event
 // Returns true if there is a new palette in pal.
-bool QStyleSheetStyle::focusPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal)
+bool QStyleSheetStyle::styleSheetPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal)
 {
     if (!w || !opt || !pal)
         return false;

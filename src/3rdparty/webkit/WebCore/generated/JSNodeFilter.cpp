@@ -19,21 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSNodeFilter.h"
 
-#include <wtf/GetPtr.h>
-
 #include "NodeFilter.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSNodeFilter)
+ASSERT_CLASS_FITS_IN_CELL(JSNodeFilter);
 
 /* Hash table */
 
@@ -91,7 +87,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -158,7 +154,6 @@ JSNodeFilter::JSNodeFilter(PassRefPtr<Structure> structure, PassRefPtr<NodeFilte
 JSNodeFilter::~JSNodeFilter()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSNodeFilter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -171,18 +166,19 @@ bool JSNodeFilter::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSNodeFilter, Base>(exec, &JSNodeFilterTable, this, propertyName, slot);
 }
 
-JSValuePtr jsNodeFilterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNodeFilterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSNodeFilter*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSNodeFilter::getConstructor(ExecState* exec)
+JSValue JSNodeFilter::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSNodeFilterConstructor>(exec);
 }
 
-JSValuePtr jsNodeFilterPrototypeFunctionAcceptNode(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsNodeFilterPrototypeFunctionAcceptNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSNodeFilter::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSNodeFilter::s_info))
         return throwError(exec, TypeError);
     JSNodeFilter* castedThisObj = static_cast<JSNodeFilter*>(asObject(thisValue));
     return castedThisObj->acceptNode(exec, args);
@@ -190,87 +186,87 @@ JSValuePtr jsNodeFilterPrototypeFunctionAcceptNode(ExecState* exec, JSObject*, J
 
 // Constant getters
 
-JSValuePtr jsNodeFilterFILTER_ACCEPT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterFILTER_ACCEPT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsNodeFilterFILTER_REJECT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterFILTER_REJECT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsNodeFilterFILTER_SKIP(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterFILTER_SKIP(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValuePtr jsNodeFilterSHOW_ALL(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ALL(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0xFFFFFFFF));
 }
 
-JSValuePtr jsNodeFilterSHOW_ELEMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ELEMENT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000001));
 }
 
-JSValuePtr jsNodeFilterSHOW_ATTRIBUTE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ATTRIBUTE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000002));
 }
 
-JSValuePtr jsNodeFilterSHOW_TEXT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_TEXT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000004));
 }
 
-JSValuePtr jsNodeFilterSHOW_CDATA_SECTION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_CDATA_SECTION(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000008));
 }
 
-JSValuePtr jsNodeFilterSHOW_ENTITY_REFERENCE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ENTITY_REFERENCE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000010));
 }
 
-JSValuePtr jsNodeFilterSHOW_ENTITY(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ENTITY(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000020));
 }
 
-JSValuePtr jsNodeFilterSHOW_PROCESSING_INSTRUCTION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_PROCESSING_INSTRUCTION(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000040));
 }
 
-JSValuePtr jsNodeFilterSHOW_COMMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_COMMENT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000080));
 }
 
-JSValuePtr jsNodeFilterSHOW_DOCUMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_DOCUMENT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000100));
 }
 
-JSValuePtr jsNodeFilterSHOW_DOCUMENT_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_DOCUMENT_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000200));
 }
 
-JSValuePtr jsNodeFilterSHOW_DOCUMENT_FRAGMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_DOCUMENT_FRAGMENT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000400));
 }
 
-JSValuePtr jsNodeFilterSHOW_NOTATION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_NOTATION(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0x00000800));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, NodeFilter* object)
+JSC::JSValue toJS(JSC::ExecState* exec, NodeFilter* object)
 {
     return getDOMObjectWrapper<JSNodeFilter>(exec, object);
 }

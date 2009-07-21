@@ -77,6 +77,7 @@ private:
     QImage logo;
     QTimeLine *anim;
     QSvgRenderer *svg_renderer;
-    QGLFramebufferObject *fbo;
+    QGLFramebufferObject *render_fbo;
+    QGLFramebufferObject *texture_fbo;
 };
 

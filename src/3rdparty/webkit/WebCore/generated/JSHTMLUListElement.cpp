@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLUListElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLUListElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLUListElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLUListElement);
 
 /* Hash table */
 
@@ -78,7 +74,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -129,40 +125,42 @@ bool JSHTMLUListElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLUListElement, Base>(exec, &JSHTMLUListElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLUListElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLUListElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->compact());
 }
 
-JSValuePtr jsHTMLUListElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLUListElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsHTMLUListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLUListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLUListElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLUListElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLUListElement, Base>(exec, propertyName, value, &JSHTMLUListElementTable, this, slot);
 }
 
-void setJSHTMLUListElementCompact(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLUListElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(thisObject)->impl());
-    imp->setCompact(value->toBoolean(exec));
+    imp->setCompact(value.toBoolean(exec));
 }
 
-void setJSHTMLUListElementType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLUListElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLUListElement::getConstructor(ExecState* exec)
+JSValue JSHTMLUListElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLUListElementConstructor>(exec);
 }

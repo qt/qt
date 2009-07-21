@@ -56,9 +56,14 @@
 #include <apgtask.h>                // TApaTaskList, TApaTask
 #include <rsendas.h>                // RSendAs
 #include <rsendasmessage.h>         // RSendAsMessage
-#include <pathinfo.h>               // PathInfo
-#ifdef USE_DOCUMENTHANDLER
-#include <documenthandler.h>        // CDocumentHandler
+
+#ifdef Q_WS_S60
+#  include <pathinfo.h>               // PathInfo
+#  ifdef USE_DOCUMENTHANDLER
+#    include <documenthandler.h>        // CDocumentHandler
+#  endif
+#elif defined(USE_DOCUMENTHANDLER)
+#  error CDocumentHandler requires support for S60
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -200,6 +205,7 @@ static TDriveUnit writableExeDrive()
 static TPtrC writableDataRoot()
 {
     TDriveUnit drive = exeDrive();
+#ifdef Q_WS_S60
     switch( drive.operator TInt() ){
         case EDriveC:
             return PathInfo::PhoneMemoryRootPath();
@@ -217,6 +223,10 @@ static TPtrC writableDataRoot()
             return PathInfo::PhoneMemoryRootPath();
             break;
     }
+#else
+#warning No fallback implementation of writableDataRoot()
+    return 0;
+#endif
 }
 
 static void openDocumentL(const TDesC& aUrl)
@@ -330,15 +340,21 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         break;
     case MusicLocation:
         path.Append(writableDataRoot());
+#ifdef Q_WS_S60
         path.Append(PathInfo::SoundsPath());
+#endif
         break;
     case MoviesLocation:
         path.Append(writableDataRoot());
+#ifdef Q_WS_S60
         path.Append(PathInfo::VideosPath());
+#endif
         break;
     case PicturesLocation:
         path.Append(writableDataRoot());
+#ifdef Q_WS_S60
         path.Append(PathInfo::ImagesPath());
+#endif
         break;
     case TempLocation:
         path.Append(writableExeDrive().Name());

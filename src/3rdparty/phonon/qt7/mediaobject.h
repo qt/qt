@@ -25,6 +25,10 @@
 
 #include "medianode.h"
 
+#if QT_ALLOW_QUICKTIME
+    #include <QuickTime/QuickTime.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -95,6 +99,10 @@ namespace QT7
 
 		int videoOutputCount();
 
+#if QT_ALLOW_QUICKTIME
+        void displayLinkEvent();
+#endif
+
     signals:
         void stateChanged(Phonon::State,Phonon::State);
         void tick(qint64);
@@ -132,6 +140,14 @@ namespace QT7
         QuickTimeAudioPlayer *m_nextAudioPlayer;
         MediaObjectAudioNode *m_mediaObjectAudioNode;
 
+#if QT_ALLOW_QUICKTIME
+        CVDisplayLinkRef m_displayLink;
+        QMutex m_displayLinkMutex;
+        bool m_pendingDisplayLinkEvent;
+        void startDisplayLink();
+        void stopDisplayLink();
+#endif
+
         qint32 m_tickInterval;
         qint32 m_transitionTime;
         quint32 m_prefinishMark;
@@ -139,7 +155,8 @@ namespace QT7
         float m_percentageLoaded;
 
         int m_tickTimer;
-        int m_bufferTimer;
+        int m_videoTimer;
+        int m_audioTimer;
         int m_rapidTimer;
 
         bool m_waitNextSwap;
@@ -154,8 +171,7 @@ namespace QT7
         void pause_internal();
         void play_internal();
         void setupAudioSystem();
-        void updateTimer(int &timer, int interval);
-        void bufferAudioVideo();
+        void restartAudioVideoTimers();
         void updateRapidly();
         void updateCrossFade();
         void updateAudioBuffers();

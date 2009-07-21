@@ -220,6 +220,9 @@ QDateTimeEdit::QDateTimeEdit(const QVariant &var, QVariant::Type parserType, QWi
   \property QDateTimeEdit::dateTime
   \brief the QDateTime that is set in the QDateTimeEdit
 
+  When setting this property the timespec of the QDateTimeEdit remains the same
+  and the timespec of the new QDateTime is ignored.
+
   By default, this property contains a date that refers to January 1,
   2000 and a time of 00:00:00 and 0 milliseconds.
 
@@ -239,7 +242,7 @@ void QDateTimeEdit::setDateTime(const QDateTime &datetime)
         d->clearCache();
         if (!(d->sections & DateSections_Mask))
             setDateRange(datetime.date(), datetime.date());
-        d->setValue(QVariant(datetime), EmitIfChanged);
+        d->setValue(QDateTime(datetime.date(), datetime.time(), d->spec), EmitIfChanged);
     }
 }
 
@@ -932,9 +935,6 @@ void QDateTimeEdit::setCalendarPopup(bool enable)
     \property QDateTimeEdit::timeSpec
     \brief the current timespec used by the date time edit.
     \since 4.4
-
-    All dates/passed to the date time edit will be converted to this
-    timespec.
 */
 
 Qt::TimeSpec QDateTimeEdit::timeSpec() const
@@ -1126,23 +1126,25 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Left:
     case Qt::Key_Right:
         if (event->key() == Qt::Key_Left || event->key() == Qt::Key_Right) {
+            if (
 #ifdef QT_KEYPAD_NAVIGATION
-            if (!QApplication::keypadNavigationEnabled() || !hasEditFocus()) {
-                select = false;
-                break;
-            }
-#else
-            if (!(event->modifiers() & Qt::ControlModifier)) {
+                QApplication::keypadNavigationEnabled() && !hasEditFocus()
+                || !QApplication::keypadNavigationEnabled() &&
+#endif
+                !(event->modifiers() & Qt::ControlModifier)) {
                 select = false;
                 break;
             }
 #ifdef Q_WS_MAC
-            else {
+            else
+#ifdef QT_KEYPAD_NAVIGATION
+                if (!QApplication::keypadNavigationEnabled())
+#endif
+            {
                 select = (event->modifiers() & Qt::ShiftModifier);
                 break;
             }
 #endif
-#endif // QT_KEYPAD_NAVIGATION
         }
         // else fall through
     case Qt::Key_Backtab:

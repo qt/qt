@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGSVGElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -58,16 +54,16 @@
 #include "SVGSVGElement.h"
 #include "SVGStringList.h"
 #include "SVGTransform.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGSVGElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGSVGElement);
 
 /* Hash table */
 
@@ -184,253 +180,283 @@ bool JSSVGSVGElement::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSSVGSVGElement, Base>(exec, &JSSVGSVGElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGSVGElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementContentScriptType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementContentScriptType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->contentScriptType());
 }
 
-JSValuePtr jsSVGSVGElementContentStyleType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementContentStyleType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->contentStyleType());
 }
 
-JSValuePtr jsSVGSVGElementViewport(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementViewport(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->viewport()).get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementPixelUnitToMillimeterX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementPixelUnitToMillimeterX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->pixelUnitToMillimeterX());
 }
 
-JSValuePtr jsSVGSVGElementPixelUnitToMillimeterY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementPixelUnitToMillimeterY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->pixelUnitToMillimeterY());
 }
 
-JSValuePtr jsSVGSVGElementScreenPixelToMillimeterX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementScreenPixelToMillimeterX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenPixelToMillimeterX());
 }
 
-JSValuePtr jsSVGSVGElementScreenPixelToMillimeterY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementScreenPixelToMillimeterY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenPixelToMillimeterY());
 }
 
-JSValuePtr jsSVGSVGElementUseCurrentView(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementUseCurrentView(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->useCurrentView());
 }
 
-JSValuePtr jsSVGSVGElementCurrentScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementCurrentScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->currentScale());
 }
 
-JSValuePtr jsSVGSVGElementCurrentTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementCurrentTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGStaticPODTypeWrapperWithParent<FloatPoint, SVGSVGElement>::create(imp, &SVGSVGElement::currentTranslate, &SVGSVGElement::setCurrentTranslate).get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
-JSValuePtr jsSVGSVGElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
-JSValuePtr jsSVGSVGElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
 }
 
-JSValuePtr jsSVGSVGElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmllang());
 }
 
-JSValuePtr jsSVGSVGElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlspace());
 }
 
-JSValuePtr jsSVGSVGElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGSVGElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->nearestViewportElement()));
 }
 
-JSValuePtr jsSVGSVGElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->farthestViewportElement()));
 }
 
-JSValuePtr jsSVGSVGElementViewBox(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementViewBox(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedRect> obj = imp->viewBoxAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedPreserveAspectRatio> obj = imp->preserveAspectRatioAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGSVGElementZoomAndPan(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGSVGElementZoomAndPan(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->zoomAndPan());
 }
 
-void JSSVGSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGSVGElement, Base>(exec, propertyName, value, &JSSVGSVGElementTable, this, slot);
 }
 
-void setJSSVGSVGElementContentScriptType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGSVGElementContentScriptType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(thisObject)->impl());
-    imp->setContentScriptType(value->toString(exec));
+    imp->setContentScriptType(value.toString(exec));
 }
 
-void setJSSVGSVGElementContentStyleType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGSVGElementContentStyleType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(thisObject)->impl());
-    imp->setContentStyleType(value->toString(exec));
+    imp->setContentStyleType(value.toString(exec));
 }
 
-void setJSSVGSVGElementUseCurrentView(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGSVGElementUseCurrentView(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(thisObject)->impl());
-    imp->setUseCurrentView(value->toBoolean(exec));
+    imp->setUseCurrentView(value.toBoolean(exec));
 }
 
-void setJSSVGSVGElementCurrentScale(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGSVGElementCurrentScale(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(thisObject)->impl());
-    imp->setCurrentScale(value->toFloat(exec));
+    imp->setCurrentScale(value.toFloat(exec));
 }
 
-void setJSSVGSVGElementXmllang(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGSVGElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(thisObject)->impl());
-    imp->setXmllang(value->toString(exec));
+    imp->setXmllang(value.toString(exec));
 }
 
-void setJSSVGSVGElementXmlspace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGSVGElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(thisObject)->impl());
-    imp->setXmlspace(value->toString(exec));
+    imp->setXmlspace(value.toString(exec));
 }
 
-void setJSSVGSVGElementZoomAndPan(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGSVGElementZoomAndPan(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(static_cast<JSSVGSVGElement*>(thisObject)->impl());
-    imp->setZoomAndPan(value->toInt32(exec));
+    imp->setZoomAndPan(value.toInt32(exec));
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionSuspendRedraw(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionSuspendRedraw(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    unsigned maxWaitMilliseconds = args.at(exec, 0)->toInt32(exec);
+    unsigned maxWaitMilliseconds = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = jsNumber(exec, imp->suspendRedraw(maxWaitMilliseconds));
+    JSC::JSValue result = jsNumber(exec, imp->suspendRedraw(maxWaitMilliseconds));
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionUnsuspendRedraw(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionUnsuspendRedraw(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned suspendHandleId = args.at(exec, 0)->toInt32(exec);
+    unsigned suspendHandleId = args.at(0).toInt32(exec);
 
     imp->unsuspendRedraw(suspendHandleId, ec);
     setDOMException(exec, ec);
     return jsUndefined();
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionUnsuspendRedrawAll(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionUnsuspendRedrawAll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
@@ -439,9 +465,10 @@ JSValuePtr jsSVGSVGElementPrototypeFunctionUnsuspendRedrawAll(ExecState* exec, J
     return jsUndefined();
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionForceRedraw(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionForceRedraw(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
@@ -450,9 +477,10 @@ JSValuePtr jsSVGSVGElementPrototypeFunctionForceRedraw(ExecState* exec, JSObject
     return jsUndefined();
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionPauseAnimations(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionPauseAnimations(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
@@ -461,9 +489,10 @@ JSValuePtr jsSVGSVGElementPrototypeFunctionPauseAnimations(ExecState* exec, JSOb
     return jsUndefined();
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionUnpauseAnimations(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionUnpauseAnimations(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
@@ -472,101 +501,109 @@ JSValuePtr jsSVGSVGElementPrototypeFunctionUnpauseAnimations(ExecState* exec, JS
     return jsUndefined();
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionAnimationsPaused(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionAnimationsPaused(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->animationsPaused());
+    JSC::JSValue result = jsBoolean(imp->animationsPaused());
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetCurrentTime(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetCurrentTime(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsNumber(exec, imp->getCurrentTime());
+    JSC::JSValue result = jsNumber(exec, imp->getCurrentTime());
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionSetCurrentTime(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionSetCurrentTime(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    float seconds = args.at(exec, 0)->toFloat(exec);
+    float seconds = args.at(0).toFloat(exec);
 
     imp->setCurrentTime(seconds);
     return jsUndefined();
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetIntersectionList(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetIntersectionList(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    FloatRect rect = toSVGRect(args.at(exec, 0));
-    SVGElement* referenceElement = toSVGElement(args.at(exec, 1));
+    FloatRect rect = toSVGRect(args.at(0));
+    SVGElement* referenceElement = toSVGElement(args.at(1));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getIntersectionList(rect, referenceElement)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getIntersectionList(rect, referenceElement)));
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetEnclosureList(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetEnclosureList(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    FloatRect rect = toSVGRect(args.at(exec, 0));
-    SVGElement* referenceElement = toSVGElement(args.at(exec, 1));
+    FloatRect rect = toSVGRect(args.at(0));
+    SVGElement* referenceElement = toSVGElement(args.at(1));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getEnclosureList(rect, referenceElement)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getEnclosureList(rect, referenceElement)));
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCheckIntersection(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCheckIntersection(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    SVGElement* element = toSVGElement(args.at(exec, 0));
-    FloatRect rect = toSVGRect(args.at(exec, 1));
+    SVGElement* element = toSVGElement(args.at(0));
+    FloatRect rect = toSVGRect(args.at(1));
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->checkIntersection(element, rect));
+    JSC::JSValue result = jsBoolean(imp->checkIntersection(element, rect));
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCheckEnclosure(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCheckEnclosure(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    SVGElement* element = toSVGElement(args.at(exec, 0));
-    FloatRect rect = toSVGRect(args.at(exec, 1));
+    SVGElement* element = toSVGElement(args.at(0));
+    FloatRect rect = toSVGRect(args.at(1));
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->checkEnclosure(element, rect));
+    JSC::JSValue result = jsBoolean(imp->checkEnclosure(element, rect));
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionDeselectAll(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionDeselectAll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
@@ -575,193 +612,207 @@ JSValuePtr jsSVGSVGElementPrototypeFunctionDeselectAll(ExecState* exec, JSObject
     return jsUndefined();
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGNumber(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGNumber(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->createSVGNumber()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->createSVGNumber()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGLength(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGLength(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->createSVGLength()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->createSVGLength()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGAngle(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGAngle(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createSVGAngle()), imp);
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createSVGAngle()), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGPoint(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGPoint(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->createSVGPoint()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->createSVGPoint()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGMatrix(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGMatrix(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->createSVGMatrix()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->createSVGMatrix()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGRect(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->createSVGRect()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->createSVGRect()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGTransform(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGTransform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransform()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransform()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionCreateSVGTransformFromMatrix(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionCreateSVGTransformFromMatrix(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    TransformationMatrix matrix = toSVGMatrix(args.at(exec, 0));
+    TransformationMatrix matrix = toSVGMatrix(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransformFromMatrix(matrix)).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransformFromMatrix(matrix)).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    const UString& extension = args.at(exec, 0)->toString(exec);
+    const UString& extension = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasExtension(extension));
+    JSC::JSValue result = jsBoolean(imp->hasExtension(extension));
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
-        return throwError(exec, TypeError);
-    JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
-    SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
-
-
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
-    return result;
-}
-
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGSVGElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGSVGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
+        return throwError(exec, TypeError);
+    JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
+    SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsSVGSVGElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGSVGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSVGElement* castedThisObj = static_cast<JSSVGSVGElement*>(asObject(thisValue));
     SVGSVGElement* imp = static_cast<SVGSVGElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGElement* element = toSVGElement(args.at(exec, 0));
+    SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsSVGSVGElementSVG_ZOOMANDPAN_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGSVGElementSVG_ZOOMANDPAN_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGSVGElementSVG_ZOOMANDPAN_DISABLE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGSVGElementSVG_ZOOMANDPAN_DISABLE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGSVGElementSVG_ZOOMANDPAN_MAGNIFY(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGSVGElementSVG_ZOOMANDPAN_MAGNIFY(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }

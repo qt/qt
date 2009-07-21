@@ -151,11 +151,11 @@ bool QIntersectionFinder::linesIntersect(const QLineF &a, const QLineF &b) const
 
     const qreal par = pDelta.x() * qDelta.y() - pDelta.y() * qDelta.x();
 
-    if (qFuzzyCompare(par + 1, 1)) {
+    if (qFuzzyIsNull(par)) {
         const QPointF normal(-pDelta.y(), pDelta.x());
 
         // coinciding?
-        if (qFuzzyCompare(dot(normal, q1 - p1) + 1, 1)) {
+        if (qFuzzyIsNull(dot(normal, q1 - p1))) {
             const qreal dp = dot(pDelta, pDelta);
 
             const qreal tq1 = dot(pDelta, q1 - p1);
@@ -217,13 +217,13 @@ void QIntersectionFinder::intersectBeziers(const QBezier &one, const QBezier &tw
         qreal alpha_q = t.at(i).second;
 
         QPointF pt;
-        if (qFuzzyCompare(alpha_p + 1, 1)) {
+        if (qFuzzyIsNull(alpha_p)) {
             pt = one.pt1();
-        } else if (qFuzzyCompare(alpha_p, 1)) {
+        } else if (qFuzzyIsNull(alpha_p - 1)) {
             pt = one.pt4();
-        } else if (qFuzzyCompare(alpha_q + 1, 1)) {
+        } else if (qFuzzyIsNull(alpha_q)) {
             pt = two.pt1();
-        } else if (qFuzzyCompare(alpha_q, 1)) {
+        } else if (qFuzzyIsNull(alpha_q - 1)) {
             pt = two.pt4();
         } else {
             pt = one.pointAt(alpha_p);
@@ -265,11 +265,11 @@ void QIntersectionFinder::intersectLines(const QLineF &a, const QLineF &b, QData
 
     const qreal par = pDelta.x() * qDelta.y() - pDelta.y() * qDelta.x();
 
-    if (qFuzzyCompare(par + 1, 1)) {
+    if (qFuzzyIsNull(par)) {
         const QPointF normal(-pDelta.y(), pDelta.x());
 
         // coinciding?
-        if (qFuzzyCompare(dot(normal, q1 - p1) + 1, 1)) {
+        if (qFuzzyIsNull(dot(normal, q1 - p1))) {
             const qreal invDp = 1 / dot(pDelta, pDelta);
 
             const qreal tq1 = dot(pDelta, q1 - p1) * invDp;
@@ -330,11 +330,11 @@ void QIntersectionFinder::intersectLines(const QLineF &a, const QLineF &b, QData
     if (tp<0 || tp>1 || tq<0 || tq>1)
         return;
 
-    const bool p_zero = qFuzzyCompare(tp + 1, 1);
-    const bool p_one = qFuzzyCompare(tp, 1);
+    const bool p_zero = qFuzzyIsNull(tp);
+    const bool p_one = qFuzzyIsNull(tp - 1);
 
-    const bool q_zero = qFuzzyCompare(tq + 1, 1);
-    const bool q_one = qFuzzyCompare(tq, 1);
+    const bool q_zero = qFuzzyIsNull(tq);
+    const bool q_one = qFuzzyIsNull(tq - 1);
 
     if ((q_zero || q_one) && (p_zero || p_one))
         return;
@@ -937,7 +937,7 @@ qreal QWingedEdge::delta(int vertex, int a, int b) const
 
     qreal result = b_angle - a_angle;
 
-    if (qFuzzyCompare(result + 1, 1) || qFuzzyCompare(result, 128))
+    if (qFuzzyIsNull(result) || qFuzzyCompare(result, 128))
         return 0;
 
     if (result < 0)
@@ -966,7 +966,7 @@ static inline QPointF tangentAt(const QWingedEdge &list, int vi, int ei)
     if (ep->bezier) {
         normal = ep->bezier->derivedAt(t);
 
-        if (qFuzzyCompare(normal.x() + 1, 1) && qFuzzyCompare(normal.y() + 1, 1))
+        if (qFuzzyIsNull(normal.x()) && qFuzzyIsNull(normal.y()))
             normal = ep->bezier->secondDerivedAt(t);
     } else {
         const QPointF a = *list.vertex(ep->first);
@@ -1095,7 +1095,7 @@ QWingedEdge::TraversalStatus QWingedEdge::findInsertStatus(int vi, int ei) const
         qDebug() << "Delta to edge" << status.edge << d2 << ", angles: " << op->angle << op->invAngle;
 #endif
 
-        if (!(qFuzzyCompare(d2 + 1, 1) && isLeftOf(*this, vi, status.edge, ei))
+        if (!(qFuzzyIsNull(d2) && isLeftOf(*this, vi, status.edge, ei))
             && (d2 < d || (qFuzzyCompare(d2, d) && isLeftOf(*this, vi, status.edge, position)))) {
             position = status.edge;
             d = d2;
@@ -1247,10 +1247,10 @@ int QWingedEdge::addEdge(int fi, int si, const QBezier *bezier, qreal t0, qreal 
         QPointF aTangent = bezier->derivedAt(t0);
         QPointF bTangent = -bezier->derivedAt(t1);
 
-        if (qFuzzyCompare(aTangent.x() + 1, 1) && qFuzzyCompare(aTangent.y() + 1, 1))
+        if (qFuzzyIsNull(aTangent.x()) && qFuzzyIsNull(aTangent.y()))
             aTangent = bezier->secondDerivedAt(t0);
 
-        if (qFuzzyCompare(bTangent.x() + 1, 1) && qFuzzyCompare(bTangent.y() + 1, 1))
+        if (qFuzzyIsNull(bTangent.x()) && qFuzzyIsNull(bTangent.y()))
             bTangent = bezier->secondDerivedAt(t1);
 
         ep->angle = computeAngle(aTangent);
@@ -1415,7 +1415,7 @@ static void addLineTo(QPainterPath &path, const QPointF &point)
 
             const QPointF p(-d1.y(), d1.x());
 
-            if (qFuzzyCompare(dot(p, d2) + 1, 1)) {
+            if (qFuzzyIsNull(dot(p, d2))) {
                 path.setElementPositionAt(elementCount - 1, point.x(), point.y());
                 return;
             }

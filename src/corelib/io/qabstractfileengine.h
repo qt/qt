@@ -100,7 +100,8 @@ public:
         LinkName,
         CanonicalName,
         CanonicalPathName,
-        BundleName
+        BundleName,
+        NFileNames = 9
     };
     enum FileOwner {
         OwnerUser,

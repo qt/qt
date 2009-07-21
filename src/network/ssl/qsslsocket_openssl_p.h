@@ -110,7 +110,7 @@ public:
     void startClientEncryption();
     void startServerEncryption();
     void transmit();
-    bool testConnection();
+    bool startHandshake();
     void disconnectFromHost();
     void disconnected();
     QSslCipher sessionCipher() const;

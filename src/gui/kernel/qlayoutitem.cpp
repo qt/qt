@@ -54,7 +54,8 @@ QT_BEGIN_NAMESPACE
 
 inline static QRect fromLayoutItemRect(QWidgetPrivate *priv, const QRect &rect)
 {
-    return priv->fromOrToLayoutItemRect(rect, -1);
+    return rect.adjusted(priv->leftLayoutItemMargin, priv->topLayoutItemMargin,
+                         -priv->rightLayoutItemMargin, -priv->bottomLayoutItemMargin);
 }
 
 inline static QSize fromLayoutItemSize(QWidgetPrivate *priv, const QSize &size)
@@ -64,7 +65,8 @@ inline static QSize fromLayoutItemSize(QWidgetPrivate *priv, const QSize &size)
 
 inline static QRect toLayoutItemRect(QWidgetPrivate *priv, const QRect &rect)
 {
-    return priv->fromOrToLayoutItemRect(rect, +1);
+    return rect.adjusted(-priv->leftLayoutItemMargin, -priv->topLayoutItemMargin,
+                         priv->rightLayoutItemMargin, priv->bottomLayoutItemMargin);
 }
 
 inline static QSize toLayoutItemSize(QWidgetPrivate *priv, const QSize &size)

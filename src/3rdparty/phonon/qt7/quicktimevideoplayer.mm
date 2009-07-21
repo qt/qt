@@ -63,12 +63,14 @@ QuickTimeVideoPlayer::QuickTimeVideoPlayer() : QObject(0)
     m_mute = false;
     m_audioEnabled = false;
     m_hasVideo = false;
+    m_staticFps = 0;
     m_playbackRateSat = false;
     m_isDrmProtected = false;
     m_isDrmAuthorized = true;
 	m_primaryRenderingTarget = 0;
 	m_primaryRenderingCIImage = 0;
     m_QImagePixelBuffer = 0;
+    m_cachedCVTextureRef = 0;
     m_folderTracks = 0;
     m_currentTrack = 0;
 
@@ -81,6 +83,7 @@ QuickTimeVideoPlayer::QuickTimeVideoPlayer() : QObject(0)
 
 QuickTimeVideoPlayer::~QuickTimeVideoPlayer()
 {
+	PhononAutoReleasePool pool;
     unsetCurrentMediaSource();
     delete m_metaData;
     [(NSObject*)m_primaryRenderingTarget release];
@@ -89,6 +92,15 @@ QuickTimeVideoPlayer::~QuickTimeVideoPlayer()
     if (m_visualContext)
         CFRelease(m_visualContext);
 #endif
+}
+
+void QuickTimeVideoPlayer::releaseImageCache()
+{
+    if (m_cachedCVTextureRef){
+        CVOpenGLTextureRelease(m_cachedCVTextureRef);
+        m_cachedCVTextureRef = 0;
+    }
+    m_cachedQImage = QImage();
 }
 
 void QuickTimeVideoPlayer::createVisualContext()
@@ -130,7 +142,10 @@ bool QuickTimeVideoPlayer::videoFrameChanged()
 		return false;
 
     QTVisualContextTask(m_visualContext);
-    return QTVisualContextIsNewImageAvailable(m_visualContext, 0);
+    bool changed = QTVisualContextIsNewImageAvailable(m_visualContext, 0);
+    if (changed)
+        releaseImageCache();
+    return changed;
 
 #elif defined(QT_MAC_USE_COCOA)
     return true;
@@ -145,10 +160,11 @@ CVOpenGLTextureRef QuickTimeVideoPlayer::currentFrameAsCVTexture()
 #ifdef QUICKTIME_C_API_AVAILABLE
     if (!m_visualContext)
         return 0;
-    CVOpenGLTextureRef texture = 0;
-    OSStatus err = QTVisualContextCopyImageForTime(m_visualContext, 0, 0, &texture);
-    BACKEND_ASSERT3(err == noErr, "Could not copy image for time in QuickTime player", FATAL_ERROR, 0)
-    return texture;
+    if (!m_cachedCVTextureRef){
+        OSStatus err = QTVisualContextCopyImageForTime(m_visualContext, 0, 0, &m_cachedCVTextureRef);
+        BACKEND_ASSERT3(err == noErr, "Could not copy image for time in QuickTime player", FATAL_ERROR, 0)
+    }
+    return m_cachedCVTextureRef;
 
 #else
     return 0;
@@ -157,6 +173,9 @@ CVOpenGLTextureRef QuickTimeVideoPlayer::currentFrameAsCVTexture()
 
 QImage QuickTimeVideoPlayer::currentFrameAsQImage()
 {
+    if (!m_cachedQImage.isNull())
+        return m_cachedQImage;
+
 #ifdef QUICKTIME_C_API_AVAILABLE
     QGLContext *prevContext = const_cast<QGLContext *>(QGLContext::currentContext());
     CVOpenGLTextureRef texture = currentFrameAsCVTexture();
@@ -186,12 +205,11 @@ QImage QuickTimeVideoPlayer::currentFrameAsQImage()
         glVertex2i(-1, -1);
     glEnd();
 
-    QImage image = m_QImagePixelBuffer->toImage();
-    CVOpenGLTextureRelease(texture);
+    m_cachedQImage = m_QImagePixelBuffer->toImage();
     // Because of QuickTime, m_QImagePixelBuffer->doneCurrent() will fail.
     // So we store, and restore, the context our selves:
     prevContext->makeCurrent();
-    return image;
+    return m_cachedQImage;
 #else
 	CIImage *img = (CIImage *)currentFrameAsCIImage();
 	if (!img)
@@ -200,10 +218,10 @@ QImage QuickTimeVideoPlayer::currentFrameAsQImage()
 	NSBitmapImageRep* bitmap = [[NSBitmapImageRep alloc] initWithCIImage:img];
 	CGRect bounds = [img extent];
 	QImage qImg([bitmap bitmapData], bounds.size.width, bounds.size.height, QImage::Format_ARGB32);
-	QImage swapped = qImg.rgbSwapped();
+	m_cachedQImage = qImg.rgbSwapped();
 	[bitmap release];
 	[img release];
-	return swapped;
+	return m_cachedQImage;
 #endif
 }
 
@@ -255,8 +273,7 @@ void *QuickTimeVideoPlayer::currentFrameAsCIImage()
 #ifdef QUICKTIME_C_API_AVAILABLE
 	CVOpenGLTextureRef cvImg = currentFrameAsCVTexture();
 	CIImage *img = [[CIImage alloc] initWithCVImageBuffer:cvImg];
-	CVOpenGLTextureRelease(cvImg);
-	return img;	
+	return img;
 #else
 	return 0;
 #endif
@@ -278,7 +295,7 @@ GLuint QuickTimeVideoPlayer::currentFrameAsGLTexture()
 
     int samplesPerPixel = [bitmap samplesPerPixel];
     if (![bitmap isPlanar] && (samplesPerPixel == 3 || samplesPerPixel == 4)){
-        glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, 
+        glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0,
             samplesPerPixel == 4 ? GL_RGBA8 : GL_RGB8,
             [bitmap pixelsWide], [bitmap pixelsHigh],
             0, samplesPerPixel == 4 ? GL_RGBA : GL_RGB,
@@ -307,7 +324,7 @@ void QuickTimeVideoPlayer::setVolume(float masterVolume, float relativeVolume)
     m_masterVolume = masterVolume;
     m_relativeVolume = relativeVolume;
     if (!m_QTMovie || !m_audioEnabled || m_mute)
-        return;                
+        return;
     [m_QTMovie setVolume:(m_masterVolume * m_relativeVolume)];
 }
 
@@ -318,7 +335,7 @@ void QuickTimeVideoPlayer::setMute(bool mute)
         return;
 
     // Work-around bug that happends if you set/unset mute
-    // before movie is playing, and audio is not played 
+    // before movie is playing, and audio is not played
     // through graph. Then audio is delayed.
     [m_QTMovie setMuted:mute];
     [m_QTMovie setVolume:(mute ? 0 : m_masterVolume * m_relativeVolume)];
@@ -331,7 +348,7 @@ void QuickTimeVideoPlayer::enableAudio(bool enable)
         return;
 
     // Work-around bug that happends if you set/unset mute
-    // before movie is playing, and audio is not played 
+    // before movie is playing, and audio is not played
     // through graph. Then audio is delayed.
     [m_QTMovie setMuted:(!enable || m_mute)];
     [m_QTMovie setVolume:((!enable || m_mute) ? 0 : m_masterVolume * m_relativeVolume)];
@@ -350,7 +367,7 @@ bool QuickTimeVideoPlayer::setAudioDevice(int id)
 #ifdef QUICKTIME_C_API_AVAILABLE
     // The following code will not work for some media codecs that
     // typically mingle audio/video frames (e.g mpeg).
-    CFStringRef idString = PhononCFString::toCFStringRef(AudioDevice::deviceUID(id));        
+    CFStringRef idString = PhononCFString::toCFStringRef(AudioDevice::deviceUID(id));
     QTAudioContextRef context;
     QTAudioContextCreateForAudioDevice(kCFAllocatorDefault, idString, 0, &context);
     OSStatus err = SetMovieAudioContext([m_QTMovie quickTimeMovie], context);
@@ -374,11 +391,16 @@ void QuickTimeVideoPlayer::setColors(qreal brightness, qreal contrast, qreal hue
     contrast += 1;
     saturation += 1;
 
+    if (m_brightness == brightness
+        && m_contrast == contrast
+        && m_hue == hue
+        && m_saturation == saturation)
+        return;
+
 	m_brightness = brightness;
 	m_contrast = contrast;
 	m_hue = hue;
 	m_saturation = saturation;
-	
 #ifdef QUICKTIME_C_API_AVAILABLE
     Float32 value;
     value = brightness;
@@ -390,6 +412,7 @@ void QuickTimeVideoPlayer::setColors(qreal brightness, qreal contrast, qreal hue
     value = saturation;
     SetMovieVisualSaturation([m_QTMovie quickTimeMovie], value, 0);
 #endif
+    releaseImageCache();
 }
 
 QRect QuickTimeVideoPlayer::videoRect() const
@@ -415,12 +438,15 @@ void QuickTimeVideoPlayer::unsetCurrentMediaSource()
     m_state = NoMedia;
     m_isDrmProtected = false;
     m_isDrmAuthorized = true;
+    m_hasVideo = false;
+    m_staticFps = 0;
     m_mediaSource = MediaSource();
     m_movieCompactDiscPath.clear();
 	[(CIImage *)m_primaryRenderingCIImage release];
 	m_primaryRenderingCIImage = 0;
     delete m_QImagePixelBuffer;
     m_QImagePixelBuffer = 0;
+    releaseImageCache();
     [m_folderTracks release];
     m_folderTracks = 0;
 }
@@ -572,6 +598,7 @@ void QuickTimeVideoPlayer::prepareCurrentMovieForPlayback()
     if (!m_playbackRateSat)
         m_playbackRate = prefferedPlaybackRate();
     checkIfVideoAwailable();
+    calculateStaticFps();
     enableAudio(m_audioEnabled);
     setMute(m_mute);
     setVolume(m_masterVolume, m_relativeVolume);
@@ -778,6 +805,44 @@ long QuickTimeVideoPlayer::timeScale() const
 
 	PhononAutoReleasePool pool;
     return [[m_QTMovie attributeForKey:@"QTMovieTimeScaleAttribute"] longValue];
+}
+
+float QuickTimeVideoPlayer::staticFps()
+{
+    return m_staticFps;
+}
+
+void QuickTimeVideoPlayer::calculateStaticFps()
+{
+    if (!m_hasVideo){
+        m_staticFps = 0;
+        return;
+    }
+
+#ifdef QT_ALLOW_QUICKTIME
+    Boolean isMpeg = false;
+    Track videoTrack = GetMovieIndTrackType([m_QTMovie quickTimeMovie], 1,
+            FOUR_CHAR_CODE('vfrr'), // 'vfrr' means: has frame rate
+            movieTrackCharacteristic | movieTrackEnabledOnly);
+    Media media = GetTrackMedia(videoTrack);
+    MediaHandler mediaH = GetMediaHandler(media);
+    MediaHasCharacteristic(mediaH, FOUR_CHAR_CODE('mpeg'), &isMpeg);
+
+    if (isMpeg){
+        MHInfoEncodedFrameRateRecord frameRate;
+        Size frameRateSize = sizeof(frameRate);
+        MediaGetPublicInfo(mediaH, kMHInfoEncodedFrameRate, &frameRate, &frameRateSize);
+        m_staticFps = float(Fix2X(frameRate.encodedFrameRate));
+    } else {
+        Media media = GetTrackMedia(videoTrack);
+        long sampleCount = GetMediaSampleCount(media);
+        TimeValue64 duration = GetMediaDisplayDuration(media);
+        TimeValue64 timeScale = GetMediaTimeScale(media);
+        m_staticFps = float((double)sampleCount * (double)timeScale / (double)duration);
+    }
+#else
+    m_staticFps = 30.0f;
+#endif
 }
 
 QString QuickTimeVideoPlayer::timeToString(quint64 ms)

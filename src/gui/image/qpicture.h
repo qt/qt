@@ -184,8 +184,10 @@ private:
   QPicture stream functions
  *****************************************************************************/
 
+#ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPicture &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPicture &);
+#endif
 
 #endif // QT_NO_PICTURE
 

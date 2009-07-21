@@ -485,7 +485,7 @@ void CSSPrimitiveValue::setFloatValue(unsigned short unitType, double floatValue
     m_type = unitType;
 }
 
-double scaleFactorForConversion(unsigned short unitType)
+static double scaleFactorForConversion(unsigned short unitType)
 {
     double factor = 1.0;
     switch (unitType) {
@@ -777,7 +777,7 @@ String CSSPrimitiveValue::cssText() const
 
             Rect* rectVal = getRectValue();
             Vector<UChar> result;
-            result.reserveCapacity(32);
+            result.reserveInitialCapacity(32);
             append(result, rectParen);
 
             append(result, rectVal->top()->cssText());
@@ -806,7 +806,7 @@ String CSSPrimitiveValue::cssText() const
             Color color(rgbColor);
 
             Vector<UChar> result;
-            result.reserveCapacity(32);
+            result.reserveInitialCapacity(32);
             if (color.hasAlpha())
                 append(result, rgbaParen);
             else

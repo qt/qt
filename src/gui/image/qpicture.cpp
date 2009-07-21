@@ -1148,6 +1148,7 @@ QPaintEngine *QPicture::paintEngine() const
   QPicture stream functions
  *****************************************************************************/
 
+#ifndef QT_NO_DATASTREAM
 /*!
     \relates QPicture
 
@@ -1193,6 +1194,7 @@ QDataStream &operator>>(QDataStream &s, QPicture &r)
     r.d_func()->resetFormat();
     return s;
 }
+#endif // QT_NO_DATASTREAM
 
 
 #ifndef QT_NO_PICTUREIO

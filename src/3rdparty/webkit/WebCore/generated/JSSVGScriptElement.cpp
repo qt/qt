@@ -20,26 +20,22 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGScriptElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedBoolean.h"
 #include "JSSVGAnimatedString.h"
 #include "KURL.h"
 #include "SVGScriptElement.h"
-
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGScriptElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGScriptElement);
 
 /* Hash table */
 
@@ -96,32 +92,35 @@ bool JSSVGScriptElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSSVGScriptElement, Base>(exec, &JSSVGScriptElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGScriptElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGScriptElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGScriptElement* imp = static_cast<SVGScriptElement*>(static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsSVGScriptElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGScriptElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGScriptElement* imp = static_cast<SVGScriptElement*>(static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGScriptElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGScriptElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGScriptElement* imp = static_cast<SVGScriptElement*>(static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-void JSSVGScriptElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGScriptElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGScriptElement, Base>(exec, propertyName, value, &JSSVGScriptElementTable, this, slot);
 }
 
-void setJSSVGScriptElementType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGScriptElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGScriptElement* imp = static_cast<SVGScriptElement*>(static_cast<JSSVGScriptElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));

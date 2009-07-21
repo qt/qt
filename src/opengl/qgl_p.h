@@ -61,6 +61,10 @@
 #include "QtCore/qhash.h"
 #include "private/qwidget_p.h"
 
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#include "private/qpixmapdata_gl_p.h"
+#endif
+
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
 #define q_vertexTypeEnum GL_FLOAT
@@ -239,6 +243,7 @@ public:
     QGLFormat glFormat;
     QGLFormat reqFormat;
     GLuint pbo;
+    GLuint fbo;
 
     uint valid : 1;
     uint sharing : 1;
@@ -255,6 +260,9 @@ public:
     QGLExtensionFuncs extensionFuncs;
     GLint max_texture_size;
 
+    GLuint current_fbo;
+    QPaintEngine *active_engine;
+
 #ifdef Q_WS_WIN
     static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->extensionFuncs; }
 #endif
@@ -268,7 +276,7 @@ public:
 };
 
 // ### make QGLContext a QObject in 5.0 and remove the proxy stuff
-class QGLSignalProxy : public QObject
+class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
 {
     Q_OBJECT
 public:
@@ -279,6 +287,54 @@ public:
     static QGLSignalProxy *instance();
 Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
+};
+
+class QGLPixelBuffer;
+class QGLFramebufferObject;
+class QWSGLWindowSurface;
+class QGLWindowSurface;
+class QGLDrawable {
+public:
+    QGLDrawable() : widget(0), buffer(0), fbo(0)
+#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
+                  , wsurf(0)
+#endif
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+                  , pixmapData(0)
+#endif
+        {}
+    void setDevice(QPaintDevice *pdev);
+    void swapBuffers();
+    void makeCurrent();
+    void doneCurrent();
+    QSize size() const;
+    QGLFormat format() const;
+    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
+    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
+    QColor backgroundColor() const;
+    QGLContext *context() const;
+    bool autoFillBackground() const;
+    bool hasTransparentBackground() const;
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+    QGLPixmapData *copyOnBegin() const;
+#endif
+
+private:
+    bool wasBound;
+    QGLWidget *widget;
+    QGLPixelBuffer *buffer;
+    QGLFramebufferObject *fbo;
+#ifdef Q_WS_QWS
+    QWSGLWindowSurface *wsurf;
+#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+    QGLWindowSurface *wsurf;
+#endif
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+    QGLPixmapData *pixmapData;
+#endif
+    int previous_fbo;
 };
 
 // GL extension definitions
@@ -296,7 +352,8 @@ public:
         StencilWrap             = 0x00000100,
         PackedDepthStencil      = 0x00000200,
         NVFloatBuffer           = 0x00000400,
-        PixelBufferObject       = 0x00000800
+        PixelBufferObject       = 0x00000800,
+        FramebufferBlit         = 0x00001000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -371,11 +428,20 @@ private:
 extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
 
 #ifdef Q_WS_QWS
-class QOpenGLPaintEngine;
-extern QOpenGLPaintEngine* qt_qgl_paint_engine();
+extern QPaintEngine* qt_qgl_paint_engine();
 
 extern EGLDisplay qt_qgl_egl_display();
 #endif
+
+inline bool qt_gl_preferGL2Engine()
+{
+#if defined(QT_OPENGL_ES_2)
+    return true;
+#else
+    return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
+           && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty();
+#endif
+}
 
 inline GLenum qt_gl_preferredTextureFormat()
 {
@@ -384,11 +450,15 @@ inline GLenum qt_gl_preferredTextureFormat()
 
 inline GLenum qt_gl_preferredTextureTarget()
 {
+#if defined(QT_OPENGL_ES_2)
+    return GL_TEXTURE_2D;
+#else
     return (QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+           && !qt_gl_preferGL2Engine()
            ? GL_TEXTURE_RECTANGLE_NV
            : GL_TEXTURE_2D;
+#endif
 }
-
 
 QT_END_NAMESPACE
 

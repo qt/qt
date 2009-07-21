@@ -48,11 +48,11 @@ MainWindow::MainWindow()
 {
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     QAction *openAction = fileMenu->addAction(tr("&Open..."));
-    openAction->setShortcut(QKeySequence(tr("Ctrl+O")));
+    openAction->setShortcuts(QKeySequence::Open);
     QAction *saveAction = fileMenu->addAction(tr("&Save As..."));
-    saveAction->setShortcut(QKeySequence(tr("Ctrl+S")));
+    saveAction->setShortcuts(QKeySequence::SaveAs);
     QAction *quitAction = fileMenu->addAction(tr("E&xit"));
-    quitAction->setShortcut(QKeySequence(tr("Ctrl+Q")));
+    quitAction->setShortcuts(QKeySequence::Quit);
 
     setupModel();
     setupViews();

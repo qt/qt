@@ -45,6 +45,7 @@ namespace WebCore
     class Element;
     class Node;
     class Page;
+    class Frame;
 
 #ifndef QT_NO_CURSOR
     class SetCursorEvent : public QEvent {
@@ -79,6 +80,9 @@ public:
 
     void _q_onLoadProgressChanged(int);
     void _q_webActionTriggered(bool checked);
+#ifndef NDEBUG
+    void _q_cleanupLeakMessages();
+#endif
     void updateAction(QWebPage::WebAction action);
     void updateNavigationActions();
     void updateEditorActions();
@@ -110,7 +114,7 @@ public:
 
     void shortcutOverrideEvent(QKeyEvent*);
     void leaveEvent(QEvent *);
-    bool handleScrolling(QKeyEvent*);
+    bool handleScrolling(QKeyEvent*, WebCore::Frame*);
 
 #ifndef QT_NO_SHORTCUT
     static QWebPage::WebAction editorActionForKeyEvent(QKeyEvent* event);
@@ -154,6 +158,7 @@ public:
     QWebPage::LinkDelegationPolicy linkPolicy;
 
     QSize viewportSize;
+    QSize fixedLayoutSize;
     QWebHistory history;
     QWebHitTestResult hitTestResult;
 #ifndef QT_NO_CONTEXTMENU
@@ -162,6 +167,7 @@ public:
     QWebSettings *settings;
     QPalette palette;
     bool editable;
+    bool useFixedLayout;
 
     QAction *actions[QWebPage::WebActionCount];
 

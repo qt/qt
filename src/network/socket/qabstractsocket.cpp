@@ -852,7 +852,7 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
         if (i != 0) s += ", ";
         s += addresses.at(i).toString();
     }
-    s += "}";
+    s += '}';
     qDebug("QAbstractSocketPrivate::_q_startConnecting(hostInfo == %s)", s.toLatin1().constData());
 #endif
 
@@ -1659,13 +1659,13 @@ bool QAbstractSocket::waitForConnected(int msecs)
 }
 
 /*!
-    This function blocks until data is available for reading and the
+    This function blocks until new data is available for reading and the
     \l{QIODevice::}{readyRead()} signal has been emitted. The function
     will timeout after \a msecs milliseconds; the default timeout is
     30000 milliseconds.
 
     The function returns true if the readyRead() signal is emitted and
-    there is data available for reading; otherwise it returns false
+    there is new data available for reading; otherwise it returns false
     (if an error occurred or the operation timed out).
 
     \sa waitForBytesWritten() 
@@ -2597,7 +2597,7 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketError er
         debug << "QAbstractSocket::ProxyProtocolError";
         break;
     default:
-        debug << "QAbstractSocket::SocketError(" << int(error) << ")";
+        debug << "QAbstractSocket::SocketError(" << int(error) << ')';
         break;
     }
     return debug;
@@ -2628,7 +2628,7 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketState st
         debug << "QAbstractSocket::ClosingState";
         break;
     default:
-        debug << "QAbstractSocket::SocketState(" << int(state) << ")";
+        debug << "QAbstractSocket::SocketState(" << int(state) << ')';
         break;
     }
     return debug;

@@ -290,7 +290,7 @@ public:
     QComboBoxDelegate(QObject *parent, QComboBox *cmb) : QItemDelegate(parent), mCombo(cmb) {}
 
     static bool isSeparator(const QModelIndex &index) {
-        return index.data(Qt::AccessibleDescriptionRole).toString() == QString::fromLatin1("separator");
+        return index.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
     }
     static void setSeparator(QAbstractItemModel *model, const QModelIndex &index) {
         model->setData(index, QString::fromLatin1("separator"), Qt::AccessibleDescriptionRole);
@@ -370,6 +370,7 @@ public:
     void updateDelegate(bool force = false);
     void keyboardSearchString(const QString &text);
     void modelChanged();
+    void updateViewContainerPaletteAndOpacity();
 
     QAbstractItemModel *model;
     QLineEdit *lineEdit;

@@ -36,9 +36,11 @@
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
+#include "MappedAttribute.h"
 #include "MouseEvent.h"
 #include "MutationEvent.h"
-#include "RenderFlow.h"
+#include "Page.h"
+#include "RenderBox.h"
 #include "RenderImage.h"
 #include "ResourceRequest.h"
 #include "SelectionController.h"
@@ -107,12 +109,14 @@ bool HTMLAnchorElement::isKeyboardFocusable(KeyboardEvent* event) const
     if (!document()->frame()->eventHandler()->tabsToLinks(event))
         return false;
 
+    if (!renderer() || !renderer()->isBoxModelObject())
+        return false;
+    
     // Before calling absoluteRects, check for the common case where the renderer
-    // or one of the continuations is non-empty, since this is a faster check and
-    // almost always returns true.
-    for (RenderObject* r = renderer(); r; r = r->continuation())
-        if (r->width() > 0 && r->height() > 0)
-            return true;
+    // is non-empty, since this is a faster check and almost always returns true.
+    RenderBoxModelObject* box = toRenderBoxModelObject(renderer());
+    if (!box->borderBoundingBox().isEmpty())
+        return true;
 
     Vector<IntRect> rects;
     FloatPoint absPos = renderer()->localToAbsolute();
@@ -197,7 +201,7 @@ void HTMLAnchorElement::defaultEventHandler(Event* evt)
         if (evt->target()->toNode()->hasTagName(imgTag)) {
             HTMLImageElement* img = static_cast<HTMLImageElement*>(evt->target()->toNode());
             if (img && img->isServerMap()) {
-                RenderImage* r = static_cast<RenderImage*>(img->renderer());
+                RenderImage* r = toRenderImage(img->renderer());
                 if (r && e) {
                     // FIXME: broken with transforms
                     FloatPoint absPos = r->localToAbsolute();
@@ -216,7 +220,7 @@ void HTMLAnchorElement::defaultEventHandler(Event* evt)
         }
 
         if (!evt->defaultPrevented() && document()->frame())
-            document()->frame()->loader()->urlSelected(document()->completeURL(url), getAttribute(targetAttr), evt, false, true);
+            document()->frame()->loader()->urlSelected(document()->completeURL(url), getAttribute(targetAttr), evt, false, false, true);
 
         evt->setDefaultHandled();
     } else if (isLink() && isContentEditable()) {
@@ -277,11 +281,17 @@ void HTMLAnchorElement::parseMappedAttribute(MappedAttribute *attr)
         bool wasLink = isLink();
         setIsLink(!attr->isNull());
         if (wasLink != isLink())
-            setChanged();
-        if (isLink() && document()->isDNSPrefetchEnabled()) {
-            String value = attr->value();
-            if (protocolIs(value, "http") || protocolIs(value, "https") || value.startsWith("//"))
-                prefetchDNS(document()->completeURL(value).host());
+            setNeedsStyleRecalc();
+        if (isLink()) {
+            String parsedURL = parseURL(attr->value());
+            if (document()->isDNSPrefetchEnabled()) {
+                if (protocolIs(parsedURL, "http") || protocolIs(parsedURL, "https") || parsedURL.startsWith("//"))
+                    prefetchDNS(document()->completeURL(parsedURL).host());
+            }
+            if (document()->page() && !document()->page()->javaScriptURLsAreAllowed() && protocolIsJavaScript(parsedURL)) {
+                setIsLink(false);
+                attr->setValue(nullAtom);
+            }
         }
     } else if (attr->name() == nameAttr ||
              attr->name() == titleAttr ||
@@ -428,7 +438,8 @@ void HTMLAnchorElement::setType(const AtomicString& value)
 
 String HTMLAnchorElement::hash() const
 {
-    return "#" + href().ref();
+    String ref = href().ref();
+    return ref.isEmpty() ? "" : "#" + ref;
 }
 
 String HTMLAnchorElement::host() const
@@ -461,7 +472,8 @@ String HTMLAnchorElement::protocol() const
 
 String HTMLAnchorElement::search() const
 {
-    return href().query();
+    String query = href().query();
+    return query.isEmpty() ? "" : "?" + query;
 }
 
 String HTMLAnchorElement::text() const

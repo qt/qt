@@ -364,6 +364,7 @@ private:
     friend class QGLWindowSurface;
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
+    friend class QGLTextureGlyphCache;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
 #ifdef Q_WS_MAC
 public:
@@ -372,9 +373,9 @@ private:
     friend class QMacGLWindowChangeEvent;
     friend QGLContextPrivate *qt_phonon_get_dptr(const QGLContext *);
 #endif
-#ifdef Q_WS_WIN
     friend class QGLFramebufferObject;
     friend class QGLFramebufferObjectPrivate;
+#ifdef Q_WS_WIN
     friend bool qt_resolve_GLSL_functions(QGLContext *ctx);
     friend bool qt_createGLSLProgram(QGLContext *ctx, GLuint &program, const char *shader_src, GLuint &shader);
 #endif

@@ -102,24 +102,7 @@ static QString buddyString(const QWidget *widget)
 
 QString Q_GUI_EXPORT qt_accStripAmp(const QString &text)
 {
-    if (text.isEmpty())
-        return text;
-
-    const QChar *ch = text.unicode();
-    int length = text.length();
-    QString str;
-    while (length > 0) {
-        if (*ch == QLatin1Char('&')) {
-            ++ch;
-            --length;
-            if (!ch)
-                --ch;
-        }
-        str += *ch;
-        ++ch;
-        --length;
-    }
-    return str;
+    return QString(text).remove(QLatin1Char('&'));
 }
 
 QString Q_GUI_EXPORT qt_accHotKey(const QString &text)

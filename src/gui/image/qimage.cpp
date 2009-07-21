@@ -1702,8 +1702,12 @@ void QImage::setColorTable(const QVector<QRgb> colors)
 
     d->colortable = colors;
     d->has_alpha_clut = false;
-    for (int i = 0; i < d->colortable.size(); ++i)
-        d->has_alpha_clut |= (qAlpha(d->colortable.at(i)) != 255);
+    for (int i = 0; i < d->colortable.size(); ++i) {
+        if (qAlpha(d->colortable.at(i)) != 255) {
+            d->has_alpha_clut = true;
+            break;
+        }
+    }
 }
 
 /*!
@@ -3958,10 +3962,8 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     if (newSize == size())
         return copy();
 
-    QImage img;
-    QTransform wm;
-    wm.scale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
-    img = transformed(wm, mode);
+    QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
+    QImage img = transformed(wm, mode);
     return img;
 }
 
@@ -3988,9 +3990,8 @@ QImage QImage::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QImage();
 
-    QTransform wm;
     qreal factor = (qreal) w / width();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -4017,9 +4018,8 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
     if (h <= 0)
         return QImage();
 
-    QTransform wm;
     qreal factor = (qreal) h / height();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -4775,7 +4775,7 @@ QDataStream &operator>>(QDataStream &s, QImage &image)
     image = QImageReader(s.device(), 0).read();
     return s;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 #ifdef QT3_SUPPORT
@@ -4865,8 +4865,6 @@ bool QImage::operator==(const QImage & i) const
         return false;
 
     if (d->format != Format_RGB32) {
-        if (d->colortable != i.d->colortable)
-            return false;
         if (d->format >= Format_ARGB32) { // all bits defined
             const int n = d->width * d->depth / 8;
             if (n == d->bytes_per_line && n == i.d->bytes_per_line) {
@@ -4879,11 +4877,13 @@ bool QImage::operator==(const QImage & i) const
                 }
             }
         } else {
-            int w = width();
-            int h = height();
+            const int w = width();
+            const int h = height();
+            const QVector<QRgb> &colortable = d->colortable;
+            const QVector<QRgb> &icolortable = i.d->colortable;
             for (int y=0; y<h; ++y) {
                 for (int x=0; x<w; ++x) {
-                    if (pixelIndex(x, y) != i.pixelIndex(x, y))
+                    if (colortable[pixelIndex(x, y)] != icolortable[i.pixelIndex(x, y)])
                         return false;
                 }
             }

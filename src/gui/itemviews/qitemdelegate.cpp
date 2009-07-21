@@ -574,7 +574,7 @@ void QItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) con
 }
 
 /*!
-    Gets data drom the \a editor widget and stores it in the specified
+    Gets data from the \a editor widget and stores it in the specified
     \a model at the item \a index.
 
     The default implementation gets the value to be stored in the data

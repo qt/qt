@@ -19,24 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSCSSVariablesRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSVariablesDeclaration.h"
 #include "CSSVariablesRule.h"
 #include "JSCSSVariablesDeclaration.h"
 #include "JSMediaList.h"
 #include "MediaList.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSVariablesRule)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSVariablesRule);
 
 /* Hash table */
 
@@ -80,7 +76,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -131,23 +127,25 @@ bool JSCSSVariablesRule::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSCSSVariablesRule, Base>(exec, &JSCSSVariablesRuleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSVariablesRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSVariablesRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->media()));
 }
 
-JSValuePtr jsCSSVariablesRuleVariables(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSVariablesRuleVariables(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->variables()));
 }
 
-JSValuePtr jsCSSVariablesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSVariablesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSCSSVariablesRule::getConstructor(ExecState* exec)
+JSValue JSCSSVariablesRule::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSVariablesRuleConstructor>(exec);
 }

@@ -20,27 +20,23 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGElement.h"
 #include "JSSVGSVGElement.h"
 #include "KURL.h"
 #include "SVGElement.h"
 #include "SVGSVGElement.h"
-
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGElement);
 
 /* Hash table */
 
@@ -98,36 +94,40 @@ bool JSSVGElement::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSSVGElement, Base>(exec, &JSSVGElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGElementId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->id());
 }
 
-JSValuePtr jsSVGElementXmlbase(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementXmlbase(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlbase());
 }
 
-JSValuePtr jsSVGElementOwnerSVGElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementOwnerSVGElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->ownerSVGElement()));
 }
 
-JSValuePtr jsSVGElementViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->viewportElement()));
 }
 
-void JSSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGElement, Base>(exec, propertyName, value, &JSSVGElementTable, this, slot);
 }
 
-void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -135,7 +135,7 @@ void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValuePtr value)
     setDOMException(exec, ec);
 }
 
-void setJSSVGElementXmlbase(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementXmlbase(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -143,9 +143,9 @@ void setJSSVGElementXmlbase(ExecState* exec, JSObject* thisObject, JSValuePtr va
     setDOMException(exec, ec);
 }
 
-SVGElement* toSVGElement(JSC::JSValuePtr value)
+SVGElement* toSVGElement(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGElement::s_info) ? static_cast<JSSVGElement*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGElement::s_info) ? static_cast<JSSVGElement*>(asObject(value))->impl() : 0;
 }
 
 }

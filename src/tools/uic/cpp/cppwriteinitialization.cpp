@@ -391,6 +391,13 @@ void WriteInitialization::LayoutDefaultHandler::acceptLayoutFunction(DomLayoutFu
     }
 }
 
+static inline void writeContentsMargins(const QString &indent, const QString &objectName, int value, QTextStream &str)
+{
+     QString contentsMargins;
+     QTextStream(&contentsMargins) << value << ", " << value << ", " << value << ", " << value;
+     writeSetter(indent, objectName, QLatin1String("setContentsMargins"), contentsMargins, str);
+ }
+
 void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QString &indent, const QString &objectName,
                                                               const DomPropertyMap &properties, const QString &propertyName, const QString &setter,
                                                               int defaultStyleValue, bool suppressDefault, QTextStream &str) const
@@ -408,7 +415,11 @@ void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QStri
                              && value == defaultStyleValue);
             if (ifndefMac)
                 str << "#ifndef Q_OS_MAC\n";
-            writeSetter(indent, objectName, setter, value, str);
+            if (p == Margin) { // Use setContentsMargins for numeric values
+                writeContentsMargins(indent, objectName, value, str);
+            } else {
+                writeSetter(indent, objectName, setter, value, str);
+            }
             if (ifndefMac)
                 str << "#endif\n";
             return;
@@ -416,13 +427,18 @@ void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QStri
     }
     if (suppressDefault)
         return;
-    // get default
+    // get default.
     if (m_state[p] & HasDefaultFunction) {
+        // Do not use setContentsMargins to avoid repetitive evaluations.
         writeSetter(indent, objectName, setter, m_functions[p], str);
         return;
     }
     if (m_state[p] & HasDefaultValue) {
-        writeSetter(indent, objectName, setter, m_defaultValues[p], str);
+        if (p == Margin) { // Use setContentsMargins for numeric values
+            writeContentsMargins(indent, objectName, m_defaultValues[p], str);
+        } else {
+            writeSetter(indent, objectName, setter, m_defaultValues[p], str);
+        }
     }
     return;
 }
@@ -2813,7 +2829,7 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
     bool generateMultiDirective = false;
     if (emptyItemPolicy == Item::ConstructItemOnly && m_children.size() == 0) {
         if (m_setupUiData.policy == ItemData::DontGenerate) {
-            m_setupUiStream << m_indent << "new " << m_itemClassName << "(" << parent << ");\n";
+            m_setupUiStream << m_indent << "new " << m_itemClassName << '(' << parent << ");\n";
                 return QString();
         } else if (m_setupUiData.policy == ItemData::GenerateWithMultiDirective) {
             generateMultiDirective = true;
@@ -2824,11 +2840,11 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
         generateMultiDirectiveBegin(m_setupUiStream, m_setupUiData.directives);
 
     const QString uniqueName = m_driver->unique(QLatin1String("__") + m_itemClassName.toLower());
-    m_setupUiStream << m_indent << m_itemClassName << " *" << uniqueName << " = new " << m_itemClassName << "(" << parent << ");\n";
+    m_setupUiStream << m_indent << m_itemClassName << " *" << uniqueName << " = new " << m_itemClassName << '(' << parent << ");\n";
 
     if (generateMultiDirective) {
         m_setupUiStream << "#else\n";
-        m_setupUiStream << m_indent << "new " << m_itemClassName << "(" << parent << ");\n";
+        m_setupUiStream << m_indent << "new " << m_itemClassName << '(' << parent << ");\n";
         generateMultiDirectiveEnd(m_setupUiStream, m_setupUiData.directives);
     }
 

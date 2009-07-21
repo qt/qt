@@ -128,7 +128,7 @@ void QToolBarLayout::setUsePopupMenu(bool set)
         invalidate();
     if (!set) {
         QObject::connect(extension, SIGNAL(clicked(bool)),
-                        this, SLOT(setExpanded(bool)));
+                        this, SLOT(setExpanded(bool)), Qt::UniqueConnection);
         extension->setPopupMode(QToolButton::DelayedPopup);
         extension->setMenu(0);
         delete popupMenu;
@@ -334,7 +334,7 @@ void QToolBarLayout::updateGeomArray() const
     if (QMainWindow *mw = qobject_cast<QMainWindow *>(parentWidget()->parentWidget())) {
         if (mw->unifiedTitleAndToolBarOnMac()
                 && mw->toolBarArea(static_cast<QToolBar *>(parentWidget())) == Qt::TopToolBarArea) {
-            if (that->expandFlag) {
+            if (expandFlag) {
                 tb->setMaximumSize(0xFFFFFF, 0xFFFFFF);
             } else {
                tb->setMaximumSize(hint);
@@ -360,23 +360,11 @@ void QToolBarLayout::setGeometry(const QRect &rect)
     QStyle *style = tb->style();
     QStyleOptionToolBar opt;
     tb->initStyleOption(&opt);
-    const int handleExtent = movable()
-            ? style->pixelMetric(QStyle::PM_ToolBarHandleExtent, &opt, tb) : 0;
     const int margin = this->margin();
     const int extensionExtent = style->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt, tb);
     Qt::Orientation o = tb->orientation();
 
     QLayout::setGeometry(rect);
-    if (movable()) {
-        if (o == Qt::Horizontal) {
-            handRect = QRect(margin, margin, handleExtent, rect.height() - 2*margin);
-            handRect = QStyle::visualRect(parentWidget()->layoutDirection(), rect, handRect);
-        } else {
-            handRect = QRect(margin, margin, rect.width() - 2*margin, handleExtent);
-        }
-    } else {
-        handRect = QRect();
-    }
 
     bool ranOutOfSpace = false;
     if (!animating)
@@ -740,11 +728,6 @@ QToolBarItem *QToolBarLayout::createItem(QAction *action)
     result->customWidget = customWidget;
     result->action = action;
     return result;
-}
-
-QRect QToolBarLayout::handleRect() const
-{
-    return handRect;
 }
 
 QT_END_NAMESPACE

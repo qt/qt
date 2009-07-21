@@ -188,7 +188,7 @@ private slots:
     void oci_fieldLength_data() { generic_data("QOCI"); }
     void oci_fieldLength();
 
-    void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE3"); }
+    void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE"); }
     void sqlite_bindAndFetchUInt();
 
     void sqlStatementUseIsNull_189093_data() { generic_data(); }
@@ -249,7 +249,7 @@ struct FieldDef {
 // excluding the primary key field
 static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
 {
-    tst_Databases::safeDropTables(db, QStringList() << qTableName("qtestfields"));
+    tst_Databases::safeDropTable(db, qTableName("qtestfields"));
     QSqlQuery q(db);
     // construct a create table statement consisting of all fieldtypes
     QString qs = "create table " + qTableName("qtestfields");
@@ -298,6 +298,7 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
         q.exec("set table_type=innodb");
     if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+        QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
     }
 
     // please never ever change this table; otherwise fix all tests ;)
@@ -357,6 +358,7 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         tableNames <<  (qTableName("qtest") + " test");
 
     tst_Databases::safeDropTables(db, tableNames);
+    tst_Databases::safeDropView(db, qTableName("qtest_view"));
 }
 
 void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
@@ -539,11 +541,6 @@ void tst_QSqlDatabase::tables()
     if (tempTables)
         QVERIFY(tables.contains(qTableName("temp_tab"), Qt::CaseInsensitive));
     QVERIFY(tables.contains(qTableName("qtest"), Qt::CaseInsensitive));
-
-    if (tst_Databases::isMSAccess(db))
-        QSqlQuery("drop table " + qTableName("qtest_view"), db);
-    else
-        QSqlQuery("drop view " + qTableName("qtest_view"), db);
 
     if (db.driverName().startsWith("QPSQL")) {
         QVERIFY(tables.contains(qTableName("qtest") + " test"));
@@ -1081,8 +1078,8 @@ void tst_QSqlDatabase::recordMySQL()
     FieldDef("bigint unsigned", QVariant::ULongLong, Q_UINT64_C(18446744073709551615)),
     FieldDef("float", QVariant::Double,	    1.12345),
     FieldDef("double", QVariant::Double,	    1.123456789),
-    FieldDef("decimal(10, 9)", QVariant::String,1.123456789),
-    FieldDef("numeric(5, 2)", QVariant::String, 123.67),
+    FieldDef("decimal(10, 9)", QVariant::Double,1.123456789),
+    FieldDef("numeric(5, 2)", QVariant::Double, 123.67),
     FieldDef("date", QVariant::Date,	    QDate::currentDate()),
     FieldDef("datetime", QVariant::DateTime,   dt),
     FieldDef("timestamp", QVariant::DateTime,  dt, false),
@@ -1244,7 +1241,7 @@ void tst_QSqlDatabase::recordSQLServer()
         FieldDef("varchar(20)", QVariant::String, QString("Blah1")),
         FieldDef("bigint", QVariant::LongLong, 12345),
         FieldDef("int", QVariant::Int, 123456),
-        FieldDef("tinyint", QVariant::Int, 255),
+        FieldDef("tinyint", QVariant::UInt, 255),
 #ifdef QT3_SUPPORT
         FieldDef("image", QVariant::ByteArray, Q3CString("Blah1")),
 #endif
@@ -1359,11 +1356,13 @@ void tst_QSqlDatabase::bigIntField()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    QString drvName = db.driverName();
 
     QSqlQuery q(db);
     q.setForwardOnly(true);
+    if (drvName.startsWith("QOCI"))
+        q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
 
-    QString drvName = db.driverName();
     if (drvName.startsWith("QMYSQL")) {
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit bigint, t_u64bit bigint unsigned)"));
     } else if (drvName.startsWith("QPSQL")
@@ -1372,6 +1371,8 @@ void tst_QSqlDatabase::bigIntField()
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + "(id int, t_s64bit bigint, t_u64bit bigint)"));
     } else if (drvName.startsWith("QOCI")) {
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit int, t_u64bit int)"));
+    //} else if (drvName.startsWith("QIBASE")) {
+    //    QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit int64, t_u64bit int64)"));
     } else {
         QSKIP("no 64 bit integer support", SkipAll);
     }
@@ -1401,10 +1402,15 @@ void tst_QSqlDatabase::bigIntField()
     }
     QVERIFY(q.exec("select * from " + qTableName("qtest_bigint") + " order by id"));
     QVERIFY(q.next());
+    QCOMPARE(q.value(1).toDouble(), (double)ll);
     QCOMPARE(q.value(1).toLongLong(), ll);
+    if(drvName.startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle driver lacks support for unsigned int64 types", Continue);
     QCOMPARE(q.value(2).toULongLong(), ull);
     QVERIFY(q.next());
     QCOMPARE(q.value(1).toLongLong(), -ll);
+    if(drvName.startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle driver lacks support for unsigned int64 types", Continue);
     QCOMPARE(q.value(2).toULongLong(), ull);
 }
 
@@ -1516,6 +1522,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     QString field1Name = QString("fIeLdNaMe");
     QString field2Name = QString("ZuLu");
 
+    q.exec(QString("DROP SCHEMA \"%1\" CASCADE").arg(schemaName));
     QString createSchema = QString("CREATE SCHEMA \"%1\"").arg(schemaName);
     QVERIFY_SQL(q, exec(createSchema));
     QString createTable = QString("CREATE TABLE \"%1\".\"%2\" (\"%3\" int PRIMARY KEY, \"%4\" varchar(20))").arg(schemaName).arg(tableName).arg(field1Name).arg(field2Name);
@@ -1619,60 +1626,82 @@ void tst_QSqlDatabase::precisionPolicy()
         QSKIP("Driver or database doesn't support setting precision policy", SkipSingle);
 
     // Create a test table with some data
-    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(20,0))").arg(tableName)));
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(18,5))").arg(tableName)));
     QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
     q.bindValue(0, 1);
     q.bindValue(1, 123);
     QVERIFY_SQL(q, exec());
     q.bindValue(0, 2);
-    q.bindValue(1, QString("18500000000000000000"));
+    q.bindValue(1, 1850000000000.0001);
     QVERIFY_SQL(q, exec());
 
     // These are expected to pass
+    q.setNumericalPrecisionPolicy(QSql::HighPrecision);
     QString query = QString("SELECT num FROM %1 WHERE id = 1").arg(tableName);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::String);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(q.value(0).type() != QVariant::LongLong)
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::LongLong);
     QCOMPARE(q.value(0).toLongLong(), (qlonglong)123);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::Int);
     QCOMPARE(q.value(0).toInt(), 123);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::Double);
     QCOMPARE(q.value(0).toDouble(), (double)123);
 
     query = QString("SELECT num FROM %1 WHERE id = 2").arg(tableName);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::Double);
-    QCOMPARE(q.value(0).toDouble(), QString("18500000000000000000").toDouble());
+    QCOMPARE(q.value(0).toDouble(), QString("1850000000000.0001").toDouble());
 
     // Postgres returns invalid QVariants on overflow
     q.setNumericalPrecisionPolicy(QSql::HighPrecision);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::String);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
+    QEXPECT_FAIL("QOCI", "Oracle fails here, to retrieve next", Continue);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).type(), QVariant::Invalid);
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
+    QCOMPARE(q.value(0).type(), QVariant::LongLong);
 
-    q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
-    QVERIFY_SQL(q, exec(query));
-    QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).type(), QVariant::Invalid);
+    QSql::NumericalPrecisionPolicy oldPrecision= db.numericalPrecisionPolicy();
+    db.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
+    QSqlQuery q2(db);
+    q2.exec(QString("SELECT num FROM %1 WHERE id = 2").arg(tableName));
+    QVERIFY_SQL(q2, exec(query));
+    QVERIFY_SQL(q2, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
+    QCOMPARE(q2.value(0).type(), QVariant::LongLong);
+    db.setNumericalPrecisionPolicy(oldPrecision);
 }
 
 // This test needs a ODBC data source containing MYSQL in it's name
@@ -2252,6 +2281,10 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    if (db.driverName().startsWith("QSQLITE2")) { 
+        QSKIP("SQLite3 specific test", SkipSingle); 
+        return; 
+    }
 
     QSqlQuery q(db);
     QString tableName = qTableName("uint_test");

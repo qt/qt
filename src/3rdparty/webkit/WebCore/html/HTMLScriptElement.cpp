@@ -26,6 +26,8 @@
 #include "Document.h"
 #include "EventNames.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
+#include "ScriptEventListener.h"
 #include "Text.h"
 
 namespace WebCore {
@@ -67,7 +69,7 @@ void HTMLScriptElement::parseMappedAttribute(MappedAttribute* attr)
     if (attrName == srcAttr)
         handleSourceAttribute(m_data, attr->value());
     else if (attrName == onloadAttr)
-        setInlineEventListenerForTypeAndAttribute(eventNames().loadEvent, attr);
+        setAttributeEventListener(eventNames().loadEvent, createAttributeEventListener(this, attr));
     else
         HTMLElement::parseMappedAttribute(attr);
 }
@@ -209,18 +211,23 @@ String HTMLScriptElement::languageAttributeValue() const
 {
     return getAttribute(languageAttr).string();
 }
+
+String HTMLScriptElement::forAttributeValue() const
+{
+    return getAttribute(forAttr).string();
+}
  
 void HTMLScriptElement::dispatchLoadEvent()
 {
     ASSERT(!m_data.haveFiredLoadEvent());
     m_data.setHaveFiredLoadEvent(true);
 
-    dispatchEventForType(eventNames().loadEvent, false, false);
+    dispatchEvent(eventNames().loadEvent, false, false);
 }
 
 void HTMLScriptElement::dispatchErrorEvent()
 {
-    dispatchEventForType(eventNames().errorEvent, true, false);
+    dispatchEvent(eventNames().errorEvent, true, false);
 }
 
 }

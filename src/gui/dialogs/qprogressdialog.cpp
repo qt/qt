@@ -626,7 +626,7 @@ int QProgressDialog::value() const
 
   \warning If the progress dialog is modal
     (see QProgressDialog::QProgressDialog()),
-    this function calls QApplication::processEvents(), so take care that
+    setValue() calls QApplication::processEvents(), so take care that
     this does not cause undesirable re-entrancy in your code. For example,
     don't use a QProgressDialog inside a paintEvent()!
 
@@ -643,7 +643,7 @@ void QProgressDialog::setValue(int progress)
 
     if (d->shown_once) {
         if (isModal())
-            qApp->processEvents();
+            QApplication::processEvents();
     } else {
         if (progress == 0) {
             d->starttime.start();

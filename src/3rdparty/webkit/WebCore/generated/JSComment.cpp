@@ -19,20 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSComment.h"
 
-#include <wtf/GetPtr.h>
-
 #include "Comment.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSComment)
+ASSERT_CLASS_FITS_IN_CELL(JSComment);
 
 /* Hash table */
 
@@ -74,7 +70,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -125,11 +121,11 @@ bool JSComment::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSComment, Base>(exec, &JSCommentTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCommentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCommentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSComment*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSComment::getConstructor(ExecState* exec)
+JSValue JSComment::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCommentConstructor>(exec);
 }

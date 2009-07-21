@@ -86,6 +86,15 @@ public:
         UShort = 133, UChar = 134, Float = 135, QObjectStar = 136, QWidgetStar = 137,
         LastCoreExtType = 137 /* QWidgetStar */,
 
+// This logic must match the one in qglobal.h
+#if defined(QT_COORD_TYPE)
+        QReal = 0,
+#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+        QReal = Float,
+#else
+        QReal = Double,
+#endif
+
         User = 256
     };
 
@@ -174,7 +183,7 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
     QMetaType::registerStreamOperators(typeName, reinterpret_cast<QMetaType::SaveOperator>(sptr),
                                        reinterpret_cast<QMetaType::LoadOperator>(lptr));
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 template <typename T>
 struct QMetaTypeId

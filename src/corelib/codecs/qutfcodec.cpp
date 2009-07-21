@@ -184,7 +184,10 @@ void QUtf8Codec::convertToUnicode(QString *target, const char *chars, int len, C
                 uc = (uc << 6) | (ch & 0x3f);
                 need--;
                 if (!need) {
-                    if (uc > 0xffff && uc < 0x110000) {
+                    // utf-8 bom composes into 0xfeff code point
+                    if (!headerdone && uc == 0xfeff) {
+                        // dont do anything, just skip the BOM
+                    } else if (uc > 0xffff && uc < 0x110000) {
                         // surrogate pair
                         uc -= 0x10000;
                         unsigned short high = uc/0x400 + 0xd800;
@@ -206,6 +209,7 @@ void QUtf8Codec::convertToUnicode(QString *target, const char *chars, int len, C
                     } else {
                         *qch++ = uc;
                     }
+                    headerdone = true;
                 }
             } else {
                 // error
@@ -213,15 +217,18 @@ void QUtf8Codec::convertToUnicode(QString *target, const char *chars, int len, C
                 *qch++ = replacement;
                 ++invalid;
                 need = 0;
+                headerdone = true;
             }
         } else {
             if (ch < 128) {
                 *qch++ = QLatin1Char(ch);
+                headerdone = true;
             } else if ((ch & 0xe0) == 0xc0) {
                 uc = ch & 0x1f;
                 need = 1;
                 error = i;
                 min_uc = 0x80;
+                headerdone = true;
             } else if ((ch & 0xf0) == 0xe0) {
                 uc = ch & 0x0f;
                 need = 2;
@@ -232,10 +239,12 @@ void QUtf8Codec::convertToUnicode(QString *target, const char *chars, int len, C
                 need = 3;
                 error = i;
                 min_uc = 0x10000;
+                headerdone = true;
             } else {
                 // error
                 *qch++ = replacement;
                 ++invalid;
+                headerdone = true;
             }
         }
     }
@@ -342,8 +351,7 @@ QString QUtf16Codec::convertToUnicode(const char *chars, int len, ConverterState
     if (headerdone && endian == Detect)
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BE : LE;
 
-    QString result;
-    result.resize(len); // worst case
+    QString result(len, Qt::Uninitialized); // worst case
     QChar *qch = (QChar *)result.unicode();
     while (len--) {
         if (half) {
@@ -387,7 +395,7 @@ QString QUtf16Codec::convertToUnicode(const char *chars, int len, ConverterState
     result.truncate(qch - result.unicode());
 
     if (state) {
-        if (endian != Detect)
+        if (headerdone)
             state->flags |= IgnoreHeader;
         state->state_data[Endian] = endian;
         if (half) {
@@ -463,8 +471,7 @@ QByteArray QUtf32Codec::convertFromUnicode(const QChar *uc, int len, ConverterSt
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BE : LE;
     }
 
-    QByteArray d;
-    d.resize(length);
+    QByteArray d(length, Qt::Uninitialized);
     char *data = d.data();
     if (!state || !(state->flags & IgnoreHeader)) {
         if (endian == BE) {
@@ -569,7 +576,7 @@ QString QUtf32Codec::convertToUnicode(const char *chars, int len, ConverterState
     result.truncate(qch - result.unicode());
     
     if (state) {
-        if (endian != Detect)
+        if (headerdone)
             state->flags |= IgnoreHeader;
         state->state_data[Endian] = endian;
         state->remainingChars = num;

@@ -44,7 +44,7 @@
 
 #include <QtGui>
 
-#include "vector.h"
+#include <QtGui/qvector3d.h>
 #include "glbuffers.h"
 
 class ItemBase : public QObject, public QGraphicsItem
@@ -85,9 +85,9 @@ public:
 protected:
     virtual ItemBase *createNew(int size, int x, int y);
 private:
-    gfx::Vector3f m_vertices[8];
-    gfx::Vector2f m_texCoords[4];
-    gfx::Vector3f m_normals[6];
+    QVector3D m_vertices[8];
+    QVector3D m_texCoords[4];
+    QVector3D m_normals[6];
     GLTexture *m_texture;
 };
 

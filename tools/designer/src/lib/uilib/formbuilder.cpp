@@ -120,7 +120,10 @@ QFormBuilder::~QFormBuilder()
 */
 QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
 {
-    QFormBuilderExtra::instance(this)->setProcessingLayoutWidget(false);
+    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
+    if (!fb->parentWidgetIsSet())
+        fb->setParentWidget(parentWidget);
+    fb->setProcessingLayoutWidget(false);
     if (ui_widget->attributeClass() == QFormBuilderStrings::instance().qWidgetClass && !ui_widget->hasAttributeNative()
             && parentWidget
 #ifndef QT_NO_MAINWINDOW
@@ -145,7 +148,7 @@ QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
             && !qobject_cast<QDockWidget *>(parentWidget)
 #endif
             )
-        QFormBuilderExtra::instance(this)->setProcessingLayoutWidget(true);
+        fb->setProcessingLayoutWidget(true);
     return QAbstractFormBuilder::create(ui_widget, parentWidget);
 }
 
@@ -227,9 +230,6 @@ QWidget *QFormBuilder::createWidget(const QString &widgetName, QWidget *parentWi
 
     if (qobject_cast<QDialog *>(w))
         w->setParent(parentWidget);
-
-    if (!fb->rootWidget())
-        fb->setRootWidget(w);
 
     return w;
 }
@@ -369,9 +369,10 @@ QWidget *QFormBuilder::create(DomUI *ui, QWidget *parentWidget)
 */
 QLayout *QFormBuilder::create(DomLayout *ui_layout, QLayout *layout, QWidget *parentWidget)
 {
+    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
     // Is this a temporary layout widget used to represent QLayout hierarchies in Designer?
     // Set its margins to 0.
-    bool layoutWidget = QFormBuilderExtra::instance(this)->processingLayoutWidget();
+    bool layoutWidget = fb->processingLayoutWidget();
     QLayout *l = QAbstractFormBuilder::create(ui_layout, layout, parentWidget);
     if (layoutWidget) {
         const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
@@ -392,7 +393,7 @@ QLayout *QFormBuilder::create(DomLayout *ui_layout, QLayout *layout, QWidget *pa
             bottom = prop->elementNumber();
 
         l->setContentsMargins(left, top, right, bottom);
-        QFormBuilderExtra::instance(this)->setProcessingLayoutWidget(false);
+        fb->setProcessingLayoutWidget(false);
     }
     return l;
 }
@@ -525,6 +526,7 @@ QList<QDesignerCustomWidgetInterface*> QFormBuilder::customWidgets() const
 /*!
     \internal
 */
+
 void QFormBuilder::applyProperties(QObject *o, const QList<DomProperty*> &properties)
 {
     typedef QList<DomProperty*> DomPropertyList;
@@ -542,11 +544,12 @@ void QFormBuilder::applyProperties(QObject *o, const QList<DomProperty*> &proper
             continue;
 
         const QString attributeName = (*it)->attributeName();
-        if (o == fb->rootWidget() && attributeName == strings.geometryProperty) {
-            // apply only the size for the rootWidget
-            fb->rootWidget()->resize(qvariant_cast<QRect>(v).size());
+        const bool isWidget = o->isWidgetType();
+        if (isWidget && o->parent() == fb->parentWidget() && attributeName == strings.geometryProperty) {
+            // apply only the size part of a geometry for the root widget
+            static_cast<QWidget*>(o)->resize(qvariant_cast<QRect>(v).size());
         } else if (fb->applyPropertyInternally(o, attributeName, v)) {
-        } else if (!qstrcmp("QFrame", o->metaObject()->className ()) && attributeName == strings.orientationProperty) {
+        } else if (isWidget && !qstrcmp("QFrame", o->metaObject()->className ()) && attributeName == strings.orientationProperty) {
             // ### special-casing for Line (QFrame) -- try to fix me
             o->setProperty("frameShape", v); // v is of QFrame::Shape enum
         } else {

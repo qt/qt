@@ -19,24 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLStyleElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLStyleElement.h"
 #include "JSStyleSheet.h"
 #include "KURL.h"
 #include "StyleSheet.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLStyleElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLStyleElement);
 
 /* Hash table */
 
@@ -82,7 +78,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -133,58 +129,62 @@ bool JSHTMLStyleElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLStyleElement, Base>(exec, &JSHTMLStyleElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLStyleElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->disabled());
 }
 
-JSValuePtr jsHTMLStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->media());
 }
 
-JSValuePtr jsHTMLStyleElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsHTMLStyleElementSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->sheet()));
 }
 
-JSValuePtr jsHTMLStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLStyleElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLStyleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLStyleElement, Base>(exec, propertyName, value, &JSHTMLStyleElementTable, this, slot);
 }
 
-void setJSHTMLStyleElementDisabled(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLStyleElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
-    imp->setDisabled(value->toBoolean(exec));
+    imp->setDisabled(value.toBoolean(exec));
 }
 
-void setJSHTMLStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
     imp->setMedia(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLStyleElementType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLStyleElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLStyleElement::getConstructor(ExecState* exec)
+JSValue JSHTMLStyleElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLStyleElementConstructor>(exec);
 }

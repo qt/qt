@@ -34,5 +34,6 @@
         <file>expected_benchlibeventcounter.txt</file>
         <file>expected_benchliboptions.txt</file>
         <file>expected_benchlibtickcounter.txt</file>
+        <file>expected_xunit.txt</file>
     </qresource>
 </RCC>

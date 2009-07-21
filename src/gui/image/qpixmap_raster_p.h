@@ -58,9 +58,6 @@
 
 #ifdef Q_WS_WIN
 # include "qt_windows.h"
-# ifndef QT_NO_DIRECT3D
-#  include <d3d9.h>
-# endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -75,6 +72,7 @@ public:
     void fromFile(const QString &filename, Qt::ImageConversionFlags flags);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
 
+    bool scroll(int dx, int dy, const QRect &rect);
     void fill(const QColor &color);
     void setMask(const QBitmap &mask);
     bool hasAlphaChannel() const;
@@ -87,10 +85,6 @@ protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
 
 private:
-#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECT3D)
-    friend class QDirect3DPaintEnginePrivate;
-    IDirect3DTexture9 *texture;
-#endif
     friend class QPixmap;
     friend class QBitmap;
     friend class QDetachedPixmap;

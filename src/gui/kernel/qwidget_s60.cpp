@@ -52,7 +52,9 @@
 
 #include <qinputcontext.h>
 
+#ifdef Q_WS_S60
 #include <aknappui.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -79,6 +81,7 @@ static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
 
 void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 {
+#ifdef Q_WS_S60
     Q_Q(QWidget);
     if (QApplication::focusWidget() && q!=QApplication::focusWidget()) {
         QList<QAction *> old = QApplication::focusWidget()->softKeys();
@@ -142,9 +145,12 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
         nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit")));
 
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
+#else
+    Q_UNUSED(softkeys)
+#endif
 }
 
-void QWidgetPrivate::setWSGeometry(bool /* dontShow */)
+void QWidgetPrivate::setWSGeometry(bool /* dontShow */, const QRect & /* rect */)
 {
 
 }
@@ -252,7 +258,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     }
 }
 
-void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
+void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool destroyOldWindow)
 {
     Q_Q(QWidget);
 
@@ -266,16 +272,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                    || type == Qt::Sheet
                    || (flags & Qt::MSWindowsFixedSizeDialogHint));
     bool desktop = (type == Qt::Desktop);
-    bool tool = (type == Qt::Tool || type == Qt::Drawer);
+    //bool tool = (type == Qt::Tool || type == Qt::Drawer);
 
     WId id = 0;
 
     if (popup)
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top
-
-    // always initialize
-    if (!window)
-        initializeWindow = true;
 
     TRect clientRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
     int sw = clientRect.Width();
@@ -423,6 +425,34 @@ void QWidgetPrivate::setFocus_sys()
     if (q->testAttribute(Qt::WA_WState_Created) && q->window()->windowType() != Qt::Popup)
         if(!q->effectiveWinId()->IsFocused()) // Avoid unnecessry calls to FocusChanged()
             q->effectiveWinId()->SetFocus(true);
+}
+
+void QWidgetPrivate::handleSymbianDeferredFocusChanged()
+{
+    Q_Q(QWidget);
+    WId control = q->internalWinId();
+    if (!control) {
+        // This could happen if the widget was reparented, while the focuschange
+        // was in the event queue.
+        return;
+    }
+
+    if (control->IsFocused()) {
+        QApplication::setActiveWindow(q);
+#ifdef Q_WS_S60
+        // If widget is fullscreen, hide status pane and button container
+        // otherwise show them.
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
+        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+            statusPane->MakeVisible(!isFullscreen);
+        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+            buttonGroup->MakeVisible(!isFullscreen);
+#endif
+    } else {
+        QApplication::setActiveWindow(0);
+    }
 }
 
 void QWidgetPrivate::raise_sys()
@@ -636,6 +666,7 @@ CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
 
 void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 {
+#ifdef Q_WS_S60
     Q_Q(QWidget);
 
     if (!q->testAttribute(Qt::WA_WState_Created) || !q->isWindow() )
@@ -649,41 +680,48 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
     TRect cPaneRect;
     TBool found = AknLayoutUtils::LayoutMetricsRect( AknLayoutUtils::EContextPane, cPaneRect );
     CAknContextPane* contextPane = S60->contextPane();
-    if( found && contextPane ) { // We have context pane with valid metrics
-		QIcon icon = q->windowIcon();
-		if (!icon.isNull()) {
-			// Valid icon -> set it as an context pane picture
-			QSize size = icon.actualSize(QSize(cPaneRect.Size().iWidth, cPaneRect.Size().iHeight));
-			QPixmap pm = icon.pixmap(size);
-			QBitmap mask = pm.mask();
-			if (mask.isNull()) {
-				mask = QBitmap(pm.size());
-				mask.fill(Qt::color1);
-			}
+    if (found && contextPane) { // We have context pane with valid metrics
+        QIcon icon = q->windowIcon();
+        if (!icon.isNull()) {
+            // Valid icon -> set it as an context pane picture
+            QSize size = icon.actualSize(QSize(cPaneRect.Size().iWidth, cPaneRect.Size().iHeight));
+            QPixmap pm = icon.pixmap(size);
+            QBitmap mask = pm.mask();
+            if (mask.isNull()) {
+                mask = QBitmap(pm.size());
+                mask.fill(Qt::color1);
+            }
 
-			// Convert to CFbsBitmp
-			// TODO: When QPixmap is adapted to use native CFbsBitmap,
-			// it could be set directly to context pane
-			CFbsBitmap* nBitmap = qt_pixmapToNativeBitmapL(pm, false);
-			CFbsBitmap* nMask = qt_pixmapToNativeBitmapL(mask, true);
+            // Convert to CFbsBitmp
+            // TODO: When QPixmap is adapted to use native CFbsBitmap,
+            // it could be set directly to context pane
+            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmapL(pm, false);
+            CFbsBitmap* nMask = qt_pixmapToNativeBitmapL(mask, true);
 
-			contextPane->SetPicture(nBitmap,nMask);
-		}  else {
-			// Icon set to null -> set context pane picture to default
-			contextPane->SetPictureToDefaultL();
-		}
+            contextPane->SetPicture(nBitmap,nMask);
+        } else {
+            // Icon set to null -> set context pane picture to default
+            contextPane->SetPictureToDefaultL();
+        }
     }
+#else
+        Q_UNUSED(forceReset)
+#endif
 }
 
 void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
 {
+#ifdef Q_WS_S60
     Q_Q(QWidget);
-    if(q->isWindow()) {
+    if (q->isWindow()) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
         CAknTitlePane* titlePane = S60->titlePane();
         if(titlePane)
             titlePane->SetTextL(qt_QString2TPtrC(caption));
     }
+#else
+    Q_UNUSED(caption)
+#endif
 }
 
 void QWidgetPrivate::setWindowIconText_sys(const QString & /*iconText */)
@@ -917,24 +955,30 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             }
         }
         if ((oldstate & Qt::WindowFullScreen) != (newstate & Qt::WindowFullScreen)) {
+#ifdef Q_WS_S60
             CEikStatusPane* statusPane = S60->statusPane();
             CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+#endif
             if (newstate & Qt::WindowFullScreen) {
                 const QRect normalGeometry = geometry();
                 const QRect r = top->normalGeometry;
                 setGeometry(qApp->desktop()->screenGeometry(this));
+#ifdef Q_WS_S60
                 if (statusPane)
                     statusPane->MakeVisible(false);
                 if (buttonGroup)
                     buttonGroup->MakeVisible(false);
+#endif
                 top->normalGeometry = r;
                 if (top->normalGeometry.width() < 0)
                     top->normalGeometry = normalGeometry;
             } else {
+#ifdef Q_WS_S60
                 if (statusPane)
                     statusPane->MakeVisible(true);
                 if (buttonGroup)
                     buttonGroup->MakeVisible(true);
+#endif
                 if (newstate & Qt::WindowMaximized) {
                     const QRect r = top->normalGeometry;
                     setGeometry(qApp->desktop()->availableGeometry(this));

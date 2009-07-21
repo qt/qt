@@ -204,7 +204,7 @@ public:
     UInt32 keyboard_dead;
     KeyboardLayoutItem *keyLayout[256];
 #elif defined(Q_WS_QWS)
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
 private:
     QHash<TUint, int> s60ToQtKeyMap;
     void fillKeyMap();

@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::EmbeddedOptionsControl
-*/
-
 #include "embeddedoptionspage.h"
 #include "deviceprofiledialog.h"
 #include "widgetfactory_p.h"

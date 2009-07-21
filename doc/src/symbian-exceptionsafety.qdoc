@@ -54,14 +54,14 @@
     
     Qt and Symbian have different exception systems. Qt works with standard C++ 
     exceptions, whereas Symbian has its TRAP/Leave/CleanupStack system. So, what would 
-    happen if 
-    you mix the two systems? It could go wrong in a number of ways.
+    happen if you mix the two systems? It could go wrong in a number of ways.
 
-    Cleanup ordering would be different between the two. When Symbian code 
-    leaves, the cleanup stack is cleaned up before anything else happens. After 
+    Clean-up ordering would be different between the two. When Symbian code 
+    leaves, the clean-up stack is cleaned up before anything else happens. After 
     that, the objects on the call stack would be cleaned up as with a normal 
-    exception. So if there are any dependencies between stack based and cleanup stack 
-    owned objects, there could be problems due to this ordering. 
+    exception. So if there are any dependencies between stack-based and  
+    objects owned by the clean-up stack, there could be problems due to this
+    ordering.
 
     Symbian's \c XLeaveException, which is used when Symbian implements leaves as 
     exceptions, is not derived from \c std::exception, so would not be caught in 

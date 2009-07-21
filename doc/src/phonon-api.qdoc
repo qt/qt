@@ -60,7 +60,7 @@
     through a function call, e.g., through
     \l{Phonon::MediaObject::}{play()}, you cannot be sure that the
     change has taken place before you receive the
-    \l{Phonon::MediaObject::}{stateChanged()} signal. 
+    \l{Phonon::MediaObject::}{stateChanged()} signal.
 
     A media object can at any time change into any state, regardless
     of the state it previously had. \omit In the
@@ -192,14 +192,14 @@
     computer on the network.
 
     \value EffectType An audio effect (\l{Phonon::}{EffectDescription}).
-    \omitvalue SubtitleType 
-    \omitvalue AudioCaptureDeviceType 
-    \omitvalue AudioChannelType 
+    \omitvalue SubtitleType
+    \omitvalue AudioCaptureDeviceType
+    \omitvalue AudioChannelType
 */
 
 /*!
     \typedef Phonon::AudioOutputDevice
-    \relates Phonon::ObjectDescription    
+    \relates Phonon::ObjectDescription
 
     This typedef of \l{Phonon::}{ObjectDescription} describes an audio output
     device, such as soundcards (with different drivers), sound servers, or other
@@ -223,7 +223,7 @@
     \fn Phonon::phononVersion()
     \inmodule Phonon
     \since 4.5
-    
+
     Returns the Phonon version.
 */
 
@@ -362,7 +362,7 @@
     property() is called.
 
     Currently, Qt backends do not use properties for their object
-    descriptions. 
+    descriptions.
 
     \sa property()
 */
@@ -370,7 +370,7 @@
 /*!
     \fn inline bool Phonon::ObjectDescription::isValid() const
 
-    Returns true if the device or effect described exists. 
+    Returns true if the device or effect described exists.
 
     An ObjectDescription that is invalid, will also have an
     index() of -1.
@@ -1032,6 +1032,7 @@
     \value Stream The MediaSource object describes a data stream.
                   This is the type used for \l{QIODevice}s. Note
                   that a stream opened with a QUrl, will still be of the Url type.
+    \value Empty The media source doesn't have a source.
 
     \sa MediaSource::type()
 */
@@ -1113,6 +1114,11 @@
 
     \note Sequential devices can also be used, but MediaObject::isSeekable() will
     return false as a result.
+
+    \warning On Windows, we only support \l{QIODevice}s containing the
+    \c avi, \c mp3, or \c mpg formats. Use the constructor that takes
+    a file name to open files (the Qt backend does not use a QFile
+    internally).
 
     \sa setAutoDelete()
 */
@@ -1863,7 +1869,7 @@
 
     \snippet doc/src/snippets/code/doc_src_phonon-api.qdoc 14
 
-    \sa currentSource()
+    \sa currentSource(), MediaSource
 */
 
 /*!
@@ -1931,7 +1937,7 @@
     \fn void Phonon::MediaObject::clearQueue()
 
     Clears the queue of media sources.
-    
+
     \sa queue(), enqueue()
 */
 
@@ -2026,6 +2032,15 @@
 */
 
 /*!
+    \fn void Phonon::MediaObject::clear()
+
+    Stops and removes all playing and enqueued media sources.
+
+    \sa setCurrentSource()
+*/
+
+
+/*!
     \fn void Phonon::MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     This signal is emitted when the state of the MediaObject has changed.
@@ -2086,7 +2101,7 @@
 /*!
     \fn void Phonon::MediaObject::hasVideoChanged(bool hasVideo)
 
-    Emitted whenever the return value of hasVideo() changes, i.e., 
+    Emitted whenever the return value of hasVideo() changes, i.e.,
     the media source being played back contains video.
 
     Normally you'll check hasVideo() first and then let this signal
@@ -3027,6 +3042,12 @@
 */
 
 /*!
+   \typedef Phonon::AudioOutputInterface
+   \inmodule Phonon
+   \internal
+*/
+
+/*!
     \class Phonon::AudioOutputInterface40
     \inmodule Phonon
     \since 4.4
@@ -3251,7 +3272,19 @@
 /*!
     \fn bool Phonon::Path::operator!=(const Path &p) const;
 
-    Returns true if this Path is not equal to \a p; otherwise returns false;
+    Returns true if this Path is not equal to \a p; otherwise returns false.
+*/
+
+/*!
+    \fn MediaNode *Phonon::Path::source() const;
+
+    Returns the source MediaNode used by the path.
+*/
+
+/*!
+    \fn MediaNode *Phonon::Path::sink() const;
+
+    Returns the sink MediaNode used by the path.
 */
 
 /*!
@@ -4082,15 +4115,13 @@
 
 /*!
     \enum Phonon::VideoWidget::ScaleMode
-    
+
     The ScaleMode enum describes how to treat aspect ratio during
-    resizing of video. 
+    resizing of video.
 
     \value FitInView    The video will be fitted to fill the view
                         keeping aspect ratio.
-    \value ScaleAndCrop The video is scaled 
-
-    
+    \value ScaleAndCrop The video is scaled
 */
 
 /*!
@@ -4108,7 +4139,6 @@
     top-level window. Key event forwarding is handled by VideoWidget,
     but if you need to handle other events, e.g., mouse events, you
     should handle fullscreen mode yourself.
-
 */
 
 /*!
@@ -4555,7 +4585,7 @@
     \class Phonon::AddonInterface
     \inmodule Phonon
     \since 4.4
-    \internal 
+    \internal
     \brief Interface for Menu, Chapter, Angle and Title/Track control.
 */
 
@@ -4878,7 +4908,7 @@
 */
 
 /*!
-    \typedef typedef void (*CleanUpFunction)()
+    \typedef Phonon::CleanUpFunction
     \inmodule Phonon
     \internal
 */

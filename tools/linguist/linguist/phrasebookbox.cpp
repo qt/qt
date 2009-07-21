@@ -56,13 +56,15 @@
 
 QT_BEGIN_NAMESPACE
 
-#define NewPhrase tr("(New Entry)")
-
 PhraseBookBox::PhraseBookBox(PhraseBook *phraseBook, QWidget *parent)
     : QDialog(parent),
       m_phraseBook(phraseBook),
       m_translationSettingsDialog(0)
 {
+
+// This definition needs to be within class context for lupdate to find it
+#define NewPhrase tr("(New Entry)")
+
     setupUi(this);
     setWindowTitle(tr("%1[*] - Qt Linguist").arg(m_phraseBook->friendlyPhraseBookName()));
     setWindowModified(m_phraseBook->isModified());

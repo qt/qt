@@ -145,7 +145,7 @@ public:
     QPushButton *addButton(StandardButton button);
     void removeButton(QAbstractButton *button);
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void setVisible(bool visible);
 #endif
 
@@ -191,6 +191,8 @@ public:
     static StandardButton information(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
+    // ### Qt 5: Replace Ok with Yes|No in question() function.
+    //     Also consider if Ok == Yes and Cancel == No.
     static StandardButton question(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);

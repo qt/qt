@@ -82,11 +82,12 @@ public:
     virtual String encoding() const { return String(); }
     virtual void data(PassRefPtr<SharedBuffer> data, bool allDataReceived) = 0;
     virtual void error() = 0;
+    virtual void httpStatusCodeError() { error(); } // Images keep loading in spite of HTTP errors (for legacy compat with <img>, etc.).
 
     const String &url() const { return m_url; }
     Type type() const { return m_type; }
 
-    virtual void addClient(CachedResourceClient*);
+    void addClient(CachedResourceClient*);
     void removeClient(CachedResourceClient*);
     bool hasClients() const { return !m_clients.isEmpty(); }
     void deleteIfPossible();
@@ -99,7 +100,8 @@ public:
     };
     PreloadResult preloadResult() const { return m_preloadResult; }
     void setRequestedFromNetworkingLayer() { m_requestedFromNetworkingLayer = true; }
-        
+
+    virtual void didAddClient(CachedResourceClient*) = 0;
     virtual void allClientsRemoved() { }
 
     unsigned count() const { return m_clients.size(); }
@@ -126,7 +128,8 @@ public:
     // Called by the cache if the object has been removed from the cache
     // while still being referenced. This means the object should delete itself
     // if the number of clients observing it ever drops to 0.
-    void setInCache(bool b) { m_inCache = b; }
+    // The resource can be brought back to cache after successful revalidation.
+    void setInCache(bool b) { m_inCache = b; if (b) m_isBeingRevalidated = false; }
     bool inCache() const { return m_inCache; }
     
     void setInLiveDecodedResourcesList(bool b) { m_inLiveDecodedResourcesList = b; }
@@ -162,7 +165,7 @@ public:
     void decreasePreloadCount() { ASSERT(m_preloadCount); --m_preloadCount; }
     
     void registerHandle(CachedResourceHandleBase* h) { ++m_handleCount; if (m_resourceToRevalidate) m_handlesToRevalidate.add(h); }
-    void unregisterHandle(CachedResourceHandleBase* h) { --m_handleCount; if (m_resourceToRevalidate) m_handlesToRevalidate.remove(h); if (!m_handleCount) deleteIfPossible(); }
+    void unregisterHandle(CachedResourceHandleBase* h) { ASSERT(m_handleCount > 0); --m_handleCount; if (m_resourceToRevalidate) m_handlesToRevalidate.remove(h); if (!m_handleCount) deleteIfPossible(); }
     
     bool canUseCacheValidator() const;
     bool mustRevalidate(CachePolicy) const;
@@ -172,12 +175,16 @@ public:
     bool isPurgeable() const;
     bool wasPurged() const;
     
+    // This is used by the archive machinery to get at a purged resource without
+    // triggering a load. We should make it protected again if we can find a
+    // better way to handle the archive case.
+    bool makePurgeable(bool purgeable);
+
 protected:
     void setEncodedSize(unsigned);
     void setDecodedSize(unsigned);
     void didAccessDecodedData(double timeStamp);
 
-    bool makePurgeable(bool purgeable);
     bool isSafeToMakePurgeable() const;
     
     HashCountedSet<CachedResourceClient*> m_clients;
@@ -187,6 +194,8 @@ protected:
     Request* m_request;
 
     ResourceResponse m_response;
+    double m_responseTimestamp;
+
     RefPtr<SharedBuffer> m_data;
     OwnPtr<PurgeableBuffer> m_purgeableData;
 
@@ -196,11 +205,16 @@ protected:
     bool m_errorOccurred;
 
 private:
+    void addClientToSet(CachedResourceClient*);
+                                        
     // These are called by the friendly Cache only
     void setResourceToRevalidate(CachedResource*);
     void switchClientsToRevalidatedResource();
     void clearResourceToRevalidate();
-    void setExpirationDate(time_t expirationDate) { m_expirationDate = expirationDate; }
+    void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
+
+    double currentAge() const;
+    double freshnessLifetime() const;
 
     unsigned m_encodedSize;
     unsigned m_decodedSize;
@@ -217,7 +231,6 @@ private:
 protected:
     bool m_inCache;
     bool m_loading;
-    bool m_expireDateChanged;
 #ifndef NDEBUG
     bool m_deleted;
     unsigned m_lruIndex;
@@ -241,8 +254,6 @@ private:
     bool m_isBeingRevalidated;
     // These handles will need to be updated to point to the m_resourceToRevalidate in case we get 304 response.
     HashSet<CachedResourceHandleBase*> m_handlesToRevalidate;
-    
-    time_t m_expirationDate;
 };
 
 }

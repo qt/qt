@@ -100,14 +100,8 @@ void MainWindow::setRenderingSystem()
 {
     QWidget *viewport = 0;
 
-    if (Colors::direct3dRendering){
-        viewport->setAttribute(Qt::WA_MSWindowsUseDirect3D);
-        setCacheMode(QGraphicsView::CacheNone);
-        if (Colors::verbose)
-            qDebug() << "- using Direct3D";
-    }
 #ifndef QT_NO_OPENGL
-    else if (Colors::openGlRendering){
+    if (Colors::openGlRendering) {
         QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
         if (Colors::noScreenSync)
             glw->format().setSwapInterval(0);
@@ -116,9 +110,10 @@ void MainWindow::setRenderingSystem()
         setCacheMode(QGraphicsView::CacheNone);
         if (Colors::verbose)
             qDebug() << "- using OpenGL";
-    }
+    } else // software rendering
 #endif
-    else{ // software rendering
+    {
+        // software rendering
         viewport = new QWidget;
         setCacheMode(QGraphicsView::CacheBackground);
         if (Colors::verbose)
@@ -386,8 +381,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             s += "Rendering system: ";
             if (Colors::openGlRendering)
                 s += "OpenGL";
-            else if (Colors::direct3dRendering)
-                s += "Direct3D";
             else
                 s += "software";
 

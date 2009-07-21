@@ -61,6 +61,7 @@
 #include "QtGui/qtabbar.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qset.h"
+#include "QtCore/qbasictimer.h"
 #include "private/qlayoutengine_p.h"
 
 #include "qdockarealayout_p.h"
@@ -165,6 +166,8 @@ public:
     void setDockOptions(QMainWindow::DockOptions opts);
     bool usesHIToolBar(QToolBar *toolbar) const;
 
+    void timerEvent(QTimerEvent *e);
+
     // status bar
 
     QLayoutItem *statusbar;
@@ -243,8 +246,7 @@ public:
 
     QList<int> movingSeparator;
     QPoint movingSeparatorOrigin, movingSeparatorPos;
-    QTimer *separatorMoveTimer;
-    QVector<QLayoutStruct> separatorMoveCache;
+    QBasicTimer separatorMoveTimer;
 
     bool startSeparatorMove(const QPoint &pos);
     bool separatorMove(const QPoint &pos);
@@ -298,7 +300,6 @@ private slots:
     void animationFinished(QWidget *widget);
     void allAnimationsFinished();
 #ifndef QT_NO_DOCKWIDGET
-    void doSeparatorMove();
 #ifndef QT_NO_TABBAR
     void tabChanged();
 #endif
@@ -340,35 +341,5 @@ public:
 QT_END_NAMESPACE
 
 #endif // QT_NO_MAINWINDOW
-
-QT_BEGIN_NAMESPACE
-static inline int pick(Qt::Orientation o, const QPoint &pos)
-{ return o == Qt::Horizontal ? pos.x() : pos.y(); }
-
-static inline int pick(Qt::Orientation o, const QSize &size)
-{ return o == Qt::Horizontal ? size.width() : size.height(); }
-
-static inline int &rpick(Qt::Orientation o, QPoint &pos)
-{ return o == Qt::Horizontal ? pos.rx() : pos.ry(); }
-
-static inline int &rpick(Qt::Orientation o, QSize &size)
-{ return o == Qt::Horizontal ? size.rwidth() : size.rheight(); }
-
-static inline QSizePolicy::Policy pick(Qt::Orientation o, const QSizePolicy &policy)
-{ return o == Qt::Horizontal ? policy.horizontalPolicy() : policy.verticalPolicy(); }
-
-static inline int perp(Qt::Orientation o, const QPoint &pos)
-{ return o == Qt::Vertical ? pos.x() : pos.y(); }
-
-static inline int perp(Qt::Orientation o, const QSize &size)
-{ return o == Qt::Vertical ? size.width() : size.height(); }
-
-static inline int &rperp(Qt::Orientation o, QPoint &pos)
-{ return o == Qt::Vertical ? pos.rx() : pos.ry(); }
-
-static inline int &rperp(Qt::Orientation o, QSize &size)
-{ return o == Qt::Vertical ? size.rwidth() : size.rheight(); }
-
-QT_END_NAMESPACE
 
 #endif // QDYNAMICMAINWINDOWLAYOUT_P_H

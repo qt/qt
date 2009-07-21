@@ -423,7 +423,7 @@ int QPdfEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
         object = addXrefEntry(-1);
         QByteArray alphaDef;
         QPdf::ByteStream s(&alphaDef);
-        s << "<<\n/ca " << (brushAlpha/qreal(255.)) << "\n";
+        s << "<<\n/ca " << (brushAlpha/qreal(255.)) << '\n';
         s << "/CA " << (penAlpha/qreal(255.)) << "\n>>";
         xprintf("%s\nendobj\n", alphaDef.constData());
         alphaCache.insert(QPair<uint, uint>(brushAlpha, penAlpha), object);
@@ -1010,7 +1010,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
             s << (char)('A' + (tag % 26));
             tag /= 26;
         }
-        s <<  "+" << properties.postscriptName << "\n"
+        s <<  '+' << properties.postscriptName << "\n"
             "/Flags " << 4 << "\n"
             "/FontBBox ["
           << properties.boundingBox.x()*scale

@@ -8,6 +8,7 @@ HEADERS        += ../colorbutton.h ../previewframe.h ../previewwidget.h ../mainw
 FORMS        = ../mainwindowbase.ui ../paletteeditoradvancedbase.ui ../previewwidgetbase.ui
 
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/qtconfig_pl.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/qtconfig_ru.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qtconfig_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qtconfig_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qtconfig_zh_TW.ts

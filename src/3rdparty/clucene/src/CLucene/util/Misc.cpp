@@ -181,12 +181,9 @@ void Misc::segmentname(QString& buffer, int32_t bufferLen,
 	CND_PRECONDITION(!segment.isEmpty(), "segment is NULL");
 	CND_PRECONDITION(!ext.isEmpty(), "extention is NULL");
 
-    buffer.clear();
-    if (x == -1) {
-		buffer = QString(segment + ext);
-    } else {
-        buffer = QString(QLatin1String("%1%2%3")).arg(segment).arg(ext).arg(x);
-    }
+    buffer = segment + ext;
+    if (x != -1)
+        buffer += QString::number(x);
 }
 
 // #pragma mark -- TCHAR related utils

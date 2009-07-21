@@ -98,8 +98,10 @@ Q_DECLARE_TYPEINFO(QSize, Q_MOVABLE_TYPE);
   QSize stream functions
  *****************************************************************************/
 
+#ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QSize &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QSize &);
+#endif
 
 
 /*****************************************************************************
@@ -171,14 +173,14 @@ inline const QSize operator*(qreal c, const QSize &s)
 
 inline QSize &QSize::operator/=(qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     wd = qRound(wd/c); ht = qRound(ht/c);
     return *this;
 }
 
 inline const QSize operator/(const QSize &s, qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     return QSize(qRound(s.wd/c), qRound(s.ht/c));
 }
 
@@ -249,8 +251,10 @@ Q_DECLARE_TYPEINFO(QSizeF, Q_MOVABLE_TYPE);
   QSizeF stream functions
  *****************************************************************************/
 
+#ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QSizeF &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QSizeF &);
+#endif
 
 
 /*****************************************************************************
@@ -327,14 +331,14 @@ inline const QSizeF operator*(qreal c, const QSizeF &s)
 
 inline QSizeF &QSizeF::operator/=(qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     wd = wd/c; ht = ht/c;
     return *this;
 }
 
 inline const QSizeF operator/(const QSizeF &s, qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     return QSizeF(s.wd/c, s.ht/c);
 }
 

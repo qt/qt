@@ -52,6 +52,10 @@
 #include <qwidget.h>
 #endif
 
+#ifdef Q_WS_MAC
+#include <private/qpaintengine_mac_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
@@ -65,7 +69,7 @@ typedef struct {
 
 QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool isTextBuffer, QWidget *)
 {
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     Q_UNUSED(isTextBuffer);
 #endif
     BITMAPINFO_MASK bmi;
@@ -78,7 +82,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool is
 
     if (format == QImage::Format_RGB16) {
         bmi.bmiHeader.biBitCount = 16;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         if (isTextBuffer) {
             bmi.bmiHeader.biCompression = BI_RGB;
             bmi.redMask = 0;
@@ -116,7 +120,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool is
     Q_ASSERT(image.paintEngine()->type() == QPaintEngine::Raster);
     static_cast<QRasterPaintEngine *>(image.paintEngine())->setDC(hdc);
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     GdiFlush();
 #endif
 }
@@ -225,18 +229,19 @@ QImage::Format QNativeImage::systemFormat()
 
 #elif defined(Q_WS_MAC)
 
-QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *)
+QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *widget)
     : image(width, height, format)
 {
-    cgColorSpace = CGColorSpaceCreateDeviceRGB();
+
+
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
 
-    cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(), cgColorSpace, cgflags);
+    cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(),
+                               QCoreGraphicsPaintEngine::macDisplayColorSpace(widget), cgflags);
     CGContextTranslateCTM(cg, 0, height);
     CGContextScaleCTM(cg, 1, -1);
 
@@ -248,7 +253,6 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
 QNativeImage::~QNativeImage()
 {
     CGContextRelease(cg);
-    CGColorSpaceRelease(cgColorSpace);
 }
 
 QImage::Format QNativeImage::systemFormat()

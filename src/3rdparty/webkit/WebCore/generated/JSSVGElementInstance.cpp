@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGElementInstance.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventListener.h"
@@ -42,14 +38,14 @@
 #include "SVGElementInstance.h"
 #include "SVGElementInstanceList.h"
 #include "SVGUseElement.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGElementInstance)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGElementInstance);
 
 /* Hash table */
 
@@ -153,7 +149,6 @@ JSSVGElementInstance::JSSVGElementInstance(PassRefPtr<Structure> structure, Pass
 JSSVGElementInstance::~JSSVGElementInstance()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGElementInstance::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -166,857 +161,944 @@ bool JSSVGElementInstance::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSSVGElementInstance, Base>(exec, &JSSVGElementInstanceTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGElementInstanceCorrespondingElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceCorrespondingElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->correspondingElement()));
 }
 
-JSValuePtr jsSVGElementInstanceCorrespondingUseElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceCorrespondingUseElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->correspondingUseElement()));
 }
 
-JSValuePtr jsSVGElementInstanceParentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceParentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->parentNode()));
 }
 
-JSValuePtr jsSVGElementInstanceChildNodes(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceChildNodes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->childNodes()));
 }
 
-JSValuePtr jsSVGElementInstanceFirstChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceFirstChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->firstChild()));
 }
 
-JSValuePtr jsSVGElementInstanceLastChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceLastChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->lastChild()));
 }
 
-JSValuePtr jsSVGElementInstancePreviousSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstancePreviousSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->previousSibling()));
 }
 
-JSValuePtr jsSVGElementInstanceNextSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceNextSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->nextSibling()));
 }
 
-JSValuePtr jsSVGElementInstanceOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onabort())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onabort()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnblur(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnblur(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onblur())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onblur()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnchange(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnchange(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onchange())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onchange()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onclick())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onclick()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOncontextmenu(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOncontextmenu(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->oncontextmenu())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oncontextmenu()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndblclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndblclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondblclick())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondblclick()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onerror())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onerror()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnfocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnfocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onfocus())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onfocus()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOninput(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOninput(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->oninput())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oninput()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnkeydown(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnkeydown(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onkeydown())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onkeydown()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnkeypress(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnkeypress(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onkeypress())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onkeypress()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnkeyup(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnkeyup(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onkeyup())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onkeyup()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onload())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnmousedown(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnmousedown(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmousedown())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onmousedown()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnmousemove(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnmousemove(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmousemove())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onmousemove()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnmouseout(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnmouseout(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmouseout())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onmouseout()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnmouseover(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnmouseover(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmouseover())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onmouseover()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnmouseup(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnmouseup(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmouseup())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onmouseup()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnmousewheel(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnmousewheel(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmousewheel())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onmousewheel()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnbeforecut(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnbeforecut(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onbeforecut())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onbeforecut()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOncut(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOncut(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->oncut())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oncut()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnbeforecopy(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnbeforecopy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onbeforecopy())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onbeforecopy()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOncopy(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOncopy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->oncopy())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oncopy()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnbeforepaste(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnbeforepaste(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onbeforepaste())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onbeforepaste()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnpaste(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnpaste(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onpaste())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onpaste()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndragenter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndragenter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondragenter())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragenter()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndragover(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndragover(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondragover())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragover()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndragleave(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndragleave(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondragleave())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragleave()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndrop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndrop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondrop())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondrop()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndragstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndragstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondragstart())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragstart()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndrag(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndrag(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondrag())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondrag()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOndragend(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOndragend(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondragend())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragend()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnreset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnreset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onreset())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onreset()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onresize())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onresize()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnscroll(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnscroll(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onscroll())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onscroll()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnsearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnsearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onsearch())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onsearch()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnselect(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnselect(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onselect())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onselect()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnselectstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnselectstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onselectstart())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onselectstart()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnsubmit(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnsubmit(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onsubmit())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onsubmit()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsSVGElementInstanceOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onunload())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-void JSSVGElementInstance::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGElementInstance::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGElementInstance, Base>(exec, propertyName, value, &JSSVGElementInstanceTable, this, slot);
 }
 
-void setJSSVGElementInstanceOnabort(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnabort(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnabort(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnabort(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnblur(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnblur(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnblur(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnblur(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnchange(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnchange(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnchange(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnchange(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnclick(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnclick(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnclick(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnclick(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOncontextmenu(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOncontextmenu(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOncontextmenu(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOncontextmenu(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndblclick(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndblclick(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndblclick(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndblclick(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnerror(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnerror(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnfocus(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnfocus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnfocus(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnfocus(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOninput(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOninput(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOninput(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOninput(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnkeydown(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnkeydown(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnkeydown(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnkeydown(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnkeypress(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnkeypress(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnkeypress(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnkeypress(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnkeyup(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnkeyup(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnkeyup(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnkeyup(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnload(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnload(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnload(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnload(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnmousedown(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnmousedown(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnmousedown(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnmousedown(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnmousemove(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnmousemove(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnmousemove(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnmousemove(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnmouseout(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnmouseout(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnmouseout(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnmouseout(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnmouseover(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnmouseover(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnmouseover(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnmouseover(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnmouseup(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnmouseup(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnmouseup(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnmouseup(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnmousewheel(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnmousewheel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnmousewheel(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnmousewheel(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnbeforecut(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnbeforecut(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnbeforecut(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnbeforecut(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOncut(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOncut(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOncut(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOncut(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnbeforecopy(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnbeforecopy(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnbeforecopy(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnbeforecopy(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOncopy(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOncopy(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOncopy(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOncopy(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnbeforepaste(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnbeforepaste(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnbeforepaste(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnbeforepaste(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnpaste(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnpaste(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnpaste(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnpaste(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndragenter(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndragenter(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndragenter(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragenter(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndragover(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndragover(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndragover(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragover(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndragleave(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndragleave(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndragleave(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragleave(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndrop(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndrop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndrop(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndrop(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndragstart(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndragstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndragstart(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragstart(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndrag(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndrag(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndrag(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndrag(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOndragend(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOndragend(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndragend(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragend(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnreset(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnreset(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnreset(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnreset(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnresize(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnresize(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnresize(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnresize(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnscroll(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnscroll(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnscroll(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnscroll(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnsearch(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnsearch(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnsearch(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnsearch(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnselect(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnselect(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnselect(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnselect(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnselectstart(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnselectstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnselectstart(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnselectstart(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnsubmit(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnsubmit(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnsubmit(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnsubmit(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSSVGElementInstanceOnunload(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGElementInstanceOnunload(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnunload(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnunload(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValuePtr jsSVGElementInstancePrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGElementInstance::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGElementInstance::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstance* castedThisObj = static_cast<JSSVGElementInstance*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
 }
 
-JSValuePtr jsSVGElementInstancePrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGElementInstance::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGElementInstance::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstance* castedThisObj = static_cast<JSSVGElementInstance*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
 }
 
-JSValuePtr jsSVGElementInstancePrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGElementInstance::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGElementInstance::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstance* castedThisObj = static_cast<JSSVGElementInstance*>(asObject(thisValue));
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    Event* event = toEvent(args.at(exec, 0));
+    Event* event = toEvent(args.at(0));
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->dispatchEvent(event, ec));
+    JSC::JSValue result = jsBoolean(imp->dispatchEvent(event, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGElementInstance* object)
+SVGElementInstance* toSVGElementInstance(JSC::JSValue value)
 {
-    return getDOMObjectWrapper<JSSVGElementInstance>(exec, object);
-}
-SVGElementInstance* toSVGElementInstance(JSC::JSValuePtr value)
-{
-    return value->isObject(&JSSVGElementInstance::s_info) ? static_cast<JSSVGElementInstance*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGElementInstance::s_info) ? static_cast<JSSVGElementInstance*>(asObject(value))->impl() : 0;
 }
 
 }

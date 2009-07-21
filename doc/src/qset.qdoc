@@ -324,6 +324,16 @@
     \sa insert(), remove(), find()
 */
 
+/*!
+    \fn bool QSet::contains(const QSet<T> &other) const
+    \since 4.6
+
+    Returns true if the set contains all items from the \a other set;
+    otherwise returns false.
+
+    \sa insert(), remove(), find()
+*/
+
 /*! \fn QSet::const_iterator QSet::begin() const
 
     Returns a const \l{STL-style iterator} positioned at the first

@@ -108,8 +108,17 @@ static void normalizeHints(qreal &minimum, qreal &preferred, qreal &maximum, qre
     \internal
 */
 QGraphicsLayoutItemPrivate::QGraphicsLayoutItemPrivate(QGraphicsLayoutItem *par, bool layout)
-    : parent(par), isLayout(layout), ownedByLayout(false), graphicsItem(0)
+    : parent(par), userSizeHints(0), isLayout(layout), ownedByLayout(false), graphicsItem(0)
 {
+}
+
+/*!
+    \internal
+*/
+QGraphicsLayoutItemPrivate::~QGraphicsLayoutItemPrivate()
+{
+    // Remove any lazily allocated data
+    delete[] userSizeHints;
 }
 
 /*!
@@ -132,7 +141,8 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
 
     for (int i = 0; i < Qt::NSizeHints; ++i) {
         cachedSizeHints[i] = constraint;
-        combineSize(cachedSizeHints[i], userSizeHints[i]);
+        if (userSizeHints)
+            combineSize(cachedSizeHints[i], userSizeHints[i]);
     }
 
     QSizeF &minS = cachedSizeHints[Qt::MinimumSize];
@@ -195,6 +205,58 @@ QGraphicsItem *QGraphicsLayoutItemPrivate::parentItem() const
         parent = parent->parentLayoutItem();
     }
     return parent ? parent->graphicsItem() : 0;
+}
+
+/*!
+    \internal
+
+     Ensures that userSizeHints is allocated.
+     This function must be called before any dereferencing.
+*/
+void QGraphicsLayoutItemPrivate::ensureUserSizeHints()
+{
+    if (!userSizeHints)
+        userSizeHints = new QSizeF[Qt::NSizeHints];
+}
+
+/*!
+    \internal
+
+    Sets the user size hint \a which to \a size. Use an invalid size to unset the size hint.
+ */
+void QGraphicsLayoutItemPrivate::setSize(Qt::SizeHint which, const QSizeF &size)
+{
+    Q_Q(QGraphicsLayoutItem);
+
+    if (userSizeHints) {
+        if (size == userSizeHints[which])
+            return;
+    } else if (!size.isValid()) {
+        return;
+    }
+
+    ensureUserSizeHints();
+    userSizeHints[which] = size;
+    q->updateGeometry();
+}
+
+/*!
+    \internal
+
+    Sets the width of the user size hint \a which to \a width.
+ */
+void QGraphicsLayoutItemPrivate::setSizeComponent(
+    Qt::SizeHint which, SizeComponent component, qreal value)
+{
+    Q_Q(QGraphicsLayoutItem);
+    ensureUserSizeHints();
+    qreal &userValue = (component == Width)
+        ? userSizeHints[which].rwidth()
+        : userSizeHints[which].rheight();
+    if (value == userValue)
+        return;
+    userValue = value;
+    q->updateGeometry();
 }
 
 /*!
@@ -380,12 +442,7 @@ QSizePolicy QGraphicsLayoutItem::sizePolicy() const
 */
 void QGraphicsLayoutItem::setMinimumSize(const QSizeF &size)
 {
-    Q_D(QGraphicsLayoutItem);
-    if (size == d->userSizeHints[Qt::MinimumSize])
-        return;
-
-    d->userSizeHints[Qt::MinimumSize] = size;
-    updateGeometry();
+    d_ptr->setSize(Qt::MinimumSize, size);
 }
 
 /*!
@@ -415,12 +472,7 @@ QSizeF QGraphicsLayoutItem::minimumSize() const
 */
 void QGraphicsLayoutItem::setMinimumWidth(qreal width)
 {
-    Q_D(QGraphicsLayoutItem);
-    qreal &userSizeHint = d->userSizeHints[Qt::MinimumSize].rwidth();
-    if (width == userSizeHint)
-        return;
-    userSizeHint = width;
-    updateGeometry();
+    d_ptr->setSizeComponent(Qt::MinimumSize, d_ptr->Width, width);
 }
 
 /*!
@@ -430,12 +482,7 @@ void QGraphicsLayoutItem::setMinimumWidth(qreal width)
 */
 void QGraphicsLayoutItem::setMinimumHeight(qreal height)
 {
-    Q_D(QGraphicsLayoutItem);
-    qreal &userSizeHint = d->userSizeHints[Qt::MinimumSize].rheight();
-    if (height == userSizeHint)
-        return;
-    userSizeHint = height;
-    updateGeometry();
+    d_ptr->setSizeComponent(Qt::MinimumSize, d_ptr->Height, height);
 }
 
 
@@ -449,12 +496,7 @@ void QGraphicsLayoutItem::setMinimumHeight(qreal height)
 */
 void QGraphicsLayoutItem::setPreferredSize(const QSizeF &size)
 {
-    Q_D(QGraphicsLayoutItem);
-    if (size == d->userSizeHints[Qt::PreferredSize])
-        return;
-
-    d->userSizeHints[Qt::PreferredSize] = size;
-    updateGeometry();
+    d_ptr->setSize(Qt::PreferredSize, size);
 }
 
 /*!
@@ -484,12 +526,7 @@ QSizeF QGraphicsLayoutItem::preferredSize() const
 */
 void QGraphicsLayoutItem::setPreferredHeight(qreal height)
 {
-    Q_D(QGraphicsLayoutItem);
-    qreal &userSizeHint = d->userSizeHints[Qt::PreferredSize].rheight();
-    if (height == userSizeHint)
-        return;
-    userSizeHint = height;
-    updateGeometry();
+    d_ptr->setSizeComponent(Qt::PreferredSize, d_ptr->Height, height);
 }
 
 /*!
@@ -499,12 +536,7 @@ void QGraphicsLayoutItem::setPreferredHeight(qreal height)
 */
 void QGraphicsLayoutItem::setPreferredWidth(qreal width)
 {
-    Q_D(QGraphicsLayoutItem);
-    qreal &userSizeHint = d->userSizeHints[Qt::PreferredSize].rwidth();
-    if (width == userSizeHint)
-        return;
-    userSizeHint = width;
-    updateGeometry();
+    d_ptr->setSizeComponent(Qt::PreferredSize, d_ptr->Width, width);
 }
 
 /*!
@@ -518,12 +550,7 @@ void QGraphicsLayoutItem::setPreferredWidth(qreal width)
 */
 void QGraphicsLayoutItem::setMaximumSize(const QSizeF &size)
 {
-    Q_D(QGraphicsLayoutItem);
-    if (size == d->userSizeHints[Qt::MaximumSize])
-        return;
-
-    d->userSizeHints[Qt::MaximumSize] = size;
-    updateGeometry();
+    d_ptr->setSize(Qt::MaximumSize, size);
 }
 
 /*!
@@ -553,12 +580,7 @@ QSizeF QGraphicsLayoutItem::maximumSize() const
 */
 void QGraphicsLayoutItem::setMaximumWidth(qreal width)
 {
-    Q_D(QGraphicsLayoutItem);
-    qreal &userSizeHint = d->userSizeHints[Qt::MaximumSize].rwidth();
-    if (width == userSizeHint)
-        return;
-    userSizeHint = width;
-    updateGeometry();
+    d_ptr->setSizeComponent(Qt::MaximumSize, d_ptr->Width, width);
 }
 
 /*!
@@ -568,12 +590,7 @@ void QGraphicsLayoutItem::setMaximumWidth(qreal width)
 */
 void QGraphicsLayoutItem::setMaximumHeight(qreal height)
 {
-    Q_D(QGraphicsLayoutItem);
-    qreal &userSizeHint = d->userSizeHints[Qt::MaximumSize].rheight();
-    if (height == userSizeHint)
-        return;
-    userSizeHint = height;
-    updateGeometry();
+    d_ptr->setSizeComponent(Qt::MaximumSize, d_ptr->Height, height);
 }
 
 /*!
@@ -731,6 +748,11 @@ QRectF QGraphicsLayoutItem::contentsRect() const
 */
 QSizeF QGraphicsLayoutItem::effectiveSizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
+    Q_D(const QGraphicsLayoutItem);
+
+    if (!d->userSizeHints && constraint.isValid())
+        return constraint;
+
     // ### should respect size policy???
     return d_ptr->effectiveSizeHints(constraint)[which];
 }

@@ -32,9 +32,12 @@
 #include "CSSValueKeywords.h"
 #include "Document.h"
 #include "EventNames.h"
+#include "Frame.h"
 #include "FrameView.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
+#include "ScriptEventListener.h"
 
 namespace WebCore {
 
@@ -131,25 +134,26 @@ void HTMLBodyElement::parseMappedAttribute(MappedAttribute *attr)
         if (attached())
             document()->recalcStyle(Force);
     } else if (attr->name() == onloadAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().loadEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().loadEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onbeforeunloadAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().beforeunloadEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().beforeunloadEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onunloadAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().unloadEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().unloadEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onblurAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().blurEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().blurEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onfocusAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().focusEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().focusEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onresizeAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().resizeEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().resizeEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onscrollAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().scrollEvent, attr);
-    else if (attr->name() == onstorageAttr) {
-        // The HTML5 spec currently specifies that storage events are fired only at the body element of
-        // an HTMLDocument, which is why the onstorage attribute differs from the ones before it.
-        // The spec might change on this, and then so should we!
-        setInlineEventListenerForTypeAndAttribute(eventNames().storageEvent, attr);
-    } else
+        document()->setWindowAttributeEventListener(eventNames().scrollEvent, createAttributeEventListener(document()->frame(), attr));
+    else if (attr->name() == onstorageAttr)
+        document()->setWindowAttributeEventListener(eventNames().storageEvent, createAttributeEventListener(document()->frame(), attr));
+    else if (attr->name() == ononlineAttr)
+        document()->setWindowAttributeEventListener(eventNames().onlineEvent, createAttributeEventListener(document()->frame(), attr));
+    else if (attr->name() == onofflineAttr)
+        document()->setWindowAttributeEventListener(eventNames().offlineEvent, createAttributeEventListener(document()->frame(), attr));
+    else
         HTMLElement::parseMappedAttribute(attr);
 }
 
@@ -240,13 +244,24 @@ void HTMLBodyElement::setVLink(const String& value)
     setAttribute(vlinkAttr, value);
 }
 
+static int adjustForZoom(int value, FrameView* frameView)
+{
+    float zoomFactor = frameView->frame()->zoomFactor();
+    if (zoomFactor == 1)
+        return value;
+    // Needed because of truncation (rather than rounding) when scaling up.
+    if (zoomFactor > 1)
+        value++;
+    return static_cast<int>(value / zoomFactor);
+}
+
 int HTMLBodyElement::scrollLeft() const
 {
     // Update the document's layout.
     Document* doc = document();
     doc->updateLayoutIgnorePendingStylesheets();
     FrameView* view = doc->view();
-    return view ? view->scrollX() : 0;
+    return view ? adjustForZoom(view->scrollX(), view) : 0;
 }
 
 void HTMLBodyElement::setScrollLeft(int scrollLeft)
@@ -255,7 +270,7 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
     if (sview) {
         // Update the document's layout
         document()->updateLayoutIgnorePendingStylesheets();
-        sview->setScrollPosition(IntPoint(scrollLeft, sview->scrollY()));
+        sview->setScrollPosition(IntPoint(static_cast<int>(scrollLeft * sview->frame()->zoomFactor()), sview->scrollY()));
     }    
 }
 
@@ -265,7 +280,7 @@ int HTMLBodyElement::scrollTop() const
     Document* doc = document();
     doc->updateLayoutIgnorePendingStylesheets();
     FrameView* view = doc->view();
-    return view ? view->scrollY() : 0;
+    return view ? adjustForZoom(view->scrollY(), view) : 0;
 }
 
 void HTMLBodyElement::setScrollTop(int scrollTop)
@@ -274,7 +289,7 @@ void HTMLBodyElement::setScrollTop(int scrollTop)
     if (sview) {
         // Update the document's layout
         document()->updateLayoutIgnorePendingStylesheets();
-        sview->setScrollPosition(IntPoint(sview->scrollX(), scrollTop));
+        sview->setScrollPosition(IntPoint(sview->scrollX(), static_cast<int>(scrollTop * sview->frame()->zoomFactor())));
     }        
 }
 
@@ -284,7 +299,7 @@ int HTMLBodyElement::scrollHeight() const
     Document* doc = document();
     doc->updateLayoutIgnorePendingStylesheets();
     FrameView* view = doc->view();
-    return view ? view->contentsHeight() : 0;    
+    return view ? adjustForZoom(view->contentsHeight(), view) : 0;    
 }
 
 int HTMLBodyElement::scrollWidth() const
@@ -293,7 +308,7 @@ int HTMLBodyElement::scrollWidth() const
     Document* doc = document();
     doc->updateLayoutIgnorePendingStylesheets();
     FrameView* view = doc->view();
-    return view ? view->contentsWidth() : 0;    
+    return view ? adjustForZoom(view->contentsWidth(), view) : 0;    
 }
 
 void HTMLBodyElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
@@ -303,4 +318,126 @@ void HTMLBodyElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
     addSubresourceURL(urls, document()->completeURL(background()));
 }
 
+void HTMLBodyElement::didMoveToNewOwnerDocument()
+{
+    // When moving body elements between documents, we should have to reset the parent sheet for any
+    // link style declarations.  If we don't we might crash later.
+    // In practice I can't reproduce this theoretical problem.
+    // webarchive/adopt-attribute-styled-body-webarchive.html tries to make sure this crash won't surface.
+    if (m_linkDecl)
+        m_linkDecl->setParent(document()->elementSheet());
+    
+    HTMLElement::didMoveToNewOwnerDocument();
 }
+
+EventListener* HTMLBodyElement::onblur() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().blurEvent);
+}
+
+void HTMLBodyElement::setOnblur(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().blurEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onerror() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().errorEvent);
+}
+
+void HTMLBodyElement::setOnerror(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().errorEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onfocus() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().focusEvent);
+}
+
+void HTMLBodyElement::setOnfocus(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().focusEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onload() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().loadEvent);
+}
+
+void HTMLBodyElement::setOnload(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().loadEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onbeforeunload() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().beforeunloadEvent);
+}
+
+void HTMLBodyElement::setOnbeforeunload(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().beforeunloadEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onmessage() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().messageEvent);
+}
+
+void HTMLBodyElement::setOnmessage(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().messageEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onoffline() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().offlineEvent);
+}
+
+void HTMLBodyElement::setOnoffline(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().offlineEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::ononline() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().onlineEvent);
+}
+
+void HTMLBodyElement::setOnonline(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().onlineEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onresize() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().resizeEvent);
+}
+
+void HTMLBodyElement::setOnresize(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().resizeEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onstorage() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().storageEvent);
+}
+
+void HTMLBodyElement::setOnstorage(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().storageEvent, eventListener);
+}
+
+EventListener* HTMLBodyElement::onunload() const
+{
+    return document()->getWindowAttributeEventListener(eventNames().unloadEvent);
+}
+
+void HTMLBodyElement::setOnunload(PassRefPtr<EventListener> eventListener)
+{
+    document()->setAttributeEventListener(eventNames().unloadEvent, eventListener);
+}
+
+} // namespace WebCore

@@ -93,9 +93,13 @@ public:
 
 private:
     void commitCurrentString(bool triggeredBySymbian);
-    void updateHints();
+    void updateHints(bool mustUpdateInputCapabilities);
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
+    void queueInputCapabilitiesChanged();
+
+private Q_SLOTS:
+    void ensureInputCapabilitiesChanged();
 
     // From MCoeFepAwareTextEditor
 public:
@@ -135,6 +139,7 @@ private:
     TUint m_textCapabilities;
     bool m_isEditing;
     bool m_inDestruction;
+    bool m_pendingInputCapabilitiesChanged;
     int m_cursorVisibility;
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;

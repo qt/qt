@@ -39,9 +39,10 @@ namespace WebCore {
 
 class DocLoader;
 class Cache;
-class FontCustomPlatformData;
 class FontPlatformData;
 class SVGFontElement;
+
+struct FontCustomPlatformData;
 
 class CachedFont : public CachedResource {
 public:
@@ -50,7 +51,7 @@ public:
     
     virtual void load(DocLoader* docLoader);
 
-    virtual void addClient(CachedResourceClient*);
+    virtual void didAddClient(CachedResourceClient*);
     virtual void data(PassRefPtr<SharedBuffer> data, bool allDataReceived);
     virtual void error();
 

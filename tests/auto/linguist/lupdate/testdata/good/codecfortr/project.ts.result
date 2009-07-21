@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
+<defaultcodec>windows-1251</defaultcodec>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="main.cpp" line="20"/>
+        <source>Á</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>

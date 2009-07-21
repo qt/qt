@@ -11,6 +11,7 @@ SUBDIRS += _networkselftest \
            compile \
            compilerwarnings \
            exceptionsafety \
+           linguist \
            macgui \
            macplist \
 	   mediaobject \
@@ -77,6 +78,7 @@ SUBDIRS += _networkselftest \
            qaction \
            qactiongroup \
            qalgorithms \
+           qanimationgroup \
            qapplication \
            qatomicint \
            qatomicpointer \
@@ -141,9 +143,17 @@ SUBDIRS += _networkselftest \
            qglobal \
            qgraphicsitem \
            qgraphicsitemanimation \
+           qgraphicslayout \
+           qgraphicslayoutitem \
+           qgraphicslinearlayout \
+           qgraphicsobject \
+           qgraphicspixmapitem \
+	   qgraphicspolygonitem \
+	   qgraphicsproxywidget \
            qgraphicsscene \
            qgraphicsview \
-           qgridlayout \
+           qgraphicswidget \
+	   qgridlayout \
            qgroupbox \
            qguivariant \
            qhash \
@@ -212,10 +222,12 @@ SUBDIRS += _networkselftest \
            qnumeric \
            qobject \
            qobjectrace \
+           qcontiguouscache \
            qpaintengine \
            qpainter \
            qpainterpath \
            qpalette \
+           qparallelanimationgroup \
            qpathclipper \
            qpen \
            qpicture \
@@ -231,6 +243,7 @@ SUBDIRS += _networkselftest \
            qprocess \
            qprogressbar \
            qprogressdialog \
+           qpropertyanimation \
            qpushbutton \
            qscopedpointer \
            qqueue \
@@ -242,6 +255,7 @@ SUBDIRS += _networkselftest \
            qregexpvalidator \
            qregion \
            qresourceengine \
+           qringbuffer \
            qscriptable \
            qscriptclass \
            qscriptcontext \
@@ -258,6 +272,7 @@ SUBDIRS += _networkselftest \
            qscrollarea \
            qsemaphore \
 	   qsharedpointer \
+           qsequentialanimationgroup \
            qset \
            qsettings \
            qshortcut \
@@ -291,6 +306,8 @@ SUBDIRS += _networkselftest \
            qstackedwidget \
            qstandarditem \
            qstandarditemmodel \
+           qstate \
+           qstatemachine \
            qstatusbar \
            qstl \
            qstring \
@@ -433,5 +450,9 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
 
 contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
-           qwebpage
+           qwebpage \
+           qwebhistoryinterface \
+           qwebelement \
+           qwebhistory
 
+SUBDIRS += math3d

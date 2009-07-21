@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::StyleSheetEditorDialog
-*/
-
 #include "stylesheeteditor_p.h"
 #include "csshighlighter_p.h"
 #include "iconselector_p.h"

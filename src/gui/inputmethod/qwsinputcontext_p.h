@@ -87,6 +87,7 @@ public:
     static bool translateIMEvent(QWidget *w, const QWSIMEvent *e);
     static bool translateIMQueryEvent(QWidget *w, const QWSIMQueryEvent *e);
     static bool translateIMInitEvent(const QWSIMInitEvent *e);
+    static void updateImeStatus(QWidget *w, bool hasFocus);
 };
 
 QT_END_NAMESPACE

@@ -205,6 +205,10 @@ WebInspector.ScriptsPanel.prototype = {
                 continue;
             view.visible = false;
         }
+        if (this._attachDebuggerWhenShown) {
+            InspectorController.enableDebuggerFromFrontend(false);
+            delete this._attachDebuggerWhenShown;
+        }
     },
 
     get searchableViews()
@@ -312,17 +316,36 @@ WebInspector.ScriptsPanel.prototype = {
             sourceFrame.removeBreakpoint(breakpoint);
     },
 
-    evaluateInSelectedCallFrame: function(code, updateInterface)
+    evaluateInSelectedCallFrame: function(code, updateInterface, callback)
     {
         var selectedCallFrame = this.sidebarPanes.callstack.selectedCallFrame;
         if (!this._paused || !selectedCallFrame)
             return;
+
         if (typeof updateInterface === "undefined")
             updateInterface = true;
-        var result = selectedCallFrame.evaluate(code);
-        if (updateInterface)
-            this.sidebarPanes.scopechain.update(selectedCallFrame);
-        return result;
+
+        var self = this;
+        function updatingCallbackWrapper(result)
+        {
+            callback(result);
+            if (updateInterface)
+                self.sidebarPanes.scopechain.update(selectedCallFrame);
+        }        
+        this.doEvalInCallFrame(selectedCallFrame, code, updatingCallbackWrapper);
+    },
+
+    doEvalInCallFrame: function(callFrame, code, callback)
+    {
+        function delayedEvaluation()
+        {
+            try {
+                callback(callFrame.evaluate(code));
+            } catch (e) {
+                callback(e, true);
+            }
+        }
+        setTimeout(delayedEvaluation, 0);
     },
 
     variablesInScopeForSelectedCallFrame: function()
@@ -357,6 +380,24 @@ WebInspector.ScriptsPanel.prototype = {
 
         WebInspector.currentPanel = this;
         window.focus();
+    },
+
+    debuggerResumed: function()
+    {
+        this._paused = false;
+        this._waitingToPause = false;
+        this._stepping = false;
+
+        this._clearInterface();
+    },
+
+    attachDebuggerWhenShown: function()
+    {
+        if (this.element.parentElement) {
+            InspectorController.enableDebuggerFromFrontend(false);
+        } else {
+            this._attachDebuggerWhenShown = true;
+        }
     },
 
     debuggerWasEnabled: function()
@@ -569,11 +610,33 @@ WebInspector.ScriptsPanel.prototype = {
 
         var select = this.filesSelectElement;
 
-        // FIXME: Append in some meaningful order.
         var option = document.createElement("option");
         option.representedObject = (script.resource || script);
         option.text = (script.sourceURL ? WebInspector.displayNameForURL(script.sourceURL) : WebInspector.UIString("(program)"));
-        select.appendChild(option);
+
+        function optionCompare(a, b)
+        {
+            var aTitle = a.text.toLowerCase();
+            var bTitle = b.text.toLowerCase();
+            if (aTitle < bTitle)
+                return -1;
+            else if (aTitle > bTitle)
+                return 1;
+
+            var aSourceID = a.representedObject.sourceID;
+            var bSourceID = b.representedObject.sourceID;
+            if (aSourceID < bSourceID)
+                return -1;
+            else if (aSourceID > bSourceID)
+                return 1;
+            return 0;
+        }
+
+        var insertionIndex = insertionIndexForObjectInListSortedByFunction(option, select.childNodes, optionCompare);
+        if (insertionIndex < 0)
+            select.appendChild(option);
+        else
+            select.insertBefore(option, select.childNodes.item(insertionIndex));
 
         script.filesSelectOption = option;
 
@@ -740,19 +803,19 @@ WebInspector.ScriptsPanel.prototype = {
     {
         if (InspectorController.debuggerEnabled())
             return;
-        this._toggleDebugging();
+        this._toggleDebugging(this.panelEnablerView.alwaysEnabled);
     },
 
-    _toggleDebugging: function()
+    _toggleDebugging: function(optionalAlways)
     {
         this._paused = false;
         this._waitingToPause = false;
         this._stepping = false;
 
         if (InspectorController.debuggerEnabled())
-            InspectorController.disableDebugger();
+            InspectorController.disableDebugger(true);
         else
-            InspectorController.enableDebugger();
+            InspectorController.enableDebuggerFromFrontend(!!optionalAlways);
     },
 
     _togglePauseOnExceptions: function()

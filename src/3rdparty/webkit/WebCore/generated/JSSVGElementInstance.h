@@ -21,10 +21,10 @@
 #ifndef JSSVGElementInstance_h
 #define JSSVGElementInstance_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
@@ -39,37 +39,40 @@ public:
     virtual ~JSSVGElementInstance();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
+
+    virtual void mark();
 
     virtual void pushEventHandlerScope(JSC::ExecState*, JSC::ScopeChain&) const;
 
 
     // Custom functions
-    JSC::JSValuePtr addEventListener(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr removeEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeEventListener(JSC::ExecState*, const JSC::ArgList&);
     SVGElementInstance* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<SVGElementInstance> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGElementInstance*);
-SVGElementInstance* toSVGElementInstance(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGElementInstance*);
+SVGElementInstance* toSVGElementInstance(JSC::JSValue);
 
 class JSSVGElementInstancePrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -78,99 +81,99 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGElementInstancePrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGElementInstancePrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGElementInstancePrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGElementInstanceCorrespondingElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstanceCorrespondingUseElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstanceParentNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstanceChildNodes(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstanceFirstChild(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstanceLastChild(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstancePreviousSibling(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstanceNextSibling(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGElementInstanceOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnblur(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnblur(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnchange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOncontextmenu(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOncontextmenu(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndblclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndblclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnfocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnkeypress(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnkeyup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnkeyup(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnmousedown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnmousedown(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnmousemove(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnmousemove(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnmouseout(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnmouseout(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnmouseover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnmouseover(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnmouseup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnmouseup(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnmousewheel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnmousewheel(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnbeforecut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnbeforecut(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOncut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOncut(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnbeforecopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnbeforecopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOncopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOncopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnbeforepaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnbeforepaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnpaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnpaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndragenter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndragenter(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndragover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndragover(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndragleave(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndragleave(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndrop(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndrop(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndragstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndragstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndrag(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndrag(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOndragend(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOndragend(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnreset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnreset(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnresize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnresize(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnscroll(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnscroll(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnsearch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnsearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnselect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnselect(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnselectstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnselectstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnsubmit(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnsubmit(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGElementInstanceOnunload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGElementInstanceOnunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsSVGElementInstanceCorrespondingElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstanceCorrespondingUseElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstanceParentNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstanceChildNodes(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstanceFirstChild(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstanceLastChild(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstancePreviousSibling(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstanceNextSibling(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGElementInstanceOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnblur(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnblur(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnchange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOncontextmenu(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOncontextmenu(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndblclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndblclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnfocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnkeypress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnkeyup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnkeyup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnmousedown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnmousedown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnmousemove(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnmousemove(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnmouseout(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnmouseout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnmouseover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnmouseover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnmouseup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnmouseup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnmousewheel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnmousewheel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnbeforecut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnbeforecut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOncut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOncut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnbeforecopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnbeforecopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOncopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOncopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnbeforepaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnbeforepaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnpaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnpaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndragenter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndragenter(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndragover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndragover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndragleave(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndragleave(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndrop(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndrop(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndragstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndragstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndrag(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndrag(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOndragend(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOndragend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnreset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnreset(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnresize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnresize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnscroll(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnscroll(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnsearch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnsearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnselect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnselect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnselectstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnselectstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnsubmit(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnsubmit(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceOnunload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGElementInstanceOnunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

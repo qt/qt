@@ -82,7 +82,7 @@ public:
     uint translucentBackground : 1;
 #endif
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     uint canUseLayeredWindow : 1;
 #endif
     uint inSetGeometry : 1;
@@ -98,7 +98,7 @@ QRasterWindowSurface::QRasterWindowSurface(QWidget *window)
         && window->x11Info().depth() == 32;
 #endif
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     d_ptr->canUseLayeredWindow = ptrUpdateLayeredWindowIndirect
         && (qt_widget_private(window)->data.window_flags & Qt::FramelessWindowHint);
 #endif
@@ -125,9 +125,9 @@ QPaintDevice *QRasterWindowSurface::paintDevice()
 
 void QRasterWindowSurface::beginPaint(const QRegion &rgn)
 {
-#if (defined(Q_WS_X11) && !defined(QT_NO_XRENDER)) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE))
+#if (defined(Q_WS_X11) && !defined(QT_NO_XRENDER)) || (defined(Q_WS_WIN) && !defined(Q_WS_WINCE))
     if (!qt_widget_private(window())->isOpaque) {
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
         if (d_ptr->image->image.format() != QImage::Format_ARGB32_Premultiplied
             && d_ptr->canUseLayeredWindow)
             prepareBuffer(QImage::Format_ARGB32_Premultiplied, window());
@@ -157,7 +157,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 #ifdef Q_WS_WIN
     QRect br = rgn.boundingRect();
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     if (!qt_widget_private(window())->isOpaque && d->canUseLayeredWindow) {
         QRect r = window()->frameGeometry();
         QPoint frameOffset = qt_widget_private(window())->frameStrut().topLeft();
@@ -295,7 +295,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 #endif
 #endif
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     Q_UNUSED(widget);
     Q_UNUSED(rgn);
     Q_UNUSED(offset);
@@ -308,7 +308,7 @@ void QRasterWindowSurface::setGeometry(const QRect &rect)
     Q_D(QRasterWindowSurface);
     d->inSetGeometry = true;
     if (d->image == 0 || d->image->width() < rect.width() || d->image->height() < rect.height()) {
-#if (defined(Q_WS_X11) && !defined(QT_NO_XRENDER)) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE))
+#if (defined(Q_WS_X11) && !defined(QT_NO_XRENDER)) || (defined(Q_WS_WIN) && !defined(Q_WS_WINCE))
 #ifndef Q_WS_WIN
         if (d_ptr->translucentBackground)
 #else

@@ -1593,8 +1593,6 @@ QDataStream &operator>>(QDataStream &stream, QSizePolicy &policy)
 {
     return stream >> policy.data;
 }
-
-#endif
-
+#endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE

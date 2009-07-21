@@ -13,18 +13,15 @@ include(../qbase.pri)
 !win32:!embedded:!mac:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
+contains(QT_CONFIG, opengles1):CONFIG += opengles1cl
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
-
-!contains(QT_CONFIG, opengles2) {
-    HEADERS += qgraphicssystem_gl_p.h qwindowsurface_gl_p.h qpixmapdata_gl_p.h
-    SOURCES += qgraphicssystem_gl.cpp qwindowsurface_gl.cpp qpixmapdata_gl.cpp
-}
 
 HEADERS += qgl.h \
 	   qgl_p.h \
 	   qglcolormap.h \
 	   qglpixelbuffer.h \
 	   qglframebufferobject.h  \
+        qglextensions_p.h
 
 SOURCES	+= qgl.cpp \
 	   qglcolormap.cpp \
@@ -33,35 +30,41 @@ SOURCES	+= qgl.cpp \
            qglextensions.cpp \
 
 !contains(QT_CONFIG, opengles2) {
-    HEADERS += qpaintengine_opengl_p.h qglpixmapfilter_p.h 
-    SOURCES += qpaintengine_opengl.cpp qglpixmapfilter.cpp
+    HEADERS += qpaintengine_opengl_p.h
+    SOURCES += qpaintengine_opengl.cpp
 }
 
-contains(QT_CONFIG, opengles2) {
-    SOURCES +=  gl2paintengineex/qglgradientcache.cpp \
-                gl2paintengineex/qglpexshadermanager.cpp \
-                gl2paintengineex/qglshader.cpp \
+!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl) {
+    HEADERS +=  qglshaderprogram.h \
+                qglpixmapfilter_p.h  \
+                qgraphicssystem_gl_p.h \
+                qwindowsurface_gl_p.h \
+                qpixmapdata_gl_p.h \
+                gl2paintengineex/qglgradientcache_p.h \
+                gl2paintengineex/qglengineshadermanager_p.h \
+                gl2paintengineex/qgl2pexvertexarray_p.h \
+                gl2paintengineex/qpaintengineex_opengl2_p.h \
+                gl2paintengineex/qglengineshadersource_p.h
+
+    SOURCES +=  qglshaderprogram.cpp \
+                qglpixmapfilter.cpp \
+                qgraphicssystem_gl.cpp \
+                qwindowsurface_gl.cpp \
+                qpixmapdata_gl.cpp \
+                gl2paintengineex/qglgradientcache.cpp \
+                gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \
                 gl2paintengineex/qpaintengineex_opengl2.cpp
 
-    HEADERS +=  gl2paintengineex/qglgradientcache_p.h \
-                gl2paintengineex/qglpexshadermanager_p.h \
-                gl2paintengineex/qglshader_p.h \
-                gl2paintengineex/qgl2pexvertexarray_p.h \
-                gl2paintengineex/qpaintengineex_opengl2_p.h
 }
-
 
 x11 {
     contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONFIG, opengles2) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
-                    qgl_egl.cpp \
-                    qegl.cpp \
-                    qegl_x11egl.cpp
+                    qgl_egl.cpp
 
-        HEADERS +=  qegl_p.h \
-                    qgl_egl_p.h
+        HEADERS +=  qgl_egl_p.h
 
     } else {
         SOURCES +=  qgl_x11.cpp \
@@ -87,13 +90,10 @@ win32:!wince*: {
 wince*: {
     SOURCES += qgl_wince.cpp \
                qglpixelbuffer_egl.cpp \
-               qgl_egl.cpp \
-               qegl.cpp \
-               qegl_wince.cpp
+               qgl_egl.cpp
 
     HEADERS += qgl_cl_p.h \
                qgl_egl_p.h \
-               qegl_p.h
 }
 
 embedded {
@@ -102,15 +102,12 @@ embedded {
                qglpixelbuffer_egl.cpp \
                qglscreen_qws.cpp \
                qglwindowsurface_qws.cpp \
-               qegl.cpp \
-               qegl_qws.cpp \
                qgl_egl.cpp
 
     HEADERS += qglpaintdevice_qws_p.h \
                qglscreen_qws.h \
                qglwindowsurface_qws_p.h \
-               qgl_egl_p.h \
-               qegl_p.h
+               qgl_egl_p.h
 
     contains(QT_CONFIG, fontconfig) {
         include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)

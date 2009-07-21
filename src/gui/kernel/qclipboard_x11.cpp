@@ -800,7 +800,7 @@ static Atom send_selection(QClipboardData *d, Atom target, Window window, Atom p
     QByteArray data;
 
     QByteArray fmt = X11->xdndAtomToString(target);
-    if (fmt.isEmpty() || !QInternalMimeData::hasFormatHelper(QString::fromAscii(fmt), d->source())) { // Not a MIME type we have
+    if (fmt.isEmpty()) { // Not a MIME type we have
         DEBUG("QClipboard: send_selection(): converting to type '%s' is not supported", fmt.data());
         return XNone;
     }

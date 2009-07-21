@@ -50,7 +50,7 @@
 
 #include <winuser.h>
 #if !defined(WINABLEAPI)
-#  if defined(Q_OS_WINCE)
+#  if defined(Q_WS_WINCE)
 #    include <bldver.h>
 #  endif
 #  include <winable.h>
@@ -61,7 +61,7 @@
 #include <comdef.h>
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include "qguifunctions_wince.h"
 #endif
 
@@ -239,7 +239,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 
     typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
 
-#if defined(Q_OS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
+#if defined(Q_WS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
     // There is no user32.lib nor NotifyWinEvent for CE
     return;
 #else
@@ -270,9 +270,9 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     if (!w) {
         if (reason != QAccessible::ContextHelpStart &&
              reason != QAccessible::ContextHelpEnd)
-            w = qApp->focusWidget();
+            w = QApplication::focusWidget();
         if (!w) {
-            w = qApp->activeWindow();
+            w = QApplication::activeWindow();
 
             if (!w)
                 return;
@@ -289,7 +289,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     if (reason != MenuCommand) { // MenuCommand is faked
         ptrNotifyWinEvent(reason, w->winId(), OBJID_CLIENT, who);
     }
-#endif // Q_OS_WINCE
+#endif // Q_WS_WINCE
 }
 
 void QAccessible::setRootObject(QObject *o)

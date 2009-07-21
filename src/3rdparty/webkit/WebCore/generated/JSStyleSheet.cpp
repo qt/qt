@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSStyleSheet.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSMediaList.h"
 #include "JSNode.h"
@@ -31,14 +28,13 @@
 #include "MediaList.h"
 #include "Node.h"
 #include "StyleSheet.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSStyleSheet)
+ASSERT_CLASS_FITS_IN_CELL(JSStyleSheet);
 
 /* Hash table */
 
@@ -87,7 +83,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -132,7 +128,6 @@ JSStyleSheet::JSStyleSheet(PassRefPtr<Structure> structure, PassRefPtr<StyleShee
 JSStyleSheet::~JSStyleSheet()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -145,71 +140,78 @@ bool JSStyleSheet::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSStyleSheet, Base>(exec, &JSStyleSheetTable, this, propertyName, slot);
 }
 
-JSValuePtr jsStyleSheetType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->type());
 }
 
-JSValuePtr jsStyleSheetDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->disabled());
 }
 
-JSValuePtr jsStyleSheetOwnerNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetOwnerNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->ownerNode()));
 }
 
-JSValuePtr jsStyleSheetParentStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetParentStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->parentStyleSheet()));
 }
 
-JSValuePtr jsStyleSheetHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->href());
 }
 
-JSValuePtr jsStyleSheetTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->title());
 }
 
-JSValuePtr jsStyleSheetMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->media()));
 }
 
-JSValuePtr jsStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSStyleSheet*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSStyleSheet::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSStyleSheet::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSStyleSheet, Base>(exec, propertyName, value, &JSStyleSheetTable, this, slot);
 }
 
-void setJSStyleSheetDisabled(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSStyleSheetDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(thisObject)->impl());
-    imp->setDisabled(value->toBoolean(exec));
+    imp->setDisabled(value.toBoolean(exec));
 }
 
-JSValuePtr JSStyleSheet::getConstructor(ExecState* exec)
+JSValue JSStyleSheet::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSStyleSheetConstructor>(exec);
 }
 
-StyleSheet* toStyleSheet(JSC::JSValuePtr value)
+StyleSheet* toStyleSheet(JSC::JSValue value)
 {
-    return value->isObject(&JSStyleSheet::s_info) ? static_cast<JSStyleSheet*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSStyleSheet::s_info) ? static_cast<JSStyleSheet*>(asObject(value))->impl() : 0;
 }
 
 }

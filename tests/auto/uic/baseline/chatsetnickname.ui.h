@@ -53,7 +53,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout1 = new QVBoxLayout();
@@ -61,7 +61,7 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout1->setMargin(0);
+        vboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         label = new QLabel(NicknameDialog);
@@ -83,7 +83,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         spacerItem = new QSpacerItem(131, 31, QSizePolicy::Expanding, QSizePolicy::Minimum);
 

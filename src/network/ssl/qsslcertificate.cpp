@@ -71,9 +71,10 @@
     After loading a certificate, you can find information about the
     certificate, its subject, and its issuer, by calling one of the
     many accessor functions, including version(), serialNumber(),
-    issuerInfo() and subjectInfo(). You can call notValidBefore() and
-    notValidAfter() to check when the certificate was issued, and when
-    it expires. The publicKey() function returns the certificate
+    issuerInfo() and subjectInfo(). You can call effectiveDate() and
+    expiryDate() to check when the certificate starts being
+    effective and when it expires.
+    The publicKey() function returns the certificate
     subject's public key as a QSslKey. You can call issuerInfo() or
     subjectInfo() to get detailed information about the certificate
     issuer and its subject.
@@ -124,6 +125,9 @@
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
+
+// forward declaration
+static QMap<QString, QString> _q_mapFromOnelineName(char *name);
 
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
@@ -293,6 +297,10 @@ static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 */
 QString QSslCertificate::issuerInfo(SubjectInfo info) const
 {
+    if (d->issuerInfo.isEmpty() && d->x509)
+        d->issuerInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+
     return d->issuerInfo.value(_q_SubjectInfoToString(info));
 }
 
@@ -320,6 +328,10 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 */
 QString QSslCertificate::subjectInfo(SubjectInfo info) const
 {
+    if (d->subjectInfo.isEmpty() && d->x509)
+        d->subjectInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+
     return d->subjectInfo.value(_q_SubjectInfoToString(info));
 }
 
@@ -655,11 +667,6 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
     if (!x509 || !QSslSocket::supportsSsl())
         return certificate;
 
-    certificate.d->issuerInfo =
-        _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(x509), 0, 0));
-    certificate.d->subjectInfo =
-        _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(x509), 0, 0));
-
     ASN1_TIME *nbef = q_X509_get_notBefore(x509);
     ASN1_TIME *naft = q_X509_get_notAfter(x509);
     certificate.d->notValidBefore = q_getTimeFromASN1(nbef);
@@ -759,16 +766,16 @@ QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
 {
     debug << "QSslCertificate("
           << certificate.version()
-          << "," << certificate.serialNumber()
-          << "," << certificate.digest().toBase64()
-          << "," << certificate.issuerInfo(QSslCertificate::Organization)
-          << "," << certificate.subjectInfo(QSslCertificate::Organization)
-          << "," << certificate.alternateSubjectNames()
+          << ',' << certificate.serialNumber()
+          << ',' << certificate.digest().toBase64()
+          << ',' << certificate.issuerInfo(QSslCertificate::Organization)
+          << ',' << certificate.subjectInfo(QSslCertificate::Organization)
+          << ',' << certificate.alternateSubjectNames()
 #ifndef QT_NO_TEXTSTREAM
-          << "," << certificate.effectiveDate()
-          << "," << certificate.expiryDate()
+          << ',' << certificate.effectiveDate()
+          << ',' << certificate.expiryDate()
 #endif
-          << ")";
+          << ')';
     return debug;
 }
 QDebug operator<<(QDebug debug, QSslCertificate::SubjectInfo info)

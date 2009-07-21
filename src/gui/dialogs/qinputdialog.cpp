@@ -307,8 +307,7 @@ void QInputDialogPrivate::ensureEnabledConnection(QAbstractSpinBox *spinBox)
 {
     if (spinBox) {
         QAbstractButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
-        QObject::disconnect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)));
-        QObject::connect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)));
+        QObject::connect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)), Qt::UniqueConnection);
     }
 }
 

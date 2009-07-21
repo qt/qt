@@ -19,25 +19,22 @@
 */
 
 #include "config.h"
-
 #include "JSMimeTypeArray.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "AtomicString.h"
 #include "JSMimeType.h"
 #include "MimeType.h"
 #include "MimeTypeArray.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSMimeTypeArray)
+ASSERT_CLASS_FITS_IN_CELL(JSMimeTypeArray);
 
 /* Hash table */
 
@@ -80,7 +77,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -132,7 +129,6 @@ JSMimeTypeArray::JSMimeTypeArray(PassRefPtr<Structure> structure, PassRefPtr<Mim
 JSMimeTypeArray::~JSMimeTypeArray()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSMimeTypeArray::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -169,13 +165,14 @@ bool JSMimeTypeArray::getOwnPropertySlot(ExecState* exec, unsigned propertyName,
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValuePtr jsMimeTypeArrayLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMimeTypeArrayLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MimeTypeArray* imp = static_cast<MimeTypeArray*>(static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
@@ -186,50 +183,52 @@ void JSMimeTypeArray::getPropertyNames(ExecState* exec, PropertyNameArray& prope
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr JSMimeTypeArray::getConstructor(ExecState* exec)
+JSValue JSMimeTypeArray::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSMimeTypeArrayConstructor>(exec);
 }
 
-JSValuePtr jsMimeTypeArrayPrototypeFunctionItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsMimeTypeArrayPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSMimeTypeArray::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSMimeTypeArray::s_info))
         return throwError(exec, TypeError);
     JSMimeTypeArray* castedThisObj = static_cast<JSMimeTypeArray*>(asObject(thisValue));
     MimeTypeArray* imp = static_cast<MimeTypeArray*>(castedThisObj->impl());
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
     return result;
 }
 
-JSValuePtr jsMimeTypeArrayPrototypeFunctionNamedItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsMimeTypeArrayPrototypeFunctionNamedItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSMimeTypeArray::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSMimeTypeArray::s_info))
         return throwError(exec, TypeError);
     JSMimeTypeArray* castedThisObj = static_cast<JSMimeTypeArray*>(asObject(thisValue));
     MimeTypeArray* imp = static_cast<MimeTypeArray*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->namedItem(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->namedItem(name)));
     return result;
 }
 
 
-JSValuePtr JSMimeTypeArray::indexGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSMimeTypeArray::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSMimeTypeArray* thisObj = static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()));
     return toJS(exec, static_cast<MimeTypeArray*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValuePtr toJS(JSC::ExecState* exec, MimeTypeArray* object)
+JSC::JSValue toJS(JSC::ExecState* exec, MimeTypeArray* object)
 {
     return getDOMObjectWrapper<JSMimeTypeArray>(exec, object);
 }
-MimeTypeArray* toMimeTypeArray(JSC::JSValuePtr value)
+MimeTypeArray* toMimeTypeArray(JSC::JSValue value)
 {
-    return value->isObject(&JSMimeTypeArray::s_info) ? static_cast<JSMimeTypeArray*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSMimeTypeArray::s_info) ? static_cast<JSMimeTypeArray*>(asObject(value))->impl() : 0;
 }
 
 }

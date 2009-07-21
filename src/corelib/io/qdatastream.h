@@ -65,9 +65,8 @@ template <typename T> class QSet;
 template <class Key, class T> class QHash;
 template <class Key, class T> class QMap;
 
-class QDataStreamPrivate;
-
 #ifndef QT_NO_DATASTREAM
+class QDataStreamPrivate;
 class Q_CORE_EXPORT QDataStream
 {
 public:
@@ -83,10 +82,11 @@ public:
         Qt_4_2 = 8,
         Qt_4_3 = 9,
         Qt_4_4 = 10,
-        Qt_4_5 = 11
-#if QT_VERSION >= 0x040600
+        Qt_4_5 = 11,
+        Qt_4_6 = Qt_4_5
+#if QT_VERSION >= 0x040700
 #error Add the datastream version for this Qt version
-        , Qt_4_6 = Qt_4_5
+        Qt_4_7 = Qt_4_6
 #endif
     };
 

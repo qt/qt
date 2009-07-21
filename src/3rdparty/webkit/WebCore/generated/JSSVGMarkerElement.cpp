@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGMarkerElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -43,16 +39,15 @@
 #include "JSSVGAnimatedString.h"
 #include "KURL.h"
 #include "SVGMarkerElement.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGMarkerElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGMarkerElement);
 
 /* Hash table */
 
@@ -114,7 +109,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -179,130 +174,145 @@ bool JSSVGMarkerElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSSVGMarkerElement, Base>(exec, &JSSVGMarkerElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGMarkerElementRefX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementRefX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->refXAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementRefY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementRefY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->refYAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementMarkerUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementMarkerUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->markerUnitsAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementMarkerWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementMarkerWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->markerWidthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementMarkerHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementMarkerHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->markerHeightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementOrientType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementOrientType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->orientTypeAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementOrientAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementOrientAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedAngle> obj = imp->orientAngleAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmllang());
 }
 
-JSValuePtr jsSVGMarkerElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlspace());
 }
 
-JSValuePtr jsSVGMarkerElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGMarkerElementViewBox(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementViewBox(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedRect> obj = imp->viewBoxAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedPreserveAspectRatio> obj = imp->preserveAspectRatioAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGMarkerElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMarkerElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGMarkerElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSSVGMarkerElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGMarkerElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGMarkerElement, Base>(exec, propertyName, value, &JSSVGMarkerElementTable, this, slot);
 }
 
-void setJSSVGMarkerElementXmllang(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMarkerElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(thisObject)->impl());
-    imp->setXmllang(value->toString(exec));
+    imp->setXmllang(value.toString(exec));
 }
 
-void setJSSVGMarkerElementXmlspace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMarkerElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(static_cast<JSSVGMarkerElement*>(thisObject)->impl());
-    imp->setXmlspace(value->toString(exec));
+    imp->setXmlspace(value.toString(exec));
 }
 
-JSValuePtr JSSVGMarkerElement::getConstructor(ExecState* exec)
+JSValue JSSVGMarkerElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGMarkerElementConstructor>(exec);
 }
 
-JSValuePtr jsSVGMarkerElementPrototypeFunctionSetOrientToAuto(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionSetOrientToAuto(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMarkerElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMarkerElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMarkerElement* castedThisObj = static_cast<JSSVGMarkerElement*>(asObject(thisValue));
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(castedThisObj->impl());
@@ -311,59 +321,61 @@ JSValuePtr jsSVGMarkerElementPrototypeFunctionSetOrientToAuto(ExecState* exec, J
     return jsUndefined();
 }
 
-JSValuePtr jsSVGMarkerElementPrototypeFunctionSetOrientToAngle(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionSetOrientToAngle(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMarkerElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMarkerElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMarkerElement* castedThisObj = static_cast<JSSVGMarkerElement*>(asObject(thisValue));
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(castedThisObj->impl());
-    SVGAngle* angle = toSVGAngle(args.at(exec, 0));
+    SVGAngle* angle = toSVGAngle(args.at(0));
 
     imp->setOrientToAngle(angle);
     return jsUndefined();
 }
 
-JSValuePtr jsSVGMarkerElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMarkerElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMarkerElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMarkerElement* castedThisObj = static_cast<JSSVGMarkerElement*>(asObject(thisValue));
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsSVGMarkerElementSVG_MARKERUNITS_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGMarkerElementSVG_MARKERUNITS_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGMarkerElementSVG_MARKERUNITS_USERSPACEONUSE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGMarkerElementSVG_MARKERUNITS_USERSPACEONUSE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGMarkerElementSVG_MARKERUNITS_STROKEWIDTH(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGMarkerElementSVG_MARKERUNITS_STROKEWIDTH(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsSVGMarkerElementSVG_MARKER_ORIENT_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGMarkerElementSVG_MARKER_ORIENT_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGMarkerElementSVG_MARKER_ORIENT_AUTO(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGMarkerElementSVG_MARKER_ORIENT_AUTO(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGMarkerElementSVG_MARKER_ORIENT_ANGLE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGMarkerElementSVG_MARKER_ORIENT_ANGLE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }

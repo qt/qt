@@ -433,7 +433,7 @@ static QString nativeAbsoluteFilePathW(const QString &path)
     if (retLen != 0)
         ret = QString::fromUtf16((unsigned short *)buf.data(), retLen);
 #else
-    if (path.startsWith(QLatin1String("/")) || path.startsWith(QLatin1String("\\")))
+    if (path.startsWith(QLatin1Char('/')) || path.startsWith(QLatin1Char('\\')))
         ret = QDir::toNativeSeparators(path);
     else
         ret = QDir::toNativeSeparators(QDir::cleanPath(qfsPrivateCurrentDir + QLatin1Char('/') + path));
@@ -1240,7 +1240,7 @@ QString QFSFileEngine::rootPath()
     QString ret = QString::fromLatin1(qgetenv("SystemDrive").constData());
     if(ret.isEmpty())
         ret = QLatin1String("c:");
-    ret += QLatin1String("/");
+    ret += QLatin1Char('/');
 #elif defined(Q_OS_OS2EMX)
     char dir[4];
     _abspath(dir, QLatin1String("/"), _MAX_PATH);
@@ -1288,19 +1288,17 @@ QFileInfoList QFSFileEngine::drives()
 	exit(1);
     driveBits &= 0x3ffffff;
 #endif
-    char driveName[4];
-
-    qstrcpy(driveName, "A:/");
+    char driveName[] = "A:/";
 
     while(driveBits) {
 	if(driveBits & 1)
-	    ret.append(QString::fromLatin1(driveName).toUpper());
+	    ret.append(QString::fromLatin1(driveName));
 	driveName[0]++;
 	driveBits = driveBits >> 1;
     }
     return ret;
 #else
-    ret.append(QString::fromLatin1("/").toUpper());
+    ret.append(QString::fromLatin1("/"));
     return ret;
 #endif
 }
@@ -1333,8 +1331,6 @@ bool QFSFileEnginePrivate::doStat() const
             if (tmpAttributes != -1) {
                 fileAttrib = tmpAttributes;
                 could_stat = true;
-            } else {
-                return false;
             }
 #endif
         } else {
@@ -1774,10 +1770,10 @@ QString QFSFileEngine::fileName(FileName file) const
         if(slash == -1) {
             if(d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
                 return d->filePath.left(2);
-            return QString::fromLatin1(".");
+            return QString(QLatin1Char('.'));
         } else {
             if(!slash)
-                return QString::fromLatin1("/");
+                return QString(QLatin1Char('/'));
             if(slash == 2 && d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
                 slash++;
             return d->filePath.left(slash);
@@ -1835,7 +1831,7 @@ QString QFSFileEngine::fileName(FileName file) const
             if (slash == -1)
                 ret = QDir::currentPath();
             else if (slash == 0)
-                ret = QLatin1String("/");
+                ret = QString(QLatin1Char('/'));
             ret = ret.left(slash);
         }
         return ret;
@@ -1897,7 +1893,7 @@ QString QFSFileEngine::owner(FileOwner own) const
 #else
     Q_UNUSED(own);
 #endif
-    return QString(QLatin1String(""));
+    return QString();
 }
 
 bool QFSFileEngine::setPermissions(uint perms)

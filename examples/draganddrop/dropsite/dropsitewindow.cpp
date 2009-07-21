@@ -119,10 +119,8 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
             text = mimeData->html().simplified();
         } else if (format == "text/uri-list") {
             QList<QUrl> urlList = mimeData->urls();
-            for (int i = 0; i < urlList.size() && i < 32; ++i) {
-                QString url = urlList.at(i).path();
-                text.append(url + " ");
-            }
+            for (int i = 0; i < urlList.size() && i < 32; ++i)
+                text.append(urlList[i].toString() + " ");
         } else {
             QByteArray data = mimeData->data(format);
             for (int i = 0; i < data.size() && i < 32; ++i) {

@@ -20,23 +20,20 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGMatrix.h"
 
-#include <wtf/GetPtr.h>
-
-
+#include "JSSVGMatrix.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGMatrix)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGMatrix);
 
 /* Hash table */
 
@@ -107,7 +104,6 @@ JSSVGMatrix::JSSVGMatrix(PassRefPtr<Structure> structure, PassRefPtr<JSSVGPODTyp
 JSSVGMatrix::~JSSVGMatrix()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGMatrix::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -120,184 +116,255 @@ bool JSSVGMatrix::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSSVGMatrix, Base>(exec, &JSSVGMatrixTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGMatrixA(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMatrixA(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.a());
 }
 
-JSValuePtr jsSVGMatrixB(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMatrixB(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.b());
 }
 
-JSValuePtr jsSVGMatrixC(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMatrixC(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.c());
 }
 
-JSValuePtr jsSVGMatrixD(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMatrixD(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.d());
 }
 
-JSValuePtr jsSVGMatrixE(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMatrixE(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.e());
 }
 
-JSValuePtr jsSVGMatrixF(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGMatrixF(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.f());
 }
 
-void JSSVGMatrix::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGMatrix::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGMatrix, Base>(exec, propertyName, value, &JSSVGMatrixTable, this, slot);
 }
 
-void setJSSVGMatrixA(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMatrixA(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(thisObject)->impl());
-    imp.setA(value->toNumber(exec));
+    imp.setA(value.toNumber(exec));
         static_cast<JSSVGMatrix*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGMatrix*>(thisObject)->context());
 }
 
-void setJSSVGMatrixB(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMatrixB(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(thisObject)->impl());
-    imp.setB(value->toNumber(exec));
+    imp.setB(value.toNumber(exec));
         static_cast<JSSVGMatrix*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGMatrix*>(thisObject)->context());
 }
 
-void setJSSVGMatrixC(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMatrixC(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(thisObject)->impl());
-    imp.setC(value->toNumber(exec));
+    imp.setC(value.toNumber(exec));
         static_cast<JSSVGMatrix*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGMatrix*>(thisObject)->context());
 }
 
-void setJSSVGMatrixD(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMatrixD(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(thisObject)->impl());
-    imp.setD(value->toNumber(exec));
+    imp.setD(value.toNumber(exec));
         static_cast<JSSVGMatrix*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGMatrix*>(thisObject)->context());
 }
 
-void setJSSVGMatrixE(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMatrixE(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(thisObject)->impl());
-    imp.setE(value->toNumber(exec));
+    imp.setE(value.toNumber(exec));
         static_cast<JSSVGMatrix*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGMatrix*>(thisObject)->context());
 }
 
-void setJSSVGMatrixF(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGMatrixF(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     TransformationMatrix imp(*static_cast<JSSVGMatrix*>(thisObject)->impl());
-    imp.setF(value->toNumber(exec));
+    imp.setF(value.toNumber(exec));
         static_cast<JSSVGMatrix*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGMatrix*>(thisObject)->context());
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionMultiply(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionMultiply(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->multiply(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+    TransformationMatrix secondMatrix = toSVGMatrix(args.at(0));
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.multiply(secondMatrix)).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionInverse(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionInverse(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
     return castedThisObj->inverse(exec, args);
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionTranslate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionTranslate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->translate(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+    float x = args.at(0).toFloat(exec);
+    float y = args.at(1).toFloat(exec);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.translate(x, y)).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionScale(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionScale(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->scale(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+    float scaleFactor = args.at(0).toFloat(exec);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.scale(scaleFactor)).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionScaleNonUniform(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionScaleNonUniform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->scaleNonUniform(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+    float scaleFactorX = args.at(0).toFloat(exec);
+    float scaleFactorY = args.at(1).toFloat(exec);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.scaleNonUniform(scaleFactorX, scaleFactorY)).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionRotate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionRotate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->rotate(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+    float angle = args.at(0).toFloat(exec);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.rotate(angle)).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionRotateFromVector(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionRotateFromVector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
     return castedThisObj->rotateFromVector(exec, args);
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionFlipX(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionFlipX(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->flipX(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.flipX()).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionFlipY(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionFlipY(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->flipY(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.flipY()).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionSkewX(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionSkewX(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->skewX(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+    float angle = args.at(0).toFloat(exec);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.skewX(angle)).get(), castedThisObj->context());
+    return result;
 }
 
-JSValuePtr jsSVGMatrixPrototypeFunctionSkewY(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionSkewY(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGMatrix::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGMatrix::s_info))
         return throwError(exec, TypeError);
     JSSVGMatrix* castedThisObj = static_cast<JSSVGMatrix*>(asObject(thisValue));
-    return castedThisObj->skewY(exec, args);
+    JSSVGPODTypeWrapper<TransformationMatrix>* wrapper = castedThisObj->impl();
+    TransformationMatrix imp(*wrapper);
+    float angle = args.at(0).toFloat(exec);
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp.skewY(angle)).get(), castedThisObj->context());
+    return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<TransformationMatrix>* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<TransformationMatrix>* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGMatrix, JSSVGPODTypeWrapper<TransformationMatrix> >(exec, object, context);
 }
-TransformationMatrix toSVGMatrix(JSC::JSValuePtr value)
+TransformationMatrix toSVGMatrix(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGMatrix::s_info) ? (TransformationMatrix) *static_cast<JSSVGMatrix*>(asObject(value))->impl() : TransformationMatrix();
+    return value.isObject(&JSSVGMatrix::s_info) ? (TransformationMatrix) *static_cast<JSSVGMatrix*>(asObject(value))->impl() : TransformationMatrix();
 }
 
 }

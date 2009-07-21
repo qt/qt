@@ -79,6 +79,7 @@ static const unsigned char gz_magic[2] = {0x1f, 0x8b}; // gzip magic header
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qauthenticator_p.h>
+#include <private/qringbuffer_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,6 +121,7 @@ public:
     QString reasonPhrase() const;
 
     qint64 bytesAvailable() const;
+    qint64 bytesAvailableNextBlock() const;
     QByteArray read(qint64 maxSize = -1);
 
     bool isFinished() const;
@@ -139,7 +141,7 @@ Q_SIGNALS:
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
     void headerChanged();
     void dataReadProgress(int done, int total);
-    void dataSendProgress(int done, int total);
+    void dataSendProgress(qint64 done, qint64 total);
 
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
@@ -158,12 +160,13 @@ public:
     qint64 readHeader(QAbstractSocket *socket);
     void parseHeader(const QByteArray &header);
     qint64 readBody(QAbstractSocket *socket, QIODevice *out);
+    qint64 readBodyFast(QAbstractSocket *socket, QRingBuffer *rb);
     bool findChallenge(bool forProxy, QByteArray &challenge) const;
     QAuthenticatorPrivate::Method authenticationMethod(bool isProxy) const;
     void clear();
 
-    qint64 transferRaw(QIODevice *in, QIODevice *out, qint64 size);
-    qint64 transferChunked(QIODevice *in, QIODevice *out);
+    qint64 readReplyBodyRaw(QIODevice *in, QIODevice *out, qint64 size);
+    qint64 readReplyBodyChunked(QIODevice *in, QIODevice *out);
     qint64 getChunkSize(QIODevice *in, qint64 *chunkSize);
 
     qint64 bytesAvailable() const;
@@ -193,7 +196,7 @@ public:
     qint64 bodyLength;
     qint64 contentRead;
     qint64 totalProgress;
-    QByteArray fragment;
+    QByteArray fragment; // used for header, status, chunk header etc, not for reply data
     qint64 currentChunkSize;
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;
@@ -204,10 +207,8 @@ public:
 #endif
     bool autoDecompress;
 
-    QByteArray responseData; // uncompressed body
+    QRingBuffer responseData; // uncompressed body
     QByteArray compressedData; // compressed body (temporary)
-    QBuffer requestDataBuffer;
-    bool requestIsBuffering;
     bool requestIsPrepared;
 };
 

@@ -167,12 +167,11 @@ class QMYSQLResultPrivate : public QObject
 {
     Q_OBJECT
 public:
-    QMYSQLResultPrivate(const QMYSQLDriver* dp) : driver(dp), result(0),
+    QMYSQLResultPrivate(const QMYSQLDriver* dp, const QMYSQLResult* d) : driver(dp), result(0), q(d), 
         rowsAffected(0), hasBlobs(false)
 #if MYSQL_VERSION_ID >= 40108
         , stmt(0), meta(0), inBinds(0), outBinds(0)
 #endif
-        , precisionPolicy(QSql::HighPrecision)
         {
             connect(dp, SIGNAL(destroyed()), this, SLOT(driverDestroyed()));
         }
@@ -180,6 +179,7 @@ public:
     const QMYSQLDriver* driver;
     MYSQL_RES *result;
     MYSQL_ROW row;
+    const QMYSQLResult* q;
 
     int rowsAffected;
 
@@ -209,7 +209,6 @@ public:
     MYSQL_BIND *inBinds;
     MYSQL_BIND *outBinds;
 #endif
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 private Q_SLOTS:
     void driverDestroyed() { driver = NULL; }
 };
@@ -254,6 +253,10 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
         break;
     case FIELD_TYPE_FLOAT :
     case FIELD_TYPE_DOUBLE :
+    case FIELD_TYPE_DECIMAL :
+#if defined(FIELD_TYPE_NEWDECIMAL)
+    case FIELD_TYPE_NEWDECIMAL:
+#endif
         type = QVariant::Double;
         break;
     case FIELD_TYPE_DATE :
@@ -277,7 +280,6 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
     default:
     case FIELD_TYPE_ENUM :
     case FIELD_TYPE_SET :
-    case FIELD_TYPE_DECIMAL :
         type = QVariant::String;
         break;
     }
@@ -354,6 +356,7 @@ bool QMYSQLResultPrivate::bindInValues()
     while((fieldInfo = mysql_fetch_field(meta))) {
         QMyField &f = fields[i];
         f.myField = fieldInfo;
+
         f.type = qDecodeMYSQLType(fieldInfo->type, fieldInfo->flags);
         if (qIsBlob(fieldInfo->type)) {
             // the size of a blob-field is available as soon as we call
@@ -384,7 +387,7 @@ bool QMYSQLResultPrivate::bindInValues()
 QMYSQLResult::QMYSQLResult(const QMYSQLDriver* db)
 : QSqlResult(db)
 {
-    d = new QMYSQLResultPrivate(db);
+    d = new QMYSQLResultPrivate(db, this);
 }
 
 QMYSQLResult::~QMYSQLResult()
@@ -599,15 +602,16 @@ QVariant QMYSQLResult::data(int field)
     case QVariant::Double: {
         QVariant v;
         bool ok=false;
-        switch(d->precisionPolicy) {
+        double dbl = val.toDouble(&ok);
+        switch(numericalPrecisionPolicy()) {
             case QSql::LowPrecisionInt32:
-                v=val.toInt(&ok);
+                v=QVariant(dbl).toInt();
                 break;
             case QSql::LowPrecisionInt64:
-                v = val.toLongLong(&ok);
+                v = QVariant(dbl).toLongLong();
                 break;
             case QSql::LowPrecisionDouble:
-                v = val.toDouble(&ok);
+                v = QVariant(dbl);
                 break;
             case QSql::HighPrecision:
             default:
@@ -620,6 +624,7 @@ QVariant QMYSQLResult::data(int field)
         else
             return QVariant();
     }
+        return QVariant(val.toDouble());
     case QVariant::Date:
         return qDateFromString(val);
     case QVariant::Time:
@@ -679,6 +684,7 @@ bool QMYSQLResult::reset (const QString& query)
     setSelect(numFields != 0);
     d->fields.resize(numFields);
     d->rowsAffected = mysql_affected_rows(d->driver->d->mysql);
+
     if (isSelect()) {
         for(int i = 0; i < numFields; i++) {
             MYSQL_FIELD* field = mysql_fetch_field_direct(d->result, i);
@@ -812,10 +818,6 @@ void QMYSQLResult::virtual_hook(int id, void *data)
     case QSqlResult::NextResult:
         Q_ASSERT(data);
         *static_cast<bool*>(data) = nextResult();
-        break;
-    case QSqlResult::SetNumericalPrecision:
-        Q_ASSERT(data);
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
         break;
     default:
         QSqlResult::virtual_hook(id, data);
@@ -1148,7 +1150,6 @@ bool QMYSQLDriver::hasFeature(DriverFeature f) const
     case NamedPlaceholders:
     case BatchOperations:
     case SimpleLocking:
-    case LowPrecisionNumbers:
     case EventNotifications:
     case FinishQuery:
         return false;
@@ -1156,6 +1157,7 @@ bool QMYSQLDriver::hasFeature(DriverFeature f) const
     case BLOB:
     case LastInsertId:
     case Unicode:
+    case LowPrecisionNumbers:
         return true;
     case PreparedQueries:
     case PositionalPlaceholders:
@@ -1342,7 +1344,7 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
     QSqlQuery i(createResult());
     QString stmt(QLatin1String("show index from %1;"));
     QSqlRecord fil = record(tablename);
-    i.exec(stmt.arg(escapeIdentifier(tablename, QSqlDriver::TableName)));
+    i.exec(stmt.arg(tablename));
     while (i.isActive() && i.next()) {
         if (i.value(2).toString() == QLatin1String("PRIMARY")) {
             idx.append(fil.field(i.value(4).toString()));
@@ -1357,14 +1359,19 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
 
 QSqlRecord QMYSQLDriver::record(const QString& tablename) const
 {
+    QString table=tablename;
+    if(isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+
     QSqlRecord info;
     if (!isOpen())
         return info;
-    MYSQL_RES* r = mysql_list_fields(d->mysql, tablename.toLocal8Bit().constData(), 0);
+    MYSQL_RES* r = mysql_list_fields(d->mysql, table.toLocal8Bit().constData(), 0);
     if (!r) {
         return info;
     }
     MYSQL_FIELD* field;
+
     while ((field = mysql_fetch_field(r)))
         info.append(qToField(field, d->tc));
     mysql_free_result(r);
@@ -1464,11 +1471,19 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
 QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('`')) && identifier.right(1) != QString(QLatin1Char('`')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('`')) && !identifier.endsWith(QLatin1Char('`')) ) {
         res.prepend(QLatin1Char('`')).append(QLatin1Char('`'));
         res.replace(QLatin1Char('.'), QLatin1String("`.`"));
     }
     return res;
+}
+
+bool QMYSQLDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
+{
+    Q_UNUSED(type);
+    return identifier.size() > 2
+        && identifier.startsWith(QLatin1Char('`')) //left delimited
+        && identifier.endsWith(QLatin1Char('`')); //right delimited
 }
 
 QT_END_NAMESPACE

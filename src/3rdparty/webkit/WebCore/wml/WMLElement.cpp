@@ -25,6 +25,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "RenderObject.h"
 #include "WMLErrorHandling.h"
 #include "WMLNames.h"
@@ -86,7 +87,7 @@ RenderObject* WMLElement::createRenderer(RenderArena*, RenderStyle* style)
     return RenderObject::createObject(this, style);
 }
 
-String WMLElement::parseValueSubstitutingVariableReferences(const AtomicString& value, WMLErrorCode defaultErrorCode)
+String WMLElement::parseValueSubstitutingVariableReferences(const AtomicString& value, WMLErrorCode defaultErrorCode) const
 {
     bool isValid = false;
     if (!containsVariableReference(value, isValid))
@@ -100,7 +101,7 @@ String WMLElement::parseValueSubstitutingVariableReferences(const AtomicString& 
     return substituteVariableReferences(value, document());
 }
 
-String WMLElement::parseValueForbiddingVariableReferences(const AtomicString& value)
+String WMLElement::parseValueForbiddingVariableReferences(const AtomicString& value) const
 {
     bool isValid = false;
     if (containsVariableReference(value, isValid)) {

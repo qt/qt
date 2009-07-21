@@ -1,12 +1,82 @@
+BODY,H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {
+  font-family: Arial, Geneva, Helvetica, sans-serif;
+}
+H1 {
+  text-align: center;
+  font-size: 160%;
+}
+H2 {
+  font-size: 120%;
+}
+H3 {
+  font-size: 100%;
+}
+
 h3.fn,span.fn
 {
-  margin-left: 1cm;
-  text-indent: -1cm;
+  background-color: #eee;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #ddd;
+  font-weight: bold;
+  padding: 6px 0px 6px 10px;
+  margin: 42px 0px 0px 0px;
+}
+
+hr {
+  border: 0;
+  color: #a0a0a0;
+  background-color: #ccc;
+  height: 1px;
+  width: 100%;
+  text-align: left;
+  margin: 34px 0px 34px 0px;
+}
+
+table.valuelist {
+	border-width: 1px 1px 1px 1px;
+	border-style: solid;
+	border-color: #dddddd;
+	border-collapse: collapse;
+	background-color: #f0f0f0;
+}
+
+table.indextable {
+	border-width: 1px 1px 1px 1px;
+	border-collapse: collapse;
+	background-color: #f0f0f0;
+    border-color:#555;    
+}
+
+
+table.valuelist th {
+	border-width: 1px 1px 1px 2px;
+	padding: 4px;
+	border-style: solid;
+	border-color: #666;
+    color:white;
+    background-color:#666;
+}
+
+th.titleheader  {
+	border-width: 1px 0px 1px 0px;
+	padding: 4px;
+	border-style: solid;
+	border-color: #444;
+    color:white;
+    background-color:#555555;
+}
+
+p {
+
+  margin-left: 4px;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 a:link
 {
-  color: #004faf;
+  color: #0046ad;
   text-decoration: none
 }
 
@@ -40,20 +110,38 @@ a.compat:visited
   text-decoration: none
 }
 
-td.postheader
-{
-  font-family: sans-serif
-}
-
-tr.address
-{
-  font-family: sans-serif
-}
-
 body
 {
   background: #ffffff;
   color: black
+}
+
+table.generic, table.annotated
+{
+  border-width: 1px;
+  border-color:#bbb;
+  border-style:solid;  
+  border-collapse:collapse;
+}
+
+table td.memItemLeft {
+  width: 160px;
+  padding: 2px 0px 0px 8px;
+  margin: 4px;
+  border-width: 1px;
+  border-color: #E0E0E0;
+  border-style: none;
+  font-size: 100%;
+  white-space: nowrap
+}
+
+table td.memItemRight {
+  padding: 2px 8px 0px 8px;
+  margin: 4px;
+  border-width: 1px;
+  border-color: #E0E0E0;
+  border-style: none;
+  font-size: 100%;
 }
 
 table tr.odd {

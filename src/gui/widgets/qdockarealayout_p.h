@@ -103,6 +103,7 @@ struct QDockAreaLayoutItem
     QSize maximumSize() const;
     QSize sizeHint() const;
     bool expansive(Qt::Orientation o) const;
+    bool hasFixedSize(Qt::Orientation o) const;
 
     QLayoutItem *widgetItem;
     QDockAreaLayoutInfo *subinfo;
@@ -135,18 +136,18 @@ public:
     QSize sizeHint() const;
     QSize size() const;
 
-    bool insertGap(QList<int> path, QLayoutItem *dockWidgetItem);
-    QLayoutItem *plug(QList<int> path);
-    QLayoutItem *unplug(QList<int> path);
+    bool insertGap(const QList<int> &path, QLayoutItem *dockWidgetItem);
+    QLayoutItem *plug(const QList<int> &path);
+    QLayoutItem *unplug(const QList<int> &path);
     enum TabMode { NoTabs, AllowTabs, ForceTabs };
     QList<int> gapIndex(const QPoint &pos, bool nestingEnabled,
                             TabMode tabMode) const;
-    void remove(QList<int> path);
+    void remove(const QList<int> &path);
     void unnest(int index);
     void split(int index, Qt::Orientation orientation, QLayoutItem *dockWidgetItem);
     void tab(int index, QLayoutItem *dockWidgetItem);
-    QDockAreaLayoutItem &item(QList<int> path);
-    QDockAreaLayoutInfo *info(QList<int> path);
+    QDockAreaLayoutItem &item(const QList<int> &path);
+    QDockAreaLayoutInfo *info(const QList<int> &path);
     QDockAreaLayoutInfo *info(QWidget *widget);
 
     enum { // sentinel values used to validate state data
@@ -161,12 +162,13 @@ public:
     bool expansive(Qt::Orientation o) const;
     int changeSize(int index, int size, bool below);
     QRect itemRect(int index) const;
-    QRect itemRect(QList<int> path) const;
+    QRect itemRect(const QList<int> &path) const;
     QRect separatorRect(int index) const;
-    QRect separatorRect(QList<int> path) const;
+    QRect separatorRect(const QList<int> &path) const;
 
     void clear();
     bool isEmpty() const;
+    bool hasFixedSize() const;
     QList<int> findSeparator(const QPoint &pos) const;
     int next(int idx) const;
     int prev(int idx) const;
@@ -179,7 +181,7 @@ public:
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
-    int separatorMove(int index, int delta, QVector<QLayoutStruct> *cache);
+    int separatorMove(int index, int delta);
 
     QLayoutItem *itemAt(int *x, int index) const;
     QLayoutItem *takeAt(int *x, int index);
@@ -188,7 +190,7 @@ public:
     QMainWindowLayout *mainWindowLayout() const;
 
     int sep;
-    QVector<QWidget*> separatorWidgets;
+    mutable QVector<QWidget*> separatorWidgets;
     QInternal::DockPosition dockPos;
     Qt::Orientation o;
     QRect rect;
@@ -231,7 +233,7 @@ public:
     QDockAreaLayout(QMainWindow *win);
     QDockAreaLayoutInfo docks[4];
     int sep; // separator extent
-    QVector<QWidget*> separatorWidgets;
+    mutable QVector<QWidget*> separatorWidgets;
 
     bool isValid() const;
 
@@ -244,18 +246,18 @@ public:
     QList<int> gapIndex(const QPoint &pos) const;
     QList<int> findSeparator(const QPoint &pos) const;
 
-    QDockAreaLayoutItem &item(QList<int> path);
-    QDockAreaLayoutInfo *info(QList<int> path);
-    const QDockAreaLayoutInfo *info(QList<int> path) const;
+    QDockAreaLayoutItem &item(const QList<int> &path);
+    QDockAreaLayoutInfo *info(const QList<int> &path);
+    const QDockAreaLayoutInfo *info(const QList<int> &path) const;
     QDockAreaLayoutInfo *info(QWidget *widget);
-    QRect itemRect(QList<int> path) const;
+    QRect itemRect(const QList<int> &path) const;
     QRect separatorRect(int index) const;
-    QRect separatorRect(QList<int> path) const;
+    QRect separatorRect(const QList<int> &path) const;
 
-    bool insertGap(QList<int> path, QLayoutItem *dockWidgetItem);
-    QLayoutItem *plug(QList<int> path);
-    QLayoutItem *unplug(QList<int> path);
-    void remove(QList<int> path);
+    bool insertGap(const QList<int> &path, QLayoutItem *dockWidgetItem);
+    QLayoutItem *plug(const QList<int> &path);
+    QLayoutItem *unplug(const QList<int> &path);
+    void remove(const QList<int> &path);
 
     void fitLayout();
 
@@ -275,8 +277,7 @@ public:
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
-    int separatorMove(QList<int> separator, const QPoint &origin, const QPoint &dest,
-                        QVector<QLayoutStruct> *cache);
+    int separatorMove(const QList<int> &separator, const QPoint &origin, const QPoint &dest);
     void updateSeparatorWidgets() const;
 
     QLayoutItem *itemAt(int *x, int index) const;
@@ -288,7 +289,7 @@ public:
     void setGrid(QVector<QLayoutStruct> *ver_struct_list,
                     QVector<QLayoutStruct> *hor_struct_list);
 
-    QRect gapRect(QList<int> path) const;
+    QRect gapRect(const QList<int> &path) const;
 
     void keepSize(QDockWidget *w);
 

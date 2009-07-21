@@ -63,7 +63,7 @@ QT_MODULE(Gui)
 
 class QGraphicsSystem;
 
-class Q_GUI_EXPORT QGraphicsSystemFactory
+class QGraphicsSystemFactory
 {
 public:
     static QStringList keys();

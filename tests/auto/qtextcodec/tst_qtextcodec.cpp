@@ -75,10 +75,16 @@ private slots:
     void utf8Codec_data();
     void utf8Codec();
 
+    void utf8bom_data();
+    void utf8bom();
+
     void utfHeaders_data();
     void utfHeaders();
 
     void codecForHtml();
+
+    void codecForUtfText_data();
+    void codecForUtfText();
 
 #ifdef Q_OS_UNIX
     void toLocal8Bit();
@@ -90,8 +96,8 @@ void tst_QTextCodec::toUnicode_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QString>("codecName");
 
-    QTest::newRow( "korean-eucKR" ) << "korean.txt" << "eucKR";
-    QTest::newRow( "UTF-8" ) << "utf8.txt" << "UTF-8";
+    QTest::newRow( "korean-eucKR" ) << SRCDIR "korean.txt" << "eucKR";
+    QTest::newRow( "UTF-8" ) << SRCDIR "utf8.txt" << "UTF-8";
 }
 
 void tst_QTextCodec::toUnicode()
@@ -232,7 +238,7 @@ void tst_QTextCodec::fromUnicode()
 
 void tst_QTextCodec::toUnicode_codecForHtml()
 {
-    QFile file(QString("QT4-crashtest.txt"));
+    QFile file(QString(SRCDIR "QT4-crashtest.txt"));
     QVERIFY(file.open(QFile::ReadOnly));
 
     QByteArray data = file.readAll();
@@ -1510,6 +1516,63 @@ void tst_QTextCodec::utf8Codec()
     QCOMPARE(str, res);
 }
 
+void tst_QTextCodec::utf8bom_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("nobom")
+        << QByteArray("\302\240", 2)
+        << QString("\240");
+
+    {
+        static const ushort data[] = { 0x201d };
+        QTest::newRow("nobom 2")
+            << QByteArray("\342\200\235", 3)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+
+    {
+        static const ushort data[] = { 0xf000 };
+        QTest::newRow("bom1")
+            << QByteArray("\357\200\200", 3)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+
+    {
+        static const ushort data[] = { 0xfec0 };
+        QTest::newRow("bom2")
+            << QByteArray("\357\273\200", 3)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+
+    {
+        QTest::newRow("normal-bom")
+            << QByteArray("\357\273\277a", 4)
+            << QString("a");
+    }
+
+    {
+        static const ushort data[] = { 0x61, 0xfeff, 0x62 };
+        QTest::newRow("middle-bom")
+            << QByteArray("a\357\273\277b", 5)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+}
+
+void tst_QTextCodec::utf8bom()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(QString, result);
+
+    QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
+    Q_ASSERT(codec);
+
+    QCOMPARE(codec->toUnicode(data.constData(), data.length(), 0), result);
+
+    QTextCodec::ConverterState state;
+    QCOMPARE(codec->toUnicode(data.constData(), data.length(), &state), result);
+}
 
 void tst_QTextCodec::utfHeaders_data()
 {
@@ -1752,6 +1815,62 @@ void tst_QTextCodec::codecForHtml()
 
     html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-15\" /></head></html>";
     QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 111); // latin 15
+}
+
+void tst_QTextCodec::codecForUtfText_data()
+{
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<bool>("detected");
+    QTest::addColumn<int>("mib");
+
+
+    QTest::newRow("utf8 bom")
+        << QByteArray("\xef\xbb\xbfhello")
+        << true
+        << 106;
+    QTest::newRow("utf8 nobom")
+        << QByteArray("hello")
+        << false
+        << 0;
+
+    QTest::newRow("utf16 bom be")
+        << QByteArray("\xfe\xff\0h\0e\0l", 8)
+        << true
+        << 1013;
+    QTest::newRow("utf16 bom le")
+        << QByteArray("\xff\xfeh\0e\0l\0", 8)
+        << true
+        << 1014;
+    QTest::newRow("utf16 nobom")
+        << QByteArray("\0h\0e\0l", 6)
+        << false
+        << 0;
+
+    QTest::newRow("utf32 bom be")
+        << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
+        << true
+        << 1018;
+    QTest::newRow("utf32 bom le")
+        << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
+        << true
+        << 1019;
+    QTest::newRow("utf32 nobom")
+        << QByteArray("\0\0\0h\0\0\0e\0\0\0l", 12)
+        << false
+        << 0;
+}
+
+void tst_QTextCodec::codecForUtfText()
+{
+    QFETCH(QByteArray, encoded);
+    QFETCH(bool, detected);
+    QFETCH(int, mib);
+
+    QTextCodec *codec = QTextCodec::codecForUtfText(encoded, 0);
+    if (detected)
+        QCOMPARE(codec->mibEnum(), mib);
+    else
+        QVERIFY(codec == 0);
 }
 
 #ifdef Q_OS_UNIX

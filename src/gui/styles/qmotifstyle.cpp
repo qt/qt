@@ -386,7 +386,7 @@ void QMotifStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QP
 
     case PE_FrameTabWidget:
     case PE_FrameWindow:
-        qDrawShadePanel(p, opt->rect, opt->palette, QStyle::State_None, pixelMetric(PM_DefaultFrameWidth));
+        qDrawShadePanel(p, opt->rect, opt->palette, QStyle::State_None, proxy()->pixelMetric(PM_DefaultFrameWidth));
         break;
     case PE_FrameFocusRect:
         if (const QStyleOptionFocusRect *fropt = qstyleoption_cast<const QStyleOptionFocusRect *>(opt)) {
@@ -475,7 +475,7 @@ void QMotifStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QP
             fill = opt->palette.brush(QPalette::Button);
          if ((opt->state & State_Enabled || opt->state & State_On) || !(opt->state & State_AutoRaise))
              qDrawShadePanel(p, opt->rect, opt->palette, bool(opt->state & (State_Sunken | State_On)),
-                             pixelMetric(PM_DefaultFrameWidth), &fill);
+                             proxy()->pixelMetric(PM_DefaultFrameWidth), &fill);
         break; }
 
     case PE_IndicatorCheckBox: {
@@ -490,9 +490,9 @@ void QMotifStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QP
                         opt->rect.x(), opt->rect.y() + opt->rect.height() - 1);
         } else {
             qDrawShadePanel(p, opt->rect, opt->palette, !showUp,
-                            pixelMetric(PM_DefaultFrameWidth), &fill);
+                            proxy()->pixelMetric(PM_DefaultFrameWidth), &fill);
         }
-        if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText))
+        if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText))
             p->fillRect(opt->rect, QBrush(p->background().color(), Qt::Dense5Pattern));
         break; }
 
@@ -545,7 +545,7 @@ void QMotifStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QP
         a.setPoints(INTARRLEN(bottom_pts), bottom_pts);
         a.translate(opt->rect.x(), opt->rect.y());
         p->drawPolyline(a);
-        if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText))
+        if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText))
             p->fillRect(opt->rect, QBrush(p->background().color(), Qt::Dense5Pattern));
         p->setPen(oldPen);
         p->setBrush(oldBrush);
@@ -736,13 +736,13 @@ void QMotifStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QP
 #undef CLEFT
 #undef CTOP
 #undef CBOT
-        if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText))
+        if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText))
             p->fillRect(opt->rect, QBrush(p->background().color(), Qt::Dense5Pattern));
         break; }
 
     case PE_IndicatorDockWidgetResizeHandle: {
         const int motifOffset = 10;
-        int sw = pixelMetric(PM_SplitterWidth);
+        int sw = proxy()->pixelMetric(PM_SplitterWidth);
         if (opt->state & State_Horizontal) {
             int yPos = opt->rect.y() + opt->rect.height() / 2;
             int kPos = opt->rect.right() - motifOffset - sw;
@@ -769,7 +769,7 @@ void QMotifStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QP
         const int markH = 6;
         int posX = opt->rect.x() + (opt->rect.width()  - markW) / 2 - 1;
         int posY = opt->rect.y() + (opt->rect.height() - markH) / 2;
-        int dfw = pixelMetric(PM_DefaultFrameWidth);
+        int dfw = proxy()->pixelMetric(PM_DefaultFrameWidth);
 
         if (dfw < 2) {
             // Could do with some optimizing/caching...
@@ -843,7 +843,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             handleOpt.state &= ~State_Horizontal;
         else
             handleOpt.state |= State_Horizontal;
-        drawPrimitive(PE_IndicatorDockWidgetResizeHandle, &handleOpt, p, widget);
+        proxy()->drawPrimitive(PE_IndicatorDockWidgetResizeHandle, &handleOpt, p, widget);
         break; }
 
     case CE_ScrollBarSubLine:
@@ -855,9 +855,9 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             pe = (opt->state & State_Horizontal) ? (opt->direction == Qt::LeftToRight ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight) : PE_IndicatorArrowUp;
         QStyleOption arrowOpt = *opt;
         arrowOpt.state |= State_Enabled;
-        drawPrimitive(pe, &arrowOpt, p, widget);
-        if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText)) {
-            int fw = pixelMetric(PM_DefaultFrameWidth);
+        proxy()->drawPrimitive(pe, &arrowOpt, p, widget);
+        if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText)) {
+            int fw = proxy()->pixelMetric(PM_DefaultFrameWidth);
             p->fillRect(opt->rect.adjusted(fw, fw, -fw, -fw), QBrush(p->background().color(), Qt::Dense5Pattern));
         }
     }break;
@@ -873,9 +873,9 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
         bevelOpt.state &= ~(State_Sunken | State_On);
         p->save();
         p->setBrushOrigin(bevelOpt.rect.topLeft());
-        drawPrimitive(PE_PanelButtonBevel, &bevelOpt, p, widget);
+        proxy()->drawPrimitive(PE_PanelButtonBevel, &bevelOpt, p, widget);
         p->restore();
-        if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText))
+        if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText))
             p->fillRect(opt->rect, QBrush(p->background().color(), Qt::Dense5Pattern));
         break; }
 
@@ -886,31 +886,31 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             QStyleOptionButton subopt = *btn;
             subopt.rect = subElementRect(isRadio ? SE_RadioButtonIndicator
                                          : SE_CheckBoxIndicator, btn, widget);
-            drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox,
+            proxy()->drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox,
                           &subopt, p, widget);
             subopt.rect = subElementRect(isRadio ? SE_RadioButtonContents
                                          : SE_CheckBoxContents, btn, widget);
-            drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, p, widget);
+            proxy()->drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, p, widget);
             if ((btn->state & State_HasFocus) && (!focus || !focus->isVisible())) {
                 QStyleOptionFocusRect fropt;
                 fropt.QStyleOption::operator=(*btn);
                 fropt.rect = subElementRect(isRadio ? SE_RadioButtonFocusRect
                                             : SE_CheckBoxFocusRect, btn, widget);
-                drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
             }
         }
         break;
     case CE_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            drawControl(CE_PushButtonBevel, btn, p, widget);
+            proxy()->drawControl(CE_PushButtonBevel, btn, p, widget);
             QStyleOptionButton subopt = *btn;
             subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
-            drawControl(CE_PushButtonLabel, &subopt, p, widget);
+            proxy()->drawControl(CE_PushButtonLabel, &subopt, p, widget);
             if ((btn->state & State_HasFocus) && (!focus || !focus->isVisible())) {
                 QStyleOptionFocusRect fropt;
                 fropt.QStyleOption::operator=(*btn);
                 fropt.rect = subElementRect(SE_PushButtonFocusRect, btn, widget);
-                drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
             }
         }
         break;
@@ -919,7 +919,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             int diw, x1, y1, x2, y2;
             p->setPen(opt->palette.foreground().color());
             p->setBrush(QBrush(opt->palette.button().color(), Qt::NoBrush));
-            diw = pixelMetric(PM_ButtonDefaultIndicator);
+            diw = proxy()->pixelMetric(PM_ButtonDefaultIndicator);
             opt->rect.getCoords(&x1, &y1, &x2, &y2);
             if (btn->features & (QStyleOptionButton::AutoDefaultButton|QStyleOptionButton::DefaultButton)) {
                 x1 += diw;
@@ -948,14 +948,14 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                 QStyleOptionButton newOpt = *btn;
                 newOpt.rect = QRect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
                 p->setBrushOrigin(p->brushOrigin());
-                drawPrimitive(PE_PanelButtonCommand, &newOpt, p, widget);
+                proxy()->drawPrimitive(PE_PanelButtonCommand, &newOpt, p, widget);
             }
             if (btn->features & QStyleOptionButton::HasMenu) {
-                int mbi = pixelMetric(PM_MenuButtonIndicator, btn, widget);
+                int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
                 QRect ir = btn->rect;
                 QStyleOptionButton newBtn = *btn;
                 newBtn.rect = QRect(ir.right() - mbi - 3, ir.y() + 4,  mbi, ir.height() - 8);
-                drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
             }
             break;
         }
@@ -963,7 +963,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
 #ifndef QT_NO_TABBAR
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            const int default_frame = pixelMetric(PM_DefaultFrameWidth, tab, widget);
+            const int default_frame = proxy()->pixelMetric(PM_DefaultFrameWidth, tab, widget);
             const int frame_offset =  (default_frame > 1) ? 1 : 0;
 
             if (tab->shape == QTabBar::RoundedNorth || tab->shape == QTabBar::RoundedEast ||
@@ -1081,7 +1081,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                 }
                 p->setTransform(m, true);
             }
-            const int unit_width = pixelMetric(PM_ProgressBarChunkWidth, opt, widget);
+            const int unit_width = proxy()->pixelMetric(PM_ProgressBarChunkWidth, opt, widget);
             int u = rect.width() / unit_width;
             int p_v = pb->progress - pb->minimum;
             int t_s = qMax(0, pb->maximum - pb->minimum);
@@ -1150,7 +1150,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                     QFont oldFont = p->font();
                     p->setFont(menuitem->font);
                     p->fillRect(x, y, w, h, opt->palette.brush(QPalette::Button));
-                    drawItemText(p, menuitem->rect.adjusted(10, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter,
+                    proxy()->drawItemText(p, menuitem->rect.adjusted(10, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter,
                                  menuitem->palette, menuitem->state & State_Enabled, menuitem->text,
                                  QPalette::Text);
                     textWidth = menuitem->fontMetrics.width(menuitem->text) + 10;
@@ -1220,10 +1220,10 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                 }
                 if (menuitem->checkType & QStyleOptionMenuItem::Exclusive) {
                     newMenuItem.rect.setRect(xvis + 2, y + motifItemFrame + mh / 4, 11, 11);
-                    drawPrimitive(PE_IndicatorRadioButton, &newMenuItem, p, widget);
+                    proxy()->drawPrimitive(PE_IndicatorRadioButton, &newMenuItem, p, widget);
                 } else {
                     newMenuItem.rect.setRect(xvis + 5, y + motifItemFrame + mh / 4, 9, 9);
-                    drawPrimitive(PE_IndicatorCheckBox, &newMenuItem, p, widget);
+                    proxy()->drawPrimitive(PE_IndicatorCheckBox, &newMenuItem, p, widget);
                 }
             }
 
@@ -1258,14 +1258,14 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                     int xv = vr.x();
                     QRect tr(xv, y+m, menuitem->tabWidth, h-2*m);
                     p->drawText(tr, text_flags, s.mid(t+1));
-                    if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText))
+                    if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText))
                         p->fillRect(tr, QBrush(p->background().color(), Qt::Dense5Pattern));
                     s = s.left(t);
                 }
                 QRect tr(xvis, y+m, w - xm - menuitem->tabWidth + 1, h-2*m);
                 p->drawText(tr, text_flags, s.left(t));
                 p->setFont(oldFont);
-                if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText))
+                if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText))
                     p->fillRect(tr, QBrush(p->background().color(), Qt::Dense5Pattern));
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {           // draw sub menu arrow
@@ -1279,7 +1279,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                     arrowOpt.state = (State_Sunken | ((opt->state & State_Enabled) ? State_Enabled : State_None));
                 else
                     arrowOpt.state = ((opt->state & State_Enabled) ? State_Enabled : State_None);
-                drawPrimitive(arrow, &arrowOpt, p, widget);
+                proxy()->drawPrimitive(arrow, &arrowOpt, p, widget);
             }
             break; }
 
@@ -1296,7 +1296,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
         p->save();
         p->setBrushOrigin(opt->rect.topLeft());
         qDrawShadePanel(p, opt->rect, opt->palette, bool(opt->state & (State_Sunken|State_On)),
-                        pixelMetric(PM_DefaultFrameWidth),
+                        proxy()->pixelMetric(PM_DefaultFrameWidth),
                         &opt->palette.brush((opt->state & State_Sunken) ? QPalette::Mid : QPalette::Button));
         p->restore();
         break;
@@ -1431,8 +1431,8 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QRect button, menuarea;
-            button = subControlRect(cc, toolbutton, SC_ToolButton, widget);
-            menuarea = subControlRect(cc, toolbutton, SC_ToolButtonMenu, widget);
+            button = proxy()->subControlRect(cc, toolbutton, SC_ToolButton, widget);
+            menuarea = proxy()->subControlRect(cc, toolbutton, SC_ToolButtonMenu, widget);
 
             State bflags = toolbutton->state & ~State_Sunken;
             if (bflags & State_AutoRaise) {
@@ -1453,7 +1453,7 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                 if (bflags & (State_Sunken | State_On | State_Raised)) {
                     tool.rect = button;
                     tool.state = bflags;
-                    drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
                 }
             }
 
@@ -1461,26 +1461,26 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                 QStyleOptionFocusRect fr;
                 fr.QStyleOption::operator=(*toolbutton);
                 fr.rect = toolbutton->rect.adjusted(3, 3, -3, -3);
-                drawPrimitive(PE_FrameFocusRect, &fr, p, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fr, p, widget);
             }
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
-            int fw = pixelMetric(PM_DefaultFrameWidth, opt, widget);
+            int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
             label.rect = button.adjusted(fw, fw, -fw, -fw);
-            drawControl(CE_ToolButtonLabel, &label, p, widget);
+            proxy()->drawControl(CE_ToolButtonLabel, &label, p, widget);
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.rect = menuarea;
                 tool.state = mflags;
                 if (mflags & (State_Sunken | State_On | State_Raised))
-                    drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, widget);
-                drawPrimitive(PE_IndicatorArrowDown, &tool, p, widget);
+                    proxy()->drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &tool, p, widget);
             } else if (toolbutton->features & QStyleOptionToolButton::HasMenu) {
-                int mbi = pixelMetric(PM_MenuButtonIndicator, toolbutton, widget);
+                int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, widget);
                 QRect ir = toolbutton->rect;
                 QStyleOptionToolButton newBtn = *toolbutton;
                 newBtn.rect = QRect(ir.right() + 5 - mbi, ir.height() - mbi + 4, mbi - 6, mbi - 6);
-                drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
             }
         }
         break;
@@ -1491,18 +1491,18 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
             PrimitiveElement pe;
 
             if (spinbox->frame && (spinbox->subControls & SC_SpinBoxFrame)) {
-                QRect r = subControlRect(CC_SpinBox, spinbox, SC_SpinBoxFrame, widget);
-                qDrawShadePanel(p, r, opt->palette, false, pixelMetric(PM_SpinBoxFrameWidth));
+                QRect r = proxy()->subControlRect(CC_SpinBox, spinbox, SC_SpinBoxFrame, widget);
+                qDrawShadePanel(p, r, opt->palette, false, proxy()->pixelMetric(PM_SpinBoxFrameWidth));
 
-                int fw = pixelMetric(QStyle::PM_DefaultFrameWidth);
-                r = subControlRect(CC_SpinBox, spinbox, SC_SpinBoxEditField, widget).adjusted(-fw,-fw,fw,fw);
+                int fw = proxy()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+                r = proxy()->subControlRect(CC_SpinBox, spinbox, SC_SpinBoxEditField, widget).adjusted(-fw,-fw,fw,fw);
                 QStyleOptionFrame lineOpt;
                 lineOpt.QStyleOption::operator=(*opt);
                 lineOpt.rect = r;
                 lineOpt.lineWidth = fw;
                 lineOpt.midLineWidth = 0;
                 lineOpt.state |= QStyle::State_Sunken;
-                drawPrimitive(QStyle::PE_FrameLineEdit, &lineOpt, p, widget);
+                proxy()->drawPrimitive(QStyle::PE_FrameLineEdit, &lineOpt, p, widget);
             }
 
             if (spinbox->subControls & SC_SpinBoxUp) {
@@ -1525,8 +1525,8 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                 pe = (spinbox->buttonSymbols == QAbstractSpinBox::PlusMinus ? PE_IndicatorSpinPlus
                       : PE_IndicatorSpinUp);
 
-                copy.rect = subControlRect(CC_SpinBox, spinbox, SC_SpinBoxUp, widget);
-                drawPrimitive(pe, &copy, p, widget);
+                copy.rect = proxy()->subControlRect(CC_SpinBox, spinbox, SC_SpinBoxUp, widget);
+                proxy()->drawPrimitive(pe, &copy, p, widget);
             }
 
             if (spinbox->subControls & SC_SpinBoxDown) {
@@ -1549,8 +1549,8 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                 pe = (spinbox->buttonSymbols == QAbstractSpinBox::PlusMinus ? PE_IndicatorSpinMinus
                       : PE_IndicatorSpinDown);
 
-                copy.rect = subControlRect(CC_SpinBox, spinbox, SC_SpinBoxDown, widget);
-                drawPrimitive(pe, &copy, p, widget);
+                copy.rect = proxy()->subControlRect(CC_SpinBox, spinbox, SC_SpinBoxDown, widget);
+                proxy()->drawPrimitive(pe, &copy, p, widget);
             }
         }
         break;
@@ -1558,16 +1558,16 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            QRect groove = subControlRect(CC_Slider, opt, SC_SliderGroove, widget),
-                  handle = subControlRect(CC_Slider, opt, SC_SliderHandle, widget);
+            QRect groove = proxy()->subControlRect(CC_Slider, opt, SC_SliderGroove, widget),
+                  handle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, widget);
 
             if ((opt->subControls & SC_SliderGroove) && groove.isValid()) {
-                qDrawShadePanel(p, groove, opt->palette, true, pixelMetric(PM_DefaultFrameWidth),
+                qDrawShadePanel(p, groove, opt->palette, true, proxy()->pixelMetric(PM_DefaultFrameWidth),
                                 &opt->palette.brush((opt->state & State_Enabled) ? QPalette::Mid : QPalette::Window));
                 if ((opt->state & State_HasFocus) && (!focus || !focus->isVisible())) {
                     QStyleOption focusOpt = *opt;
                     focusOpt.rect = subElementRect(SE_SliderFocusRect, opt, widget);
-                    drawPrimitive(PE_FrameFocusRect, &focusOpt, p, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &focusOpt, p, widget);
                 }
             }
 
@@ -1577,7 +1577,7 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                 bevelOpt.rect = handle;
                 p->save();
                 p->setBrushOrigin(bevelOpt.rect.topLeft());
-                drawPrimitive(PE_PanelButtonBevel, &bevelOpt, p, widget);
+                proxy()->drawPrimitive(PE_PanelButtonBevel, &bevelOpt, p, widget);
                 p->restore();
 
                 if (slider->orientation == Qt::Horizontal) {
@@ -1589,14 +1589,14 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                     qDrawShadeLine(p, handle.x(), mid, handle.x() + handle.width() - 2, mid, opt->palette,
                                    true, 1);
                 }
-                if (!(opt->state & State_Enabled) && styleHint(SH_DitherDisabledText))
+                if (!(opt->state & State_Enabled) && proxy()->styleHint(SH_DitherDisabledText))
                     p->fillRect(handle, QBrush(p->background().color(), Qt::Dense5Pattern));
             }
 
             if (slider->subControls & SC_SliderTickmarks) {
                 QStyleOptionSlider tmpSlider = *slider;
                 tmpSlider.subControls = SC_SliderTickmarks;
-                int frameWidth = pixelMetric(PM_DefaultFrameWidth);
+                int frameWidth = proxy()->pixelMetric(PM_DefaultFrameWidth);
                 tmpSlider.rect.translate(frameWidth - 1, 0);
                 QCommonStyle::drawComplexControl(cc, &tmpSlider, p, widget);
             }
@@ -1607,13 +1607,13 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             if (opt->subControls & SC_ComboBoxArrow) {
                 int awh, ax, ay, sh, sy, dh, ew;
-                int fw = cb->frame ? pixelMetric(PM_ComboBoxFrameWidth, opt, widget) : 0;
+                int fw = cb->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, opt, widget) : 0;
 
                 if (cb->frame) {
                     QStyleOptionButton btn;
                     btn.QStyleOption::operator=(*cb);
                     btn.state |= QStyle::State_Raised;
-                    drawPrimitive(PE_PanelButtonCommand, &btn, p, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonCommand, &btn, p, widget);
                 } else {
                     p->fillRect(opt->rect, opt->palette.brush(QPalette::Button));
                 }
@@ -1627,7 +1627,7 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                 QStyleOption arrowOpt = *opt;
                 arrowOpt.rect = ar;
                 arrowOpt.state |= State_Enabled;
-                drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
 
 
                 // draws the shaded line under the arrow
@@ -1643,13 +1643,13 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                     focus.QStyleOption::operator=(*opt);
                     focus.rect = subElementRect(SE_ComboBoxFocusRect, opt, widget);
                     focus.backgroundColor = opt->palette.button().color();
-                    drawPrimitive(PE_FrameFocusRect, &focus, p, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &focus, p, widget);
                 }
             }
 
             if (opt->subControls & SC_ComboBoxEditField) {
                 if (cb->editable) {
-                    QRect er = subControlRect(CC_ComboBox, opt, SC_ComboBoxEditField, widget);
+                    QRect er = proxy()->subControlRect(CC_ComboBox, opt, SC_ComboBoxEditField, widget);
                     er.adjust(-1, -1, 1, 1);
                     qDrawShadePanel(p, er, opt->palette, true, 1,
                                     &opt->palette.brush(QPalette::Base));
@@ -1663,7 +1663,7 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
     case CC_ScrollBar: {
         if (opt->subControls & SC_ScrollBarGroove)
             qDrawShadePanel(p, opt->rect, opt->palette, true,
-                            pixelMetric(PM_DefaultFrameWidth, opt, widget),
+                            proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget),
                             &opt->palette.brush((opt->state & State_Enabled) ? QPalette::Mid : QPalette::Window));
 
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
@@ -1798,7 +1798,7 @@ int QMotifStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt,
         break;
 
     case PM_ToolBarFrameWidth:
-        ret = pixelMetric(PM_DefaultFrameWidth);
+        ret = proxy()->pixelMetric(PM_DefaultFrameWidth);
         break;
 
     case PM_ToolBarItemMargin:
@@ -1819,7 +1819,7 @@ int QMotifStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt,
         break;
 
     case PM_SliderThickness:
-        ret = 16 + 4 * pixelMetric(PM_DefaultFrameWidth);
+        ret = 16 + 4 * proxy()->pixelMetric(PM_DefaultFrameWidth);
         break;
 #ifndef QT_NO_SLIDER
     case PM_SliderControlThickness:
@@ -1849,9 +1849,9 @@ int QMotifStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt,
     case PM_SliderSpaceAvailable:
         if (const QStyleOptionSlider *sl = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             if (sl->orientation == Qt::Horizontal)
-                ret = sl->rect.width() - pixelMetric(PM_SliderLength, opt, widget) - 2 * pixelMetric(PM_DefaultFrameWidth, opt, widget);
+                ret = sl->rect.width() - proxy()->pixelMetric(PM_SliderLength, opt, widget) - 2 * proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
             else
-                ret = sl->rect.height() - pixelMetric(PM_SliderLength, opt, widget) - 2 * pixelMetric(PM_DefaultFrameWidth, opt, widget);
+                ret = sl->rect.height() - proxy()->pixelMetric(PM_SliderLength, opt, widget) - 2 * proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
         }
         break;
 #endif // QT_NO_SLIDER
@@ -1901,7 +1901,7 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            int fw = spinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
+            int fw = spinbox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
             QSize bs;
             bs.setHeight(opt->rect.height()/2 - fw);
             bs.setWidth(qMin(bs.height() * 8 / 5, opt->rect.width() / 4)); // 1.6 -approximate golden mean
@@ -1944,11 +1944,11 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             if (sc == SC_SliderHandle) {
-                int tickOffset = pixelMetric(PM_SliderTickmarkOffset, opt, widget);
-                int thickness = pixelMetric(PM_SliderControlThickness, opt, widget);
+                int tickOffset = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, widget);
+                int thickness = proxy()->pixelMetric(PM_SliderControlThickness, opt, widget);
                 bool horizontal = slider->orientation == Qt::Horizontal;
-                int len = pixelMetric(PM_SliderLength, opt, widget);
-                int motifBorder = pixelMetric(PM_DefaultFrameWidth);
+                int len = proxy()->pixelMetric(PM_SliderLength, opt, widget);
+                int motifBorder = proxy()->pixelMetric(PM_DefaultFrameWidth);
                 int sliderPos = sliderPositionFromValue(slider->minimum, slider->maximum, slider->sliderPosition,
                                                         horizontal ? slider->rect.width() - len - 2 * motifBorder
                                                         : slider->rect.height() - len - 2 * motifBorder,
@@ -1967,7 +1967,7 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            int dfw = pixelMetric(PM_DefaultFrameWidth);
+            int dfw = proxy()->pixelMetric(PM_DefaultFrameWidth);
             QRect rect =  visualRect(scrollbar->direction, scrollbar->rect,
                                      QCommonStyle::subControlRect(cc, scrollbar, sc, widget));
             if (sc == SC_ScrollBarSlider) {
@@ -1991,7 +1991,7 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
             switch (sc) {
             case SC_ComboBoxArrow: {
                 int ew, awh, sh, dh, ax, ay, sy;
-                int fw = cb->frame ? pixelMetric(PM_ComboBoxFrameWidth, opt, widget) : 0;
+                int fw = cb->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, opt, widget) : 0;
                 QRect cr = opt->rect;
                 cr.adjust(fw, fw, -fw, -fw);
                 get_combo_parameters(cr, ew, awh, ax, ay, sh, dh, sy);
@@ -1999,7 +1999,7 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
             }
 
             case SC_ComboBoxEditField: {
-                int fw = cb->frame ? pixelMetric(PM_ComboBoxFrameWidth, opt, widget) : 0;
+                int fw = cb->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, opt, widget) : 0;
                 QRect rect = opt->rect;
                 rect.adjust(fw, fw, -fw, -fw);
                 int ew = get_combo_extra_width(rect.height(), rect.width());
@@ -2029,10 +2029,6 @@ QMotifStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     QSize sz(contentsSize);
 
     switch(ct) {
-    case CT_Splitter:
-        sz = QSize(10, 10);
-        break;
-
     case CT_RadioButton:
     case CT_CheckBox:
         sz = QCommonStyle::sizeFromContents(ct, opt, contentsSize, widget);
@@ -2119,7 +2115,7 @@ QMotifStyle::subElementRect(SubElement sr, const QStyleOption *opt, const QWidge
     case SE_ComboBoxFocusRect:
     {
         int awh, ax, ay, sh, sy, dh, ew;
-        int fw = pixelMetric(PM_DefaultFrameWidth, opt, widget);
+        int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
         QRect tr = opt->rect;
 
         tr.adjust(fw, fw, -fw, -fw);

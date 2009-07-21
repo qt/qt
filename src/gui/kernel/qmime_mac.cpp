@@ -68,11 +68,6 @@
 #include "qmap.h"
 #include <private/qt_mac_p.h>
 
-#ifdef Q_WS_MAC32
-#include <QuickTime/QuickTime.h>
-#include "qlibrary.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 extern CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imagePtr = 0); // qpaintengine_mac.cpp
@@ -127,32 +122,44 @@ CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
 
 /*!
   \class QMacPasteboardMime
-  \brief The QMacPasteboardMime class maps open-standard MIME to Mac flavors.
+  \brief The QMacPasteboardMime class converts between a MIME type and a
+  \l{http://developer.apple.com/macosx/uniformtypeidentifiers.html}{Uniform
+  Type Identifier (UTI)} format.
   \since 4.2
   \ingroup io
   \ingroup draganddrop
   \ingroup misc
 
-  Qt's drag and drop support and clipboard facilities use the MIME
-  standard. On X11, this maps trivially to the Xdnd protocol, but on
-  Mac although some applications use MIME types to describe clipboard
-  formats, others use arbitrary non-standardized naming conventions,
-  or unnamed built-in Mac formats.
+  Qt's drag and drop and clipboard facilities use the MIME
+  standard. On X11, this maps trivially to the Xdnd protocol. On
+  Mac, although some applications use MIME to describe clipboard
+  contents, it is more common to use Apple's UTI format.
 
-  By instantiating subclasses of QMacPasteboardMime that provide conversions
-  between Mac flavors and MIME formats, you can convert proprietary
-  clipboard formats to MIME formats.
+  QMacPasteboardMime's role is to bridge the gap between MIME and UTI;
+  By subclasses this class, one can extend Qt's drag and drop
+  and clipboard handling to convert to and from unsupported, or proprietary, UTI formats.
 
-  Qt has predefined support for the following Mac flavors:
+  A subclass of QMacPasteboardMime will automatically be registered, and active, upon instantiation.
+
+  Qt has predefined support for the following UTIs:
   \list
-    \i kScrapFlavorTypeUnicode - converted to "text/plain;charset=ISO-10646-UCS-2"
-    \i kScrapFlavorTypeText - converted to "text/plain;charset=system" or "text/plain"
-    \i kScrapFlavorTypePicture - converted to "application/x-qt-image"
-    \i typeFileURL - converted to "text/uri-list"
+    \i public.utf8-plain-text - converts to "text/plain"
+    \i public.utf16-plain-text - converts to "text/plain"
+    \i public.html - converts to "text/html"
+    \i public.url - converts to "text/uri-list"
+    \i public.file-url - converts to "text/uri-list"
+    \i public.tiff - converts to "application/x-qt-image"
+    \i com.apple.traditional-mac-plain-text - converts to "text/plain"
+    \i com.apple.pict - converts to "application/x-qt-image"
   \endlist
 
-  You can check if a MIME type is convertible using canConvert() and
-  can perform conversions with convertToMime() and convertFromMime().
+  When working with MIME data, Qt will interate through all instances of QMacPasteboardMime to
+  find an instance that can convert to, or from, a specific MIME type. It will do this by calling
+  canConvert() on each instance, starting with (and choosing) the last created instance first.
+  The actual conversions will be done by using convertToMime() and convertFromMime().
+
+  \note The API uses the term "flavor" in some cases. This is for backwards
+  compatibility reasons, and should now be understood as UTIs.
 */
 
 /*! \enum QMacPasteboardMime::QMacPasteboardMimeType
@@ -206,7 +213,7 @@ QString QMacPasteboardMimeAny::flavorFor(const QString &mime)
     if(mime == QLatin1String("application/x-qt-mime-type-name"))
         return QString();
     QString ret = QLatin1String("com.trolltech.anymime.") + mime;
-    return ret.replace(QLatin1String("/"), QLatin1String("--"));
+    return ret.replace(QLatin1Char('/'), QLatin1String("--"));
 }
 
 QString QMacPasteboardMimeAny::mimeFor(QString flav)
@@ -382,7 +389,7 @@ QString QMacPasteboardMimeUnicodeText::flavorFor(const QString &mime)
     int i = mime.indexOf(QLatin1String("charset="));
     if (i >= 0) {
         QString cs(mime.mid(i+8).toLower());
-        i = cs.indexOf(QLatin1String(";"));
+        i = cs.indexOf(QLatin1Char(';'));
         if (i>=0)
             cs = cs.left(i);
         if (cs == QLatin1String("system"))
@@ -494,6 +501,11 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
 
 
 #ifdef Q_WS_MAC32
+
+// This can be removed once 10.6 is the minimum (or we have to require 64-bit) whichever comes first.
+
+#include <QuickTime/QuickTime.h>
+#include <qlibrary.h>
 
 typedef ComponentResult (*PtrGraphicsImportSetDataHandle)(GraphicsImportComponent, Handle);
 typedef ComponentResult (*PtrGraphicsImportCreateCGImage)(GraphicsImportComponent, CGImageRef*, UInt32);
@@ -672,33 +684,11 @@ QVariant QMacPasteboardMimeTiff::convertToMime(const QString &mime, QList<QByteA
         return ret;
     const QByteArray &a = data.first();
     QCFType<CGImageRef> image;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDataRef> data = CFDataCreateWithBytesNoCopy(0,
-                                                    reinterpret_cast<const UInt8 *>(a.constData()),
-                                                    a.size(), kCFAllocatorNull);
-        QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(data, 0);
-        image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-    } else
-#endif
-    {
-#ifdef Q_WS_MAC32
-        if (resolveMimeQuickTimeSymbols()) {
-            Handle tiff = NewHandle(a.size());
-            memcpy(*tiff, a.constData(), a.size());
-            GraphicsImportComponent graphicsImporter;
-            ComponentResult result = OpenADefaultComponent(GraphicsImporterComponentType,
-                                                           kQTFileTypeTIFF, &graphicsImporter);
-            if (!result)
-                result = ptrGraphicsImportSetDataHandle(graphicsImporter, tiff);
-            if (!result)
-                result = ptrGraphicsImportCreateCGImage(graphicsImporter, &image,
-                                                     kGraphicsImportCreateCGImageUsingCurrentSettings);
-            CloseComponent(graphicsImporter);
-            DisposeHandle(tiff);
-        }
-#endif
-    }
+    QCFType<CFDataRef> tiffData = CFDataCreateWithBytesNoCopy(0,
+                                                reinterpret_cast<const UInt8 *>(a.constData()),
+                                                a.size(), kCFAllocatorNull);
+    QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(tiffData, 0);
+    image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
 
     if (image != 0)
         ret = QVariant(QPixmap::fromMacCGImageRef(image).toImage());
@@ -828,6 +818,80 @@ QList<QByteArray> QMacPasteboardMimeFileUri::convertFromMime(const QString &mime
         return ret;
     QList<QVariant> urls = data.toList();
     for(int i = 0; i < urls.size(); ++i) {
+        QUrl url = urls.at(i).toUrl();
+        if (url.scheme().isEmpty())
+            url.setScheme(QLatin1String("file"));
+        if (url.scheme().toLower() == QLatin1String("file")) {
+            if (url.host().isEmpty())
+                url.setHost(QLatin1String("localhost"));
+            url.setPath(url.path().normalized(QString::NormalizationForm_D));
+        }
+        ret.append(url.toEncoded());
+    }
+    return ret;
+}
+
+class QMacPasteboardMimeUrl : public QMacPasteboardMime {
+public:
+    QMacPasteboardMimeUrl() : QMacPasteboardMime(MIME_ALL) { }
+    QString convertorName();
+
+    QString flavorFor(const QString &mime);
+    QString mimeFor(QString flav);
+    bool canConvert(const QString &mime, QString flav);
+    QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
+    QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
+};
+
+QString QMacPasteboardMimeUrl::convertorName()
+{
+    return QLatin1String("URL");
+}
+
+QString QMacPasteboardMimeUrl::flavorFor(const QString &mime)
+{
+    if(mime.startsWith(QLatin1String("text/uri-list")))
+        return QLatin1String("public.url");
+    return QString();
+}
+
+QString QMacPasteboardMimeUrl::mimeFor(QString flav)
+{
+    if(flav == QLatin1String("public.url"))
+        return QLatin1String("text/uri-list");
+    return QString();
+}
+
+bool QMacPasteboardMimeUrl::canConvert(const QString &mime, QString flav)
+{
+    return flav == QLatin1String("public.url")
+            && mime == QLatin1String("text/uri-list");
+}
+
+QVariant QMacPasteboardMimeUrl::convertToMime(const QString &mime, QList<QByteArray> data, QString flav)
+{
+    if(!canConvert(mime, flav))
+        return QVariant();
+
+    QList<QVariant> ret;
+    for (int i=0; i<data.size(); ++i) {
+        QUrl url = QUrl::fromEncoded(data.at(i));
+        if (url.host().toLower() == QLatin1String("localhost"))
+            url.setHost(QString());
+        url.setPath(url.path().normalized(QString::NormalizationForm_C));
+        ret.append(url);
+    }
+    return QVariant(ret);
+}
+
+QList<QByteArray> QMacPasteboardMimeUrl::convertFromMime(const QString &mime, QVariant data, QString flav)
+{
+    QList<QByteArray> ret;
+    if (!canConvert(mime, flav))
+        return ret;
+
+    QList<QVariant> urls = data.toList();
+    for(int i=0; i<urls.size(); ++i) {
         QUrl url = urls.at(i).toUrl();
         if (url.scheme().isEmpty())
             url.setScheme(QLatin1String("file"));
@@ -1037,12 +1101,16 @@ void QMacPasteboardMime::initialize()
         //standard types that we wrap
         new QMacPasteboardMimeTiff;
 #ifdef Q_WS_MAC32
-        new QMacPasteboardMimePict;
+        // 10.6 does automatic synthesis to and from PICT to standard image types (like TIFF),
+        // so don't bother doing it ourselves, especially since it's not available in 64-bit.
+        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
+            new QMacPasteboardMimePict;
 #endif
         new QMacPasteboardMimeUnicodeText;
         new QMacPasteboardMimePlainText;
         new QMacPasteboardMimeHTMLText;
         new QMacPasteboardMimeFileUri;
+        new QMacPasteboardMimeUrl;
         new QMacPasteboardMimeTypeName;
         //make sure our "non-standard" types are always last! --Sam
         new QMacPasteboardMimeAny;

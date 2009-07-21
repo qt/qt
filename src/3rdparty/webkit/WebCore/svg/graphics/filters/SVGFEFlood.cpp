@@ -2,6 +2,7 @@
     Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
                   2005 Eric Seidel <eric@webkit.org>
+                  2009 Dirk Schulze <krit@webkit.org>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -21,22 +22,26 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEFlood.h"
+
+#include "Filter.h"
+#include "GraphicsContext.h"
 #include "SVGRenderTreeAsText.h"
 
 namespace WebCore {
 
-FEFlood::FEFlood(const Color& floodColor, const float& floodOpacity)
+FEFlood::FEFlood(FilterEffect* in, const Color& floodColor, const float& floodOpacity)
     : FilterEffect()
+    , m_in(in)
     , m_floodColor(floodColor)
     , m_floodOpacity(floodOpacity)
 {
 }
 
-PassRefPtr<FEFlood> FEFlood::create(const Color& floodColor, const float& floodOpacity)
+PassRefPtr<FEFlood> FEFlood::create(FilterEffect* in, const Color& floodColor, const float& floodOpacity)
 {
-    return adoptRef(new FEFlood(floodColor, floodOpacity));
+    return adoptRef(new FEFlood(in, floodColor, floodOpacity));
 }
 
 Color FEFlood::floodColor() const
@@ -59,8 +64,14 @@ void FEFlood::setFloodOpacity(float floodOpacity)
     m_floodOpacity = floodOpacity;
 }
 
-void FEFlood::apply()
+void FEFlood::apply(Filter*)
 {
+    GraphicsContext* filterContext = getEffectContext();
+    if (!filterContext)
+        return;
+
+    Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
+    filterContext->fillRect(FloatRect(FloatPoint(), subRegion().size()), color);
 }
 
 void FEFlood::dump()
@@ -78,4 +89,4 @@ TextStream& FEFlood::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

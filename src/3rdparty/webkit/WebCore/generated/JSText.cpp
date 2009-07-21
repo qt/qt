@@ -19,25 +19,21 @@
 */
 
 #include "config.h"
-
 #include "JSText.h"
-
-#include <wtf/GetPtr.h>
 
 #include "ExceptionCode.h"
 #include "JSText.h"
 #include "KURL.h"
 #include "Text.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSText)
+ASSERT_CLASS_FITS_IN_CELL(JSText);
 
 /* Hash table */
 
@@ -80,7 +76,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -138,51 +134,54 @@ bool JSText::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
     return getStaticValueSlot<JSText, Base>(exec, &JSTextTable, this, propertyName, slot);
 }
 
-JSValuePtr jsTextWholeText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextWholeText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Text* imp = static_cast<Text*>(static_cast<JSText*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->wholeText());
 }
 
-JSValuePtr jsTextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSText*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSText::getConstructor(ExecState* exec)
+JSValue JSText::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSTextConstructor>(exec);
 }
 
-JSValuePtr jsTextPrototypeFunctionSplitText(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTextPrototypeFunctionSplitText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSText::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSText::s_info))
         return throwError(exec, TypeError);
     JSText* castedThisObj = static_cast<JSText*>(asObject(thisValue));
     Text* imp = static_cast<Text*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    int offset = args.at(exec, 0)->toInt32(exec);
+    int offset = args.at(0).toInt32(exec);
     if (offset < 0) {
         setDOMException(exec, INDEX_SIZE_ERR);
         return jsUndefined();
     }
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->splitText(offset, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->splitText(offset, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsTextPrototypeFunctionReplaceWholeText(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTextPrototypeFunctionReplaceWholeText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSText::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSText::s_info))
         return throwError(exec, TypeError);
     JSText* castedThisObj = static_cast<JSText*>(asObject(thisValue));
     Text* imp = static_cast<Text*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& content = args.at(exec, 0)->toString(exec);
+    const UString& content = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->replaceWholeText(content, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->replaceWholeText(content, ec)));
     setDOMException(exec, ec);
     return result;
 }

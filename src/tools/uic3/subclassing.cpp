@@ -69,7 +69,7 @@ void Ui3Reader::createSubDecl( const QDomElement &e, const QString& subClass )
         return;
 
     out << "class " << subClass << " : public " << nameOfClass << endl;
-    out << "{" << endl;
+    out << '{' << endl;
 
 /* tmake ignore Q_OBJECT */
     out << "    Q_OBJECT" << endl;
@@ -105,8 +105,8 @@ void Ui3Reader::createSubDecl( const QDomElement &e, const QString& subClass )
             continue;
         QString returnType = n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         QString functionName = n.firstChild().toText().data().trimmed();
-        if ( functionName.endsWith(QLatin1String(";")))
-            functionName = functionName.left( functionName.length() - 1 );
+        if ( functionName.endsWith(QLatin1Char(';')))
+            functionName.chop(1);
         QString specifier = n.attribute(QLatin1String("specifier"));
         QString access = n.attribute(QLatin1String("access"));
         if ( access == QLatin1String("protected") ) {
@@ -133,8 +133,8 @@ void Ui3Reader::createSubDecl( const QDomElement &e, const QString& subClass )
             continue;
         QString returnType = n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         QString functionName = n.firstChild().toText().data().trimmed();
-        if ( functionName.endsWith(QLatin1String(";")) )
-            functionName = functionName.left( functionName.length() - 1 );
+        if ( functionName.endsWith(QLatin1Char(';')) )
+            functionName.chop(1);
         QString specifier = n.attribute(QLatin1String("specifier"));
         QString access = n.attribute(QLatin1String("access"));
         if ( access == QLatin1String("protected") ) {
@@ -195,7 +195,7 @@ void Ui3Reader::writeFunctionsSubDecl( const QStringList &fuLst, const QStringLi
             type = QLatin1String("void");
         if ( *it3 == QLatin1String("non virtual") )
             continue;
-        out << "    " << type << " " << fixDeclaration(*it) << ";" << endl;
+        out << "    " << type << ' ' << fixDeclaration(*it) << ';' << endl;
     }
     out << endl;
 }
@@ -223,7 +223,7 @@ void Ui3Reader::createSubImpl( const QDomElement &e, const QString& subClass )
         out << " *  name 'name' and widget flags set to 'f' " << endl;
         out << " *" << endl;
         out << " *  The " << objClass.mid(1).toLower() << " will by default be modeless, unless you set 'modal' to" << endl;
-        out << " *  true to construct a modal " << objClass.mid(1).toLower() << "." << endl;
+        out << " *  true to construct a modal " << objClass.mid(1).toLower() << '.' << endl;
         out << " */" << endl;
         out << subClass << "::" << subClass << "( QWidget* parent, const char* name, bool modal, Qt::WindowFlags fl )" << endl;
         out << "    : " << nameOfClass << "( parent, name, modal, fl )" << endl;
@@ -235,8 +235,8 @@ void Ui3Reader::createSubImpl( const QDomElement &e, const QString& subClass )
         out << subClass << "::" << subClass << "( QWidget* parent, const char* name, Qt::WindowFlags fl )" << endl;
         out << "    : " << nameOfClass << "( parent, name, fl )" << endl;
     }
-    out << "{" << endl;
-    out << "}" << endl;
+    out << '{' << endl;
+    out << '}' << endl;
     out << endl;
 
     // destructor
@@ -244,9 +244,9 @@ void Ui3Reader::createSubImpl( const QDomElement &e, const QString& subClass )
     out << " *  Destroys the object and frees any allocated resources" << endl;
     out << " */" << endl;
     out << subClass << "::~" << subClass << "()" << endl;
-    out << "{" << endl;
+    out << '{' << endl;
     out << "    // no need to delete child widgets, Qt does it all for us" << endl;
-    out << "}" << endl;
+    out << '}' << endl;
     out << endl;
 
 
@@ -268,8 +268,8 @@ void Ui3Reader::createSubImpl( const QDomElement &e, const QString& subClass )
             continue;
         QString returnType = n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         QString functionName = n.firstChild().toText().data().trimmed();
-        if ( functionName.endsWith(QLatin1String(";")) )
-            functionName = functionName.left( functionName.length() - 1 );
+        if ( functionName.endsWith(QLatin1Char(';')) )
+            functionName.chop(1);
         QString specifier = n.attribute(QLatin1String("specifier"));
         QString access = n.attribute(QLatin1String("access"));
         if ( access == QLatin1String("protected") ) {
@@ -296,8 +296,8 @@ void Ui3Reader::createSubImpl( const QDomElement &e, const QString& subClass )
             continue;
         QString returnType = n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         QString functionName = n.firstChild().toText().data().trimmed();
-        if ( functionName.endsWith(QLatin1String(";")) )
-            functionName = functionName.left( functionName.length() - 1 );
+        if ( functionName.endsWith(QLatin1Char(';')) )
+            functionName.chop(1);
         QString specifier = n.attribute(QLatin1String("specifier"));
         QString access = n.attribute(QLatin1String("access"));
         if ( access == QLatin1String("protected") ) {
@@ -351,10 +351,10 @@ void Ui3Reader::writeFunctionsSubImpl( const QStringList &fuLst, const QStringLi
         out << "/*" << endl;
         out << " * " << descr << endl;
         out << " */" << endl;
-        out << type << " " << subClass << "::" << fixDeclaration(*it) << endl;
-        out << "{" << endl;
+        out << type << ' ' << subClass << "::" << fixDeclaration(*it) << endl;
+        out << '{' << endl;
         out << "    qWarning( \"" << subClass << "::" << fixDeclaration(*it) << " not yet implemented!\" );" << endl;
-        out << "}" << endl << endl;
+        out << '}' << endl << endl;
     }
     out << endl;
 }

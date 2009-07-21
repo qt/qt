@@ -46,6 +46,7 @@
 
 #import <wtf/StdLibExtras.h>
 #import <wtf/RetainPtr.h>
+#import <wtf/UnusedParam.h>
 
 @interface NSAttributedString (AppKitSecretsIKnowAbout)
 - (id)_initWithDOMRange:(DOMRange *)domRange;
@@ -138,12 +139,13 @@ void Pasteboard::writeSelection(NSPasteboard* pasteboard, Range* selectedRange, 
         Pasteboard::generalPasteboard(); //Initialises pasteboard types
     ASSERT(selectedRange);
     
-    NSAttributedString *attributedString = [[[NSAttributedString alloc] _initWithDOMRange:[DOMRange _wrapRange:selectedRange]] autorelease];
+    NSAttributedString *attributedString = [[[NSAttributedString alloc] _initWithDOMRange:kit(selectedRange)] autorelease];
 #ifdef BUILDING_ON_TIGER
     // 4930197: Mail overrides [WebHTMLView pasteboardTypesForSelection] in order to add another type to the pasteboard
     // after WebKit does.  On Tiger we must call this function so that Mail code will be executed, meaning that 
     // we can't call WebCore::Pasteboard's method for setting types. 
-    
+    UNUSED_PARAM(canSmartCopyOrDelete);
+
     NSArray *types = frame->editor()->client()->pasteboardTypesForSelection(frame);
     // Don't write RTFD to the pasteboard when the copied attributed string has no attachments.
     NSMutableArray *mutableTypes = nil;
@@ -182,8 +184,7 @@ void Pasteboard::writeSelection(NSPasteboard* pasteboard, Range* selectedRange, 
     if ([types containsObject:NSStringPboardType]) {
         // Map &nbsp; to a plain old space because this is better for source code, other browsers do it,
         // and because HTML forces you to do this any time you want two spaces in a row.
-        String text = selectedRange->text();
-        text.replace('\\', frame->backslashAsCurrencySymbol());
+        String text = frame->displayStringModifiedByEncoding(selectedRange->text());
         NSMutableString *s = [[[(NSString*)text copy] autorelease] mutableCopy];
         
         NSString *NonBreakingSpaceString = [NSString stringWithCharacters:&noBreakSpace length:1];
@@ -277,7 +278,7 @@ void Pasteboard::writeImage(Node* node, const KURL& url, const String& title)
     ASSERT(cocoaURL);
 
     ASSERT(node->renderer() && node->renderer()->isImage());
-    RenderImage* renderer = static_cast<RenderImage*>(node->renderer());
+    RenderImage* renderer = toRenderImage(node->renderer());
     CachedImage* cachedImage = static_cast<CachedImage*>(renderer->cachedImage());
     ASSERT(cachedImage);
     
@@ -309,7 +310,7 @@ String Pasteboard::plainText(Frame* frame)
     NSArray *types = [m_pasteboard.get() types];
     
     if ([types containsObject:NSStringPboardType])
-        return [m_pasteboard.get() stringForType:NSStringPboardType];
+        return [[m_pasteboard.get() stringForType:NSStringPboardType] precomposedStringWithCanonicalMapping];
     
     NSAttributedString *attributedString = nil;
     NSString *string;
@@ -319,13 +320,13 @@ String Pasteboard::plainText(Frame* frame)
     if (attributedString == nil && [types containsObject:NSRTFPboardType])
         attributedString = [[NSAttributedString alloc] initWithRTF:[m_pasteboard.get() dataForType:NSRTFPboardType] documentAttributes:NULL];
     if (attributedString != nil) {
-        string = [[attributedString string] copy];
+        string = [[attributedString string] precomposedStringWithCanonicalMapping];
         [attributedString release];
-        return [string autorelease];
+        return string;
     }
     
     if ([types containsObject:NSFilenamesPboardType]) {
-        string = [[m_pasteboard.get() propertyListForType:NSFilenamesPboardType] componentsJoinedByString:@"\n"];
+        string = [[[m_pasteboard.get() propertyListForType:NSFilenamesPboardType] componentsJoinedByString:@"\n"] precomposedStringWithCanonicalMapping];
         if (string != nil)
             return string;
     }
@@ -337,7 +338,7 @@ String Pasteboard::plainText(Frame* frame)
         // helper code that should either be done in a separate patch or figured out in another way.
         string = frame->editor()->client()->userVisibleString(url);
         if ([string length] > 0)
-            return string;
+            return [string precomposedStringWithCanonicalMapping];
     }
 
     
@@ -367,7 +368,7 @@ PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefP
     
     if (allowPlainText && [types containsObject:NSStringPboardType]) {
         chosePlainText = true;
-        RefPtr<DocumentFragment> fragment = createFragmentFromText(context.get(), [m_pasteboard.get() stringForType:NSStringPboardType]);
+        RefPtr<DocumentFragment> fragment = createFragmentFromText(context.get(), [[m_pasteboard.get() stringForType:NSStringPboardType] precomposedStringWithCanonicalMapping]);
         if (fragment)
             return fragment.release();
     }

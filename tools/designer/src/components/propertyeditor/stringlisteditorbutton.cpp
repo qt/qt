@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::StringListEditorButton
-*/
-
 #include "stringlisteditorbutton.h"
 #include "stringlisteditor.h"
 

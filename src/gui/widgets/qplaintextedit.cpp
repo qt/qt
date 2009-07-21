@@ -375,11 +375,16 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
         extraMargin += fm.width(QChar(0x21B5));
     }
     tl->beginLayout();
+    qreal availableWidth = d->width;
+    if (availableWidth <= 0) {
+        availableWidth = INT_MAX; // similar to text edit with pageSize.width == 0
+    }
+    availableWidth -= 2*margin + extraMargin;
     while (1) {
         QTextLine line = tl->createLine();
         if (!line.isValid())
             break;
-        line.setLineWidth(d->width - 2*margin - extraMargin);
+        line.setLineWidth(availableWidth);
 
         height += leading;
         line.setPosition(QPointF(margin, height));
@@ -444,7 +449,7 @@ QPlainTextEditControl::QPlainTextEditControl(QPlainTextEdit *parent)
 void QPlainTextEditPrivate::_q_cursorPositionChanged()
 {
     pageUpDownLastCursorYIsValid = false;
-};
+}
 
 void QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered(int action) {
     if (action == QAbstractSlider::SliderPageStepAdd) {
@@ -560,7 +565,8 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
     if (!currentBlock.isValid())
         return QRectF();
     Q_ASSERT(currentBlock.blockNumber() == currentBlockNumber);
-    QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout());
+    QTextDocument *doc = document();
+    QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(doc->documentLayout());
     Q_ASSERT(documentLayout);
 
     QPointF offset;
@@ -571,13 +577,22 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
         offset.ry() += r.height();
         currentBlock = currentBlock.next();
         ++currentBlockNumber;
+        if (!currentBlock.isVisible()) {
+            currentBlock = doc->findBlockByLineNumber(currentBlock.firstLineNumber());
+            currentBlockNumber = currentBlock.blockNumber();
+        }
         r = documentLayout->blockBoundingRect(currentBlock);
     }
     while (currentBlockNumber > blockNumber && offset.y() >= -textEdit->viewport()->height()) {
         currentBlock = currentBlock.previous();
+        --currentBlockNumber;
+        while (!currentBlock.isVisible()) {
+            currentBlock = currentBlock.previous();
+            --currentBlockNumber;
+        }
         if (!currentBlock.isValid())
             break;
-        --currentBlockNumber;
+
         r = documentLayout->blockBoundingRect(currentBlock);
         offset.ry() -= r.height();
     }
@@ -752,7 +767,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
     // viewport dimensions later.
-    doc->setTextWidth(0);
+    doc->setTextWidth(-1);
     doc->documentLayout()->setPaintDevice(viewport);
     doc->setDefaultFont(q->font());
 
@@ -1005,14 +1020,13 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
     QPlainText uses very much the same technology and concepts as
     QTextEdit, but is optimized for plain text handling.
 
-    QPlainTextEdit works on paragraphs and characters. A paragraph is a
-    formatted string which is word-wrapped to fit into the width of
+    QPlainTextEdit works on paragraphs and characters. A paragraph is
+    a formatted string which is word-wrapped to fit into the width of
     the widget. By default when reading plain text, one newline
     signifies a paragraph. A document consists of zero or more
-    paragraphs. The words in the paragraph are aligned in accordance
-    with the paragraph's alignment. Paragraphs are separated by hard
-    line breaks. Each character within a paragraph has its own
-    attributes, for example, font and color.
+    paragraphs. Paragraphs are separated by hard line breaks. Each
+    character within a paragraph has its own attributes, for example,
+    font and color.
 
     The shape of the mouse cursor on a QPlainTextEdit is
     Qt::IBeamCursor by default.  It can be changed through the
@@ -1020,15 +1034,14 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
     \section1 Using QPlainTextEdit as a Display Widget
 
-    The text is set or replaced using setPlainText() which deletes any
-    existing text and replaces it with the text passed in the
-    setPlainText() call.
+    The text is set or replaced using setPlainText() which deletes the
+    existing text and replaces it with the text passed to setPlainText().
 
-    Text itself can be inserted using the QTextCursor class or using
-    the convenience functins insertPlainText(), appendPlainText() or
+    Text can be inserted using the QTextCursor class or using the
+    convenience functions insertPlainText(), appendPlainText() or
     paste().
 
-    By default the text edit wraps words at whitespace to fit within
+    By default, the text edit wraps words at whitespace to fit within
     the text edit widget. The setLineWrapMode() function is used to
     specify the kind of line wrap you want, \l WidgetWidth or \l
     NoWrap if you don't want any wrapping.  If you use word wrap to
@@ -1154,7 +1167,8 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
 
     \sa QTextDocument, QTextCursor, {Application Example},
-	{Syntax Highlighter Example}, {Rich Text Processing}
+        {Code Editor Example}, {Syntax Highlighter Example},
+        {Rich Text Processing}
 
 */
 
@@ -1716,8 +1730,7 @@ static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, QRectF
     p->save();
     if (brush.style() >= Qt::LinearGradientPattern && brush.style() <= Qt::ConicalGradientPattern) {
         if (!gradientRect.isNull()) {
-            QTransform m;
-            m.translate(gradientRect.left(), gradientRect.top());
+            QTransform m = QTransform::fromTranslate(gradientRect.left(), gradientRect.top());
             m.scale(gradientRect.width(), gradientRect.height());
             brush.setTransform(m);
             const_cast<QGradient *>(brush.gradient())->setCoordinateMode(QGradient::LogicalMode);
@@ -1747,7 +1760,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
 
     QTextBlock block = firstVisibleBlock();
     qreal maximumWidth = document()->documentLayout()->documentSize().width();
-    
+
     // keep right margin clean from full-width selection
     int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth)
                - document()->documentMargin();
@@ -2018,6 +2031,7 @@ void QPlainTextEdit::inputMethodEvent(QInputMethodEvent *e)
     }
 #endif
     d->sendControlEvent(e);
+    ensureCursorVisible();
 }
 
 /*!\reimp

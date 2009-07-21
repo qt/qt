@@ -25,6 +25,7 @@
 #include "qwebframe_p.h"
 #include "qwebsecurityorigin.h"
 #include "qwebsecurityorigin_p.h"
+#include "qwebelement.h"
 
 #include "DocumentLoader.h"
 #include "FocusController.h"
@@ -44,6 +45,7 @@
 #include "SubstituteData.h"
 
 #include "markup.h"
+#include "htmlediting.h"
 #include "RenderTreeAsText.h"
 #include "Element.h"
 #include "Document.h"
@@ -95,6 +97,7 @@ QT_END_NAMESPACE
 
 void QWEBKIT_EXPORT qt_drt_setJavaScriptProfilingEnabled(QWebFrame* qframe, bool enabled)
 {
+#if ENABLE(JAVASCRIPT_DEBUGGER)
     Frame* frame = QWebFramePrivate::core(qframe);
     InspectorController* controller = frame->page()->inspectorController();
     if (!controller)
@@ -103,6 +106,64 @@ void QWEBKIT_EXPORT qt_drt_setJavaScriptProfilingEnabled(QWebFrame* qframe, bool
         controller->enableProfiler();
     else
         controller->disableProfiler();
+#endif
+}
+
+// Pause a given CSS animation or transition on the target node at a specific time.
+// If the animation or transition is already paused, it will update its pause time.
+// This method is only intended to be used for testing the CSS animation and transition system.
+bool QWEBKIT_EXPORT qt_drt_pauseAnimation(QWebFrame *qframe, const QString &animationName, double time, const QString &elementId)
+{
+    Frame* frame = QWebFramePrivate::core(qframe);
+    if (!frame)
+        return false;
+
+    AnimationController* controller = frame->animation();
+    if (!controller)
+        return false;
+
+    Document* doc = frame->document();
+    Q_ASSERT(doc);
+
+    Node* coreNode = doc->getElementById(elementId);
+    if (!coreNode || !coreNode->renderer())
+        return false;
+
+    return controller->pauseAnimationAtTime(coreNode->renderer(), animationName, time);
+}
+
+bool QWEBKIT_EXPORT qt_drt_pauseTransitionOfProperty(QWebFrame *qframe, const QString &propertyName, double time, const QString &elementId)
+{
+    Frame* frame = QWebFramePrivate::core(qframe);
+    if (!frame)
+        return false;
+
+    AnimationController* controller = frame->animation();
+    if (!controller)
+        return false;
+
+    Document* doc = frame->document();
+    Q_ASSERT(doc);
+
+    Node* coreNode = doc->getElementById(elementId);
+    if (!coreNode || !coreNode->renderer())
+        return false;
+
+    return controller->pauseTransitionAtTime(coreNode->renderer(), propertyName, time);
+}
+
+// Returns the total number of currently running animations (includes both CSS transitions and CSS animations).
+int QWEBKIT_EXPORT qt_drt_numberOfActiveAnimations(QWebFrame *qframe)
+{
+    Frame* frame = QWebFramePrivate::core(qframe);
+    if (!frame)
+        return false;
+
+    AnimationController* controller = frame->animation();
+    if (!controller)
+        return false;
+
+    return controller->numberOfActiveAnimations();
 }
 
 void QWebFramePrivate::init(QWebFrame *qframe, WebCore::Page *webcorePage, QWebFrameData *frameData)
@@ -142,6 +203,37 @@ WebCore::Scrollbar* QWebFramePrivate::verticalScrollBar() const
     if (!frame->view())
         return 0;
     return frame->view()->verticalScrollbar();
+}
+
+void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip, bool contents)
+{
+    if (!frame->view() || !frame->contentRenderer())
+        return;
+
+    QVector<QRect> vector = clip.rects();
+    if (vector.isEmpty())
+        return;
+
+    WebCore::FrameView* view = frame->view();
+    view->layoutIfNeededRecursive();
+
+    GraphicsContext context(painter);
+
+    if (!contents)
+        view->paint(&context, vector.first());
+    else
+        view->paintContents(&context, vector.first());
+
+    for (int i = 1; i < vector.size(); ++i) {
+        const QRect& clipRect = vector.at(i);
+        painter->save();
+        painter->setClipRect(clipRect, Qt::IntersectClip);
+        if (!contents)
+            view->paint(&context, clipRect);
+        else
+            view->paintContents(&context, clipRect);
+        painter->restore();
+    }
 }
 
 /*!
@@ -192,7 +284,7 @@ QWebFrame::QWebFrame(QWebPage *parent, QWebFrameData *frameData)
 
     if (!frameData->url.isEmpty()) {
         WebCore::ResourceRequest request(frameData->url, frameData->referrer);
-        d->frame->loader()->load(request, frameData->name);
+        d->frame->loader()->load(request, frameData->name, false);
     }
 }
 
@@ -260,8 +352,8 @@ void QWebFrame::addToJavaScriptWindowObject(const QString &name, QObject *object
 
     JSC::ExecState* exec = window->globalExec();
 
-    JSC::JSObject*runtimeObject =
-        JSC::Bindings::Instance::createRuntimeObject(exec, JSC::Bindings::QtInstance::getQtInstance(object, root, ownership));
+    JSC::JSObject* runtimeObject =
+            JSC::Bindings::QtInstance::getQtInstance(object, root, ownership)->createRuntimeObject(exec);
 
     JSC::PutPropertySlot slot;
     window->put(exec, JSC::Identifier(exec, (const UChar *) name.constData(), name.length()), runtimeObject, slot);
@@ -468,7 +560,7 @@ void QWebFrame::load(const QWebNetworkRequest &req)
     if (!postData.isEmpty())
         request.setHTTPBody(WebCore::FormData::create(postData.constData(), postData.size()));
 
-    d->frame->loader()->load(request);
+    d->frame->loader()->load(request, false);
 
     if (d->parentFrame())
         d->page->d->insideOpenCall = false;
@@ -524,7 +616,7 @@ void QWebFrame::load(const QNetworkRequest &req,
     if (!body.isEmpty())
         request.setHTTPBody(WebCore::FormData::create(body.constData(), body.size()));
 
-    d->frame->loader()->load(request);
+    d->frame->loader()->load(request, false);
 
     if (d->parentFrame())
         d->page->d->insideOpenCall = false;
@@ -551,7 +643,7 @@ void QWebFrame::setHtml(const QString &html, const QUrl &baseUrl)
     const QByteArray utf8 = html.toUtf8();
     WTF::RefPtr<WebCore::SharedBuffer> data = WebCore::SharedBuffer::create(utf8.constData(), utf8.length());
     WebCore::SubstituteData substituteData(data, WebCore::String("text/html"), WebCore::String("utf-8"), kurl);
-    d->frame->loader()->load(request, substituteData);
+    d->frame->loader()->load(request, substituteData, false);
 }
 
 /*!
@@ -574,7 +666,7 @@ void QWebFrame::setContent(const QByteArray &data, const QString &mimeType, cons
     if (actualMimeType.isEmpty())
         actualMimeType = QLatin1String("text/html");
     WebCore::SubstituteData substituteData(buffer, WebCore::String(actualMimeType), WebCore::String(), kurl);
-    d->frame->loader()->load(request, substituteData);
+    d->frame->loader()->load(request, substituteData, false);
 }
 
 
@@ -712,6 +804,21 @@ int QWebFrame::scrollBarMinimum(Qt::Orientation orientation) const
 }
 
 /*!
+  \since 4.6
+  Returns the geometry for the scrollbar with orientation \a orientation.
+
+  If the scrollbar does not exist an empty rect is returned.
+*/
+QRect QWebFrame::scrollBarGeometry(Qt::Orientation orientation) const
+{
+    Scrollbar *sb;
+    sb = (orientation == Qt::Horizontal) ? d->horizontalScrollBar() : d->verticalScrollBar();
+    if (sb)
+        return sb->frameRect();
+    return QRect();
+}
+
+/*!
   \since 4.5
   Scrolls the frame \a dx pixels to the right and \a dy pixels downward. Both
   \a dx and \a dy may be negative.
@@ -757,25 +864,7 @@ void QWebFrame::setScrollPosition(const QPoint &pos)
 */
 void QWebFrame::render(QPainter *painter, const QRegion &clip)
 {
-    if (!d->frame->view() || !d->frame->contentRenderer())
-        return;
-
-    d->frame->view()->layoutIfNeededRecursive();
-
-    GraphicsContext ctx(painter);
-    QVector<QRect> vector = clip.rects();
-    WebCore::FrameView* view = d->frame->view();
-    for (int i = 0; i < vector.size(); ++i) {
-        if (i > 0) {
-            painter->save();
-            painter->setClipRect(vector.at(i), Qt::IntersectClip);
-        }
-
-        view->paint(&ctx, vector.at(i));
-
-        if (i > 0)
-            painter->restore();
-    }
+    d->renderPrivate(painter, clip);
 }
 
 /*!
@@ -783,14 +872,19 @@ void QWebFrame::render(QPainter *painter, const QRegion &clip)
 */
 void QWebFrame::render(QPainter *painter)
 {
-    if (!d->frame->view() || !d->frame->contentRenderer())
+    if (!d->frame->view())
         return;
 
-    d->frame->view()->layoutIfNeededRecursive();
+    d->renderPrivate(painter, QRegion(d->frame->view()->frameRect()));
+}
 
-    GraphicsContext ctx(painter);
-    WebCore::FrameView* view = d->frame->view();
-    view->paint(&ctx, view->frameRect());
+/*!
+  \since 4.6
+  Render the frame's \a contents into \a painter while clipping to \a contents.
+*/
+void QWebFrame::renderContents(QPainter *painter, const QRegion &contents)
+{
+    d->renderPrivate(painter, contents, true);
 }
 
 /*!
@@ -862,6 +956,8 @@ QRect QWebFrame::geometry() const
 /*!
     \property QWebFrame::contentsSize
     \brief the size of the contents in this frame
+
+    \sa contentsSizeChanged()
 */
 QSize QWebFrame::contentsSize() const
 {
@@ -872,6 +968,47 @@ QSize QWebFrame::contentsSize() const
 }
 
 /*!
+    \since 4.6
+
+    Returns the document element of this frame.
+
+    The document element provides access to the entire structured
+    content of the frame.
+*/
+QWebElement QWebFrame::documentElement() const
+{
+    WebCore::Document *doc = d->frame->document();
+    if (!doc)
+        return QWebElement();
+    return QWebElement(doc->documentElement());
+}
+
+/*!
+    \since 4.6
+    Returns a new collection of elements that are children of the frame's
+    document element and that match the given CSS selector \a selectorQuery.
+
+    \sa QWebElement::findAll()
+*/
+QList<QWebElement> QWebFrame::findAllElements(const QString &selectorQuery) const
+{
+    return documentElement().findAll(selectorQuery);
+}
+
+/*!
+    \since 4.6
+    Returns the first element in the frame's document that matches the
+    given CSS selector \a selectorQuery. Returns a null element if there is no
+    match.
+
+    \sa QWebElement::findFirst()
+*/
+QWebElement QWebFrame::findFirstElement(const QString &selectorQuery) const
+{
+    return documentElement().findFirst(selectorQuery);
+}
+
+/*!
     Performs a hit test on the frame contents at the given position \a pos and returns the hit test result.
 */
 QWebHitTestResult QWebFrame::hitTestContent(const QPoint &pos) const
@@ -879,7 +1016,11 @@ QWebHitTestResult QWebFrame::hitTestContent(const QPoint &pos) const
     if (!d->frame->view() || !d->frame->contentRenderer())
         return QWebHitTestResult();
 
-    HitTestResult result = d->frame->eventHandler()->hitTestResultAtPoint(d->frame->view()->windowToContents(pos), /*allowShadowContent*/ false);
+    HitTestResult result = d->frame->eventHandler()->hitTestResultAtPoint(d->frame->view()->windowToContents(pos), /*allowShadowContent*/ false, /*ignoreClipping*/ true);
+
+    if (result.scrollbar())
+        return QWebHitTestResult();
+
     return QWebHitTestResult(new QWebHitTestResultPrivate(result));
 }
 
@@ -994,11 +1135,9 @@ QVariant QWebFrame::evaluateJavaScript(const QString& scriptSource)
     ScriptController *proxy = d->frame->script();
     QVariant rc;
     if (proxy) {
-        JSC::JSValuePtr v = proxy->evaluate(ScriptSourceCode(scriptSource)).jsValue();
-        if (v) {
-            int distance = 0;
-            rc = JSC::Bindings::convertValueToQVariant(proxy->globalObject()->globalExec(), v, QMetaType::Void, &distance);
-        }
+        JSC::JSValue v = proxy->evaluate(ScriptSourceCode(scriptSource)).jsValue();
+        int distance = 0;
+        rc = JSC::Bindings::convertValueToQVariant(proxy->globalObject()->globalExec(), v, QMetaType::Void, &distance);
     }
     return rc;
 }
@@ -1080,6 +1219,16 @@ QWebFrame* QWebFramePrivate::kit(WebCore::Frame* coreFrame)
 */
 
 /*!
+  \fn void QWebFrame::contentsSizeChanged(const QSize &size)
+  \since 4.6
+
+  This signal is emitted when the frame's contents size changes
+  to \a size.
+
+  \sa contentsSize()
+*/
+
+/*!
     \class QWebHitTestResult
     \since 4.4
     \brief The QWebHitTestResult class provides information about the web
@@ -1100,6 +1249,7 @@ QWebHitTestResult::QWebHitTestResult(QWebHitTestResultPrivate *priv)
 QWebHitTestResultPrivate::QWebHitTestResultPrivate(const WebCore::HitTestResult &hitTest)
     : isContentEditable(false)
     , isContentSelected(false)
+    , isScrollBar(false)
 {
     if (!hitTest.innerNode())
         return;
@@ -1111,6 +1261,7 @@ QWebHitTestResultPrivate::QWebHitTestResultPrivate(const WebCore::HitTestResult 
     linkTitle = hitTest.titleDisplayString();
     alternateText = hitTest.altDisplayString();
     imageUrl = hitTest.absoluteImageURL();
+    innerNode = hitTest.innerNode();
     innerNonSharedNode = hitTest.innerNonSharedNode();
     WebCore::Image *img = hitTest.image();
     if (img) {
@@ -1121,13 +1272,17 @@ QWebHitTestResultPrivate::QWebHitTestResultPrivate(const WebCore::HitTestResult 
     WebCore::Frame *wframe = hitTest.targetFrame();
     if (wframe)
         linkTargetFrame = QWebFramePrivate::kit(wframe);
+    linkElement = QWebElement(hitTest.URLElement());
 
     isContentEditable = hitTest.isContentEditable();
     isContentSelected = hitTest.isSelected();
+    isScrollBar = hitTest.scrollbar();
 
     if (innerNonSharedNode && innerNonSharedNode->document()
         && innerNonSharedNode->document()->frame())
         frame = QWebFramePrivate::kit(innerNonSharedNode->document()->frame());
+
+    enclosingBlock = QWebElement(WebCore::enclosingBlock(innerNode.get()));
 }
 
 /*!
@@ -1204,6 +1359,21 @@ QRect QWebHitTestResult::boundingRect() const
 }
 
 /*!
+    \since 4.6
+    Returns the block element that encloses the element hit.
+
+    A block element is an element that is rendered using the
+    CSS "block" style. This includes for example text
+    paragraphs.
+*/
+QWebElement QWebHitTestResult::enclosingBlockElement() const
+{
+    if (!d)
+        return QWebElement();
+    return d->enclosingBlock;
+}
+
+/*!
     Returns the title of the nearest enclosing HTML element.
 */
 QString QWebHitTestResult::title() const
@@ -1244,7 +1414,22 @@ QUrl QWebHitTestResult::linkTitle() const
 }
 
 /*!
+  \since 4.6
+  Returns the element that represents the link.
+
+  \sa linkTargetFrame()
+*/
+QWebElement QWebHitTestResult::linkElement() const
+{
+    if (!d)
+        return QWebElement();
+    return d->linkElement;
+}
+
+/*!
     Returns the frame that will load the link if it is activated.
+
+    \sa linkElement()
 */
 QWebFrame *QWebHitTestResult::linkTargetFrame() const
 {
@@ -1302,6 +1487,18 @@ bool QWebHitTestResult::isContentSelected() const
     if (!d)
         return false;
     return d->isContentSelected;
+}
+
+/*!
+    \since 4.6
+    Returns the underlying DOM element as QWebElement.
+*/
+QWebElement QWebHitTestResult::element() const
+{
+    if (!d || !d->innerNonSharedNode || !d->innerNonSharedNode->isElementNode())
+        return QWebElement();
+
+    return QWebElement(static_cast<WebCore::Element*>(d->innerNonSharedNode.get()));
 }
 
 /*!

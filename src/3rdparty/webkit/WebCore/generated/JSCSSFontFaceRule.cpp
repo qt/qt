@@ -19,23 +19,19 @@
 */
 
 #include "config.h"
-
 #include "JSCSSFontFaceRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSFontFaceRule.h"
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
 #include "JSCSSStyleDeclaration.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSFontFaceRule)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSFontFaceRule);
 
 /* Hash table */
 
@@ -78,7 +74,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -129,17 +125,18 @@ bool JSCSSFontFaceRule::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSCSSFontFaceRule, Base>(exec, &JSCSSFontFaceRuleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSFontFaceRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSFontFaceRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSFontFaceRule* imp = static_cast<CSSFontFaceRule*>(static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsCSSFontFaceRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSFontFaceRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSCSSFontFaceRule::getConstructor(ExecState* exec)
+JSValue JSCSSFontFaceRule::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSFontFaceRuleConstructor>(exec);
 }

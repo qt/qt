@@ -94,7 +94,7 @@ QSvgCircle::QSvgCircle(QSvgNode *parent, const QRectF &rect)
 QRectF QSvgCircle::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1))
+    if (qFuzzyIsNull(sw))
         return m_bounds;
     else {
         QPainterPath path;
@@ -129,7 +129,7 @@ QSvgEllipse::QSvgEllipse(QSvgNode *parent, const QRectF &rect)
 QRectF QSvgEllipse::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1))
+    if (qFuzzyIsNull(sw))
         return m_bounds;
     else {
         QPainterPath path;
@@ -190,7 +190,7 @@ void QSvgPath::draw(QPainter *p, QSvgExtraStates &states)
 QRectF QSvgPath::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1))
+    if (qFuzzyIsNull(sw))
         return m_cachedBounds;
     else {
         return boundsOnStroke(m_path, sw);
@@ -198,15 +198,14 @@ QRectF QSvgPath::bounds() const
 }
 
 QSvgPolygon::QSvgPolygon(QSvgNode *parent, const QPolygonF &poly)
-    : QSvgNode(parent), m_poly(poly)
+    : QSvgNode(parent), m_poly(poly), m_fillRule(Qt::WindingFill)
 {
-
 }
 
 QRectF QSvgPolygon::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1))
+    if (qFuzzyIsNull(sw))
         return m_poly.boundingRect();
     else {
         QPainterPath path;
@@ -217,7 +216,7 @@ QRectF QSvgPolygon::bounds() const
 
 void QSvgPolygon::draw(QPainter *p, QSvgExtraStates &states)
 {
-    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly));
+    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly, m_fillRule));
 }
 
 
@@ -249,7 +248,7 @@ QSvgRect::QSvgRect(QSvgNode *node, const QRectF &rect, int rx, int ry)
 QRectF QSvgRect::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1))
+    if (qFuzzyIsNull(sw))
         return m_rect;
     else {
         QPainterPath path;
@@ -596,7 +595,7 @@ QRectF QSvgUse::transformedBounds(const QTransform &transform) const
 QRectF QSvgPolyline::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1))
+    if (qFuzzyIsNull(sw))
         return m_poly.boundingRect();
     else {
         QPainterPath path;
@@ -608,7 +607,7 @@ QRectF QSvgPolyline::bounds() const
 QRectF QSvgArc::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1))
+    if (qFuzzyIsNull(sw))
         return m_cachedBounds;
     else {
         return boundsOnStroke(cubic, sw);
@@ -623,7 +622,7 @@ QRectF QSvgImage::bounds() const
 QRectF QSvgLine::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyCompare(sw + 1, 1)) {
+    if (qFuzzyIsNull(sw)) {
         qreal minX = qMin(m_bounds.x1(), m_bounds.x2());
         qreal minY = qMin(m_bounds.y1(), m_bounds.y2());
         qreal maxX = qMax(m_bounds.x1(), m_bounds.x2());

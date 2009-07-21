@@ -19,25 +19,22 @@
 */
 
 #include "config.h"
-
 #include "JSCSSMediaRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMediaRule.h"
 #include "CSSRuleList.h"
 #include "JSCSSRuleList.h"
 #include "JSMediaList.h"
 #include "MediaList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSMediaRule)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSMediaRule);
 
 /* Hash table */
 
@@ -81,7 +78,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -139,51 +136,55 @@ bool JSCSSMediaRule::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSCSSMediaRule, Base>(exec, &JSCSSMediaRuleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSMediaRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSMediaRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->media()));
 }
 
-JSValuePtr jsCSSMediaRuleCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSMediaRuleCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->cssRules()));
 }
 
-JSValuePtr jsCSSMediaRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSMediaRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSCSSMediaRule::getConstructor(ExecState* exec)
+JSValue JSCSSMediaRule::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSMediaRuleConstructor>(exec);
 }
 
-JSValuePtr jsCSSMediaRulePrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCSSMediaRulePrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCSSMediaRule::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCSSMediaRule::s_info))
         return throwError(exec, TypeError);
     JSCSSMediaRule* castedThisObj = static_cast<JSCSSMediaRule*>(asObject(thisValue));
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& rule = args.at(exec, 0)->toString(exec);
-    unsigned index = args.at(exec, 1)->toInt32(exec);
+    const UString& rule = args.at(0).toString(exec);
+    unsigned index = args.at(1).toInt32(exec);
 
 
-    JSC::JSValuePtr result = jsNumber(exec, imp->insertRule(rule, index, ec));
+    JSC::JSValue result = jsNumber(exec, imp->insertRule(rule, index, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsCSSMediaRulePrototypeFunctionDeleteRule(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCSSMediaRulePrototypeFunctionDeleteRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCSSMediaRule::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCSSMediaRule::s_info))
         return throwError(exec, TypeError);
     JSCSSMediaRule* castedThisObj = static_cast<JSCSSMediaRule*>(asObject(thisValue));
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
     imp->deleteRule(index, ec);
     setDOMException(exec, ec);

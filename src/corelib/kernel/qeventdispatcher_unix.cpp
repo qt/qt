@@ -263,7 +263,7 @@ QTimerInfoList::QTimerInfoList()
 #  if (_POSIX_MONOTONIC_CLOCK == 0)
     // detect if the system support monotonic timers
     long x = sysconf(_SC_MONOTONIC_CLOCK);
-    useMonotonicTimers = x >= 200112L;
+    useMonotonicTimers = x != -1;
 #  endif
 
     getTime(currentTime);

@@ -136,13 +136,12 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
 class QPSQLResultPrivate
 {
 public:
-    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), precisionPolicy(QSql::HighPrecision) {}
+    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1) {}
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *driver;
     PGresult *result;
     int currentSize;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
     bool preparedQueriesEnabled;
     QString preparedStmtId;
 
@@ -320,15 +319,16 @@ QVariant QPSQLResult::data(int i)
         return atoi(val);
     case QVariant::Double:
         if (ptype == QNUMERICOID) {
-            if (d->precisionPolicy != QSql::HighPrecision) {
+            if (numericalPrecisionPolicy() != QSql::HighPrecision) {
                 QVariant retval;
                 bool convert;
-                if (d->precisionPolicy == QSql::LowPrecisionInt64)
-                    retval = QString::fromAscii(val).toLongLong(&convert);
-                else if (d->precisionPolicy == QSql::LowPrecisionInt32)
-                    retval = QString::fromAscii(val).toInt(&convert);
-                else if (d->precisionPolicy == QSql::LowPrecisionDouble)
-                    retval = QString::fromAscii(val).toDouble(&convert);
+                double dbl=QString::fromAscii(val).toDouble(&convert);
+                if (numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
+                    retval = (qlonglong)dbl;
+                else if (numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
+                    retval = (int)dbl;
+                else if (numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
+                    retval = dbl;
                 if (!convert)
                     return QVariant();
                 return retval;
@@ -467,9 +467,6 @@ void QPSQLResult::virtual_hook(int id, void *data)
     Q_ASSERT(data);
 
     switch (id) {
-    case QSqlResult::SetNumericalPrecision:
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
-        break;
     default:
         QSqlResult::virtual_hook(id, data);
     }
@@ -541,7 +538,7 @@ bool QPSQLResult::prepare(const QString &query)
         qDeallocatePreparedStmt(d);
 
     const QString stmtId = qMakePreparedStmtId();
-    const QString stmt = QString(QLatin1String("PREPARE %1 AS ")).arg(stmtId).append(qReplacePlaceholderMarkers(query));
+    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(qReplacePlaceholderMarkers(query));
 
     PGresult *result = PQexec(d->driver->connection,
                               d->driver->isUtf8 ? stmt.toUtf8().constData()
@@ -570,9 +567,9 @@ bool QPSQLResult::exec()
     QString stmt;
     const QString params = qCreateParamString(boundValues(), d->q->driver());
     if (params.isEmpty())
-        stmt = QString(QLatin1String("EXECUTE %1")).arg(d->preparedStmtId);
+        stmt = QString::fromLatin1("EXECUTE %1").arg(d->preparedStmtId);
     else
-        stmt = QString(QLatin1String("EXECUTE %1 (%2)")).arg(d->preparedStmtId).arg(params);
+        stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId).arg(params);
 
     d->result = PQexec(d->driver->connection,
                        d->driver->isUtf8 ? stmt.toUtf8().constData()
@@ -907,6 +904,16 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     QString schema;
     qSplitTableName(tbl, schema);
 
+    if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
+        tbl = stripDelimiters(tbl, QSqlDriver::TableName);
+    else
+        tbl = tbl.toLower();
+
+    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
+        schema = stripDelimiters(schema, QSqlDriver::TableName);
+    else
+        schema = schema.toLower();
+
     switch(d->pro) {
     case QPSQLDriver::Version6:
         stmt = QLatin1String("select pg_att1.attname, int(pg_att1.atttypid), pg_cl.relname "
@@ -939,7 +946,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
                 "FROM pg_attribute, pg_class "
                 "WHERE %1 pg_class.oid IN "
                 "(SELECT indexrelid FROM pg_index WHERE indisprimary = true AND indrelid IN "
-                " (SELECT oid FROM pg_class WHERE lower(relname) = '%2')) "
+                " (SELECT oid FROM pg_class WHERE relname = '%2')) "
                 "AND pg_attribute.attrelid = pg_class.oid "
                 "AND pg_attribute.attisdropped = false "
                 "ORDER BY pg_attribute.attnum");
@@ -947,11 +954,11 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
             stmt = stmt.arg(QLatin1String("pg_table_is_visible(pg_class.oid) AND"));
         else
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
-                   "pg_namespace where pg_namespace.nspname = '%1') AND ").arg(schema.toLower()));
+                   "pg_namespace where pg_namespace.nspname = '%1') AND ").arg(schema));
         break;
     }
 
-    i.exec(stmt.arg(tbl.toLower()));
+    i.exec(stmt.arg(tbl));
     while (i.isActive() && i.next()) {
         QSqlField f(i.value(0).toString(), qDecodePSQLType(i.value(1).toInt()));
         idx.append(f);
@@ -969,6 +976,16 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
     QString tbl = tablename;
     QString schema;
     qSplitTableName(tbl, schema);
+
+    if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
+        tbl = stripDelimiters(tbl, QSqlDriver::TableName);
+    else
+        tbl = tbl.toLower();
+
+    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
+        schema = stripDelimiters(schema, QSqlDriver::TableName);
+    else
+        schema = schema.toLower();
 
     QString stmt;
     switch(d->pro) {
@@ -1014,7 +1031,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "left join pg_attrdef on (pg_attrdef.adrelid = "
                 "pg_attribute.attrelid and pg_attrdef.adnum = pg_attribute.attnum) "
                 "where %1 "
-                "and lower(pg_class.relname) = '%2' "
+                "and pg_class.relname = '%2' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid "
                 "and pg_attribute.attisdropped = false "
@@ -1023,12 +1040,12 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
             stmt = stmt.arg(QLatin1String("pg_table_is_visible(pg_class.oid)"));
         else
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
-                   "pg_namespace where pg_namespace.nspname = '%1')").arg(schema.toLower()));
+                   "pg_namespace where pg_namespace.nspname = '%1')").arg(schema));
         break;
     }
 
     QSqlQuery query(createResult());
-    query.exec(stmt.arg(tbl.toLower()));
+    query.exec(stmt.arg(tbl));
     if (d->pro >= QPSQLDriver::Version71) {
         while (query.next()) {
             int len = query.value(3).toInt();
@@ -1095,12 +1112,12 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 QTime tm = field.value().toDateTime().time();
                 // msecs need to be right aligned otherwise psql
                 // interpretes them wrong
-                r = QLatin1String("'") + QString::number(dt.year()) + QLatin1String("-")
-                          + QString::number(dt.month()) + QLatin1String("-")
-                          + QString::number(dt.day()) + QLatin1String(" ")
-                          + tm.toString() + QLatin1String(".")
+                r = QLatin1Char('\'') + QString::number(dt.year()) + QLatin1Char('-')
+                          + QString::number(dt.month()) + QLatin1Char('-')
+                          + QString::number(dt.day()) + QLatin1Char(' ')
+                          + tm.toString() + QLatin1Char('.')
                           + QString::number(tm.msec()).rightJustified(3, QLatin1Char('0'))
-                          + QLatin1String("'");
+                          + QLatin1Char('\'');
             } else {
                 r = QLatin1String("NULL");
             }
@@ -1155,7 +1172,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 QString QPSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));
@@ -1188,7 +1205,7 @@ bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
 
     int socket = PQsocket(d->connection);
     if (socket) {
-        QString query = QString(QLatin1String("LISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
+        QString query = QLatin1String("LISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
         if (PQresultStatus(PQexec(d->connection,
                                   d->isUtf8 ? query.toUtf8().constData()
                                             : query.toLocal8Bit().constData())
@@ -1220,7 +1237,7 @@ bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
         return false;
     }
 
-    QString query = QString(QLatin1String("UNLISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
+    QString query = QLatin1String("UNLISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
     if (PQresultStatus(PQexec(d->connection,
                               d->isUtf8 ? query.toUtf8().constData()
                                         : query.toLocal8Bit().constData())
@@ -1248,15 +1265,15 @@ QStringList QPSQLDriver::subscribedToNotificationsImplementation() const
 void QPSQLDriver::_q_handleNotification(int)
 {
     PQconsumeInput(d->connection);
-    PGnotify *notify = PQnotifies(d->connection);
-    if (notify) {
-        QString name(QLatin1String(notify->relname));
 
+    PGnotify *notify = 0;
+    while((notify = PQnotifies(d->connection)) != 0) {
+        QString name(QLatin1String(notify->relname));
         if (d->seid.contains(name))
             emit notification(name);
         else
             qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
-                qPrintable(name));
+                    qPrintable(name));
 
         qPQfreemem(notify);
     }

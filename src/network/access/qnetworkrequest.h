@@ -75,6 +75,7 @@ public:
         CacheLoadControlAttribute,
         CacheSaveControlAttribute,
         SourceIsFromCacheAttribute,
+        DoNotBufferUploadDataAttribute,
 
         User = 1000,
         UserMax = 32767

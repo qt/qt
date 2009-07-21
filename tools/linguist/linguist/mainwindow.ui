@@ -60,7 +60,7 @@
      <x>0</x>
      <y>0</y>
      <width>673</width>
-     <height>30</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuPhrases">
@@ -116,6 +116,7 @@
     <addaction name="actionResetSorting"/>
     <addaction name="actionDisplayGuesses"/>
     <addaction name="actionStatistics"/>
+    <addaction name="actionLenghtVariants"/>
     <addaction name="separator"/>
     <addaction name="menuToolbars"/>
     <addaction name="menuViewViews"/>
@@ -401,7 +402,7 @@
     <string>&amp;Prev Unfinished</string>
    </property>
    <property name="toolTip">
-    <string>Previous unfinished item.</string>
+    <string>Previous unfinished item</string>
    </property>
    <property name="whatsThis">
     <string>Move to the previous unfinished item.</string>
@@ -418,7 +419,7 @@
     <string>&amp;Next Unfinished</string>
    </property>
    <property name="toolTip">
-    <string>Next unfinished item.</string>
+    <string>Next unfinished item</string>
    </property>
    <property name="whatsThis">
     <string>Move to the next unfinished item.</string>
@@ -435,7 +436,7 @@
     <string>P&amp;rev</string>
    </property>
    <property name="toolTip">
-    <string>Move to previous item.</string>
+    <string>Move to previous item</string>
    </property>
    <property name="whatsThis">
     <string>Move to the previous item.</string>
@@ -452,7 +453,7 @@
     <string>Ne&amp;xt</string>
    </property>
    <property name="toolTip">
-    <string>Next item.</string>
+    <string>Next item</string>
    </property>
    <property name="whatsThis">
     <string>Move to the next item.</string>
@@ -472,7 +473,7 @@
     <string>&amp;Done and Next</string>
    </property>
    <property name="toolTip">
-    <string>Mark item as done and move to the next unfinished item.</string>
+    <string>Mark item as done and move to the next unfinished item</string>
    </property>
    <property name="whatsThis">
     <string>Mark this item as done and move to the next unfinished item.</string>
@@ -492,7 +493,7 @@
     <string>Copy from source text</string>
    </property>
    <property name="toolTip">
-    <string>Copies the source text into the translation field.</string>
+    <string>Copies the source text into the translation field</string>
    </property>
    <property name="whatsThis">
     <string>Copies the source text into the translation field.</string>
@@ -512,7 +513,7 @@
     <string>&amp;Accelerators</string>
    </property>
    <property name="toolTip">
-    <string>Toggle the validity check of accelerators.</string>
+    <string>Toggle the validity check of accelerators</string>
    </property>
    <property name="whatsThis">
     <string>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</string>
@@ -529,7 +530,7 @@
     <string>&amp;Ending Punctuation</string>
    </property>
    <property name="toolTip">
-    <string>Toggle the validity check of ending punctuation.</string>
+    <string>Toggle the validity check of ending punctuation</string>
    </property>
    <property name="whatsThis">
     <string>Toggle the validity check of ending punctuation. If the check fails, a message is shown in the warnings window.</string>
@@ -546,7 +547,7 @@
     <string>&amp;Phrase matches</string>
    </property>
    <property name="toolTip">
-    <string>Toggle checking that phrase suggestions are used.</string>
+    <string>Toggle checking that phrase suggestions are used</string>
    </property>
    <property name="whatsThis">
     <string>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</string>
@@ -563,7 +564,7 @@
     <string>Place &amp;Marker Matches</string>
    </property>
    <property name="toolTip">
-    <string>Toggle the validity check of place markers.</string>
+    <string>Toggle the validity check of place markers</string>
    </property>
    <property name="whatsThis">
     <string>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</string>
@@ -875,6 +876,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionLenghtVariants">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lenght Variants</string>
    </property>
   </action>
  </widget>

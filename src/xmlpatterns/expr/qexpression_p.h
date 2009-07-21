@@ -884,7 +884,7 @@ namespace QPatternist
         {
             pDebug() << "AST REWRITE:" << old.data() << "to" << New.data()
                      << '(' << old->actualReflection() << "to" << New->actualReflection() << ", "
-                     << old->description() << "to" << New->description() << ")";
+                     << old->description() << "to" << New->description() << ')';
 
             /* The order of these two lines is significant.. */
             context->addLocation(New.data(), context->locationFor(old->actualReflection()));

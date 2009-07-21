@@ -105,11 +105,7 @@ inline static QString qTableName( const QString& prefix, QSqlDriver* driver = 0 
 
 inline static bool testWhiteSpaceNames( const QString &name )
 {
-/*    return name.startsWith( "QPSQL" )
-           || name.startsWith( "QODBC" )
-           || name.startsWith( "QSQLITE" )
-           || name.startsWith( "QMYSQL" );*/
-    return name != QLatin1String("QSQLITE2");
+    return name != QLatin1String("QTDS7");
 }
 
 inline static QString toHex( const QString& binary )
@@ -211,7 +207,7 @@ public:
 //      This requires a local ODBC data source to be configured( pointing to a MySql database )
 //         addDb( "QODBC", "mysqlodbc", "troll", "trond" );
 //         addDb( "QODBC", "SqlServer", "troll", "trond" );
-//         addDb( "QTDS7", "testdb", "troll", "trondk", "horsehead.nokia.troll.no" );
+//         addDb( "QTDS7", "testdb", "troll", "trondk", "horsehead" );
 //         addDb( "QODBC", "silencetestdb", "troll", "trond", "silence" );
 //         addDb( "QODBC", "horseheadtestdb", "troll", "trondk", "horsehead" );
 
@@ -221,7 +217,7 @@ public:
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3309, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 5.0.18 Linux
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "iceblink.nokia.troll.no" ); // MySQL 5.0.13 Windows
 //         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql4-nokia.trolltech.com.au" ); // MySQL 4.1.22-2.el4  linux
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
+//        addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
 
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no" ); // V7.2 NOT SUPPORTED!
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 5434 ); // V7.2 NOT SUPPORTED! Multi-byte
@@ -243,16 +239,16 @@ public:
 
 //      use in-memory database to prevent local files
 //         addDb("QSQLITE", ":memory:");
-        addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
+       addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
 //         addDb( "QSQLITE2", QDir::toNativeSeparators(QDir::tempPath()+"/foo2.db") );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
 
 //         addDb( "QODBC", "DRIVER={MySQL ODBC 3.51 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk;TDS_Version=8.0", "troll", "trondk", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond;TDS_Version=8.0", "troll", "trond", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2003" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2008" );
     }
@@ -320,19 +316,26 @@ public:
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
 
-        foreach(const QString &tableName, tableNames) {
+        foreach(QString tableName, tableNames)
+        {
             wasDropped = true;
-            foreach(const QString dbtablesName, dbtables) {
-                if(dbtablesName.toUpper() == tableName.toUpper()) {
-                    dbtables.removeAll(dbtablesName);
-                    wasDropped = q.exec("drop table " + db.driver()->escapeIdentifier( dbtablesName, QSqlDriver::TableName ));
-                    if(!wasDropped)
-                        wasDropped = q.exec("drop table " + dbtablesName);
-                }
-            }
+            QString table=tableName;
+            if ( db.driver()->isIdentifierEscaped(table, QSqlDriver::TableName))
+                table = db.driver()->stripDelimiters(table, QSqlDriver::TableName);
+
+            if ( dbtables.contains( table, Qt::CaseSensitive ) )
+                wasDropped = q.exec( "drop table " + tableName);
+            else if ( dbtables.contains( table, Qt::CaseInsensitive ) )
+                wasDropped = q.exec( "drop table " + tableName);
+
             if ( !wasDropped )
                 qWarning() << dbToString(db) << "unable to drop table" << tableName << ':' << q.lastError().text() << "tables:" << dbtables;
         }
+    }
+
+    static void safeDropTable( QSqlDatabase db, const QString& tableName )
+    {
+        safeDropTables(db, QStringList() << tableName);
     }
 
     static void safeDropViews( QSqlDatabase db, const QStringList &viewNames )
@@ -354,6 +357,11 @@ public:
                 QSqlQuery q( "drop view " + viewName, db );
             }
         }
+    }
+
+    static void safeDropView( QSqlDatabase db, const QString& tableName )
+    {
+        safeDropViews(db, QStringList() << tableName);
     }
 
     // returns the type name of the blob datatype for the database db.

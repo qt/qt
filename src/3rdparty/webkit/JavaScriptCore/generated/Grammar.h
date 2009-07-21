@@ -207,7 +207,7 @@ typedef union YYSTYPE
     Operator            op;
 }
 /* Line 1489 of yacc.c.  */
-#line 211 "Grammar.tab.h"
+#line 211 "JavaScriptCore/tmp/../generated/Grammar.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

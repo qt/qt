@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,21 +26,25 @@
 #include "config.h"
 #include "StorageEvent.h"
 
+#if ENABLE(DOM_STORAGE)
+
 #include "DOMWindow.h"
+#include "Storage.h"
 
 namespace WebCore {
 
-StorageEvent::StorageEvent(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& uri, PassRefPtr<DOMWindow> source)
+StorageEvent::StorageEvent(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& uri, PassRefPtr<DOMWindow> source, Storage* storageArea)
     : Event(type, false, true)
     , m_key(key)
     , m_oldValue(oldValue)
     , m_newValue(newValue)
     , m_uri(uri)
     , m_source(source)
+    , m_storageArea(storageArea)
 {
 }
 
-void StorageEvent::initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& uri, PassRefPtr<DOMWindow> source)
+void StorageEvent::initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& uri, PassRefPtr<DOMWindow> source, Storage* storageArea)
 {
     if (dispatched())
         return;
@@ -52,6 +56,10 @@ void StorageEvent::initStorageEvent(const AtomicString& type, bool canBubble, bo
     m_newValue = newValue;
     m_uri = uri;
     m_source = source;
+    m_storageArea = storageArea;
 }
 
-}
+} // namespace WebCore
+
+#endif // ENABLE(DOM_STORAGE)
+

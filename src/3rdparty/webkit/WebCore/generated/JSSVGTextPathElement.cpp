@@ -20,26 +20,21 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGTextPathElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedEnumeration.h"
 #include "JSSVGAnimatedLength.h"
 #include "JSSVGAnimatedString.h"
 #include "SVGTextPathElement.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGTextPathElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGTextPathElement);
 
 /* Hash table */
 
@@ -91,7 +86,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -153,71 +148,75 @@ bool JSSVGTextPathElement::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSSVGTextPathElement, Base>(exec, &JSSVGTextPathElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGTextPathElementStartOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementStartOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->startOffsetAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPathElementMethod(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementMethod(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->methodAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPathElementSpacing(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementSpacing(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->spacingAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPathElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPathElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSSVGTextPathElement::getConstructor(ExecState* exec)
+JSValue JSSVGTextPathElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGTextPathElementConstructor>(exec);
 }
 
 // Constant getters
 
-JSValuePtr jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }

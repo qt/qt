@@ -131,7 +131,7 @@ public:
     void saveWidgetFont(QWidget* w, const QFont& font) const;
     void clearWidgetFont(QWidget* w) const;
 
-    bool focusPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal);
+    bool styleSheetPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal);
 
 protected Q_SLOTS:
     QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,

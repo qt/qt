@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Samuel Weinig <sam.weinig@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -22,15 +22,16 @@ module core {
 
     interface [
         CustomMarkFunction,
+        CustomPushEventHandlerScope,
         GenerateConstructor,
         GenerateNativeConverter,
         GenerateToJS,
         InlineGetOwnPropertySlot,
-        ObjCCustomInternalImpl,
+        Polymorphic,
         InterfaceUUID=84BA0D7A-7E3E-4a7b-B6FB-7653E8FB54ED,
         ImplementationUUID=81B47FDB-94B0-40fd-8E0C-FB2A6E53CC04
     ] Node
-#if defined(LANGUAGE_OBJECTIVE_C)
+#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
         : Object, EventTarget
 #endif /* defined(LANGUAGE_OBJECTIVE_C) */
      {
@@ -64,12 +65,12 @@ module core {
         readonly attribute NamedNodeMap     attributes;
         readonly attribute Document         ownerDocument;
 
-        [OldStyleObjC, Custom] Node insertBefore(in [Return] Node newChild, 
+        [OldStyleObjC, Custom] Node insertBefore(in [Return] Node newChild,
                                                  in Node refChild)
             raises(DOMException);
-        [OldStyleObjC, Custom] Node replaceChild(in Node newChild, 
+        [OldStyleObjC, Custom] Node replaceChild(in Node newChild,
                                                  in [Return] Node oldChild)
-            raises(DOMException);
+            raises(DOMExceptionJSC);
         [Custom] Node               removeChild(in [Return] Node oldChild)
             raises(DOMException);
         [Custom] Node               appendChild(in [Return] Node newChild)
@@ -124,13 +125,26 @@ module core {
         DOMUserData        getUserData(in DOMString key);
 #endif /* 0 */
 
-        // IE extentions
-        readonly attribute Node             parentElement;
+        // IE extensions
+        readonly attribute Element          parentElement;
 
-#if defined(LANGUAGE_OBJECTIVE_C)
+#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
         // Objective-C extensions
         readonly attribute boolean          isContentEditable;
 #endif /* defined(LANGUAGE_OBJECTIVE_C) */
+
+#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
+#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
+        [Custom] void addEventListener(in DOMString type, 
+                                       in EventListener listener, 
+                                       in boolean useCapture);
+        [Custom] void removeEventListener(in DOMString type, 
+                                          in EventListener listener, 
+                                          in boolean useCapture);
+        boolean dispatchEvent(in Event event)
+            raises(EventException);
+#endif
+#endif
     };
 
 }

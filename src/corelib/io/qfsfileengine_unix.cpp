@@ -103,12 +103,12 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
     } else if (flags & QIODevice::WriteOnly) {
         mode = "wb";
         if (flags & QIODevice::ReadOnly)
-            mode += "+";
+            mode += '+';
     }
     if (flags & QIODevice::Append) {
         mode = "ab";
         if (flags & QIODevice::ReadOnly)
-            mode += "+";
+            mode += '+';
     }
     return mode;
 }
@@ -694,24 +694,8 @@ static bool _q_isMacHidden(const QString &path)
 
     FSRef fsRef;
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        err = FSPathMakeRefWithOptions(reinterpret_cast<const UInt8 *>(QFile::encodeName(QDir::cleanPath(path)).constData()),
-                                        kFSPathMakeRefDoNotFollowLeafSymlink, &fsRef, 0);
-    } else
-#endif
-    {
-        QFileInfo fi(path);
-        FSRef parentRef;
-        err = FSPathMakeRef(reinterpret_cast<const UInt8 *>(fi.absoluteDir().absolutePath().toUtf8().constData()),
-                            &parentRef, 0);
-        if (err == noErr) {
-            QString fileName = fi.fileName();
-            err = FSMakeFSRefUnicode(&parentRef, fileName.length(),
-                                     reinterpret_cast<const UniChar *>(fileName.unicode()),
-                                     kTextEncodingUnknown, &fsRef);
-        }
-    }
+    err = FSPathMakeRefWithOptions(reinterpret_cast<const UInt8 *>(QFile::encodeName(QDir::cleanPath(path)).constData()),
+                                    kFSPathMakeRefDoNotFollowLeafSymlink, &fsRef, 0);
     if (err != noErr)
         return false;
 
@@ -986,7 +970,7 @@ QString QFSFileEngine::fileName(FileName file) const
         bool isDir = ret.endsWith(QLatin1Char('/'));
         ret = QDir::cleanPath(ret);
         if (isDir)
-            ret += QLatin1String("/");
+            ret += QLatin1Char('/');
         if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(QLatin1Char('/'));
             if (slash == -1)
@@ -1202,6 +1186,8 @@ bool QFSFileEngine::setSize(qint64 size)
     Q_D(QFSFileEngine);
     if (d->fd != -1)
         return !QT_FTRUNCATE(d->fd, size);
+    if (d->fh)
+        return !QT_FTRUNCATE(QT_FILENO(d->fh), size);
     return !QT_TRUNCATE(d->nativeFilePath.constData(), size);
 }
 

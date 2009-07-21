@@ -1,0 +1,3 @@
+# Add the command that lupdate should run here. If it can't find anything it will default to
+TRANSLATION: ts\project.ts
+lupdate -silent project.pro

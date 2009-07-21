@@ -69,6 +69,7 @@ unix:!symbian {
  	 		(cd config.tests/unix/mysql_r && $(MAKE) distclean); \
 			(cd config.tests/unix/nis && $(MAKE) distclean); \
 			(cd config.tests/unix/nix && $(MAKE) distclean); \
+			(cd config.tests/unix/iodbc && $(MAKE) distclean); \
 			(cd config.tests/unix/odbc && $(MAKE) distclean); \
 			(cd config.tests/unix/oci && $(MAKE) distclean); \
 			(cd config.tests/unix/tds && $(MAKE) distclean); \

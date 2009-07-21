@@ -258,7 +258,7 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
 
 #ifdef Q_WS_X11
     // Workaround for window managers which refuse to move a tool window partially offscreen.
-    QRect desktop = qApp->desktop()->availableGeometry(widget);
+    QRect desktop = QApplication::desktop()->availableGeometry(widget);
     pp.rx() = qMax(pp.x(), desktop.left());
     pp.ry() = qMax(pp.y(), desktop.top());
     p.rx() = qMin(p.x(), desktop.right());

@@ -21,10 +21,10 @@
 #ifndef JSSVGMetadataElement_h
 #define JSSVGMetadataElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -42,6 +42,7 @@ public:
 
 
 class JSSVGMetadataElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

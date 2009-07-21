@@ -58,6 +58,7 @@ class ScriptSourceCode;
 class ScriptValue;
 class String;
 class Widget;
+class XSSAuditor;
 
 typedef HashMap<void*, RefPtr<JSC::Bindings::RootObject> > RootObjectMap;
 
@@ -81,14 +82,12 @@ public:
 
     ScriptValue evaluate(const ScriptSourceCode&);
 
-    PassRefPtr<EventListener> createInlineEventListener(const String& functionName, const String& code, Node*);
-#if ENABLE(SVG)
-    PassRefPtr<EventListener> createSVGEventHandler(const String& functionName, const String& code, Node*);
-#endif
-    void setEventHandlerLineno(int lineno) { m_handlerLineno = lineno; }
+    void setEventHandlerLineNumber(int lineno) { m_handlerLineNumber = lineno; }
+    int eventHandlerLineNumber() { return m_handlerLineNumber; }
 
     void setProcessingTimerCallback(bool b) { m_processingTimerCallback = b; }
     bool processingUserGesture() const;
+    bool anyPageIsProcessingUserGesture() const;
 
     bool isEnabled();
 
@@ -97,6 +96,9 @@ public:
     void setPaused(bool b) { m_paused = b; }
     bool isPaused() const { return m_paused; }
 
+    void setAllowPopupsFromPlugin(bool allowPopupsFromPlugin) { m_allowPopupsFromPlugin = allowPopupsFromPlugin; }
+    bool allowPopupsFromPlugin() const { return m_allowPopupsFromPlugin; }
+    
     const String* sourceURL() const { return m_sourceURL; } // 0 if we are not evaluating any script
 
     void clearWindowShell();
@@ -125,10 +127,14 @@ public:
     WebScriptObject* windowScriptObject();
 #endif
 
+    JSC::JSObject* jsObjectForPluginElement(HTMLPlugInElement*);
+    
 #if ENABLE(NETSCAPE_PLUGIN_API)
     NPObject* createScriptObjectForPluginElement(HTMLPlugInElement*);
     NPObject* windowScriptNPObject();
 #endif
+    
+    XSSAuditor* xssAuditor() { return m_XSSAuditor.get(); }
 
 private:
     void initScriptIfNeeded()
@@ -140,13 +146,17 @@ private:
 
     void disconnectPlatformScriptObjects();
 
+    bool processingUserGestureEvent() const;
+    bool isJavaScriptAnchorNavigation() const;
+
     JSC::ProtectedPtr<JSDOMWindowShell> m_windowShell;
     Frame* m_frame;
-    int m_handlerLineno;
+    int m_handlerLineNumber;
     const String* m_sourceURL;
 
     bool m_processingTimerCallback;
     bool m_paused;
+    bool m_allowPopupsFromPlugin;
 
     // The root object used for objects bound outside the context of a plugin.
     RefPtr<JSC::Bindings::RootObject> m_bindingRootObject;
@@ -157,6 +167,9 @@ private:
 #if PLATFORM(MAC)
     RetainPtr<WebScriptObject> m_windowScriptObject;
 #endif
+    
+    // The XSSAuditor associated with this ScriptController.
+    OwnPtr<XSSAuditor> m_XSSAuditor;
 };
 
 } // namespace WebCore

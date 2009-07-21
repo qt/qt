@@ -21,10 +21,10 @@
 #ifndef JSSVGPointList_h
 #define JSSVGPointList_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
@@ -42,20 +42,20 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom functions
-    JSC::JSValuePtr clear(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr initialize(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr getItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr insertItemBefore(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr replaceItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr removeItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr appendItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue clear(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue initialize(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue getItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue insertItemBefore(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue replaceItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue appendItem(JSC::ExecState*, const JSC::ArgList&);
     SVGPointList* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -64,16 +64,17 @@ private:
     RefPtr<SVGPointList > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGPointList*, SVGElement* context);
-SVGPointList* toSVGPointList(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGPointList*, SVGElement* context);
+SVGPointList* toSVGPointList(JSC::JSValue);
 
 class JSSVGPointListPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -82,16 +83,16 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGPointListPrototypeFunctionClear(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPointListPrototypeFunctionInitialize(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPointListPrototypeFunctionGetItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPointListPrototypeFunctionInsertItemBefore(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPointListPrototypeFunctionReplaceItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPointListPrototypeFunctionRemoveItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPointListPrototypeFunctionAppendItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionClear(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionInitialize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionGetItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionInsertItemBefore(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionReplaceItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionRemoveItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionAppendItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGPointListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGPointListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

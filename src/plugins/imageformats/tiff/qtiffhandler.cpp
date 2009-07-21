@@ -131,58 +131,138 @@ bool QTiffHandler::read(QImage *image)
     if (!canRead())
         return false;
 
-    TIFF *tiff = TIFFClientOpen("foo",
-                                "r",
-                                this,
-                                qtiffReadProc,
-                                qtiffWriteProc,
-                                qtiffSeekProc,
-                                qtiffCloseProc,
-                                qtiffSizeProc,
-                                qtiffMapProc,
-                                qtiffUnmapProc);
+    TIFF *const tiff = TIFFClientOpen("foo",
+                                      "r",
+                                      this,
+                                      qtiffReadProc,
+                                      qtiffWriteProc,
+                                      qtiffSeekProc,
+                                      qtiffCloseProc,
+                                      qtiffSizeProc,
+                                      qtiffMapProc,
+                                      qtiffUnmapProc);
 
-    if (tiff) {
-        uint32 width = 0;
-        uint32 height = 0;
-        TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &width);
-        TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &height);
-        if (image->size() != QSize(width, height) || image->format() != QImage::Format_ARGB32)
-            *image = QImage(width, height, QImage::Format_ARGB32);
-        if (!image->isNull()) {
-            if (TIFFReadRGBAImageOriented(tiff, width, height, reinterpret_cast<uint32 *>(image->bits()), ORIENTATION_TOPLEFT, 0)) {
-                uint16 resUnit = RESUNIT_NONE;
-                float resX = 0;
-                float resY = 0;
-                TIFFGetField(tiff, TIFFTAG_RESOLUTIONUNIT, &resUnit);
-                TIFFGetField(tiff, TIFFTAG_XRESOLUTION, &resX);
-                TIFFGetField(tiff, TIFFTAG_YRESOLUTION, &resY);
-                switch(resUnit) {
-                    case RESUNIT_CENTIMETER:
-                        image->setDotsPerMeterX(qRound(resX * 100));
-                        image->setDotsPerMeterY(qRound(resY * 100));
-                        break;
-                    case RESUNIT_INCH:
-                        image->setDotsPerMeterX(qRound(resX * (100 / 2.54)));
-                        image->setDotsPerMeterY(qRound(resY * (100 / 2.54)));
-                        break;
-                    default:
-                        // do nothing as defaults have already
-						// been set within the QImage class
-                        break;
-                }
-                for (uint32 y=0; y<height; ++y)
-                    convert32BitOrder(image->scanLine(y), width);
-            } else {
-                *image = QImage();
-            }
-        }
+    if (!tiff) {
+        return false;
+    }
+    uint32 width;
+    uint32 height;
+    uint16 photometric;
+    if (!TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &width)
+        || !TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &height)
+        || !TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric)) {
         TIFFClose(tiff);
+        return false;
     }
 
-    if (image->isNull())
-        return false;
+    if (photometric == PHOTOMETRIC_MINISBLACK || photometric == PHOTOMETRIC_MINISWHITE) {
+        if (image->size() != QSize(width, height) || image->format() != QImage::Format_Mono)
+            *image = QImage(width, height, QImage::Format_Mono);
+        QVector<QRgb> colortable(2);
+        if (photometric == PHOTOMETRIC_MINISBLACK) {
+            colortable[0] = 0xff000000;
+            colortable[1] = 0xffffffff;
+        } else {
+            colortable[0] = 0xffffffff;
+            colortable[1] = 0xff000000;
+        }
+        image->setColorTable(colortable);
 
+        if (!image->isNull()) {
+            for (uint32 y=0; y<height; ++y) {
+                if (TIFFReadScanline(tiff, image->scanLine(y), y, 0) < 0) {
+                        TIFFClose(tiff);
+                        return false;
+                }
+            }
+        }
+    } else {
+        uint16 bitPerSample;
+        if (!TIFFGetField(tiff, TIFFTAG_BITSPERSAMPLE, &bitPerSample)) {
+            TIFFClose(tiff);
+            return false;
+        }
+        if (photometric == PHOTOMETRIC_PALETTE && bitPerSample == 8) {
+            if (image->size() != QSize(width, height) || image->format() != QImage::Format_Indexed8)
+                *image = QImage(width, height, QImage::Format_Indexed8);
+            if (!image->isNull()) {
+                // create the color table
+                const uint16 tableSize = 256;
+                uint16 *redTable = static_cast<uint16 *>(qMalloc(tableSize * sizeof(uint16)));
+                uint16 *greenTable = static_cast<uint16 *>(qMalloc(tableSize * sizeof(uint16)));
+                uint16 *blueTable = static_cast<uint16 *>(qMalloc(tableSize * sizeof(uint16)));
+                if (!redTable || !greenTable || !blueTable) {
+                    TIFFClose(tiff);
+                    return false;
+                }
+                if (!TIFFGetField(tiff, TIFFTAG_COLORMAP, &redTable, &greenTable, &blueTable)) {
+                    TIFFClose(tiff);
+                    return false;
+                }
+
+                QVector<QRgb> qtColorTable(tableSize);
+                for (int i = 0; i<tableSize ;++i) {
+                    const int red = redTable[i] / 257;
+                    const int green = greenTable[i] / 257;
+                    const int blue = blueTable[i] / 257;
+                    qtColorTable[i] = qRgb(red, green, blue);
+
+                }
+
+                image->setColorTable(qtColorTable);
+                for (uint32 y=0; y<height; ++y) {
+                    if (TIFFReadScanline(tiff, image->scanLine(y), y, 0) < 0) {
+                        TIFFClose(tiff);
+                        return false;
+                    }
+                }
+
+                // free redTable, greenTable and greenTable done by libtiff
+            }
+        } else {
+            if (image->size() != QSize(width, height) || image->format() != QImage::Format_ARGB32)
+                *image = QImage(width, height, QImage::Format_ARGB32);
+            if (!image->isNull()) {
+                if (TIFFReadRGBAImageOriented(tiff, width, height, reinterpret_cast<uint32 *>(image->bits()), ORIENTATION_TOPLEFT, 0)) {
+                    for (uint32 y=0; y<height; ++y)
+                        convert32BitOrder(image->scanLine(y), width);
+                } else {
+                    TIFFClose(tiff);
+                    return false;
+                }
+            }
+        }
+    }
+
+    if (image->isNull()) {
+        TIFFClose(tiff);
+        return false;
+    }
+
+    float resX = 0;
+    float resY = 0;
+    uint16 resUnit = RESUNIT_NONE;
+    if (TIFFGetField(tiff, TIFFTAG_RESOLUTIONUNIT, &resUnit)
+        && TIFFGetField(tiff, TIFFTAG_XRESOLUTION, &resX)
+        && TIFFGetField(tiff, TIFFTAG_YRESOLUTION, &resY)) {
+
+        switch(resUnit) {
+        case RESUNIT_CENTIMETER:
+            image->setDotsPerMeterX(qRound(resX * 100));
+            image->setDotsPerMeterY(qRound(resY * 100));
+            break;
+        case RESUNIT_INCH:
+            image->setDotsPerMeterX(qRound(resX * (100 / 2.54)));
+            image->setDotsPerMeterY(qRound(resY * (100 / 2.54)));
+            break;
+        default:
+            // do nothing as defaults have already
+            // been set within the QImage class
+            break;
+        }
+    }
+
+    TIFFClose(tiff);
     return true;
 }
 
@@ -191,33 +271,148 @@ bool QTiffHandler::write(const QImage &image)
     if (!device()->isWritable())
         return false;
 
-    TIFF *tiff = TIFFClientOpen("foo",
-                                "w",
-                                this,
-                                qtiffReadProc,
-                                qtiffWriteProc,
-                                qtiffSeekProc,
-                                qtiffCloseProc,
-                                qtiffSizeProc,
-                                qtiffMapProc,
-                                qtiffUnmapProc);
+    TIFF *const tiff = TIFFClientOpen("foo",
+                                      "w",
+                                      this,
+                                      qtiffReadProc,
+                                      qtiffWriteProc,
+                                      qtiffSeekProc,
+                                      qtiffCloseProc,
+                                      qtiffSizeProc,
+                                      qtiffMapProc,
+                                      qtiffUnmapProc);
+    if (!tiff)
+        return false;
 
-    if (tiff) {
-        int width = image.width();
-        int height = image.height();
-        int depth = 32;
+    const int width = image.width();
+    const int height = image.height();
 
-        if (!TIFFSetField(tiff, TIFFTAG_IMAGEWIDTH, width)
-                || !TIFFSetField(tiff, TIFFTAG_IMAGELENGTH, height)
-                || !TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB)
-                || !TIFFSetField(tiff, TIFFTAG_COMPRESSION, compression == NoCompression ? COMPRESSION_NONE : COMPRESSION_LZW)
-                || !TIFFSetField(tiff, TIFFTAG_SAMPLESPERPIXEL, depth/8)
-                || !TIFFSetField(tiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG)
-                || !TIFFSetField(tiff, TIFFTAG_BITSPERSAMPLE, 8)) {
+    if (!TIFFSetField(tiff, TIFFTAG_IMAGEWIDTH, width)
+        || !TIFFSetField(tiff, TIFFTAG_IMAGELENGTH, height)
+        || !TIFFSetField(tiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG)) {
+        TIFFClose(tiff);
+        return false;
+    }
+
+    // set the resolution
+    bool  resolutionSet = false;
+    const int dotPerMeterX = image.dotsPerMeterX();
+    const int dotPerMeterY = image.dotsPerMeterY();
+    if ((dotPerMeterX % 100) == 0
+        && (dotPerMeterY % 100) == 0) {
+        resolutionSet = TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_CENTIMETER)
+                        && TIFFSetField(tiff, TIFFTAG_XRESOLUTION, dotPerMeterX/100.0)
+                        && TIFFSetField(tiff, TIFFTAG_YRESOLUTION, dotPerMeterY/100.0);
+    } else {
+        resolutionSet = TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH)
+                        && TIFFSetField(tiff, TIFFTAG_XRESOLUTION, static_cast<float>(image.logicalDpiX()))
+                        && TIFFSetField(tiff, TIFFTAG_YRESOLUTION, static_cast<float>(image.logicalDpiY()));
+    }
+    if (!resolutionSet) {
+        TIFFClose(tiff);
+        return false;
+    }
+
+    // configure image depth
+    const QImage::Format format = image.format();
+    if (format == QImage::Format_Mono || format == QImage::Format_MonoLSB) {
+        uint16 photometric = PHOTOMETRIC_MINISBLACK;
+        if (image.colorTable().at(0) == 0xffffffff)
+            photometric = PHOTOMETRIC_MINISWHITE;
+        if (!TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, photometric)
+            || !TIFFSetField(tiff, TIFFTAG_COMPRESSION, compression == NoCompression ? COMPRESSION_NONE : COMPRESSION_CCITTRLE)) {
             TIFFClose(tiff);
             return false;
         }
 
+        // try to do the conversion in chunks no greater than 16 MB
+        int chunks = (width * height / (1024 * 1024 * 16)) + 1;
+        int chunkHeight = qMax(height / chunks, 1);
+
+        int y = 0;
+        while (y < height) {
+            QImage chunk = image.copy(0, y, width, qMin(chunkHeight, height - y)).convertToFormat(QImage::Format_Mono);
+
+            int chunkStart = y;
+            int chunkEnd = y + chunk.height();
+            while (y < chunkEnd) {
+                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32 *>(chunk.scanLine(y - chunkStart)), y) != 1) {
+                    TIFFClose(tiff);
+                    return false;
+                }
+                ++y;
+            }
+        }
+        TIFFClose(tiff);
+    } else if (format == QImage::Format_Indexed8) {
+        if (!TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_PALETTE)
+            || !TIFFSetField(tiff, TIFFTAG_COMPRESSION, compression == NoCompression ? COMPRESSION_NONE : COMPRESSION_PACKBITS)
+            || !TIFFSetField(tiff, TIFFTAG_BITSPERSAMPLE, 8)) {
+            TIFFClose(tiff);
+            return false;
+        }
+        //// write the color table
+        // allocate the color tables
+        uint16 *redTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
+        uint16 *greenTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
+        uint16 *blueTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
+        if (!redTable || !greenTable || !blueTable) {
+            TIFFClose(tiff);
+            return false;
+        }
+
+        // set the color table
+        const QVector<QRgb> colorTable = image.colorTable();
+
+        const int tableSize = colorTable.size();
+        Q_ASSERT(tableSize <= 256);
+        for (int i = 0; i<tableSize; ++i) {
+            const QRgb color = colorTable.at(i);
+            redTable[i] = qRed(color) * 257;
+            greenTable[i] = qGreen(color) * 257;
+            blueTable[i] = qBlue(color) * 257;
+        }
+
+        const bool setColorTableSuccess = TIFFSetField(tiff, TIFFTAG_COLORMAP, redTable, greenTable, blueTable);
+
+        qFree(redTable);
+        qFree(greenTable);
+        qFree(blueTable);
+
+        if (!setColorTableSuccess) {
+            TIFFClose(tiff);
+            return false;
+        }
+
+        //// write the data
+        // try to do the conversion in chunks no greater than 16 MB
+        int chunks = (width * height/ (1024 * 1024 * 16)) + 1;
+        int chunkHeight = qMax(height / chunks, 1);
+
+        int y = 0;
+        while (y < height) {
+            QImage chunk = image.copy(0, y, width, qMin(chunkHeight, height - y));
+
+            int chunkStart = y;
+            int chunkEnd = y + chunk.height();
+            while (y < chunkEnd) {
+                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32 *>(chunk.scanLine(y - chunkStart)), y) != 1) {
+                    TIFFClose(tiff);
+                    return false;
+                }
+                ++y;
+            }
+        }
+        TIFFClose(tiff);
+
+    } else {
+        if (!TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB)
+            || !TIFFSetField(tiff, TIFFTAG_COMPRESSION, compression == NoCompression ? COMPRESSION_NONE : COMPRESSION_LZW)
+            || !TIFFSetField(tiff, TIFFTAG_SAMPLESPERPIXEL, 4)
+            || !TIFFSetField(tiff, TIFFTAG_BITSPERSAMPLE, 8)) {
+            TIFFClose(tiff);
+            return false;
+        }
         // try to do the ARGB32 conversion in chunks no greater than 16 MB
         int chunks = (width * height * 4 / (1024 * 1024 * 16)) + 1;
         int chunkHeight = qMax(height / chunks, 1);
@@ -242,9 +437,8 @@ bool QTiffHandler::write(const QImage &image)
             }
         }
         TIFFClose(tiff);
-    } else {
-        return false;
     }
+
     return true;
 }
 

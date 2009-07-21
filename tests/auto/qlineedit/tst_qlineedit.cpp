@@ -258,6 +258,7 @@ private slots:
     void task233101_cursorPosAfterInputMethod_data();
     void task233101_cursorPosAfterInputMethod();
     void task241436_passwordEchoOnEditRestoreEchoMode();
+    void task248948_redoRemovedSelection();
 
 protected slots:
 #ifdef QT3_SUPPORT
@@ -3483,6 +3484,18 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
 
     // restore clean state
     testWidget->setEchoMode(QLineEdit::Normal);
+}
+
+void tst_QLineEdit::task248948_redoRemovedSelection()
+{
+    testWidget->setText("a");
+    testWidget->selectAll();
+    QTest::keyPress(testWidget, Qt::Key_Delete);
+    testWidget->undo();
+    testWidget->redo();
+    QTest::keyPress(testWidget, 'a');
+    QTest::keyPress(testWidget, 'b');
+    QCOMPARE(testWidget->text(), QLatin1String("ab"));
 }
 
 QTEST_MAIN(tst_QLineEdit)

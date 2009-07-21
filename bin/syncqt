@@ -24,6 +24,7 @@ $basedir =~ s=\\=/=g;
 my %modules = ( # path to module name map
         "QtGui" => "$basedir/src/gui",
         "QtOpenGL" => "$basedir/src/opengl",
+        "QtOpenVG" => "$basedir/src/openvg",
         "QtCore" => "$basedir/src/corelib",
         "QtXml" => "$basedir/src/xml",
         "QtXmlPatterns" => "$basedir/src/xmlpatterns",
@@ -687,6 +688,7 @@ foreach (@modules_to_sync) {
 			$master_contents .= "#include <QtXml/QtXml>\n" if("$_" eq "xml");
 			$master_contents .= "#include <QtXmlPatterns/QtXmlPatterns>\n" if("$_" eq "xmlpatterns");
 			$master_contents .= "#include <QtOpenGL/QtOpenGL>\n" if("$_" eq "opengl");
+			$master_contents .= "#include <QtOpenVG/QtOpenVG>\n" if("$_" eq "openvg");
 		    }
 		}
 	    }

@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGRadialGradientElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedLength.h"
 #include "SVGRadialGradientElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGRadialGradientElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGRadialGradientElement);
 
 /* Hash table */
 
@@ -95,36 +91,41 @@ bool JSSVGRadialGradientElement::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGRadialGradientElement, Base>(exec, &JSSVGRadialGradientElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGRadialGradientElementCx(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementCx(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->cxAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGRadialGradientElementCy(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementCy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->cyAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGRadialGradientElementR(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementR(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->rAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGRadialGradientElementFx(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementFx(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->fxAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGRadialGradientElementFy(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementFy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->fyAnimated();
     return toJS(exec, obj.get(), imp);

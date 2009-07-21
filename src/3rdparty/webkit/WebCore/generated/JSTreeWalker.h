@@ -36,43 +36,44 @@ public:
     virtual ~JSTreeWalker();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
     virtual void mark();
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
 
     // Custom functions
-    JSC::JSValuePtr parentNode(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr firstChild(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr lastChild(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr previousSibling(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr nextSibling(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr previousNode(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr nextNode(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue parentNode(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue firstChild(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue lastChild(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue previousSibling(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue nextSibling(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue previousNode(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue nextNode(JSC::ExecState*, const JSC::ArgList&);
     TreeWalker* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<TreeWalker> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, TreeWalker*);
-TreeWalker* toTreeWalker(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, TreeWalker*);
+TreeWalker* toTreeWalker(JSC::JSValue);
 
 class JSTreeWalkerPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -81,22 +82,22 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsTreeWalkerPrototypeFunctionParentNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsTreeWalkerPrototypeFunctionFirstChild(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsTreeWalkerPrototypeFunctionLastChild(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsTreeWalkerPrototypeFunctionPreviousSibling(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsTreeWalkerPrototypeFunctionNextSibling(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsTreeWalkerPrototypeFunctionPreviousNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsTreeWalkerPrototypeFunctionNextNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionParentNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionFirstChild(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionLastChild(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousSibling(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextSibling(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsTreeWalkerRoot(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsTreeWalkerWhatToShow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsTreeWalkerFilter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsTreeWalkerExpandEntityReferences(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsTreeWalkerCurrentNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSTreeWalkerCurrentNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsTreeWalkerConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsTreeWalkerRoot(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsTreeWalkerWhatToShow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsTreeWalkerFilter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsTreeWalkerExpandEntityReferences(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsTreeWalkerCurrentNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSTreeWalkerCurrentNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsTreeWalkerConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

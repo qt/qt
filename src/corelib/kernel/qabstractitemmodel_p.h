@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QPersistentModelIndexData
+class QPersistentModelIndexData
 {
 public:
     QPersistentModelIndexData() : model(0) {}
@@ -89,6 +89,7 @@ public:
     void columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
     void columnsRemoved(const QModelIndex &parent, int first, int last);
     static QAbstractItemModel *staticEmptyModel();
+    static bool canConvertToDouble(const QVariant &value);
 
     inline QModelIndex createIndex(int row, int column, void *data = 0) const {
         return q_func()->createIndex(row, column, data);

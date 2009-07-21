@@ -79,6 +79,7 @@ class QGraphicsSceneHelpEvent;
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
+class QGraphicsSceneGestureEvent;
 class QGraphicsSimpleTextItem;
 class QGraphicsTextItem;
 class QGraphicsView;
@@ -189,7 +190,7 @@ public:
     inline QGraphicsRectItem *addRect(qreal x, qreal y, qreal w, qreal h, const QPen &pen = QPen(), const QBrush &brush = QBrush())
     { return addRect(QRectF(x, y, w, h), pen, brush); }
     void removeItem(QGraphicsItem *item);
-    
+
     QGraphicsItem *focusItem() const;
     void setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReason = Qt::OtherFocusReason);
     bool hasFocus() const;
@@ -271,17 +272,14 @@ Q_SIGNALS:
     void selectionChanged();
 
 private:
-    void itemUpdated(QGraphicsItem *item, const QRectF &rect);
-
     Q_DECLARE_PRIVATE(QGraphicsScene)
     Q_DISABLE_COPY(QGraphicsScene)
     Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
     Q_PRIVATE_SLOT(d_func(), void _q_emitUpdated())
-    Q_PRIVATE_SLOT(d_func(), void _q_removeItemLater(QGraphicsItem *item))
     Q_PRIVATE_SLOT(d_func(), void _q_updateLater())
     Q_PRIVATE_SLOT(d_func(), void _q_polishItems())
     Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
-    Q_PRIVATE_SLOT(d_func(), void _q_resetDirtyItems())
+    Q_PRIVATE_SLOT(d_func(), void _q_processDirtyItems())
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
     friend class QGraphicsView;

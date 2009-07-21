@@ -29,10 +29,12 @@
 #ifndef AnimationController_h
 #define AnimationController_h
 
+#include "CSSPropertyNames.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {
 
+class AnimationBase;
 class AnimationControllerPrivate;
 class AtomicString;
 class Document;
@@ -50,40 +52,27 @@ public:
 
     void cancelAnimations(RenderObject*);
     PassRefPtr<RenderStyle> updateAnimations(RenderObject*, RenderStyle* newStyle);
+    PassRefPtr<RenderStyle> getAnimatedStyleForRenderer(RenderObject*);
 
-    void setAnimationStartTime(RenderObject*, double t);
-    void setTransitionStartTime(RenderObject*, int property, double t);
+    // This is called when an accelerated animation or transition has actually started to animate.
+    void notifyAnimationStarted(RenderObject*, double startTime);
 
     bool pauseAnimationAtTime(RenderObject*, const String& name, double t); // To be used only for testing
     bool pauseTransitionAtTime(RenderObject*, const String& property, double t); // To be used only for testing
     unsigned numberOfActiveAnimations() const; // To be used only for testing
     
-    bool isAnimatingPropertyOnRenderer(RenderObject*, int property, bool isRunningNow) const;
+    bool isAnimatingPropertyOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow = true) const;
 
     void suspendAnimations(Document*);
     void resumeAnimations(Document*);
 
-    void startUpdateRenderingDispatcher();
-    void addEventToDispatch(PassRefPtr<Element>, const AtomicString& eventType, const String& name, double elapsedTime);
-
-    void styleAvailable();
-
-    void setWaitingForStyleAvailable(bool waiting)
-    {
-        if (waiting)
-            m_numStyleAvailableWaiters++;
-        else
-            m_numStyleAvailableWaiters--;
-    }
-    
-    double beginAnimationUpdateTime();
-    
     void beginAnimationUpdate();
     void endAnimationUpdate();
+    
+    static bool supportsAcceleratedAnimationOfProperty(CSSPropertyID);
 
 private:
     AnimationControllerPrivate* m_data;
-    unsigned m_numStyleAvailableWaiters;    
 };
 
 } // namespace WebCore

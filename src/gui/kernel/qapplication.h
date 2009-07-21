@@ -61,7 +61,7 @@
 
 QT_BEGIN_HEADER
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 class TWsEvent;
 #endif
 
@@ -75,6 +75,7 @@ class QStyle;
 class QEventLoop;
 class QIcon;
 class QInputContext;
+class QGestureRecognizer;
 template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
@@ -109,10 +110,11 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
 #ifndef QT_NO_STYLE_STYLESHEET
     Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
 #endif
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
+    Q_PROPERTY(int eventDeliveryDelayForGestures READ eventDeliveryDelayForGestures WRITE setEventDeliveryDelayForGestures)
 
 public:
     enum Type { Tty, GuiClient, GuiServer };
@@ -230,7 +232,7 @@ public:
     virtual int x11ClientMessage(QWidget*, XEvent*, bool passive_only);
     int x11ProcessEvent(XEvent*);
 #endif
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
     int s60ProcessEvent(TWsEvent *event);
     virtual bool s60EventFilter(TWsEvent *aEvent);
     void symbianHandleCommand(int command);
@@ -278,6 +280,12 @@ public:
     static bool keypadNavigationEnabled();
 #endif
 
+    void addGestureRecognizer(QGestureRecognizer *recognizer);
+    void removeGestureRecognizer(QGestureRecognizer *recognizer);
+
+    void setEventDeliveryDelayForGestures(int delay);
+    int eventDeliveryDelayForGestures();
+
 Q_SIGNALS:
     void lastWindowClosed();
     void focusChanged(QWidget *old, QWidget *now);
@@ -293,7 +301,7 @@ public Q_SLOTS:
 #ifndef QT_NO_STYLE_STYLESHEET
     void setStyleSheet(const QString& sheet);
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void setAutoMaximizeThreshold(const int threshold);
     int autoMaximizeThreshold() const;
 #endif
@@ -388,6 +396,7 @@ private:
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;
 #endif
+    friend class QGestureManager;
 
 #if defined(Q_WS_WIN)
     friend QApplicationPrivate* getQApplicationPrivateInternal();
@@ -395,6 +404,9 @@ private:
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
     Q_PRIVATE_SLOT(d_func(), void _q_alertTimeOut())
+#endif
+#if defined(QT_RX71_MULTITOUCH)
+    Q_PRIVATE_SLOT(d_func(), void _q_readRX71MultiTouchEvents())
 #endif
 };
 

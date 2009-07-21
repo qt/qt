@@ -2455,6 +2455,9 @@ void DesignerEditorFactory::slotStringTextChanged(const QString &value)
             if (val.userType() == DesignerPropertyManager::designerStringTypeId()) {
                 PropertySheetStringValue strVal = qVariantValue<PropertySheetStringValue>(val);
                 strVal.setValue(value);
+                // Disable translation if no translation subproperties exist.
+                if (varProp->subProperties().empty())
+                    strVal.setTranslatable(false);
                 val = qVariantFromValue(strVal);
             } else {
                 val = QVariant(value);

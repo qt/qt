@@ -21,15 +21,16 @@
 #ifndef WTF_Vector_h
 #define WTF_Vector_h
 
-#include "Assertions.h"
-#include "FastMalloc.h"
+#include "FastAllocBase.h"
 #include "Noncopyable.h"
 #include "NotFound.h"
 #include "VectorTraits.h"
 #include <limits>
-#include <stdlib.h>
-#include <string.h>
 #include <utility>
+
+#if PLATFORM(QT)
+#include <QDataStream>
+#endif
 
 namespace WTF {
 
@@ -377,7 +378,8 @@ namespace WTF {
         VectorBuffer(size_t capacity)
             : Base(inlineBuffer(), inlineCapacity)
         {
-            allocateBuffer(capacity);
+            if (capacity > inlineCapacity)
+                Base::allocateBuffer(capacity);
         }
 
         ~VectorBuffer()
@@ -389,6 +391,10 @@ namespace WTF {
         {
             if (newCapacity > inlineCapacity)
                 Base::allocateBuffer(newCapacity);
+            else {
+                m_buffer = inlineBuffer();
+                m_capacity = inlineCapacity;
+            }
         }
 
         void deallocateBuffer(T* bufferToDeallocate)
@@ -428,7 +434,7 @@ namespace WTF {
     };
 
     template<typename T, size_t inlineCapacity = 0>
-    class Vector {
+    class Vector : public FastAllocBase {
     private:
         typedef VectorBuffer<T, inlineCapacity> Buffer;
         typedef VectorTypeOperations<T> TypeOperations;
@@ -561,6 +567,32 @@ namespace WTF {
         Buffer m_buffer;
     };
 
+#if PLATFORM(QT)
+    template<typename T>
+    QDataStream& operator<<(QDataStream& stream, const Vector<T>& data)
+    {
+        stream << qint64(data.size());
+        foreach (const T& i, data)
+            stream << i;
+        return stream;
+    }
+
+    template<typename T>
+    QDataStream& operator>>(QDataStream& stream, Vector<T>& data)
+    {
+        data.clear();
+        qint64 count;
+        T item;
+        stream >> count;
+        data.reserveCapacity(count);
+        for (qint64 i = 0; i < count; ++i) {
+            stream >> item;
+            data.append(item);
+        }
+        return stream;
+    }
+#endif
+
     template<typename T, size_t inlineCapacity>
     Vector<T, inlineCapacity>::Vector(const Vector& other)
         : m_size(other.size())
@@ -687,7 +719,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity>
-    void Vector<T, inlineCapacity>::resize(size_t size)
+    inline void Vector<T, inlineCapacity>::resize(size_t size)
     {
         if (size <= m_size)
             TypeOperations::destruct(begin() + size, end());
@@ -776,6 +808,8 @@ namespace WTF {
             if (!begin())
                 return;
         }
+        if (newSize < m_size)
+            CRASH();
         T* dest = end();
         for (size_t i = 0; i < dataSize; ++i)
             new (&dest[i]) T(data[i]);
@@ -783,7 +817,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity> template<typename U>
-    inline void Vector<T, inlineCapacity>::append(const U& val)
+    ALWAYS_INLINE void Vector<T, inlineCapacity>::append(const U& val)
     {
         const U* ptr = &val;
         if (size() == capacity()) {
@@ -837,6 +871,8 @@ namespace WTF {
             if (!begin())
                 return;
         }
+        if (newSize < m_size)
+            CRASH();
         T* spot = begin() + position;
         TypeOperations::moveOverlapping(spot, end(), spot + dataSize);
         for (size_t i = 0; i < dataSize; ++i)

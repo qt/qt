@@ -67,6 +67,7 @@
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
 #include <QtGui/qpaintengine.h>
+#include <private/qbackingstore_p.h>
 
 #ifdef Q_WS_S60
 #include <avkon.hrh>                // EEikStatusPaneUidTitle
@@ -296,6 +297,7 @@ private slots:
     void render_systemClip3_data();
     void render_systemClip3();
     void render_task252837();
+    void render_worldTransform();
 
     void setContentsMargins();
 
@@ -357,6 +359,10 @@ private slots:
 #endif
     void updateOnDestroyedSignal();
     void toplevelLineEditFocus();
+
+    void focusWidget_task254563();
+
+    void destroyBackingStore();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -1561,6 +1567,10 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedOriginalChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 7; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOriginalChain[i]);
+    }
 
     QWidget window2;
     child2->setParent(&window2);
@@ -1571,12 +1581,20 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedNewChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedNewChain[i]);
+    }
 
     QWidget *expectedOldChain[5] = {&window, child1,  child3, child4, &window};
     w = &window;
     for (int i = 0; i <5; ++i) {
         QCOMPARE(w, expectedOldChain[i]);
         w = w->nextInFocusChain();
+    }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOldChain[i]);
     }
 }
 
@@ -2455,6 +2473,9 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
     actualFocusWidget.sprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
     expectedFocusWidget.sprintf("%p %s %s", edit2, edit2->objectName().toLatin1().constData(), edit2->metaObject()->className());
     QCOMPARE(actualFocusWidget, expectedFocusWidget);
+
+    delete edit2;
+    delete parentWidget;
 }
 
 void tst_QWidget::normalGeometry()
@@ -5874,6 +5895,35 @@ void tst_QWidget::setToolTip()
     widget.setToolTip(QString());
     QCOMPARE(widget.toolTip(), QString());
     QCOMPARE(spy.count(), 2);
+
+
+
+    for (int pass = 0; pass < 2; ++pass) {
+        QWidget *popup = new QWidget(0, Qt::Popup);
+        popup->resize(150, 50);
+        QFrame *frame = new QFrame(popup);
+        frame->setGeometry(0, 0, 50, 50);
+        frame->setFrameStyle(QFrame::Box | QFrame::Plain);
+        EventSpy spy1(frame, QEvent::ToolTip);
+        EventSpy spy2(popup, QEvent::ToolTip);
+        frame->setMouseTracking(pass == 0 ? false : true);
+        frame->setToolTip(QLatin1String("TOOLTIP FRAME"));
+        popup->setToolTip(QLatin1String("TOOLTIP POPUP"));
+        popup->show();
+#ifdef Q_WS_X11
+        qt_x11_wait_for_window_manager(popup);
+#endif
+        QTest::qWait(100);
+        QTest::mouseMove(frame);
+        QTest::qWait(900);          // delay is 700
+
+        QCOMPARE(spy1.count(), 1);
+        QCOMPARE(spy2.count(), 0);
+        if (pass == 0)
+            QTest::qWait(2200);     // delay is 2000
+        QTest::mouseMove(popup);
+        delete popup;
+    }
 }
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
@@ -6125,6 +6175,9 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6220,6 +6273,9 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6315,6 +6371,9 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -7202,6 +7261,99 @@ void tst_QWidget::render_task252837()
     // Please do not crash.
     widget.render(&painter);
 }
+
+void tst_QWidget::render_worldTransform()
+{
+    class MyWidget : public QWidget
+    { public:
+        void paintEvent(QPaintEvent *)
+        {
+            QPainter painter(this);
+            // Make sure world transform is identity.
+            QCOMPARE(painter.worldTransform(), QTransform());
+
+            // Make sure device transform is correct.
+            const QPoint widgetOffset = geometry().topLeft();
+            QTransform expectedDeviceTransform = QTransform::fromTranslate(105, 5);
+            expectedDeviceTransform.rotate(90);
+            expectedDeviceTransform.translate(widgetOffset.x(), widgetOffset.y());
+            QCOMPARE(painter.deviceTransform(), expectedDeviceTransform);
+
+            // Set new world transform.
+            QTransform newWorldTransform = QTransform::fromTranslate(10, 10);
+            newWorldTransform.rotate(90);
+            painter.setWorldTransform(newWorldTransform);
+            QCOMPARE(painter.worldTransform(), newWorldTransform);
+
+            // Again, check device transform.
+            expectedDeviceTransform.translate(10, 10);
+            expectedDeviceTransform.rotate(90);
+            QCOMPARE(painter.deviceTransform(), expectedDeviceTransform);
+
+            painter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+        }
+    };
+
+    MyWidget widget;
+    widget.setFixedSize(100, 100);
+    widget.setPalette(Qt::red);
+    widget.setAutoFillBackground(true);
+
+    MyWidget child;
+    child.setParent(&widget);
+    child.move(50, 50);
+    child.setFixedSize(50, 50);
+    child.setPalette(Qt::blue);
+    child.setAutoFillBackground(true);
+
+    QImage image(QSize(110, 110), QImage::Format_RGB32);
+    image.fill(QColor(Qt::black).rgb());
+
+    QPainter painter(&image);
+    painter.translate(105, 5);
+    painter.rotate(90);
+
+    const QTransform worldTransform = painter.worldTransform();
+    const QTransform deviceTransform = painter.deviceTransform();
+
+    // Render widgets onto image.
+    widget.render(&painter);
+#ifdef RENDER_DEBUG
+    image.save("render_worldTransform_image.png");
+#endif
+
+    // Ensure the transforms are unchanged after render.
+    QCOMPARE(painter.worldTransform(), painter.worldTransform());
+    QCOMPARE(painter.deviceTransform(), painter.deviceTransform());
+    painter.end();
+
+    // Paint expected image.
+    QImage expected(QSize(110, 110), QImage::Format_RGB32);
+    expected.fill(QColor(Qt::black).rgb());
+
+    QPainter expectedPainter(&expected);
+    expectedPainter.translate(105, 5);
+    expectedPainter.rotate(90);
+    expectedPainter.save();
+    expectedPainter.fillRect(widget.rect(),Qt::red);
+    expectedPainter.translate(10, 10);
+    expectedPainter.rotate(90);
+    expectedPainter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+    expectedPainter.restore();
+    expectedPainter.translate(50, 50);
+    expectedPainter.fillRect(child.rect(),Qt::blue);
+    expectedPainter.translate(10, 10);
+    expectedPainter.rotate(90);
+    expectedPainter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+    expectedPainter.end();
+
+#ifdef RENDER_DEBUG
+    expected.save("render_worldTransform_expected.png");
+#endif
+
+    QCOMPARE(image, expected);
+}
+
 void tst_QWidget::setContentsMargins()
 {
     QLabel label("why does it always rain on me?");
@@ -9033,6 +9185,47 @@ void tst_QWidget::toplevelLineEditFocus()
 
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&w);
     QCOMPARE(QApplication::focusWidget(), (QWidget*)&w);
+}
+
+void tst_QWidget::focusWidget_task254563()
+{
+    //having different visibility for widget is important
+    QWidget top;
+    top.show();
+    QWidget container(&top);
+    QWidget *widget = new QWidget(&container);
+    widget->show();
+
+    widget->setFocus(); //set focus (will set the focus widget up to the toplevel to be 'widget')
+    container.setFocus();
+    delete widget; // will call clearFocus but that doesn't help
+    QVERIFY(top.focusWidget() != widget); //dangling pointer
+}
+
+void tst_QWidget::destroyBackingStore()
+{
+    UpdateWidget w;
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QApplication::processEvents();
+
+    w.reset();
+    w.update();
+    delete qt_widget_private(&w)->topData()->backingStore;
+    qt_widget_private(&w)->topData()->backingStore = 0;
+    qt_widget_private(&w)->topData()->backingStore = new QWidgetBackingStore(&w);
+
+    w.update();
+    QApplication::processEvents();
+    QCOMPARE(w.numPaintEvents, 1);
+
+    // Check one more time, because the second time around does more caching.
+    w.update();
+    QApplication::processEvents();
+    QCOMPARE(w.numPaintEvents, 2);
 }
 
 QTEST_MAIN(tst_QWidget)

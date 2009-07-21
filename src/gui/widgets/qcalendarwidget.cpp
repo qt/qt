@@ -198,7 +198,7 @@ QString QCalendarDayValidator::text() const
 {
     QString str;
     if (m_day / 10 == 0)
-        str += QLatin1String("0");
+        str += QLatin1Char('0');
     str += QString::number(m_day);
     return highlightString(str, m_pos);
 }
@@ -210,7 +210,7 @@ QString QCalendarDayValidator::text(const QDate &date, int repeat) const
     } else if (repeat == 2) {
         QString str;
         if (date.day() / 10 == 0)
-            str += QLatin1String("0");
+            str += QLatin1Char('0');
         return str + QString::number(date.day());
     } else if (repeat == 3) {
         return m_locale.dayName(date.dayOfWeek(), QLocale::ShortFormat);
@@ -316,7 +316,7 @@ QString QCalendarMonthValidator::text() const
 {
     QString str;
     if (m_month / 10 == 0)
-        str += QLatin1String("0");
+        str += QLatin1Char('0');
     str += QString::number(m_month);
     return highlightString(str, m_pos);
 }
@@ -328,7 +328,7 @@ QString QCalendarMonthValidator::text(const QDate &date, int repeat) const
     } else if (repeat == 2) {
         QString str;
         if (date.month() / 10 == 0)
-            str += QLatin1String("0");
+            str += QLatin1Char('0');
         return str + QString::number(date.month());
     } else if (repeat == 3) {
         return m_locale.standaloneMonthName(date.month(), QLocale::ShortFormat);
@@ -432,7 +432,7 @@ QString QCalendarYearValidator::text() const
     int pow = 10;
     for (int i = 0; i < 3; i++) {
         if (m_year / pow == 0)
-            str += QLatin1String("0");
+            str += QLatin1Char('0');
         pow *= 10;
     }
     str += QString::number(m_year);
@@ -445,7 +445,7 @@ QString QCalendarYearValidator::text(const QDate &date, int repeat) const
         QString str;
         int year = date.year() % 100;
         if (year / 10 == 0)
-            str = QLatin1String("0");
+            str = QLatin1Char('0');
         return str + QString::number(year);
     }
     return QString::number(date.year());
@@ -577,7 +577,7 @@ void QCalendarDateValidator::setFormat(const QString &format)
     clear();
 
     int pos = 0;
-    const QLatin1String quote("'");
+    const QLatin1Char quote('\'');
     bool quoting = false;
     QString separator;
     while (pos < format.size()) {
@@ -2142,14 +2142,11 @@ QSize QCalendarWidget::minimumSizeHint() const
     int end = 53;
     int rows = 7;
     int cols = 8;
-    int startRow = 0;
-    int startCol = 0;
 
     const int marginH = (style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1) * 2;
 
     if (horizontalHeaderFormat() == QCalendarWidget::NoHorizontalHeader) {
         rows = 6;
-        startRow = 1;
     } else {
         for (int i = 1; i <= 7; i++) {
             QFontMetrics fm(d->m_model->formatForCell(0, i).font());
@@ -2160,7 +2157,6 @@ QSize QCalendarWidget::minimumSizeHint() const
 
     if (verticalHeaderFormat() == QCalendarWidget::NoVerticalHeader) {
         cols = 7;
-        startCol = 1;
     } else {
         for (int i = 1; i <= 6; i++) {
             QFontMetrics fm(d->m_model->formatForCell(i, 0).font());
@@ -2526,13 +2522,6 @@ void QCalendarWidget::setDateRange(const QDate &min, const QDate &max)
         return;
     if (!min.isValid() || !max.isValid())
         return;
-
-    QDate minimum = min;
-    QDate maximum = max;
-    if (min > max) {
-        minimum = max;
-        maximum = min;
-    }
 
     QDate oldDate = d->m_model->m_date;
     d->m_model->setRange(min, max);

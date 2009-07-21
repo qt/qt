@@ -108,6 +108,8 @@ public:
 
     QHash<glyph_t, Coord> coords;
 
+    QImage textureMapForGlyph(glyph_t g) const;
+
 protected:
     const QTextItemInt *m_current_textitem;
 
@@ -116,11 +118,10 @@ protected:
     int m_cx; // current x
     int m_cy; // current y
     QFontEngineGlyphCache::Type m_type;
-
 };
 
 
-class Q_GUI_EXPORT QImageTextureGlyphCache : public QTextureGlyphCache
+class QImageTextureGlyphCache : public QTextureGlyphCache
 {
 public:
     QImageTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)

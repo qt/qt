@@ -19,22 +19,19 @@
 */
 
 #include "config.h"
-
 #include "JSGeolocation.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Geolocation.h"
 #include "Geoposition.h"
 #include "JSGeoposition.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSGeolocation)
+ASSERT_CLASS_FITS_IN_CELL(JSGeolocation);
 
 /* Hash table */
 
@@ -91,7 +88,6 @@ JSGeolocation::JSGeolocation(PassRefPtr<Structure> structure, PassRefPtr<Geoloca
 JSGeolocation::~JSGeolocation()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSGeolocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -104,47 +100,51 @@ bool JSGeolocation::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSGeolocation, Base>(exec, &JSGeolocationTable, this, propertyName, slot);
 }
 
-JSValuePtr jsGeolocationLastPosition(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsGeolocationLastPosition(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Geolocation* imp = static_cast<Geolocation*>(static_cast<JSGeolocation*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->lastPosition()));
 }
 
-JSValuePtr jsGeolocationPrototypeFunctionGetCurrentPosition(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSGeolocation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSGeolocation::s_info))
         return throwError(exec, TypeError);
     JSGeolocation* castedThisObj = static_cast<JSGeolocation*>(asObject(thisValue));
     return castedThisObj->getCurrentPosition(exec, args);
 }
 
-JSValuePtr jsGeolocationPrototypeFunctionWatchPosition(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionWatchPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSGeolocation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSGeolocation::s_info))
         return throwError(exec, TypeError);
     JSGeolocation* castedThisObj = static_cast<JSGeolocation*>(asObject(thisValue));
     return castedThisObj->watchPosition(exec, args);
 }
 
-JSValuePtr jsGeolocationPrototypeFunctionClearWatch(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionClearWatch(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSGeolocation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSGeolocation::s_info))
         return throwError(exec, TypeError);
     JSGeolocation* castedThisObj = static_cast<JSGeolocation*>(asObject(thisValue));
     Geolocation* imp = static_cast<Geolocation*>(castedThisObj->impl());
-    int watchId = args.at(exec, 0)->toInt32(exec);
+    int watchId = args.at(0).toInt32(exec);
 
     imp->clearWatch(watchId);
     return jsUndefined();
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Geolocation* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Geolocation* object)
 {
     return getDOMObjectWrapper<JSGeolocation>(exec, object);
 }
-Geolocation* toGeolocation(JSC::JSValuePtr value)
+Geolocation* toGeolocation(JSC::JSValue value)
 {
-    return value->isObject(&JSGeolocation::s_info) ? static_cast<JSGeolocation*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSGeolocation::s_info) ? static_cast<JSGeolocation*>(asObject(value))->impl() : 0;
 }
 
 }

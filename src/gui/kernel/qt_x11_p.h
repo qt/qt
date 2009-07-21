@@ -154,6 +154,10 @@ extern "C" {
 #  include <X11/extensions/Xrender.h>
 #endif // QT_NO_XRENDER
 
+#ifndef QT_NO_XSYNC
+#  include "X11/extensions/sync.h"
+#endif
+
 // #define QT_NO_XKB
 #ifndef QT_NO_XKB
 #  include <X11/XKBlib.h>
@@ -502,7 +506,6 @@ struct QX11Data
     int fc_hint_style;
 
     char *startupId;
-    char *originalStartupId;
 
     DesktopEnvironment desktopEnvironment;
 
@@ -514,6 +517,8 @@ struct QX11Data
         WM_TAKE_FOCUS,
         _NET_WM_PING,
         _NET_WM_CONTEXT_HELP,
+        _NET_WM_SYNC_REQUEST,
+        _NET_WM_SYNC_REQUEST_COUNTER,
 
         // ICCCM window state
         WM_STATE,
@@ -651,6 +656,10 @@ struct QX11Data
         // XEMBED
         _XEMBED,
         _XEMBED_INFO,
+
+        XWacomStylus,
+        XWacomCursor,
+        XWacomEraser,
 
         NPredefinedAtoms,
 

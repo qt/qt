@@ -4,15 +4,9 @@ HEADERS		= ../../../sql/drivers/odbc/qsql_odbc.h
 SOURCES		= main.cpp \
 		  ../../../sql/drivers/odbc/qsql_odbc.cpp
 
-mac {
-        !contains( LIBS, .*odbc.* ) {
-            LIBS        *= -liodbc
-        }
-}
-
 unix {
 	!contains( LIBS, .*odbc.* ) {
-	    LIBS 	*= -lodbc
+	    LIBS 	*= $$QT_LFLAGS_ODBC
 	}
 }
 

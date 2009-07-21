@@ -20,13 +20,9 @@
 
 #include "config.h"
 
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
-
-#include "SVGElement.h"
 #include "JSSVGFEDiffuseLightingElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -37,14 +33,14 @@
 #include "JSSVGAnimatedNumber.h"
 #include "JSSVGAnimatedString.h"
 #include "SVGFEDiffuseLightingElement.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEDiffuseLightingElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEDiffuseLightingElement);
 
 /* Hash table */
 
@@ -116,103 +112,116 @@ bool JSSVGFEDiffuseLightingElement::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticValueSlot<JSSVGFEDiffuseLightingElement, Base>(exec, &JSSVGFEDiffuseLightingElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementSurfaceScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementSurfaceScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->surfaceScaleAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementDiffuseConstant(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementDiffuseConstant(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->diffuseConstantAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementKernelUnitLengthX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementKernelUnitLengthX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->kernelUnitLengthXAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementKernelUnitLengthY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementKernelUnitLengthY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->kernelUnitLengthYAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDiffuseLightingElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(static_cast<JSSVGFEDiffuseLightingElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGFEDiffuseLightingElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGFEDiffuseLightingElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGFEDiffuseLightingElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGFEDiffuseLightingElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEDiffuseLightingElement* castedThisObj = static_cast<JSSVGFEDiffuseLightingElement*>(asObject(thisValue));
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

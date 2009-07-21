@@ -31,7 +31,7 @@
 
 #include "PlatformString.h"
 
-#if USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
 #include <profiler/Profile.h>
 #endif
 
@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-#if USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
     typedef Vector<RefPtr<JSC::Profile> > ProfilesArray;
 #endif
 
@@ -64,8 +64,8 @@ namespace WebCore {
         LogMessageLevel,
         WarningMessageLevel,
         ErrorMessageLevel,
+        // FIXME: the remaining levels should become a new MessageType enum.
         ObjectMessageLevel,
-        NodeMessageLevel,
         TraceMessageLevel,
         StartGroupMessageLevel,
         EndGroupMessageLevel
@@ -75,6 +75,7 @@ namespace WebCore {
     public:
         static PassRefPtr<Console> create(Frame* frame) { return adoptRef(new Console(frame)); }
 
+        Frame* frame() const;
         void disconnectFrame();
 
         void addMessage(MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
@@ -89,7 +90,7 @@ namespace WebCore {
         void trace(ScriptCallStack*);
         void assertCondition(bool condition, ScriptCallStack*);
         void count(ScriptCallStack*);
-#if USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
         void profile(const JSC::UString&, ScriptCallStack*);
         void profileEnd(const JSC::UString&, ScriptCallStack*);
 #endif
@@ -101,7 +102,7 @@ namespace WebCore {
         static bool shouldPrintExceptions();
         static void setShouldPrintExceptions(bool);
 
-#if USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
         const ProfilesArray& profiles() const { return m_profiles; }
 #endif
 
@@ -112,7 +113,7 @@ namespace WebCore {
         Console(Frame*);
 
         Frame* m_frame;
-#if USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
         ProfilesArray m_profiles;
 #endif
     };

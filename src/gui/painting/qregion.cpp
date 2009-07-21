@@ -450,9 +450,9 @@ QDebug operator<<(QDebug s, const QRegion &r)
 {
     QVector<QRect> rects = r.rects();
     s.nospace() << "QRegion(size=" << rects.size() << "), "
-                << "bounds = " << r.boundingRect() << "\n";
+                << "bounds = " << r.boundingRect() << '\n';
     for (int i=0; i<rects.size(); ++i)
-        s << "- " << i << rects.at(i) << "\n";
+        s << "- " << i << rects.at(i) << '\n';
     return s;
 }
 #endif
@@ -698,6 +698,8 @@ bool QRegion::intersects(const QRegion &region) const
 
     if (!rect_intersects(boundingRect(), region.boundingRect()))
         return false;
+    if (numRects() == 1 && region.numRects() == 1)
+        return true;
 
     const QVector<QRect> myRects = rects();
     const QVector<QRect> otherRects = region.rects();
@@ -723,6 +725,8 @@ bool QRegion::intersects(const QRect &rect) const
     const QRect r = rect.normalized();
     if (!rect_intersects(boundingRect(), r))
         return false;
+    if (numRects() == 1)
+        return true;
 
     const QVector<QRect> myRects = rects();
     for (QVector<QRect>::const_iterator it = myRects.constBegin(); it < myRects.constEnd(); ++it)
@@ -1601,7 +1605,7 @@ void QRegionPrivate::selfTest() const
     for (int i = 0; i < numRects; ++i) {
         const QRect r = rects.at(i);
         if ((r.width() * r.height()) > innerArea)
-            qDebug() << "selfTest(): innerRect" << innerRect << "<" << r;
+            qDebug() << "selfTest(): innerRect" << innerRect << '<' << r;
     }
 
     QRect r = rects.first();

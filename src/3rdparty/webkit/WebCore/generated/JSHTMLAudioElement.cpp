@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLAudioElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLAudioElement.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLAudioElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLAudioElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,11 +124,11 @@ bool JSHTMLAudioElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLAudioElement, Base>(exec, &JSHTMLAudioElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLAudioElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLAudioElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLAudioElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSHTMLAudioElement::getConstructor(ExecState* exec)
+JSValue JSHTMLAudioElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLAudioElementConstructor>(exec);
 }

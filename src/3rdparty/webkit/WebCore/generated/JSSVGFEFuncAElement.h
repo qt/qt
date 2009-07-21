@@ -21,10 +21,10 @@
 #ifndef JSSVGFEFuncAElement_h
 #define JSSVGFEFuncAElement_h
 
-
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "JSSVGComponentTransferFunctionElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -42,6 +42,7 @@ public:
 
 
 class JSSVGFEFuncAElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -52,6 +53,6 @@ public:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 
 #endif

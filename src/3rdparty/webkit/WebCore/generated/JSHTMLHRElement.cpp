@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLHRElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLHRElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLHRElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLHRElement);
 
 /* Hash table */
 
@@ -80,7 +76,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -131,64 +127,68 @@ bool JSHTMLHRElement::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSHTMLHRElement, Base>(exec, &JSHTMLHRElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLHRElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHRElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->align());
 }
 
-JSValuePtr jsHTMLHRElementNoShade(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHRElementNoShade(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->noShade());
 }
 
-JSValuePtr jsHTMLHRElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHRElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->size());
 }
 
-JSValuePtr jsHTMLHRElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHRElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->width());
 }
 
-JSValuePtr jsHTMLHRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLHRElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLHRElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLHRElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLHRElement, Base>(exec, propertyName, value, &JSHTMLHRElementTable, this, slot);
 }
 
-void setJSHTMLHRElementAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLHRElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLHRElementNoShade(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLHRElementNoShade(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(thisObject)->impl());
-    imp->setNoShade(value->toBoolean(exec));
+    imp->setNoShade(value.toBoolean(exec));
 }
 
-void setJSHTMLHRElementSize(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLHRElementSize(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(thisObject)->impl());
     imp->setSize(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLHRElementWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLHRElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLHRElement* imp = static_cast<HTMLHRElement*>(static_cast<JSHTMLHRElement*>(thisObject)->impl());
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLHRElement::getConstructor(ExecState* exec)
+JSValue JSHTMLHRElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLHRElementConstructor>(exec);
 }

@@ -175,6 +175,9 @@ private slots:
     void bypassGraphicsProxyWidget_data();
     void bypassGraphicsProxyWidget();
     void dragDrop();
+    void windowFlags_data();
+    void windowFlags();
+    void comboboxWindowFlags();
 };
 
 // Subclass that exposes the protected functions.
@@ -1484,7 +1487,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 	     QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
     QCOMPARE(widget->npaints, 2);
     QCOMPARE(widget->paintEventRegion.rects(),
-	     QVector<QRect>() << QRect(0, 0, 200, 13) << QRect(0, 13, 103, 10));
+             QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
 }
 
 void tst_QGraphicsProxyWidget::setWidget_simple()
@@ -3151,6 +3154,67 @@ void tst_QGraphicsProxyWidget::dragDrop()
         QVERIFY(event.isAccepted());
     }
     QCOMPARE(edit->text(), QString("hei"));
+}
+
+void tst_QGraphicsProxyWidget::windowFlags_data()
+{
+    QTest::addColumn<int>("proxyFlags");
+    QTest::addColumn<int>("widgetFlags");
+    QTest::addColumn<int>("resultingProxyFlags");
+    QTest::addColumn<int>("resultingWidgetFlags");
+
+    QTest::newRow("proxy(0) widget(0)") << 0 << 0 << 0 << int(Qt::Window);
+    QTest::newRow("proxy(window)") << int(Qt::Window) << 0 << int(Qt::Window) << int(Qt::Window);
+    QTest::newRow("proxy(window) widget(window)") << int(Qt::Window) << int(Qt::Window) << int(Qt::Window) << int(Qt::Window);
+    QTest::newRow("proxy(0) widget(window)") << int(0) << int(Qt::Window) << int(0) << int(Qt::Window);
+}
+
+void tst_QGraphicsProxyWidget::windowFlags()
+{
+    QFETCH(int, proxyFlags);
+    QFETCH(int, widgetFlags);
+    QFETCH(int, resultingProxyFlags);
+    QFETCH(int, resultingWidgetFlags);
+    Qt::WindowFlags proxyWFlags = Qt::WindowFlags(proxyFlags);
+    Qt::WindowFlags widgetWFlags = Qt::WindowFlags(widgetFlags);
+    Qt::WindowFlags resultingProxyWFlags = Qt::WindowFlags(resultingProxyFlags);
+    Qt::WindowFlags resultingWidgetWFlags = Qt::WindowFlags(resultingWidgetFlags);
+
+    QGraphicsProxyWidget proxy(0, proxyWFlags);
+    QVERIFY((proxy.windowFlags() & proxyWFlags) == proxyWFlags);
+
+    QWidget *widget = new QWidget(0, widgetWFlags);
+    QVERIFY((widget->windowFlags() & widgetWFlags) == widgetWFlags);
+
+    proxy.setWidget(widget);
+ 
+    if (resultingProxyFlags == 0)
+        QVERIFY(!proxy.windowFlags());
+    else
+        QVERIFY((proxy.windowFlags() & resultingProxyWFlags) == resultingProxyWFlags);
+    QVERIFY((widget->windowFlags() & resultingWidgetWFlags) == resultingWidgetWFlags);
+}
+
+void tst_QGraphicsProxyWidget::comboboxWindowFlags()
+{
+    QComboBox *comboBox = new QComboBox;
+    comboBox->addItem("Item 1");
+    comboBox->addItem("Item 2");
+    comboBox->addItem("Item 3");
+    QWidget *embedWidget = comboBox;
+
+    QGraphicsScene scene;
+    QGraphicsProxyWidget *proxy = scene.addWidget(embedWidget);
+    proxy->setWindowFlags(Qt::Window);
+    QVERIFY(embedWidget->isWindow());
+    QVERIFY(proxy->isWindow());
+
+    comboBox->showPopup();
+
+    QCOMPARE(proxy->childItems().size(), 1);
+    QGraphicsItem *popupProxy = proxy->childItems().first();
+    QVERIFY(popupProxy->isWindow());
+    QVERIFY((static_cast<QGraphicsWidget *>(popupProxy)->windowFlags() & Qt::Popup) == Qt::Popup);
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

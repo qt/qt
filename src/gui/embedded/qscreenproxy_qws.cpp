@@ -279,6 +279,7 @@ void QProxyScreen::exposeRegion(QRegion r, int changing)
     }
 
     realScreen->exposeRegion(r, changing);
+    r &= realScreen->region();
 
     const QVector<QRect> rects = r.rects();
     for (int i = 0; i < rects.size(); ++i)

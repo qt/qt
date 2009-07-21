@@ -85,6 +85,8 @@ public:
 
     inline bool contains(const T &value) const { return q_hash.contains(value); }
 
+    bool contains(const QSet<T> &set) const;
+
     class const_iterator;
 
     class iterator
@@ -272,6 +274,18 @@ Q_INLINE_TEMPLATE QSet<T> &QSet<T>::subtract(const QSet<T> &other)
             remove(*i);
     }
     return *this;
+}
+
+template <class T>
+Q_INLINE_TEMPLATE bool QSet<T>::contains(const QSet<T> &other) const
+{
+    typename QSet<T>::const_iterator i = other.constBegin();
+    while (i != other.constEnd()) {
+        if (!contains(*i))
+            return false;
+        ++i;
+    }
+    return true;
 }
 
 template <typename T>

@@ -55,7 +55,7 @@ symbian: {
     codecs_plugins.sources = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
     codecs_plugins.path = $$QT_PLUGINS_BASE_DIR/codecs
  
-    DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins
+    DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins graphicssystems_plugins
 
     contains(QT_CONFIG, svg): {	
        qtlibraries.sources += QtSvg.dll
@@ -69,7 +69,12 @@ symbian: {
        qtlibraries.sources += Phonon.dll
     }    
 
+    graphicssystems_plugins.path = $$QT_PLUGINS_BASE_DIR/graphicssystems
+    contains(QT_CONFIG, openvg) {
+        qtlibraries.sources = QtOpenVG.dll
+        graphicssystems_plugins.sources += qvggraphicssystem.dll
+    }
+
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
-    BLD_INF_RULES.prj_exports += "qtvggraphicssystem.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qtvggraphicssystem.iby)"
     BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
 }

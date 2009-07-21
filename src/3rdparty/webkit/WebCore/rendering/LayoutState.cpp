@@ -27,16 +27,19 @@
 #include "LayoutState.h"
 
 #include "RenderArena.h"
+#include "RenderInline.h"
 #include "RenderLayer.h"
 #include "RenderView.h"
 
 namespace WebCore {
 
 LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const IntSize& offset)
+    : m_next(prev)
+#ifndef NDEBUG
+    , m_renderer(renderer)
+#endif
 {
-    ASSERT(prev);
-
-    m_next = prev;
+    ASSERT(m_next);
 
     bool fixed = renderer->isPositioned() && renderer->style()->position() == FixedPosition;
     if (fixed) {
@@ -50,8 +53,10 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const IntSize& 
         if (renderer->hasLayer())
             m_offset += renderer->layer()->relativePositionOffset();
     } else if (renderer->isPositioned() && !fixed) {
-        if (RenderObject* container = renderer->container())
-            m_offset += renderer->offsetForPositionedInContainer(container);
+        if (RenderObject* container = renderer->container()) {
+            if (container->isRelPositioned() && container->isRenderInline())
+                m_offset += toRenderInline(container)->relativePositionedInlineOffset(renderer);
+        }
     }
 
     m_clipped = !fixed && prev->m_clipped;
@@ -72,16 +77,22 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const IntSize& 
         layer->subtractScrolledContentOffset(x, y);
         m_offset = IntSize(x, y);
     }
+
+    m_layoutDelta = m_next->m_layoutDelta;
+
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
 LayoutState::LayoutState(RenderObject* root)
     : m_clipped(false)
+    , m_next(0)
+#ifndef NDEBUG
+    , m_renderer(root)
+#endif
 {
     RenderObject* container = root->container();
-    FloatPoint absContentPoint = container->localToAbsoluteForContent(FloatPoint(), false, true);
+    FloatPoint absContentPoint = container->localToAbsolute(FloatPoint(), false, true);
     m_offset = IntSize(absContentPoint.x(), absContentPoint.y());
-    m_next = 0;
 }
 
 #ifndef NDEBUG

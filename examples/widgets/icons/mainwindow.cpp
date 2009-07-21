@@ -369,7 +369,7 @@ void MainWindow::createActions()
             this, SLOT(removeAllImages()));
 
     exitAct = new QAction(tr("&Quit"), this);
-    exitAct->setShortcut(tr("Ctrl+Q"));
+    exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
     styleActionGroup = new QActionGroup(this);

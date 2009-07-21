@@ -19,21 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSCSSValue.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSValue.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSValue)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSValue);
 
 /* Hash table */
 
@@ -81,7 +78,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -135,7 +132,6 @@ JSCSSValue::JSCSSValue(PassRefPtr<Structure> structure, PassRefPtr<CSSValue> imp
 JSCSSValue::~JSCSSValue()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSCSSValue::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -148,28 +144,30 @@ bool JSCSSValue::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSCSSValue, Base>(exec, &JSCSSValueTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSValueCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSValueCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSValue* imp = static_cast<CSSValue*>(static_cast<JSCSSValue*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->cssText());
 }
 
-JSValuePtr jsCSSValueCssValueType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSValueCssValueType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSValue* imp = static_cast<CSSValue*>(static_cast<JSCSSValue*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->cssValueType());
 }
 
-JSValuePtr jsCSSValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSValue*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSCSSValue::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSCSSValue::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSCSSValue, Base>(exec, propertyName, value, &JSCSSValueTable, this, slot);
 }
 
-void setJSCSSValueCssText(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSCSSValueCssText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     CSSValue* imp = static_cast<CSSValue*>(static_cast<JSCSSValue*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -177,36 +175,36 @@ void setJSCSSValueCssText(ExecState* exec, JSObject* thisObject, JSValuePtr valu
     setDOMException(exec, ec);
 }
 
-JSValuePtr JSCSSValue::getConstructor(ExecState* exec)
+JSValue JSCSSValue::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSValueConstructor>(exec);
 }
 
 // Constant getters
 
-JSValuePtr jsCSSValueCSS_INHERIT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSValueCSS_INHERIT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsCSSValueCSS_PRIMITIVE_VALUE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSValueCSS_PRIMITIVE_VALUE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsCSSValueCSS_VALUE_LIST(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSValueCSS_VALUE_LIST(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsCSSValueCSS_CUSTOM(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSValueCSS_CUSTOM(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-CSSValue* toCSSValue(JSC::JSValuePtr value)
+CSSValue* toCSSValue(JSC::JSValue value)
 {
-    return value->isObject(&JSCSSValue::s_info) ? static_cast<JSCSSValue*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSCSSValue::s_info) ? static_cast<JSCSSValue*>(asObject(value))->impl() : 0;
 }
 
 }

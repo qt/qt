@@ -20,23 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGUnitTypes.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGUnitTypes.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGUnitTypes)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGUnitTypes);
 
 /* Hash table */
 
@@ -81,7 +76,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -135,7 +130,6 @@ JSSVGUnitTypes::JSSVGUnitTypes(PassRefPtr<Structure> structure, PassRefPtr<SVGUn
 JSSVGUnitTypes::~JSSVGUnitTypes()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -148,39 +142,39 @@ bool JSSVGUnitTypes::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSSVGUnitTypes, Base>(exec, &JSSVGUnitTypesTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGUnitTypes*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSSVGUnitTypes::getConstructor(ExecState* exec)
+JSValue JSSVGUnitTypes::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGUnitTypesConstructor>(exec);
 }
 
 // Constant getters
 
-JSValuePtr jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGUnitTypes* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGUnitTypes* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGUnitTypes>(exec, object, context);
 }
-SVGUnitTypes* toSVGUnitTypes(JSC::JSValuePtr value)
+SVGUnitTypes* toSVGUnitTypes(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGUnitTypes::s_info) ? static_cast<JSSVGUnitTypes*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGUnitTypes::s_info) ? static_cast<JSSVGUnitTypes*>(asObject(value))->impl() : 0;
 }
 
 }

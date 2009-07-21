@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLBRElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLBRElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLBRElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLBRElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,28 +124,29 @@ bool JSHTMLBRElement::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSHTMLBRElement, Base>(exec, &JSHTMLBRElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLBRElementClear(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBRElementClear(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBRElement* imp = static_cast<HTMLBRElement*>(static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->clear());
 }
 
-JSValuePtr jsHTMLBRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLBRElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLBRElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLBRElement, Base>(exec, propertyName, value, &JSHTMLBRElementTable, this, slot);
 }
 
-void setJSHTMLBRElementClear(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBRElementClear(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBRElement* imp = static_cast<HTMLBRElement*>(static_cast<JSHTMLBRElement*>(thisObject)->impl());
     imp->setClear(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLBRElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBRElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLBRElementConstructor>(exec);
 }

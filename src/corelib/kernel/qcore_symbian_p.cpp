@@ -131,7 +131,9 @@ public:
     }
 
 private:
-    void init() {
+    void init()
+    {
+#ifdef Q_WS_S60
         _LIT(KLibName_3_1, "qts60plugin_3_1.dll");
         _LIT(KLibName_3_2, "qts60plugin_3_2.dll");
         _LIT(KLibName_5_0, "qts60plugin_5_0.dll");
@@ -156,6 +158,7 @@ private:
 
         TUidType libUid(KDynamicLibraryUid, KSharedLibraryUid, TUid::Uid(uidValue));
         lib.Load(libName, libUid);
+#endif
     }
 
     RLibrary lib;

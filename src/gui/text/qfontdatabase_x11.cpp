@@ -392,7 +392,7 @@ int qt_mib_for_xlfd_encoding(const char *encoding)
     int id = qt_xlfd_encoding_id(encoding);
     if (id != -1) return xlfd_encoding[id].mib;
     return 0;
-};
+}
 
 int qt_encoding_id_for_mib(int mib)
 {
@@ -509,9 +509,9 @@ bool qt_fillFontDef(const QByteArray &xlfd, QFontDef *fd, int dpi, QtFontDesc *d
     fd->styleStrategy |= QFont::NoAntialias;
     fd->family = QString::fromLatin1(tokens[Family]);
     QString foundry = QString::fromLatin1(tokens[Foundry]);
-    if (! foundry.isEmpty() && foundry != QString::fromLatin1("*") && (!desc || desc->family->count > 1))
+    if (! foundry.isEmpty() && foundry != QLatin1String("*") && (!desc || desc->family->count > 1))
         fd->family +=
-            QString::fromLatin1(" [") + foundry + QString::fromLatin1("]");
+            QLatin1String(" [") + foundry + QLatin1Char(']');
 
     if (qstrlen(tokens[AddStyle]) > 0)
         fd->addStyle = QString::fromLatin1(tokens[AddStyle]);
@@ -1802,30 +1802,30 @@ QFontEngine *QFontDatabase::loadXlfd(int screen, int script, const QFontDef &req
 
             QByteArray xlfd("-");
             xlfd += desc.foundry->name.isEmpty() ? QByteArray("*") : desc.foundry->name.toLatin1();
-            xlfd += "-";
+            xlfd += '-';
             xlfd += desc.family->name.isEmpty() ? QByteArray("*") : desc.family->name.toLatin1();
-            xlfd += "-";
+            xlfd += '-';
             xlfd += desc.style->weightName ? desc.style->weightName : "*";
-            xlfd += "-";
+            xlfd += '-';
             xlfd += (desc.style->key.style == QFont::StyleItalic
-                     ? "i"
-                     : (desc.style->key.style == QFont::StyleOblique ? "o" : "r"));
-            xlfd += "-";
+                     ? 'i'
+                     : (desc.style->key.style == QFont::StyleOblique ? 'o' : 'r'));
+            xlfd += '-';
             xlfd += desc.style->setwidthName ? desc.style->setwidthName : "*";
             // ### handle add-style
             xlfd += "-*-";
             xlfd += QByteArray::number(px);
-            xlfd += "-";
+            xlfd += '-';
             xlfd += QByteArray::number(desc.encoding->xpoint);
-            xlfd += "-";
+            xlfd += '-';
             xlfd += QByteArray::number(desc.encoding->xres);
-            xlfd += "-";
+            xlfd += '-';
             xlfd += QByteArray::number(desc.encoding->yres);
-            xlfd += "-";
+            xlfd += '-';
             xlfd += desc.encoding->pitch;
-            xlfd += "-";
+            xlfd += '-';
             xlfd += QByteArray::number(desc.encoding->avgwidth);
-            xlfd += "-";
+            xlfd += '-';
             xlfd += xlfd_for_id(desc.encoding->encoding);
 
             FM_DEBUG("    using XLFD: %s\n", xlfd.data());

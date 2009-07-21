@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::SignalSlotEditorPlugin
-*/
-
 #include "signalsloteditor_plugin.h"
 #include "signalsloteditor_tool.h"
 

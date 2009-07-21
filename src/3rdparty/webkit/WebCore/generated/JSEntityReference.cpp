@@ -19,20 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSEntityReference.h"
 
-#include <wtf/GetPtr.h>
-
 #include "EntityReference.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSEntityReference)
+ASSERT_CLASS_FITS_IN_CELL(JSEntityReference);
 
 /* Hash table */
 
@@ -74,7 +70,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -125,11 +121,11 @@ bool JSEntityReference::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSEntityReference, Base>(exec, &JSEntityReferenceTable, this, propertyName, slot);
 }
 
-JSValuePtr jsEntityReferenceConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityReferenceConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSEntityReference*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSEntityReference::getConstructor(ExecState* exec)
+JSValue JSEntityReference::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSEntityReferenceConstructor>(exec);
 }

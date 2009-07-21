@@ -68,6 +68,7 @@ public:
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
     void copy(const QPixmapData *data, const QRect &rect);
+    bool scroll(int dx, int dy, const QRect &rect);
 
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
     void fill(const QColor &color);
@@ -82,7 +83,6 @@ public:
     QPaintEngine* paintEngine() const;
 
 private:
-    int w, h, d;
 
     uint has_alpha : 1, has_mask : 1, uninit : 1;
 

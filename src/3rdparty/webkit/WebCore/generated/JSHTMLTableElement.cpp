@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLTableElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLCollection.h"
 #include "HTMLElement.h"
@@ -34,16 +31,15 @@
 #include "JSHTMLTableCaptionElement.h"
 #include "JSHTMLTableSectionElement.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLTableElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLTableElement);
 
 /* Hash table */
 
@@ -99,7 +95,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -163,100 +159,114 @@ bool JSHTMLTableElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLTableElement, Base>(exec, &JSHTMLTableElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLTableElementCaption(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementCaption(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->caption()));
 }
 
-JSValuePtr jsHTMLTableElementTHead(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementTHead(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->tHead()));
 }
 
-JSValuePtr jsHTMLTableElementTFoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementTFoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->tFoot()));
 }
 
-JSValuePtr jsHTMLTableElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->rows()));
 }
 
-JSValuePtr jsHTMLTableElementTBodies(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementTBodies(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->tBodies()));
 }
 
-JSValuePtr jsHTMLTableElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->align());
 }
 
-JSValuePtr jsHTMLTableElementBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->bgColor());
 }
 
-JSValuePtr jsHTMLTableElementBorder(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementBorder(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->border());
 }
 
-JSValuePtr jsHTMLTableElementCellPadding(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementCellPadding(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->cellPadding());
 }
 
-JSValuePtr jsHTMLTableElementCellSpacing(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementCellSpacing(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->cellSpacing());
 }
 
-JSValuePtr jsHTMLTableElementFrame(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementFrame(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->frame());
 }
 
-JSValuePtr jsHTMLTableElementRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->rules());
 }
 
-JSValuePtr jsHTMLTableElementSummary(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementSummary(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->summary());
 }
 
-JSValuePtr jsHTMLTableElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->width());
 }
 
-JSValuePtr jsHTMLTableElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLTableElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLTableElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLTableElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLTableElement, Base>(exec, propertyName, value, &JSHTMLTableElementTable, this, slot);
 }
 
-void setJSHTMLTableElementCaption(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementCaption(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -264,7 +274,7 @@ void setJSHTMLTableElementCaption(ExecState* exec, JSObject* thisObject, JSValue
     setDOMException(exec, ec);
 }
 
-void setJSHTMLTableElementTHead(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementTHead(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -272,7 +282,7 @@ void setJSHTMLTableElementTHead(ExecState* exec, JSObject* thisObject, JSValuePt
     setDOMException(exec, ec);
 }
 
-void setJSHTMLTableElementTFoot(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementTFoot(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -280,80 +290,82 @@ void setJSHTMLTableElementTFoot(ExecState* exec, JSObject* thisObject, JSValuePt
     setDOMException(exec, ec);
 }
 
-void setJSHTMLTableElementAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementBgColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementBgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setBgColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementBorder(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementBorder(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setBorder(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementCellPadding(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementCellPadding(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setCellPadding(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementCellSpacing(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementCellSpacing(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setCellSpacing(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementFrame(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementFrame(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setFrame(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementRules(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementRules(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setRules(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementSummary(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementSummary(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setSummary(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableElementWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(static_cast<JSHTMLTableElement*>(thisObject)->impl());
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLTableElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTableElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLTableElementConstructor>(exec);
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionCreateTHead(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionCreateTHead(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createTHead()));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createTHead()));
     return result;
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionDeleteTHead(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionDeleteTHead(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
@@ -362,21 +374,23 @@ JSValuePtr jsHTMLTableElementPrototypeFunctionDeleteTHead(ExecState* exec, JSObj
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionCreateTFoot(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionCreateTFoot(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createTFoot()));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createTFoot()));
     return result;
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionDeleteTFoot(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionDeleteTFoot(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
@@ -385,21 +399,23 @@ JSValuePtr jsHTMLTableElementPrototypeFunctionDeleteTFoot(ExecState* exec, JSObj
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionCreateCaption(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionCreateCaption(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createCaption()));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createCaption()));
     return result;
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionDeleteCaption(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionDeleteCaption(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
@@ -408,29 +424,31 @@ JSValuePtr jsHTMLTableElementPrototypeFunctionDeleteCaption(ExecState* exec, JSO
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionInsertRow(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionInsertRow(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    int index = args.at(exec, 0)->toInt32(exec);
+    int index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->insertRow(index, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->insertRow(index, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsHTMLTableElementPrototypeFunctionDeleteRow(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLTableElementPrototypeFunctionDeleteRow(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLTableElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLTableElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableElement* castedThisObj = static_cast<JSHTMLTableElement*>(asObject(thisValue));
     HTMLTableElement* imp = static_cast<HTMLTableElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    int index = args.at(exec, 0)->toInt32(exec);
+    int index = args.at(0).toInt32(exec);
 
     imp->deleteRow(index, ec);
     setDOMException(exec, ec);

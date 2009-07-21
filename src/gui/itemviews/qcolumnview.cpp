@@ -108,9 +108,9 @@ void QColumnViewPrivate::initialize()
 {
     Q_Q(QColumnView);
     q->setTextElideMode(Qt::ElideMiddle);
-    q->connect(&currentAnimation, SIGNAL(frameChanged(int)),
-            q->horizontalScrollBar(), SLOT(setValue(int)));
-    q->connect(&currentAnimation, SIGNAL(finished()), q, SLOT(_q_changeCurrentColumn()));
+    QObject::connect(&currentAnimation, SIGNAL(frameChanged(int)),
+            hbar, SLOT(setValue(int)));
+    QObject::connect(&currentAnimation, SIGNAL(finished()), q, SLOT(_q_changeCurrentColumn()));
     delete itemDelegate;
     q->setItemDelegate(new QColumnViewDelegate(q));
 }
@@ -421,23 +421,23 @@ void QColumnViewPrivate::updateScrollbars()
             horizontalLength = (columns.first()->x() + columns.first()->width()) - columns.last()->x();
     }
 
-    QSize viewportSize = q->viewport()->size();
-    if (horizontalLength < viewportSize.width() && q->horizontalScrollBar()->value() == 0) {
-        q->horizontalScrollBar()->setRange(0, 0);
+    QSize viewportSize = viewport->size();
+    if (horizontalLength < viewportSize.width() && hbar->value() == 0) {
+        hbar->setRange(0, 0);
     } else {
         int visibleLength = qMin(horizontalLength + q->horizontalOffset(), viewportSize.width());
         int hiddenLength = horizontalLength - visibleLength;
-        if (hiddenLength != q->horizontalScrollBar()->maximum())
-            q->horizontalScrollBar()->setRange(0, hiddenLength);
+        if (hiddenLength != hbar->maximum())
+            hbar->setRange(0, hiddenLength);
     }
     if (!columns.isEmpty()) {
         int pageStepSize = columns.at(0)->width();
-        if (pageStepSize != q->horizontalScrollBar()->pageStep())
-            q->horizontalScrollBar()->setPageStep(pageStepSize);
+        if (pageStepSize != hbar->pageStep())
+            hbar->setPageStep(pageStepSize);
     }
-    bool visible = (q->horizontalScrollBar()->maximum() > 0);
-    if (visible != q->horizontalScrollBar()->isVisible())
-        q->horizontalScrollBar()->setVisible(visible);
+    bool visible = (hbar->maximum() > 0);
+    if (visible != hbar->isVisible())
+        hbar->setVisible(visible);
 }
 
 /*!
@@ -696,7 +696,7 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
             q, SIGNAL(pressed(const QModelIndex &)));
 
     view->setFocusPolicy(Qt::NoFocus);
-    view->setParent(q->viewport());
+    view->setParent(viewport);
     Q_ASSERT(view);
 
     // Setup corner grip
@@ -707,13 +707,13 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
     }
 
     if (columnSizes.count() > columns.count()) {
-        view->setGeometry(0, 0, columnSizes.at(columns.count()), q->viewport()->height());
+        view->setGeometry(0, 0, columnSizes.at(columns.count()), viewport->height());
     } else {
         int initialWidth = view->sizeHint().width();
         if (q->isRightToLeft())
-            view->setGeometry(q->viewport()->width() - initialWidth, 0, initialWidth, q->viewport()->height());
+            view->setGeometry(viewport->width() - initialWidth, 0, initialWidth, viewport->height());
         else
-            view->setGeometry(0, 0, initialWidth, q->viewport()->height());
+            view->setGeometry(0, 0, initialWidth, viewport->height());
         columnSizes.resize(qMax(columnSizes.count(), columns.count() + 1));
         columnSizes[columns.count()] = initialWidth;
     }
@@ -1056,11 +1056,11 @@ void QColumnViewPrivate::doLayout()
     if (!model || columns.isEmpty())
         return;
 
-    int viewportHeight = q->viewport()->height();
+    int viewportHeight = viewport->height();
     int x = columns.at(0)->x();
 
     if (q->isRightToLeft()) {
-        x = q->viewport()->width() + q->horizontalOffset();
+        x = viewport->width() + q->horizontalOffset();
         for (int i = 0; i < columns.size(); ++i) {
             QAbstractItemView *view = columns.at(i);
             x -= view->width();
@@ -1116,7 +1116,7 @@ void QColumnViewDelegate::paint(QPainter *painter,
     // Draw >
     if (index.model()->hasChildren(index)) {
         const QWidget *view = opt.widget;
-        QStyle *style = view ? view->style() : qApp->style();
+        QStyle *style = view ? view->style() : QApplication::style();
         style->drawPrimitive(QStyle::PE_IndicatorColumnViewArrow, &opt, painter, view);
     }
 }

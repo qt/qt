@@ -19,20 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLPreElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLPreElement.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLPreElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLPreElement);
 
 /* Hash table */
 
@@ -76,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -127,40 +124,42 @@ bool JSHTMLPreElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSHTMLPreElement, Base>(exec, &JSHTMLPreElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLPreElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLPreElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->width());
 }
 
-JSValuePtr jsHTMLPreElementWrap(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLPreElementWrap(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->wrap());
 }
 
-JSValuePtr jsHTMLPreElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLPreElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLPreElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLPreElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLPreElement, Base>(exec, propertyName, value, &JSHTMLPreElementTable, this, slot);
 }
 
-void setJSHTMLPreElementWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLPreElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(thisObject)->impl());
-    imp->setWidth(value->toInt32(exec));
+    imp->setWidth(value.toInt32(exec));
 }
 
-void setJSHTMLPreElementWrap(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLPreElementWrap(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(thisObject)->impl());
-    imp->setWrap(value->toBoolean(exec));
+    imp->setWrap(value.toBoolean(exec));
 }
 
-JSValuePtr JSHTMLPreElement::getConstructor(ExecState* exec)
+JSValue JSHTMLPreElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLPreElementConstructor>(exec);
 }

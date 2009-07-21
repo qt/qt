@@ -149,7 +149,7 @@ void Porting::readXML(RuleList *renamedHeaders, RuleList *renamedClasses, RuleLi
     QString fileName = QLatin1String("q3porting.xml");
     QString filePath;
     //check QLibraryInfo::DataPath/filename
-    filePath = QDir::cleanPath(QLibraryInfo::location(QLibraryInfo::DataPath) + QLatin1String("/") + fileName)  ;
+    filePath = QDir::cleanPath(QLibraryInfo::location(QLibraryInfo::DataPath) + QLatin1Char('/') + fileName)  ;
 
     //check QLibraryInfo::PrefixPath/tools/porting/src/filename
     if (!QFile::exists(filePath))

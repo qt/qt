@@ -223,7 +223,7 @@ public:
     inline QT3_SUPPORT QString ref() const { return fragment(); }
     inline QT3_SUPPORT void setRef(const QString &txt) { setFragment(txt); }
     inline QT3_SUPPORT bool hasRef() const { return !fragment().isEmpty(); }
-    inline QT3_SUPPORT void addPath(const QString &p) { setPath(path() + QLatin1String("/") + p); }
+    inline QT3_SUPPORT void addPath(const QString &p) { setPath(path() + QLatin1Char('/') + p); }
     QT3_SUPPORT void setFileName(const QString &txt);
     QT3_SUPPORT QString fileName() const;
     QT3_SUPPORT QString dirPath() const;

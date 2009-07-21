@@ -19,21 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSMessageChannel.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSMessagePort.h"
 #include "MessageChannel.h"
 #include "MessagePort.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSMessageChannel)
+ASSERT_CLASS_FITS_IN_CELL(JSMessageChannel);
 
 /* Hash table */
 
@@ -91,7 +88,6 @@ JSMessageChannel::JSMessageChannel(PassRefPtr<Structure> structure, PassRefPtr<M
 JSMessageChannel::~JSMessageChannel()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSMessageChannel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -104,25 +100,27 @@ bool JSMessageChannel::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSMessageChannel, Base>(exec, getJSMessageChannelTable(exec), this, propertyName, slot);
 }
 
-JSValuePtr jsMessageChannelPort1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMessageChannelPort1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MessageChannel* imp = static_cast<MessageChannel*>(static_cast<JSMessageChannel*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->port1()));
 }
 
-JSValuePtr jsMessageChannelPort2(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMessageChannelPort2(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MessageChannel* imp = static_cast<MessageChannel*>(static_cast<JSMessageChannel*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->port2()));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, MessageChannel* object)
+JSC::JSValue toJS(JSC::ExecState* exec, MessageChannel* object)
 {
     return getDOMObjectWrapper<JSMessageChannel>(exec, object);
 }
-MessageChannel* toMessageChannel(JSC::JSValuePtr value)
+MessageChannel* toMessageChannel(JSC::JSValue value)
 {
-    return value->isObject(&JSMessageChannel::s_info) ? static_cast<JSMessageChannel*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSMessageChannel::s_info) ? static_cast<JSMessageChannel*>(asObject(value))->impl() : 0;
 }
 
 }

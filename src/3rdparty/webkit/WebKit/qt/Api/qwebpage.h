@@ -52,10 +52,11 @@ namespace WebCore {
     class ChromeClientQt;
     class EditorClientQt;
     class FrameLoaderClientQt;
-    class FrameLoadRequest;
     class InspectorClientQt;
     class ResourceHandle;
     class HitTestResult;
+
+    struct FrameLoadRequest;
 }
 
 class QWEBKIT_EXPORT QWebPage : public QObject
@@ -65,6 +66,7 @@ class QWEBKIT_EXPORT QWebPage : public QObject
     Q_PROPERTY(bool modified READ isModified)
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(QSize viewportSize READ viewportSize WRITE setViewportSize)
+    Q_PROPERTY(QSize fixedContentsSize READ fixedContentsSize WRITE setFixedContentsSize)
     Q_PROPERTY(bool forwardUnsupportedContent READ forwardUnsupportedContent WRITE setForwardUnsupportedContent)
     Q_PROPERTY(LinkDelegationPolicy linkDelegationPolicy READ linkDelegationPolicy WRITE setLinkDelegationPolicy)
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
@@ -148,13 +150,30 @@ public:
 
         SelectAll,
 
+        PasteAndMatchStyle,
+        RemoveFormat,
+
+        ToggleStrikethrough,
+        ToggleSubscript,
+        ToggleSuperscript,
+        InsertUnorderedList,
+        InsertOrderedList,
+        Indent,
+        Outdent,
+
+        AlignCenter,
+        AlignJustified,
+        AlignLeft,
+        AlignRight,
+
         WebActionCount
     };
 
     enum FindFlag {
         FindBackward = 1,
         FindCaseSensitively = 2,
-        FindWrapsAroundDocument = 4
+        FindWrapsAroundDocument = 4,
+        HighlightAllOccurrences = 8
     };
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
@@ -214,6 +233,9 @@ public:
 
     QSize viewportSize() const;
     void setViewportSize(const QSize &size) const;
+
+    QSize fixedContentsSize() const;
+    void setFixedContentsSize(const QSize &size) const;
 
     virtual bool event(QEvent*);
     bool focusNextPrevChild(bool next);
@@ -317,6 +339,9 @@ protected:
 private:
     Q_PRIVATE_SLOT(d, void _q_onLoadProgressChanged(int))
     Q_PRIVATE_SLOT(d, void _q_webActionTriggered(bool checked))
+#ifndef NDEBUG
+    Q_PRIVATE_SLOT(d, void _q_cleanupLeakMessages())
+#endif
     QWebPagePrivate *d;
 
     friend class QWebFrame;

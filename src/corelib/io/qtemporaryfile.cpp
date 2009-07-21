@@ -203,7 +203,7 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
             if (QDir::isAbsolutePath(QString::fromLatin1(path)))
                 targetPath = QLatin1String(path);
             else
-                targetPath = QDir::currentPath().append(QLatin1String("/")) + QLatin1String(path);
+                targetPath = QDir::currentPath().append(QLatin1Char('/')) + QLatin1String(path);
 
             if ((*doopen =
                 QT_OPEN(targetPath.toLocal8Bit(), O_CREAT|O_EXCL|O_RDWR
@@ -340,6 +340,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
     Q_ASSERT(!isReallyOpen());
+
+    openMode |= QIODevice::ReadWrite;
 
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
@@ -762,7 +764,6 @@ bool QTemporaryFile::open(OpenMode flags)
         }
     }
 
-    flags |= QIODevice::ReadWrite;
     if (QFile::open(flags)) {
         d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);
         return true;

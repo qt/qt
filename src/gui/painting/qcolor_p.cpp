@@ -49,7 +49,7 @@
 #include "qrgb.h"
 #include "qstringlist.h"
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include "qguifunctions_wince.h"
 #endif
 QT_BEGIN_NAMESPACE

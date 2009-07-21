@@ -100,7 +100,7 @@ enum ThreadAction {
     RemoveWatchAction = 61,
     ToggleWatchAction = 62,
     SocketReadAction = 63,
-    SocketWriteAction = 64,
+    SocketWriteAction = 64
 };
 
 struct QDBusLockerBase

@@ -19,20 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSVoidCallback.h"
 
-#include <wtf/GetPtr.h>
-
 #include "VoidCallback.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSVoidCallback)
+ASSERT_CLASS_FITS_IN_CELL(JSVoidCallback);
 
 /* Hash table for prototype */
 
@@ -72,7 +69,6 @@ JSVoidCallback::JSVoidCallback(PassRefPtr<Structure> structure, PassRefPtr<VoidC
 JSVoidCallback::~JSVoidCallback()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSVoidCallback::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -80,9 +76,10 @@ JSObject* JSVoidCallback::createPrototype(ExecState* exec, JSGlobalObject* globa
     return new (exec) JSVoidCallbackPrototype(JSVoidCallbackPrototype::createStructure(globalObject->objectPrototype()));
 }
 
-JSValuePtr jsVoidCallbackPrototypeFunctionHandleEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsVoidCallbackPrototypeFunctionHandleEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSVoidCallback::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSVoidCallback::s_info))
         return throwError(exec, TypeError);
     JSVoidCallback* castedThisObj = static_cast<JSVoidCallback*>(asObject(thisValue));
     VoidCallback* imp = static_cast<VoidCallback*>(castedThisObj->impl());
@@ -91,7 +88,7 @@ JSValuePtr jsVoidCallbackPrototypeFunctionHandleEvent(ExecState* exec, JSObject*
     return jsUndefined();
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, VoidCallback* object)
+JSC::JSValue toJS(JSC::ExecState* exec, VoidCallback* object)
 {
     return getDOMObjectWrapper<JSVoidCallback>(exec, object);
 }

@@ -79,7 +79,7 @@
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include "qkeysequence.h"
-#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1String("\t") + QString(QKeySequence(k)) : QString())
+#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1Char('\t') + QString(QKeySequence(k)) : QString())
 #else
 #define ACCEL_KEY(k) QString()
 #endif
@@ -1555,10 +1555,7 @@ void QLineEditPrivate::copy(bool clipboard) const
     Q_Q(const QLineEdit);
     QString t = q->selectedText();
     if (!t.isEmpty() && echoMode == QLineEdit::Normal) {
-        q->disconnect(QApplication::clipboard(), SIGNAL(selectionChanged()), q, 0);
         QApplication::clipboard()->setText(t, clipboard ? QClipboard::Clipboard : QClipboard::Selection);
-        q->connect(QApplication::clipboard(), SIGNAL(selectionChanged()),
-                   q, SLOT(_q_clipboardChanged()));
     }
 }
 
@@ -2571,7 +2568,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // draw text, selections and cursors
 #ifndef QT_NO_STYLE_STYLESHEET
     if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
-        cssStyle->focusPalette(this, &panel, &pal);
+        cssStyle->styleSheetPalette(this, &panel, &pal);
     }
 #endif
     p.setPen(pal.text().color());
@@ -2742,11 +2739,11 @@ QMenu *QLineEdit::createStandardContextMenu()
 
 #ifndef QT_NO_CLIPBOARD
     action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
-    action->setEnabled(!d->readOnly && d->hasSelectedText());
+    action->setEnabled(!d->readOnly && d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(cut()));
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
-    action->setEnabled(d->hasSelectedText());
+    action->setEnabled(d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
     action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
@@ -2800,10 +2797,6 @@ void QLineEdit::changeEvent(QEvent *ev)
         d->updateTextLayout();
     }
     QWidget::changeEvent(ev);
-}
-
-void QLineEditPrivate::_q_clipboardChanged()
-{
 }
 
 void QLineEditPrivate::_q_handleWindowActivate()
@@ -3577,6 +3570,8 @@ void QLineEditPrivate::redo() {
         case RemoveSelection:
         case DeleteSelection:
             text.remove(cmd.pos, 1);
+            selstart = cmd.selStart;
+            selend = cmd.selEnd;
             cursor = cmd.pos;
             break;
         case Separator:

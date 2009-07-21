@@ -72,7 +72,7 @@
 #include "qfontengine_qpf_p.h"
 #endif
 #endif
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
 #include "qt_s60_p.h"
 #endif
 
@@ -172,7 +172,7 @@ Q_GUI_EXPORT int qt_defaultDpiX()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiX;
 #endif // Q_WS_X11
 
@@ -200,7 +200,7 @@ Q_GUI_EXPORT int qt_defaultDpiY()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiY;
 #endif // Q_WS_X11
 
@@ -793,7 +793,7 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     resolve_mask = QFont::FamilyResolved;
 
     if (pointSize <= 0) {
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
         pointSize = 7;
 #else
         pointSize = 12;

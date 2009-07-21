@@ -5,10 +5,8 @@ unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 wince*:{
   SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_script src_testlib
-} symbian {
+} else:symbian {
   SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_script src_testlib
-  contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
-  SRC_SUBDIRS += src_plugins
   SRC_SUBDIRS += $$QT_SOURCE_TREE/src/s60installs/qt_libs.pro
 } else {
     SRC_SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_corelib src_xml src_network src_gui src_sql src_script src_testlib
@@ -23,12 +21,10 @@ win32:{
     !wince*: SRC_SUBDIRS += src_tools_idc
 }
 
-# TODO the following line should be between opengl and webkit when the 'symbian' block is removed
-contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
-
-!symbian {
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
+contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
+contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, webkit)  {
     #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
@@ -36,7 +32,6 @@ contains(QT_CONFIG, webkit)  {
 }
 contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 SRC_SUBDIRS += src_plugins
-}
 
 src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
 src_s60main.target = sub-s60main
@@ -72,6 +67,8 @@ src_scripttools.subdir = $$QT_SOURCE_TREE/src/scripttools
 src_scripttools.target = sub-scripttools
 src_opengl.subdir = $$QT_SOURCE_TREE/src/opengl
 src_opengl.target = sub-opengl
+src_openvg.subdir = $$QT_SOURCE_TREE/src/openvg
+src_openvg.target = sub-openvg
 src_qt3support.subdir = $$QT_SOURCE_TREE/src/qt3support
 src_qt3support.target = sub-qt3support
 src_phonon.subdir = $$QT_SOURCE_TREE/src/phonon
@@ -107,6 +104,7 @@ src_webkit.target = sub-webkit
    src_scripttools.depends = src_script src_gui src_network
    src_network.depends = src_corelib
    src_opengl.depends = src_gui
+   src_openvg.depends = src_gui
    src_sql.depends = src_corelib
    src_testlib.depends = src_corelib
    src_qt3support.depends = src_gui src_xml src_network src_sql

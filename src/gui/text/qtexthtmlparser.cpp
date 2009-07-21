@@ -343,7 +343,7 @@ static QChar resolveEntity(const QString &entity)
     return e->code;
 }
 
-static const uint windowsLatin1ExtendedCharacters[0xA0 - 0x80] = {
+static const ushort windowsLatin1ExtendedCharacters[0xA0 - 0x80] = {
     0x20ac, // 0x80
     0x0081, // 0x81 direct mapping
     0x201a, // 0x82
@@ -499,7 +499,7 @@ void QTextHtmlParser::dumpHtml()
 {
     for (int i = 0; i < count(); ++i) {
         qDebug().nospace() << qPrintable(QString(depth(i)*4, QLatin1Char(' ')))
-                           << qPrintable(at(i).tag) << ":"
+                           << qPrintable(at(i).tag) << ':'
                            << quoteNewline(at(i).text);
             ;
     }

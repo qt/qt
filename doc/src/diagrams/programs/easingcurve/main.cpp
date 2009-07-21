@@ -1,0 +1,120 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the examples of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at http://www.qtsoftware.com/contact.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <QtGui>
+
+void createCurveIcons();
+
+int main(int argc, char **argv)
+{
+    QApplication app(argc, argv);
+    createCurveIcons();
+    return app.exit();
+}
+
+void createCurveIcons()
+{
+    QDir dir(QDir::current());
+    if (dir.dirName() == QLatin1String("debug") || dir.dirName() == QLatin1String("release")) {
+        dir.cdUp();
+    }
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    QSize iconSize(128, 128);
+    QPixmap pix(iconSize);
+    QPainter painter(&pix);
+    QLinearGradient gradient(0,0, 0, iconSize.height());
+    gradient.setColorAt(0.0, QColor(240, 240, 240));
+    gradient.setColorAt(1.0, QColor(224, 224, 224));
+    QBrush brush(gradient);
+    const QMetaObject &mo = QEasingCurve::staticMetaObject;
+    QMetaEnum metaEnum = mo.enumerator(mo.indexOfEnumerator("Type"));
+    QFont oldFont = painter.font();
+    // Skip QEasingCurve::Custom
+    QString output(QString::fromAscii("%1/images").arg(dir.absolutePath()));
+    printf("Generating images to %s\n", qPrintable(output));
+    for (int i = 0; i < QEasingCurve::NCurveTypes - 1; ++i) {
+        painter.setFont(oldFont);
+        QString name(QLatin1String(metaEnum.key(i)));
+        painter.fillRect(QRect(QPoint(0, 0), iconSize), brush);
+        QEasingCurve curve((QEasingCurve::Type)i);
+        painter.setPen(QColor(0, 0, 255, 64));
+        qreal xAxis = iconSize.height()/1.5;
+        qreal yAxis = iconSize.width()/3;
+        painter.drawLine(0, xAxis, iconSize.width(),  xAxis); // hor
+        painter.drawLine(yAxis, 0, yAxis, iconSize.height()); // ver
+
+        qreal curveScale = iconSize.height()/2;
+
+        painter.drawLine(yAxis - 2, xAxis - curveScale, yAxis + 2, xAxis - curveScale); // hor 
+        painter.drawLine(yAxis + curveScale, xAxis + 2, yAxis + curveScale, xAxis - 2); // ver
+        painter.drawText(yAxis + curveScale - 8, xAxis - curveScale - 4, QLatin1String("(1,1)"));
+        
+        painter.drawText(yAxis + 42, xAxis + 10, QLatin1String("progress"));
+        painter.drawText(15, xAxis - curveScale - 10, QLatin1String("ease"));
+        
+        painter.setPen(QPen(Qt::red, 1, Qt::DotLine));        
+        painter.drawLine(yAxis, xAxis - curveScale, yAxis + curveScale, xAxis - curveScale); // hor
+        painter.drawLine(yAxis + curveScale, xAxis, yAxis + curveScale, xAxis - curveScale); // ver
+        
+        QPoint currentPos(yAxis, xAxis);
+        
+        painter.setPen(Qt::black);
+        QFont font = oldFont;
+        font.setPixelSize(oldFont.pixelSize() + 15);
+        painter.setFont(font);
+        painter.drawText(0, iconSize.height() - 20, iconSize.width(), 20, Qt::AlignHCenter, name);
+       
+        for (qreal t = 0; t < 1.0; t+=1.0/curveScale) {
+            QPoint to;
+            to.setX(yAxis + curveScale * t);
+            to.setY(xAxis - curveScale * curve.valueForProgress(t));
+            painter.drawLine(currentPos, to);
+            currentPos = to;
+        }
+        QString fileName(QString::fromAscii("qeasingcurve-%1.png").arg(name.toLower()));
+        printf("%s\n", qPrintable(fileName));
+        pix.save(QString::fromAscii("%1/%2").arg(output).arg(fileName), "PNG");
+    }
+}
+
+

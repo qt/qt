@@ -111,15 +111,29 @@ void tst_QScriptEngineDebugger::attachAndDetach()
 {
     {
         QScriptEngineDebugger debugger;
+        QCOMPARE(debugger.state(), QScriptEngineDebugger::SuspendedState);
         debugger.attachTo(0);
         QScriptEngine engine;
         debugger.attachTo(&engine);
+        QCOMPARE(debugger.state(), QScriptEngineDebugger::SuspendedState);
     }
     {
         QScriptEngineDebugger debugger;
         QScriptEngine engine;
+        QScriptValue oldPrint = engine.globalObject().property("print");
+        QVERIFY(oldPrint.isFunction());
+        QVERIFY(!engine.globalObject().property("__FILE__").isValid());
+        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
+
         debugger.attachTo(&engine);
+        QVERIFY(engine.globalObject().property("__FILE__").isUndefined());
+        QVERIFY(engine.globalObject().property("__LINE__").isNumber());
+        QVERIFY(!engine.globalObject().property("print").strictlyEquals(oldPrint));
+
         debugger.detach();
+        QVERIFY(engine.globalObject().property("print").strictlyEquals(oldPrint));
+        QVERIFY(!engine.globalObject().property("__FILE__").isValid());
+        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
     }
     {
         QScriptEngineDebugger debugger;
@@ -147,6 +161,14 @@ void tst_QScriptEngineDebugger::attachAndDetach()
         debugger2.attachTo(&engine);
     }
 #endif
+    {
+        QScriptEngine *engine = new QScriptEngine;
+        QScriptEngineDebugger debugger;
+        debugger.attachTo(engine);
+        delete engine;
+        QScriptEngine engine2;
+        debugger.attachTo(&engine2);
+    }
 }
 
 void tst_QScriptEngineDebugger::action()

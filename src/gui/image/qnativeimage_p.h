@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
 class QWidget;
 
-class Q_GUI_EXPORT QNativeImage
+class QNativeImage
 {
 public:
     QNativeImage(int width, int height, QImage::Format format, bool isTextBuffer = false, QWidget *widget = 0);
@@ -95,7 +95,6 @@ public:
 
 #elif defined(Q_WS_MAC)
     CGContextRef cg;
-    CGColorSpaceRef cgColorSpace;
 #endif
 
 private:

@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLBlockquoteElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLBlockquoteElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLBlockquoteElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLBlockquoteElement);
 
 /* Hash table */
 
@@ -77,7 +73,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,28 +124,29 @@ bool JSHTMLBlockquoteElement::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSHTMLBlockquoteElement, Base>(exec, &JSHTMLBlockquoteElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLBlockquoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBlockquoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->cite());
 }
 
-JSValuePtr jsHTMLBlockquoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBlockquoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLBlockquoteElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLBlockquoteElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLBlockquoteElement, Base>(exec, propertyName, value, &JSHTMLBlockquoteElementTable, this, slot);
 }
 
-void setJSHTMLBlockquoteElementCite(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBlockquoteElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(static_cast<JSHTMLBlockquoteElement*>(thisObject)->impl());
     imp->setCite(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLBlockquoteElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBlockquoteElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLBlockquoteElementConstructor>(exec);
 }

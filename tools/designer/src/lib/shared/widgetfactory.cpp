@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::WidgetFactory
-*/
-
 #include "widgetfactory_p.h"
 #include "widgetdatabase_p.h"
 #include "metadatabase_p.h"

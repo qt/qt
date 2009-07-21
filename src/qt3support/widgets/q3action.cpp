@@ -415,7 +415,7 @@ static QString qt_stripMenuText(QString s)
     s.remove(QLatin1String("..."));
     s.remove(QLatin1Char('&'));
     return s.trimmed();
-};
+}
 
 /*!
     Constructs an action called \a name with parent \a parent.

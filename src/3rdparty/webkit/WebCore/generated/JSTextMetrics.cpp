@@ -19,20 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSTextMetrics.h"
 
-#include <wtf/GetPtr.h>
-
 #include "TextMetrics.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSTextMetrics)
+ASSERT_CLASS_FITS_IN_CELL(JSTextMetrics);
 
 /* Hash table */
 
@@ -75,7 +72,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -120,7 +117,6 @@ JSTextMetrics::JSTextMetrics(PassRefPtr<Structure> structure, PassRefPtr<TextMet
 JSTextMetrics::~JSTextMetrics()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSTextMetrics::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -133,28 +129,29 @@ bool JSTextMetrics::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSTextMetrics, Base>(exec, &JSTextMetricsTable, this, propertyName, slot);
 }
 
-JSValuePtr jsTextMetricsWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextMetricsWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TextMetrics* imp = static_cast<TextMetrics*>(static_cast<JSTextMetrics*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->width());
 }
 
-JSValuePtr jsTextMetricsConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextMetricsConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSTextMetrics*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSTextMetrics::getConstructor(ExecState* exec)
+JSValue JSTextMetrics::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSTextMetricsConstructor>(exec);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, TextMetrics* object)
+JSC::JSValue toJS(JSC::ExecState* exec, TextMetrics* object)
 {
     return getDOMObjectWrapper<JSTextMetrics>(exec, object);
 }
-TextMetrics* toTextMetrics(JSC::JSValuePtr value)
+TextMetrics* toTextMetrics(JSC::JSValue value)
 {
-    return value->isObject(&JSTextMetrics::s_info) ? static_cast<JSTextMetrics*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSTextMetrics::s_info) ? static_cast<JSTextMetrics*>(asObject(value))->impl() : 0;
 }
 
 }

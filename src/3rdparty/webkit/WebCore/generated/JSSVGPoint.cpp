@@ -20,25 +20,21 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPoint.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGMatrix.h"
 #include "JSSVGPoint.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPoint)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPoint);
 
 /* Hash table */
 
@@ -95,7 +91,6 @@ JSSVGPoint::JSSVGPoint(PassRefPtr<Structure> structure, PassRefPtr<JSSVGPODTypeW
 JSSVGPoint::~JSSVGPoint()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSSVGPoint::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -108,59 +103,62 @@ bool JSSVGPoint::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSSVGPoint, Base>(exec, &JSSVGPointTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPointX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPointX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     FloatPoint imp(*static_cast<JSSVGPoint*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.x());
 }
 
-JSValuePtr jsSVGPointY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPointY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     FloatPoint imp(*static_cast<JSSVGPoint*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp.y());
 }
 
-void JSSVGPoint::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPoint::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPoint, Base>(exec, propertyName, value, &JSSVGPointTable, this, slot);
 }
 
-void setJSSVGPointX(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPointX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     FloatPoint imp(*static_cast<JSSVGPoint*>(thisObject)->impl());
-    imp.setX(value->toFloat(exec));
+    imp.setX(value.toFloat(exec));
         static_cast<JSSVGPoint*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGPoint*>(thisObject)->context());
 }
 
-void setJSSVGPointY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPointY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     FloatPoint imp(*static_cast<JSSVGPoint*>(thisObject)->impl());
-    imp.setY(value->toFloat(exec));
+    imp.setY(value.toFloat(exec));
         static_cast<JSSVGPoint*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGPoint*>(thisObject)->context());
 }
 
-JSValuePtr jsSVGPointPrototypeFunctionMatrixTransform(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGPointPrototypeFunctionMatrixTransform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGPoint::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGPoint::s_info))
         return throwError(exec, TypeError);
     JSSVGPoint* castedThisObj = static_cast<JSSVGPoint*>(asObject(thisValue));
     JSSVGPODTypeWrapper<FloatPoint>* wrapper = castedThisObj->impl();
     FloatPoint imp(*wrapper);
-    TransformationMatrix matrix = toSVGMatrix(args.at(exec, 0));
+    TransformationMatrix matrix = toSVGMatrix(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp.matrixTransform(matrix)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp.matrixTransform(matrix)).get(), castedThisObj->context());
     wrapper->commitChange(imp, castedThisObj->context());
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<FloatPoint>* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<FloatPoint>* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGPoint, JSSVGPODTypeWrapper<FloatPoint> >(exec, object, context);
 }
-FloatPoint toSVGPoint(JSC::JSValuePtr value)
+FloatPoint toSVGPoint(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGPoint::s_info) ? (FloatPoint) *static_cast<JSSVGPoint*>(asObject(value))->impl() : FloatPoint();
+    return value.isObject(&JSSVGPoint::s_info) ? (FloatPoint) *static_cast<JSSVGPoint*>(asObject(value))->impl() : FloatPoint();
 }
 
 }

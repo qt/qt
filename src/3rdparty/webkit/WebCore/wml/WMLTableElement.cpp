@@ -28,6 +28,7 @@
 #include "CSSValueKeywords.h"
 #include "Document.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "NodeList.h"
 #include "RenderObject.h"
 #include "Text.h"
@@ -66,7 +67,7 @@ void WMLTableElement::parseMappedAttribute(MappedAttribute* attr)
 
         // Spec: This required attribute specifies the number of columns for the table.
         // The user agent must create a table with exactly the number of columns specified
-        // by the attribute value. It is an error to specify a value of zero (“0”).
+        // by the attribute value. It is an error to specify a value of zero ("0")
         if (!m_columns || !isNumber)
             reportWMLError(document(), WMLErrorInvalidColumnsNumberInTable);
     } else if (attr->name() == HTMLNames::alignAttr)

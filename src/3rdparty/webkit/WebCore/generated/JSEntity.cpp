@@ -19,21 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSEntity.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Entity.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSEntity)
+ASSERT_CLASS_FITS_IN_CELL(JSEntity);
 
 /* Hash table */
 
@@ -78,7 +74,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -129,29 +125,32 @@ bool JSEntity::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNam
     return getStaticValueSlot<JSEntity, Base>(exec, &JSEntityTable, this, propertyName, slot);
 }
 
-JSValuePtr jsEntityPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(static_cast<JSEntity*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->publicId());
 }
 
-JSValuePtr jsEntitySystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntitySystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(static_cast<JSEntity*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->systemId());
 }
 
-JSValuePtr jsEntityNotationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityNotationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(static_cast<JSEntity*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->notationName());
 }
 
-JSValuePtr jsEntityConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSEntity*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSEntity::getConstructor(ExecState* exec)
+JSValue JSEntity::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSEntityConstructor>(exec);
 }

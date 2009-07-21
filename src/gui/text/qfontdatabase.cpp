@@ -56,7 +56,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#if (defined(Q_WS_QWS) || defined(Q_WS_S60)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 #  include <ft2build.h>
 #  include FT_TRUETYPE_TABLES_H
 #endif
@@ -94,34 +94,34 @@ static int getFontWeight(const QString &weightString)
     // Test in decreasing order of commonness
     if (s == QLatin1String("medium") ||
         s == QLatin1String("normal")
-        || s.compare(qApp->translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
         return QFont::Normal;
     if (s == QLatin1String("bold")
-        || s.compare(qApp->translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
         return QFont::Bold;
     if (s == QLatin1String("demibold") || s == QLatin1String("demi bold")
-        || s.compare(qApp->translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
         return QFont::DemiBold;
     if (s == QLatin1String("black")
-        || s.compare(qApp->translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
         return QFont::Black;
     if (s == QLatin1String("light"))
         return QFont::Light;
 
     if (s.contains(QLatin1String("bold"))
-        || s.contains(qApp->translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
+        || s.contains(QApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
         if (s.contains(QLatin1String("demi"))
-            || s.compare(qApp->translate("QFontDatabase", "Demi"), Qt::CaseInsensitive) == 0)
+            || s.compare(QApplication::translate("QFontDatabase", "Demi"), Qt::CaseInsensitive) == 0)
             return (int) QFont::DemiBold;
         return (int) QFont::Bold;
     }
 
     if (s.contains(QLatin1String("light"))
-        || s.compare(qApp->translate("QFontDatabase", "Light"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Light"), Qt::CaseInsensitive) == 0)
         return (int) QFont::Light;
 
     if (s.contains(QLatin1String("black"))
-        || s.compare(qApp->translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
         return (int) QFont::Black;
 
     return (int) QFont::Normal;
@@ -148,10 +148,10 @@ struct QtFontSize
     QtFontEncoding *encodingID(int id, uint xpoint = 0, uint xres = 0,
                                 uint yres = 0, uint avgwidth = 0, bool add = false);
 #endif // Q_WS_X11
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QByteArray fileName;
     int fileIndex;
-#endif // defined(Q_WS_QWS) || defined(Q_WS_S60)
+#endif // defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
 };
 
 
@@ -225,12 +225,12 @@ struct QtFontStyle
         delete [] weightName;
         delete [] setwidthName;
 #endif
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
         while (count--) {
 #ifdef Q_WS_X11
             free(pixelSizes[count].encodings);
 #endif
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
             pixelSizes[count].fileName.~QByteArray();
 #endif
         }
@@ -248,7 +248,7 @@ struct QtFontStyle
     const char *weightName;
     const char *setwidthName;
 #endif // Q_WS_X11
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     bool antialiased;
 #endif
 
@@ -261,10 +261,10 @@ QtFontStyle::Key::Key(const QString &styleString)
     weight = getFontWeight(styleString);
 
     if (styleString.contains(QLatin1String("Italic"))
-        || styleString.contains(qApp->translate("QFontDatabase", "Italic")))
+        || styleString.contains(QApplication::translate("QFontDatabase", "Italic")))
         style = QFont::StyleItalic;
     else if (styleString.contains(QLatin1String("Oblique"))
-             || styleString.contains(qApp->translate("QFontDatabase", "Oblique")))
+             || styleString.contains(QApplication::translate("QFontDatabase", "Oblique")))
         style = QFont::StyleOblique;
 }
 
@@ -289,7 +289,7 @@ QtFontSize *QtFontStyle::pixelSize(unsigned short size, bool add)
     pixelSizes[count].count = 0;
     pixelSizes[count].encodings = 0;
 #endif
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     new (&pixelSizes[count].fileName) QByteArray;
     pixelSizes[count].fileIndex = 0;
 #endif
@@ -375,7 +375,7 @@ struct QtFontFamily
         fixedPitchComputed(false),
 #endif
         name(n), count(0), foundries(0)
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
         , bogusWritingSystems(false)
 #endif
     {
@@ -405,7 +405,7 @@ struct QtFontFamily
 #endif
 
     QString name;
-#if defined(Q_WS_X11) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_X11) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     QByteArray fontFilename;
     int fontFileIndex;
 #endif
@@ -415,7 +415,7 @@ struct QtFontFamily
     int count;
     QtFontFoundry **foundries;
 
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     bool bogusWritingSystems;
     QStringList fallbackFamilies;
 #endif
@@ -462,7 +462,7 @@ QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
 
 // ### copied to tools/makeqpf/qpf2.cpp
 
-#if (defined(Q_WS_QWS) && !defined(QT_NO_FREETYPE)) || defined(Q_WS_WIN) || (defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)) || defined(Q_WS_S60)
+#if (defined(Q_WS_QWS) && !defined(QT_NO_FREETYPE)) || defined(Q_WS_WIN)  || defined(Q_OS_SYMBIAN) || (defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA))
 // see the Unicode subset bitfields in the MSDN docs
 static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Any,
@@ -583,7 +583,7 @@ static QList<QFontDatabase::WritingSystem> determineWritingSystemsFromTrueTypeBi
 }
 #endif
 
-#if defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 // class with virtual destructor, derived in qfontdatabase_s60.cpp
 class QFontDatabaseS60Store
 {
@@ -600,7 +600,7 @@ public:
 #if defined(Q_WS_QWS)
           , stream(0)
 #endif
-#if defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
           , s60Store(0)
 #endif
     { }
@@ -614,7 +614,7 @@ public:
         ::free(families);
         families = 0;
         count = 0;
-#if defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
         if (s60Store) {
             delete s60Store;
             s60Store = 0;
@@ -649,7 +649,7 @@ public:
     bool loadFromCache(const QString &fontPath);
     void addQPF2File(const QByteArray &file);
 #endif // Q_WS_QWS
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     void addFont(const QString &familyname, const char *foundryname, int weight,
                  bool italic, int pixelSize, const QByteArray &file, int fileIndex,
                  bool antialiased,
@@ -661,7 +661,7 @@ public:
 #if defined(Q_WS_QWS)
     QDataStream *stream;
     QStringList fallbackFamilies;
-#elif defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
     const QFontDatabaseS60Store *s60Store;
 #endif
 };
@@ -712,7 +712,7 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
     return families[pos];
 }
 
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
 void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, bool italic, int pixelSize,
                                    const QByteArray &file, int fileIndex, bool antialiased,
                                    const QList<QFontDatabase::WritingSystem> &writingSystems)
@@ -751,14 +751,14 @@ void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundr
         for (int i = 0; i < writingSystems.count(); ++i)
             *stream << quint8(writingSystems.at(i));
     }
-#else // ..in case of defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#else // ..in case of defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     f->fontFilename = file;
     f->fontFileIndex = fileIndex;
 #endif
 }
 #endif
 
-#if (defined(Q_WS_QWS) || defined(Q_WS_S60)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 QStringList QFontDatabasePrivate::addTTFile(const QByteArray &file, const QByteArray &fontData)
 {
     QStringList families;
@@ -951,7 +951,7 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     if (! desc.foundry->name.isEmpty() && desc.family->count > 1) {
         fontDef->family += QString::fromLatin1(" [");
         fontDef->family += desc.foundry->name;
-        fontDef->family += QString::fromLatin1("]");
+        fontDef->family += QLatin1Char(']');
     }
 
     if (desc.style->smoothScalable)
@@ -973,7 +973,7 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
 #endif
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
 static void getEngineData(const QFontPrivate *d, const QFontCache::Key &key)
 {
     // look for the requested font in the engine data cache
@@ -1034,7 +1034,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #  include "qfontdatabase_win.cpp"
 #elif defined(Q_WS_QWS)
 #  include "qfontdatabase_qws.cpp"
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
 #  include "qfontdatabase_s60.cpp"
 #endif
 QT_END_INCLUDE_NAMESPACE
@@ -1408,21 +1408,21 @@ static QString styleStringHelper(int weight, QFont::Style style)
 {
     QString result;
     if (weight >= QFont::Black)
-        result = qApp->translate("QFontDatabase", "Black");
+        result = QApplication::translate("QFontDatabase", "Black");
     else if (weight >= QFont::Bold)
-        result = qApp->translate("QFontDatabase", "Bold");
+        result = QApplication::translate("QFontDatabase", "Bold");
     else if (weight >= QFont::DemiBold)
-        result = qApp->translate("QFontDatabase", "Demi Bold");
+        result = QApplication::translate("QFontDatabase", "Demi Bold");
     else if (weight < QFont::Normal)
-        result = qApp->translate("QFontDatabase", "Light");
+        result = QApplication::translate("QFontDatabase", "Light");
 
     if (style == QFont::StyleItalic)
-        result += QLatin1Char(' ') + qApp->translate("QFontDatabase", "Italic");
+        result += QLatin1Char(' ') + QApplication::translate("QFontDatabase", "Italic");
     else if (style == QFont::StyleOblique)
-        result += QLatin1Char(' ') + qApp->translate("QFontDatabase", "Oblique");
+        result += QLatin1Char(' ') + QApplication::translate("QFontDatabase", "Oblique");
 
     if (result.isEmpty())
-        result = qApp->translate("QFontDatabase", "Normal");
+        result = QApplication::translate("QFontDatabase", "Normal");
 
     return result.simplified();
 }
@@ -1654,7 +1654,7 @@ QStringList QFontDatabase::families(WritingSystem writingSystem) const
                 if (!foundry.isEmpty()) {
                     str += QLatin1String(" [");
                     str += foundry;
-                    str += QLatin1String("]");
+                    str += QLatin1Char(']');
                 }
                 flist.append(str);
             }
@@ -2226,7 +2226,7 @@ QString QFontDatabase::writingSystemName(WritingSystem writingSystem)
         Q_ASSERT_X(false, "QFontDatabase::writingSystemName", "invalid 'writingSystem' parameter");
         break;
     }
-    return qApp ? qApp->translate("QFontDatabase", name) : QString::fromLatin1(name);
+    return QApplication::translate("QFontDatabase", name);
 }
 
 

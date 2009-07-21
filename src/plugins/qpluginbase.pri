@@ -17,4 +17,5 @@ wince*:LIBS += $$QMAKE_LIBS_GUI
 symbian: {
     TARGET.EPOCALLOWDLLDATA=1
     TARGET.CAPABILITY = All -Tcb        
+    load(armcc_warnings)
 }

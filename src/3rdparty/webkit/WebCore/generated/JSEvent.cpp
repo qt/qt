@@ -19,25 +19,22 @@
 */
 
 #include "config.h"
-
 #include "JSEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventTarget.h"
 #include "JSEventTarget.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSEvent)
+ASSERT_CLASS_FITS_IN_CELL(JSEvent);
 
 /* Hash table */
 
@@ -109,7 +106,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -189,7 +186,6 @@ JSEvent::JSEvent(PassRefPtr<Structure> structure, PassRefPtr<Event> impl)
 JSEvent::~JSEvent()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -202,100 +198,111 @@ bool JSEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName
     return getStaticValueSlot<JSEvent, Base>(exec, getJSEventTable(exec), this, propertyName, slot);
 }
 
-JSValuePtr jsEventType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsEventTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->target()));
 }
 
-JSValuePtr jsEventCurrentTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventCurrentTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->currentTarget()));
 }
 
-JSValuePtr jsEventEventPhase(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventEventPhase(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->eventPhase());
 }
 
-JSValuePtr jsEventBubbles(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventBubbles(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->bubbles());
 }
 
-JSValuePtr jsEventCancelable(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventCancelable(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->cancelable());
 }
 
-JSValuePtr jsEventTimeStamp(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventTimeStamp(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->timeStamp());
 }
 
-JSValuePtr jsEventSrcElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventSrcElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->srcElement()));
 }
 
-JSValuePtr jsEventReturnValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventReturnValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->returnValue());
 }
 
-JSValuePtr jsEventCancelBubble(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventCancelBubble(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->cancelBubble());
 }
 
-JSValuePtr jsEventClipboardData(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventClipboardData(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSEvent*>(asObject(slot.slotBase()))->clipboardData(exec);
 }
 
-JSValuePtr jsEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSEvent::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSEvent::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSEvent, Base>(exec, propertyName, value, getJSEventTable(exec), this, slot);
 }
 
-void setJSEventReturnValue(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSEventReturnValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(thisObject)->impl());
-    imp->setReturnValue(value->toBoolean(exec));
+    imp->setReturnValue(value.toBoolean(exec));
 }
 
-void setJSEventCancelBubble(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSEventCancelBubble(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     Event* imp = static_cast<Event*>(static_cast<JSEvent*>(thisObject)->impl());
-    imp->setCancelBubble(value->toBoolean(exec));
+    imp->setCancelBubble(value.toBoolean(exec));
 }
 
-JSValuePtr JSEvent::getConstructor(ExecState* exec)
+JSValue JSEvent::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSEventConstructor>(exec);
 }
 
-JSValuePtr jsEventPrototypeFunctionStopPropagation(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsEventPrototypeFunctionStopPropagation(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSEvent::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSEvent::s_info))
         return throwError(exec, TypeError);
     JSEvent* castedThisObj = static_cast<JSEvent*>(asObject(thisValue));
     Event* imp = static_cast<Event*>(castedThisObj->impl());
@@ -304,9 +311,10 @@ JSValuePtr jsEventPrototypeFunctionStopPropagation(ExecState* exec, JSObject*, J
     return jsUndefined();
 }
 
-JSValuePtr jsEventPrototypeFunctionPreventDefault(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsEventPrototypeFunctionPreventDefault(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSEvent::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSEvent::s_info))
         return throwError(exec, TypeError);
     JSEvent* castedThisObj = static_cast<JSEvent*>(asObject(thisValue));
     Event* imp = static_cast<Event*>(castedThisObj->impl());
@@ -315,15 +323,16 @@ JSValuePtr jsEventPrototypeFunctionPreventDefault(ExecState* exec, JSObject*, JS
     return jsUndefined();
 }
 
-JSValuePtr jsEventPrototypeFunctionInitEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsEventPrototypeFunctionInitEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSEvent::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSEvent::s_info))
         return throwError(exec, TypeError);
     JSEvent* castedThisObj = static_cast<JSEvent*>(asObject(thisValue));
     Event* imp = static_cast<Event*>(castedThisObj->impl());
-    const UString& eventTypeArg = args.at(exec, 0)->toString(exec);
-    bool canBubbleArg = args.at(exec, 1)->toBoolean(exec);
-    bool cancelableArg = args.at(exec, 2)->toBoolean(exec);
+    const UString& eventTypeArg = args.at(0).toString(exec);
+    bool canBubbleArg = args.at(1).toBoolean(exec);
+    bool cancelableArg = args.at(2).toBoolean(exec);
 
     imp->initEvent(eventTypeArg, canBubbleArg, cancelableArg);
     return jsUndefined();
@@ -331,104 +340,104 @@ JSValuePtr jsEventPrototypeFunctionInitEvent(ExecState* exec, JSObject*, JSValue
 
 // Constant getters
 
-JSValuePtr jsEventCAPTURING_PHASE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventCAPTURING_PHASE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsEventAT_TARGET(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventAT_TARGET(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsEventBUBBLING_PHASE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventBUBBLING_PHASE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValuePtr jsEventMOUSEDOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventMOUSEDOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsEventMOUSEUP(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventMOUSEUP(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsEventMOUSEOVER(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventMOUSEOVER(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValuePtr jsEventMOUSEOUT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventMOUSEOUT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(8));
 }
 
-JSValuePtr jsEventMOUSEMOVE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventMOUSEMOVE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(16));
 }
 
-JSValuePtr jsEventMOUSEDRAG(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventMOUSEDRAG(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(32));
 }
 
-JSValuePtr jsEventCLICK(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventCLICK(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(64));
 }
 
-JSValuePtr jsEventDBLCLICK(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventDBLCLICK(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(128));
 }
 
-JSValuePtr jsEventKEYDOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventKEYDOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(256));
 }
 
-JSValuePtr jsEventKEYUP(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventKEYUP(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(512));
 }
 
-JSValuePtr jsEventKEYPRESS(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventKEYPRESS(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1024));
 }
 
-JSValuePtr jsEventDRAGDROP(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventDRAGDROP(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2048));
 }
 
-JSValuePtr jsEventFOCUS(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventFOCUS(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(4096));
 }
 
-JSValuePtr jsEventBLUR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventBLUR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(8192));
 }
 
-JSValuePtr jsEventSELECT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventSELECT(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(16384));
 }
 
-JSValuePtr jsEventCHANGE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventCHANGE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(32768));
 }
 
-Event* toEvent(JSC::JSValuePtr value)
+Event* toEvent(JSC::JSValue value)
 {
-    return value->isObject(&JSEvent::s_info) ? static_cast<JSEvent*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSEvent::s_info) ? static_cast<JSEvent*>(asObject(value))->impl() : 0;
 }
 
 }

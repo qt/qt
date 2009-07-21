@@ -385,17 +385,10 @@ static void qt_create_pipe(int *pipe)
         qt_native_close(pipe[0]);
     if (pipe[1] != -1)
         qt_native_close(pipe[1]);
-#ifdef Q_OS_IRIX
-    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, pipe) == -1) {
-        qWarning("QProcessPrivate::createPipe: Cannot create pipe %p: %s",
-                 pipe, qPrintable(qt_error_string(errno)));
-    }
-#else
     if (::pipe(pipe) != 0) {
         qWarning("QProcessPrivate::createPipe: Cannot create pipe %p: %s",
                  pipe, qPrintable(qt_error_string(errno)));
     }
-#endif
     ::fcntl(pipe[0], F_SETFD, FD_CLOEXEC);
     ::fcntl(pipe[1], F_SETFD, FD_CLOEXEC);
 }
@@ -522,8 +515,12 @@ bool QProcessPrivate::createChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QStringList &environment, int *envc)
+static char **_q_dupEnvironment(const QHash<QString, QString> *environment, int *envc)
 {
+    *envc = 0;
+    if (!environment)
+        return 0;               // use the default environment
+
     // if LD_LIBRARY_PATH exists in the current environment, but
     // not in the environment list passed by the programmer, then
     // copy it over.
@@ -532,27 +529,29 @@ static char **_q_dupEnvironment(const QStringList &environment, int *envc)
 #else
     static const char libraryPath[] = "LD_LIBRARY_PATH";
 #endif
-    const QString libraryPathString = QLatin1String(libraryPath);
-    QStringList env = environment;
-    QStringList matches = env.filter(
-        QRegExp(QLatin1Char('^') + libraryPathString + QLatin1Char('=')));
-    const QString envLibraryPath = QString::fromLocal8Bit(::getenv(libraryPath));
-    if (matches.isEmpty() && !envLibraryPath.isEmpty()) {
-        QString entry = libraryPathString;
-        entry += QLatin1Char('=');
-        entry += envLibraryPath;
-        env << libraryPathString + QLatin1Char('=') + envLibraryPath;
+    const QByteArray envLibraryPath = qgetenv(libraryPath);
+    bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
+                                !environment->contains(QLatin1String(libraryPath));
+
+    char **envp = new char *[environment->count() + 2];
+    envp[environment->count()] = 0;
+    envp[environment->count() + 1] = 0;
+
+    QHash<QString, QString>::ConstIterator it = environment->constBegin();
+    const QHash<QString, QString>::ConstIterator end = environment->constEnd();
+    for ( ; it != end; ++it) {
+        QByteArray key = it.key().toLocal8Bit();
+        QByteArray value = it.value().toLocal8Bit();
+        key.reserve(key.length() + 1 + value.length());
+        key.append('=');
+        key.append(value);
+
+        envp[(*envc)++] = ::strdup(key.constData());
     }
 
-    char **envp = new char *[env.count() + 1];
-    envp[env.count()] = 0;
-
-    for (int j = 0; j < env.count(); ++j) {
-        QString item = env.at(j);
-        envp[j] = ::strdup(item.toLocal8Bit().constData());
-    }
-
-    *envc = env.count();
+    if (needToAddLibraryPath)
+        envp[(*envc)++] = ::strdup(QByteArray(libraryPath) + '=' +
+                                 envLibraryPath);
     return envp;
 }
 
@@ -581,28 +580,26 @@ void QProcessPrivate::startProcess()
     processManager()->start();
 
     // Initialize pipes
+    if (!createChannel(stdinChannel) ||
+        !createChannel(stdoutChannel) ||
+        !createChannel(stderrChannel))
+        return;
     qt_create_pipe(childStartedPipe);
+    qt_create_pipe(deathPipe);
+    ::fcntl(deathPipe[0], F_SETFD, FD_CLOEXEC);
+    ::fcntl(deathPipe[1], F_SETFD, FD_CLOEXEC);
+
     if (threadData->eventDispatcher) {
         startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
                                                     QSocketNotifier::Read, q);
         QObject::connect(startupSocketNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_startupNotification()));
-    }
 
-    qt_create_pipe(deathPipe);
-    ::fcntl(deathPipe[0], F_SETFD, FD_CLOEXEC);
-    ::fcntl(deathPipe[1], F_SETFD, FD_CLOEXEC);
-    if (threadData->eventDispatcher) {
         deathNotifier = new QSocketNotifier(deathPipe[0],
                                             QSocketNotifier::Read, q);
         QObject::connect(deathNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_processDied()));
     }
-
-    if (!createChannel(stdinChannel) ||
-        !createChannel(stdoutChannel) ||
-        !createChannel(stderrChannel))
-        return;
 
     // Start the process (platform dependent)
     q->setProcessState(QProcess::Starting);
@@ -791,7 +788,7 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     q->setupChildProcess();
 
     // execute the process
-    if (environment.isEmpty()) {
+    if (!envp) {
         qt_native_execvp(argv[0], argv);
     } else {
         if (path) {

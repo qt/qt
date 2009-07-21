@@ -60,7 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QScriptDebuggerFrontend;
+class QScriptDebuggerCommandSchedulerInterface;
+class QScriptDebuggerJobSchedulerInterface;
 class QScriptDebuggerConsole;
 
 class QScriptCompletionTaskPrivate;
@@ -70,9 +71,9 @@ class Q_AUTOTEST_EXPORT QScriptCompletionTask
     Q_OBJECT
 public:
     QScriptCompletionTask(
-        const QString &contents, int cursorPosition,
-        int frameIndex,
-        QScriptDebuggerFrontend *frontend,
+        const QString &contents, int cursorPosition, int frameIndex,
+        QScriptDebuggerCommandSchedulerInterface *commandScheduler,
+        QScriptDebuggerJobSchedulerInterface *jobScheduler,
         QScriptDebuggerConsole *console,
         QObject *parent = 0);
     ~QScriptCompletionTask();

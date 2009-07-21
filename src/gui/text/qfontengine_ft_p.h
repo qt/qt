@@ -256,7 +256,7 @@ public:
     QGlyphSet *loadTransformedGlyphSet(const QTransform &matrix);
     bool loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs, GlyphFormat format = Format_Render);
 
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     virtual void draw(QPaintEngine * /*p*/, qreal /*x*/, qreal /*y*/, const QTextItemInt & /*si*/) {}
 #endif
 

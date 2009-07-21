@@ -565,20 +565,6 @@ void QWidget::activateWindow()
     }
 }
 
-/*
-  Should we require that  q is a toplevel window ???
-
-  Used by QWSManager
- */
-void QWidgetPrivate::blitToScreen(const QRegion &globalrgn)
-{
-    Q_Q(QWidget);
-    QWidget *win = q->window();
-    QBrush bgBrush = win->palette().brush(win->backgroundRole());
-    bool opaque = bgBrush.style() == Qt::NoBrush || bgBrush.isOpaque();
-    QWidget::qwsDisplay()->repaintRegion(win->data->winid, win->windowFlags(), opaque, globalrgn);
-}
-
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
@@ -1038,6 +1024,9 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+#ifndef QT_NO_QWS_MANAGER
+    extra->topextra->qwsManager = 0;
+#endif
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2004, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,9 +42,26 @@ namespace WebCore {
 
         bool isValid() const { return m_name; }
         const char* name() const { return m_name; }
+        const char* domName() const; // name exposed via DOM
         bool usesVisualOrdering() const;
         bool isJapanese() const;
-        UChar backslashAsCurrencySymbol() const;
+        
+        PassRefPtr<StringImpl> displayString(PassRefPtr<StringImpl> str) const
+        {
+            if (m_backslashAsCurrencySymbol == '\\' || !str)
+                return str;
+            return str->replace('\\', m_backslashAsCurrencySymbol);
+        }
+        void displayBuffer(UChar* characters, unsigned len) const
+        {
+            if (m_backslashAsCurrencySymbol == '\\')
+                return;
+            for (unsigned i = 0; i < len; ++i) {
+                if (characters[i] == '\\')
+                    characters[i] = m_backslashAsCurrencySymbol;
+            }
+        }
+
         const TextEncoding& closestByteBasedEquivalent() const;
         const TextEncoding& encodingForFormSubmission() const;
 
@@ -57,8 +74,12 @@ namespace WebCore {
         CString encode(const UChar*, size_t length, UnencodableHandling) const;
 
     private:
-        const char* m_name;
+        UChar backslashAsCurrencySymbol() const;
         bool isNonByteBasedEncoding() const;
+        bool isUTF7Encoding() const;
+
+        const char* m_name;
+        UChar m_backslashAsCurrencySymbol;
     };
 
     inline bool operator==(const TextEncoding& a, const TextEncoding& b) { return a.name() == b.name(); }

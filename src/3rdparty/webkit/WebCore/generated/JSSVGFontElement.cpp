@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGFontElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGFontElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFontElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFontElement);
 
 /* Hash table for prototype */
 

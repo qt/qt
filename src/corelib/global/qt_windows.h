@@ -106,6 +106,9 @@
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
 #ifndef ETO_PDY
 #define ETO_PDY 0x2000
 #endif

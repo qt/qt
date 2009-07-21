@@ -75,10 +75,6 @@
 #include "qscriptdebuggerjob_p_p.h"
 #include "qscriptxmlparser_p.h"
 
-#include "qscriptenginedebuggerfrontend_p.h"
-#include "qscriptdebuggerbackend_p.h"
-#include <QtScript/qscriptengine.h>
-
 #include "private/qobject_p.h"
 
 #include <QtScript/qscriptcontext.h>
@@ -94,6 +90,9 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qinputdialog.h>
+#include <QtGui/qmenu.h>
+#include <QtGui/qtoolbar.h>
+#include <QtGui/qtooltip.h>
 
 QT_BEGIN_NAMESPACE
 typedef QPair<QList<qint64>, QList<qint64> > QScriptScriptsDelta;
@@ -171,8 +170,8 @@ public:
     QScriptCompletionTaskInterface *createCompletionTask(
         const QString &contents, int cursorPosition, int frameIndex, int options);
 
-    QString toolTip(int frameIndex, int lineNumber,
-                    const QStringList &path);
+    void showToolTip(const QPoint &pos, int frameIndex,
+                     int lineNumber, const QStringList &path);
 
     static QPixmap pixmap(const QString &path);
 
@@ -633,11 +632,49 @@ bool QScriptDebuggerPrivate::debuggerEvent(const QScriptDebuggerEvent &event)
     return !interactive;
 }
 
+class QScriptToolTipJob : public QScriptDebuggerCommandSchedulerJob
+{
+public:
+    QScriptToolTipJob(const QPoint &pos, int frameIndex,
+                      int lineNumber, const QStringList &path,
+                      QScriptDebuggerCommandSchedulerInterface *scheduler)
+        : QScriptDebuggerCommandSchedulerJob(scheduler), m_pos(pos),
+          m_frameIndex(frameIndex), m_lineNumber(lineNumber), m_path(path)
+        {}
+
+    void start()
+    {
+        QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
+        frontend.scheduleGetPropertyExpressionValue(m_frameIndex, m_lineNumber, m_path);
+    }
+    void handleResponse(const QScriptDebuggerResponse &response, int /*commandId*/)
+    {
+        QString tip = response.result().toString();
+        if (tip.indexOf(QLatin1Char('\n')) != -1) {
+            QStringList lines = tip.split(QLatin1Char('\n'));
+            int lineCount = lines.size();
+            if (lineCount > 5) {
+                lines = lines.mid(0, 5);
+                lines.append(QString::fromLatin1("(... %0 more lines ...)").arg(lineCount - 5));
+            }
+            tip = lines.join(QLatin1String("\n"));
+        }
+        QToolTip::showText(m_pos, tip);
+        finish();
+    }
+
+private:
+    QPoint m_pos;
+    int m_frameIndex;
+    int m_lineNumber;
+    QStringList m_path;
+};
+
 /*!
   \reimp
 */
-QString QScriptDebuggerPrivate::toolTip(int frameIndex, int lineNumber,
-                                        const QStringList &path)
+void QScriptDebuggerPrivate::showToolTip(const QPoint &pos, int frameIndex,
+                                         int lineNumber, const QStringList &path)
 {
     if (frameIndex == -1) {
         if (stackWidget)
@@ -645,40 +682,8 @@ QString QScriptDebuggerPrivate::toolTip(int frameIndex, int lineNumber,
         else
             frameIndex = console->currentFrameIndex();
     }
-    // ### cheating for now, need to use async API
-    QScriptEngineDebuggerFrontend *edf = static_cast<QScriptEngineDebuggerFrontend*>(frontend);
-    QScriptDebuggerBackend *backend = edf->backend();
-    QScriptContext *ctx = backend->context(frameIndex);
-    if (!ctx || path.isEmpty())
-        return QString();
-    QScriptContextInfo ctxInfo(ctx);
-    if (ctx->callee().isValid()
-        && ((lineNumber < ctxInfo.functionStartLineNumber())
-            || (lineNumber > ctxInfo.functionEndLineNumber()))) {
-        return QString();
-    }
-    QScriptValueList objects;
-    int pathIndex = 0;
-    if (path.at(0) == QLatin1String("this")) {
-        objects.append(ctx->thisObject());
-        ++pathIndex;
-    } else {
-        objects << ctx->scopeChain();
-    }
-    for (int i = 0; i < objects.size(); ++i) {
-        QScriptValue val = objects.at(i);
-        for (int j = pathIndex; val.isValid() && (j < path.size()); ++j) {
-            val = val.property(path.at(j));
-        }
-        if (val.isValid()) {
-            bool hadException = (ctx->state() == QScriptContext::ExceptionState);
-            QString str = val.toString();
-            if (!hadException && backend->engine()->hasUncaughtException())
-                backend->engine()->clearExceptions();
-            return str;
-        }
-    }
-    return QString();
+    QScriptDebuggerJob *job = new QScriptToolTipJob(pos, frameIndex, lineNumber, path, this);
+    scheduleJob(job);
 }
 
 /*!
@@ -688,7 +693,7 @@ QScriptCompletionTaskInterface *QScriptDebuggerPrivate::createCompletionTask(
     const QString &contents, int cursorPosition, int frameIndex, int options)
 {
     return new QScriptCompletionTask(
-        contents, cursorPosition, frameIndex, frontend,
+        contents, cursorPosition, frameIndex, this, this,
         (options & QScriptCompletionProviderInterface::ConsoleCommandCompletion) ? console : 0);
 }
 
@@ -1072,7 +1077,7 @@ class LoadLocalsJob : public QScriptDebuggerCommandSchedulerJob
 public:
     LoadLocalsJob(QScriptDebuggerPrivate *debugger, int frameIndex)
         : QScriptDebuggerCommandSchedulerJob(debugger),
-          m_debugger(debugger), m_frameIndex(frameIndex), m_state(0) {}
+          m_debugger(debugger), m_frameIndex(frameIndex) {}
 
     void start()
     {
@@ -1104,7 +1109,6 @@ public:
 private:
     QScriptDebuggerPrivate *m_debugger;
     int m_frameIndex;
-    int m_state;
 };
 
 class EmitStoppedSignalJob : public QScriptDebuggerJob
@@ -1329,6 +1333,122 @@ void QScriptDebugger::setFrontend(QScriptDebuggerFrontend *frontend)
                                         scriptDebuggerEventCallback);
         }
     }
+}
+
+QAction *QScriptDebugger::action(DebuggerAction action, QObject *parent)
+{
+    switch (action) {
+    case InterruptAction:
+        return interruptAction(parent);
+    case ContinueAction:
+        return continueAction(parent);
+    case StepIntoAction:
+        return stepIntoAction(parent);
+    case StepOverAction:
+        return stepOverAction(parent);
+    case StepOutAction:
+        return stepOutAction(parent);
+    case RunToCursorAction:
+        return runToCursorAction(parent);
+    case RunToNewScriptAction:
+        return runToNewScriptAction(parent);
+    case ToggleBreakpointAction:
+        return toggleBreakpointAction(parent);
+    case ClearDebugOutputAction:
+        return clearDebugOutputAction(parent);
+    case ClearErrorLogAction:
+        return clearErrorLogAction(parent);
+    case ClearConsoleAction:
+        return clearConsoleAction(parent);
+    case FindInScriptAction:
+        return findInScriptAction(parent);
+    case FindNextInScriptAction:
+        return findNextInScriptAction(parent);
+    case FindPreviousInScriptAction:
+        return findPreviousInScriptAction(parent);
+    case GoToLineAction:
+        return goToLineAction(parent);
+    }
+    return 0;
+}
+
+QWidget *QScriptDebugger::widget(DebuggerWidget widget)
+{
+    switch (widget) {
+    case ConsoleWidget: {
+        QScriptDebuggerConsoleWidgetInterface *w = consoleWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createConsoleWidget();
+            setConsoleWidget(w);
+        }
+        return w;
+    }
+    case StackWidget: {
+        QScriptDebuggerStackWidgetInterface *w = stackWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createStackWidget();
+            setStackWidget(w);
+        }
+        return w;
+    }
+    case ScriptsWidget: {
+        QScriptDebuggerScriptsWidgetInterface *w = scriptsWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createScriptsWidget();
+            setScriptsWidget(w);
+        }
+        return w;
+    }
+    case LocalsWidget: {
+        QScriptDebuggerLocalsWidgetInterface *w = localsWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createLocalsWidget();
+            setLocalsWidget(w);
+        }
+        return w;
+    }
+    case CodeWidget: {
+        QScriptDebuggerCodeWidgetInterface *w = codeWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createCodeWidget();
+            setCodeWidget(w);
+        }
+        return w;
+    }
+    case CodeFinderWidget: {
+        QScriptDebuggerCodeFinderWidgetInterface *w = codeFinderWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createCodeFinderWidget();
+            setCodeFinderWidget(w);
+        }
+        return w;
+    }
+    case BreakpointsWidget: {
+        QScriptBreakpointsWidgetInterface *w = breakpointsWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createBreakpointsWidget();
+            setBreakpointsWidget(w);
+        }
+        return w;
+    }
+    case DebugOutputWidget: {
+        QScriptDebugOutputWidgetInterface *w = debugOutputWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createDebugOutputWidget();
+            setDebugOutputWidget(w);
+        }
+        return w;
+    }
+    case ErrorLogWidget: {
+        QScriptErrorLogWidgetInterface *w = errorLogWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createErrorLogWidget();
+            setErrorLogWidget(w);
+        }
+        return w;
+    }
+    }
+    return 0;
 }
 
 QScriptDebuggerConsoleWidgetInterface *QScriptDebugger::consoleWidget() const
@@ -1781,6 +1901,51 @@ QAction *QScriptDebugger::goToLineAction(QObject *parent) const
                          that, SLOT(_q_goToLine()));
     }
     return d->goToLineAction;
+}
+
+QMenu *QScriptDebugger::createStandardMenu(QWidget *widgetParent, QObject *actionParent)
+{
+    QMenu *menu = new QMenu(widgetParent);
+    menu->setTitle(QObject::tr("Debug"));
+    menu->addAction(action(ContinueAction, actionParent));
+    menu->addAction(action(InterruptAction, actionParent));
+    menu->addAction(action(StepIntoAction, actionParent));
+    menu->addAction(action(StepOverAction, actionParent));
+    menu->addAction(action(StepOutAction, actionParent));
+    menu->addAction(action(RunToCursorAction, actionParent));
+    menu->addAction(action(RunToNewScriptAction, actionParent));
+
+    menu->addSeparator();
+    menu->addAction(action(ToggleBreakpointAction, actionParent));
+
+    menu->addSeparator();
+    menu->addAction(action(ClearDebugOutputAction, actionParent));
+    menu->addAction(action(ClearErrorLogAction, actionParent));
+    menu->addAction(action(ClearConsoleAction, actionParent));
+
+    return menu;
+}
+
+QToolBar *QScriptDebugger::createStandardToolBar(QWidget *widgetParent, QObject *actionParent)
+{
+    QToolBar *tb = new QToolBar(widgetParent);
+    tb->setObjectName(QLatin1String("qtscriptdebugger_standardToolBar"));
+    tb->addAction(action(ContinueAction, actionParent));
+    tb->addAction(action(InterruptAction, actionParent));
+    tb->addAction(action(StepIntoAction, actionParent));
+    tb->addAction(action(StepOverAction, actionParent));
+    tb->addAction(action(StepOutAction, actionParent));
+    tb->addAction(action(RunToCursorAction, actionParent));
+    tb->addAction(action(RunToNewScriptAction, actionParent));
+    tb->addSeparator();
+    tb->addAction(action(FindInScriptAction, actionParent));
+    return tb;
+}
+
+bool QScriptDebugger::isInteractive() const
+{
+    Q_D(const QScriptDebugger);
+    return d->interactive;
 }
 
 /*!

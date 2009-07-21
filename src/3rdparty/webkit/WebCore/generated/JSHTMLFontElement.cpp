@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLFontElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLFontElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLFontElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLFontElement);
 
 /* Hash table */
 
@@ -79,7 +75,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -130,52 +126,55 @@ bool JSHTMLFontElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSHTMLFontElement, Base>(exec, &JSHTMLFontElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLFontElementColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFontElementColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->color());
 }
 
-JSValuePtr jsHTMLFontElementFace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFontElementFace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->face());
 }
 
-JSValuePtr jsHTMLFontElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFontElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->size());
 }
 
-JSValuePtr jsHTMLFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLFontElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLFontElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLFontElement, Base>(exec, propertyName, value, &JSHTMLFontElementTable, this, slot);
 }
 
-void setJSHTMLFontElementColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLFontElementColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(thisObject)->impl());
     imp->setColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLFontElementFace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLFontElementFace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(thisObject)->impl());
     imp->setFace(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLFontElementSize(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLFontElementSize(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(thisObject)->impl());
     imp->setSize(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLFontElement::getConstructor(ExecState* exec)
+JSValue JSHTMLFontElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLFontElementConstructor>(exec);
 }

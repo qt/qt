@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGMissingGlyphElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGMissingGlyphElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGMissingGlyphElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGMissingGlyphElement);
 
 /* Hash table for prototype */
 

@@ -110,9 +110,10 @@ public:
     };
 
     enum OptimizationFlag {
-        DontClipPainter = 0x1,
+        DontClipPainter = 0x1, // obsolete
         DontSavePainterState = 0x2,
-        DontAdjustForAntialiasing = 0x4
+        DontAdjustForAntialiasing = 0x4,
+        IndirectPainting = 0x8
     };
     Q_DECLARE_FLAGS(OptimizationFlags, OptimizationFlag)
 
@@ -169,6 +170,7 @@ public:
     void resetMatrix();
     QTransform transform() const;
     QTransform viewportTransform() const;
+    bool isTransformed() const;
     void setTransform(const QTransform &matrix, bool combine = false);
     void resetTransform();
     void rotate(qreal angle);
@@ -273,7 +275,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_setViewportCursor(const QCursor &))
     Q_PRIVATE_SLOT(d_func(), void _q_unsetViewportCursor())
 #endif
-    Q_PRIVATE_SLOT(d_func(), void _q_updateLaterSlot())
     friend class QGraphicsSceneWidget;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;

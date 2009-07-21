@@ -181,8 +181,10 @@ inline bool operator<(int i, const QFixed &f) { return (i<<6) < f.value(); }
 inline bool operator>(const QFixed &f, int i) { return f.value() > (i<<6); }
 inline bool operator>(int i, const QFixed &f) { return (i<<6) > f.value(); }
 
+#ifndef QT_NO_DEBUG_STREAM
 inline QDebug &operator<<(QDebug &dbg, const QFixed &f)
 { return dbg << f.toReal(); }
+#endif
 
 struct QFixedPoint {
     QFixed x;

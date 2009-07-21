@@ -93,7 +93,7 @@ public:
     void hideDefault();
     void resetModalitySetByOpen();
 
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
     void _q_doneAction();
 #endif
 

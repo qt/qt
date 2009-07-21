@@ -2500,7 +2500,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
     LDEBUG << "layoutBlock from=" << layoutFrom << "to=" << layoutTo;
 
-//    qDebug() << "layoutBlock; width" << layoutStruct->x_right - layoutStruct->x_left << "(maxWidth is btw" << tl->maximumWidth() << ")";
+//    qDebug() << "layoutBlock; width" << layoutStruct->x_right - layoutStruct->x_left << "(maxWidth is btw" << tl->maximumWidth() << ')';
 
     if (previousBlockFormat) {
         qreal margin = qMax(blockFormat.topMargin(), previousBlockFormat->bottomMargin());
@@ -3205,18 +3205,16 @@ bool QTextDocumentLayout::contentHasAlignment() const
 
 qreal QTextDocumentLayoutPrivate::scaleToDevice(qreal value) const
 {
-    QPaintDevice *dev = q_func()->paintDevice();
-    if (!dev)
+    if (!paintDevice)
         return value;
-    return value * dev->logicalDpiY() / qreal(qt_defaultDpi());
+    return value * paintDevice->logicalDpiY() / qreal(qt_defaultDpi());
 }
 
 QFixed QTextDocumentLayoutPrivate::scaleToDevice(QFixed value) const
 {
-    QPaintDevice *dev = q_func()->paintDevice();
-    if (!dev)
+    if (!paintDevice)
         return value;
-    return value * QFixed(dev->logicalDpiY()) / QFixed(qt_defaultDpi());
+    return value * QFixed(paintDevice->logicalDpiY()) / QFixed(qt_defaultDpi());
 }
 
 QT_END_NAMESPACE

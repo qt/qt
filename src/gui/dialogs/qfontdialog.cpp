@@ -311,11 +311,11 @@ void QFontDialogPrivate::init()
     buttonBox->addButton(QDialogButtonBox::Cancel);
     QObject::connect(buttonBox, SIGNAL(rejected()), q, SLOT(reject()));
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     q->resize(180, 120);
 #else
     q->resize(500, 360);
-#endif // Q_OS_WINCE
+#endif // Q_WS_WINCE
 
     sizeEdit->installEventFilter(q);
     familyList->installEventFilter(q);
@@ -501,8 +501,6 @@ void QFontDialogPrivate::updateFamilies()
 {
     Q_Q(QFontDialog);
 
-    familyList->blockSignals(true);
-
     enum match_t { MATCH_NONE = 0, MATCH_LAST_RESORT = 1, MATCH_APP = 2, MATCH_FAMILY = 3 };
 
     QStringList familyNames = fdb.families(writingSystem);
@@ -556,7 +554,6 @@ void QFontDialogPrivate::updateFamilies()
             && familyList->hasFocus())
         familyEdit->selectAll();
 
-    familyList->blockSignals(false);
     updateStyles();
 }
 
@@ -567,9 +564,6 @@ void QFontDialogPrivate::updateFamilies()
 void QFontDialogPrivate::updateStyles()
 {
     Q_Q(QFontDialog);
-
-    styleList->blockSignals(true);
-
     QStringList styles = fdb.styles(familyList->currentText());
     styleList->model()->setStringList(styles);
 
@@ -613,8 +607,6 @@ void QFontDialogPrivate::updateStyles()
         smoothScalable = fdb.isSmoothlyScalable(familyList->currentText(), styleList->currentText());
     }
 
-    styleList->blockSignals(false);
-
     updateSizes();
 }
 
@@ -627,8 +619,6 @@ void QFontDialogPrivate::updateStyles()
 void QFontDialogPrivate::updateSizes()
 {
     Q_Q(QFontDialog);
-
-    sizeList->blockSignals(true);
 
     if (!familyList->currentText().isEmpty()) {
         QList<int> sizes = fdb.pointSizes(familyList->currentText(), styleList->currentText());
@@ -659,7 +649,6 @@ void QFontDialogPrivate::updateSizes()
         sizeEdit->clear();
     }
 
-    sizeList->blockSignals(false);
     _q_updateSample();
 }
 

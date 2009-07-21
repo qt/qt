@@ -315,10 +315,11 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "QT3SUPPORT" ]      = "yes";
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
-    dictionary[ "DIRECT3D" ]        = "auto";
+    dictionary[ "OPENVG" ]          = "no";
     dictionary[ "IPV6" ]            = "yes"; // Always, dynamicly loaded
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
+    dictionary[ "S60" ]             = "yes";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
@@ -438,7 +439,7 @@ void Configure::parseCmdLine()
     }
 
     for( ; i<configCmdLine.size(); ++i ) {
-        bool continueElse = false;
+        bool continueElse[] = {false, false};
         if( configCmdLine.at(i) == "-help"
             || configCmdLine.at(i) == "-h"
             || configCmdLine.at(i) == "-?" )
@@ -686,8 +687,8 @@ void Configure::parseCmdLine()
 
         // Work around compiler nesting limitation
         else
-            continueElse = true;
-        if (!continueElse) {
+            continueElse[1] = true;
+        if (!continueElse[1]) {
         }
 
         // OpenGL Support -------------------------------------------
@@ -703,6 +704,14 @@ void Configure::parseCmdLine()
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
         }
+
+        // OpenVG Support -------------------------------------------
+        else if( configCmdLine.at(i) == "-openvg" ) {
+            dictionary[ "OPENVG" ]    = "yes";
+        } else if( configCmdLine.at(i) == "-no-openvg" ) {
+            dictionary[ "OPENVG" ]    = "no";
+        }
+
         // Databases ------------------------------------------------
         else if( configCmdLine.at(i) == "-qt-sql-mysql" )
             dictionary[ "SQL_MYSQL" ] = "yes";
@@ -797,6 +806,13 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "ARM_FPU_TYPE" ] = configCmdLine.at(i);
         }
+
+        // S60 Support -------------------------------------------
+        else if( configCmdLine.at(i) == "-s60" )
+            dictionary[ "S60" ]    = "yes";
+        else if( configCmdLine.at(i) == "-no-s60" )
+            dictionary[ "S60" ]    = "no";
+
         else if (configCmdLine.at(i) == "-fast" )
             dictionary[ "FAST" ] = "yes";
         else if (configCmdLine.at(i) == "-no-fast" )
@@ -845,11 +861,7 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-iwmmxt")
             dictionary[ "IWMMXT" ] = "yes";
 
-        else if (configCmdLine.at(i) == "-no-direct3d") {
-            dictionary["DIRECT3D"] = "no";
-        }else if (configCmdLine.at(i) == "-direct3d") {
-            dictionary["DIRECT3D"] = "auto"; // have to pass auto detection to enable Direct3D
-        } else if( configCmdLine.at(i) == "-no-openssl" ) {
+        else if( configCmdLine.at(i) == "-no-openssl" ) {
               dictionary[ "OPENSSL"] = "no";
         } else if( configCmdLine.at(i) == "-openssl" ) {
               dictionary[ "OPENSSL" ] = "yes";
@@ -893,6 +905,12 @@ void Configure::parseCmdLine()
             dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
         }
 
+        // Work around compiler nesting limitation
+        else
+            continueElse[0] = true;
+        if (!continueElse[0]) {
+        }
+
         else if( configCmdLine.at(i) == "-internal" )
             dictionary[ "QMAKE_INTERNAL" ] = "yes";
 
@@ -917,6 +935,11 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
+        } else if( configCmdLine.at(i) == "-qtlibinfix" ) {
+            ++i;
+            if(i==argCount)
+                break;
+            dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
         } else if( configCmdLine.at(i) == "-D" ) {
             ++i;
             if (i==argCount)
@@ -1062,7 +1085,9 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
             QString system = configCmdLine.at(i);
-            if (system == QLatin1String("raster") || system == QLatin1String("opengl"))
+            if (system == QLatin1String("raster")
+                || system == QLatin1String("opengl")
+                || system == QLatin1String("openvg"))
                 dictionary["GRAPHICS_SYSTEM"] = configCmdLine.at(i);
         }
 
@@ -1377,7 +1402,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "MMX" ]                 = "no";
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
-        dictionary[ "DIRECT3D" ]            = "no";
         dictionary[ "WEBKIT" ]              = "no";
         dictionary[ "PHONON" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
@@ -1422,6 +1446,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "PHONON" ]              = "yes";
         dictionary[ "XMLPATTERNS" ]         = "no";
         dictionary[ "QT_GLIB" ]             = "no";
+        dictionary[ "S60" ]                 = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
         // iconv_open seems to return -1 always, so something is probably missing from the platform.
         dictionary[ "QT_ICONV" ]            = "no";
@@ -1519,13 +1544,13 @@ bool Configure::displayHelp()
                     "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
                     "[-no-libmng] [-qt-libmng] [-system-libmng] [-no-qt3support] [-mmx]\n"
                     "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
-                    "[-no-iwmmxt] [-iwmmxt] [-direct3d] [-openssl] [-openssl-linked]\n"
+                    "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
-                    "[-qtnamespace <namespace>] [-no-phonon] [-phonon]\n"
-                    "[-no-phonon-backend] [-phonon-backend]\n"
+                    "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
+                    "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-webkit] [-webkit]\n"
                     "[-no-scripttools] [-scripttools]\n"
-                    "[-graphicssystem raster|opengl]\n\n", 0, 7);
+                    "[-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1607,13 +1632,19 @@ bool Configure::displayHelp()
         desc("QT3SUPPORT", "no","-no-qt3support",       "Disables the Qt 3 support functionality.\n");
         desc("OPENGL", "no","-no-opengl",               "Disables OpenGL functionality\n");
 
+        desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality\n");
+        desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality");
+        desc(                   "",                     "Requires EGL support, typically supplied by an OpenGL", false, ' ');
+        desc(                   "",                     "or other graphics implementation\n", false, ' ');
+
 #endif
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
 
 #if !defined(EVAL)
-        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}\n");
+        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
+        desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>\n");
         desc(                   "-D <define>",          "Add an explicit define to the preprocessor.");
         desc(                   "-I <includepath>",     "Add an explicit include path.");
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
@@ -1622,7 +1653,8 @@ bool Configure::displayHelp()
         desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
                                 "Available values for <sys>:");
         desc("GRAPHICS_SYSTEM", "raster", "", "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL accelleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL acceleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "openvg", "", "  openvg - Using OpenVG acceleration, experimental!", ' ');
 
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
@@ -1686,7 +1718,6 @@ bool Configure::displayHelp()
         desc("SSE", "yes",      "-sse",                 "Compile with use of SSE instructions");
         desc("SSE2", "no",      "-no-sse2",             "Do not compile with use of SSE2 instructions");
         desc("SSE2", "yes",      "-sse2",               "Compile with use of SSE2 instructions");
-        desc("DIRECT3D", "yes",  "-direct3d",           "Compile in Direct3D support (experimental - see INSTALL for more info)");
         desc("OPENSSL", "no",    "-no-openssl",         "Do not compile in OpenSSL support");
         desc("OPENSSL", "yes",   "-openssl",            "Compile in run-time OpenSSL support");
         desc("OPENSSL", "linked","-openssl-linked",     "Compile in linked OpenSSL support");
@@ -1752,10 +1783,12 @@ bool Configure::displayHelp()
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
         // Qt\Symbian only options go below here -----------------------------------------------------------------------------
-        desc("Qt for S60 only:\n\n");
+        desc("Qt for Symbian OS only:\n\n");
         desc("FREETYPE", "no",     "-no-freetype",         "Do not compile in Freetype2 support.");
-        desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.\n");
-        desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2\n");
+        desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.");
+        desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2");
+        desc("S60", "no",          "-no-s60",              "Do not compile in S60 support.");
+        desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework\n");
         return true;
     }
     return false;
@@ -1948,47 +1981,6 @@ bool Configure::checkAvailability(const QString &part)
                && dictionary.value("QMAKESPEC") != "win32-msvc.net" // Leave for now, since we can't be sure if they are using 2002 or 2003 with this spec
                && dictionary.value("QMAKESPEC") != "win32-msvc2002"
                && dictionary.value("EXCEPTIONS") == "yes";
-    } else if (part == "DIRECT3D") {
-        QString sdk_dir(QString::fromLocal8Bit(getenv("DXSDK_DIR")));
-        QDir dir;
-        bool has_d3d = false;
-
-        if (!sdk_dir.isEmpty() && dir.exists(sdk_dir))
-            has_d3d = true;
-
-        if (has_d3d && !QFile::exists(sdk_dir + QLatin1String("\\include\\d3d9.h"))) {
-            cout << "No Direct3D version 9 SDK found." << endl;
-           has_d3d = false;
-        }
-
-        // find the first dxguid.lib in the current LIB paths, if it is NOT
-        // the D3D SDK one, we're most likely in trouble..
-        if (has_d3d) {
-            has_d3d = false;
-            QString env_lib(QString::fromLocal8Bit(getenv("LIB")));
-            QStringList lib_paths = env_lib.split(';');
-            for (int i=0; i<lib_paths.size(); ++i) {
-               QString lib_path = lib_paths.at(i);
-                if (QFile::exists(lib_path + QLatin1String("\\dxguid.lib")))
-                {
-                    if (lib_path.startsWith(sdk_dir)) {
-                        has_d3d = true;
-                    } else {
-                        cout << "Your D3D/Platform SDK library paths seem to appear in the wrong order." << endl;
-                    }
-                    break;
-                }
-            }
-        }
-
-        available = has_d3d;
-        if (!has_d3d) {
-            cout << "Setting Direct3D to NO, since the proper Direct3D SDK was not detected." << endl
-                 << "Make sure you have the Direct3D SDK installed, and that you have run" << endl
-                 << "the <path to SDK>\\Utilities\\Bin\\dx_setenv.cmd script." << endl
-                 << "The D3D SDK library path *needs* to appear before the Platform SDK library" << endl
-                 << "path in your LIB environment variable." << endl;
-        }
     } else if (part == "PHONON") {
         available = findFile("vmr9.h") && findFile("dshow.h") && findFile("strmiids.lib") &&
                         findFile("dmoguids.lib") && findFile("msdmo.lib") && findFile("d3d9.h");
@@ -2082,8 +2074,6 @@ void Configure::autoDetection()
         dictionary["SCRIPTTOOLS"] = checkAvailability("SCRIPTTOOLS") ? "yes" : "no";
     if (dictionary["XMLPATTERNS"] == "auto")
         dictionary["XMLPATTERNS"] = checkAvailability("XMLPATTERNS") ? "yes" : "no";
-    if (dictionary["DIRECT3D"] == "auto")
-        dictionary["DIRECT3D"] = checkAvailability("DIRECT3D") ? "yes" : "no";
     if (dictionary["PHONON"] == "auto")
         dictionary["PHONON"] = checkAvailability("PHONON") ? "yes" : "no";
     if (dictionary["WEBKIT"] == "auto")
@@ -2421,11 +2411,17 @@ void Configure::generateOutputVars()
         qtConfig += "opengles1cl";
     }
 
+    if ( dictionary["OPENVG"] == "yes" ) {
+        qtConfig += "openvg";
+        qtConfig += "egl";
+    }
+
+    if ( dictionary["S60"] == "yes" ) {
+        qtConfig += "s60";
+    }
+
      if ( dictionary["DIRECTSHOW"] == "yes" )
         qtConfig += "directshow";
-
-    if (dictionary[ "DIRECT3D" ] == "yes")
-        qtConfig += "direct3d";
 
     if (dictionary[ "OPENSSL" ] == "yes")
         qtConfig += "openssl";
@@ -2687,12 +2683,14 @@ void Configure::generateCachefile()
             configStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
 
         if(!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            configStream<<"QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"] <<endl;
+            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
 
-		if(!dictionary["ARM_FPU_TYPE"].isEmpty())
-		{
-			configStream<<"QMAKE_CXXFLAGS.ARMCC += --fpu "<< dictionary["ARM_FPU_TYPE"];
-		}
+        if (!dictionary["QT_LIBINFIX"].isEmpty())
+            configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
+
+        if(!dictionary["ARM_FPU_TYPE"].isEmpty()) {
+            configStream<<"QMAKE_CXXFLAGS.ARMCC += --fpu "<< dictionary["ARM_FPU_TYPE"];
+        }
 
         configStream.flush();
         configFile.close();
@@ -2832,7 +2830,7 @@ void Configure::generateConfigfiles()
         if(dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if(dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
         if(dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
-        if(dictionary["DIRECT3D"] == "no")          qconfigList += "QT_NO_DIRECT3D";
+        if(dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
         if(dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if(dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if(dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
@@ -2841,6 +2839,8 @@ void Configure::generateConfigfiles()
         if(dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
         if(dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
+        if(dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
+        if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_CL"] == "yes" ||
@@ -2860,6 +2860,7 @@ void Configure::generateConfigfiles()
         if(dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if(dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
 
+        if (dictionary["GRAPHICS_SYSTEM"] == "openvg") qconfigList += "QT_GRAPHICSSYSTEM_OPENVG";
         if (dictionary["GRAPHICS_SYSTEM"] == "opengl") qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
         if (dictionary["GRAPHICS_SYSTEM"] == "raster") qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
         // ### This block should be removed once Qt for S60 is out.
@@ -3097,7 +3098,7 @@ void Configure::displayConfig()
     cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
     cout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     cout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
-    cout << "Direct3D support............" << dictionary[ "DIRECT3D" ] << endl;
+    cout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
@@ -3156,6 +3157,10 @@ void Configure::displayConfig()
         cout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
         cout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
         cout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl << endl;
+    }
+
+    if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("symbian"))) {
+        cout << "Support for S60............." << dictionary[ "S60" ] << endl;
     }
 
     if(dictionary["ASSISTANT_WEBKIT"] == "yes")

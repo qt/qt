@@ -42,7 +42,6 @@
 #include "qglobal.h"
 
 #ifndef QT_NO_SYSTEMLOCALE
-#define QLOCALE_CPP
 QT_BEGIN_NAMESPACE
 class QSystemLocale;
 static QSystemLocale *QSystemLocale_globalSystemLocale();
@@ -120,7 +119,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
 Q_CORE_EXPORT char *qdtoa(double d, int mode, int ndigits, int *decpt,
                         int *sign, char **rve, char **digits_str);
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
-Q_CORE_EXPORT qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
+static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
 static qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok);
 
 #if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
@@ -193,8 +192,7 @@ static QString languageToCode(QLocale::Language language)
 
     const unsigned char *c = language_code_list + 3*(uint(language));
 
-    QString code;
-    code.resize(c[2] == 0 ? 2 : 3);
+    QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
@@ -209,8 +207,7 @@ static QString countryToCode(QLocale::Country country)
     if (country == QLocale::AnyCountry)
         return QString();
 
-    QString code;
-    code.resize(2);
+    QString code(2, Qt::Uninitialized);
     const unsigned char *c = country_code_list + 2*(uint(country));
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
@@ -328,7 +325,7 @@ static QString readEscapedFormatString(const QString &format, int *idx)
 {
     int &i = *idx;
 
-    Q_ASSERT(format.at(i).unicode() == '\'');
+    Q_ASSERT(format.at(i) == QLatin1Char('\''));
     ++i;
     if (i == format.size())
         return QString();
@@ -642,7 +639,7 @@ static QLocale::MeasurementSystem winSystemMeasurementSystem()
         QString iMeasure = QT_WA_INLINE(
                 QString::fromUtf16(reinterpret_cast<ushort*>(output)),
                 QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
-        if (iMeasure == QString::fromLatin1("1")) {
+        if (iMeasure == QLatin1String("1")) {
             return QLocale::ImperialSystem;
         }
     }
@@ -780,7 +777,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
    Instead it can return a "Windows code". This maps windows codes to ISO country names. */
 
 struct WindowsToISOListElt {
-    int windows_code;
+    ushort windows_code;
     char iso_name[6];
 };
 
@@ -1021,21 +1018,17 @@ static QString macMonthName(int month, bool short_format)
     if (month < 0 || month > 11)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values
-            = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                      short_format ? kCFDateFormatterShortMonthSymbols
-                                                   : kCFDateFormatterMonthSymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values
+        = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                  short_format ? kCFDateFormatterShortMonthSymbols
+                                               : kCFDateFormatterMonthSymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
@@ -1045,20 +1038,16 @@ static QString macDayName(int day, bool short_format)
     if (day < 1 || day > 7)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                                short_format ? kCFDateFormatterShortWeekdaySymbols
-                                                             : kCFDateFormatterWeekdaySymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                            short_format ? kCFDateFormatterShortWeekdaySymbols
+                                                         : kCFDateFormatterWeekdaySymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
@@ -1143,7 +1132,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 break;
             case 'S': // fractional second
                 if (repeat < 3)
-                    result += QLatin1String("z");
+                    result += QLatin1Char('z');
                 else
                     result += QLatin1String("zzz");
                 break;
@@ -1157,7 +1146,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 if (repeat >= 2)
                     result += QLatin1String("dd");
                 else
-                    result += QLatin1String("d");
+                    result += QLatin1Char('d');
                 break;
             case 'a':
                 result += QLatin1String("AP");
@@ -1541,7 +1530,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     l = QLocale(s);
     return ds;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*!
@@ -1609,6 +1598,8 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     This constructor converts the locale name to a language/country
     pair; it does not use the system locale database.
 
+    QLocale's data is based on Common Locale Data Repository v1.6.1.
+
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
 
@@ -1628,8 +1619,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
     This product includes software developed by the University of
     California, Berkeley and its contributors.
-
-    QLocale's data is based on Common Locale Data Repository v1.6.1.
 
     \sa QString::arg(), QString::toInt(), QString::toDouble()
 */
@@ -4678,7 +4667,7 @@ static qulonglong qstrtoull(const char *nptr, const char **endptr, register int 
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-Q_CORE_EXPORT qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
+static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
 {
     register const char *s;
     register qulonglong acc;
@@ -5375,6 +5364,14 @@ static Bigint *mult(Bigint *a, Bigint *b)
 
 static Bigint *p5s;
 
+struct p5s_deleter
+{
+    ~p5s_deleter()
+    {
+        Bfree(p5s);
+    }
+};
+
 static Bigint *pow5mult(Bigint *b, int k)
 {
     Bigint *b1, *p5, *p51;
@@ -5396,6 +5393,7 @@ static Bigint *pow5mult(Bigint *b, int k)
         return b;
     if (!(p5 = p5s)) {
         /* first time */
+        static p5s_deleter deleter;
         p5 = p5s = i2b(625);
         p5->next = 0;
     }

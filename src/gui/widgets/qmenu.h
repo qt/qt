@@ -52,7 +52,7 @@
 #endif
 
 QT_BEGIN_HEADER
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     class CEikMenuPane;
 #endif
 
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     IMPORT_C void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
     IMPORT_C void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
 #endif
@@ -149,7 +149,7 @@ public:
     OSMenuRef macMenu(OSMenuRef merge=0);
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     HMENU wceMenu(bool create = false);
 #endif
 
@@ -181,7 +181,7 @@ protected:
     bool focusNextPrevChild(bool next);
     void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     QAction* wceCommands(uint command);
 #endif
 

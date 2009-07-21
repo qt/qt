@@ -154,14 +154,14 @@ public:
     int activateTimers();
 };
 
-struct Q_CORE_EXPORT QSockNot
+struct QSockNot
 {
     QSocketNotifier *obj;
     int fd;
     fd_set *queue;
 };
 
-class Q_CORE_EXPORT QSockNotType
+class QSockNotType
 {
 public:
     QSockNotType();

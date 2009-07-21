@@ -290,7 +290,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "bindtest" )
                << qTableName( "more_results" )
                << qTableName( "blobstest" )
-               << qTableName( "oraRowId" );
+               << qTableName( "oraRowId" )
+               << qTableName( "qtest_batch" );
 
     if ( db.driverName().startsWith("QSQLITE") )
         tablenames << qTableName( "record_sqlite" );
@@ -303,6 +304,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     tablenames <<  qTableName( "Planet" );
     
     tablenames << qTableName( "task_250026" );
+    tablenames << qTableName( "task_234422" );
 
     tst_Databases::safeDropTables( db, tablenames );
 }
@@ -1902,71 +1904,48 @@ void tst_QSqlQuery::batchExec()
         QSKIP( "Database can't do BatchOperations", SkipSingle );
 
     QSqlQuery q( db );
+    QString tableName = qTableName( "qtest_batch" );
 
-    q.exec( "drop table " + qTableName( "qtest_batch" ) );
-
-    QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_batch" ) + " (id int, name varchar(20), dt date, num numeric(8, 4))" ) );
-
-    QVERIFY_SQL( q, prepare( "insert into " + qTableName( "qtest_batch" ) + " (id, name, dt, num) values (?, ?, ?, ?)" ) );
+    QVERIFY_SQL( q, exec( "create table " + tableName + " (id int, name varchar(20), dt date, num numeric(8, 4))" ) );
+    QVERIFY_SQL( q, prepare( "insert into " + tableName + " (id, name, dt, num) values (?, ?, ?, ?)" ) );
 
     QVariantList intCol;
-
     intCol << 1 << 2 << QVariant( QVariant::Int );
 
     QVariantList charCol;
-
     charCol << QLatin1String( "harald" ) << QLatin1String( "boris" ) << QVariant( QVariant::String );
 
     QVariantList dateCol;
-
     QDateTime dt = QDateTime( QDate::currentDate(), QTime( 1, 2, 3 ) );
-
     dateCol << dt << dt.addDays( -1 ) << QVariant( QVariant::DateTime );
 
     QVariantList numCol;
-
     numCol << 2.3 << 3.4 << QVariant( QVariant::Double );
 
     q.addBindValue( intCol );
-
     q.addBindValue( charCol );
-
     q.addBindValue( dateCol );
-
     q.addBindValue( numCol );
 
     QVERIFY_SQL( q, execBatch() );
-
-    QVERIFY_SQL( q, exec( "select id, name, dt, num from " + qTableName( "qtest_batch" ) + " order by id" ) );
+    QVERIFY_SQL( q, exec( "select id, name, dt, num from " + tableName + " order by id" ) );
 
     QVERIFY( q.next() );
-
     QCOMPARE( q.value( 0 ).toInt(), 1 );
-
     QCOMPARE( q.value( 1 ).toString(), QString( "harald" ) );
-
     QCOMPARE( q.value( 2 ).toDateTime(), dt );
-
     QCOMPARE( q.value( 3 ).toDouble(), 2.3 );
 
     QVERIFY( q.next() );
-
     QCOMPARE( q.value( 0 ).toInt(), 2 );
-
     QCOMPARE( q.value( 1 ).toString(), QString( "boris" ) );
-
     QCOMPARE( q.value( 2 ).toDateTime(), dt.addDays( -1 ) );
-
     QCOMPARE( q.value( 3 ).toDouble(), 3.4 );
 
     QVERIFY( q.next() );
-
     QVERIFY( q.value( 0 ).isNull() );
-
     QVERIFY( q.value( 1 ).isNull() );
-
     QVERIFY( q.value( 2 ).isNull() );
-
     QVERIFY( q.value( 3 ).isNull() );
 }
 
@@ -2344,6 +2323,8 @@ void tst_QSqlQuery::sqlite_finish()
 
         QString tableName = qTableName( "qtest_lockedtable" );
         QSqlQuery q( db );
+
+        tst_Databases::safeDropTable( db2, tableName );
         q.exec( "CREATE TABLE " + tableName + " (pk_id INTEGER PRIMARY KEY, whatever TEXT)" );
         q.exec( "INSERT INTO " + tableName + " values(1, 'whatever')" );
         q.exec( "INSERT INTO " + tableName + " values(2, 'whatever more')" );
@@ -2361,7 +2342,8 @@ void tst_QSqlQuery::sqlite_finish()
         q.finish();
         QVERIFY_SQL( q2, exec( "DELETE FROM " + tableName + " WHERE pk_id=2" ) );
         QCOMPARE( q2.numRowsAffected(), 1 );
-        q.exec( "DROP TABLE " + tableName );
+
+        tst_Databases::safeDropTable( db2, tableName );
     }
 
     QSqlDatabase::removeDatabase( "sqlite_finish_sqlite" );
@@ -2574,71 +2556,47 @@ void tst_QSqlQuery::blobsPreparedQuery()
     QString tableName = qTableName( "blobstest" );
 
     QSqlQuery q( db );
-
     q.setForwardOnly( true ); // This is needed to make the test work with DB2.
-
     QString shortBLOB( "abc" );
-
     QString longerBLOB( "abcdefghijklmnopqrstuvxyz¿äëïöü¡  " );
 
     // In PostgreSQL a BLOB is not called a BLOB, but a BYTEA! :-)
     // ... and in SQL Server it can be called a lot, but IMAGE will do.
     QString typeName( "BLOB" );
-
     if ( db.driverName().startsWith( "QPSQL" ) )
         typeName = "BYTEA";
     else if ( db.driverName().startsWith( "QODBC" ) )
         typeName = "IMAGE";
 
     QVERIFY_SQL( q, exec( QString( "CREATE TABLE %1(id INTEGER, data %2)" ).arg( tableName ).arg( typeName ) ) );
-
     q.prepare( QString( "INSERT INTO %1(id, data) VALUES(:id, :data)" ).arg( tableName ) );
-
     q.bindValue( ":id", 1 );
-
     q.bindValue( ":data", shortBLOB.toAscii() );
-
     QVERIFY_SQL( q, exec() );
 
     q.bindValue( ":id", 2 );
-
     q.bindValue( ":data", longerBLOB.toAscii() );
-
     QVERIFY_SQL( q, exec() );
 
     // Two executions and result sets
     q.prepare( QString( "SELECT data FROM %1 WHERE id = ?" ).arg( tableName ) );
-
     q.bindValue( 0, QVariant( 1 ) );
-
     QVERIFY_SQL( q, exec() );
-
     QVERIFY_SQL( q, next() );
-
     QCOMPARE( q.value( 0 ).toString(), shortBLOB );
 
     q.bindValue( 0, QVariant( 2 ) );
-
     QVERIFY_SQL( q, exec() );
-
     QVERIFY_SQL( q, next() );
-
     QCOMPARE( q.value( 0 ).toString(), longerBLOB );
 
     // Only one execution and result set
     q.prepare( QString( "SELECT id, data FROM %1 ORDER BY id" ).arg( tableName ) );
-
     QVERIFY_SQL( q, exec() );
-
     QVERIFY_SQL( q, next() );
-
     QCOMPARE( q.value( 1 ).toString(), shortBLOB );
-
     QVERIFY_SQL( q, next() );
-
     QCOMPARE( q.value( 1 ).toString(), longerBLOB );
-
-    q.exec( QString( "DROP TABLE %1" ).arg( tableName ) );
 }
 
 // There were problems with navigating past the end of a table returning an error on mysql
@@ -2790,7 +2748,6 @@ void tst_QSqlQuery::task_234422()
 
     QString tableName = qTableName( "task_234422" );
 
-    query.exec("DROP TABLE " + tableName);
     QVERIFY_SQL(query,exec("CREATE TABLE " + tableName + " (id int primary key, "
                 "name varchar(20), homecountry varchar(2))"));
     for (int i = 0; i < m_airlines.count(); ++i) {

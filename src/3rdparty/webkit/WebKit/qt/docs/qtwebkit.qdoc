@@ -39,7 +39,10 @@
 
     \note Building the QtWebKit module with debugging symbols is problematic
     on many platforms due to the size of the WebKit engine. We recommend
-    building the module in release mode only for embedded platforms.
+    building the module only in release mode for embedded platforms.
+    Currently QtWebKit will always be compiled without debugging symbols
+    when using gcc. Take a look at the last lines of
+    \c{src/3rdparty/webkit/WebCore/WebCore.pro} if you need to change this.
 
     \note Web site icons, also known as "FavIcons", are currently not supported
     on Windows. We plan to address this in a future release.
@@ -96,7 +99,8 @@
 
     Since WebKit supports the Netscape Plugin API, Qt applications can display
     Web pages that embed common plugins, as long as the user has the appropriate
-    binary files for those plugins installed.
+    binary files for those plugins installed and the \l{QWebSettings::PluginsEnabled}
+    attribute is set for the application.
 
     The following locations are searched for plugins:
 

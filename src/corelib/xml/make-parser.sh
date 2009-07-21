@@ -6,10 +6,8 @@ mkdir -p $me/out
 
 for f in $me/out/*.h; do
     n=$(basename $f)
-    p4 open $n
     cp $f $n
 done
 
-p4 revert -a ...
-p4 diff -dub ...
+git diff .
 

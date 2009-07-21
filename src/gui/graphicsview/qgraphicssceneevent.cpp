@@ -76,14 +76,14 @@
     received by the view (see
     \l{QGraphicsSceneMouseEvent::}{lastScreenPos()},
     \l{QGraphicsSceneMouseEvent::}{lastScenePos()}, and
-    \l{QGraphicsSceneMouseEvent::}{lastPos()}). 
+    \l{QGraphicsSceneMouseEvent::}{lastPos()}).
 
     \sa QEvent
 */
 
 /*!
     \class QGraphicsSceneMouseEvent
-    \brief The QGraphicsSceneMouseEvent class provides mouse events 
+    \brief The QGraphicsSceneMouseEvent class provides mouse events
            in the graphics view framework.
     \since 4.2
     \ingroup multimedia
@@ -106,7 +106,7 @@
 
 /*!
     \class QGraphicsSceneWheelEvent
-    \brief The QGraphicsSceneWheelEvent class provides wheel events 
+    \brief The QGraphicsSceneWheelEvent class provides wheel events
            in the graphics view framework.
     \brief The QGraphicsSceneWheelEvent class provides wheel events in the
     graphics view framework.
@@ -157,7 +157,7 @@
 
 /*!
     \class QGraphicsSceneHoverEvent
-    \brief The QGraphicsSceneHoverEvent class provides hover events 
+    \brief The QGraphicsSceneHoverEvent class provides hover events
            in the graphics view framework.
     \since 4.2
     \ingroup multimedia
@@ -173,7 +173,7 @@
 
 /*!
     \class QGraphicsSceneHelpEvent
-    \brief The QGraphicsSceneHelpEvent class provides events when a 
+    \brief The QGraphicsSceneHelpEvent class provides events when a
            tooltip is requested.
     \since 4.2
     \ingroup multimedia
@@ -199,7 +199,7 @@
 /*!
     \class QGraphicsSceneDragDropEvent
     \brief The QGraphicsSceneDragDropEvent class provides events for
-           drag and drop in the graphics view framework. 
+           drag and drop in the graphics view framework.
     \since 4.2
     \ingroup multimedia
     \ingroup graphicsview-api
@@ -268,8 +268,14 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qstring.h>
+#include "qgraphicsview.h"
+#include "qgraphicsitem.h"
+#include <QtGui/qgesture.h>
+#include <private/qevent_p.h>
 
 QT_BEGIN_NAMESPACE
+
+QString qt_getStandardGestureTypeName(Qt::GestureType type);
 
 class QGraphicsSceneEventPrivate
 {
@@ -521,7 +527,7 @@ void QGraphicsSceneMouseEvent::setLastPos(const QPointF &pos)
 }
 
 /*!
-    Returns the last recorded mouse cursor position in scene 
+    Returns the last recorded mouse cursor position in scene
     coordinates. The last recorded position is the position of
     the previous mouse event received by the view that created
     the event.
@@ -544,7 +550,7 @@ void QGraphicsSceneMouseEvent::setLastScenePos(const QPointF &pos)
 }
 
 /*!
-    Returns the last recorded mouse cursor position in screen 
+    Returns the last recorded mouse cursor position in screen
     coordinates. The last recorded position is the position of
     the previous mouse event received by the view that created
     the event.
@@ -1274,7 +1280,7 @@ QGraphicsSceneDragDropEvent::~QGraphicsSceneDragDropEvent()
 /*!
     Returns the mouse position of the event relative to the
     view that sent the event.
-    
+
     \sa QGraphicsView, screenPos(), scenePos()
 */
 QPointF QGraphicsSceneDragDropEvent::pos() const
@@ -1372,7 +1378,7 @@ void QGraphicsSceneDragDropEvent::setButtons(Qt::MouseButtons buttons)
 
 /*!
     Returns the keyboard modifiers that were pressed when the drag
-    and drop event was created. 
+    and drop event was created.
 
     \sa Qt::KeyboardModifiers
 */
@@ -1427,7 +1433,7 @@ void QGraphicsSceneDragDropEvent::setPossibleActions(Qt::DropActions actions)
     The action must be one of the possible actions as defined by
     \c possibleActions().
 
-    \sa Qt::DropAction, possibleActions()    
+    \sa Qt::DropAction, possibleActions()
 */
 
 Qt::DropAction QGraphicsSceneDragDropEvent::proposedAction() const
@@ -1670,6 +1676,249 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
 {
     Q_D(QGraphicsSceneMoveEvent);
     d->newPos = pos;
+}
+
+/*!
+    \class QGraphicsSceneGestureEvent
+    \brief The QGraphicsSceneGestureEvent class provides gesture events for
+           the graphics view framework.
+    \since 4.6
+    \ingroup multimedia
+    \ingroup graphicsview-api
+
+    QGraphicsSceneGestureEvent extends information provided by
+    QGestureEvent by adding some convenience functions like
+    \l{QGraphicsSceneEvent::}{widget()} to get a widget that received
+    original gesture event, and convenience functions mapToScene(),
+    mapToItem() for converting positions of the gesture into
+    QGraphicsScene and QGraphicsItem coordinate system respectively.
+
+    The scene sends the event to the first QGraphicsItem under the
+    mouse cursor that accepts gestures; a graphics item is set to accept
+    gestures with \l{QGraphicsItem::}{grabGesture()}.
+
+    \sa QGestureEvent
+*/
+
+/*!
+    Constructs a QGraphicsSceneGestureEvent.
+*/
+QGraphicsSceneGestureEvent::QGraphicsSceneGestureEvent()
+    : QGraphicsSceneEvent(QEvent::GraphicsSceneGesture)
+{
+    setAccepted(false);
+}
+
+/*!
+    Destroys a QGraphicsSceneGestureEvent.
+*/
+QGraphicsSceneGestureEvent::~QGraphicsSceneGestureEvent()
+{
+}
+
+/*!
+    Returns true if the gesture event contains gesture of specific \a
+    type; returns false otherwise.
+*/
+bool QGraphicsSceneGestureEvent::contains(const QString &type) const
+{
+    return gesture(type) != 0;
+}
+
+/*!
+    Returns true if the gesture event contains gesture of specific \a
+    type; returns false otherwise.
+*/
+bool QGraphicsSceneGestureEvent::contains(Qt::GestureType type) const
+{
+    return contains(qt_getStandardGestureTypeName(type));
+}
+
+/*!
+    Returns a list of gesture names that this event contains.
+*/
+QList<QString> QGraphicsSceneGestureEvent::gestureTypes() const
+{
+    return m_gestures.keys();
+}
+
+/*!
+    Returns extended information about a gesture of specific \a type.
+*/
+const QGesture* QGraphicsSceneGestureEvent::gesture(const QString &type) const
+{
+    return m_gestures.value(type, 0);
+}
+
+/*!
+    Returns extended information about a gesture of specific \a type.
+*/
+const QGesture* QGraphicsSceneGestureEvent::gesture(Qt::GestureType type) const
+{
+    return gesture(qt_getStandardGestureTypeName(type));
+}
+
+/*!
+    Returns extended information about all gestures in the event.
+*/
+QList<QGesture*> QGraphicsSceneGestureEvent::gestures() const
+{
+    return m_gestures.values();
+}
+
+/*!
+    Returns a set of gesture names that used to be executed, but were
+    cancelled (i.e. they were not finished properly).
+*/
+QSet<QString> QGraphicsSceneGestureEvent::cancelledGestures() const
+{
+    return m_cancelledGestures;
+}
+
+/*!
+    Sets a list of gesture names \a cancelledGestures that used to be
+    executed, but were cancelled (i.e. they were not finished
+    properly).
+*/
+void QGraphicsSceneGestureEvent::setCancelledGestures(const QSet<QString> &cancelledGestures)
+{
+    m_cancelledGestures = cancelledGestures;
+}
+
+/*!
+    Maps the point \a point, which is in a view coordinate system, to
+    scene coordinate system, and returns the mapped coordinate.
+
+    A \a point is in coordinate system of the widget that received
+    gesture event.
+
+    \sa mapToItem(), {The Graphics View Coordinate System}
+*/
+QPointF QGraphicsSceneGestureEvent::mapToScene(const QPoint &point) const
+{
+    if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+        return view->mapToScene(point);
+    return QPointF();
+}
+
+/*!
+    Maps the rectangular \a rect, which is in a view coordinate system, to
+    scene coordinate system, and returns the mapped coordinate.
+
+    A \a rect is in coordinate system of the widget that received
+    gesture event.
+
+    \sa mapToItem(), {The Graphics View Coordinate System}
+*/
+QPolygonF QGraphicsSceneGestureEvent::mapToScene(const QRect &rect) const
+{
+    if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+        return view->mapToScene(rect);
+    return QPolygonF();
+}
+
+/*!
+    Maps the point \a point, which is in a view coordinate system, to
+    item's \a item coordinate system, and returns the mapped coordinate.
+
+    If \a item is 0, this function returns the same as mapToScene().
+
+    \sa mapToScene(), {The Graphics View Coordinate System}
+*/
+QPointF QGraphicsSceneGestureEvent::mapToItem(const QPoint &point, QGraphicsItem *item) const
+{
+    if (item) {
+        if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+            return item->mapFromScene(view->mapToScene(point));
+    } else {
+        return mapToScene(point);
+    }
+    return QPointF();
+}
+
+/*!
+    Maps the rectangualar \a rect, which is in a view coordinate system, to
+    item's \a item coordinate system, and returns the mapped coordinate.
+
+    If \a item is 0, this function returns the same as mapToScene().
+
+    \sa mapToScene(), {The Graphics View Coordinate System}
+*/
+QPolygonF QGraphicsSceneGestureEvent::mapToItem(const QRect &rect, QGraphicsItem *item) const
+{
+    if (item) {
+        if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+            return item->mapFromScene(view->mapToScene(rect));
+    } else {
+        return mapToScene(rect);
+    }
+    return QPolygonF();
+}
+
+/*!
+    Set a list of gesture objects containing extended information about \a gestures.
+*/
+void QGraphicsSceneGestureEvent::setGestures(const QList<QGesture*> &gestures)
+{
+    foreach(QGesture *g, gestures)
+        m_gestures.insert(g->type(), g);
+}
+
+/*!
+    Set a list of gesture objects containing extended information about \a gestures.
+*/
+void QGraphicsSceneGestureEvent::setGestures(const QSet<QGesture*> &gestures)
+{
+    foreach(QGesture *g, gestures)
+        m_gestures.insert(g->type(), g);
+}
+
+/*!
+    Sets the accept flag of the all gestures inside the event object,
+    the equivalent of calling \l{QEvent::accept()}{accept()} or
+    \l{QEvent::setAccepted()}{setAccepted(true)}.
+
+    Setting the accept parameter indicates that the event receiver
+    wants the gesture. Unwanted gestures might be propagated to the parent
+    widget.
+*/
+void QGraphicsSceneGestureEvent::acceptAll()
+{
+    QHash<QString, QGesture*>::iterator it = m_gestures.begin(),
+                                         e = m_gestures.end();
+    for(; it != e; ++it)
+        it.value()->accept();
+    setAccepted(true);
+}
+
+/*!
+    Sets the accept flag of the specified gesture inside the event
+    object, the equivalent of calling
+    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
+
+    Setting the accept parameter indicates that the event receiver
+    wants the gesture. Unwanted gestures might be propagated to the parent
+    widget.
+*/
+void QGraphicsSceneGestureEvent::accept(Qt::GestureType type)
+{
+    if (QGesture *g = m_gestures.value(qt_getStandardGestureTypeName(type), 0))
+        g->accept();
+}
+
+/*!
+    Sets the accept flag of the specified gesture inside the event
+    object, the equivalent of calling
+    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
+
+    Setting the accept parameter indicates that the event receiver
+    wants the gesture. Unwanted gestures might be propagated to the parent
+    widget.
+*/
+void QGraphicsSceneGestureEvent::accept(const QString &type)
+{
+    if (QGesture *g = m_gestures.value(type, 0))
+        g->accept();
 }
 
 QT_END_NAMESPACE

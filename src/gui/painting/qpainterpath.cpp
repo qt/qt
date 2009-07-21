@@ -1309,10 +1309,10 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
         qreal bx = QT_BEZIER_B(b, x);
         qreal cx = QT_BEZIER_C(b, x);
         // specialcase quadratic curves to avoid div by zero
-        if (qFuzzyCompare(ax + 1, 1)) {
+        if (qFuzzyIsNull(ax)) {
 
             // linear curves are covered by initialization.
-            if (!qFuzzyCompare(bx + 1, 1)) {
+            if (!qFuzzyIsNull(bx)) {
                 qreal t = -cx / bx;
                 QT_BEZIER_CHECK_T(b, t);
             }
@@ -1339,10 +1339,10 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
         qreal cy = QT_BEZIER_C(b, y);
 
         // specialcase quadratic curves to avoid div by zero
-        if (qFuzzyCompare(ay + 1, 1)) {
+        if (qFuzzyIsNull(ay)) {
 
             // linear curves are covered by initialization.
-            if (!qFuzzyCompare(by + 1, 1)) {
+            if (!qFuzzyIsNull(by)) {
                 qreal t = -cy / by;
                 QT_BEZIER_CHECK_T(b, t);
             }
@@ -2010,7 +2010,63 @@ bool QPainterPath::intersects(const QRectF &rect) const
     return false;
 }
 
+/*!
+    Translates all elements in the path by (\a{dx}, \a{dy}).
 
+    \since 4.6
+    \sa translated()
+*/
+void QPainterPath::translate(qreal dx, qreal dy)
+{
+    if (!d_ptr || (dx == 0 && dy == 0))
+        return;
+
+    int elementsLeft = d_ptr->elements.size();
+    if (elementsLeft <= 0)
+        return;
+
+    detach();
+    QPainterPath::Element *element = d_func()->elements.data();
+    Q_ASSERT(element);
+    while (elementsLeft--) {
+        element->x += dx;
+        element->y += dy;
+        ++element;
+    }
+}
+
+/*!
+    \fn void QPainterPath::translate(const QPointF &offset)
+    \overload
+    \since 4.6
+
+    Translates all elements in the path by the given \a offset.
+
+    \sa translated()
+*/
+
+/*!
+    Returns a copy of the path that is translated by (\a{dx}, \a{dy}).
+
+    \since 4.6
+    \sa translate()
+*/
+QPainterPath QPainterPath::translated(qreal dx, qreal dy) const
+{
+    QPainterPath copy(*this);
+    copy.translate(dx, dy);
+    return copy;
+}
+
+/*!
+    \fn QPainterPath QPainterPath::translated(const QPointF &offset) const;
+    \overload
+    \since 4.6
+
+    Returns a copy of the path that is translated by the given \a offset.
+
+    \sa translate()
+*/
 
 /*!
     \fn bool QPainterPath::contains(const QRectF &rectangle) const
@@ -2320,7 +2376,7 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
     p.d_func()->dirtyControlBounds = true;
     return s;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*******************************************************************************
@@ -2876,7 +2932,7 @@ qreal QPainterPath::angleAtPercent(qreal t) const
     return QLineF(0, 0, m1, m2).angle();
 }
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #pragma warning( disable : 4056 4756 )
 #endif
 
@@ -3301,7 +3357,7 @@ QDebug operator<<(QDebug s, const QPainterPath &p)
     s.nospace() << "QPainterPath: Element count=" << p.elementCount() << endl;
     const char *types[] = {"MoveTo", "LineTo", "CurveTo", "CurveToData"};
     for (int i=0; i<p.elementCount(); ++i) {
-        s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ")" << endl;
+        s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ')' << endl;
 
     }
     return s;

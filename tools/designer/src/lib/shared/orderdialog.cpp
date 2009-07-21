@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::OrderDialog
-*/
-
 #include "orderdialog_p.h"
 #include "iconloader_p.h"
 #include "ui_orderdialog.h"

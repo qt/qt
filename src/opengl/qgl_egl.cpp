@@ -57,14 +57,14 @@ void qt_egl_set_format(QEglProperties& props, int deviceType, const QGLFormat& f
     // Set the pixel format to that contained in the QGLFormat
     // if the system hasn't already chosen a fixed format to
     // match the pixmap, widget, etc.
-    if (props.value(EGL_RED_SIZE) == EGL_DONT_CARE || f.redBufferSize() != -1)
+    if (props.value(EGL_RED_SIZE) == 0 || f.redBufferSize() != -1)
         props.setValue(EGL_RED_SIZE, f.redBufferSize() == -1 ? 1 : f.redBufferSize());
-    if (props.value(EGL_GREEN_SIZE) == EGL_DONT_CARE || f.greenBufferSize() != -1)
+    if (props.value(EGL_GREEN_SIZE) == 0 || f.greenBufferSize() != -1)
         props.setValue(EGL_GREEN_SIZE, f.greenBufferSize() == -1 ? 1 : f.greenBufferSize());
-    if (props.value(EGL_BLUE_SIZE) == EGL_DONT_CARE || f.blueBufferSize() != -1)
+    if (props.value(EGL_BLUE_SIZE) == 0 || f.blueBufferSize() != -1)
         props.setValue(EGL_BLUE_SIZE, f.blueBufferSize() == -1 ? 1 : f.blueBufferSize());
     if (f.alpha()) {
-        if (props.value(EGL_ALPHA_SIZE) == EGL_DONT_CARE || f.alphaBufferSize() != -1)
+        if (props.value(EGL_ALPHA_SIZE) == 0 || f.alphaBufferSize() != -1)
             props.setValue(EGL_ALPHA_SIZE, f.alphaBufferSize() == -1 ? 1 : f.alphaBufferSize());
     }
 

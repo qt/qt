@@ -70,12 +70,6 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
     }
 }
 
-
-
-QFontEngineGlyphCache::~QFontEngineGlyphCache()
-{
-}
-
 // Harfbuzz helper functions
 
 static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint32 length, HB_Glyph *glyphs, hb_uint32 *numGlyphs, HB_Bool rightToLeft)
@@ -430,8 +424,7 @@ void QFontEngine::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> positioned_glyphs;
-    QTransform matrix;
-    matrix.translate(x, y);
+    QTransform matrix = QTransform::fromTranslate(x, y);
     getGlyphPositions(glyphs, matrix, flags, positioned_glyphs, positions);
     addGlyphsToPath(positioned_glyphs.data(), positions.data(), positioned_glyphs.size(), path, flags);
 }
@@ -821,7 +814,7 @@ QFontEngineGlyphCache *QFontEngine::glyphCache(QFontEngineGlyphCache::Type key, 
     return 0;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
 static inline QFixed kerning(int left, int right, const QFontEngine::KernPair *pairs, int numPairs)
 {
     uint left_right = (left << 16) + right;
@@ -917,7 +910,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
 end:
     qSort(kerning_pairs);
 //    for (int i = 0; i < kerning_pairs.count(); ++i)
-//        qDebug() << "i" << i << "left_right" << hex << kerning_pairs.at(i).left_right;
+//        qDebug() << 'i' << i << "left_right" << hex << kerning_pairs.at(i).left_right;
 }
 
 #else
@@ -1043,9 +1036,8 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
             return 0;
         quint16 segCountX2 = qFromBigEndian<quint16>(cmap + 6);
         const unsigned char *ends = cmap + 14;
-        quint16 endIndex = 0;
         int i = 0;
-        for (; i < segCountX2/2 && (endIndex = qFromBigEndian<quint16>(ends + 2*i)) < unicode; i++) {}
+        for (; i < segCountX2/2 && qFromBigEndian<quint16>(ends + 2*i) < unicode; i++) {}
 
         const unsigned char *idx = ends + segCountX2 + 2 + 2*i;
         quint16 startIndex = qFromBigEndian<quint16>(idx);
@@ -1171,8 +1163,7 @@ void QFontEngineBox::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyp
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> positioned_glyphs;
-    QTransform matrix;
-    matrix.translate(x, y - _size);
+    QTransform matrix = QTransform::fromTranslate(x, y - _size);
     getGlyphPositions(glyphs, matrix, flags, positioned_glyphs, positions);
 
     QSize s(_size - 3, _size - 3);
@@ -1200,8 +1191,7 @@ void QFontEngineBox::draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt 
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix;
-    matrix.translate(x, y - _size);
+    QTransform matrix = QTransform::fromTranslate(x, y - _size);
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
     if (glyphs.size() == 0)
         return;
@@ -1658,12 +1648,6 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     }
 
     return allExist;
-}
-
-QFontEngine *QFontEngineMulti::engine(int at) const
-{
-    Q_ASSERT(at < engines.size());
-    return engines.at(at);
 }
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t)

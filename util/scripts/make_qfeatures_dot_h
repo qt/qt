@@ -83,7 +83,7 @@ open OUT, ">$ENV{QTDIR}/src/corelib/global/qfeatures.h"
     or die "Cannot open $ENV{QTDIR}/src/corelib/global/qfeatures.h for writing";
 
 print OUT
-"/****************************************************************************
+'/****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info\@nokia.com)
@@ -127,10 +127,11 @@ print OUT
 /*
  * All features and their dependencies.
  *
- * This list is generated from \$QTDIR/src/corelib/global/qfeatures.txt
+ * This list is generated from $QTDIR/src/corelib/global/qfeatures.txt
  */
 
-";
+';
+
 
 for $macro ( @macros ) {
     print OUT "// $label{$macro}\n";

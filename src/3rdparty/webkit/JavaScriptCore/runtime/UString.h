@@ -1,6 +1,7 @@
 /*
  *  Copyright (C) 1999-2000 Harri Porten (porten@kde.org)
  *  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ *  Copyright (C) 2009 Google Inc. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -26,8 +27,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <wtf/Assertions.h>
-#include <wtf/FastMalloc.h>
+#include <wtf/CrossThreadRefCounted.h>
+#include <wtf/OwnFastMallocPtr.h>
 #include <wtf/PassRefPtr.h>
+#include <wtf/PtrAndFlags.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 #include <wtf/unicode/Unicode.h>
@@ -74,10 +77,26 @@ namespace JSC {
         friend class JIT;
 
     public:
-        struct Rep {
+        typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
+        struct BaseString;
+        struct Rep : Noncopyable {
             friend class JIT;
 
-            static PassRefPtr<Rep> create(UChar*, int);
+            static PassRefPtr<Rep> create(UChar* buffer, int length)
+            {
+                return adoptRef(new BaseString(buffer, length));
+            }
+
+            static PassRefPtr<Rep> createEmptyBuffer(size_t size)
+            {
+                // Guard against integer overflow
+                if (size < (std::numeric_limits<size_t>::max() / sizeof(UChar))) {
+                    if (void * buf = tryFastMalloc(size * sizeof(UChar)))
+                        return adoptRef(new BaseString(static_cast<UChar*>(buf), 0, size));
+                }
+                return adoptRef(new BaseString(0, 0, 0));
+            }
+
             static PassRefPtr<Rep> createCopying(const UChar*, int);
             static PassRefPtr<Rep> create(PassRefPtr<Rep> base, int offset, int length);
 
@@ -85,10 +104,14 @@ namespace JSC {
             // Returns UString::Rep::null for null input or conversion failure.
             static PassRefPtr<Rep> createFromUTF8(const char*);
 
+            // Uses SharedUChar to have joint ownership over the UChar*.
+            static PassRefPtr<Rep> create(UChar*, int, PassRefPtr<SharedUChar>);
+
+            SharedUChar* sharedBuffer();
             void destroy();
 
-            bool baseIsSelf() const { return baseString == this; }
-            UChar* data() const { return baseString->buf + baseString->preCapacity + offset; }
+            bool baseIsSelf() const { return m_identifierTableAndFlags.isFlagSet(BaseStringFlag); }
+            UChar* data() const;
             int size() const { return len; }
 
             unsigned hash() const { if (_hash == 0) _hash = computeHash(data(), len); return _hash; }
@@ -98,35 +121,115 @@ namespace JSC {
             static unsigned computeHash(const char*, int length);
             static unsigned computeHash(const char* s) { return computeHash(s, strlen(s)); }
 
-            IdentifierTable* identifierTable() const { return reinterpret_cast<IdentifierTable*>(m_identifierTable & ~static_cast<uintptr_t>(1)); }
-            void setIdentifierTable(IdentifierTable* table) { ASSERT(!isStatic()); m_identifierTable = reinterpret_cast<intptr_t>(table); }
+            IdentifierTable* identifierTable() const { return m_identifierTableAndFlags.get(); }
+            void setIdentifierTable(IdentifierTable* table) { ASSERT(!isStatic()); m_identifierTableAndFlags.set(table); }
 
-            bool isStatic() const { return m_identifierTable & 1; }
-            void setStatic(bool v) { ASSERT(!identifierTable()); m_identifierTable = v; }
+            bool isStatic() const { return m_identifierTableAndFlags.isFlagSet(StaticFlag); }
+            void setStatic(bool);
+            void setBaseString(PassRefPtr<BaseString>);
+            BaseString* baseString();
+            const BaseString* baseString() const;
 
             Rep* ref() { ++rc; return this; }
             ALWAYS_INLINE void deref() { if (--rc == 0) destroy(); }
 
             void checkConsistency() const;
+            enum UStringFlags {
+                StaticFlag,
+                BaseStringFlag
+            };
 
             // unshared data
             int offset;
             int len;
             int rc; // For null and empty static strings, this field does not reflect a correct count, because ref/deref are not thread-safe. A special case in destroy() guarantees that these do not get deleted.
             mutable unsigned _hash;
-            intptr_t m_identifierTable; // A pointer to identifier table. The lowest bit is used to indicate whether the string is static (null or empty).
-            UString::Rep* baseString;
+            PtrAndFlags<IdentifierTable, UStringFlags> m_identifierTableAndFlags;
+
+            static BaseString& null() { return *nullBaseString; }
+            static BaseString& empty() { return *emptyBaseString; }
+
+            bool reserveCapacity(int capacity);
+
+        protected:
+            // Constructor for use by BaseString subclass; they use the union with m_baseString for another purpose.
+            Rep(int length)
+                : offset(0)
+                , len(length)
+                , rc(1)
+                , _hash(0)
+                , m_baseString(0)
+            {
+            }
+
+            Rep(PassRefPtr<BaseString> base, int offsetInBase, int length)
+                : offset(offsetInBase)
+                , len(length)
+                , rc(1)
+                , _hash(0)
+                , m_baseString(base.releaseRef())
+            {
+                checkConsistency();
+            }
+
+            union {
+                // If !baseIsSelf()
+                BaseString* m_baseString;
+                // If baseIsSelf()
+                SharedUChar* m_sharedBuffer;
+            };
+
+        private:
+            // For SmallStringStorage which allocates an array and does initialization manually.
+            Rep() { }
+
+            friend class SmallStringsStorage;
+            friend void initializeUString();
+            JS_EXPORTDATA static BaseString* nullBaseString;
+            JS_EXPORTDATA static BaseString* emptyBaseString;
+        };
+
+
+        struct BaseString : public Rep {
+            bool isShared() { return rc != 1 || isBufferReadOnly(); }
+            void setSharedBuffer(PassRefPtr<SharedUChar>);
+
+            bool isBufferReadOnly()
+            {
+                if (!m_sharedBuffer)
+                    return false;
+                return slowIsBufferReadOnly();
+            }
+
+            // potentially shared data.
+            UChar* buf;
+            int preCapacity;
+            int usedPreCapacity;
+            int capacity;
+            int usedCapacity;
+
             size_t reportedCost;
 
-            // potentially shared data. 0 if backed up by a base string.
-            UChar* buf;
-            int usedCapacity;
-            int capacity;
-            int usedPreCapacity;
-            int preCapacity;
+        private:
+            BaseString(UChar* buffer, int length, int additionalCapacity = 0)
+                : Rep(length)
+                , buf(buffer)
+                , preCapacity(0)
+                , usedPreCapacity(0)
+                , capacity(length + additionalCapacity)
+                , usedCapacity(length)
+                , reportedCost(0)
+            {
+                m_identifierTableAndFlags.setFlag(BaseStringFlag);
+                checkConsistency();
+            }
 
-            static Rep null;
-            static Rep empty;
+            SharedUChar* sharedBuffer();
+            bool slowIsBufferReadOnly();
+
+            friend struct Rep;
+            friend class SmallStringsStorage;
+            friend void initializeUString();
         };
 
     public:
@@ -175,11 +278,15 @@ namespace JSC {
 
         UString spliceSubstringsWithSeparators(const Range* substringRanges, int rangeCount, const UString* separators, int separatorCount) const;
 
+        UString replaceRange(int rangeStart, int RangeEnd, const UString& replacement) const;
+
         UString& append(const UString&);
         UString& append(const char*);
         UString& append(UChar);
         UString& append(char c) { return append(static_cast<UChar>(static_cast<unsigned char>(c))); }
         UString& append(const UChar*, int size);
+        UString& appendNumeric(int);
+        UString& appendNumeric(double);
 
         bool getCString(CStringBuffer&) const;
 
@@ -204,7 +311,7 @@ namespace JSC {
 
         const UChar* data() const { return m_rep->data(); }
 
-        bool isNull() const { return (m_rep == &Rep::null); }
+        bool isNull() const { return (m_rep == &Rep::null()); }
         bool isEmpty() const { return (!m_rep->len); }
 
         bool is8Bit() const;
@@ -230,7 +337,7 @@ namespace JSC {
 
         UString substr(int pos = 0, int len = -1) const;
 
-        static const UString& null();
+        static const UString& null() { return *nullUString; }
 
         Rep* rep() const { return m_rep.get(); }
         static Rep* nullRep();
@@ -243,15 +350,26 @@ namespace JSC {
 
         size_t cost() const;
 
+        // Attempt to grow this string such that it can grow to a total length of 'capacity'
+        // without reallocation.  This may fail a number of reasons - if the BasicString is
+        // shared and another string is using part of the capacity beyond our end point, if
+        // the realloc fails, or if this string is empty and has no storage.
+        //
+        // This method returns a boolean indicating success.
+        bool reserveCapacity(int capacity)
+        {
+            return m_rep->reserveCapacity(capacity);
+        }
+
     private:
-        int usedCapacity() const;
-        int usedPreCapacity() const;
         void expandCapacity(int requiredLength);
         void expandPreCapacity(int requiredPreCap);
         void makeNull();
 
         RefPtr<Rep> m_rep;
+        static UString* nullUString;
 
+        friend void initializeUString();
         friend bool operator==(const UString&, const UString&);
         friend PassRefPtr<Rep> concatenate(Rep*, Rep*); // returns 0 if out of memory
     };
@@ -259,7 +377,26 @@ namespace JSC {
     PassRefPtr<UString::Rep> concatenate(UString::Rep*, int);
     PassRefPtr<UString::Rep> concatenate(UString::Rep*, double);
 
-    bool operator==(const UString&, const UString&);
+    inline bool operator==(const UString& s1, const UString& s2)
+    {
+        int size = s1.size();
+        switch (size) {
+        case 0:
+            return !s2.size();
+        case 1:
+            return s2.size() == 1 && s1.data()[0] == s2.data()[0];
+        case 2: {
+            if (s2.size() != 2)
+                return false;
+            const UChar* d1 = s1.data();
+            const UChar* d2 = s2.data();
+            return (d1[0] == d2[0]) & (d1[1] == d2[1]);
+        }
+        default:
+            return s2.size() == size && memcmp(s1.data(), s2.data(), size * sizeof(UChar)) == 0;
+        }
+    }
+
 
     inline bool operator!=(const UString& s1, const UString& s2)
     {
@@ -298,6 +435,54 @@ namespace JSC {
 
     bool equal(const UString::Rep*, const UString::Rep*);
 
+    inline PassRefPtr<UString::Rep> UString::Rep::create(PassRefPtr<UString::Rep> rep, int offset, int length)
+    {
+        ASSERT(rep);
+        rep->checkConsistency();
+
+        int repOffset = rep->offset;
+
+        PassRefPtr<BaseString> base = rep->baseString();
+
+        ASSERT(-(offset + repOffset) <= base->usedPreCapacity);
+        ASSERT(offset + repOffset + length <= base->usedCapacity);
+
+        // Steal the single reference this Rep was created with.
+        return adoptRef(new Rep(base, repOffset + offset, length));
+    }
+
+    inline UChar* UString::Rep::data() const
+    {
+        const BaseString* base = baseString();
+        return base->buf + base->preCapacity + offset;
+    }
+
+    inline void UString::Rep::setStatic(bool v)
+    {
+        ASSERT(!identifierTable());
+        if (v)
+            m_identifierTableAndFlags.setFlag(StaticFlag);
+        else
+            m_identifierTableAndFlags.clearFlag(StaticFlag);
+    }
+
+    inline void UString::Rep::setBaseString(PassRefPtr<BaseString> base)
+    {
+        ASSERT(base != this);
+        ASSERT(!baseIsSelf());
+        m_baseString = base.releaseRef();
+    }
+
+    inline UString::BaseString* UString::Rep::baseString()
+    {
+        return !baseIsSelf() ? m_baseString : reinterpret_cast<BaseString*>(this) ;
+    }
+
+    inline const UString::BaseString* UString::Rep::baseString() const
+    {
+        return const_cast<Rep*>(this)->baseString();
+    }
+
 #ifdef NDEBUG
     inline void UString::Rep::checkConsistency() const
     {
@@ -305,7 +490,7 @@ namespace JSC {
 #endif
 
     inline UString::UString()
-        : m_rep(&Rep::null)
+        : m_rep(&Rep::null())
     {
     }
 
@@ -328,8 +513,9 @@ namespace JSC {
 
     inline size_t UString::cost() const
     {
-        size_t capacity = (m_rep->baseString->capacity + m_rep->baseString->preCapacity) * sizeof(UChar);
-        size_t reportedCost = m_rep->baseString->reportedCost;
+        BaseString* base = m_rep->baseString();
+        size_t capacity = (base->capacity + base->preCapacity) * sizeof(UChar);
+        size_t reportedCost = base->reportedCost;
         ASSERT(capacity >= reportedCost);
 
         size_t capacityDelta = capacity - reportedCost;
@@ -337,7 +523,7 @@ namespace JSC {
         if (capacityDelta < static_cast<size_t>(minShareSize))
             return 0;
 
-        m_rep->baseString->reportedCost = capacity;
+        base->reportedCost = capacity;
 
         return capacityDelta;
     }
@@ -347,6 +533,7 @@ namespace JSC {
         static unsigned hash(JSC::UString::Rep* key) { return key->computedHash(); }
     };
 
+    void initializeUString();
 } // namespace JSC
 
 namespace WTF {

@@ -19,24 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLMapElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLCollection.h"
 #include "HTMLMapElement.h"
 #include "JSHTMLCollection.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLMapElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLMapElement);
 
 /* Hash table */
 
@@ -80,7 +76,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -131,34 +127,36 @@ bool JSHTMLMapElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSHTMLMapElement, Base>(exec, &JSHTMLMapElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLMapElementAreas(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLMapElementAreas(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLMapElement* imp = static_cast<HTMLMapElement*>(static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->areas()));
 }
 
-JSValuePtr jsHTMLMapElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLMapElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLMapElement* imp = static_cast<HTMLMapElement*>(static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsHTMLMapElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLMapElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLMapElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLMapElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLMapElement, Base>(exec, propertyName, value, &JSHTMLMapElementTable, this, slot);
 }
 
-void setJSHTMLMapElementName(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLMapElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLMapElement* imp = static_cast<HTMLMapElement*>(static_cast<JSHTMLMapElement*>(thisObject)->impl());
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLMapElement::getConstructor(ExecState* exec)
+JSValue JSHTMLMapElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLMapElementConstructor>(exec);
 }

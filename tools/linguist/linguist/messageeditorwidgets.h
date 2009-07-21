@@ -42,6 +42,7 @@
 #ifndef MESSAGEEDITORWIDGETS_H
 #define MESSAGEEDITORWIDGETS_H
 
+#include <QIcon>
 #include <QImage>
 #include <QLabel>
 #include <QMap>
@@ -51,6 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QAbstractButton;
 class QAction;
 class QContextMenuEvent;
 class QKeyEvent;
@@ -115,14 +117,66 @@ public:
     FormatTextEdit *getEditor() { return m_editor; }
 
 signals:
-    void textChanged();
-    void selectionChanged();
+    void textChanged(QTextEdit *);
+    void selectionChanged(QTextEdit *);
     void cursorPositionChanged();
+
+private slots:
+    void slotSelectionChanged();
+    void slotTextChanged();
 
 private:
     QLabel *m_label;
     FormatTextEdit *m_editor;
     bool m_hideWhenEmpty;
+};
+
+/*
+  Displays text fields & associated label
+*/
+class FormMultiWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    FormMultiWidget(const QString &label, QWidget *parent = 0);
+    void setLabel(const QString &label) { m_label->setText(label); }
+    void setTranslation(const QString &text, bool userAction = false);
+    void clearTranslation() { setTranslation(QString(), false); }
+    QString getTranslation() const;
+    void setEditingEnabled(bool enable);
+    void setMultiEnabled(bool enable);
+    void setHideWhenEmpty(bool optional) { m_hideWhenEmpty = optional; }
+    const QList<FormatTextEdit *> &getEditors() const { return m_editors; }
+
+signals:
+    void editorCreated(QTextEdit *);
+    void textChanged(QTextEdit *);
+    void selectionChanged(QTextEdit *);
+    void cursorPositionChanged();
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event);
+
+private slots:
+    void slotTextChanged();
+    void slotSelectionChanged();
+    void minusButtonClicked();
+    void plusButtonClicked();
+
+private:
+    void addEditor(int idx);
+    void updateLayout();
+    QAbstractButton *makeButton(const QIcon &icon, const char *slot);
+    void insertEditor(int idx);
+    void deleteEditor(int idx);
+
+    QLabel *m_label;
+    QList<FormatTextEdit *> m_editors;
+    QList<QWidget *> m_plusButtons;
+    QList<QAbstractButton *> m_minusButtons;
+    bool m_hideWhenEmpty;
+    bool m_multiEnabled;
+    QIcon m_plusIcon, m_minusIcon;
 };
 
 QT_END_NAMESPACE

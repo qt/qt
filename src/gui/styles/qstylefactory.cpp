@@ -178,7 +178,7 @@ QStyle *QStyleFactory::create(const QString& key)
     else
 #endif
 #ifndef QT_NO_STYLE_MAC
-    if (style.left(9) == QLatin1String("macintosh")) {
+    if (style.startsWith(QLatin1String("macintosh"))) {
         ret = new QMacStyle;
 #  ifdef Q_WS_MAC
         if (style == QLatin1String("macintosh"))

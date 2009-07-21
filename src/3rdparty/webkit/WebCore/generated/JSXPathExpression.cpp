@@ -20,26 +20,22 @@
 
 #include "config.h"
 
-
 #if ENABLE(XPATH)
 
 #include "JSXPathExpression.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSNode.h"
 #include "JSXPathResult.h"
 #include "XPathExpression.h"
 #include "XPathResult.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSXPathExpression)
+ASSERT_CLASS_FITS_IN_CELL(JSXPathExpression);
 
 /* Hash table */
 
@@ -81,7 +77,7 @@ public:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -132,7 +128,6 @@ JSXPathExpression::JSXPathExpression(PassRefPtr<Structure> structure, PassRefPtr
 JSXPathExpression::~JSXPathExpression()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
 JSObject* JSXPathExpression::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -145,39 +140,40 @@ bool JSXPathExpression::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSXPathExpression, Base>(exec, &JSXPathExpressionTable, this, propertyName, slot);
 }
 
-JSValuePtr jsXPathExpressionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathExpressionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSXPathExpression*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSXPathExpression::getConstructor(ExecState* exec)
+JSValue JSXPathExpression::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSXPathExpressionConstructor>(exec);
 }
 
-JSValuePtr jsXPathExpressionPrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsXPathExpressionPrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSXPathExpression::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSXPathExpression::s_info))
         return throwError(exec, TypeError);
     JSXPathExpression* castedThisObj = static_cast<JSXPathExpression*>(asObject(thisValue));
     XPathExpression* imp = static_cast<XPathExpression*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    Node* contextNode = toNode(args.at(exec, 0));
-    unsigned short type = args.at(exec, 1)->toInt32(exec);
-    XPathResult* inResult = toXPathResult(args.at(exec, 2));
+    Node* contextNode = toNode(args.at(0));
+    unsigned short type = args.at(1).toInt32(exec);
+    XPathResult* inResult = toXPathResult(args.at(2));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->evaluate(contextNode, type, inResult, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->evaluate(contextNode, type, inResult, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, XPathExpression* object)
+JSC::JSValue toJS(JSC::ExecState* exec, XPathExpression* object)
 {
     return getDOMObjectWrapper<JSXPathExpression>(exec, object);
 }
-XPathExpression* toXPathExpression(JSC::JSValuePtr value)
+XPathExpression* toXPathExpression(JSC::JSValue value)
 {
-    return value->isObject(&JSXPathExpression::s_info) ? static_cast<JSXPathExpression*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSXPathExpression::s_info) ? static_cast<JSXPathExpression*>(asObject(value))->impl() : 0;
 }
 
 }

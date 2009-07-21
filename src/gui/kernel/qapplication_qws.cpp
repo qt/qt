@@ -196,15 +196,15 @@ QString qws_dataDir()
     static QString result;
     if (!result.isEmpty())
         return result;
-    QByteArray dataDir = QString(QLatin1String("/tmp/qtembedded-%1")).arg(qws_display_id).toLocal8Bit();
-    if (mkdir(dataDir, 0700)) {
+    QByteArray dataDir = QString::fromLatin1("/tmp/qtembedded-%1").arg(qws_display_id).toLocal8Bit();
+    if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
         }
     }
 
-    struct stat buf;
-    if (lstat(dataDir, &buf))
+    QT_STATBUF buf;
+    if (QT_LSTAT(dataDir, &buf))
         qFatal("stat failed for Qt for Embedded Linux data directory: %s", dataDir.constData());
 
     if (!S_ISDIR(buf.st_mode))
@@ -217,7 +217,7 @@ QString qws_dataDir()
     if ((buf.st_mode & 0677) != 0600)
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());
 #endif
-    dataDir += "/";
+    dataDir += '/';
 
     result = QString::fromLocal8Bit(dataDir);
     return result;
@@ -226,7 +226,7 @@ QString qws_dataDir()
 // Get the filename of the pipe Qt for Embedded Linux uses for server/client comms
 Q_GUI_EXPORT QString qws_qtePipeFilename()
 {
-    return (qws_dataDir() + QString(QLatin1String(QTE_PIPE)).arg(qws_display_id));
+    return (qws_dataDir() + QString::fromLatin1(QTE_PIPE).arg(qws_display_id));
 }
 
 static void setMaxWindowRect(const QRect &rect)
@@ -2018,8 +2018,8 @@ bool QApplicationPrivate::qws_apply_settings()
     // read new QStyle
     QString stylename = settings.value(QLatin1String("style")).toString();
     if (QCoreApplication::startingUp()) {
-        if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
-            QApplicationPrivate::styleOverride = new QString(stylename);
+        if (!stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull())
+            QApplicationPrivate::styleOverride = stylename;
     } else {
         QApplication::setStyle(stylename);
     }
@@ -2287,7 +2287,8 @@ void qt_init(QApplicationPrivate *priv, int type)
         qt_appType = QApplication::Type(type);
         qws_single_process = true;
         QWSServer::startup(flags);
-        setenv("QWS_DISPLAY", qws_display_spec.constData(), 0);
+        if (!display) // if not already set
+            qputenv("QWS_DISPLAY", qws_display_spec);
     }
 
     if(qt_is_gui_used) {
@@ -3752,14 +3753,9 @@ void QApplication::setArgs(int c, char **v)
     d->argv = v;
 }
 
-/* \internal
-   This is used to clean up the qws server
-   in case the QApplication constructor threw an exception
- */
-QWSServerCleaner::~QWSServerCleaner()
-{
-    if (qwsServer && qws_single_process)
-        QWSServer::closedown();
-}
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
 
 QT_END_NAMESPACE
