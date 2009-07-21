@@ -51,6 +51,8 @@
 #include <QtCore/QIODevice>
 #include <QtCore/QUrl>
 
+QT_BEGIN_NAMESPACE
+
 /*!
   \class QXmlSchemaValidator
 
@@ -338,3 +340,5 @@ QNetworkAccessManager *QXmlSchemaValidator::networkAccessManager() const
 
     return d->m_networkAccessManager.data()->value;
 }
+
+QT_END_NAMESPACE
