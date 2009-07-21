@@ -364,15 +364,15 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         // for opacity to the cache.
         GLuint texId = QGL2GradientCache::cacheForContext(ctx)->getBuffer(*g, 1.0);
 
+        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        glBindTexture(GL_TEXTURE_2D, texId);
+
         if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
         else if (g->spread() == QGradient::ReflectSpread)
             updateTextureFilter(GL_TEXTURE_2D, GL_MIRRORED_REPEAT_IBM, true);
         else
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, true);
-
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        glBindTexture(GL_TEXTURE_2D, texId);
     }
     else if (style == Qt::TexturePattern) {
         const QPixmap& texPixmap = currentBrush->texture();
