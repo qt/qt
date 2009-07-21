@@ -60,10 +60,7 @@
 #include "QtCore/qthreadstorage.h"
 #include "QtCore/qhash.h"
 #include "private/qwidget_p.h"
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-#include "private/qpixmapdata_gl_p.h"
-#endif
+#include "qcache.h"
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -203,17 +200,18 @@ struct QGLContextGroupResources
     QAtomicInt refs;
 };
 
+class QGLTexture;
+
 class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
     explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {groupResources = new QGLContextGroupResources;}
     ~QGLContextPrivate() {if (!groupResources->refs.deref()) delete groupResources;}
-    GLuint bindTexture(const QImage &image, GLenum target, GLint format, const qint64 key,
+    QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, const qint64 key,
                        bool clean = false);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean);
-    GLuint bindTexture(const QImage &image, GLenum target, GLint format, bool clean);
-    bool textureCacheLookup(const qint64 key, GLenum target, GLuint *id);
+    QGLTexture *bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean, bool canInvert = false);
+    QGLTexture *textureCacheLookup(const qint64 key, GLenum target);
     void init(QPaintDevice *dev, const QGLFormat &format);
     QImage convertToGLFormat(const QImage &image, bool force_premul, GLenum texture_format);
     int maxTextureSize();
@@ -241,6 +239,8 @@ public:
     void* pbuf;
     quint32 gpm;
     int screen;
+    QHash<QPixmapData*, QPixmap> boundPixmaps;
+    QGLTexture *bindTextureFromNativePixmap(QPixmap *pm, const qint64 key, bool internal);
 #endif
 #if defined(Q_WS_MAC)
     bool update;
@@ -300,6 +300,7 @@ class QGLPixelBuffer;
 class QGLFramebufferObject;
 class QWSGLWindowSurface;
 class QGLWindowSurface;
+class QGLPixmapData;
 class QGLDrawable {
 public:
     QGLDrawable() : widget(0), buffer(0), fbo(0)
@@ -360,7 +361,8 @@ public:
         PackedDepthStencil      = 0x00000200,
         NVFloatBuffer           = 0x00000400,
         PixelBufferObject       = 0x00000800,
-        FramebufferBlit         = 0x00001000
+        FramebufferBlit         = 0x00001000,
+        NPOTTextures            = 0x00002000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -396,6 +398,66 @@ private:
 };
 
 extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
+
+class QGLTexture {
+public:
+    QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
+               bool _clean = true, bool _yInverted = false)
+        : context(ctx), id(tx_id), target(tx_target), clean(_clean), yInverted(_yInverted)
+#if defined(Q_WS_X11)
+            , boundPixmap(0)
+#endif
+    {}
+
+    ~QGLTexture() {
+        if (clean) {
+            QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
+            QGLContext *ctx = const_cast<QGLContext *>(context);
+            bool switch_context = current && current != ctx && !qgl_share_reg()->checkSharing(current, ctx);
+            if (switch_context)
+                ctx->makeCurrent();
+#if defined(Q_WS_X11)
+            deleteBoundPixmap();
+#endif
+            glDeleteTextures(1, &id);
+            if (switch_context)
+                current->makeCurrent();
+        }
+     }
+
+    QGLContext *context;
+    GLuint id;
+    GLenum target;
+    bool clean;
+    bool yInverted; // NOTE: Y-Inverted textures are for internal use only!
+#if defined(Q_WS_X11)
+    Qt::HANDLE boundPixmap;
+    void deleteBoundPixmap(); // in qgl_x11.cpp/qgl_x11egl.cpp
+#endif
+};
+
+class QGLTextureCache {
+public:
+    QGLTextureCache();
+    ~QGLTextureCache();
+
+    void insert(QGLContext *ctx, qint64 key, QGLTexture *texture, int cost);
+    void remove(quint64 key) { m_cache.remove(key); }
+    bool remove(QGLContext *ctx, GLuint textureId);
+    void removeContextTextures(QGLContext *ctx);
+    int size() { return m_cache.size(); }
+    void setMaxCost(int newMax) { m_cache.setMaxCost(newMax); }
+    int maxCost() {return m_cache.maxCost(); }
+    QGLTexture* getTexture(quint64 key) { return m_cache.object(key); }
+
+    static QGLTextureCache *instance();
+    static void deleteIfEmpty();
+    static void cleanupHook(qint64 cacheKey);
+
+private:
+    QCache<qint64, QGLTexture> m_cache;
+};
+
 
 #ifdef Q_WS_QWS
 extern QPaintEngine* qt_qgl_paint_engine();

@@ -74,6 +74,7 @@
 #include <private/qpainter_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qtextureglyphcache_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
 #include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"
@@ -1054,14 +1055,18 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
 
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    GLuint id = ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
+    QGLTexture *texture = ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true, true);
+
+    GLfloat top = texture->yInverted ? (pixmap.height() - src.top()) : src.top();
+    GLfloat bottom = texture->yInverted ? (pixmap.height() - src.bottom()) : src.bottom();
+    QGLRect srcRect(src.left(), top, src.right(), bottom);
 
     bool isBitmap = pixmap.isQBitmap();
     bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel();
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
-                           state()->renderHints & QPainter::SmoothPixmapTransform, id);
-    d->drawTexture(dest, src, pixmap.size(), isOpaque, isBitmap);
+                           state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
+    d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
@@ -1073,7 +1078,8 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    GLuint id = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
+    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
+    GLuint id = texture->id;
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
@@ -1287,6 +1293,14 @@ bool QGL2PaintEngineEx::end()
     glUseProgram(0);
     d->transferMode(BrushDrawingMode);
     d->drawable.swapBuffers();
+#if defined(Q_WS_X11)
+    // On some (probably all) drivers, deleting an X pixmap which has been bound to a texture
+    // before calling glFinish/swapBuffers renders garbage. Presumably this is because X deletes
+    // the pixmap behind the driver's back before it's had a chance to use it. To fix this, we
+    // reference all QPixmaps which have been bound to stop them being deleted and only deref
+    // them here, after swapBuffers, where they can be safely deleted.
+    ctx->d_func()->boundPixmaps.clear();
+#endif
     d->drawable.doneCurrent();
     d->ctx->d_ptr->active_engine = 0;
 
