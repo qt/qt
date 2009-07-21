@@ -96,7 +96,7 @@ private:
     class Private;
     Private *d;
 
-    // This doesn't help gcc 3.3 ...
+    // This doesn't help gcc 3.3 and sunpro ...
     template<typename T> friend class QTypeInfo;
 };
 
