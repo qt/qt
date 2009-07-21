@@ -127,6 +127,7 @@ private slots:
     void targetStateWithNoParent();
     void targetStateDeleted();
     void transitionToRootState();
+    void transitionFromRootState();
     void transitionEntersParent();
     
     void defaultErrorState();
@@ -277,6 +278,15 @@ void tst_QStateMachine::transitionToRootState()
 
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(initialState));
+}
+
+void tst_QStateMachine::transitionFromRootState()
+{
+    QStateMachine machine;
+    QState *root = machine.rootState();
+    QState *s1 = new QState(root);
+    QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: cannot add transition from root state");
+    root->addTransition(new EventTransition(QEvent::User, s1));
 }
 
 void tst_QStateMachine::transitionEntersParent()
