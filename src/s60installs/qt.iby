@@ -70,6 +70,9 @@ file=ABI_DIR\BUILD_DIR\qtwcodecs.dll         SHARED_LIB_DIR\qtwcodecs.dll    PAG
 // iconengines
 file=ABI_DIR\BUILD_DIR\qsvgicon.dll          SHARED_LIB_DIR\qsvgicon.dll     PAGED
 
+// Phonon MMF backend
+file=ABI_DIR\BUILD_DIR\phonon_mmf.dll        SHARED_LIB_DIR\phonon_mmf.dll   PAGED
+
 S60_APP_RESOURCE(s60main)
 
 // imageformats stubs
@@ -88,6 +91,9 @@ data=\epoc32\winscw\c\resource\qt\plugins\codecs\qtwcodecs.qtplugin          res
 
 // iconengines stubs
 data=\epoc32\winscw\c\resource\qt\plugins\iconengines\qsvgicon.qtplugin      resource\qt\plugins\iconengines\qsvgicon.qtplugin
+
+// Phonon MMF backend
+data=\epoc32\winscw\c\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
 
 // Stub sis file
 data=ZSYSTEM\install\qt.sis    System\Install\qt.sis
