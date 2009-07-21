@@ -185,16 +185,6 @@ void MMF::MediaObject::setTransitionTime(qint32)
 {
 }
 
-void MMF::MediaObject::MaloLoadingComplete()
-{
-    transitTo(StoppedState);
-}
-
-void MMF::MediaObject::MaloLoadingStarted()
-{
-    transitTo(LoadingState);
-}
-
 void MMF::MediaObject::MdapcInitComplete(TInt aError,
                                          const TTimeIntervalMicroSeconds &)
 {
@@ -234,5 +224,25 @@ void MMF::MediaObject::transitTo(Phonon::State newState)
 Phonon::State MMF::MediaObject::state() const
 {
     return m_state;
+}
+
+void MMF::MediaObject::MaloLoadingComplete()
+{
+    transitTo(StoppedState);
+}
+
+void MMF::MediaObject::MaloLoadingStarted()
+{
+    transitTo(LoadingState);
+}
+
+void MMF::MediaObject::MvloLoadingComplete()
+{
+    transitTo(StoppedState);
+}
+
+void MMF::MediaObject::MvloLoadingStarted()
+{
+    transitTo(LoadingState);
 }
 

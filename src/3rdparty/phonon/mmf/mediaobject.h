@@ -78,14 +78,18 @@ namespace Phonon
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
 
-            // MAudioLoadingObserver
-            virtual void MaloLoadingComplete();
-            virtual void MaloLoadingStarted();
-
             // MDrmAudioPlayerCallback
             virtual void MdapcInitComplete(TInt aError,
                                            const TTimeIntervalMicroSeconds &aDuration);
             virtual void MdapcPlayComplete(TInt aError);
+
+            // MAudioLoadingObserver
+            virtual void MaloLoadingComplete();
+            virtual void MaloLoadingStarted();
+
+            // MVideoLoadingObserver
+            virtual void MvloLoadingComplete();
+            virtual void MvloLoadingStarted();
 
         Q_SIGNALS:
             void totalTimeChanged();
