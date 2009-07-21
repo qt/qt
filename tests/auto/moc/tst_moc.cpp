@@ -488,6 +488,7 @@ private slots:
     void warnOnPropertyWithoutREAD();
     void constructors();
     void typenameWithUnsigned();
+    void warnOnVirtualSignal();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -1178,6 +1179,27 @@ void tst_Moc::typenameWithUnsigned()
     QVERIFY(mobj->indexOfSlot("j(unsigned1,uint)") != -1);
     QVERIFY(mobj->indexOfSlot("k(unsignedQImage)") != -1);
     QVERIFY(mobj->indexOfSlot("l(unsignedQImage)") != -1);
+}
+
+
+void tst_Moc::warnOnVirtualSignal()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("pure-virtual-signals.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
+    QCOMPARE(mocWarning, QString(SRCDIR) + QString("/pure-virtual-signals.h:48: Warning: Signals cannot be declared virtual\n") +
+                         QString(SRCDIR) + QString("/pure-virtual-signals.h:50: Warning: Signals cannot be declared virtual\n"));
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
 }
 
 QTEST_MAIN(tst_Moc)
