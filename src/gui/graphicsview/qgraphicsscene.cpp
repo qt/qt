@@ -2694,15 +2694,17 @@ void QGraphicsScene::clearFocus()
 
 /*!
     \property QGraphicsScene::stickyFocus
-    \brief whether or not clicking the scene will clear focus
+    \brief whether clicking into the scene background will clear focus
 
     \since 4.6
 
-    If this property is false (the default), then clicking on the scene
-    background or on an item that does not accept focus, will clear
-    focus. Otherwise, focus will remain unchanged.
+    In a QGraphicsScene with stickyFocus set to true, focus will remain
+    unchanged when the user clicks into the scene background or on an item
+    that does not accept focus. Otherwise, focus will be cleared.
 
-    The focus change happens in response to a mouse press. You can reimplement
+    By default, this property is false.
+
+    Focus changes in response to a mouse press. You can reimplement
     mousePressEvent() in a subclass of QGraphicsScene to toggle this property
     based on where the user has clicked.
 
