@@ -224,11 +224,11 @@ void QFxPaintedItem::paintContents(QPainter &p)
         p.setRenderHints(QPainter::SmoothPixmapTransform, true);
     QRectF clipf = p.clipRegion().boundingRect();
     if (clipf.isEmpty())
-        clipf = mapToScene(content); // ### Inefficient: Maps toScene and then fromScene
+        clipf = mapToScene(content).boundingRect(); // ### Inefficient: Maps toScene and then fromScene
     else
-        clipf = mapToScene(clipf);
+        clipf = mapToScene(clipf).boundingRect();
 
-    const QRect clip = mapFromScene(clipf).toRect();
+    const QRect clip = mapFromScene(clipf).boundingRect().toRect();
 
     QRegion topaint(clip);
     topaint &= content;

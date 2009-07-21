@@ -411,7 +411,7 @@ void QFxPathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
     int idx = 0;
     for (; idx < d->items.count(); ++idx) {
         QRectF rect = d->items.at(idx)->boundingRect();
-        rect = d->items.at(idx)->mapToScene(rect);
+        rect = d->items.at(idx)->mapToScene(rect).boundingRect();
         if (rect.contains(scenePoint))
             break;
     }
@@ -495,7 +495,7 @@ bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxPathView);
     QGraphicsSceneMouseEvent mouseEvent(event->type());
-    QRectF myRect = mapToScene(QRectF(0, 0, width(), height()));
+    QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
     QFxItem *grabber = static_cast<QFxItem*>(mouseGrabberItem());
     if ((d->stealMouse || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab())) {
         mouseEvent.setAccepted(false);

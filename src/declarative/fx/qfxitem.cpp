@@ -349,22 +349,6 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::visibleChanged()
-
-    This signal is emitted when the visibility of the item changes.
-
-    \sa setVisible()
-*/
-
-/*!
-    \fn void QFxItem::opacityChanged()
-
-    This signal is emitted when the opacity of the item changes.
-
-    \sa opacity(), setOpacity()
-*/
-
-/*!
     \fn void QFxItem::parentChanged()
 
     This signal is emitted when the parent of the item changes.
@@ -1068,14 +1052,6 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
 }
 
 /*!
-  Returns the bounding rectangle of the item in scene coordinates.
-*/
-QRectF QFxItem::sceneBoundingRect() const
-{
-    return QRectF(mapToScene(QPointF(0,0)), QSize(width(), height()));
-}
-
-/*!
   \qmlproperty string Item::id
   This property holds the identifier for the item.
   
@@ -1503,26 +1479,6 @@ void QFxItem::setRotation(qreal rotation)
 */
 
 /*!
-  \property QFxItem::opacity
-
-  The opacity of the item.  Opacity is specified as a number between 0
-  (fully transparent) and 1 (fully opaque).  The default is 1.
-
-  Opacity is an \e inherited attribute.  That is, the opacity is
-  also applied individually to child items. 
-*/
-
-void QFxItem::setOpacity(qreal v)
-{
-    if (v == opacity())
-        return;
-
-    QGraphicsItem::setOpacity(v);
-
-    emit opacityChanged();
-}
-
-/*!
   Returns a value indicating whether the mouse should
   remain with this item.
  */
@@ -1775,43 +1731,6 @@ QList<QFxTransform *> *QFxItem::transform()
     return &(d->_transform);
 }
 
-/*!
-  Returns true if the item is visible; otherwise returns false.
-
-  An item is considered visible if its opacity is not 0.
-*/
-bool QFxItem::isVisible() const
-{
-    Q_D(const QFxItem);
-    return d->visible;
-}
-
-/*! 
-  \property QFxItem::visible
-
-  This property specifies whether the item is visible or invisible.
-
-  Setting visibility to false sets opacity to 0.  Setting the
-  visibility to true restores the opacity to its previous value.
-
-  \sa isVisible()
-*/
-void QFxItem::setVisible(bool visible)
-{
-    Q_D(QFxItem);
-    if (visible == d->visible)
-        return;
-
-    d->visible = visible;
-    if (visible)
-        setOpacity(d->visibleOp);
-    else {
-        d->visibleOp = opacity();
-        setOpacity(0);
-    }
-
-    emit visibleChanged();
-}
 
 /*! \internal
 */
@@ -2279,26 +2198,6 @@ void QFxItem::setScale(qreal s)
 QRect QFxItem::itemBoundingRect()
 {
     return boundingRect().toAlignedRect();
-}
-
-QPointF QFxItem::mapFromScene(const QPointF &p) const
-{
-    return QGraphicsItem::mapFromScene(p);
-}
-
-QRectF QFxItem::mapFromScene(const QRectF &r) const
-{
-    return QGraphicsItem::mapFromScene(r).boundingRect();
-}
-
-QPointF QFxItem::mapToScene(const QPointF &p) const
-{
-    return QGraphicsItem::mapToScene(p);
-}
-
-QRectF QFxItem::mapToScene(const QRectF &r) const
-{
-    return QGraphicsItem::mapToScene(r).boundingRect();
 }
 
 QTransform QFxItem::transform() const
