@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qfxpixmap.h"
+#include <QImageReader>
 #include <QHash>
 #include <QNetworkReply>
 #include <QPixmapCache>
@@ -124,8 +125,30 @@ QFxPixmap::QFxPixmap(const QUrl &url)
                 if ((*iter)->reply->error()) {
                     qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
                 } else {
+                    QImageReader imgio((*iter)->reply);
+
+//#define QT_TEST_SCALED_SIZE
+#ifdef QT_TEST_SCALED_SIZE
+                    /*
+                    Some mechanism is needed for loading images at a limited size, especially
+                    for remote images. Loading only thumbnails of remote progressive JPEG
+                    images can be efficient. (Qt jpeg handler does not do so currently)
+                    */
+
+                    QSize limit(60,60);
+                    QSize sz = imgio.size();
+                    if (sz.width() > limit.width() || sz.height() > limit.height()) {
+                        sz.scale(limit,Qt::KeepAspectRatio);
+                        imgio.setScaledSize(sz);
+                    }
+#endif
+
                     QImage img;
-                    if (img.load((*iter)->reply, 0)) {
+                    if (imgio.read(&img)) {
+#ifdef QT_TEST_SCALED_SIZE
+                        if (!sz.isValid())
+                            img = img.scaled(limit,Qt::KeepAspectRatio);
+#endif
                         d->pixmap = QPixmap::fromImage(img);
                         QPixmapCache::insert(key, d->pixmap);
                     } else {
