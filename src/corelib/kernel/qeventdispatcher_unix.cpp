@@ -365,7 +365,7 @@ timeval qAbs(const timeval &t)
 */
 bool QTimerInfoList::timeChanged(timeval *delta)
 {
-    tms unused;
+    struct tms unused;
     clock_t currentTicks = times(&unused);
 
     clock_t elapsedTicks = currentTicks - previousTicks;

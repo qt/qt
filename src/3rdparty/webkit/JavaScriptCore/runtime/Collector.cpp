@@ -89,6 +89,13 @@ extern int *__libc_stack_end;
 #include <pthread_np.h>
 #endif
 
+#if PLATFORM(QNX)
+#include <fcntl.h>
+#include <sys/procfs.h>
+#include <stdio.h>
+#include <errno.h>
+#endif
+
 #endif
 
 #define DEBUG_COLLECTOR 0
@@ -580,6 +587,24 @@ static inline void* currentThreadStackBase()
     static pthread_t stackThread;
     pthread_t thread = pthread_self();
     if (stackBase == 0 || thread != stackThread) {
+#if PLATFORM(QNX)
+        int fd;
+        struct _debug_thread_info tinfo;
+        memset(&tinfo, 0, sizeof(tinfo));
+        tinfo.tid = pthread_self();
+        fd = open("/proc/self", O_RDONLY);
+        if (fd == -1) {
+#ifndef NDEBUG
+            perror("Unable to open /proc/self:");
+#endif
+            return 0;
+        }
+        devctl(fd, DCMD_PROC_TIDSTATUS, &tinfo, sizeof(tinfo), NULL);
+        close(fd);
+        stackBase = (void*)tinfo.stkbase;
+        stackSize = tinfo.stksize;
+        ASSERT(stackBase);
+#else
 #if defined(QT_LINUXBASE)
         // LinuxBase is missing pthread_getattr_np - resolve it once at runtime instead
         // see http://bugs.linuxbase.org/show_bug.cgi?id=2364
@@ -604,6 +629,7 @@ static inline void* currentThreadStackBase()
         (void)rc; // FIXME: Deal with error code somehow? Seems fatal.
         ASSERT(stackBase);
         pthread_attr_destroy(&sattr);
+#endif
         stackThread = thread;
     }
     return static_cast<char*>(stackBase) + stackSize;

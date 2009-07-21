@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
+
 #include "qsvghandler_p.h"
 
 #ifndef QT_NO_SVG

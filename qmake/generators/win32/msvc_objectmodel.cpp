@@ -49,9 +49,9 @@ QT_BEGIN_NAMESPACE
 // XML Tags ---------------------------------------------------------
 const char _Configuration[]                     = "Configuration";
 const char _Configurations[]                    = "Configurations";
-const char _File[]                              = "File";
+const char q_File[]                              = "File";
 const char _FileConfiguration[]                 = "FileConfiguration";
-const char _Files[]                             = "Files";
+const char q_Files[]                             = "Files";
 const char _Filter[]                            = "Filter";
 const char _Globals[]                           = "Globals";
 const char _Platform[]                          = "Platform";
@@ -2381,11 +2381,11 @@ XmlOutput &operator<<(XmlOutput &xml, VCFilter &tool)
     }
     for (int i = 0; i < tool.Files.count(); ++i) {
         const VCFilterFile &info = tool.Files.at(i);
-        xml << tag(_File)
+        xml << tag(q_File)
                 << attrS(_RelativePath, Option::fixPathToLocalOS(info.file))
             << data(); // In case no custom builds, to avoid "/>" endings
         tool.outputFileConfig(xml, tool.Files.at(i).file);
-        xml << closetag(_File);
+        xml << closetag(q_File);
     }
     if (!tool.Name.isEmpty())
         xml << closetag(_Filter);
@@ -2421,7 +2421,7 @@ XmlOutput &operator<<(XmlOutput &xml, const VCProjectSingleConfig &tool)
             << tag(_Configurations)
             << tool.Configuration;
     xml     << closetag(_Configurations)
-            << tag(_Files);
+            << tag(q_Files);
     // Add this configuration into a multi-config project, since that's where we have the flat/tree
     // XML output functionality
     VCProject tempProj;
@@ -2437,7 +2437,7 @@ XmlOutput &operator<<(XmlOutput &xml, const VCProjectSingleConfig &tool)
         tempProj.outputFilter(xml, tempProj.ExtraCompilers.at(x));
     }
     tempProj.outputFilter(xml, "RootFiles");
-    xml     << closetag(_Files)
+    xml     << closetag(q_Files)
             << tag(_Globals)
                 << data(); // No "/>" end tag
     return xml;
@@ -2492,7 +2492,7 @@ void VCProject::outputFileConfigs(XmlOutput &xml,
                                   const VCFilterFile &info,
                                   const QString &filtername)
 {
-    xml << tag(_File)
+    xml << tag(q_File)
             << attrS(_RelativePath, Option::fixPathToLocalOS(info.file));
     for (int i = 0; i < SingleProjects.count(); ++i) {
         VCFilter filter;
@@ -2520,7 +2520,7 @@ void VCProject::outputFileConfigs(XmlOutput &xml,
         if (filter.Config) // only if the filter is not empty
             filter.outputFileConfig(xml, info.file);
     }
-    xml << closetag(_File);
+    xml << closetag(q_File);
 }
 
 // outputs a given filter for all existing configurations of a project
@@ -2615,7 +2615,7 @@ XmlOutput &operator<<(XmlOutput &xml, VCProject &tool)
     for (int i = 0; i < tool.SingleProjects.count(); ++i)
         xml     << tool.SingleProjects.at(i).Configuration;
     xml     << closetag(_Configurations)
-            << tag(_Files);
+            << tag(q_Files);
     tool.outputFilter(xml, "Sources");
     tool.outputFilter(xml, "Headers");
     tool.outputFilter(xml, "GeneratedFiles");
@@ -2627,7 +2627,7 @@ XmlOutput &operator<<(XmlOutput &xml, VCProject &tool)
         tool.outputFilter(xml, tool.ExtraCompilers.at(x));
     }
     tool.outputFilter(xml, "RootFiles");
-    xml     << closetag(_Files)
+    xml     << closetag(q_Files)
             << tag(_Globals)
             << data(); // No "/>" end tag
     return xml;

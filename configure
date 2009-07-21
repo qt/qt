@@ -542,9 +542,12 @@ cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
 
 QMakeVar add styles "cde mac motif plastique cleanlooks windows"
 QMakeVar add decorations "default windows styled"
-QMakeVar add gfx-drivers "linuxfb"
+QMakeVar add mouse-drivers "pc"
+if [ "$UNAME_SYSTEM" = "Linux" ] ; then
+    QMakeVar add gfx-drivers "linuxfb"
+    QMakeVar add mouse-drivers "linuxtp"
+fi
 QMakeVar add kbd-drivers "tty"
-QMakeVar add mouse-drivers "pc linuxtp"
 
 if [ "$CFG_DEV" = "yes" ]; then
     QMakeVar add kbd-drivers "um"
@@ -618,6 +621,12 @@ CFG_KBD_AVAILABLE="tty linuxinput qvfb"
 CFG_KBD_ON="tty"    #default, see QMakeVar above
 CFG_MOUSE_AVAILABLE="pc linuxtp linuxinput tslib qvfb"
 CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
+
+if [ -f "$relpath/src/gui/embedded/qscreenqnx_qws.cpp" ]; then
+    CFG_KBD_AVAILABLE="${CFG_KBD_AVAILABLE} qnx"
+    CFG_MOUSE_AVAILABLE="${CFG_MOUSE_AVAILABLE} qnx"
+    CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} qnx"
+fi
 
 CFG_ARCH=
 CFG_HOST_ARCH=
@@ -2021,6 +2030,12 @@ for e in gawk nawk awk; do
     fi
 done
 
+# find perl
+PERL="/usr/bin/perl"
+if "$WHICH" perl >/dev/null 2>&1 && ( perl /dev/null ) >/dev/null 2>&1; then
+    PERL=`$WHICH perl`
+fi
+
 ### skip this if the user just needs help...
 if [ "$OPT_HELP" != "yes" ]; then
 
@@ -2249,6 +2264,13 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
             XPLATFORM="qws/linux-$CFG_EMBEDDED-g++"
         fi
         ;;
+    QNX:*)
+        [ -z "$PLATFORM" ] && PLATFORM=unsupported/qws/qnx-generic-g++
+        if [ -z "$XPLATFORM" ]; then
+            [ "$CFG_EMBEDDED" = "auto" ] && CFG_EMBEDDED=generic
+            XPLATFORM="unsupported/qws/qnx-$CFG_EMBEDDED-g++"
+        fi
+        ;;
     CYGWIN*:*)
 	CFG_EMBEDDED=x86
 	;;
@@ -2399,6 +2421,9 @@ if [ -z "$PLATFORM" ]; then
         ;;
      UNIX_SV:*)
         PLATFORM=unixware-g++
+        ;;
+     QNX:*)
+        PLATFORM=unsupported/qnx-g++
         ;;
      *)
         if [ "$OPT_HELP" != "yes" ]; then
@@ -2624,6 +2649,16 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
             echo "    Linux on SPARC"
         fi
         CFG_HOST_ARCH=sparc
+        ;;
+    QNX:*:*)
+        case "$UNAME_MACHINE" in
+        x86pc)
+            if [ "$OPT_VERBOSE" = "yes" ]; then
+                echo "    QNX on Intel 80x86 (i386)"
+            fi
+            CFG_HOST_ARCH=i386
+            ;;
+        esac
         ;;
     *:*:*)
         if [ "$OPT_VERBOSE" = "yes" ]; then

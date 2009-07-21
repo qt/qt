@@ -198,7 +198,14 @@ QString qws_dataDir()
     static QString result;
     if (!result.isEmpty())
         return result;
-    QByteArray dataDir = QString::fromLatin1("/tmp/qtembedded-%1").arg(qws_display_id).toLocal8Bit();
+    QByteArray dataDir;
+#ifdef QT_QWS_TEMP_DIR
+    dataDir = QT_QWS_TEMP_DIR;
+#else
+    dataDir = "/tmp";
+#endif
+    dataDir += "/qtembedded-";
+    dataDir += QByteArray::number(qws_display_id);
     if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());

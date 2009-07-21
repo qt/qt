@@ -238,8 +238,6 @@ namespace QT_NAMESPACE {}
 #elif defined(__DGUX__)
 #  define Q_OS_DGUX
 #elif defined(__QNXNTO__)
-#  define Q_OS_QNX6
-#elif defined(__QNX__)
 #  define Q_OS_QNX
 #elif defined(_SEQUENT_)
 #  define Q_OS_DYNIX
@@ -427,25 +425,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
-#  if defined(Q_OS_QNX4)
-/* compiler flags */
-#    define Q_TYPENAME
-#    define Q_NO_BOOL_TYPE
-#    define Q_CANNOT_DELETE_CONSTANT
-#    define mutable
-/* ??? */
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-/* no template classes in QVariant */
-#    define QT_NO_TEMPLATE_VARIANT
-/* Wcc does not fill in functions needed by valuelists, maps, and
-   valuestacks implicitly */
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-/* can we just compare the structures? */
-#    define Q_FULL_TEMPLATE_INSTANTIATION_MEMCMP
-/* these are not useful to our customers */
-#    define QT_NO_QWS_MULTIPROCESS
-#    define QT_NO_QWS_CURSOR
-#  endif
 
 #elif defined(__CC_ARM)
 #  define Q_CC_RVCT
@@ -2450,6 +2429,17 @@ QT_LICENSED_MODULE(DBus)
 #if defined(Q_CC_GNU) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
+#endif
+
+#ifdef Q_OS_QNX
+// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
+// shared fonts and QSystemSemaphore + QSharedMemory are not available
+#  define QT_NO_QWS_MULTIPROCESS
+#  define QT_NO_QWS_SHARE_FONTS
+#  define QT_NO_SYSTEMSEMAPHORE
+#  define QT_NO_SHAREDMEMORY
+// QNX currently doesn't support forking in a thread, so disable QProcess
+#  define QT_NO_PROCESS
 #endif
 
 QT_END_NAMESPACE
