@@ -612,9 +612,6 @@ bool QImageData::checkForAlphaPixels() const
     \table
     \header \o Function \o Description
     \row
-    \o setAlphaChannel()
-    \o Sets the alpha channel of the image.
-    \row
     \o setDotsPerMeterX()
     \o Defines the aspect ratio by setting the number of pixels that fit
     horizontally in a physical meter.
@@ -5587,7 +5584,7 @@ bool QImage::isDetached() const
     Note that the image will be converted to the Format_ARGB32_Premultiplied
     format if the function succeeds.
 
-    Use one of the composition mods in QPainter::CompositionMode instead.
+    Use one of the composition modes in QPainter::CompositionMode instead.
 
     \warning This function is expensive.
 
@@ -5665,6 +5662,8 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
 
 
 /*!
+    \obsolete
+
     Returns the alpha channel of the image as a new grayscale QImage in which
     each pixel's red, green, and blue values are given the alpha value of the
     original image. The color depth of the returned image is 8-bit.
@@ -5744,7 +5743,7 @@ QImage QImage::alphaChannel() const
     Returns true if the image has a format that respects the alpha
     channel, otherwise returns false.
 
-    \sa alphaChannel(), {QImage#Image Information}{Image Information}
+    \sa {QImage#Image Information}{Image Information}
 */
 bool QImage::hasAlphaChannel() const
 {
