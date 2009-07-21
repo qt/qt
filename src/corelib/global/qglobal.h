@@ -665,7 +665,8 @@ namespace QT_NAMESPACE {}
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
+//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
 #    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
