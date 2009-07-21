@@ -431,23 +431,6 @@ QmlComponent::QmlComponent(QmlComponentPrivate &dd, QObject *parent)
 {
 }
 
-/*!
-    Create a script object instance from this component. Returns a null
-    script object if creation failed. It will create the instance in the 
-    engine's \l {QmlEngine::rootContext()}{root context}.
-
-    Similar to QmlComponent::create(), but creates an object suitable
-    for usage within scripts.
-*/
-QScriptValue QmlComponent::createObject()
-{
-    Q_D(QmlComponent);
-    QObject* ret = create();
-    if(ret)
-        return QmlEngine::qmlScriptObject(ret, d->engine);
-    else
-        return d->engine->scriptEngine()->nullValue();
-}
 
 /*!
     Create an object instance from this component.  Returns 0 if creation

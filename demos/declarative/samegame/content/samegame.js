@@ -201,7 +201,7 @@ var waitTop = -1;
 
 function finishCreatingBlock(xIdx,yIdx){
     //TODO: Doc that the 'x', 'y' that were here are hidden properties from the calling QFxItem
-    if(component.isReady()){
+    if(component.isReady){
         if(xIdx == undefined){
             //Called without arguments, create a previously stored (xIdx,yIdx)
             if(waitTop == -1)
@@ -226,7 +226,7 @@ function finishCreatingBlock(xIdx,yIdx){
         dynamicObject.spawned = true;
         board[index(xIdx,yIdx)] = dynamicObject;
         return true;
-    }else if(component.isError()){
+    }else if(component.isError){
         print("error creating block");
         print(component.errorsString());
     }else{
