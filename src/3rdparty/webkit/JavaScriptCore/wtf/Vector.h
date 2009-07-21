@@ -129,7 +129,7 @@ namespace WTF {
     template<typename T>
     struct VectorMover<false, T>
     {
-        static void move(const T* src, const T* srcEnd, T* dst)
+        static void move(T* src, const T* srcEnd, T* dst)
         {
             while (src != srcEnd) {
                 new (dst) T(*src);
@@ -138,7 +138,7 @@ namespace WTF {
                 ++src;
             }
         }
-        static void moveOverlapping(const T* src, const T* srcEnd, T* dst)
+        static void moveOverlapping(T* src, const T* srcEnd, T* dst)
         {
             if (src > dst)
                 move(src, srcEnd, dst);
@@ -157,11 +157,11 @@ namespace WTF {
     template<typename T>
     struct VectorMover<true, T>
     {
-        static void move(const T* src, const T* srcEnd, T* dst) 
+        static void move(T* src, const T* srcEnd, T* dst) 
         {
             memcpy(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
         }
-        static void moveOverlapping(const T* src, const T* srcEnd, T* dst) 
+        static void moveOverlapping(T* src, const T* srcEnd, T* dst) 
         {
             memmove(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
         }
@@ -254,12 +254,12 @@ namespace WTF {
             VectorInitializer<VectorTraits<T>::needsInitialization, VectorTraits<T>::canInitializeWithMemset, T>::initialize(begin, end);
         }
 
-        static void move(const T* src, const T* srcEnd, T* dst)
+        static void move(T* src, const T* srcEnd, T* dst)
         {
             VectorMover<VectorTraits<T>::canMoveWithMemcpy, T>::move(src, srcEnd, dst);
         }
 
-        static void moveOverlapping(const T* src, const T* srcEnd, T* dst)
+        static void moveOverlapping(T* src, const T* srcEnd, T* dst)
         {
             VectorMover<VectorTraits<T>::canMoveWithMemcpy, T>::moveOverlapping(src, srcEnd, dst);
         }
