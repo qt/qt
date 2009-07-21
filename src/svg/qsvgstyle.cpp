@@ -81,12 +81,12 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 }
 
 QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false), m_fillRule(Qt::WindingFill), m_fillOpacity(1.0), m_gradientResolved (true)
+    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillRule(Qt::WindingFill), m_fillOpacitySet(false), m_fillOpacity(1.0), m_gradientResolved (true)
 {
 }
 
 QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false), m_fillRule(Qt::WindingFill), m_fillOpacity(1.0), m_gradientResolved (true)
+    : m_style(style), m_fillRuleSet(false), m_fillRule(Qt::WindingFill), m_fillOpacitySet(false), m_fillOpacity(1.0), m_gradientResolved (true)
 {
 }
 
