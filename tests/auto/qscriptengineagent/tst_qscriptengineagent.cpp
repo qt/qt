@@ -69,7 +69,20 @@ signals:
 private slots:
     void scriptLoadAndUnload();
     void contextPushAndPop();
-    void functionEntryAndExit();
+    void functionEntryAndExit_semicolon();
+    void functionEntryAndExit_expression();
+    void functionEntryAndExit_functionCall();
+    void functionEntryAndExit_functionDefinition();
+    void functionEntryAndExit_native();
+    void functionEntryAndExit_native2();
+    void functionEntryAndExit_nativeThrowing();
+    void functionEntryAndExit_builtin();
+    void functionEntryAndExit_objects();
+    void functionEntryAndExit_slots();
+    void functionEntryAndExit_property();
+    void functionEntryAndExit_call();
+    void functionEntryAndExit_functionReturn();
+    void functionEntryAndExit_objectCall();
     void positionChange();
     void exceptionThrowAndCatch();
     void eventOrder();
@@ -455,12 +468,12 @@ static QScriptValue nativeFunctionCallingArg(QScriptContext *ctx, QScriptEngine 
     return ctx->argument(0).call();
 }
 
-void tst_QScriptEngineAgent::functionEntryAndExit()
+/** check behaiviour of ';' */
+void tst_QScriptEngineAgent::functionEntryAndExit_semicolon()
 {
     QScriptEngine eng;
     ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
                                                        | ScriptEngineSpy::IgnoreFunctionExit));
-
     {
         spy->clear();
         eng.evaluate(";");
@@ -474,7 +487,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QVERIFY(spy->at(1).value.isUndefined());
     }
+    delete spy;
+}
 
+/** check behaiviour of expression */
+void tst_QScriptEngineAgent::functionEntryAndExit_expression()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     {
         spy->clear();
         eng.evaluate("1 + 2");
@@ -491,7 +512,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(1).value.isNumber());
         QCOMPARE(spy->at(1).value.toNumber(), qsreal(3));
     }
+    delete spy;
+}
 
+/** check behaiviour of standard function call */
+void tst_QScriptEngineAgent::functionEntryAndExit_functionCall()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     {
         spy->clear();
         eng.evaluate("(function() { return 123; } )()");
@@ -518,7 +547,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(3).value.isNumber());
         QCOMPARE(spy->at(3).value.toNumber(), qsreal(123));
     }
+    delete spy;
+}
 
+/** check behaiviour of function definition */
+void tst_QScriptEngineAgent::functionEntryAndExit_functionDefinition()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     {
         spy->clear();
         eng.evaluate("function foo() { return 456; }");
@@ -556,9 +593,16 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(5).value.isNumber());
         QCOMPARE(spy->at(5).value.toNumber(), qsreal(456));
     }
+    delete spy;
+}
 
+/** check behaiviour of native function */
+void tst_QScriptEngineAgent::functionEntryAndExit_native()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     // native functions
-
     {
         QScriptValue fun = eng.newFunction(nativeFunctionReturningArg);
         eng.globalObject().setProperty("nativeFunctionReturningArg", fun);
@@ -586,7 +630,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(3).value.isNumber());
         QCOMPARE(spy->at(3).value.toNumber(), qsreal(123));
     }
+    delete spy;
+}
 
+/** check behaiviour of native function */
+void tst_QScriptEngineAgent::functionEntryAndExit_native2()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     {
         QScriptValue fun = eng.newFunction(nativeFunctionCallingArg);
         eng.globalObject().setProperty("nativeFunctionCallingArg", fun);
@@ -622,7 +674,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(5).value.isNumber());
         QCOMPARE(spy->at(5).value.toNumber(), qsreal(123));
     }
+    delete spy;
+}
 
+/** check behaiviour of native function throwing error*/
+void tst_QScriptEngineAgent::functionEntryAndExit_nativeThrowing()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     {
         QScriptValue fun = eng.newFunction(nativeFunctionThrowingError);
         eng.globalObject().setProperty("nativeFunctionThrowingError", fun);
@@ -648,7 +708,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
         QVERIFY(spy->at(3).value.isError());
     }
+    delete spy;
+}
 
+/** check behaiviour of built-in function */
+void tst_QScriptEngineAgent::functionEntryAndExit_builtin()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     {
         spy->clear();
         eng.evaluate("'ciao'.toString()");
@@ -673,7 +741,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(3).value.isString());
         QCOMPARE(spy->at(3).value.toString(), QString("ciao"));
     }
+    delete spy;
+}
 
+/** check behaiviour of object creation*/
+void tst_QScriptEngineAgent::functionEntryAndExit_objects()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     {
         spy->clear();
         eng.evaluate("Array(); Boolean(); Date(); Function(); Number(); Object(); RegExp(); String()");
@@ -769,7 +845,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(19).value.isString());
         QCOMPARE(spy->at(19).value.toString(), QString());
     }
+    delete spy;
+}
 
+/** check behaiviour of slots*/
+void tst_QScriptEngineAgent::functionEntryAndExit_slots()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     // slots
     {
         eng.globalObject().setProperty("qobj", eng.newQObject(this));
@@ -789,7 +873,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         // evaluate() exit
         QCOMPARE(spy->at(3).type, ScriptEngineEvent::FunctionExit);
     }
+    delete spy;
+}
 
+/** check behaiviour of property accessors*/
+void tst_QScriptEngineAgent::functionEntryAndExit_property()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     // property accessors
     {
         eng.globalObject().setProperty("qobj", eng.newQObject(this));
@@ -829,7 +921,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QCOMPARE(spy->at(3).type, ScriptEngineEvent::FunctionExit);
         QVERIFY(spy->at(3).value.strictlyEquals(spy->at(2).value));
     }
+    delete spy;
+}
 
+/** check behaiviour of calling script functions from c++*/
+void tst_QScriptEngineAgent::functionEntryAndExit_call()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     // calling script functions from C++
 
     {
@@ -850,6 +950,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QVERIFY(spy->at(1).value.isNumber());
         QCOMPARE(spy->at(1).value.toNumber(), qsreal(123));
     }
+    delete spy;
+}
+
+/** check behaiviour of native function returnning arg*/
+void tst_QScriptEngineAgent::functionEntryAndExit_functionReturn()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
 
     for (int x = 0; x < 2; ++x) {
         QScriptValue fun = eng.newFunction(nativeFunctionReturningArg);
@@ -872,7 +981,15 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QVERIFY(spy->at(1).value.strictlyEquals(args.at(0)));
     }
+    delete spy;
+}
 
+/** check behaiviour of object creation with args (?)*/
+void tst_QScriptEngineAgent::functionEntryAndExit_objectCall()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
+                                                       | ScriptEngineSpy::IgnoreFunctionExit));
     for (int x = 0; x < 2; ++x) {
         QScriptValue fun = eng.evaluate("Boolean");
 
@@ -894,6 +1011,7 @@ void tst_QScriptEngineAgent::functionEntryAndExit()
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QVERIFY(spy->at(1).value.equals(args.at(0)));
     }
+    delete spy;
 }
 
 void tst_QScriptEngineAgent::positionChange()
