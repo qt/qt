@@ -174,6 +174,10 @@ static QString bulletChar(QTextListFormat::Style style)
         return QString::fromLatin1("a");
     case QTextListFormat::ListUpperAlpha:
         return QString::fromLatin1("A");
+    case QTextListFormat::ListLowerRoman:
+        return QString::fromLatin1("i");
+    case QTextListFormat::ListUpperRoman:
+        return QString::fromLatin1("I");
     default:
     case QTextListFormat::ListStyleUndefined:
         return QString();
@@ -619,7 +623,9 @@ void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, QTextListFormat f
 
     QTextListFormat::Style style = format.style();
     if (style == QTextListFormat::ListDecimal || style == QTextListFormat::ListLowerAlpha
-            || style == QTextListFormat::ListUpperAlpha) {
+            || style == QTextListFormat::ListUpperAlpha
+            || style == QTextListFormat::ListLowerRoman
+            || style == QTextListFormat::ListUpperRoman) {
         writer.writeStartElement(textNS, QString::fromLatin1("list-level-style-number"));
         writer.writeAttribute(styleNS, QString::fromLatin1("num-format"), bulletChar(style));
         writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), QString::fromLatin1("."));

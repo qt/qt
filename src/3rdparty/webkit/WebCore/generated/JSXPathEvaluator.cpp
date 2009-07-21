@@ -51,7 +51,7 @@ static const HashTableValue JSXPathEvaluatorTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathEvaluatorTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathEvaluatorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXPathEvaluatorTableValues, 0 };
 #else
@@ -65,7 +65,7 @@ static const HashTableValue JSXPathEvaluatorConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathEvaluatorConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathEvaluatorConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXPathEvaluatorConstructorTableValues, 0 };
 #else
@@ -115,7 +115,7 @@ static const HashTableValue JSXPathEvaluatorPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathEvaluatorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathEvaluatorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSXPathEvaluatorPrototypeTableValues, 0 };
 #else

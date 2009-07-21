@@ -70,6 +70,7 @@
 #include <qpixmapcache.h>
 #undef signals // Collides with GTK stymbols
 #include "qgtkpainter_p.h"
+#include "qstylehelper_p.h"
 
 #include <private/qcleanlooksstyle_p.h>
 
@@ -206,17 +207,6 @@ static GdkColor fromQColor(const QColor &color)
     retval.green = color.green() * 255;
     retval.blue = color.blue() * 255;
     return retval;
-}
-
-// Note this is different from uniqueName as used in QGtkPainter
-static QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
-{
-    QString tmp;
-    const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
-    tmp.sprintf("%s-%d-%d-%d-%lld-%dx%d", key.toLatin1().constData(), uint(option->state),
-                option->direction, complexOption ? uint(complexOption->activeSubControls) : uint(0),
-                option->palette.cacheKey(), size.width(), size.height());
-    return tmp;
 }
 
 /*!
@@ -609,6 +599,26 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
 
     break;
 
+    case SH_ToolButtonStyle:
+    {
+        if (QGtk::isKDE4Session())
+            return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
+        GtkWidget *gtkToolbar = QGtk::gtkWidget(QLS("GtkToolbar"));
+        GtkToolbarStyle toolbar_style = GTK_TOOLBAR_ICONS;
+        g_object_get(gtkToolbar, "toolbar-style", &toolbar_style, NULL);
+        switch (toolbar_style) {
+        case GTK_TOOLBAR_TEXT:
+            return Qt::ToolButtonTextOnly;
+        case GTK_TOOLBAR_BOTH:
+            return Qt::ToolButtonTextUnderIcon;
+        case GTK_TOOLBAR_BOTH_HORIZ:
+            return Qt::ToolButtonTextBesideIcon;
+        case GTK_TOOLBAR_ICONS:
+        default:
+            return Qt::ToolButtonIconOnly;
+        }
+    }
+    break;
     case SH_SpinControls_DisableOnBounds:
         return int(true);
 
@@ -684,11 +694,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         const QString pmKey = QString(QLS("windowframe %0")).arg(option->state);
 
         QPixmap pixmap;
-        QPixmapCache::find(pmKey, pixmap);
         QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));
 
         // Only draw through style once
-        if (pixmap.isNull()) {
+        if (!QPixmapCache::find(pmKey, pixmap)) {
             pixmap = QPixmap(pmSize, pmSize);
             pixmap.fill(Qt::transparent);
             QPainter pmPainter(&pixmap);

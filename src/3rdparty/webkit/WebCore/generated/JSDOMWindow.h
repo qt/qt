@@ -66,6 +66,7 @@ public:
     JSC::JSValue webKitCSSMatrix(JSC::ExecState*) const;
     JSC::JSValue webKitPoint(JSC::ExecState*) const;
     JSC::JSValue xmlHttpRequest(JSC::ExecState*) const;
+    JSC::JSValue messageChannel(JSC::ExecState*) const;
     JSC::JSValue worker(JSC::ExecState*) const;
     JSC::JSValue audio(JSC::ExecState*) const;
 
@@ -447,6 +448,8 @@ JSC::JSValue jsDOMWindowHTMLCanvasElementConstructor(JSC::ExecState*, const JSC:
 void setJSDOMWindowHTMLCanvasElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLDataGridElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowHTMLDataGridElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowHTMLDataGridCellElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowHTMLDataGridCellElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLDataGridColElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowHTMLDataGridColElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLDListElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -609,6 +612,10 @@ JSC::JSValue jsDOMWindowXMLHttpRequestUploadConstructor(JSC::ExecState*, const J
 void setJSDOMWindowXMLHttpRequestUploadConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowXMLHttpRequestExceptionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowXMLHttpRequestExceptionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowMessagePortConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowMessagePortConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowMessageChannelConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowMessageChannelConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowWorkerConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowWorkerConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowPluginConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

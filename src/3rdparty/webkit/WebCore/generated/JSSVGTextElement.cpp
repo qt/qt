@@ -49,7 +49,7 @@ static const HashTableValue JSSVGTextElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGTextElementTableValues, 0 };
 #else
@@ -67,7 +67,7 @@ static const HashTableValue JSSVGTextElementPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGTextElementPrototypeTableValues, 0 };
 #else

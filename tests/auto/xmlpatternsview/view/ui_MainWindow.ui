@@ -234,6 +234,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenXSLTSCatalog"/>
+    <addaction name="actionOpenXSDTSCatalog"/>
     <addaction name="actionExecute"/>
     <addaction name="separator"/>
     <addaction name="actionRestart"/>
@@ -302,6 +303,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionOpenXSDTSCatalog">
+   <property name="text">
+    <string>O&amp;pen XSDTS Catalog...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

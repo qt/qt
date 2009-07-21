@@ -69,13 +69,14 @@ class QFileSystemWatcherEngine : public QThread
     Q_OBJECT
 
 protected:
-    inline QFileSystemWatcherEngine()
+    inline QFileSystemWatcherEngine(bool move = true)
     {
-        moveToThread(this);
+        if (move)
+            moveToThread(this);
     }
 
 public:
-    // fills \a files and \a directires with the \a paths it could
+    // fills \a files and \a directories with the \a paths it could
     // watch, and returns a list of paths this engine could not watch
     virtual QStringList addPaths(const QStringList &paths,
                                  QStringList *files,

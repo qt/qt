@@ -67,8 +67,8 @@ private slots:
 static QStringList getFeatures()
 {
     QStringList srcDirs;
-    srcDirs << QString::fromLocal8Bit(getenv("QTDIR"))
-            << QString::fromLocal8Bit(getenv("QTSRCDIR"));
+    srcDirs << QString::fromLocal8Bit(qgetenv("QTDIR"))
+            << QString::fromLocal8Bit(qgetenv("QTSRCDIR"));
 
     QString featurefile;
     foreach (QString dir, srcDirs) {
@@ -157,7 +157,7 @@ void tst_CompilerWarnings::warnings()
     QStringList args;
     QString compilerName;
 
-    static QString qtDir = QString::fromLocal8Bit(getenv("QTDIR"));
+    static QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
     QVERIFY2(!qtDir.isEmpty(), "This test needs $QTDIR");
 
     args << cflags;

@@ -649,16 +649,19 @@ void QNetworkAccessHttpBackend::readFromHttp()
     if (!httpReply)
         return;
 
-    // We implement the download rate control
-    // Don't read from QHttpNetworkAccess more than QNetworkAccessBackend wants
-    // One of the two functions above will be called when we can read again
+    // We read possibly more than nextDownstreamBlockSize(), but
+    // this is not a critical thing since it is already in the
+    // memory anyway
 
-    qint64 bytesToRead = qBound<qint64>(0, httpReply->bytesAvailable(), nextDownstreamBlockSize());
-    if (!bytesToRead)
-        return;
+    QByteDataBuffer list;
 
-    QByteArray data = httpReply->read(bytesToRead);
-    writeDownstreamData(data);
+    while (httpReply->bytesAvailable() != 0 && nextDownstreamBlockSize() != 0 && nextDownstreamBlockSize() > list.byteAmount()) {
+        QByteArray data = httpReply->readAny();
+        list.append(data);
+    }
+
+    if (!list.isEmpty())
+      writeDownstreamData(list);
 }
 
 void QNetworkAccessHttpBackend::replyFinished()

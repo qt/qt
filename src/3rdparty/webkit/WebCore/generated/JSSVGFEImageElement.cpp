@@ -62,7 +62,7 @@ static const HashTableValue JSSVGFEImageElementTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEImageElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEImageElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEImageElementTableValues, 0 };
 #else
@@ -77,7 +77,7 @@ static const HashTableValue JSSVGFEImageElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEImageElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEImageElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEImageElementPrototypeTableValues, 0 };
 #else

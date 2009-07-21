@@ -51,9 +51,12 @@
 #include "qdebug.h"
 #include "qboxlayout.h"
 #include "qpainter.h"
+#include "qstandardgestures.h"
 
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
+
+#include <private/qapplication_p.h>
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
@@ -157,6 +160,9 @@ QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
     :hbar(0), vbar(0), vbarpolicy(Qt::ScrollBarAsNeeded), hbarpolicy(Qt::ScrollBarAsNeeded),
      viewport(0), cornerWidget(0), left(0), top(0), right(0), bottom(0),
      xoffset(0), yoffset(0), viewportFilter(0)
+#ifdef Q_WS_WIN
+     , singleFingerPanEnabled(false)
+#endif
 {
 }
 
@@ -288,6 +294,32 @@ void QAbstractScrollAreaPrivate::init()
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
+}
+
+void QAbstractScrollAreaPrivate::setupGestures()
+{
+#ifdef Q_OS_WIN
+    if (!viewport)
+        return;
+    QApplicationPrivate* getQApplicationPrivateInternal();
+    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+    bool needh = (hbarpolicy == Qt::ScrollBarAlwaysOn
+                  || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
+
+    bool needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
+                  || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
+    if (qAppPriv->SetGestureConfig && (needh || needv)) {
+        GESTURECONFIG gc[1];
+        gc[0].dwID = GID_PAN;
+        gc[0].dwWant = GC_PAN;
+        gc[0].dwBlock = 0;
+        if (needv && singleFingerPanEnabled)
+            gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
+        if (needh && singleFingerPanEnabled)
+            gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+        qAppPriv->SetGestureConfig(viewport->winId(), 0, 1, gc, sizeof(gc));
+    }
+#endif // Q_OS_WIN
 }
 
 void QAbstractScrollAreaPrivate::layoutChildren()
@@ -458,9 +490,6 @@ void QAbstractScrollAreaPrivate::layoutChildren()
 
     viewport->setGeometry(QStyle::visualRect(opt.direction, opt.rect, viewportRect)); // resize the viewport last
 }
-
-// ### Fix for 4.4, talk to Bjoern E or Girish.
-void QAbstractScrollAreaPrivate::scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy) {}
 
 /*!
     \internal
@@ -909,7 +938,6 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::DragMove:
     case QEvent::DragLeave:
 #endif
-    case QEvent::Gesture:
         return false;
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
@@ -1239,6 +1267,7 @@ void QAbstractScrollAreaPrivate::_q_vslide(int y)
 void QAbstractScrollAreaPrivate::_q_showOrHideScrollBars()
 {
     layoutChildren();
+    setupGestures();
 }
 
 QPoint QAbstractScrollAreaPrivate::contentsOffset() const

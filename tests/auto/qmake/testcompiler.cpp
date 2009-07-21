@@ -56,7 +56,7 @@ static QString targetName( BuildType buildMode, const QString& target, const QSt
         targetName.append(".exe");
         break;
     case Dll: // dll
-        if (!version.empty())
+        if (!version.isEmpty())
             targetName.append(version.section(".", 0, 0));
         targetName.append(".dll");
         break;

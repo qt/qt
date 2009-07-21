@@ -45,7 +45,7 @@ static const HashTableValue JSXMLHttpRequestExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSXMLHttpRequestExceptionTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSXMLHttpRequestExceptionConstructorTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSXMLHttpRequestExceptionConstructorTableValues, 0 };
 #else
@@ -102,7 +102,7 @@ static const HashTableValue JSXMLHttpRequestExceptionPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSXMLHttpRequestExceptionPrototypeTableValues, 0 };
 #else

@@ -58,6 +58,7 @@
 
 #if defined(Q_OS_UNIX)
 #define QT_USE_MMAP
+#include "private/qcore_unix_p.h"
 #endif
 
 // most of the headers below are already included in qplatformdefs.h
@@ -502,7 +503,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
   \overload load()
   \fn bool QTranslator::load(const uchar *data, int len)
 
-  Loads the .qm file data \a data of length \a len into the
+  Loads the QM file data \a data of length \a len into the
   translator.
 
   The data is not copied. The caller must be able to guarantee that \a data

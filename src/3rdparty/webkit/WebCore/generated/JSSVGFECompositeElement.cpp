@@ -65,7 +65,7 @@ static const HashTableValue JSSVGFECompositeElementTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFECompositeElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFECompositeElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFECompositeElementTableValues, 0 };
 #else
@@ -86,7 +86,7 @@ static const HashTableValue JSSVGFECompositeElementConstructorTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFECompositeElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFECompositeElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFECompositeElementConstructorTableValues, 0 };
 #else
@@ -132,7 +132,7 @@ static const HashTableValue JSSVGFECompositeElementPrototypeTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFECompositeElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFECompositeElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGFECompositeElementPrototypeTableValues, 0 };
 #else

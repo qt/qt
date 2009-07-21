@@ -73,6 +73,8 @@ union semun {
 
 #endif // QT_NO_QWS_MULTIPROCESS
 
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
+
 #define MAX_LOCKS   200            // maximum simultaneous read locks
 
 QT_BEGIN_NAMESPACE
@@ -134,7 +136,7 @@ QLock::QLock(const QString &filename, char id, bool create)
 #ifdef Q_NO_SEMAPHORE
     data->file = QString(filename+id).toLocal8Bit().constData();
     for(int x = 0; x < 2; x++) {
-        data->id = open(data->file, O_RDWR | (x ? O_CREAT : 0), S_IRWXU);
+        data->id = QT_OPEN(data->file, O_RDWR | (x ? O_CREAT : 0), S_IRWXU);
         if(data->id != -1 || !create) {
             data->owned = x;
             break;
@@ -177,7 +179,7 @@ QLock::~QLock()
         unlock();
 #ifdef Q_NO_SEMAPHORE
     if(isValid()) {
-        close(data->id);
+        QT_CLOSE(data->id);
         if(data->owned)
             unlink(data->file);
     }

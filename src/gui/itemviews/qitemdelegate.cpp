@@ -574,7 +574,7 @@ void QItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) con
 }
 
 /*!
-    Gets data drom the \a editor widget and stores it in the specified
+    Gets data from the \a editor widget and stores it in the specified
     \a model at the item \a index.
 
     The default implementation gets the value to be stored in the data
@@ -861,6 +861,8 @@ void QItemDelegate::drawBackground(QPainter *painter,
 
 /*!
     \internal
+
+    Code duplicated in QCommonStylePrivate::viewItemLayout
 */
 
 void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
@@ -882,8 +884,10 @@ void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
     int w, h;
 
     textRect->adjust(-textMargin, 0, textMargin, 0); // add width padding
-    if (textRect->height() == 0 && !hasPixmap)
+    if (textRect->height() == 0 && (!hasPixmap || !hint)) {
+        //if there is no text, we still want to have a decent height for the item sizeHint and the editor size
         textRect->setHeight(option.fontMetrics.height());
+    }
 
     QSize pm(0, 0);
     if (hasPixmap) {
@@ -1219,15 +1223,12 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
         if (editor->parentWidget())
             editor->parentWidget()->setFocus();
         return true;
-    } else if (event->type() == QEvent::FocusOut || event->type() == QEvent::Hide) {
+    } else if (event->type() == QEvent::FocusOut || (event->type() == QEvent::Hide && editor->isWindow())) {
         //the Hide event will take care of he editors that are in fact complete dialogs
         if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
-            QWidget *w = QApplication::focusWidget();
-            while (w) { // don't worry about focus changes internally in the editor
-                if (w == editor)
-                    return false;
-                w = w->parentWidget();
-            }
+            if (editor->isAncestorOf(QApplication::focusWidget()))
+                return false; // don't worry about focus changes internally in the editor
+
 #ifndef QT_NO_DRAGANDDROP
             // The window may lose focus during an drag operation.
             // i.e when dragging involves the taskbar on Windows.

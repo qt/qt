@@ -81,7 +81,7 @@ static QString qt_strippedText(QString s)
 
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
                                    visible(1), forceInvisible(0), checkable(0), checked(0), separator(0), fontSet(false),
-                                   menuRole(QAction::TextHeuristicRole), iconVisibleInMenu(-1)
+                                   menuRole(QAction::TextHeuristicRole), priority(QAction::NormalPriority), iconVisibleInMenu(-1)
 {
 #ifdef QT3_SUPPORT
     static int qt_static_action_id = -1;
@@ -256,7 +256,9 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
            as described in the QMenuBar documentation.
     \value ApplicationSpecificRole This action should be put in the application menu with an application specific role
     \value AboutQtRole This action matches handles the "About Qt" menu item.
-    \value AboutRole This action should be placed where the "About" menu item is in the application menu.
+    \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
+           the menu item will be set to "About <application name>". The application name is fetched from the
+           \c{Info.plist} file in the application's bundle (See \l{Deploying an Application on Mac OS X}).
     \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
     \value QuitRole This action should be placed where the Quit menu item is in the application menu.
 */
@@ -907,6 +909,52 @@ QString QAction::whatsThis() const
     return d->whatsthis;
 }
 
+/*!
+    \enum QAction::Priority
+    \since 4.6
+
+    This enum defines priorities for actions in user interface.
+
+    \value LowPriority The action should not be prioritized in
+    the user interface.
+
+    \value NormalPriority
+
+    \value HighPriority The action should be prioritized in
+    the user interface.
+
+    \sa priority
+*/
+
+
+/*!
+    \property QAction::priority
+    \since 4.6
+
+    \brief the actions's priority in the user interface.
+
+    This property can be set to indicate how the action should be prioritized
+    in the user interface.
+
+    For instance, when toolbars have the Qt::ToolButtonTextBesideIcon
+    mode set, then actions with LowPriority will not show the text
+    labels.
+*/
+void QAction::setPriority(Priority priority)
+{
+    Q_D(QAction);
+    if (d->priority == priority)
+        return;
+
+    d->priority = priority;
+    d->sendDataChanged();
+}
+
+QAction::Priority QAction::priority() const
+{
+    Q_D(const QAction);
+    return d->priority;
+}
 
 /*!
     \property QAction::checkable

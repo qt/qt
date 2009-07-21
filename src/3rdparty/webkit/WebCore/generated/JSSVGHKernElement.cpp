@@ -40,7 +40,7 @@ static const HashTableValue JSSVGHKernElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGHKernElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGHKernElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGHKernElementPrototypeTableValues, 0 };
 #else

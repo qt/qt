@@ -66,6 +66,7 @@ JSC::JSValue JSC_HOST_CALL jsHTMLButtonElementPrototypeFunctionClick(JSC::ExecSt
 // Attributes
 
 JSC::JSValue jsHTMLButtonElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLButtonElementValidity(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLButtonElementAccessKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLButtonElementAccessKey(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLButtonElementDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

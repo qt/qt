@@ -48,7 +48,7 @@ static const HashTableValue JSCSSVariablesDeclarationTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSVariablesDeclarationTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSVariablesDeclarationTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSCSSVariablesDeclarationTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSCSSVariablesDeclarationConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSVariablesDeclarationConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSVariablesDeclarationConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSVariablesDeclarationConstructorTableValues, 0 };
 #else
@@ -104,7 +104,7 @@ static const HashTableValue JSCSSVariablesDeclarationPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSVariablesDeclarationPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSVariablesDeclarationPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSCSSVariablesDeclarationPrototypeTableValues, 0 };
 #else

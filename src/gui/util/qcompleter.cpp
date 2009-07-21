@@ -134,7 +134,7 @@
 
     To provide completions, QCompleter needs to know the path from an index.
     This is provided by pathFromIndex(). The default implementation of
-    pathFromIndex(), returns the data for the \l{Qt::EditRole}{edit role} 
+    pathFromIndex(), returns the data for the \l{Qt::EditRole}{edit role}
     for list models and the absolute file path if the mode is a QDirModel.
 
     \sa QAbstractItemModel, QLineEdit, QComboBox, {Completer Example}
@@ -772,7 +772,7 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
 ///////////////////////////////////////////////////////////////////////////////
 QCompleterPrivate::QCompleterPrivate()
 : widget(0), proxy(0), popup(0), cs(Qt::CaseSensitive), role(Qt::EditRole), column(0),
-  sorting(QCompleter::UnsortedModel), wrap(true), eatFocusOut(true)
+  sorting(QCompleter::UnsortedModel), wrap(true), maxVisibleItems(7), eatFocusOut(true)
 {
 }
 
@@ -861,7 +861,7 @@ void QCompleterPrivate::showPopup(const QRect& rect)
     Qt::LayoutDirection dir = widget->layoutDirection();
     QPoint pos;
     int rw, rh, w;
-    int h = (popup->sizeHintForRow(0) * qMin(7, popup->model()->rowCount()) + 3) + 3;
+    int h = (popup->sizeHintForRow(0) * qMin(maxVisibleItems, popup->model()->rowCount()) + 3) + 3;
     QScrollBar *hsb = popup->horizontalScrollBar();
     if (hsb && hsb->isVisible())
         h += popup->horizontalScrollBar()->sizeHint().height();
@@ -1182,7 +1182,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Up:
             if (!curIndex.isValid()) {
                 int rowCount = d->proxy->rowCount();
-                QModelIndex lastIndex = d->proxy->index(rowCount - 1, 0);
+                QModelIndex lastIndex = d->proxy->index(rowCount - 1, d->column);
                 d->setCurrentIndex(lastIndex);
                 return true;
             } else if (curIndex.row() == 0) {
@@ -1194,7 +1194,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
         case Qt::Key_Down:
             if (!curIndex.isValid()) {
-                QModelIndex firstIndex = d->proxy->index(0, 0);
+                QModelIndex firstIndex = d->proxy->index(0, d->column);
                 d->setCurrentIndex(firstIndex);
                 return true;
             } else if (curIndex.row() == d->proxy->rowCount() - 1) {
@@ -1510,6 +1510,30 @@ bool QCompleter::wrapAround() const
 }
 
 /*!
+    \property QCompleter::maxVisibleItems
+    \brief the maximum allowed size on screen of the completer, measured in items
+    \since 4.6
+
+    By default, this property has a value of 7.
+*/
+int QCompleter::maxVisibleItems() const
+{
+    Q_D(const QCompleter);
+    return d->maxVisibleItems;
+}
+
+void QCompleter::setMaxVisibleItems(int maxItems)
+{
+    Q_D(QCompleter);
+    if (maxItems < 0) {
+        qWarning("QCompleter::setMaxVisibleItems: "
+                 "Invalid max visible items (%d) must be >= 0", maxItems);
+        return;
+    }
+    d->maxVisibleItems = maxItems;
+}
+
+/*!
     \property QCompleter::caseSensitivity
     \brief the case sensitivity of the matching
 
@@ -1581,6 +1605,10 @@ QString QCompleter::currentCompletion() const
     Returns the completion model. The completion model is a read-only list model
     that contains all the possible matches for the current completion prefix.
     The completion model is auto-updated to reflect the current completions.
+
+    \note The return value of this function is defined to be an QAbstractItemModel
+    purely for generality. This actual kind of model returned is an instance of an
+    QAbstractProxyModel subclass.
 
     \sa completionPrefix, model()
 */

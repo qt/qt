@@ -358,6 +358,30 @@ QString global_greeting(int type)
 //! [36]
 
 
+//! [qttrid]
+    //% "%n fooish bar(s) found.\n"
+    //% "Do you want to continue?"
+    QString text = qtTrId("qtn_foo_bar", n);
+//! [qttrid]
+
+
+//! [qttrid_noop]
+static const char * const ids[] = {
+    //% "This is the first text."
+    QT_TRID_NOOP("qtn_1st_text"),
+    //% "This is the second text."
+    QT_TRID_NOOP("qtn_2nd_text"),
+    0
+};
+
+void TheClass::addLabels()
+{
+    for (int i = 0; ids[i]; ++i)
+        new QLabel(qtTrId(ids[i]), this);
+}
+//! [qttrid_noop]
+
+
 //! [37]
 qWarning("%s: %s", qPrintable(key), qPrintable(value));
 //! [37]

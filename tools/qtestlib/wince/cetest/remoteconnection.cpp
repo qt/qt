@@ -41,6 +41,38 @@
 
 #include "remoteconnection.h"
 
+QByteArray strwinerror(DWORD errorcode)
+{
+    QByteArray out(512, 0);
+
+    DWORD ok = FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        0,
+        errorcode,
+        0,
+        out.data(),
+        out.size(),
+        0
+    );
+
+    if (!ok) {
+        qsnprintf(out.data(), out.size(),
+            "(error %d; additionally, error %d while looking up error string)",
+            (int)errorcode, (int)GetLastError());
+    }
+    else {
+        out.resize(qstrlen(out.constData()));
+        if (out.endsWith("\r\n"))
+            out.chop(2);
+
+        /* Append error number to error message for good measure */
+        out.append(" (0x");
+        out.append(QByteArray::number(uint(errorcode), 16).rightJustified(8, '0'));
+        out.append(")");
+    }
+    return out;
+}
+
 AbstractRemoteConnection::AbstractRemoteConnection()
 {
 }

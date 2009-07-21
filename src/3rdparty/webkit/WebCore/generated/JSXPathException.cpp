@@ -48,7 +48,7 @@ static const HashTableValue JSXPathExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSXPathExceptionTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSXPathExceptionConstructorTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSXPathExceptionConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSXPathExceptionPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSXPathExceptionPrototypeTableValues, 0 };
 #else

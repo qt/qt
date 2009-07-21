@@ -41,7 +41,7 @@ static const HashTableValue JSSVGUnitTypesTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUnitTypesTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUnitTypesTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGUnitTypesTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSSVGUnitTypesConstructorTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUnitTypesConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUnitTypesConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGUnitTypesConstructorTableValues, 0 };
 #else
@@ -99,7 +99,7 @@ static const HashTableValue JSSVGUnitTypesPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUnitTypesPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUnitTypesPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGUnitTypesPrototypeTableValues, 0 };
 #else

@@ -69,6 +69,7 @@ QT_BEGIN_NAMESPACE
 // functionality is provided within Qt (see task 196275).
 static const char * language_strings[] =
 {
+    QT_TRANSLATE_NOOP("MessageEditor", "Russian"),
     QT_TRANSLATE_NOOP("MessageEditor", "German"),
     QT_TRANSLATE_NOOP("MessageEditor", "Japanese"),
     QT_TRANSLATE_NOOP("MessageEditor", "French"),

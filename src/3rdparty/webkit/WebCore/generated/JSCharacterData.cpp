@@ -45,7 +45,7 @@ static const HashTableValue JSCharacterDataTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCharacterDataTable =
+static JSC_CONST_HASHTABLE HashTable JSCharacterDataTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSCharacterDataTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSCharacterDataConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCharacterDataConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCharacterDataConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCharacterDataConstructorTableValues, 0 };
 #else
@@ -102,7 +102,7 @@ static const HashTableValue JSCharacterDataPrototypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCharacterDataPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCharacterDataPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSCharacterDataPrototypeTableValues, 0 };
 #else

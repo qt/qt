@@ -142,6 +142,7 @@ QGLSignalProxy *QGLSignalProxy::instance()
 
 /*!
     \namespace QGL
+    \inmodule QtOpenGL
 
     \brief The QGL namespace specifies miscellaneous identifiers used
     in the Qt OpenGL module.

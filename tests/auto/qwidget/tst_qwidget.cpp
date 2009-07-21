@@ -106,7 +106,7 @@
 // taken from qguifunctions_wce.cpp
 #define SPI_GETPLATFORMTYPE 257
 bool qt_wince_is_platform(const QString &platformString) {
-    TCHAR tszPlatform[64];
+    wchar_t tszPlatform[64];
     if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
                              sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
       if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
@@ -351,8 +351,10 @@ private slots:
 #endif
     void updateOnDestroyedSignal();
     void toplevelLineEditFocus();
+    void inputFocus_task257832();
 
     void focusWidget_task254563();
+    void rectOutsideCoordinatesLimit_task144779();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -3433,9 +3435,9 @@ static QString visibleWindowTitle(QWidget *window, Qt::WindowState state = Qt::W
 #ifdef Q_WS_WIN
     Q_UNUSED(state);
     const size_t maxTitleLength = 256;
-    WCHAR title[maxTitleLength];
-    GetWindowTextW(window->winId(), title, maxTitleLength);
-    vTitle = QString::fromUtf16((ushort *)title);
+    wchar_t title[maxTitleLength];
+    GetWindowText(window->winId(), title, maxTitleLength);
+    vTitle = QString::fromWCharArray(title);
 #elif defined(Q_WS_X11)
     /*
       We can't check what the window manager displays, but we can
@@ -9115,6 +9117,54 @@ void tst_QWidget::focusWidget_task254563()
     container.setFocus();
     delete widget; // will call clearFocus but that doesn't help
     QVERIFY(top.focusWidget() != widget); //dangling pointer
+}
+
+void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
+{
+    QWidget main;
+    QPalette palette;
+    palette.setColor(QPalette::Window, Qt::red);
+    main.setPalette(palette);
+    main.resize(400, 400);
+
+    QWidget *offsetWidget = new QWidget(&main);
+    offsetWidget->setGeometry(0, -14600, 400, 15000);
+
+    // big widget is too big for the coordinates, it must be limited by wrect
+    // if wrect is not at the right position because of offsetWidget, bigwidget
+    // is not painted correctly
+    QWidget *bigWidget = new QWidget(offsetWidget);
+    bigWidget->setGeometry(0, 0, 400, 50000);
+    palette.setColor(QPalette::Window, Qt::green);
+    bigWidget->setPalette(palette);
+    bigWidget->setAutoFillBackground(true);
+
+    main.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&main);
+#endif
+    QTest::qWait(100);
+    QPixmap pixmap = QPixmap::grabWindow(main.winId());
+
+    QPixmap correct(main.size());
+    correct.fill(Qt::green);
+
+    QRect center(100, 100, 200, 200); // to avoid the decorations
+    QCOMPARE(pixmap.toImage().copy(center), correct.toImage().copy(center));
+}
+
+void tst_QWidget::inputFocus_task257832()
+{
+      QLineEdit *widget = new QLineEdit;
+      QInputContext *context = widget->inputContext();
+      if (!context)
+            QSKIP("No input context", SkipSingle);
+      widget->setFocus();
+      context->setFocusWidget(widget);
+      QCOMPARE(context->focusWidget(), widget);
+      widget->setReadOnly(true);
+      QVERIFY(!context->focusWidget());
+      delete widget;
 }
 
 QTEST_MAIN(tst_QWidget)

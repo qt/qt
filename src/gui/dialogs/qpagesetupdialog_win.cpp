@@ -78,11 +78,10 @@ int QPageSetupDialog::exec()
     psd.lStructSize = sizeof(PAGESETUPDLG);
 
     // we need a temp DEVMODE struct if we don't have a global DEVMODE
-    HGLOBAL hDevMode;
-    int devModeSize;
+    HGLOBAL hDevMode = 0;
+    int devModeSize = 0;
     if (!ep->globalDevMode) {
-        QT_WA( { devModeSize = sizeof(DEVMODEW) + ((DEVMODEW *) ep->devMode)->dmDriverExtra; },
-               { devModeSize = sizeof(DEVMODEA) + ((DEVMODEA *) ep->devMode)->dmDriverExtra; });
+        devModeSize = sizeof(DEVMODE) + ep->devMode->dmDriverExtra;
         hDevMode = GlobalAlloc(GHND, devModeSize);
         if (hDevMode) {
             void *dest = GlobalLock(hDevMode);

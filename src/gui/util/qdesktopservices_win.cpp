@@ -47,7 +47,7 @@
 #include <qtemporaryfile.h>
 #include <qcoreapplication.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <shlobj.h>
 #if !defined(Q_OS_WINCE)
 #  include <intshcut.h>
@@ -62,33 +62,25 @@
 
 QT_BEGIN_NAMESPACE
 
-//#undef UNICODE
-
 static bool openDocument(const QUrl &file)
 {
     if (!file.isValid())
         return false;
-
-    quintptr returnValue;
-    QT_WA({
-                returnValue = (quintptr)ShellExecute(0, 0, (TCHAR *)file.toString().utf16(), 0, 0, SW_SHOWNORMAL);
-            } , {
-                returnValue = (quintptr)ShellExecuteA(0, 0, file.toString().toLocal8Bit().constData(), 0, 0, SW_SHOWNORMAL);
-            });
+    QString filePath = file.toLocalFile();
+    if (filePath.isEmpty())
+        filePath = file.toString();
+    quintptr returnValue = (quintptr)ShellExecute(0, 0, (wchar_t*)filePath.utf16(), 0, 0, SW_SHOWNORMAL);
     return (returnValue > 32); //ShellExecute returns a value greater than 32 if successful
 }
 
 static QString expandEnvStrings(const QString &command)
 {
-
 #if defined(Q_OS_WINCE)
     return command;
 #else
-    QByteArray path = command.toLocal8Bit();
-    char commandValue[2 * MAX_PATH] = {0};
-    DWORD returnValue = ExpandEnvironmentStringsA(path.data(), commandValue, MAX_PATH);
-    if (returnValue)
-        return QString::fromLocal8Bit(commandValue);
+    wchar_t buffer[MAX_PATH];
+    if (ExpandEnvironmentStrings((wchar_t*)command.utf16(), buffer, MAX_PATH))
+        return QString::fromWCharArray(buffer);
     else
         return command;
 #endif
@@ -129,8 +121,9 @@ static bool launchWebBrowser(const QUrl &url)
             command = QString::fromRawData((QChar*)keyValue, bufferSize);
         RegCloseKey(handle);
 
-        if(returnValue)
+        if (returnValue)
             return false;
+
         command = expandEnvStrings(command);
         command = command.trimmed();
         //Make sure the path for the process is in quotes
@@ -152,7 +145,7 @@ static bool launchWebBrowser(const QUrl &url)
         ZeroMemory(&si, sizeof(si));
         si.cb = sizeof(si);
 
-        returnValue = CreateProcess(NULL, (TCHAR*)command.utf16(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+        returnValue = CreateProcess(NULL, (wchar_t*)command.utf16(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 
         if (!returnValue)
             return false;
@@ -168,9 +161,8 @@ static bool launchWebBrowser(const QUrl &url)
     if (url.scheme().isEmpty())
         return openDocument(url);
 
-    quintptr returnValue;
-    returnValue = (quintptr)ShellExecute(0, 0, (TCHAR *) QString::fromUtf8(url.toEncoded().constData()).utf16(),
-                                         0, 0, SW_SHOWNORMAL);
+    quintptr returnValue = (quintptr)ShellExecute(0, 0, (wchar_t *)QString::fromUtf8(url.toEncoded().constData()).utf16(),
+                                                  0, 0, SW_SHOWNORMAL);
     return (returnValue > 32);
 }
 

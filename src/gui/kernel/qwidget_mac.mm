@@ -83,6 +83,7 @@
 #include "qcursor.h"
 #include "qdesktopwidget.h"
 #include "qevent.h"
+#include "qfileinfo.h"
 #include "qimage.h"
 #include "qlayout.h"
 #include "qmenubar.h"
@@ -843,8 +844,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowToolbarSwitchMode) {
-            QToolBarChangeEvent ev(!(GetCurrentKeyModifiers() & cmdKey));
-            QApplication::sendSpontaneousEvent(widget, &ev);
+            macSendToolbarChangeEvent(widget);
             HIToolbarRef toolbar;
             if (GetWindowToolbar(wid, &toolbar) == noErr) {
                 if (toolbar) {
@@ -1198,22 +1198,13 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         p.setClipping(false);
                         if(was_unclipped)
                             widget->setAttribute(Qt::WA_PaintUnclipped);
-
-                        QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget->parent());
-                        QPoint scrollAreaOffset;
-                        if (scrollArea && scrollArea->viewport() == widget) {
-                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr);
-                            scrollAreaOffset = priv->contentsOffset();
-                            p.translate(-scrollAreaOffset);
-                        }
-
-                        widget->d_func()->paintBackground(&p, qrgn, scrollAreaOffset, widget->isWindow() ? DrawAsRoot : 0);
+                        widget->d_func()->paintBackground(&p, qrgn, widget->isWindow() ? DrawAsRoot : 0);
                         if (widget->testAttribute(Qt::WA_TintedBackground)) {
                             QColor tint = widget->palette().window().color();
                             tint.setAlphaF(.6);
                             const QVector<QRect> &rects = qrgn.rects();
                             for (int i = 0; i < rects.size(); ++i)
-                                p.fillRect(rects.at(i).translated(scrollAreaOffset), tint);
+                                p.fillRect(rects.at(i), tint);
                         }
                         p.end();
                         if (!redirectionOffset.isNull())
@@ -1369,6 +1360,14 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         // Set dropWidget to zero, so qt_mac_dnd_event
                         // doesn't get called a second time below:
                         dropWidget = 0;
+                    } else if (ekind == kEventControlDragLeave) {
+                        dropWidget = QDragManager::self()->currentTarget();
+                        if (dropWidget) {
+                            dropWidget->d_func()->qt_mac_dnd_event(kEventControlDragLeave, drag);
+                        }
+                        // Set dropWidget to zero, so qt_mac_dnd_event
+                        // doesn't get called a second time below:
+                        dropWidget = 0;
                     }
                 }
             }
@@ -1513,12 +1512,16 @@ void QWidgetPrivate::toggleDrawers(bool visible)
  *****************************************************************************/
 bool QWidgetPrivate::qt_mac_update_sizer(QWidget *w, int up)
 {
+    // I'm not sure what "up" is
     if(!w || !w->isWindow())
         return false;
 
     QTLWExtra *topData = w->d_func()->topData();
     QWExtra *extraData = w->d_func()->extraData();
-    topData->resizer += up;
+    // topData->resizer is only 4 bits, so subtracting -1 from zero causes bad stuff
+    // to happen, prevent that here (you really want the thing hidden).
+    if (up >= 0 || topData->resizer != 0)
+        topData->resizer += up;
     OSWindowRef windowRef = qt_mac_window_for(OSViewRef(w->winId()));
     {
 #ifndef QT_MAC_USE_COCOA
@@ -1531,7 +1534,6 @@ bool QWidgetPrivate::qt_mac_update_sizer(QWidget *w, int up)
     bool remove_grip = (topData->resizer || (w->windowFlags() & Qt::FramelessWindowHint)
                         || (extraData->maxw && extraData->maxh &&
                             extraData->maxw == extraData->minw && extraData->maxh == extraData->minh));
-
 #ifndef QT_MAC_USE_COCOA
     WindowAttributes attr;
     GetWindowAttributes(windowRef, &attr);
@@ -2132,11 +2134,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
 
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
-        [windowRef setHasShadow:YES];
     } else {
         [windowRef setHidesOnDeactivate:NO];
     }
-
+    [windowRef setHasShadow:YES];
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -2691,10 +2692,15 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
-            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
-                mwl->updateHIToolBarStatus();
+            // We do this down below for wasCreated, so avoid doing this twice
+            // (only for performance, it gets called a lot anyway).
+            if (!wasCreated) {
+                if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                    mwl->updateHIToolBarStatus();
+                }
             }
 #else
+            // Simply transfer our toolbar over. Everything should stay put, unlike in Carbon.
             if (oldToolbar && !(f & Qt::FramelessWindowHint)) {
                 OSWindowRef newWindow = qt_mac_window_for(q);
                 [newWindow setToolbar:oldToolbar];
@@ -2709,6 +2715,16 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 
     if (wasCreated) {
         transferChildren();
+#ifndef QT_MAC_USE_COCOA
+        // If we were a unified window, We just transfered our toolbars out of the unified toolbar.
+        // So redo the status one more time. It apparently is not an issue with Cocoa.
+        if (q->isWindow()) {
+            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                mwl->updateHIToolBarStatus();
+            }
+        }
+#endif
+
         if (topData &&
                 (!topData->caption.isEmpty() || !topData->filePath.isEmpty()))
             setWindowTitle_helper(q->windowTitle());
@@ -2840,8 +2856,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
         SetWindowTitleWithCFString(qt_mac_window_for(q), QCFString(caption));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-          setTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(caption)))];
+        [qt_mac_window_for(q) setTitle:qt_mac_QStringToNSString(caption)];
 #endif
     }
 }
@@ -2863,7 +2878,8 @@ void QWidgetPrivate::setWindowFilePath_sys(const QString &filePath)
     Q_Q(QWidget);
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
-    [qt_mac_window_for(q) setRepresentedFilename:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(filePath)))];
+    QFileInfo fi(filePath);
+    [qt_mac_window_for(q) setRepresentedFilename:fi.exists() ? qt_mac_QStringToNSString(filePath) : @""];
 #else
     bool validRef = false;
     FSRef ref;
@@ -2953,8 +2969,7 @@ void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
         SetWindowAlternateTitle(qt_mac_window_for(q), QCFString(iconText));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-            setMiniwindowTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(iconText)))];
+        [qt_mac_window_for(q) setMiniwindowTitle:qt_mac_QStringToNSString(iconText)];
 #endif
     }
 }
@@ -3801,8 +3816,6 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
       Qt coordinate system for parent
       X coordinate system for parent (relative to parent's wrect).
     */
-    QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
-    QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
     QRect wrect;
     //xrect is the X geometry of my X widget. (starts out in  parent's Qt coord sys, and ends up in parent's X coord sys)
     QRect xrect = data.crect;
@@ -3824,6 +3837,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             parentWRect = QRect(tmpRect.origin.x, tmpRect.origin.y,
                                 tmpRect.size.width, tmpRect.size.height);
         } else {
+            const QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
             parentWRect = wrectRange;
         }
     } else {
@@ -3879,15 +3893,24 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             }
         }
 
+        const QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
         if (!validRange.contains(xrect)) {
             // we are too big, and must clip
-            xrect &=wrectRange;
-            wrect = xrect;
-            wrect.translate(-data.crect.topLeft());
-            //parent's X coord system is equal to parent's Qt coord
-            //sys, so we don't need to map xrect.
-        }
+            QPoint screenOffset(0, 0); // offset of the part being on screen
+            const QWidget *parentWidget = q->parentWidget();
+            while (parentWidget && !parentWidget->isWindow()) {
+                screenOffset -= parentWidget->data->crect.topLeft();
+                parentWidget = parentWidget->parentWidget();
+            }
+            QRect cropRect(screenOffset.x() - WRECT_MAX,
+                           screenOffset.y() - WRECT_MAX,
+                           2*WRECT_MAX,
+                           2*WRECT_MAX);
 
+            xrect &=cropRect;
+            wrect = xrect;
+            wrect.translate(-data.crect.topLeft()); // translate wrect in my Qt coordinates
+        }
     }
 
     // unmap if we are outside the valid window system coord system
@@ -3927,10 +3950,9 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
 
     qt_mac_update_widget_posisiton(q, oldRect, xrect);
 
-    if  (jump) {
-        updateSystemBackground();
+    if  (jump)
         q->update();
-    }
+
     if (mapWindow && !dontShow) {
         q->setAttribute(Qt::WA_Mapped);
 #ifndef QT_MAC_USE_COCOA
@@ -4012,6 +4034,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             setGeometry_sys_helper(x, y, w, h, isMove);
         }
 #else
+        QSize  olds = q->size();
+        const bool isResize = (olds != QSize(w, h));
         NSWindow *window = qt_mac_window_for(q);
         const QRect &fStrut = frameStrut();
         const QRect frameRect(QPoint(x - fStrut.left(), y - fStrut.top()),
@@ -4019,7 +4043,10 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                                     fStrut.top() + fStrut.bottom() + h));
         NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
                                            frameRect.width(), frameRect.height());
-
+        // The setFrame call will trigger a 'windowDidResize' notification for the corresponding
+        // NSWindow. The pending flag is set, so that the resize event can be send as non-spontaneous.
+        if (isResize)
+            q->setAttribute(Qt::WA_PendingResizeEvent);
         QPoint currTopLeft = data.crect.topLeft();
         if (currTopLeft.x() == x && currTopLeft.y() == y
                 && cocoaFrameRect.size.width != 0

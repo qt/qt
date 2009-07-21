@@ -109,9 +109,9 @@ static QString qfsPrivateCurrentDir = QLatin1String("");
 QT_BEGIN_INCLUDE_NAMESPACE
 typedef DWORD (WINAPI *PtrGetNamedSecurityInfoW)(LPWSTR, SE_OBJECT_TYPE, SECURITY_INFORMATION, PSID*, PSID*, PACL*, PACL*, PSECURITY_DESCRIPTOR*);
 static PtrGetNamedSecurityInfoW ptrGetNamedSecurityInfoW = 0;
-typedef DECLSPEC_IMPORT BOOL (WINAPI *PtrLookupAccountSidW)(LPCWSTR, PSID, LPWSTR, LPDWORD, LPWSTR, LPDWORD, PSID_NAME_USE);
+typedef BOOL (WINAPI *PtrLookupAccountSidW)(LPCWSTR, PSID, LPWSTR, LPDWORD, LPWSTR, LPDWORD, PSID_NAME_USE);
 static PtrLookupAccountSidW ptrLookupAccountSidW = 0;
-typedef DECLSPEC_IMPORT BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
+typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
 static PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = 0;
 typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
 static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
@@ -119,7 +119,7 @@ typedef VOID (WINAPI *PtrBuildTrusteeWithNameW)(PTRUSTEE_W, unsigned short*);
 static PtrBuildTrusteeWithNameW ptrBuildTrusteeWithNameW = 0;
 typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
-typedef DECLSPEC_IMPORT PVOID (WINAPI *PtrFreeSid)(PSID);
+typedef PVOID (WINAPI *PtrFreeSid)(PSID);
 static PtrFreeSid ptrFreeSid = 0;
 static TRUSTEE_W currentUserTrusteeW;
 
@@ -152,66 +152,64 @@ void QFSFileEnginePrivate::resolveLibs()
 
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        if(QSysInfo::WindowsVersion & QSysInfo::WV_NT_based) {
-            HINSTANCE advapiHnd = LoadLibraryW(L"advapi32");
-            if (advapiHnd) {
-                ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
-                ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
-                ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
-                ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
-                ptrBuildTrusteeWithNameW = (PtrBuildTrusteeWithNameW)GetProcAddress(advapiHnd, "BuildTrusteeWithNameW");
-                ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
-                ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
-            }
-            if (ptrBuildTrusteeWithNameW) {
-                HINSTANCE versionHnd = LoadLibraryW(L"version");
-                if (versionHnd) {
-                    typedef DWORD (WINAPI *PtrGetFileVersionInfoSizeW)(LPWSTR lptstrFilename,LPDWORD lpdwHandle);
-                    PtrGetFileVersionInfoSizeW ptrGetFileVersionInfoSizeW = (PtrGetFileVersionInfoSizeW)GetProcAddress(versionHnd, "GetFileVersionInfoSizeW");
-                    typedef BOOL (WINAPI *PtrGetFileVersionInfoW)(LPWSTR lptstrFilename,DWORD dwHandle,DWORD dwLen,LPVOID lpData);
-                    PtrGetFileVersionInfoW ptrGetFileVersionInfoW = (PtrGetFileVersionInfoW)GetProcAddress(versionHnd, "GetFileVersionInfoW");
-                    typedef BOOL (WINAPI *PtrVerQueryValueW)(const LPVOID pBlock,LPWSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
-                    PtrVerQueryValueW ptrVerQueryValueW = (PtrVerQueryValueW)GetProcAddress(versionHnd, "VerQueryValueW");
-                    if(ptrGetFileVersionInfoSizeW && ptrGetFileVersionInfoW && ptrVerQueryValueW) {
-                        DWORD fakeHandle;
-                        DWORD versionSize = ptrGetFileVersionInfoSizeW(L"secur32.dll", &fakeHandle);
-                        if(versionSize) {
-                            LPVOID versionData;
-                            versionData = malloc(versionSize);
-                            if(ptrGetFileVersionInfoW(L"secur32.dll", 0, versionSize, versionData)) {
-                                UINT puLen;
-                                VS_FIXEDFILEINFO *pLocalInfo;
-                                if(ptrVerQueryValueW(versionData, L"\\", (void**)&pLocalInfo, &puLen)) {
-                                    WORD wVer1, wVer2, wVer3, wVer4;
-                                    wVer1 = HIWORD(pLocalInfo->dwFileVersionMS);
-                                    wVer2 = LOWORD(pLocalInfo->dwFileVersionMS);
-                                    wVer3 = HIWORD(pLocalInfo->dwFileVersionLS);
-                                    wVer4 = LOWORD(pLocalInfo->dwFileVersionLS);
-                                    // It will not work with secur32.dll version 5.0.2195.2862
-                                    if(!(wVer1 == 5 && wVer2 == 0 && wVer3 == 2195 && (wVer4 == 2862 || wVer4 == 4587))) {
-                                        HINSTANCE userHnd = LoadLibraryW(L"secur32");
-                                        if (userHnd) {
-                                            typedef BOOL (WINAPI *PtrGetUserNameExW)(EXTENDED_NAME_FORMAT nameFormat, ushort* lpBuffer, LPDWORD nSize);
-                                            PtrGetUserNameExW ptrGetUserNameExW = (PtrGetUserNameExW)GetProcAddress(userHnd, "GetUserNameExW");
-                                            if(ptrGetUserNameExW) {
-                                                static TCHAR buffer[258];
-                                                DWORD bufferSize = 257;
-                                                ptrGetUserNameExW(NameSamCompatible, (ushort*)buffer, &bufferSize);
-                                                ptrBuildTrusteeWithNameW(&currentUserTrusteeW, (ushort*)buffer);
-                                            }
-                                            FreeLibrary(userHnd);
+        HINSTANCE advapiHnd = LoadLibraryW(L"advapi32");
+        if (advapiHnd) {
+            ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
+            ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
+            ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
+            ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
+            ptrBuildTrusteeWithNameW = (PtrBuildTrusteeWithNameW)GetProcAddress(advapiHnd, "BuildTrusteeWithNameW");
+            ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
+            ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
+        }
+        if (ptrBuildTrusteeWithNameW) {
+            HINSTANCE versionHnd = LoadLibraryW(L"version");
+            if (versionHnd) {
+                typedef DWORD (WINAPI *PtrGetFileVersionInfoSizeW)(LPCWSTR lptstrFilename,LPDWORD lpdwHandle);
+                PtrGetFileVersionInfoSizeW ptrGetFileVersionInfoSizeW = (PtrGetFileVersionInfoSizeW)GetProcAddress(versionHnd, "GetFileVersionInfoSizeW");
+                typedef BOOL (WINAPI *PtrGetFileVersionInfoW)(LPCWSTR lptstrFilename,DWORD dwHandle,DWORD dwLen,LPVOID lpData);
+                PtrGetFileVersionInfoW ptrGetFileVersionInfoW = (PtrGetFileVersionInfoW)GetProcAddress(versionHnd, "GetFileVersionInfoW");
+                typedef BOOL (WINAPI *PtrVerQueryValueW)(const LPVOID pBlock,LPCWSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
+                PtrVerQueryValueW ptrVerQueryValueW = (PtrVerQueryValueW)GetProcAddress(versionHnd, "VerQueryValueW");
+                if(ptrGetFileVersionInfoSizeW && ptrGetFileVersionInfoW && ptrVerQueryValueW) {
+                    DWORD fakeHandle;
+                    DWORD versionSize = ptrGetFileVersionInfoSizeW(L"secur32.dll", &fakeHandle);
+                    if(versionSize) {
+                        LPVOID versionData;
+                        versionData = malloc(versionSize);
+                        if(ptrGetFileVersionInfoW(L"secur32.dll", 0, versionSize, versionData)) {
+                            UINT puLen;
+                            VS_FIXEDFILEINFO *pLocalInfo;
+                            if(ptrVerQueryValueW(versionData, L"\\", (void**)&pLocalInfo, &puLen)) {
+                                WORD wVer1, wVer2, wVer3, wVer4;
+                                wVer1 = HIWORD(pLocalInfo->dwFileVersionMS);
+                                wVer2 = LOWORD(pLocalInfo->dwFileVersionMS);
+                                wVer3 = HIWORD(pLocalInfo->dwFileVersionLS);
+                                wVer4 = LOWORD(pLocalInfo->dwFileVersionLS);
+                                // It will not work with secur32.dll version 5.0.2195.2862
+                                if(!(wVer1 == 5 && wVer2 == 0 && wVer3 == 2195 && (wVer4 == 2862 || wVer4 == 4587))) {
+                                    HINSTANCE userHnd = LoadLibraryW(L"secur32");
+                                    if (userHnd) {
+                                        typedef BOOL (WINAPI *PtrGetUserNameExW)(EXTENDED_NAME_FORMAT nameFormat, ushort* lpBuffer, LPDWORD nSize);
+                                        PtrGetUserNameExW ptrGetUserNameExW = (PtrGetUserNameExW)GetProcAddress(userHnd, "GetUserNameExW");
+                                        if(ptrGetUserNameExW) {
+                                            static wchar_t buffer[258];
+                                            DWORD bufferSize = 257;
+                                            ptrGetUserNameExW(NameSamCompatible, (ushort*)buffer, &bufferSize);
+                                            ptrBuildTrusteeWithNameW(&currentUserTrusteeW, (ushort*)buffer);
                                         }
+                                        FreeLibrary(userHnd);
                                     }
                                 }
                             }
-                            free(versionData);
                         }
+                        free(versionData);
                     }
-                    FreeLibrary(versionHnd);
                 }
+                FreeLibrary(versionHnd);
             }
             ptrOpenProcessToken = (PtrOpenProcessToken)GetProcAddress(advapiHnd, "OpenProcessToken");
-	        HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
+                HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
             if (userenvHnd) {
                 ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
             }
@@ -225,120 +223,60 @@ void QFSFileEnginePrivate::resolveLibs()
 #endif // QT_NO_LIBRARY
 
 // UNC functions NT
-typedef DWORD (WINAPI *PtrNetShareEnum_NT)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
-static PtrNetShareEnum_NT ptrNetShareEnum_NT = 0;
-typedef DWORD (WINAPI *PtrNetApiBufferFree_NT)(LPVOID);
-static PtrNetApiBufferFree_NT ptrNetApiBufferFree_NT = 0;
-typedef struct _SHARE_INFO_1_NT {
+typedef DWORD (WINAPI *PtrNetShareEnum)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
+static PtrNetShareEnum ptrNetShareEnum = 0;
+typedef DWORD (WINAPI *PtrNetApiBufferFree)(LPVOID);
+static PtrNetApiBufferFree ptrNetApiBufferFree = 0;
+typedef struct _SHARE_INFO_1 {
     LPWSTR shi1_netname;
     DWORD shi1_type;
     LPWSTR shi1_remark;
-} SHARE_INFO_1_NT;
+} SHARE_INFO_1;
 
 
-bool QFSFileEnginePrivate::resolveUNCLibs_NT()
+bool QFSFileEnginePrivate::resolveUNCLibs()
 {
     static bool triedResolve = false;
     if (!triedResolve) {
 #ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
         if (triedResolve) {
-            return ptrNetShareEnum_NT && ptrNetApiBufferFree_NT;
+            return ptrNetShareEnum && ptrNetApiBufferFree;
         }
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
         HINSTANCE hLib = LoadLibraryW(L"Netapi32");
         if (hLib) {
-            ptrNetShareEnum_NT = (PtrNetShareEnum_NT)GetProcAddress(hLib, "NetShareEnum");
-            if (ptrNetShareEnum_NT)
-                ptrNetApiBufferFree_NT = (PtrNetApiBufferFree_NT)GetProcAddress(hLib, "NetApiBufferFree");
+            ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
+            if (ptrNetShareEnum)
+                ptrNetApiBufferFree = (PtrNetApiBufferFree)GetProcAddress(hLib, "NetApiBufferFree");
         }
 #endif
     }
-    return ptrNetShareEnum_NT && ptrNetApiBufferFree_NT;
-}
-
-// UNC functions 9x
-typedef DWORD (WINAPI *PtrNetShareEnum_9x)(const char FAR *, short, char FAR *, unsigned short, unsigned short FAR *, unsigned short FAR *);
-static PtrNetShareEnum_9x ptrNetShareEnum_9x = 0;
-#ifdef LM20_NNLEN
-# define LM20_NNLEN_9x LM20_NNLEN
-#else
-# define LM20_NNLEN_9x 12
-#endif
-typedef struct _SHARE_INFO_1_9x {
-  char shi1_netname[LM20_NNLEN_9x+1];
-  char shi1_pad1;
-  unsigned short shi1_type;
-  char FAR* shi1_remark;
-} SHARE_INFO_1_9x;
-
-bool QFSFileEnginePrivate::resolveUNCLibs_9x()
-{
-    static bool triedResolve = false;
-    if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        if (triedResolve) {
-            return ptrNetShareEnum_9x;
-        }
-#endif
-        triedResolve = true;
-#if !defined(Q_OS_WINCE)
-        HINSTANCE hLib = LoadLibraryA("Svrapi");
-        if (hLib)
-            ptrNetShareEnum_9x = (PtrNetShareEnum_9x)GetProcAddress(hLib, "NetShareEnum");
-#endif
-    }
-    return ptrNetShareEnum_9x;
+    return ptrNetShareEnum && ptrNetApiBufferFree;
 }
 
 bool QFSFileEnginePrivate::uncListSharesOnServer(const QString &server, QStringList *list)
 {
-    if (resolveUNCLibs_NT()) {
-        SHARE_INFO_1_NT *BufPtr, *p;
+    if (resolveUNCLibs()) {
+        SHARE_INFO_1 *BufPtr, *p;
         DWORD res;
         DWORD er=0,tr=0,resume=0, i;
         do {
-            res = ptrNetShareEnum_NT((wchar_t*)server.utf16(), 1, (LPBYTE *)&BufPtr, DWORD(-1), &er, &tr, &resume);
+            res = ptrNetShareEnum((wchar_t*)server.utf16(), 1, (LPBYTE *)&BufPtr, DWORD(-1), &er, &tr, &resume);
             if (res == ERROR_SUCCESS || res == ERROR_MORE_DATA) {
                 p=BufPtr;
                 for (i = 1; i <= er; ++i) {
                     if (list && p->shi1_type == 0)
-                        list->append(QString::fromUtf16((unsigned short *)p->shi1_netname));
+                        list->append(QString::fromWCharArray(p->shi1_netname));
                     p++;
                 }
             }
-            ptrNetApiBufferFree_NT(BufPtr);
+            ptrNetApiBufferFree(BufPtr);
         } while (res==ERROR_MORE_DATA);
         return res == ERROR_SUCCESS;
 
-    } else if (resolveUNCLibs_9x()) {
-        SHARE_INFO_1_9x *pBuf = 0;
-        short cbBuffer;
-        unsigned short nEntriesRead = 0;
-        unsigned short nTotalEntries = 0;
-        short numBuffs = 20;
-        DWORD nStatus = 0;
-        do {
-            cbBuffer = numBuffs * sizeof(SHARE_INFO_1_9x);
-            pBuf = (SHARE_INFO_1_9x *)malloc(cbBuffer);
-            if (pBuf) {
-                nStatus = ptrNetShareEnum_9x(server.toLocal8Bit().constData(), 1, (char FAR *)pBuf, cbBuffer, &nEntriesRead, &nTotalEntries);
-                if ((nStatus == ERROR_SUCCESS)) {
-                    for (int i = 0; i < nEntriesRead; ++i) {
-                        if (list && pBuf[i].shi1_type == 0)
-                            list->append(QString::fromLocal8Bit(pBuf[i].shi1_netname));
-                    }
-                    free(pBuf);
-                    break;
-                }
-                free(pBuf);
-                numBuffs *=2;
-            }
-        } while (nStatus == ERROR_MORE_DATA);
-        return nStatus == ERROR_SUCCESS;
     }
     return false;
 }
@@ -399,39 +337,19 @@ static bool uncShareExists(const QString &server)
     return false;
 }
 
-#if !defined(Q_OS_WINCE)
-// If you change this function, remember to also change the UNICODE version
-static QString nativeAbsoluteFilePathA(const QString &path)
-{
-    QString ret;
-    QVarLengthArray<char, MAX_PATH> buf(MAX_PATH);
-    char *fileName = 0;
-    QByteArray ba = path.toLocal8Bit();
-    DWORD retLen = GetFullPathNameA(ba.constData(), buf.size(), buf.data(), &fileName);
-    if (retLen > (DWORD)buf.size()) {
-        buf.resize(retLen);
-        retLen = GetFullPathNameA(ba.constData(), buf.size(), buf.data(), &fileName);
-    }
-    if (retLen != 0)
-        ret = QString::fromLocal8Bit(buf.data(), retLen);
-    return ret;
-}
-#endif
-
-// If you change this function, remember to also change the NON-UNICODE version
-static QString nativeAbsoluteFilePathW(const QString &path)
+static QString nativeAbsoluteFilePathCore(const QString &path)
 {
     QString ret;
 #if !defined(Q_OS_WINCE)
     QVarLengthArray<wchar_t, MAX_PATH> buf(MAX_PATH);
     wchar_t *fileName = 0;
-    DWORD retLen = GetFullPathNameW((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
+    DWORD retLen = GetFullPathName((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
     if (retLen > (DWORD)buf.size()) {
         buf.resize(retLen);
-        retLen = GetFullPathNameW((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
+        retLen = GetFullPathName((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
     }
     if (retLen != 0)
-        ret = QString::fromUtf16((unsigned short *)buf.data(), retLen);
+        ret = QString::fromWCharArray(buf.data(), retLen);
 #else
     if (path.startsWith(QLatin1Char('/')) || path.startsWith(QLatin1Char('\\')))
         ret = QDir::toNativeSeparators(path);
@@ -443,7 +361,7 @@ static QString nativeAbsoluteFilePathW(const QString &path)
 
 static QString nativeAbsoluteFilePath(const QString &path)
 {
-    QString absPath = QT_WA_INLINE(nativeAbsoluteFilePathW(path), nativeAbsoluteFilePathA(path));
+    QString absPath = nativeAbsoluteFilePathCore(path);
     // This is really ugly, but GetFullPathName strips off whitespace at the end.
     // If you for instance write ". " in the lineedit of QFileDialog,
     // (which is an invalid filename) this function will strip the space off and viola,
@@ -459,26 +377,6 @@ static QString nativeAbsoluteFilePath(const QString &path)
         }
     }
     return absPath;
-}
-
-QByteArray QFSFileEnginePrivate::win95Name(const QString &path)
-{
-    QString ret(path);
-    if(path.length() > 1 && path[0] == QLatin1Char('/') && path[1] == QLatin1Char('/')) {
-        // Win95 cannot handle slash-slash needs slosh-slosh.
-        ret[0] = QLatin1Char('\\');
-        ret[1] = QLatin1Char('\\');
-        int n = ret.indexOf(QLatin1Char('/'));
-        if(n >= 0)
-            ret[n] = QLatin1Char('\\');
-    } else if(path.length() > 3 && path[2] == QLatin1Char('/') && path[3] == QLatin1Char('/')) {
-        ret[2] = QLatin1Char('\\');
-        ret.remove(3, 1);
-        int n = ret.indexOf(QLatin1Char('/'));
-        if(n >= 0)
-            ret[n] = QLatin1Char('\\');
-    }
-    return ret.toLocal8Bit();
 }
 
 /*!
@@ -507,13 +405,8 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
 */
 void QFSFileEnginePrivate::nativeInitFileName()
 {
-    QT_WA({
-        QString path = longFileName(QDir::toNativeSeparators(fixIfRelativeUncPath(filePath)));
-        nativeFilePath = QByteArray((const char *)path.utf16(), path.size() * 2 + 1);
-    }, {
-        QString path = fixIfRelativeUncPath(filePath);
-        nativeFilePath = win95Name(path).replace('/', '\\');
-    });
+		QString path = longFileName(QDir::toNativeSeparators(fixIfRelativeUncPath(filePath)));
+		nativeFilePath = QByteArray((const char *)path.utf16(), path.size() * 2 + 1);
 }
 
 /*
@@ -539,23 +432,13 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
                          ? OPEN_ALWAYS : OPEN_EXISTING;
 
     // Create the file handle.
-    QT_WA({
-        fileHandle = CreateFileW((TCHAR *)nativeFilePath.constData(),
-                                 accessRights,
-                                 shareMode,
-                                 &securityAtts,
-                                 creationDisp,
-                                 FILE_ATTRIBUTE_NORMAL,
-                                 NULL);
-    }, {
-        fileHandle = CreateFileA(nativeFilePath.constData(),
-                                 accessRights,
-                                 shareMode,
-                                 &securityAtts,
-                                 creationDisp,
-                                 FILE_ATTRIBUTE_NORMAL,
-                                 NULL);
-    });
+    fileHandle = CreateFile((const wchar_t*)nativeFilePath.constData(),
+                            accessRights,
+                            shareMode,
+                            &securityAtts,
+                            creationDisp,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL);
 
     // Bail out on error.
     if (fileHandle == INVALID_HANDLE_VALUE) {
@@ -641,15 +524,32 @@ qint64 QFSFileEnginePrivate::nativeSize() const
     // Not-open mode, where the file name is known: We'll check the
     // file system directly.
     if (openMode == QIODevice::NotOpen && !nativeFilePath.isEmpty()) {
-        bool ok = false;
         WIN32_FILE_ATTRIBUTE_DATA attribData;
-        QT_WA({
-            ok = ::GetFileAttributesExW((TCHAR *)nativeFilePath.constData(),
+        bool ok = ::GetFileAttributesEx((const wchar_t*)nativeFilePath.constData(),
                                         GetFileExInfoStandard, &attribData);
-        } , {
-            ok = ::GetFileAttributesExA(nativeFilePath.constData(),
-                                        GetFileExInfoStandard, &attribData);
-        });
+        if (!ok) {
+            int errorCode = GetLastError();
+            if (errorCode != ERROR_INVALID_NAME
+                && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+                QByteArray path = nativeFilePath;
+                // path for the FindFirstFile should not end with a trailing slash
+                while (path.endsWith('\\'))
+                    path.chop(1);
+
+                // FindFirstFile can not handle drives
+                if (!path.endsWith(':')) {
+                    WIN32_FIND_DATA findData;
+                    HANDLE hFind = ::FindFirstFile((const wchar_t*)path.constData(),
+                                                   &findData);
+                    if (hFind != INVALID_HANDLE_VALUE) {
+                        ::FindClose(hFind);
+                        ok = true;
+                        attribData.nFileSizeHigh = findData.nFileSizeHigh;
+                        attribData.nFileSizeLow = findData.nFileSizeLow;
+                    }
+                }
+            }
+        }
         if (ok) {
             qint64 size = attribData.nFileSizeHigh;
             size <<= 32;
@@ -711,28 +611,28 @@ qint64 QFSFileEnginePrivate::nativePos() const
     if (fileHandle == INVALID_HANDLE_VALUE)
         return 0;
 
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     QFSFileEnginePrivate::resolveLibs();
     if (!ptrSetFilePointerEx) {
 #endif
-        DWORD newFilePointer = SetFilePointer(fileHandle, 0, NULL, FILE_CURRENT);
-        if (newFilePointer == 0xFFFFFFFF) {
+        LARGE_INTEGER filepos;
+        filepos.HighPart = 0;
+        DWORD newFilePointer = SetFilePointer(fileHandle, 0, &filepos.HighPart, FILE_CURRENT);
+        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
             thatQ->setError(QFile::UnspecifiedError, qt_error_string());
             return 0;
         }
 
-        // Note: returns <4GB; does not work with large files. This is the
-        // case for MOC, UIC, qmake and other bootstrapped tools, and for
-        // Win9x/ME.
-        return qint64(newFilePointer);
-#if !defined(QT_NO_LIBRARY)
+        // Note: This is the case for MOC, UIC, qmake and other
+        //       bootstrapped tools, and for Windows CE.
+        filepos.LowPart = newFilePointer;
+        return filepos.QuadPart;
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     }
 
-    // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
-    offset.LowPart = 0;
-    offset.HighPart = 0;
+    offset.QuadPart = 0;
     if (!ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_CURRENT)) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return 0;
@@ -755,28 +655,27 @@ bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
         return seekFdFh(pos);
     }
 
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     QFSFileEnginePrivate::resolveLibs();
     if (!ptrSetFilePointerEx) {
 #endif
-        LONG seekToPos = LONG(pos); // <- lossy
-        DWORD newFilePointer = SetFilePointer(fileHandle, seekToPos, NULL, FILE_BEGIN);
-        if (newFilePointer == 0xFFFFFFFF) {
-            thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+        DWORD newFilePointer;
+        LARGE_INTEGER *li = reinterpret_cast<LARGE_INTEGER*>(&pos);
+        newFilePointer = SetFilePointer(fileHandle, li->LowPart, &li->HighPart, FILE_BEGIN);
+        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
+            thatQ->setError(QFile::PositionError, qt_error_string());
             return false;
         }
 
-        // Note: does not work with large files. This is the case for MOC,
-        // UIC, qmake and other bootstrapped tools, and for Win9x/ME.
+        // Note: This is the case for MOC, UIC, qmake and other
+        //       bootstrapped tools, and for Windows CE.
         return true;
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     }
 
-    // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
-    offset.LowPart = (unsigned int)(quint64(pos) & Q_UINT64_C(0xffffffff));
-    offset.HighPart = (unsigned int)((quint64(pos) >> 32) & Q_UINT64_C(0xffffffff));
+    offset.QuadPart = pos;
     if (ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_BEGIN) == 0) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return false;
@@ -949,35 +848,21 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    QT_WA({
-        return ::DeleteFileW((TCHAR*)QFSFileEnginePrivate::longFileName(d->filePath).utf16()) != 0;
-    } , {
-        return ::DeleteFileA(QFSFileEnginePrivate::win95Name(d->filePath)) != 0;
-    });
+    return ::DeleteFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16()) != 0;
 }
 
 bool QFSFileEngine::copy(const QString &copyName)
 {
     Q_D(QFSFileEngine);
-    QT_WA({
-        return ::CopyFileW((TCHAR*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
-                           (TCHAR*)QFSFileEnginePrivate::longFileName(copyName).utf16(), true) != 0;
-    } , {
-        return ::CopyFileA(QFSFileEnginePrivate::win95Name(d->filePath),
-                           QFSFileEnginePrivate::win95Name(copyName), true) != 0;
-    });
+    return ::CopyFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
+                      (wchar_t*)QFSFileEnginePrivate::longFileName(copyName).utf16(), true) != 0;
 }
 
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    QT_WA({
-        return ::MoveFileW((TCHAR*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
-                           (TCHAR*)QFSFileEnginePrivate::longFileName(newName).utf16()) != 0;
-    } , {
-        return ::MoveFileA(QFSFileEnginePrivate::win95Name(d->filePath),
-                           QFSFileEnginePrivate::win95Name(newName)) != 0;
-    });
+    return ::MoveFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
+                      (wchar_t*)QFSFileEnginePrivate::longFileName(newName).utf16()) != 0;
 }
 
 static inline bool mkDir(const QString &path)
@@ -1001,20 +886,12 @@ static inline bool mkDir(const QString &path)
     if (platformId == 1 && QFSFileEnginePrivate::longFileName(path).size() > 256)
         return false;
 #endif
-    QT_WA({
-        return ::CreateDirectoryW((TCHAR*)QFSFileEnginePrivate::longFileName(path).utf16(), 0);
-    } , {
-        return ::CreateDirectoryA(QFSFileEnginePrivate::win95Name(QFileInfo(path).absoluteFilePath()), 0);
-    });
+    return ::CreateDirectory((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(), 0);
 }
 
 static inline bool rmDir(const QString &path)
 {
-    QT_WA({
-        return ::RemoveDirectoryW((TCHAR*)QFSFileEnginePrivate::longFileName(path).utf16());
-    } , {
-        return ::RemoveDirectoryA(QFSFileEnginePrivate::win95Name(QFileInfo(path).absoluteFilePath()));
-    });
+    return ::RemoveDirectory((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16());
 }
 
 static inline bool isDirPath(const QString &dirPath, bool *existed)
@@ -1023,12 +900,27 @@ static inline bool isDirPath(const QString &dirPath, bool *existed)
     if (path.length() == 2 &&path.at(1) == QLatin1Char(':'))
         path += QLatin1Char('\\');
 
-    DWORD fileAttrib = INVALID_FILE_ATTRIBUTES;
-    QT_WA({
-        fileAttrib = ::GetFileAttributesW((TCHAR*)QFSFileEnginePrivate::longFileName(path).utf16());
-    } , {
-        fileAttrib = ::GetFileAttributesA(QFSFileEnginePrivate::win95Name(QFileInfo(path).absoluteFilePath()));
-    });
+    DWORD fileAttrib = ::GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16());
+    if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
+        int errorCode = GetLastError();
+        if (errorCode != ERROR_INVALID_NAME
+            && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+            // path for the FindFirstFile should not end with a trailing slash
+            while (path.endsWith(QLatin1Char('\\')))
+                path.chop(1);
+
+            // FindFirstFile can not handle drives
+            if (!path.endsWith(QLatin1Char(':'))) {
+                WIN32_FIND_DATA findData;
+                HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
+                                               &findData);
+                if (hFind != INVALID_HANDLE_VALUE) {
+                    ::FindClose(hFind);
+                    fileAttrib = findData.dwFileAttributes;
+                }
+            }
+        }
+    }
 
     if (existed)
         *existed = fileAttrib != INVALID_FILE_ATTRIBUTES;
@@ -1110,16 +1002,10 @@ bool QFSFileEngine::setCurrentPath(const QString &path)
         return false;
 
 #if !defined(Q_OS_WINCE)
-    int r;
-    QT_WA({
-        r = ::SetCurrentDirectoryW((WCHAR*)path.utf16());
-    } , {
-        r = ::SetCurrentDirectoryA(QFSFileEnginePrivate::win95Name(path));
-    });
-    return r != 0;
+    return ::SetCurrentDirectory((wchar_t*)path.utf16()) != 0;
 #else
-	qfsPrivateCurrentDir = QFSFileEnginePrivate::longFileName(path);
-	return true;
+        qfsPrivateCurrentDir = QFSFileEnginePrivate::longFileName(path);
+        return true;
 #endif
 }
 
@@ -1132,48 +1018,34 @@ QString QFSFileEngine::currentPath(const QString &fileName)
         fileName.at(0).isLetter() && fileName.at(1) == QLatin1Char(':')) {
         int drv = fileName.toUpper().at(0).toLatin1() - 'A' + 1;
         if (_getdrive() != drv) {
-            QT_WA({
-                TCHAR buf[PATH_MAX];
-                ::_wgetdcwd(drv, buf, PATH_MAX);
-                ret.setUtf16((ushort*)buf, uint(::wcslen(buf)));
-            }, {
-                char buf[PATH_MAX];
-                ::_getdcwd(drv, buf, PATH_MAX);
-                ret = QString::fromLatin1(buf);
-            });
+            wchar_t buf[PATH_MAX];
+            ::_wgetdcwd(drv, buf, PATH_MAX);
+            ret = QString::fromWCharArray(buf);
         }
     }
     if (ret.isEmpty()) {
         //just the pwd
-        QT_WA({
-            DWORD size = 0;
-            WCHAR currentName[PATH_MAX];
-            size = ::GetCurrentDirectoryW(PATH_MAX, currentName);
-            if (size !=0) {
-                if (size > PATH_MAX) {
-                    WCHAR * newCurrentName = new WCHAR[size];
-                    if (::GetCurrentDirectoryW(PATH_MAX, newCurrentName) != 0)
-                        ret = QString::fromUtf16((ushort*)newCurrentName);
-                    delete [] newCurrentName;
-                } else {
-                    ret = QString::fromUtf16((ushort*)currentName);
-                }
+        DWORD size = 0;
+        wchar_t currentName[PATH_MAX];
+        size = ::GetCurrentDirectory(PATH_MAX, currentName);
+        if (size != 0) {
+            if (size > PATH_MAX) {
+                wchar_t *newCurrentName = new wchar_t[size];
+                if (::GetCurrentDirectory(PATH_MAX, newCurrentName) != 0)
+                    ret = QString::fromWCharArray(newCurrentName);
+                delete [] newCurrentName;
+            } else {
+                ret = QString::fromWCharArray(currentName);
             }
-        } , {
-            DWORD size = 0;
-            char currentName[PATH_MAX];
-            size = ::GetCurrentDirectoryA(PATH_MAX, currentName);
-            if (size !=0)
-                ret = QString::fromLocal8Bit(currentName);
-        });
+        }
     }
     if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
     return QDir::fromNativeSeparators(ret);
 #else
-	Q_UNUSED(fileName);
-	if (qfsPrivateCurrentDir.isEmpty())
-		qfsPrivateCurrentDir = QCoreApplication::applicationDirPath();
+        Q_UNUSED(fileName);
+        if (qfsPrivateCurrentDir.isEmpty())
+                qfsPrivateCurrentDir = QCoreApplication::applicationDirPath();
 
     return QDir::fromNativeSeparators(qfsPrivateCurrentDir);
 #endif
@@ -1183,35 +1055,27 @@ QString QFSFileEngine::homePath()
 {
     QString ret;
 #if !defined(QT_NO_LIBRARY)
-    QT_WA (
-    {
-        QFSFileEnginePrivate::resolveLibs();
-		if (ptrOpenProcessToken && ptrGetUserProfileDirectoryW) {
-			HANDLE hnd = ::GetCurrentProcess();
-			HANDLE token = 0;
-			BOOL ok = ::ptrOpenProcessToken(hnd, TOKEN_QUERY, &token);
-			if (ok) {
-				DWORD dwBufferSize = 0;
-				// First call, to determine size of the strings (with '\0').
-				ok = ::ptrGetUserProfileDirectoryW(token, NULL, &dwBufferSize);
-				if (!ok && dwBufferSize != 0) {		// We got the required buffer size
-					wchar_t *userDirectory = new wchar_t[dwBufferSize];
-					// Second call, now we can fill the allocated buffer.
-					ok = ::ptrGetUserProfileDirectoryW(token, userDirectory, &dwBufferSize);
-					if (ok)
-						ret = QString::fromUtf16((ushort*)userDirectory);
+    QFSFileEnginePrivate::resolveLibs();
+    if (ptrOpenProcessToken && ptrGetUserProfileDirectoryW) {
+        HANDLE hnd = ::GetCurrentProcess();
+        HANDLE token = 0;
+        BOOL ok = ::ptrOpenProcessToken(hnd, TOKEN_QUERY, &token);
+        if (ok) {
+            DWORD dwBufferSize = 0;
+            // First call, to determine size of the strings (with '\0').
+            ok = ::ptrGetUserProfileDirectoryW(token, NULL, &dwBufferSize);
+            if (!ok && dwBufferSize != 0) {        // We got the required buffer size
+                wchar_t *userDirectory = new wchar_t[dwBufferSize];
+                // Second call, now we can fill the allocated buffer.
+                ok = ::ptrGetUserProfileDirectoryW(token, userDirectory, &dwBufferSize);
+                if (ok)
+                    ret = QString::fromWCharArray(userDirectory);
 
-					delete [] userDirectory;
-				}
-				::CloseHandle(token);
-			}
-		}
-    }
-    ,
-    {
-        // GetUserProfileDirectory is only available from NT 4.0,
-		// so fall through for Win98 and friends version.
-    })
+                delete [] userDirectory;
+            }
+            ::CloseHandle(token);
+        }
+                }
 #endif
     if(ret.isEmpty() || !QFile::exists(ret)) {
         ret = QString::fromLocal8Bit(qgetenv("USERPROFILE").constData());
@@ -1251,17 +1115,10 @@ QString QFSFileEngine::rootPath()
 
 QString QFSFileEngine::tempPath()
 {
-    QString ret;
-    int success;
-    QT_WA({
-        wchar_t tempPath[MAX_PATH];
-        success = GetTempPathW(MAX_PATH, tempPath);
-        ret = QString::fromUtf16((ushort*)tempPath);
-    } , {
-        char tempPath[MAX_PATH];
-        success = GetTempPathA(MAX_PATH, tempPath);
-        ret = QString::fromLocal8Bit(tempPath);
-    });
+    wchar_t tempPath[MAX_PATH];
+    int success = GetTempPath(MAX_PATH, tempPath);
+    QString ret = QString::fromWCharArray(tempPath);
+
     if (ret.isEmpty() || !success) {
 #if !defined(Q_OS_WINCE)
         ret = QString::fromLatin1("c:/tmp");
@@ -1285,7 +1142,7 @@ QFileInfoList QFSFileEngine::drives()
 #elif defined(Q_OS_OS2EMX)
     quint32 driveBits, cur;
     if(DosQueryCurrentDisk(&cur,&driveBits) != NO_ERROR)
-	exit(1);
+        exit(1);
     driveBits &= 0x3ffffff;
 #endif
     char driveName[] = "A:/";
@@ -1327,18 +1184,35 @@ bool QFSFileEnginePrivate::doStat() const
                 }
             }
 #else
-            DWORD tmpAttributes = GetFileAttributesW((TCHAR*)QFSFileEnginePrivate::longFileName(fname).utf16());
+            DWORD tmpAttributes = GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(fname).utf16());
             if (tmpAttributes != -1) {
                 fileAttrib = tmpAttributes;
                 could_stat = true;
             }
 #endif
         } else {
-            QT_WA({
-                fileAttrib = GetFileAttributesW((TCHAR*)QFSFileEnginePrivate::longFileName(fname).utf16());
-            } , {
-                fileAttrib = GetFileAttributesA(QFSFileEnginePrivate::win95Name(QFileInfo(fname).absoluteFilePath()));
-            });
+            fileAttrib = GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(fname).utf16());
+            if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
+                int errorCode = GetLastError();
+                if (errorCode != ERROR_INVALID_NAME
+                    && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+                    QString path = QDir::toNativeSeparators(fname);
+                    // path for the FindFirstFile should not end with a trailing slash
+                    while (path.endsWith(QLatin1Char('\\')))
+                        path.chop(1);
+
+                    // FindFirstFile can not handle drives
+                    if (!path.endsWith(QLatin1Char(':'))) {
+                        WIN32_FIND_DATA findData;
+                        HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
+                                                       &findData);
+                        if (hFind != INVALID_HANDLE_VALUE) {
+                            ::FindClose(hFind);
+                            fileAttrib = findData.dwFileAttributes;
+                        }
+                    }
+                }
+            }
             could_stat = fileAttrib != INVALID_FILE_ATTRIBUTES;
             if (!could_stat) {
 #if !defined(Q_OS_WINCE)
@@ -1398,74 +1272,39 @@ static QString readLink(const QString &link)
 #if !defined(Q_OS_WINCE)
 #if !defined(QT_NO_LIBRARY)
     QString ret;
-    QT_WA({
-        bool neededCoInit = false;
-        IShellLink *psl;                            // pointer to IShellLink i/f
-        HRESULT hres;
-        WIN32_FIND_DATA wfd;
-        TCHAR szGotPath[MAX_PATH];
-        // Get pointer to the IShellLink interface.
+
+    bool neededCoInit = false;
+    IShellLink *psl;                            // pointer to IShellLink i/f
+    WIN32_FIND_DATA wfd;
+    wchar_t szGotPath[MAX_PATH];
+
+    // Get pointer to the IShellLink interface.
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID *)&psl);
+
+    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
+        neededCoInit = true;
+        CoInitialize(NULL);
         hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
                                     IID_IShellLink, (LPVOID *)&psl);
-
-        if(hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-            neededCoInit = true;
-            CoInitialize(NULL);
-            hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
-                                        IID_IShellLink, (LPVOID *)&psl);
-        }
-        if(SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
-            IPersistFile *ppf;
-            hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
-            if(SUCCEEDED(hres))  {
-                hres = ppf->Load((LPOLESTR)link.utf16(), STGM_READ);
-                //The original path of the link is retrieved. If the file/folder
-                //was moved, the return value still have the old path.
-                if(SUCCEEDED(hres)) {
-                    if (psl->GetPath(szGotPath, MAX_PATH, &wfd, SLGP_UNCPRIORITY) == NOERROR)
-                        ret = QString::fromUtf16((ushort*)szGotPath);
-                }
-                ppf->Release();
+    }
+    if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
+        IPersistFile *ppf;
+        hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
+        if(SUCCEEDED(hres))  {
+            hres = ppf->Load((LPOLESTR)link.utf16(), STGM_READ);
+            //The original path of the link is retrieved. If the file/folder
+            //was moved, the return value still have the old path.
+            if(SUCCEEDED(hres)) {
+                if (psl->GetPath(szGotPath, MAX_PATH, &wfd, SLGP_UNCPRIORITY) == NOERROR)
+                    ret = QString::fromWCharArray(szGotPath);
             }
-            psl->Release();
+            ppf->Release();
         }
-        if(neededCoInit)
-            CoUninitialize();
-    } , {
-	    bool neededCoInit = false;
-        IShellLinkA *psl;                            // pointer to IShellLink i/f
-        HRESULT hres;
-        WIN32_FIND_DATAA wfd;
-        char szGotPath[MAX_PATH];
-        // Get pointer to the IShellLink interface.
+        psl->Release();
+    }
+    if (neededCoInit)
+        CoUninitialize();
 
-        hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
-                                    IID_IShellLinkA, (LPVOID *)&psl);
-
-        if(hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-            neededCoInit = true;
-            CoInitialize(NULL);
-            hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
-                                        IID_IShellLinkA, (LPVOID *)&psl);
-        }
-        if(SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
-            IPersistFile *ppf;
-            hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
-            if(SUCCEEDED(hres))  {
-                hres = ppf->Load((LPOLESTR)QFileInfo(link).absoluteFilePath().utf16(), STGM_READ);
-                //The original path of the link is retrieved. If the file/folder
-                //was moved, the return value still have the old path.
-                 if(SUCCEEDED(hres)) {
-                    if (psl->GetPath((char*)szGotPath, MAX_PATH, &wfd, SLGP_UNCPRIORITY) == NOERROR)
-                        ret = QString::fromLocal8Bit(szGotPath);
-                }
-                ppf->Release();
-            }
-            psl->Release();
-        }
-        if(neededCoInit)
-            CoUninitialize();
-    });
     return ret;
 #else
     Q_UNUSED(link);
@@ -1475,7 +1314,7 @@ static QString readLink(const QString &link)
     wchar_t target[MAX_PATH];
     QString result;
     if (SHGetShortcutTarget((wchar_t*)QFileInfo(link).absoluteFilePath().replace(QLatin1Char('/'),QLatin1Char('\\')).utf16(), target, MAX_PATH)) {
-        result = QString::fromUtf16(reinterpret_cast<const ushort *> (target));
+        result = QString::fromWCharArray(target);
         if (result.startsWith(QLatin1Char('"')))
             result.remove(0,1);
         if (result.endsWith(QLatin1Char('"')))
@@ -1502,76 +1341,37 @@ bool QFSFileEngine::link(const QString &newName)
     QString linkName = newName;
     //### assume that they add .lnk
 
-    QT_WA({
-        HRESULT hres;
-        IShellLink *psl;
-        bool neededCoInit = false;
+    IShellLink *psl;
+    bool neededCoInit = false;
 
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
+
+    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
+        neededCoInit = true;
+        CoInitialize(NULL);
         hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        if(hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-                neededCoInit = true;
-                CoInitialize(NULL);
-                hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        }
+    }
+
+    if (SUCCEEDED(hres)) {
+        hres = psl->SetPath((wchar_t *)fileName(AbsoluteName).replace(QLatin1Char('/'), QLatin1Char('\\')).utf16());
         if (SUCCEEDED(hres)) {
-            hres = psl->SetPath((wchar_t *)fileName(AbsoluteName).replace(QLatin1Char('/'), QLatin1Char('\\')).utf16());
+            hres = psl->SetWorkingDirectory((wchar_t *)fileName(AbsolutePathName).replace(QLatin1Char('/'), QLatin1Char('\\')).utf16());
             if (SUCCEEDED(hres)) {
-                hres = psl->SetWorkingDirectory((wchar_t *)fileName(AbsolutePathName).replace(QLatin1Char('/'), QLatin1Char('\\')).utf16());
+                IPersistFile *ppf;
+                hres = psl->QueryInterface(IID_IPersistFile, (void **)&ppf);
                 if (SUCCEEDED(hres)) {
-                    IPersistFile *ppf;
-                    hres = psl->QueryInterface(IID_IPersistFile, (void **)&ppf);
-                    if (SUCCEEDED(hres)) {
-                        hres = ppf->Save((TCHAR*)linkName.utf16(), TRUE);
-                        if (SUCCEEDED(hres))
-                             ret = true;
-                        ppf->Release();
-                    }
+                    hres = ppf->Save((wchar_t*)linkName.utf16(), TRUE);
+                    if (SUCCEEDED(hres))
+                         ret = true;
+                    ppf->Release();
                 }
             }
-            psl->Release();
         }
-        if(neededCoInit)
-                CoUninitialize();
-    } , {
-        // the SetPath() call _sometimes_ changes the current path and when it does it sometimes
-        // does not let us change it back unless we call currentPath() many times.
-        QString cwd = currentPath();
-        HRESULT hres;
-        IShellLinkA *psl;
-        bool neededCoInit = false;
-
-        hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        if(hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-            neededCoInit = true;
-            CoInitialize(NULL);
-            hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        }
-        if (SUCCEEDED(hres)) {
-            currentPath();
-            hres = psl->SetPath((char *)QString::fromLocal8Bit(QFSFileEnginePrivate::win95Name(fileName(AbsoluteName))).utf16());
-            currentPath();
-            if (SUCCEEDED(hres)) {
-                hres = psl->SetWorkingDirectory((char *)QString::fromLocal8Bit(QFSFileEnginePrivate::win95Name(fileName(AbsolutePathName))).utf16());
-                currentPath();
-                if (SUCCEEDED(hres)) {
-                    IPersistFile *ppf;
-                    hres = psl->QueryInterface(IID_IPersistFile, (void **)&ppf);
-                    if (SUCCEEDED(hres)) {
-                        currentPath();
-                        hres = ppf->Save((LPCOLESTR)linkName.utf16(), TRUE);
-                        currentPath();
-                        if (SUCCEEDED(hres))
-                            ret = true;
-                        ppf->Release();
-                    }
-                }
-                psl->Release();
-            }
-        }
-        if(neededCoInit)
+        psl->Release();
+    }
+    if(neededCoInit)
             CoUninitialize();
-        setCurrentPath(cwd);
-    });
+
     return ret;
 #else
     Q_UNUSED(newName);
@@ -1598,9 +1398,9 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 
 #if !defined(QT_NO_LIBRARY)
     if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-	PSID pOwner = 0;
-	PSID pGroup = 0;
-	PACL pDacl;
+        PSID pOwner = 0;
+        PSID pGroup = 0;
+        PACL pDacl;
         PSECURITY_DESCRIPTOR pSD;
         ACCESS_MASK access_mask;
 
@@ -1610,42 +1410,42 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 
             QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
             DWORD res = ptrGetNamedSecurityInfoW((wchar_t*)fname.utf16(), SE_FILE_OBJECT,
-						 OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
-						 &pOwner, &pGroup, &pDacl, 0, &pSD);
+                                                 OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+                                                 &pOwner, &pGroup, &pDacl, 0, &pSD);
 
             if(res == ERROR_SUCCESS) {
                 TRUSTEE_W trustee;
                 { //user
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
-		    if(access_mask & ReadMask)
-			ret |= QAbstractFileEngine::ReadUserPerm;
-		    if(access_mask & WriteMask)
-			ret |= QAbstractFileEngine::WriteUserPerm;
-		    if(access_mask & ExecMask)
-			ret |= QAbstractFileEngine::ExeUserPerm;
+                    if(access_mask & ReadMask)
+                        ret |= QAbstractFileEngine::ReadUserPerm;
+                    if(access_mask & WriteMask)
+                        ret |= QAbstractFileEngine::WriteUserPerm;
+                    if(access_mask & ExecMask)
+                        ret |= QAbstractFileEngine::ExeUserPerm;
                 }
                 { //owner
                     ptrBuildTrusteeWithSidW(&trustee, pOwner);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
-		    if(access_mask & ReadMask)
-			ret |= QAbstractFileEngine::ReadOwnerPerm;
-		    if(access_mask & WriteMask)
-			ret |= QAbstractFileEngine::WriteOwnerPerm;
-		    if(access_mask & ExecMask)
-			ret |= QAbstractFileEngine::ExeOwnerPerm;
+                    if(access_mask & ReadMask)
+                        ret |= QAbstractFileEngine::ReadOwnerPerm;
+                    if(access_mask & WriteMask)
+                        ret |= QAbstractFileEngine::WriteOwnerPerm;
+                    if(access_mask & ExecMask)
+                        ret |= QAbstractFileEngine::ExeOwnerPerm;
                 }
                 { //group
                     ptrBuildTrusteeWithSidW(&trustee, pGroup);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
-		    if(access_mask & ReadMask)
-			ret |= QAbstractFileEngine::ReadGroupPerm;
-		    if(access_mask & WriteMask)
-			ret |= QAbstractFileEngine::WriteGroupPerm;
-		    if(access_mask & ExecMask)
-			ret |= QAbstractFileEngine::ExeGroupPerm;
+                    if(access_mask & ReadMask)
+                        ret |= QAbstractFileEngine::ReadGroupPerm;
+                    if(access_mask & WriteMask)
+                        ret |= QAbstractFileEngine::WriteGroupPerm;
+                    if(access_mask & ExecMask)
+                        ret |= QAbstractFileEngine::ExeGroupPerm;
                 }
                 { //other (world)
                     // Create SID for Everyone (World)
@@ -1655,12 +1455,12 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                         ptrBuildTrusteeWithSidW(&trustee, pWorld);
                         if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                             access_mask = (ACCESS_MASK)-1; // ###
-			if(access_mask & ReadMask)
-			    ret |= QAbstractFileEngine::ReadOtherPerm;
-			if(access_mask & WriteMask)
-			    ret |= QAbstractFileEngine::WriteOtherPerm;
-			if(access_mask & ExecMask)
-			    ret |= QAbstractFileEngine::ExeOtherPerm;
+                        if(access_mask & ReadMask)
+                            ret |= QAbstractFileEngine::ReadOtherPerm;
+                        if(access_mask & WriteMask)
+                            ret |= QAbstractFileEngine::WriteOtherPerm;
+                        if(access_mask & ExecMask)
+                            ret |= QAbstractFileEngine::ExeOtherPerm;
                     }
                     ptrFreeSid(pWorld);
                 }
@@ -1670,13 +1470,13 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
     } else
 #endif
            {
-	//### what to do with permissions if we don't use ntfs or are not on a NT system
-	// for now just add all permissions and what about exe missions ??
-	// also qt_ntfs_permission_lookup is now not set by defualt ... should it ?
-    	ret |= QAbstractFileEngine::ReadOtherPerm | QAbstractFileEngine::ReadGroupPerm
-	    | QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
-	    | QAbstractFileEngine::WriteUserPerm | QAbstractFileEngine::WriteOwnerPerm
-	    | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
+        //### what to do with permissions if we don't use NTFS
+        // for now just add all permissions and what about exe missions ??
+        // also qt_ntfs_permission_lookup is now not set by defualt ... should it ?
+            ret |= QAbstractFileEngine::ReadOtherPerm | QAbstractFileEngine::ReadGroupPerm
+            | QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
+            | QAbstractFileEngine::WriteUserPerm | QAbstractFileEngine::WriteOwnerPerm
+            | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
     }
 
     if (doStat()) {
@@ -1783,8 +1583,8 @@ QString QFSFileEngine::fileName(FileName file) const
 
         if (!isRelativePath()) {
 #if !defined(Q_OS_WINCE)
-            if (d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
-                && d->filePath.at(2) != QLatin1Char('/') || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
+            if ((d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
+                && d->filePath.at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
                 d->filePath.startsWith(QLatin1Char('/'))    // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
                 ) {
                 ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(d->filePath));
@@ -1911,13 +1711,9 @@ bool QFSFileEngine::setPermissions(uint perms)
         return false;
 
 #if !defined(Q_OS_WINCE)
-   QT_WA({
-        ret = ::_wchmod((TCHAR*)d->filePath.utf16(), mode) == 0;
-   } , {
-        ret = ::_chmod(d->filePath.toLocal8Bit(), mode) == 0;
-   });
+    ret = ::_wchmod((wchar_t*)d->filePath.utf16(), mode) == 0;
 #else
-    ret = ::_wchmod((TCHAR*)d->longFileName(d->filePath).utf16(), mode);
+    ret = ::_wchmod((wchar_t*)d->longFileName(d->filePath).utf16(), mode);
 #endif
    return ret;
 }
@@ -1960,34 +1756,33 @@ bool QFSFileEngine::setSize(qint64 size)
 static inline QDateTime fileTimeToQDateTime(const FILETIME *time)
 {
     QDateTime ret;
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based || QSysInfo::WindowsVersion & QSysInfo::WV_CE_based) {
-        // SystemTimeToTzSpecificLocalTime is not available on Win98/ME so we have to pull it off ourselves.
-        SYSTEMTIME systime;
-        FILETIME ftime;
-        systime.wYear = 1970;
-        systime.wMonth = 1;
-        systime.wDay = 1;
-        systime.wHour = 0;
-        systime.wMinute = 0;
-        systime.wSecond = 0;
-        systime.wMilliseconds = 0;
-        systime.wDayOfWeek = 4;
-        SystemTimeToFileTime(&systime, &ftime);
-        unsigned __int64 acttime = (unsigned __int64)time->dwHighDateTime << 32 | time->dwLowDateTime;
-        FileTimeToSystemTime(time, &systime);
-        unsigned __int64 time1970 = (unsigned __int64)ftime.dwHighDateTime << 32 | ftime.dwLowDateTime;
-        unsigned __int64 difftime = acttime - time1970;
-        difftime /= 10000000;
-        ret.setTime_t((unsigned int)difftime);
-    } else {
-#ifndef Q_OS_WINCE
-        SYSTEMTIME sTime, lTime;
-        FileTimeToSystemTime(time, &sTime);
-        SystemTimeToTzSpecificLocalTime(0, &sTime, &lTime);
-        ret.setDate(QDate(lTime.wYear, lTime.wMonth, lTime.wDay));
-        ret.setTime(QTime(lTime.wHour, lTime.wMinute, lTime.wSecond, lTime.wMilliseconds));
+
+#if defined(Q_OS_WINCE)
+    SYSTEMTIME systime;
+    FILETIME ftime;
+    systime.wYear = 1970;
+    systime.wMonth = 1;
+    systime.wDay = 1;
+    systime.wHour = 0;
+    systime.wMinute = 0;
+    systime.wSecond = 0;
+    systime.wMilliseconds = 0;
+    systime.wDayOfWeek = 4;
+    SystemTimeToFileTime(&systime, &ftime);
+    unsigned __int64 acttime = (unsigned __int64)time->dwHighDateTime << 32 | time->dwLowDateTime;
+    FileTimeToSystemTime(time, &systime);
+    unsigned __int64 time1970 = (unsigned __int64)ftime.dwHighDateTime << 32 | ftime.dwLowDateTime;
+    unsigned __int64 difftime = acttime - time1970;
+    difftime /= 10000000;
+    ret.setTime_t((unsigned int)difftime);
+#else
+    SYSTEMTIME sTime, lTime;
+    FileTimeToSystemTime(time, &sTime);
+    SystemTimeToTzSpecificLocalTime(0, &sTime, &lTime);
+    ret.setDate(QDate(lTime.wYear, lTime.wMonth, lTime.wDay));
+    ret.setTime(QTime(lTime.wHour, lTime.wMinute, lTime.wSecond, lTime.wMilliseconds));
 #endif
-    }
+
     return ret;
 }
 
@@ -2011,13 +1806,32 @@ QDateTime QFSFileEngine::fileTime(FileTime time) const
         }
 #endif
     } else {
-        bool ok = false;
         WIN32_FILE_ATTRIBUTE_DATA attribData;
-        QT_WA({
-            ok = ::GetFileAttributesExW((TCHAR*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(), GetFileExInfoStandard, &attribData);
-        } , {
-            ok = ::GetFileAttributesExA(QFSFileEnginePrivate::win95Name(QFileInfo(d->filePath).absoluteFilePath()), GetFileExInfoStandard, &attribData);
-        });
+        bool ok = ::GetFileAttributesEx((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(), GetFileExInfoStandard, &attribData);
+        if (!ok) {
+            int errorCode = GetLastError();
+            if (errorCode != ERROR_INVALID_NAME
+                && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+                QString path = QDir::toNativeSeparators(d->filePath);
+                // path for the FindFirstFile should not end with a trailing slash
+                while (path.endsWith(QLatin1Char('\\')))
+                    path.chop(1);
+
+                // FindFirstFile can not handle drives
+                if (!path.endsWith(QLatin1Char(':'))) {
+                    WIN32_FIND_DATA findData;
+                    HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
+                                                   &findData);
+                    if (hFind != INVALID_HANDLE_VALUE) {
+                        ::FindClose(hFind);
+                        ok = true;
+                        attribData.ftCreationTime = findData.ftCreationTime;
+                        attribData.ftLastWriteTime = findData.ftLastWriteTime;
+                        attribData.ftLastAccessTime = findData.ftLastAccessTime;
+                    }
+                }
+            }
+        }
         if (ok) {
             if(time == CreationTime)
                 ret = fileTimeToQDateTime(&attribData.ftCreationTime);
@@ -2037,11 +1851,11 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     Q_UNUSED(flags);
     if (openMode == QFile::NotOpen) {
         q->setError(QFile::PermissionsError, qt_error_string());
-	return 0;
+        return 0;
     }
     if (offset == 0 && size == 0) {
         q->setError(QFile::UnspecifiedError, qt_error_string());
-	return 0;
+        return 0;
     }
 
 
@@ -2054,7 +1868,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     #ifdef Q_USE_DEPRECATED_MAP_API
     nativeClose();
     if (fileMapHandle == INVALID_HANDLE_VALUE) {
-        fileMapHandle = CreateFileForMappingW((TCHAR *)nativeFilePath.constData(),
+        fileMapHandle = CreateFileForMapping((const wchar_t*)nativeFilePath.constData(),
                 GENERIC_READ | (openMode & QIODevice::WriteOnly ? GENERIC_WRITE : 0),
                 0,
                 NULL,
@@ -2069,21 +1883,14 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 #endif
 
     // first create the file mapping handle
-    HANDLE mapHandle = 0;
     DWORD protection = (openMode & QIODevice::WriteOnly) ? PAGE_READWRITE : PAGE_READONLY;
-    QT_WA({
-    mapHandle = ::CreateFileMappingW(handle, 0, protection,
-             0, 0, 0);
-    },{
-    mapHandle = ::CreateFileMappingA(handle, 0, protection,
-             0, 0, 0);
-    });
+    HANDLE mapHandle = ::CreateFileMapping(handle, 0, protection, 0, 0, 0);
     if (mapHandle == NULL) {
         q->setError(QFile::PermissionsError, qt_error_string());
 #ifdef Q_USE_DEPRECATED_MAP_API
         mapHandleClose();
 #endif
-	return 0;
+        return 0;
     }
 
     // setup args to map
@@ -2112,7 +1919,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     switch(GetLastError()) {
     case ERROR_ACCESS_DENIED:
         q->setError(QFile::PermissionsError, qt_error_string());
-	break;
+        break;
     case ERROR_INVALID_PARAMETER:
         // size are out of bounds
     default:

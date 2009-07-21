@@ -24,7 +24,9 @@
 #include "HTMLButtonElement.h"
 #include "HTMLFormElement.h"
 #include "JSHTMLFormElement.h"
+#include "JSValidityState.h"
 #include "KURL.h"
+#include "ValidityState.h"
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
@@ -37,9 +39,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLButtonElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLButtonElementTableValues[10] =
+static const HashTableValue JSHTMLButtonElementTableValues[11] =
 {
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLButtonElementForm, (intptr_t)0 },
+    { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLButtonElementValidity, (intptr_t)0 },
     { "accessKey", DontDelete, (intptr_t)jsHTMLButtonElementAccessKey, (intptr_t)setJSHTMLButtonElementAccessKey },
     { "disabled", DontDelete, (intptr_t)jsHTMLButtonElementDisabled, (intptr_t)setJSHTMLButtonElementDisabled },
     { "autofocus", DontDelete, (intptr_t)jsHTMLButtonElementAutofocus, (intptr_t)setJSHTMLButtonElementAutofocus },
@@ -51,7 +54,7 @@ static const HashTableValue JSHTMLButtonElementTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLButtonElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLButtonElementTableValues, 0 };
 #else
@@ -65,7 +68,7 @@ static const HashTableValue JSHTMLButtonElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLButtonElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLButtonElementConstructorTableValues, 0 };
 #else
@@ -104,7 +107,7 @@ static const HashTableValue JSHTMLButtonElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLButtonElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLButtonElementPrototypeTableValues, 0 };
 #else
@@ -145,6 +148,13 @@ JSValue jsHTMLButtonElementForm(ExecState* exec, const Identifier&, const Proper
     UNUSED_PARAM(exec);
     HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->form()));
+}
+
+JSValue jsHTMLButtonElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    return toJS(exec, WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLButtonElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)

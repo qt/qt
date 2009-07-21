@@ -444,6 +444,8 @@ QDebug operator<<(QDebug d, const QPointF &p)
 
 
 /*!
+    \since 4.6
+
     Returns the sum of the absolute values of x() and y(),
     traditionally known as the "Manhattan length" of the vector from
     the origin to the point.

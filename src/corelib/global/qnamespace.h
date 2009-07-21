@@ -1410,7 +1410,8 @@ public:
         ToolButtonIconOnly,
         ToolButtonTextOnly,
         ToolButtonTextBesideIcon,
-        ToolButtonTextUnderIcon
+        ToolButtonTextUnderIcon,
+        ToolButtonFollowStyle
     };
 
     enum LayoutDirection {
@@ -1562,41 +1563,12 @@ public:
     };
     Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
 
-    enum GestureType
-    {
-        UnknownGesture,
-        TapGesture,
-        DoubleTapGesture,
-        TrippleTapGesture,
-        TapAndHoldGesture,
-        PanGesture,
-        PinchGesture
-    };
-
-
     enum GestureState
     {
         NoGesture,
         GestureStarted = 1,
         GestureUpdated = 2,
         GestureFinished = 3
-    };
-
-    enum DirectionType
-    {
-        NoDirection = 0,
-        LeftDownDirection = 1,
-        DownLeftDirection = LeftDownDirection,
-        DownDirection = 2,
-        RightDownDirection = 3,
-        DownRightDirection = RightDownDirection,
-        LeftDirection = 4,
-        RightDirection = 6,
-        LeftUpDirection = 7,
-        UpLeftDirection = LeftUpDirection,
-        UpDirection = 8,
-        RightUpDirection = 9,
-        UpRightDirection = RightUpDirection
     };
 
 }

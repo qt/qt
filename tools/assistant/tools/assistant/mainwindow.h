@@ -119,6 +119,9 @@ private slots:
     void qtDocumentationInstalled(bool newDocsInstalled);
     void checkInitState();
 
+    void updateBookmarkMenu();
+    void showBookmark(QAction *action);
+
 private:
     bool initHelpDB();
     void setupActions();
@@ -157,6 +160,8 @@ private:
 
     QMenu *m_viewMenu;
     QMenu *m_toolBarMenu;
+    QMenu *m_bookmarkMenu;
+    QAction *m_bookmarkMenuAction;
 
     CmdLineParser *m_cmdLine;
 

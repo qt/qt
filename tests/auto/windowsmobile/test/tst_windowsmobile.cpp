@@ -72,7 +72,7 @@ public:
 #ifdef Q_OS_WINCE_WM
 
 bool qt_wince_is_platform(const QString &platformString) {
-    TCHAR tszPlatform[64];
+    wchar_t tszPlatform[64];
     if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
                              sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
       if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))

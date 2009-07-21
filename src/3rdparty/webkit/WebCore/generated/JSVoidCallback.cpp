@@ -39,7 +39,7 @@ static const HashTableValue JSVoidCallbackPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSVoidCallbackPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSVoidCallbackPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSVoidCallbackPrototypeTableValues, 0 };
 #else

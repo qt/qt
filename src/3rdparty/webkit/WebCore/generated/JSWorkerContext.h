@@ -48,6 +48,7 @@ public:
 
 
     // Custom attributes
+    JSC::JSValue messageChannel(JSC::ExecState*) const;
     JSC::JSValue xmlHttpRequest(JSC::ExecState*) const;
 
     // Custom functions
@@ -99,6 +100,8 @@ JSC::JSValue jsWorkerContextMessageEventConstructor(JSC::ExecState*, const JSC::
 void setJSWorkerContextMessageEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsWorkerContextWorkerLocationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSWorkerContextWorkerLocationConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextMessageChannelConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextMessageChannelConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsWorkerContextXMLHttpRequestConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSWorkerContextXMLHttpRequestConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 

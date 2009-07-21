@@ -307,6 +307,9 @@ public:
     RenderStyle* getCachedPseudoStyle(PseudoId) const;
     RenderStyle* addCachedPseudoStyle(PassRefPtr<RenderStyle>);
 
+    typedef Vector<RenderStyle*, 10> PseudoStyleCache;
+    void getPseudoStyleCache(PseudoStyleCache&) const;
+
     bool affectedByHoverRules() const { return noninherited_flags._affectedByHover; }
     bool affectedByActiveRules() const { return noninherited_flags._affectedByActive; }
     bool affectedByDragRules() const { return noninherited_flags._affectedByDrag; }
@@ -788,7 +791,7 @@ public:
     void setOverflowY(EOverflow v) { noninherited_flags._overflowY = v; }
     void setVisibility(EVisibility v) { inherited_flags._visibility = v; }
     void setVerticalAlign(EVerticalAlign v) { noninherited_flags._vertical_align = v; }
-    void setVerticalAlignLength(Length l) { SET_VAR(box, vertical_align, l ) }
+    void setVerticalAlignLength(Length l) { SET_VAR(box, vertical_align, l) }
 
     void setHasClip(bool b = true) { SET_VAR(visual, hasClip, b) }
     void setClipLeft(Length v) { SET_VAR(visual, clip.m_left, v) }
@@ -797,7 +800,7 @@ public:
     void setClipBottom(Length v) { SET_VAR(visual, clip.m_bottom, v) }
     void setClip(Length top, Length right, Length bottom, Length left);
 
-    void setUnicodeBidi( EUnicodeBidi b ) { noninherited_flags._unicodeBidi = b; }
+    void setUnicodeBidi(EUnicodeBidi b) { noninherited_flags._unicodeBidi = b; }
 
     void setClear(EClear v) { noninherited_flags._clear = v; }
     void setTableLayout(ETableLayout v) { noninherited_flags._table_layout = v; }
@@ -884,7 +887,7 @@ public:
     void setPaddingLeft(Length v) { SET_VAR(surround, padding.m_left, v) }
     void setPaddingRight(Length v) { SET_VAR(surround, padding.m_right, v) }
 
-    void setCursor( ECursor c ) { inherited_flags._cursor_style = c; }
+    void setCursor(ECursor c) { inherited_flags._cursor_style = c; }
     void addCursor(CachedImage*, const IntPoint& = IntPoint());
     void setCursorList(PassRefPtr<CursorList>);
     void clearCursorList();

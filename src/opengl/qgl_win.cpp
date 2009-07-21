@@ -51,7 +51,7 @@
 #include <qdebug.h>
 #include <qcolor.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 
 typedef bool (APIENTRY *PFNWGLGETPIXELFORMATATTRIBIVARB)(HDC hdc,
                                                          int iPixelFormat,
@@ -642,14 +642,10 @@ public:
         QString windowClassName = qt_getRegisteredWndClass();
         if (parent && !parent->internalWinId())
             parent = parent->nativeParentWidget();
-        QT_WA({
-            const TCHAR *cname = (TCHAR*)windowClassName.utf16();
-            dmy_id = CreateWindow(cname, 0, 0, 0, 0, 1, 1,
-                                  parent ? parent->winId() : 0, 0, qWinAppInst(), 0);
-        } , {
-            dmy_id = CreateWindowA(windowClassName.toLatin1(), 0, 0, 0, 0, 1, 1,
-                                   parent ? parent->winId() : 0, 0, qWinAppInst(), 0);
-        });
+
+        dmy_id = CreateWindow((const wchar_t *)windowClassName.utf16(),
+                              0, 0, 0, 0, 1, 1,
+                              parent ? parent->winId() : 0, 0, qWinAppInst(), 0);
 
         dmy_pdc = GetDC(dmy_id);
         PIXELFORMATDESCRIPTOR dmy_pfd;
@@ -1417,7 +1413,7 @@ void QGLWidget::setContext(QGLContext *context,
     }
 
     if (!d->glcx->isValid()) {
-        bool wasSharing = shareContext || oldcx && oldcx->isSharing();
+        bool wasSharing = shareContext || (oldcx && oldcx->isSharing());
         d->glcx->create(shareContext ? shareContext : oldcx);
         // the above is a trick to keep disp lists etc when a
         // QGLWidget has been reparented, so remove the sharing

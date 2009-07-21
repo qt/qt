@@ -56,7 +56,7 @@ static const HashTableValue JSHTMLTableCellElementTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableCellElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableCellElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSHTMLTableCellElementTableValues, 0 };
 #else
@@ -70,7 +70,7 @@ static const HashTableValue JSHTMLTableCellElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableCellElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableCellElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTableCellElementConstructorTableValues, 0 };
 #else
@@ -108,7 +108,7 @@ static const HashTableValue JSHTMLTableCellElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableCellElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableCellElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTableCellElementPrototypeTableValues, 0 };
 #else

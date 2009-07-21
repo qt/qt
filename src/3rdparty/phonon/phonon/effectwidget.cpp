@@ -97,7 +97,8 @@ void EffectWidgetPrivate::autogenerateUi()
     Q_Q(EffectWidget);
     QVBoxLayout *mainLayout = new QVBoxLayout(q);
     mainLayout->setMargin(0);
-    foreach (const EffectParameter &para, effect->parameters()) {
+    for (int i = 0; i < effect->parameters().count(); ++i) {
+        const EffectParameter &para = effect->parameters().at(i);
         QVariant value = effect->parameterValue(para);
         QHBoxLayout *pLayout = new QHBoxLayout;
         mainLayout->addLayout(pLayout);
@@ -117,13 +118,14 @@ void EffectWidgetPrivate::autogenerateUi()
                 control = cb;
                 if (value.type() == QVariant::Int) {
                     //value just defines the item index
-                    foreach (const QVariant &item, para.possibleValues()) {
-                        cb->addItem(item.toString());
+                    for (int i = 0; i < para.possibleValues().count(); ++i) {
+                        cb->addItem(para.possibleValues().at(i).toString());
                     }
                     cb->setCurrentIndex(value.toInt());
                     QObject::connect(cb, SIGNAL(currentIndexChanged(int)), q, SLOT(_k_setIntParameter(int)));
                 } else {
-                    foreach (const QVariant &item, para.possibleValues()) {
+                    for (int i = 0; i < para.possibleValues().count(); ++i) {
+                        const QVariant &item = para.possibleValues().at(i);
                         cb->addItem(item.toString());
                         if (item == value) {
                             cb->setCurrentIndex(cb->count() - 1);

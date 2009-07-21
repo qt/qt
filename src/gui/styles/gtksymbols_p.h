@@ -162,6 +162,7 @@ typedef void (*Ptr_gtk_file_filter_set_name)(GtkFileFilter *, const gchar *);
 typedef void (*Ptr_gtk_file_filter_add_pattern)(GtkFileFilter *filter, const gchar *pattern);
 typedef void (*Ptr_gtk_file_chooser_add_filter)(GtkFileChooser *chooser, GtkFileFilter *filter);
 typedef void (*Ptr_gtk_file_chooser_set_filter)(GtkFileChooser *chooser, GtkFileFilter *filter);
+typedef GtkFileFilter* (*Ptr_gtk_file_chooser_get_filter)(GtkFileChooser *chooser);
 typedef gchar*  (*Ptr_gtk_file_chooser_get_filename)(GtkFileChooser *chooser);
 typedef GSList* (*Ptr_gtk_file_chooser_get_filenames)(GtkFileChooser *chooser);
 typedef GtkWidget* (*Ptr_gtk_file_chooser_dialog_new)(const gchar *title,
@@ -302,6 +303,7 @@ public:
     static Ptr_gtk_file_filter_add_pattern gtk_file_filter_add_pattern;
     static Ptr_gtk_file_chooser_add_filter gtk_file_chooser_add_filter;
     static Ptr_gtk_file_chooser_set_filter gtk_file_chooser_set_filter;
+    static Ptr_gtk_file_chooser_get_filter gtk_file_chooser_get_filter;
     static Ptr_gtk_file_chooser_dialog_new gtk_file_chooser_dialog_new;
     static Ptr_gtk_file_chooser_set_current_folder gtk_file_chooser_set_current_folder;
     static Ptr_gtk_file_chooser_get_filename gtk_file_chooser_get_filename;

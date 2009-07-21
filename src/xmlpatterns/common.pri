@@ -10,6 +10,7 @@ INCLUDEPATH += $$PWD/acceltree      \
                $$PWD/iterators      \
                $$PWD/janitors       \
                $$PWD/parser         \
+               $$PWD/schema         \
                $$PWD/type           \
                $$PWD/utils
 

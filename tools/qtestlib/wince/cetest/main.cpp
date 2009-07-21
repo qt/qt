@@ -320,6 +320,7 @@ int main(int argc, char **argv)
     cout << endl << "Remote Launch:" << qPrintable(TestConfiguration::remoteExecutable) << " " << qPrintable(launchArguments.join(" ")) << endl;
     if (!connection.execute(TestConfiguration::remoteExecutable, launchArguments.join(" "), timeout)) {
         cout << "Error: Could not execute target file" << endl;
+        return -1;
     }
 
 

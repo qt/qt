@@ -106,7 +106,7 @@ public:
                         QDir::Filters filters, QDirIterator::IteratorFlags flags);
     ~QDirIteratorPrivate();
 
-    void pushSubDirectory(const QString &path, const QStringList &nameFilters,
+    void pushSubDirectory(const QFileInfo &fileInfo, const QStringList &nameFilters,
                           QDir::Filters filters);
     void advance();
     bool shouldFollowDirectory(const QFileInfo &);
@@ -119,7 +119,6 @@ public:
     QFileInfo nextFileInfo;
     //This fileinfo is the current that we will return from the public API
     QFileInfo currentFileInfo;
-    QString currentFilePath;
     QDirIterator::IteratorFlags iteratorFlags;
     QDir::Filters filters;
     QStringList nameFilters;
@@ -142,8 +141,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
     this->filters = filters;
     this->nameFilters = nameFilters;
 
-    pushSubDirectory(nextFileInfo.isSymLink() ? nextFileInfo.canonicalFilePath() : path,
-                     nameFilters, filters);
+    pushSubDirectory(nextFileInfo, nameFilters, filters);
 }
 
 /*!
@@ -157,19 +155,19 @@ QDirIteratorPrivate::~QDirIteratorPrivate()
 /*!
     \internal
 */
-void QDirIteratorPrivate::pushSubDirectory(const QString &path, const QStringList &nameFilters,
+void QDirIteratorPrivate::pushSubDirectory(const QFileInfo &fileInfo, const QStringList &nameFilters,
                                            QDir::Filters filters)
 {
-    if (iteratorFlags & QDirIterator::FollowSymlinks) {
-        if (nextFileInfo.filePath() != path)
-            nextFileInfo.setFile(path);
-        if (nextFileInfo.isSymLink()) {
-            visitedLinks << nextFileInfo.canonicalFilePath();
-        } else {
-            visitedLinks << nextFileInfo.absoluteFilePath();
-        }
-    }
-    
+    QString path = fileInfo.filePath();
+
+#ifdef Q_OS_WIN
+    if (fileInfo.isSymLink())
+        path = fileInfo.canonicalFilePath();
+#endif
+
+    if (iteratorFlags & QDirIterator::FollowSymlinks)
+        visitedLinks << fileInfo.canonicalFilePath();
+
     if (engine || (engine = QAbstractFileEngine::create(this->path))) {
         engine->setFileName(path);
         QAbstractFileEngineIterator *it = engine->beginEntryList(filters, nameFilters);
@@ -187,23 +185,12 @@ void QDirIteratorPrivate::pushSubDirectory(const QString &path, const QStringLis
 */
 void QDirIteratorPrivate::advance()
 {
-    // Store the current entry
-    if (!fileEngineIterators.isEmpty())
-        currentFilePath = fileEngineIterators.top()->currentFilePath();
-
     // Advance to the next entry
     if (followNextDir) {
         // Start by navigating into the current directory.
-        followNextDir = false;
-
         QAbstractFileEngineIterator *it = fileEngineIterators.top();
-
-        QString subDir = it->currentFilePath();
-#ifdef Q_OS_WIN
-        if (nextFileInfo.isSymLink())
-            subDir = nextFileInfo.canonicalFilePath();
-#endif
-        pushSubDirectory(subDir, it->nameFilters(), it->filters());
+        pushSubDirectory(it->currentFileInfo(), it->nameFilters(), it->filters());
+        followNextDir = false;
     }
 
     while (!fileEngineIterators.isEmpty()) {
@@ -222,17 +209,8 @@ void QDirIteratorPrivate::advance()
                 //We found a matching entry.
                 return;
 
-            } else if (iteratorFlags & QDirIterator::Subdirectories) {
-
-                if (!shouldFollowDirectory(info))
-                    continue;
-                QString subDir = it->currentFilePath();
-#ifdef Q_OS_WIN
-                if (info.isSymLink())
-                    subDir = info.canonicalFilePath();
-#endif
-                pushSubDirectory(subDir, it->nameFilters(), it->filters());
-                
+            } else if (shouldFollowDirectory(info)) {
+                pushSubDirectory(info, it->nameFilters(), it->filters());
                 foundDirectory = true;
                 break;
             }
@@ -252,17 +230,15 @@ bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
     // If we're doing flat iteration, we're done.
     if (!(iteratorFlags & QDirIterator::Subdirectories))
         return false;
-    
+
     // Never follow non-directory entries
     if (!fileInfo.isDir())
         return false;
-
 
     // Never follow . and ..
     if (fileInfo.fileName() == QLatin1String(".") || fileInfo.fileName() == QLatin1String(".."))
         return false;
 
-      
     // Check symlinks
     if (fileInfo.isSymLink() && !(iteratorFlags & QDirIterator::FollowSymlinks)) {
         // Follow symlinks only if FollowSymlinks was passed
@@ -272,10 +248,9 @@ bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
     // Stop link loops
     if (visitedLinks.contains(fileInfo.canonicalFilePath()))
         return false;
-    
+
     return true;
 }
-    
 
 /*!
     \internal
@@ -368,7 +343,7 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
             || (doExecutable && !fi.isExecutable()))) {
         return false;
     }
-    
+
     return true;
 }
 
@@ -445,7 +420,7 @@ QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
      passed to the flags.
 
     \warning This constructor expects \c flags to be left at its default value. Use the
-             constructors that do not take the \a filters argument instead. 
+             constructors that do not take the \a filters argument instead.
 
     \sa hasNext(), next(), IteratorFlags
 */
@@ -500,13 +475,12 @@ bool QDirIterator::hasNext() const
 
 /*!
     Returns the file name for the current directory entry, without the path
-    prepended. If the current entry is invalid (i.e., isValid() returns
-    false), a null QString is returned.
+    prepended.
 
-    This function is provided for the convenience when iterating single
-    directories. For recursive iteration, you should call filePath() or
-    fileInfo() instead.
-    
+    This function is convenient when iterating a single directory. When using
+    the QDirIterator::Subdirectories flag, you can use filePath() to get the
+    full path.
+
     \sa filePath(), fileInfo()
 */
 QString QDirIterator::fileName() const
@@ -515,20 +489,17 @@ QString QDirIterator::fileName() const
 }
 
 /*!
-    Returns the full file path for the current directory entry. If the current
-    entry is invalid (i.e., isValid() returns false), a null QString is
-    returned.
+    Returns the full file path for the current directory entry.
 
     \sa fileInfo(), fileName()
 */
 QString QDirIterator::filePath() const
 {
-    return d->currentFilePath;
+    return d->currentFileInfo.filePath();
 }
 
 /*!
-    Returns a QFileInfo for the current directory entry. If the current entry
-    is invalid (i.e., isValid() returns false), a null QFileInfo is returned.
+    Returns a QFileInfo for the current directory entry.
 
     \sa filePath(), fileName()
 */

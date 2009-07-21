@@ -117,7 +117,9 @@ extern "C" {
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
+#if !defined(QT_NO_XINPUT)
 #include <X11/extensions/XI.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -655,11 +657,13 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
         break;
 
     default:
+#if !defined(QT_NO_XINPUT)
         if (err->request_code == X11->xinput_major
             && err->error_code == (X11->xinput_errorbase + XI_BadDevice)
             && err->minor_code == 3 /* X_OpenDevice */) {
             return 0;
         }
+#endif
         break;
     }
 
@@ -1392,6 +1396,18 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
                 color = kdeColor(QLatin1String("Colors:Button/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 pal.setColor(QPalette::ButtonText, color);
+
+            color = kdeColor(QLatin1String("linkColor"), theKdeSettings);
+            if (!color.isValid())
+                color = kdeColor(QLatin1String("Colors:View/ForegroundLink"), theKdeSettings);
+            if (color.isValid())
+                pal.setColor(QPalette::Link, color);
+
+            color = kdeColor(QLatin1String("visitedLinkColor"), theKdeSettings);
+            if (!color.isValid())
+                color = kdeColor(QLatin1String("Colors:View/ForegroundVisited"), theKdeSettings);
+            if (color.isValid())
+                pal.setColor(QPalette::LinkVisited, color);
         }
 
         if (highlight.isValid() && highlightText.isValid()) {
@@ -3437,19 +3453,10 @@ int QApplication::x11ProcessEvent(XEvent* event)
         QSize oldSize(w->size());
         w->data->crect.setWidth(DisplayWidth(X11->display, scr));
         w->data->crect.setHeight(DisplayHeight(X11->display, scr));
-        QVarLengthArray<QRect> oldSizes(desktop->numScreens());
-        for (int i = 0; i < desktop->numScreens(); ++i)
-            oldSizes[i] = desktop->screenGeometry(i);
         QResizeEvent e(w->size(), oldSize);
         QApplication::sendEvent(w, &e);
-        for (int i = 0; i < qMin(oldSizes.count(), desktop->numScreens()); ++i) {
-            if (oldSizes[i] != desktop->screenGeometry(i))
-                emit desktop->resized(i);
-        }
-        for (int i = oldSizes.count(); i < desktop->numScreens(); ++i)
-            emit desktop->resized(i); // added
-        for (int i = desktop->numScreens(); i < oldSizes.count(); ++i)
-            emit desktop->resized(i); // removed
+        if (w != desktop)
+            QApplication::sendEvent(desktop, &e);
     }
 #endif // QT_NO_XRANDR
 

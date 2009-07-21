@@ -41,6 +41,7 @@
 
 /*!
     \namespace Qt
+    \inmodule QtCore
 
     \brief The Qt namespace contains miscellaneous identifiers
     used throughout the Qt library.
@@ -1208,6 +1209,9 @@
     handle touch events. Without this attribute set, events from a
     touch device will be sent as mouse events.
 
+    \value WA_TouchPadAcceptSingleTouchEvents Allows touchpad single
+    touch events to be sent to the widget. 
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
@@ -1243,8 +1247,9 @@
 /*! \typedef Qt::HANDLE
 
     Platform-specific handle type for system objects. This is
-    equivalent to \c{void *} on Windows and Mac OS X, and embedded
-    Linux, and to \c{unsigned long} on X11.
+    equivalent to \c{void *} on Mac OS X and embedded Linux, 
+    and to \c{unsigned long} on X11. On Windows it is the
+    DWORD returned by the Win32 function getCurrentThreadId().
 
     \warning Using this type is not portable.
 */
@@ -1692,6 +1697,7 @@
     \value ToolButtonTextOnly Only display the text.
     \value ToolButtonTextBesideIcon The text appears beside the icon.
     \value ToolButtonTextUnderIcon The text appears under the icon.
+    \value ToolButtonFollowStyle Follow the \l{QStyle::SH_ToolButtonStyle}{style}.
 */
 
 /*!
@@ -2697,20 +2703,6 @@
     \internal
 */
 
-/*! \enum Qt::GestureType
-    \since 4.6
-
-    This enum lists standard gestures.
-
-    \value UnknownGesture An unknown gesture. This enum value shouldn't be used.
-    \value TapGesture A single tap gesture.
-    \value DoubleTapGesture A double tap gesture.
-    \value TrippleTapGesture A tripple tap gesture.
-    \value TapAndHoldGesture A tap-and-hold (long tap) gesture.
-    \value PanGesture A pan gesture.
-    \value PinchGesture A pinch gesture.
-*/
-
 /*!
     \enum Qt::GestureState
     \since 4.6
@@ -2719,30 +2711,8 @@
 
     \omitvalue NoGesture
     \value GestureStarted   A continuous gesture has started.
-    \value GestureUpdated   A gesture continiues.
+    \value GestureUpdated   A gesture continues.
     \value GestureFinished  A gesture has finished.
 
     \sa QGesture
-*/
-
-/*!
-    \enum Qt::DirectionType
-    \since 4.6
-
-    This enum type describes directions. This could be used by the
-    gesture recognizers.
-
-    \value NoDirection Non-specific direction.
-    \value LeftDownDirection
-    \value DownLeftDirection
-    \value DownDirection
-    \value RightDownDirection
-    \value DownRightDirection
-    \value LeftDirection
-    \value RightDirection
-    \value LeftUpDirection
-    \value UpLeftDirection
-    \value UpDirection
-    \value RightUpDirection
-    \value UpRightDirection
 */

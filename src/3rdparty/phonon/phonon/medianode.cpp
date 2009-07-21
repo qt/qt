@@ -67,8 +67,8 @@ bool MediaNode::isValid() const
 
     MediaNodePrivate::~MediaNodePrivate()
     {
-        foreach (MediaNodeDestructionHandler *handler, handlers) {
-            handler->phononObjectDestroyed(this);
+        for (int i = 0 ; i < handlers.count(); ++i) {
+            handlers.at(i)->phononObjectDestroyed(this);
         }
         Factory::deregisterFrontendObject(this);
         delete m_backendObject;

@@ -64,7 +64,7 @@ static const HashTableValue JSXMLHttpRequestTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSXMLHttpRequestTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSXMLHttpRequestPrototypeTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSXMLHttpRequestPrototypeTableValues, 0 };
 #else

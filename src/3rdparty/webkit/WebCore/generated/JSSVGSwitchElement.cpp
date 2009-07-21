@@ -68,7 +68,7 @@ static const HashTableValue JSSVGSwitchElementTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGSwitchElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGSwitchElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGSwitchElementTableValues, 0 };
 #else
@@ -88,7 +88,7 @@ static const HashTableValue JSSVGSwitchElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGSwitchElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGSwitchElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGSwitchElementPrototypeTableValues, 0 };
 #else

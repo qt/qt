@@ -57,7 +57,7 @@ static const HashTableValue JSDOMApplicationCacheTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMApplicationCacheTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMApplicationCacheTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSDOMApplicationCacheTableValues, 0 };
 #else
@@ -82,7 +82,7 @@ static const HashTableValue JSDOMApplicationCachePrototypeTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMApplicationCachePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMApplicationCachePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSDOMApplicationCachePrototypeTableValues, 0 };
 #else

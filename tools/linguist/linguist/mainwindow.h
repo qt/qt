@@ -51,7 +51,6 @@
 #include <QtCore/QLocale>
 
 #include <QtGui/QMainWindow>
-#include <QtGui/QPrinter>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,6 +59,7 @@ class QAction;
 class QDialog;
 class QLabel;
 class QMenu;
+class QPrinter;
 class QProcess;
 class QIcon;
 class QSortFilterProxyModel;
@@ -200,6 +200,8 @@ private:
     void releaseInternal(int model);
     void saveInternal(int model);
 
+    QPrinter *printer();
+
     // FIXME: move to DataModel
     void updateDanger(const MultiDataIndex &index, bool verbose);
 
@@ -226,7 +228,7 @@ private:
     QList<QHash<QString, QList<Phrase *> > > m_phraseDict;
     QList<PhraseBook *> m_phraseBooks;
     QMap<QAction *, PhraseBook *> m_phraseBookMenu[3];
-    QPrinter m_printer;
+    QPrinter *m_printer;
 
     FindDialog *m_findDialog;
     QString m_findText;

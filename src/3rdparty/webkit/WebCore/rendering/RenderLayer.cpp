@@ -167,7 +167,7 @@ RenderLayer::RenderLayer(RenderBoxModelObject* renderer)
     , m_has3DTransformedDescendant(false)
 #if USE(ACCELERATED_COMPOSITING)
     , m_hasCompositingDescendant(false)
-    , m_mustOverlayCompositedLayers(false)
+    , m_mustOverlapCompositedLayers(false)
 #endif
     , m_marquee(0)
     , m_staticX(0)
@@ -231,7 +231,7 @@ void RenderLayer::rendererContentChanged()
 {
     // This can get called when video becomes accelerated, so the layers may change.
     if (compositor()->updateLayerCompositingState(this))
-        compositor()->setCompositingLayersNeedUpdate();
+        compositor()->setCompositingLayersNeedRebuild();
 
     if (m_backing)
         m_backing->rendererContentChanged();
@@ -255,17 +255,17 @@ void RenderLayer::setStaticY(int staticY)
     renderer()->setChildNeedsLayout(true, false);
 }
 
-void RenderLayer::updateLayerPositions(bool doFullRepaint, bool checkForRepaint)
+void RenderLayer::updateLayerPositions(UpdateLayerPositionsFlags flags)
 {
-    if (doFullRepaint) {
+    if (flags & DoFullRepaint) {
         renderer()->repaint();
 #if USE(ACCELERATED_COMPOSITING)
-        checkForRepaint = false;
+        flags &= ~CheckForRepaint;
         // We need the full repaint to propagate to child layers if we are hardware compositing.
         if (!compositor()->inCompositingMode())
-            doFullRepaint = false;
+            flags &= ~DoFullRepaint;
 #else
-        checkForRepaint = doFullRepaint = false;
+        flags &= ~(CheckForRepaint | DoFullRepaint);
 #endif
     }
     
@@ -292,7 +292,7 @@ void RenderLayer::updateLayerPositions(bool doFullRepaint, bool checkForRepaint)
         RenderBoxModelObject* repaintContainer = renderer()->containerForRepaint();
         IntRect newRect = renderer()->clippedOverflowRectForRepaint(repaintContainer);
         IntRect newOutlineBox = renderer()->outlineBoundsForRepaint(repaintContainer);
-        if (checkForRepaint) {
+        if (flags & CheckForRepaint) {
             if (view && !view->printing()) {
                 if (m_needsFullRepaint) {
                     renderer()->repaintUsingContainer(repaintContainer, m_repaintRect);
@@ -316,16 +316,23 @@ void RenderLayer::updateLayerPositions(bool doFullRepaint, bool checkForRepaint)
         m_reflection->layout();
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateLayerPositions(doFullRepaint, checkForRepaint);
+        child->updateLayerPositions(flags);
 
 #if USE(ACCELERATED_COMPOSITING)
-    if (isComposited())
-        backing()->updateAfterLayout();
+    if ((flags & UpdateCompositingLayers) && isComposited())
+        backing()->updateAfterLayout(RenderLayerBacking::CompositingChildren);
 #endif
         
     // With all our children positioned, now update our marquee if we need to.
     if (m_marquee)
         m_marquee->updateMarqueePosition();
+}
+
+void RenderLayer::computeRepaintRects()
+{
+    RenderBoxModelObject* repaintContainer = renderer()->containerForRepaint();
+    m_repaintRect = renderer()->clippedOverflowRectForRepaint(repaintContainer);
+    m_outlineBox = renderer()->outlineBoundsForRepaint(repaintContainer);
 }
 
 void RenderLayer::updateTransform()
@@ -453,7 +460,7 @@ void RenderLayer::updateVisibilityStatus()
                 else {
                     do {
                         r = r->parent();
-                        if (r==renderer())
+                        if (r == renderer())
                             r = 0;
                     } while (r && !r->nextSibling());
                     if (r)
@@ -1057,14 +1064,15 @@ void RenderLayer::scrollToOffset(int x, int y, bool updateScrollbars, bool repai
     m_scrollX = newScrollX;
     m_scrollY = y;
 
-    // Update the positions of our child layers.
+    // Update the positions of our child layers. Don't have updateLayerPositions() update
+    // compositing layers, because we need to do a deep update from the compositing ancestor.
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateLayerPositions(false, false);
+        child->updateLayerPositions(0);
 
 #if USE(ACCELERATED_COMPOSITING)
     if (compositor()->inCompositingMode()) {
         if (RenderLayer* compositingAncestor = ancestorCompositingLayer())
-            compositingAncestor->backing()->updateAfterLayout();
+            compositingAncestor->backing()->updateAfterLayout(RenderLayerBacking::AllDescendants);
     }
 #endif
     
@@ -1421,6 +1429,66 @@ bool RenderLayer::scrollbarCornerPresent() const
 {
     ASSERT(renderer()->isBox());
     return !scrollCornerRect(this, renderBox()->borderBoxRect()).isEmpty();
+}
+
+IntRect RenderLayer::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
+{
+    RenderView* view = renderer()->view();
+    if (!view)
+        return scrollbarRect;
+
+    IntRect rect = scrollbarRect;
+    rect.move(scrollbarOffset(scrollbar));
+
+    return view->frameView()->convertFromRenderer(renderer(), rect);
+}
+
+IntRect RenderLayer::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+{
+    RenderView* view = renderer()->view();
+    if (!view)
+        return parentRect;
+
+    IntRect rect = view->frameView()->convertToRenderer(renderer(), parentRect);
+    rect.move(-scrollbarOffset(scrollbar));
+    return rect;
+}
+
+IntPoint RenderLayer::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
+{
+    RenderView* view = renderer()->view();
+    if (!view)
+        return scrollbarPoint;
+
+    IntPoint point = scrollbarPoint;
+    point.move(scrollbarOffset(scrollbar));
+    return view->frameView()->convertFromRenderer(renderer(), point);
+}
+
+IntPoint RenderLayer::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+{
+    RenderView* view = renderer()->view();
+    if (!view)
+        return parentPoint;
+
+    IntPoint point = view->frameView()->convertToRenderer(renderer(), parentPoint);
+
+    point.move(-scrollbarOffset(scrollbar));
+    return point;
+}
+
+IntSize RenderLayer::scrollbarOffset(const Scrollbar* scrollbar) const
+{
+    RenderBox* box = renderBox();
+
+    if (scrollbar == m_vBar.get())
+        return IntSize(box->width() - box->borderRight() - scrollbar->width(), box->borderTop());
+
+    if (scrollbar == m_hBar.get())
+        return IntSize(box->borderLeft(), box->height() - box->borderBottom() - scrollbar->height());
+    
+    ASSERT_NOT_REACHED();
+    return IntSize();
 }
 
 void RenderLayer::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
@@ -1834,34 +1902,29 @@ bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint) const
     return resizerCornerRect(this, localBounds).contains(localPoint);
 }
     
-bool RenderLayer::hitTestOverflowControls(HitTestResult& result)
+bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
 {
     if (!m_hBar && !m_vBar && (!renderer()->hasOverflowClip() || renderer()->style()->resize() == RESIZE_NONE))
         return false;
 
     RenderBox* box = renderBox();
     ASSERT(box);
-
-    int x = 0;
-    int y = 0;
-    convertToLayerCoords(root(), x, y);
-    IntRect absBounds(x, y, box->width(), box->height());
     
     IntRect resizeControlRect;
     if (renderer()->style()->resize() != RESIZE_NONE) {
-        resizeControlRect = resizerCornerRect(this, absBounds);
-        if (resizeControlRect.contains(result.point()))
+        resizeControlRect = resizerCornerRect(this, box->borderBoxRect());
+        if (resizeControlRect.contains(localPoint))
             return true;
     }
 
     int resizeControlSize = max(resizeControlRect.height(), 0);
 
     if (m_vBar) {
-        IntRect vBarRect(absBounds.right() - box->borderRight() - m_vBar->width(), 
-                         absBounds.y() + box->borderTop(),
+        IntRect vBarRect(box->width() - box->borderRight() - m_vBar->width(), 
+                         box->borderTop(),
                          m_vBar->width(),
-                         absBounds.height() - (box->borderTop() + box->borderBottom()) - (m_hBar ? m_hBar->height() : resizeControlSize));
-        if (vBarRect.contains(result.point())) {
+                         box->height() - (box->borderTop() + box->borderBottom()) - (m_hBar ? m_hBar->height() : resizeControlSize));
+        if (vBarRect.contains(localPoint)) {
             result.setScrollbar(m_vBar.get());
             return true;
         }
@@ -1869,11 +1932,11 @@ bool RenderLayer::hitTestOverflowControls(HitTestResult& result)
 
     resizeControlSize = max(resizeControlRect.width(), 0);
     if (m_hBar) {
-        IntRect hBarRect(absBounds.x() + box->borderLeft(),
-                         absBounds.bottom() - box->borderBottom() - m_hBar->height(),
-                         absBounds.width() - (box->borderLeft() + box->borderRight()) - (m_vBar ? m_vBar->width() : resizeControlSize),
+        IntRect hBarRect(box->borderLeft(),
+                         box->height() - box->borderBottom() - m_hBar->height(),
+                         box->width() - (box->borderLeft() + box->borderRight()) - (m_vBar ? m_vBar->width() : resizeControlSize),
                          m_hBar->height());
-        if (hBarRect.contains(result.point())) {
+        if (hBarRect.contains(localPoint)) {
             result.setScrollbar(m_hBar.get());
             return true;
         }
@@ -2046,7 +2109,7 @@ void RenderLayer::paintLayer(RenderLayer* rootLayer, GraphicsContext* p,
     int ty = y - renderBoxY();
                              
     // Ensure our lists are up-to-date.
-    updateLayerListsIfNeeded();
+    updateCompositingAndLayerListsIfNeeded();
 
     bool selectionOnly = paintRestriction == PaintRestrictionSelectionOnly || paintRestriction == PaintRestrictionSelectionOnlyBlackText;
     bool forceBlackText = paintRestriction == PaintRestrictionSelectionOnlyBlackText;
@@ -2336,7 +2399,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
     }
 
     // Ensure our lists and 3d status are up-to-date.
-    updateLayerListsIfNeeded();
+    updateCompositingAndLayerListsIfNeeded();
     update3DTransformedDescendantStatus();
     
     RefPtr<HitTestingTransformState> localTransformState;
@@ -2574,13 +2637,13 @@ void RenderLayer::calculateClipRects(const RenderLayer* rootLayer, ClipRects& cl
         }
         
         if (renderer()->hasOverflowClip()) {
-            IntRect newOverflowClip = toRenderBox(renderer())->overflowClipRect(x,y);
+            IntRect newOverflowClip = toRenderBox(renderer())->overflowClipRect(x, y);
             clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
             if (renderer()->isPositioned() || renderer()->isRelPositioned())
                 clipRects.setPosClipRect(intersection(newOverflowClip, clipRects.posClipRect()));
         }
         if (renderer()->hasClip()) {
-            IntRect newPosClip = toRenderBox(renderer())->clipRect(x,y);
+            IntRect newPosClip = toRenderBox(renderer())->clipRect(x, y);
             clipRects.setPosClipRect(intersection(newPosClip, clipRects.posClipRect()));
             clipRects.setOverflowClipRect(intersection(newPosClip, clipRects.overflowClipRect()));
             clipRects.setFixedClipRect(intersection(newPosClip, clipRects.fixedClipRect()));
@@ -2630,10 +2693,10 @@ void RenderLayer::calculateRects(const RenderLayer* rootLayer, const IntRect& pa
     if (renderer()->hasOverflowClip() || renderer()->hasClip()) {
         // This layer establishes a clip of some kind.
         if (renderer()->hasOverflowClip())
-            foregroundRect.intersect(toRenderBox(renderer())->overflowClipRect(x,y));
+            foregroundRect.intersect(toRenderBox(renderer())->overflowClipRect(x, y));
         if (renderer()->hasClip()) {
             // Clip applies to *us* as well, so go ahead and update the damageRect.
-            IntRect newPosClip = toRenderBox(renderer())->clipRect(x,y);
+            IntRect newPosClip = toRenderBox(renderer())->clipRect(x, y);
             backgroundRect.intersect(newPosClip);
             foregroundRect.intersect(newPosClip);
             outlineRect.intersect(newPosClip);
@@ -2920,7 +2983,7 @@ void RenderLayer::dirtyZOrderLists()
 
 #if USE(ACCELERATED_COMPOSITING)
     if (!renderer()->documentBeingDestroyed())
-        compositor()->setCompositingLayersNeedUpdate();
+        compositor()->setCompositingLayersNeedRebuild();
 #endif
 }
 
@@ -2939,7 +3002,7 @@ void RenderLayer::dirtyNormalFlowList()
 
 #if USE(ACCELERATED_COMPOSITING)
     if (!renderer()->documentBeingDestroyed())
-        compositor()->setCompositingLayersNeedUpdate();
+        compositor()->setCompositingLayersNeedRebuild();
 #endif
 }
 
@@ -3009,6 +3072,12 @@ void RenderLayer::collectLayers(Vector<RenderLayer*>*& posBuffer, Vector<RenderL
 
 void RenderLayer::updateLayerListsIfNeeded()
 {
+    updateZOrderLists();
+    updateNormalFlowList();
+}
+
+void RenderLayer::updateCompositingAndLayerListsIfNeeded()
+{
 #if USE(ACCELERATED_COMPOSITING)
     if (compositor()->inCompositingMode()) {
         if ((isStackingContext() && m_zOrderListsDirty) || m_normalFlowListDirty)
@@ -3016,8 +3085,7 @@ void RenderLayer::updateLayerListsIfNeeded()
         return;
     }
 #endif
-    updateZOrderLists();
-    updateNormalFlowList();
+    updateLayerListsIfNeeded();
 }
 
 void RenderLayer::repaintIncludingDescendants()
@@ -3129,7 +3197,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle*)
     updateTransform();
 
     if (compositor()->updateLayerCompositingState(this))
-        compositor()->setCompositingLayersNeedUpdate();
+        compositor()->setCompositingLayersNeedRebuild();
     else if (m_backing)
         m_backing->updateGraphicsLayerGeometry();
 

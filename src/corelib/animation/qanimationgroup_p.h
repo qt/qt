@@ -59,6 +59,8 @@
 
 #include "private/qabstractanimation_p.h"
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 class QAnimationGroupPrivate : public QAbstractAnimationPrivate
@@ -75,5 +77,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ANIMATION
 
 #endif //QANIMATIONGROUP_P_H

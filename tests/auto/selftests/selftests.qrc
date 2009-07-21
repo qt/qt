@@ -14,6 +14,7 @@
         <file>expected_fetchbogus.txt</file>
         <file>expected_crashes_1.txt</file>
         <file>expected_crashes_2.txt</file>
+        <file>expected_crashes_3.txt</file>
         <file>expected_multiexec.txt</file>
         <file>expected_failinit.txt</file>
         <file>expected_failinitdata.txt</file>
@@ -25,7 +26,7 @@
         <file>expected_fatal.txt</file>
         <file>expected_waitwithoutgui.txt</file>
         <file>expected_differentexec.txt</file>
-        <file>expected_exception.txt</file>
+        <file>expected_exceptionthrow.txt</file>
         <file>expected_qexecstringlist.txt</file>
         <file>expected_datatable.txt</file>
         <file>expected_commandlinedata.txt</file>

@@ -293,8 +293,6 @@ int QPixmapConvolutionFilter::columns() const
 
 
 /*!
-    \reimp
-
     \internal
 */
 QRectF QPixmapConvolutionFilter::boundingRectFor(const QRectF &rect) const
@@ -405,8 +403,6 @@ static void convolute(
 }
 
 /*!
-    \reimp
-
     \internal
 */
 void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const QPixmap &src, const QRectF& srcRect) const
@@ -581,8 +577,6 @@ void QPixmapColorizeFilter::setColor(const QColor &color)
 }
 
 /*!
-    \reimp
-
     \internal
 */
 void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
@@ -805,8 +799,6 @@ void QPixmapDropShadowFilter::setOffset(const QPointF &offset)
 */
 
 /*!
-    \reimp
-
     \internal
  */
 QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
@@ -822,8 +814,6 @@ QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 }
 
 /*!
-    \reimp
-
     \internal
  */
 void QPixmapDropShadowFilter::draw(QPainter *p,

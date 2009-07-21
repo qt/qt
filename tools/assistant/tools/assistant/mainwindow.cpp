@@ -93,6 +93,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
 {
+    setToolButtonStyle(Qt::ToolButtonFollowStyle);
+
     if (usesDefaultCollection()) {
         MainWindow::collectionFileDirectory(true);
         m_helpEngine = new QHelpEngine(MainWindow::defaultHelpCollectionFileName(),
@@ -137,7 +139,14 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     if (initHelpDB()) {
         setupFilterToolbar();
         setupAddressToolbar();
+
         m_bookmarkManager->setupBookmarkModels();
+        m_bookmarkMenu->addSeparator();
+        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
+        connect(m_bookmarkMenu, SIGNAL(triggered(QAction*)), this,
+            SLOT(showBookmark(QAction*)));
+        connect(m_bookmarkManager, SIGNAL(bookmarksChanged()), this,
+            SLOT(updateBookmarkMenu()));
 
         setWindowTitle(m_helpEngine->customValue(QLatin1String("WindowTitle"),
             defWindowTitle).toString());
@@ -370,6 +379,29 @@ void MainWindow::checkInitState()
     }
 }
 
+void MainWindow::updateBookmarkMenu()
+{
+    if (m_bookmarkManager) {
+        m_bookmarkMenu->removeAction(m_bookmarkMenuAction);
+        
+        m_bookmarkMenu->clear();
+        
+        m_bookmarkMenu->addAction(m_bookmarkMenuAction);
+        m_bookmarkMenu->addSeparator();
+        
+        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
+    }
+}
+
+void MainWindow::showBookmark(QAction *action)
+{
+    if (m_bookmarkManager) {
+        const QUrl &url = m_bookmarkManager->urlForAction(action);
+        if (url.isValid())
+            m_centralWidget->setSource(url);
+    }
+}
+
 void MainWindow::insertLastPages()
 {
     if (m_cmdLine->url().isValid())
@@ -399,6 +431,7 @@ void MainWindow::setupActions()
         SLOT(printPreview()));
 
     m_printAction = menu->addAction(tr("&Print..."), m_centralWidget, SLOT(print()));
+    m_printAction->setPriority(QAction::LowPriority);
     m_printAction->setIcon(QIcon(resourcePath + QLatin1String("/print.png")));
     m_printAction->setShortcut(QKeySequence::Print);
 
@@ -418,12 +451,15 @@ void MainWindow::setupActions()
     menu = menuBar()->addMenu(tr("&Edit"));
     m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
         SLOT(copySelection()));
+    m_copyAction->setPriority(QAction::LowPriority);
+    m_copyAction->setIconText("&Copy");
     m_copyAction->setIcon(QIcon(resourcePath + QLatin1String("/editcopy.png")));
     m_copyAction->setShortcuts(QKeySequence::Copy);
     m_copyAction->setEnabled(false);
 
     m_findAction = menu->addAction(tr("&Find in Text..."), m_centralWidget,
         SLOT(showTextSearch()));
+    m_findAction->setIconText("&Find");
     m_findAction->setIcon(QIcon(resourcePath + QLatin1String("/find.png")));
     m_findAction->setShortcuts(QKeySequence::Find);
 
@@ -442,16 +478,19 @@ void MainWindow::setupActions()
     m_viewMenu = menuBar()->addMenu(tr("&View"));
     m_zoomInAction = m_viewMenu->addAction(tr("Zoom &in"), m_centralWidget,
         SLOT(zoomIn()));
+    m_zoomInAction->setPriority(QAction::LowPriority);
     m_zoomInAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomin.png")));
     m_zoomInAction->setShortcut(QKeySequence::ZoomIn);
 
     m_zoomOutAction = m_viewMenu->addAction(tr("Zoom &out"), m_centralWidget,
         SLOT(zoomOut()));
+    m_zoomOutAction->setPriority(QAction::LowPriority);
     m_zoomOutAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomout.png")));
     m_zoomOutAction->setShortcut(QKeySequence::ZoomOut);
 
     m_resetZoomAction = m_viewMenu->addAction(tr("Normal &Size"), m_centralWidget,
         SLOT(resetZoom()));
+    m_resetZoomAction->setPriority(QAction::LowPriority);
     m_resetZoomAction->setIcon(QIcon(resourcePath + QLatin1String("/resetzoom.png")));
     m_resetZoomAction->setShortcut(tr("Ctrl+0"));
 
@@ -477,12 +516,14 @@ void MainWindow::setupActions()
     m_backAction->setIcon(QIcon(resourcePath + QLatin1String("/previous.png")));
 
     m_nextAction = menu->addAction(tr("&Forward"), m_centralWidget, SLOT(forward()));
+    m_nextAction->setPriority(QAction::LowPriority);
     m_nextAction->setEnabled(false);
     m_nextAction->setShortcuts(QKeySequence::Forward);
     m_nextAction->setIcon(QIcon(resourcePath + QLatin1String("/next.png")));
 
     m_syncAction = menu->addAction(tr("Sync with Table of Contents"), this,
         SLOT(syncContents()));
+    m_syncAction->setIconText("Sync");
     m_syncAction->setIcon(QIcon(resourcePath + QLatin1String("/synctoc.png")));
 
     menu->addSeparator();
@@ -495,9 +536,10 @@ void MainWindow::setupActions()
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
-    menu = menuBar()->addMenu(tr("&Bookmarks"));
-    tmp = menu->addAction(tr("Add Bookmark..."), this, SLOT(addBookmark()));
-    tmp->setShortcut(tr("CTRL+D"));
+    m_bookmarkMenu = menuBar()->addMenu(tr("&Bookmarks"));
+    m_bookmarkMenuAction = m_bookmarkMenu->addAction(tr("Add Bookmark..."),
+        this, SLOT(addBookmark()));
+    m_bookmarkMenuAction->setShortcut(tr("CTRL+D"));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));

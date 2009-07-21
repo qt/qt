@@ -46,6 +46,7 @@
 ImageWidget::ImageWidget(QWidget *parent)
     : QWidget(parent)
 {
+    setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
@@ -61,9 +62,11 @@ ImageWidget::ImageWidget(QWidget *parent)
     horizontalOffset = 0;
     verticalOffset = 0;
 
-    grabGesture(Qt::DoubleTapGesture);
-    grabGesture(Qt::PanGesture);
-    grabGesture(Qt::TapAndHoldGesture);
+    panGesture = new QPanGesture(this);
+    connect(panGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
+
+    tapAndHoldGesture = new QTapAndHoldGesture(this);
+    connect(tapAndHoldGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)
@@ -131,30 +134,33 @@ void ImageWidget::paintEvent(QPaintEvent*)
     p.restore();
 }
 
-bool ImageWidget::event(QEvent *event)
+void ImageWidget::mousePressEvent(QMouseEvent *event)
 {
-    if (event->type() == QEvent::Gesture) {
-        gestureEvent(static_cast<QGestureEvent*>(event));
-        return true;
-    }
-    return QWidget::event(event);
+    touchFeedback.tapped = true;
+    touchFeedback.position = event->pos();
 }
 
-void ImageWidget::gestureEvent(QGestureEvent *event)
+void ImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+    touchFeedback.doubleTapped = true;
+    const QPoint p = event->pos();
+    touchFeedback.position = p;
+    horizontalOffset = p.x() - currentImage.width()*1.0*p.x()/width();
+    verticalOffset = p.y() - currentImage.height()*1.0*p.y()/height();
+    setZoomedIn(!zoomedIn);
+    zoomed = rotated = false;
+    updateImage();
+
+    feedbackFadeOutTimer.start(500, this);
+}
+
+void ImageWidget::gestureTriggered()
+{
+    touchFeedback.tapped = false;
     touchFeedback.doubleTapped = false;
 
-    Q_ASSERT(event);
-    if (event->contains(Qt::TapGesture)) {
-        //
-    } else if (const QGesture *g = event->gesture(Qt::DoubleTapGesture)) {
-        touchFeedback.doubleTapped = true;
-        horizontalOffset = g->hotSpot().x() - currentImage.width()*1.0*g->hotSpot().x()/width();
-        verticalOffset = g->hotSpot().y() - currentImage.height()*1.0*g->hotSpot().y()/height();
-        setZoomedIn(!zoomedIn);
-        zoomed = rotated = false;
-        updateImage();
-    } else if (const QGesture *g = event->gesture(Qt::PanGesture)) {
+    QGesture *g = qobject_cast<QGesture*>(sender());
+    if (sender() == panGesture) {
         if (zoomedIn) {
             // usual panning
 #ifndef QT_NO_CURSOR
@@ -170,24 +176,22 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
             update();
         } else {
             // only slide gesture should be accepted
-            const QPanningGesture *pg = static_cast<const QPanningGesture*>(g);
-            if (pg->direction() != pg->lastDirection()) {
-                // ###: event->cancel();
-            }
+            const QPanGesture *pg = static_cast<const QPanGesture*>(g);
             if (g->state() == Qt::GestureFinished) {
                 touchFeedback.sliding = false;
                 zoomed = rotated = false;
-                if (pg->direction() == Qt::RightDirection) {
+                if (pg->totalOffset().width() > 0) {
                     qDebug() << "slide right";
                     goNextImage();
-                } else if (pg->direction() == Qt::LeftDirection) {
+                } else {
                     qDebug() << "slide left";
                     goPrevImage();
                 }
                 updateImage();
             }
         }
-    } else if (const QGesture *g = event->gesture(Qt::TapAndHoldGesture)) {
+        feedbackFadeOutTimer.start(500, this);
+    } else if (sender() == tapAndHoldGesture) {
         if (g->state() == Qt::GestureFinished) {
             qDebug() << "tap and hold detected";
             touchFeedback.reset();
@@ -197,13 +201,20 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
             menu.addAction("Action 1");
             menu.addAction("Action 2");
             menu.addAction("Action 3");
-            menu.exec(mapToGlobal(g->hotSpot()));
+            menu.exec(mapToGlobal(g->pos()));
         }
-    } else {
-        qDebug() << "unknown gesture";
+        feedbackFadeOutTimer.start(500, this);
     }
-    feedbackFadeOutTimer.start(500, this);
-    event->accept();
+}
+
+void ImageWidget::gestureFinished()
+{
+    qDebug() << "gesture finished" << sender();
+}
+
+void ImageWidget::gestureCancelled()
+{
+    qDebug() << "gesture cancelled" << sender();
 }
 
 void ImageWidget::resizeEvent(QResizeEvent*)
@@ -345,3 +356,5 @@ void ImageWidget::timerEvent(QTimerEvent *event)
     }
     update();
 }
+
+#include "moc_imagewidget.cpp"

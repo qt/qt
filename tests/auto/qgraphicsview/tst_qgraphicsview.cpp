@@ -63,6 +63,8 @@
 #include <QtGui/QBoxLayout>
 #include <QtGui/QStyle>
 #include <QtGui/QPushButton>
+#include <QtGui/QInputContext>
+#include <private/qgraphicsview_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -175,6 +177,7 @@ private slots:
     void transformationAnchor();
     void resizeAnchor();
     void viewportUpdateMode();
+    void viewportUpdateMode2();
     void acceptDrops();
     void optimizationFlags();
     void optimizationFlags_dontSavePainterState();
@@ -195,6 +198,10 @@ private slots:
     void mouseTracking2();
     void render();
     void exposeRegion();
+    void update_data();
+    void update();
+    void inputMethodSensitivity();
+    void inputContextReset();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -371,6 +378,7 @@ void tst_QGraphicsView::interactive()
     QCOMPARE(item->events.size(), 0);
 
     QPoint itemPoint = view.mapFromScene(item->scenePos());
+
     QVERIFY(view.itemAt(itemPoint));
 
     for (int i = 0; i < 100; ++i) {
@@ -2106,12 +2114,12 @@ void tst_QGraphicsView::resizeAnchor()
             view.setResizeAnchor(QGraphicsView::AnchorViewCenter);
         }
         view.centerOn(0, 0);
-        QTest::qWait(100);
+        QTest::qWait(250);
 
         QPointF f = view.mapToScene(50, 50);
         QPointF center = view.mapToScene(view.viewport()->rect().center());
 
-        QTest::qWait(100);
+        QTest::qWait(250);
 
         for (int size = 200; size <= 400; size += 25) {
             view.resize(size, size);
@@ -2126,7 +2134,7 @@ void tst_QGraphicsView::resizeAnchor()
                 QVERIFY(qAbs(newCenter.x() - center.x()) < slack);
                 QVERIFY(qAbs(newCenter.y() - center.y()) < slack);
             }
-            QTest::qWait(100);
+            QTest::qWait(250);
         }
     }
 }
@@ -2226,6 +2234,52 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // The view should not get any painting calls from the scene updates
     QCOMPARE(view.lastUpdateRegions.size(), 0);
+}
+
+void tst_QGraphicsView::viewportUpdateMode2()
+{
+    // Create a view with viewport rect equal to QRect(0, 0, 200, 200).
+    QGraphicsScene dummyScene;
+    CustomView view;
+    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    view.setScene(&dummyScene);
+    int left, top, right, bottom;
+    view.getContentsMargins(&left, &top, &right, &bottom);
+    view.resize(200 + left + right, 200 + top + bottom);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(300);
+    const QRect viewportRect = view.viewport()->rect();
+    QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
+    QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
+
+    QRect boundingRect;
+    const QRect rect1(0, 0, 10, 10);
+    QVERIFY(viewPrivate->updateRect(rect1));
+    QVERIFY(!viewPrivate->fullUpdatePending);
+    boundingRect |= rect1;
+    QCOMPARE(viewPrivate->dirtyBoundingRect, boundingRect);
+
+    const QRect rect2(50, 50, 10, 10);
+    QVERIFY(viewPrivate->updateRect(rect2));
+    QVERIFY(!viewPrivate->fullUpdatePending);
+    boundingRect |= rect2;
+    QCOMPARE(viewPrivate->dirtyBoundingRect, boundingRect);
+
+    const QRect rect3(190, 190, 10, 10);
+    QVERIFY(viewPrivate->updateRect(rect3));
+    QVERIFY(viewPrivate->fullUpdatePending);
+    boundingRect |= rect3;
+    QCOMPARE(viewPrivate->dirtyBoundingRect, boundingRect);
+
+    view.lastUpdateRegions.clear();
+    viewPrivate->processPendingUpdates();
+    QTest::qWait(50);
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    // Note that we adjust by 2 for antialiasing.
+    QCOMPARE(view.lastUpdateRegions.at(0), QRegion(boundingRect.adjusted(-2, -2, 2, 2) & viewportRect));
 }
 
 void tst_QGraphicsView::acceptDrops()
@@ -2988,14 +3042,7 @@ void tst_QGraphicsView::embeddedViews()
     v2->QWidget::render(&actual);
     QTransform b = item->transform;
 
-#ifdef Q_WS_MAC
-    // We don't use shared painter on the Mac, so the
-    // transform should be exactly the same.
     QVERIFY(a == b);
-#else
-    QVERIFY(a != b);
-#endif
-
     delete v1;
 }
 
@@ -3092,7 +3139,7 @@ void tst_QGraphicsView::moveItemWhileScrolling()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(100);
+    QTest::qWait(200);
 
     view.lastPaintedRegion = QRegion();
     view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
@@ -3264,7 +3311,9 @@ void tst_QGraphicsView::mouseTracking2()
 
     EventSpy spy(&scene, QEvent::GraphicsSceneMouseMove);
     QCOMPARE(spy.count(), 0);
-    sendMouseMove(view.viewport(), view.viewport()->rect().center());
+    QMouseEvent event(QEvent::MouseMove,view.viewport()->rect().center(), Qt::NoButton,
+                      Qt::MouseButtons(Qt::NoButton), 0);
+    QApplication::sendEvent(view.viewport(), &event);
     QCOMPARE(spy.count(), 1);
 }
 
@@ -3289,6 +3338,15 @@ void tst_QGraphicsView::render()
 {
     // ### This test can be much more thorough - see QGraphicsScene::render.
     QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(200, 200);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
     RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
     RenderTester *r3 = new RenderTester(QRectF(0, 50, 50, 50));
@@ -3298,14 +3356,7 @@ void tst_QGraphicsView::render()
     scene.addItem(r3);
     scene.addItem(r4);
 
-    QGraphicsView view(&scene);
-    view.setFrameStyle(0);
-    view.resize(200, 200);
-    view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(200);
+    qApp->processEvents();
 
     QCOMPARE(r1->paints, 1);
     QCOMPARE(r2->paints, 1);
@@ -3355,6 +3406,187 @@ void tst_QGraphicsView::exposeRegion()
 
     // Make sure the item didn't get any repaints.
     QCOMPARE(item->paints, 0);
+}
+
+void tst_QGraphicsView::update_data()
+{
+    // In view.viewport() coordinates. (viewport rect: QRect(0, 0, 200, 200))
+    QTest::addColumn<QRect>("updateRect");
+    QTest::newRow("empty") << QRect();
+    QTest::newRow("outside left") << QRect(-200, 0, 100, 100);
+    QTest::newRow("outside right") << QRect(400, 0 ,100, 100);
+    QTest::newRow("outside top") << QRect(0, -200, 100, 100);
+    QTest::newRow("outside bottom") << QRect(0, 400, 100, 100);
+    QTest::newRow("partially inside left") << QRect(-50, 0, 100, 100);
+    QTest::newRow("partially inside right") << QRect(-150, 0, 100, 100);
+    QTest::newRow("partially inside top") << QRect(0, -150, 100, 100);
+    QTest::newRow("partially inside bottom") << QRect(0, 150, 100, 100);
+    QTest::newRow("on topLeft edge") << QRect(-100, -100, 100, 100);
+    QTest::newRow("on topRight edge") << QRect(200, -100, 100, 100);
+    QTest::newRow("on bottomRight edge") << QRect(200, 200, 100, 100);
+    QTest::newRow("on bottomLeft edge") << QRect(-200, 200, 100, 100);
+    QTest::newRow("inside topLeft") << QRect(-99, -99, 100, 100);
+    QTest::newRow("inside topRight") << QRect(199, -99, 100, 100);
+    QTest::newRow("inside bottomRight") << QRect(199, 199, 100, 100);
+    QTest::newRow("inside bottomLeft") << QRect(-199, 199, 100, 100);
+    QTest::newRow("large1") << QRect(50, -100, 100, 400);
+    QTest::newRow("large2") << QRect(-100, 50, 400, 100);
+    QTest::newRow("large3") << QRect(-100, -100, 400, 400);
+    QTest::newRow("viewport rect") << QRect(0, 0, 200, 200);
+}
+
+void tst_QGraphicsView::update()
+{
+    QFETCH(QRect, updateRect);
+
+    // Create a view with viewport rect equal to QRect(0, 0, 200, 200).
+    QGraphicsScene dummyScene;
+    CustomView view;
+    view.setScene(&dummyScene);
+    int left, top, right, bottom;
+    view.getContentsMargins(&left, &top, &right, &bottom);
+    view.resize(200 + left + right, 200 + top + bottom);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(300);
+    const QRect viewportRect = view.viewport()->rect();
+    QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
+
+    const bool intersects = updateRect.intersects(viewportRect);
+    QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
+    QCOMPARE(viewPrivate->updateRect(updateRect), intersects);
+    QCOMPARE(viewPrivate->updateRegion(updateRect), intersects);
+
+    view.lastUpdateRegions.clear();
+    viewPrivate->processPendingUpdates();
+    QVERIFY(viewPrivate->dirtyRegion.isEmpty());
+    QVERIFY(viewPrivate->dirtyBoundingRect.isEmpty());
+    QTest::qWait(50);
+    if (!intersects) {
+        QVERIFY(view.lastUpdateRegions.isEmpty());
+    } else {
+        QCOMPARE(view.lastUpdateRegions.size(), 1);
+        // Note that we adjust by 2 for antialiasing.
+        QCOMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect.adjusted(-2, -2, 2, 2) & viewportRect));
+    }
+    QVERIFY(!viewPrivate->fullUpdatePending);
+}
+
+void tst_QGraphicsView::inputMethodSensitivity()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    QGraphicsRectItem *item = new QGraphicsRectItem;
+
+    view.setAttribute(Qt::WA_InputMethodEnabled, true);
+
+    scene.addItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.removeItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
+    scene.addItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.removeItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.addItem(item);
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.removeItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    item->setFlag(QGraphicsItem::ItemIsFocusable);
+    scene.addItem(item);
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    // introduce another item that is focusable but does not accept input methods
+    QGraphicsRectItem *item2 = new QGraphicsRectItem;
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+    scene.addItem(item2);
+    scene.setFocusItem(item2);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    view.setScene(0);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    view.setScene(&scene);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    scene.setFocusItem(item2);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    view.setScene(0);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    view.setScene(&scene);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+}
+
+class InputContextTester : public QInputContext
+{
+    QString identifierName() { return QString(); }
+    bool isComposing() const { return false; }
+    QString language() { return QString(); }
+    void reset() { ++resets; }
+public:
+    int resets;
+};
+
+void tst_QGraphicsView::inputContextReset()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    InputContextTester inputContext;
+    view.setInputContext(&inputContext);
+
+    QGraphicsItem *item1 = new QGraphicsRectItem;
+    item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
+
+    inputContext.resets = 0;
+    scene.addItem(item1);
+    QCOMPARE(inputContext.resets, 0);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(item1);
+    QCOMPARE(inputContext.resets, 0);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(0);
+    QCOMPARE(inputContext.resets, 1);
+
+    // introduce another item that is focusable but does not accept input methods
+    QGraphicsItem *item2 = new QGraphicsRectItem;
+    item1->setFlags(QGraphicsItem::ItemIsFocusable);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(item2);
+    QCOMPARE(inputContext.resets, 0);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(item1);
+    QCOMPARE(inputContext.resets, 0);
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()

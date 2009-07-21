@@ -43,7 +43,7 @@ static const HashTableValue JSSVGAnimatedAngleTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedAngleTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedAngleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedAngleTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSSVGAnimatedAnglePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedAnglePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedAnglePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedAnglePrototypeTableValues, 0 };
 #else

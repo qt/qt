@@ -149,13 +149,27 @@ QWebSecurityOrigin QWebDatabase::origin() const
 }
 
 /*!
-    Removes the database, \a db, from its security origin. All data stored in this database
+    Removes the database \a db from its security origin. All data stored in this database
     will be destroyed.
 */
 void QWebDatabase::removeDatabase(const QWebDatabase &db)
 {
 #if ENABLE(DATABASE)
     DatabaseTracker::tracker().deleteDatabase(db.d->origin.get(), db.d->name);
+#endif
+}
+
+/*!
+  \since 4.6
+
+  Deletes all web databases in the configured offline storage path.
+
+  \sa QWebSettings::setOfflineStoragePath()
+*/
+void QWebDatabase::removeAllDatabases()
+{
+#if ENABLE(DATABASE)
+    DatabaseTracker::tracker().deleteAllDatabases();
 #endif
 }
 

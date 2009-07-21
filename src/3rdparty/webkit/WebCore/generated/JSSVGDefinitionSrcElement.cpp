@@ -40,7 +40,7 @@ static const HashTableValue JSSVGDefinitionSrcElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGDefinitionSrcElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGDefinitionSrcElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGDefinitionSrcElementPrototypeTableValues, 0 };
 #else

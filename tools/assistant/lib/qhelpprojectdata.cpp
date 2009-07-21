@@ -41,6 +41,7 @@
 
 #include "qhelpprojectdata_p.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QStack>
 #include <QtCore/QMap>
@@ -73,6 +74,7 @@ private:
     void readKeywords();
     void readFiles();
     void raiseUnknownTokenError();
+    void addMatchingFiles(const QString &pattern);
 };
 
 void QHelpProjectDataPrivate::raiseUnknownTokenError()
@@ -161,7 +163,7 @@ void QHelpProjectDataPrivate::readFilterSection()
         readNext();
         if (isStartElement()) {
             if (name() == QLatin1String("filterAttribute"))
-                filterSectionList.last().addFilterAttribute(readElementText());				
+                filterSectionList.last().addFilterAttribute(readElementText());
             else if (name() == QLatin1String("toc"))
                 readTOC();
             else if (name() == QLatin1String("keywords"))
@@ -244,7 +246,7 @@ void QHelpProjectDataPrivate::readFiles()
         readNext();
         if (isStartElement()) {
             if (name() == QLatin1String("file"))
-                filterSectionList.last().addFile(readElementText());
+                addMatchingFiles(readElementText());
             else
                 raiseUnknownTokenError();
         } else if (isEndElement()) {
@@ -258,7 +260,21 @@ void QHelpProjectDataPrivate::readFiles()
     }
 }
 
-
+// Expand file pattern and add matches into list. If the pattern does not match
+// any files, insert the pattern itself so the QHelpGenerator will emit a
+// meaningful warning later.
+void QHelpProjectDataPrivate::addMatchingFiles(const QString &pattern)
+{
+    QFileInfo fileInfo(rootPath + '/' + pattern);
+    const QStringList &matches =
+            fileInfo.dir().entryList(QStringList(fileInfo.fileName()));
+    for (QStringList::ConstIterator it = matches.constBegin();
+         it != matches.constEnd();
+         ++it)
+        filterSectionList.last().addFile(QFileInfo(pattern).dir().path() + '/' + *it);
+    if (matches.empty())
+        filterSectionList.last().addFile(pattern);
+}
 
 /*!
     \internal

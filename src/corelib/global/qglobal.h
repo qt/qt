@@ -147,7 +147,7 @@ namespace QT_NAMESPACE {}
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
-     WIN32    - Win32 (Windows 95/98/ME and Windows NT/2000/XP)
+     WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
      WINCE    - WinCE (Windows CE 5.0)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -705,7 +705,7 @@ namespace QT_NAMESPACE {}
 #      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
 #    endif
 #    if __HP_aCC-0 >= 062000
-#      define Q_DECL_EXPORT     __attribute__((visibility("default"))
+#      define Q_DECL_EXPORT     __attribute__((visibility("default")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
@@ -1416,21 +1416,13 @@ inline QT3_SUPPORT bool qSysInfo(int *wordSize, bool *bigEndian)
 
 #if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
 #if defined(QT3_SUPPORT)
-inline QT3_SUPPORT bool qt_winUnicode() { return !(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based); }
+inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
-#ifdef Q_OS_WINCE
-#define QT_WA(uni, ansi) uni
-#define QT_WA_INLINE(uni, ansi) (uni)
-#elif defined(UNICODE)
-#define QT_WA(uni, ansi) if (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based)) { uni } else { ansi }
+#define QT_WA(unicode, ansi) unicode
+#define QT_WA_INLINE(unicode, ansi) (unicode)
 
-#define QT_WA_INLINE(uni, ansi) (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based) ? uni : ansi)
-#else
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) ansi
-#endif
 #endif /* Q_WS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE
@@ -2070,7 +2062,7 @@ public:
 
     inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f; }
+    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == f ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\
@@ -2206,6 +2198,18 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #define QT_TRANSLATE_NOOP_UTF8(scope, x) (x)
 #define QT_TRANSLATE_NOOP3(scope, x, comment) {x, comment}
 #define QT_TRANSLATE_NOOP3_UTF8(scope, x, comment) {x, comment}
+
+#ifndef QT_NO_TRANSLATION // ### This should enclose the NOOPs above
+
+// Defined in qcoreapplication.cpp
+// The better name qTrId() is reserved for an upcoming function which would
+// return a much more powerful QStringFormatter instead of a QString.
+Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
+
+#define QT_TRID_NOOP(id) id
+
+#endif // QT_NO_TRANSLATION
+
 #define QDOC_PROPERTY(text)
 
 /*

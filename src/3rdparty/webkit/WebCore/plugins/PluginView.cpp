@@ -239,8 +239,12 @@ void PluginView::performRequest(PluginRequest* request)
             m_streams.add(stream);
             stream->start();
         } else {
+            // If the target frame is our frame, we could destroy the
+            // PluginView, so we protect it. <rdar://problem/6991251>
+            RefPtr<PluginView> protect(this);
+
             m_parentFrame->loader()->load(request->frameLoadRequest().resourceRequest(), targetFrameName, false);
-      
+
             // FIXME: <rdar://problem/4807469> This should be sent when the document has finished loading
             if (request->sendNotification()) {
                 PluginView::setCurrentPluginView(this);
@@ -481,6 +485,11 @@ PassRefPtr<JSC::Bindings::Instance> PluginView::bindingInstance()
     if (!m_plugin || !m_plugin->pluginFuncs()->getvalue)
         return 0;
 
+    // On Windows, calling Java's NPN_GetValue can allow the message loop to
+    // run, allowing loading to take place or JavaScript to run. Protect the
+    // PluginView from destruction. <rdar://problem/6978804>
+    RefPtr<PluginView> protect(this);
+
     NPError npErr;
     {
         PluginView::setCurrentPluginView(this);
@@ -489,6 +498,13 @@ PassRefPtr<JSC::Bindings::Instance> PluginView::bindingInstance()
         npErr = m_plugin->pluginFuncs()->getvalue(m_instance, NPPVpluginScriptableNPObject, &object);
         setCallingPlugin(false);
         PluginView::setCurrentPluginView(0);
+    }
+
+    if (hasOneRef()) {
+        // The renderer for the PluginView was destroyed during the above call, and
+        // the PluginView will be destroyed when this function returns, so we
+        // return null.
+        return 0;
     }
 
     if (npErr != NPERR_NO_ERROR || !object)
@@ -667,7 +683,7 @@ bool PluginView::isCallingPlugin()
     return s_callingPlugin > 0;
 }
 
-PluginView* PluginView::create(Frame* parentFrame, const IntSize& size, Element* element, const KURL& url, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually)
+PassRefPtr<PluginView> PluginView::create(Frame* parentFrame, const IntSize& size, Element* element, const KURL& url, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually)
 {
     // if we fail to find a plugin for this MIME type, findPlugin will search for
     // a plugin by the file extension and update the MIME type, so pass a mutable String
@@ -680,7 +696,7 @@ PluginView* PluginView::create(Frame* parentFrame, const IntSize& size, Element*
         plugin = PluginDatabase::installedPlugins()->findPlugin(url, mimeTypeCopy);
     }
 
-    return new PluginView(parentFrame, size, plugin, element, url, paramNames, paramValues, mimeTypeCopy, loadManually);
+    return adoptRef(new PluginView(parentFrame, size, plugin, element, url, paramNames, paramValues, mimeTypeCopy, loadManually));
 }
 
 void PluginView::freeStringArray(char** stringArray, int length)

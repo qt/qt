@@ -661,10 +661,14 @@ void QWSDisplay::Data::sendSynchronousCommand(QWSCommand & cmd)
 
 int QWSDisplay::Data::takeId()
 {
-    if (unused_identifiers.count() == 10)
+    int unusedIdCount = unused_identifiers.count();
+    if (unusedIdCount == 10)
         create(15);
-    if (unused_identifiers.count() == 0)
+    if (unusedIdCount == 0) {
+        create(1); // Make sure we have an incoming id to wait for, just in case we're recursive
         waitForCreation();
+    }
+
     return unused_identifiers.takeFirst();
 }
 

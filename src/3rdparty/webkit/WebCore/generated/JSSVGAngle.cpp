@@ -49,7 +49,7 @@ static const HashTableValue JSSVGAngleTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAngleTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAngleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGAngleTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGAngleConstructorTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAngleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAngleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGAngleConstructorTableValues, 0 };
 #else
@@ -113,7 +113,7 @@ static const HashTableValue JSSVGAnglePrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnglePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnglePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGAnglePrototypeTableValues, 0 };
 #else

@@ -215,8 +215,6 @@ private:
     Q_DECLARE_PRIVATE(QTabBar)
     Q_PRIVATE_SLOT(d_func(), void _q_scrollTabs())
     Q_PRIVATE_SLOT(d_func(), void _q_closeTab())
-    Q_PRIVATE_SLOT(d_func(), void _q_moveTab(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_moveTabFinished())
 };
 
 #endif // QT_NO_TABBAR

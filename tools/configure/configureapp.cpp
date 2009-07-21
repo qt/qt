@@ -116,16 +116,9 @@ Configure::Configure( int& argc, char** argv )
 
 
     // Get the path to the executable
-    QFileInfo sourcePathInfo;
-    QT_WA({
-        unsigned short module_name[256];
-        GetModuleFileNameW(0, reinterpret_cast<wchar_t *>(module_name), sizeof(module_name));
-        sourcePathInfo = QString::fromUtf16(module_name);
-    }, {
-        char module_name[256];
-        GetModuleFileNameA(0, module_name, sizeof(module_name));
-        sourcePathInfo = QString::fromLocal8Bit(module_name);
-    });
+    wchar_t module_name[MAX_PATH];
+    GetModuleFileName(0, module_name, sizeof(module_name) / sizeof(wchar_t));
+    QFileInfo sourcePathInfo = QString::fromWCharArray(module_name);
     sourcePath = sourcePathInfo.absolutePath();
     sourceDir = sourcePathInfo.dir();
     buildPath = QDir::currentPath();
@@ -604,10 +597,13 @@ void Configure::parseCmdLine()
         // cetest ---------------------------------------------------
         else if (configCmdLine.at(i) == "-no-cetest") {
             dictionary[ "CETEST" ] = "no";
+            dictionary[ "CETEST_REQUESTED" ] = "no";
         } else if (configCmdLine.at(i) == "-cetest") {
             // although specified to use it, we stay at "auto" state
             // this is because checkAvailability() adds variables
-            // we need for crosscompilation
+            // we need for crosscompilation; but remember if we asked
+            // for it.
+            dictionary[ "CETEST_REQUESTED" ] = "yes";
         }
         // Qt/CE - signing tool -------------------------------------
         else if( configCmdLine.at(i) == "-signature") {
@@ -891,6 +887,11 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
+        } else if( configCmdLine.at(i) == "-qtlibinfix" ) {
+            ++i;
+            if(i==argCount)
+                break;
+            dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
         } else if( configCmdLine.at(i) == "-D" ) {
             ++i;
             if (i==argCount)
@@ -1133,6 +1134,10 @@ void Configure::parseCmdLine()
     }
 
     useUnixSeparators = (dictionary["QMAKESPEC"] == "win32-g++");
+
+    // Allow tests for private classes to be compiled against internal builds
+    if (dictionary["BUILDDEV"] == "yes")
+        qtConfig += "private_tests";
 
 
 #if !defined(EVAL)
@@ -1418,8 +1423,8 @@ bool Configure::displayHelp()
                     "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
-                    "[-qtnamespace <namespace>] [-no-phonon] [-phonon]\n"
-                    "[-no-phonon-backend] [-phonon-backend]\n"
+                    "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
+                    "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-webkit] [-webkit]\n"
                     "[-no-scripttools] [-scripttools]\n"
                     "[-graphicssystem raster|opengl]\n\n", 0, 7);
@@ -1510,7 +1515,8 @@ bool Configure::displayHelp()
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
 
 #if !defined(EVAL)
-        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}\n");
+        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
+        desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>\n");
         desc(                   "-D <define>",          "Add an explicit define to the preprocessor.");
         desc(                   "-I <includepath>",     "Add an explicit include path.");
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
@@ -1519,7 +1525,7 @@ bool Configure::displayHelp()
         desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
                                 "Available values for <sys>:");
         desc("GRAPHICS_SYSTEM", "raster", "", "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL accelleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL acceleration, experimental!", ' ');
 
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
@@ -1650,39 +1656,49 @@ bool Configure::displayHelp()
     return false;
 }
 
-bool Configure::findFileInPaths(const QString &fileName, const QStringList &paths)
+QString Configure::findFileInPaths(const QString &fileName, const QString &paths)
 {
-    QDir d;
-    for( QStringList::ConstIterator it = paths.begin(); it != paths.end(); ++it ) {
-        // Remove any leading or trailing ", this is commonly used in the environment
-        // variables
-        QString path = (*it);
-        if ( path.startsWith( "\"" ) )
-            path = path.right( path.length() - 1 );
-        if ( path.endsWith( "\"" ) )
-            path = path.left( path.length() - 1 );
-        if( d.exists( path + QDir::separator() + fileName ) )
-            return true;
-    }
-    return false;
-}
-
-bool Configure::findFile( const QString &fileName )
-{
-    QString file = fileName.toLower();
-    QStringList paths;
 #if defined(Q_OS_WIN32)
     QRegExp splitReg("[;,]");
 #else
     QRegExp splitReg("[:]");
 #endif
-    if (file.endsWith(".h"))
-        paths = QString::fromLocal8Bit(getenv("INCLUDE")).split(splitReg, QString::SkipEmptyParts);
-    else if ( file.endsWith( ".lib" ) )
-        paths = QString::fromLocal8Bit(getenv("LIB")).split(splitReg, QString::SkipEmptyParts);
-    else
-        paths = QString::fromLocal8Bit(getenv("PATH")).split(splitReg, QString::SkipEmptyParts);
-    return findFileInPaths(file, paths);
+    QStringList pathList = paths.split(splitReg, QString::SkipEmptyParts);
+    QDir d;
+    for( QStringList::ConstIterator it = pathList.begin(); it != pathList.end(); ++it ) {
+        // Remove any leading or trailing ", this is commonly used in the environment
+        // variables
+        QString path = (*it);
+        if ( path.startsWith( '\"' ) )
+            path = path.right( path.length() - 1 );
+        if ( path.endsWith( '\"' ) )
+            path = path.left( path.length() - 1 );
+        if( d.exists( path + QDir::separator() + fileName ) )
+            return path;
+    }
+    return QString();
+}
+
+bool Configure::findFile( const QString &fileName )
+{
+    const QString file = fileName.toLower();
+    const QString pathEnvVar = QString::fromLocal8Bit(getenv("PATH"));
+    const QString mingwPath = dictionary["QMAKESPEC"].endsWith("-g++") ?
+        findFileInPaths("mingw32-g++.exe", pathEnvVar) : QString();
+
+    QString paths;
+    if (file.endsWith(".h")) {
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
+		    return true;
+        paths = QString::fromLocal8Bit(getenv("INCLUDE"));
+    } else if ( file.endsWith( ".lib" ) ||  file.endsWith( ".a" ) ) {
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../lib")).isNull())
+		    return true;
+        paths = QString::fromLocal8Bit(getenv("LIB"));
+    } else {
+        paths = pathEnvVar;
+    }
+    return !findFileInPaths(file, paths).isNull();
 }
 
 /*!
@@ -1752,7 +1768,7 @@ bool Configure::checkAvailability(const QString &part)
 {
     bool available = false;
     if (part == "STYLE_WINDOWSXP")
-        available = (dictionary.value("QMAKESPEC") == "win32-g++" || findFile("uxtheme.h"));
+        available = (findFile("uxtheme.h"));
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
@@ -1818,6 +1834,11 @@ bool Configure::checkAvailability(const QString &part)
             dictionary[ "QT_CE_RAPI_INC" ] += QLatin1String("\"") + rapiHeader + QLatin1String("\"");
             dictionary[ "QT_CE_RAPI_LIB" ] += QLatin1String("\"") + rapiLib + QLatin1String("\"");
         }
+        else if (dictionary[ "CETEST_REQUESTED" ] == "yes") {
+            cout << "cetest could not be enabled: rapi.h and rapi.lib could not be found." << endl;
+            cout << "Make sure the environment is set up for compiling with ActiveSync." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
     }
     else if (part == "INCREDIBUILD_XGE")
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
@@ -1829,13 +1850,22 @@ bool Configure::checkAvailability(const QString &part)
                && dictionary.value("QMAKESPEC") != "win32-msvc2002"
                && dictionary.value("EXCEPTIONS") == "yes";
     } else if (part == "PHONON") {
-        available = findFile("vmr9.h") && findFile("dshow.h") && findFile("strmiids.lib") &&
-                        findFile("dmoguids.lib") && findFile("msdmo.lib") && findFile("d3d9.h");
+        available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
+            && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
+            && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
+            && (findFile("msdmo.lib") || findFile("libmsdmo.a"))
+            && findFile("d3d9.h");
 
         if (!available) {
             cout << "All the required DirectShow/Direct3D files couldn't be found." << endl
-                 << "Make sure you have either the platform SDK AND the DirectX SDK or the Windows SDK installed." << endl
-                 << "If you have the DirectX SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
+                 << "Make sure you have either the platform SDK AND the DirectShow SDK or the Windows SDK installed." << endl
+                 << "If you have the DirectShow SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
+            if (!findFile("vmr9.h"))  cout << "vmr9.h not found" << endl;
+            if (!findFile("dshow.h")) cout << "dshow.h not found" << endl;
+            if (!findFile("strmiids.lib")) cout << "strmiids.lib not found" << endl;
+            if (!findFile("dmoguids.lib")) cout << "dmoguids.lib not found" << endl;
+            if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
+            if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
@@ -1990,7 +2020,6 @@ bool Configure::verifyConfiguration()
      no-gif gif
      dll staticlib
 
-     internal
      nocrosscompiler
      GNUmake
      largefile
@@ -2498,7 +2527,10 @@ void Configure::generateCachefile()
             configStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
 
         if(!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            configStream<<"QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"];
+            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
+
+        if (!dictionary["QT_LIBINFIX"].isEmpty())
+            configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
 
         configStream.flush();
         configFile.close();
@@ -2716,7 +2748,7 @@ void Configure::generateConfigfiles()
         tmpFile.flush();
 
         // Replace old qconfig.h with new one
-        ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL);
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
         QFile::remove(outName);
         tmpFile.copy(outName);
         tmpFile.close();
@@ -2752,7 +2784,7 @@ void Configure::generateConfigfiles()
     }
 
     outName = defSpec + "/qmake.conf";
-    ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL );
+    ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL );
     QFile qmakeConfFile(outName);
     if (qmakeConfFile.open(QFile::Append | QFile::WriteOnly | QFile::Text)) {
         QTextStream qmakeConfStream;
@@ -2820,7 +2852,7 @@ void Configure::generateConfigfiles()
         tmpFile2.flush();
 
         // Replace old qconfig.cpp with new one
-        ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL );
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL );
         QFile::remove( outName );
         tmpFile2.copy(outName);
         tmpFile2.close();

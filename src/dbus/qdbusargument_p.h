@@ -130,7 +130,7 @@ public:
     QDBusMarshaller *endCommon();
     void open(QDBusMarshaller &sub, int code, const char *signature);
     void close();
-    void error();
+    void error(const QString &message);
 
     bool appendVariantInternal(const QVariant &arg);
     bool appendRegisteredType(const QVariant &arg);
@@ -140,6 +140,7 @@ public:
     DBusMessageIter iterator;
     QDBusMarshaller *parent;
     QByteArray *ba;
+    QString errorString;
     char closeCode;
     bool ok;
 

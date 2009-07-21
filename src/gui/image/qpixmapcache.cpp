@@ -65,24 +65,22 @@ QT_BEGIN_NAMESPACE
     object for caching the pixmaps.
 
     The cache associates a pixmap with a string as a key or with a QPixmapCache::Key.
-    The QPixmapCache::Key is faster than using strings as key. The string API is
-    very convenient for complex keys but the QPixmapCache::Key API will be very efficient
-    and convenient for a 1 object <-> 1 pixmap mapping (then you can store the key as
-    a member).
-    If two pixmaps are inserted into the cache using equal keys, then the
-    last pixmap will hide the first pixmap. The QHash and QCache classes do
-    exactly the same.
+    Using QPixmapCache::Key for keys is faster than using strings. The string API is
+    very convenient for complex keys but the QPixmapCache::Key API will be very
+    efficient and convenient for a one-to-one object-to-pixmap mapping \mdash in
+    this case, you can store the keys as members of an object.
+
+    If two pixmaps are inserted into the cache using equal keys then the
+    last pixmap will replace the first pixmap in the cache. This follows the
+    behavior of the QHash and QCache classes.
 
     The cache becomes full when the total size of all pixmaps in the
     cache exceeds cacheLimit(). The initial cache limit is
-    2048 KB(2 MB) for Embedded, 10240 KB (10
-    MB) for Desktops; it is changed with setCacheLimit().
-    A pixmap takes roughly (\e{width} * \e{height} * \e{depth})/8 bytes of memory.
-
-    The \e{Qt Quarterly} article
-    \l{http://doc.trolltech.com/qq/qq12-qpixmapcache.html}{Optimizing
-    with QPixmapCache} explains how to use QPixmapCache to speed up
-    applications by caching the results of painting.
+    2048 KB (2 MB) on embedded platforms, 10240 KB (10 MB) on desktop
+    platforms; you can change this by calling setCacheLimit() with the
+    required value.
+    A pixmap takes roughly (\e{width} * \e{height} * \e{depth})/8 bytes of
+    memory.
 
     \sa QCache, QPixmap
 */
@@ -112,7 +110,7 @@ QPixmapCache::Key::Key(const Key &other)
 }
 
 /*!
-    Destructor; called immediately before the object is deleted.
+    Destroys the key.
 */
 QPixmapCache::Key::~Key()
 {
@@ -123,7 +121,8 @@ QPixmapCache::Key::~Key()
 /*!
     \internal
 
-    Returns true if this key is the same as the given \a key.
+    Returns true if this key is the same as the given \a key; otherwise returns
+    false.
 */
 bool QPixmapCache::Key::operator ==(const Key &key) const
 {
@@ -407,7 +406,7 @@ QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
 Q_GLOBAL_STATIC(QPMCache, pm_cache)
 
 /*!
-  \obsolete
+    \obsolete
     \overload
 
     Returns the pixmap associated with the \a key in the cache, or
@@ -440,7 +439,7 @@ bool QPixmapCache::find(const QString &key, QPixmap& pixmap)
 }
 
 /*!
-    Looks for a cached pixmap associated with the \a key in the cache.
+    Looks for a cached pixmap associated with the given \a key in the cache.
     If the pixmap is found, the function sets \a pixmap to that pixmap and
     returns true; otherwise it leaves \a pixmap alone and returns false.
 
@@ -459,10 +458,10 @@ bool QPixmapCache::find(const QString &key, QPixmap* pixmap)
 }
 
 /*!
-    Looks for a cached pixmap associated with the \a key in the cache.
+    Looks for a cached pixmap associated with the given \a key in the cache.
     If the pixmap is found, the function sets \a pixmap to that pixmap and
     returns true; otherwise it leaves \a pixmap alone and returns false. If
-    the pixmap is not found, it means that the \a key is not valid anymore,
+    the pixmap is not found, it means that the \a key is no longer valid,
     so it will be released for the next insertion.
 
     \since 4.6
@@ -504,8 +503,8 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
 }
 
 /*!
-    Inserts a copy of the pixmap \a pixmap into
-    the cache and return you the key.
+    Inserts a copy of the given \a pixmap into the cache and returns a key
+    that can be used to retrieve it.
 
     When a pixmap is inserted and the cache is about to exceed its
     limit, it removes pixmaps until there is enough room for the
@@ -524,9 +523,9 @@ QPixmapCache::Key QPixmapCache::insert(const QPixmap &pixmap)
 }
 
 /*!
-    Replace the pixmap associated to the \a key into
-    the cache. It return true if the pixmap \a pixmap has been correctly
-    inserted into the cache false otherwise.
+    Replaces the pixmap associated with the given \a key with the \a pixmap
+    specified. Returns true if the \a pixmap has been correctly inserted into
+    the cache; otherwise returns false.
 
     \sa setCacheLimit(), insert()
 
@@ -543,8 +542,8 @@ bool QPixmapCache::replace(const Key &key, const QPixmap &pixmap)
 /*!
     Returns the cache limit (in kilobytes).
 
-    The default cache limit is 2048 KB for Embedded, 10240 KB for
-    Desktops.
+    The default cache limit is 2048 KB on embedded platforms, 10240 KB on
+    desktop platforms.
 
     \sa setCacheLimit()
 */
@@ -557,8 +556,8 @@ int QPixmapCache::cacheLimit()
 /*!
     Sets the cache limit to \a n kilobytes.
 
-    The default setting is 2048 KB for Embedded, 10240 KB for
-    Desktops.
+    The default setting is 2048 KB on embedded platforms, 10240 KB on
+    desktop platforms.
 
     \sa cacheLimit()
 */
@@ -578,7 +577,7 @@ void QPixmapCache::remove(const QString &key)
 }
 
 /*!
-  Removes the pixmap associated with \a key from the cache and release
+  Removes the pixmap associated with \a key from the cache and releases
   the key for a future insertion.
 
   \since 4.6

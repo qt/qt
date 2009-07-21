@@ -48,7 +48,7 @@ static const HashTableValue JSSVGTextPathElementTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextPathElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextPathElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGTextPathElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGTextPathElementConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextPathElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextPathElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGTextPathElementConstructorTableValues, 0 };
 #else
@@ -112,7 +112,7 @@ static const HashTableValue JSSVGTextPathElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextPathElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextPathElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGTextPathElementPrototypeTableValues, 0 };
 #else

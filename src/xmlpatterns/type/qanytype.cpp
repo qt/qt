@@ -69,7 +69,7 @@ QXmlName AnyType::name(const NamePool::Ptr &np) const
     return np->allocateQName(StandardNamespaces::xs, QLatin1String("anyType"));
 }
 
-QString AnyType::displayName(const NamePool::Ptr &) const
+QString AnyType::displayName(const NamePool::Ptr &np) const
 {
     /* A bit faster than calling name()->displayName() */
     return QLatin1String("xs:anyType");
@@ -85,9 +85,19 @@ SchemaType::TypeCategory AnyType::category() const
     return None;
 }
 
+bool AnyType::isComplexType() const
+{
+    return true;
+}
+
 SchemaType::DerivationMethod AnyType::derivationMethod() const
 {
     return NoDerivation;
+}
+
+SchemaType::DerivationConstraints AnyType::derivationConstraints() const
+{
+    return SchemaType::DerivationConstraints();
 }
 
 QT_END_NAMESPACE

@@ -106,18 +106,16 @@ void QDirectFBWindowSurface::createWindow()
         qFatal("QDirectFBWindowSurface: Unable to get primary display layer!");
 
     DFBWindowDescription description;
-    description.caps = DFBWindowCapabilities(DWCAPS_NODECORATION);
-    description.flags = DFBWindowDescriptionFlags(DWDESC_CAPS
-                                                  |DWDESC_SURFACE_CAPS
-                                                  |DWDESC_PIXELFORMAT);
+    description.caps = DWCAPS_NODECORATION;
+    description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT;
 
     description.surface_caps = DSCAPS_NONE;
     if (screen->directFBFlags() & QDirectFBScreen::VideoOnly)
-        description.surface_caps = DFBSurfaceCapabilities(description.surface_caps|DSCAPS_VIDEOONLY);
+        description.surface_caps |= DSCAPS_VIDEOONLY;
     const QImage::Format format = screen->pixelFormat();
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
     if (QDirectFBScreen::isPremultiplied(format))
-        description.surface_caps = DFBSurfaceCapabilities(DSCAPS_PREMULTIPLIED|description.caps);
+        description.surface_caps = DSCAPS_PREMULTIPLIED;
 
     DFBResult result = layer->CreateWindow(layer, &description, &dfbWindow);
     if (result != DFB_OK)
@@ -252,7 +250,6 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 
 static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
 {
-    surface->SetBlittingFlags(surface, DSBLIT_NOFX);
     const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
     surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
 }
@@ -365,12 +362,13 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
         if (winOpacity != opacity)
             dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
+#endif
     if (!(flipFlags & DSFLIP_BLIT)) {
         dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
         if (!boundingRectFlip && region.numRects() > 1) {
             const QVector<QRect> rects = region.rects();
-            const DFBSurfaceFlipFlags nonWaitFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
+            const DFBSurfaceFlipFlags nonWaitFlags = flipFlags & ~DSFLIP_WAIT;
             for (int i=0; i<rects.size(); ++i) {
                 const QRect &r = rects.at(i);
                 const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
@@ -386,7 +384,6 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
             dfbSurface->Flip(dfbSurface, &dfbReg, flipFlags);
         }
     }
-#endif
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };
     ++frames;

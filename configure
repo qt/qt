@@ -570,6 +570,7 @@ CFG_DEBUG_RELEASE=no
 CFG_SHARED=yes
 CFG_SM=auto
 CFG_XSHAPE=auto
+CFG_XSYNC=auto
 CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
@@ -838,7 +839,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1440,6 +1441,13 @@ while [ "$#" -gt 0 ]; do
     xshape)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XSHAPE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xsync)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XSYNC="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3517,6 +3525,10 @@ Qt/X11 only:
  $SHY  -xshape ............ Compile XShape support.
                          Requires X11/extensions/shape.h.
 
+ $SHN  -no-xsync .......... Do not compile XSync support.
+ $SHY  -xsync ............. Compile XSync support.
+                         Requires X11/extensions/sync.h.
+
  $XAN  -no-xinerama ....... Do not compile Xinerama (multihead) support.
  $XAY  -xinerama .......... Compile Xinerama support.
                          Requires X11/extensions/Xinerama.h and libXinerama.
@@ -5064,6 +5076,23 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 	fi
     fi
 
+    # auto-detect XSync support
+    if [ "$CFG_XSYNC" != "no" ]; then
+	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xsync "XSync" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+	    CFG_XSYNC=yes
+	else
+	    if [ "$CFG_XSYNC" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+		echo "XSync support cannot be enabled due to functionality tests!"
+		echo " Turn on verbose messaging (-v) to $0 to see the final report."
+		echo " If you believe this message is in error you may use the continue"
+		echo " switch (-continue) to $0 to continue."
+		exit 101
+	    else
+		CFG_XSYNC=no
+	    fi
+	fi
+    fi
+
     # auto-detect Xinerama support
     if [ "$CFG_XINERAMA" != "no" ]; then
 	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinerama "Xinerama" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
@@ -5924,6 +5953,9 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_XSHAPE" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xshape"
     fi
+    if [ "$CFG_XSYNC" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG xsync"
+    fi
     if [ "$CFG_XINERAMA" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xinerama"
 	QMakeVar set QMAKE_LIBS_X11 '-lXinerama $$QMAKE_LIBS_X11'
@@ -6256,7 +6288,6 @@ esac
 #     debug release
 #     dll staticlib
 #
-#     internal
 #     nocrosscompiler
 #     GNUmake
 #     largefile
@@ -6636,6 +6667,7 @@ fi
 [ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
 [ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
 [ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
+[ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
 [ "$CFG_XINPUT" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINPUT QT_NO_TABLET"
 
 [ "$CFG_XCURSOR" = "runtime" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XCURSOR"
@@ -6735,6 +6767,9 @@ else
 fi
 if [ "$PLATFORM_MAC" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG $CFG_MAC_ARCHS"
+fi
+if [ "$CFG_DEV" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG private_tests"
 fi
 
 # Make the application arch follow the Qt arch for single arch builds.
@@ -7094,6 +7129,7 @@ fi
 if [ "$PLATFORM_X11" = "yes" ]; then
     echo "NAS sound support ... $CFG_NAS"
     echo "XShape support ...... $CFG_XSHAPE"
+    echo "XSync support ....... $CFG_XSYNC"
     echo "Xinerama support .... $CFG_XINERAMA"
     echo "Xcursor support ..... $CFG_XCURSOR"
     echo "Xfixes support ...... $CFG_XFIXES"

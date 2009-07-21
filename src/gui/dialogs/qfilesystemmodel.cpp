@@ -49,7 +49,7 @@
 #include <qapplication.h>
 
 #ifdef Q_OS_WIN
-#include <windows.h>
+#include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -296,22 +296,14 @@ static QString qt_GetLongPathName(const QString &strShortPath)
 #else
                 QString longSection = QDir::toNativeSeparators(section);
 #endif
-                QT_WA({
-                    WIN32_FIND_DATAW findData;
-                    h = ::FindFirstFileW((wchar_t *)longSection.utf16(), &findData);
-                    if (h != INVALID_HANDLE_VALUE)
-                        longPath.append(QString::fromUtf16((ushort*)findData.cFileName));
-                    } , {
-                    WIN32_FIND_DATAA findData;
-                    h = ::FindFirstFileA(section.toLocal8Bit(), &findData);
-                    if (h != INVALID_HANDLE_VALUE)
-                        longPath.append(QString::fromLocal8Bit(findData.cFileName));
-                });
-                if (h == INVALID_HANDLE_VALUE) {
+                WIN32_FIND_DATA findData;
+                h = ::FindFirstFile((wchar_t*)longSection.utf16(), &findData);
+                if (h != INVALID_HANDLE_VALUE) {
+                    longPath.append(QString::fromWCharArray(findData.cFileName));
+                    ::FindClose(h);
+                } else {
                     longPath.append(section);
                     break;
-                } else {
-                    ::FindClose(h);
                 }
             }
             if (it != constEnd)

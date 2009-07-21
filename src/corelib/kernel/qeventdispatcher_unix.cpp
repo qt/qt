@@ -49,6 +49,7 @@
 #include "qeventdispatcher_unix_p.h"
 #include <private/qthread_p.h>
 #include <private/qcoreapplication_p.h>
+#include <private/qcore_unix_p.h>
 
 #include <errno.h>
 #include <stdio.h>
@@ -56,6 +57,10 @@
 
 #if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
 #  include <sys/times.h>
+#endif
+
+#ifdef Q_OS_MAC
+#include <mach/mach_time.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -76,6 +81,7 @@ static void signalHandler(int sig)
 }
 
 
+#ifdef Q_OS_INTEGRITY
 static void initThreadPipeFD(int fd)
 {
     int ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
@@ -90,7 +96,7 @@ static void initThreadPipeFD(int fd)
     if (ret == -1)
         perror("QEventDispatcherUNIXPrivate: Unable to set flags on thread pipe");
 }
-
+#endif
 
 QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 {
@@ -102,13 +108,13 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
     // INTEGRITY doesn't like a "select" on pipes, so use socketpair instead
     if (socketpair(AF_INET, SOCK_STREAM, PF_INET, thread_pipe) == -1)
         perror("QEventDispatcherUNIXPrivate(): Unable to create socket pair");
-#else
-    if (pipe(thread_pipe) == -1)
-        perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe");
-#endif
 
     initThreadPipeFD(thread_pipe[0]);
     initThreadPipeFD(thread_pipe[1]);
+#else
+    if (qt_safe_pipe(thread_pipe, O_NONBLOCK) == -1)
+        perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe");
+#endif
 
     sn_highest = -1;
 
@@ -257,7 +263,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 
 QTimerInfoList::QTimerInfoList()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
     useMonotonicTimers = false;
 
 #  if (_POSIX_MONOTONIC_CLOCK == 0)
@@ -285,6 +291,9 @@ QTimerInfoList::QTimerInfoList()
         msPerTick = 0;
     }
 #else
+#  if defined(Q_OS_MAC)
+    useMonotonicTimers = true;
+#  endif
     // using monotonic timers unconditionally
     getTime(currentTime);
 #endif
@@ -333,7 +342,19 @@ bool QTimerInfoList::timeChanged(timeval *delta)
 
 void QTimerInfoList::getTime(timeval &t)
 {
-#if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
+#if defined(Q_OS_MAC)
+    {
+        static mach_timebase_info_data_t info = {0,0};
+        if (info.denom == 0)
+            mach_timebase_info(&info);
+
+        uint64_t cpu_time = mach_absolute_time();
+        uint64_t nsecs = cpu_time * (info.numer / info.denom);
+        t.tv_sec = nsecs * 1e-9;
+        t.tv_usec = nsecs * 1e-3 - (t.tv_sec * 1e6);
+        return;
+    }
+#elif !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
     if (useMonotonicTimers) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);

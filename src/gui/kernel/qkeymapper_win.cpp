@@ -41,7 +41,7 @@
 
 #include "qkeymapper_p.h"
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <qdebug.h>
 #include <private/qevent_p.h>
 #include <private/qlocale_p.h>
@@ -57,9 +57,7 @@ QT_BEGIN_NAMESPACE
 
 // Implemented elsewhere
 extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
-Q_CORE_EXPORT bool winPostMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-Q_CORE_EXPORT bool winPeekMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax,
-                                  UINT wRemoveMsg);
+
 extern Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id);
 #ifndef LANG_PASHTO
 #define LANG_PASHTO 0x63
@@ -467,12 +465,7 @@ static inline int toKeyOrUnicode(int vk, int scancode, unsigned char *kbdBuffer,
     Q_ASSERT(vk > 0 && vk < 256);
     int code = 0;
     QChar unicodeBuffer[5];
-    int res = 0;
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_NT)
-        res = ToAscii(vk, scancode, kbdBuffer, reinterpret_cast<LPWORD>(unicodeBuffer), 0);
-    else
-        res = ToUnicode(vk, scancode, kbdBuffer, reinterpret_cast<LPWSTR>(unicodeBuffer), 5, 0);
-
+    int res = ToUnicode(vk, scancode, kbdBuffer, reinterpret_cast<LPWSTR>(unicodeBuffer), 5, 0);
     if (res)
         code = unicodeBuffer[0].toUpper().unicode();
 
@@ -502,38 +495,6 @@ static inline int asciiToKeycode(char a, int state)
             a += '@';                       // to @..A..Z.._
     }
     return a & 0xff;
-}
-
-static int inputcharset = CP_ACP;
-static inline QChar wmchar_to_unicode(DWORD c)
-{
-    // qt_winMB2QString is the generalization of this function.
-    QT_WA({
-        return QChar((ushort)c);
-    } , {
-        char mb[2];
-        mb[0] = c & 0xff;
-        mb[1] = 0;
-        WCHAR wc[1];
-        MultiByteToWideChar(inputcharset, MB_PRECOMPOSED, mb, -1, wc, 1);
-        return QChar(wc[0]);
-    });
-}
-
-static inline QChar imechar_to_unicode(DWORD c)
-{
-    // qt_winMB2QString is the generalization of this function.
-    QT_WA({
-        return QChar((ushort)c);
-    } , {
-        char mb[3];
-        mb[0] = (c >> 8) & 0xff;
-        mb[1] = c & 0xff;
-        mb[2] = 0;
-        WCHAR wc[1];
-        MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mb, -1, wc, 1);
-        return QChar(wc[0]);
-    });
 }
 
 static inline bool isModifierKey(int code)
@@ -635,43 +596,15 @@ void QKeyMapperPrivate::clearMappings()
 
     /* MAKELCID()'s first argument is a WORD, and GetKeyboardLayout()
      * returns a DWORD. */
-//    LCID newLCID = MAKELCID(DWORD(GetKeyboardLayout(0)), SORT_DEFAULT);
-//    keyboardInputLocale = qt_localeFromLCID(newLCID);
-     LCID newLCID = MAKELCID(
-         reinterpret_cast<long>(GetKeyboardLayout(0)),
-         SORT_DEFAULT
-     );
-     keyboardInputLocale = qt_localeFromLCID(newLCID);
-    bool bidi = false;
-#ifdef UNICODE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_2000) {
-        WCHAR wchLCIDFontSig[16];
-        if (GetLocaleInfoW(newLCID,
-                           LOCALE_FONTSIGNATURE,
-                           &wchLCIDFontSig[0],
-                           (sizeof(wchLCIDFontSig)/sizeof(WCHAR)))
-            && (wchLCIDFontSig[7] & (WCHAR)0x0800))
-        bidi = true;
-    } else
-#endif //UNICODE
-    {
-        if (newLCID == 0x0859 ||  //Sindhi (Arabic script)
-            newLCID == 0x0460)    //Kashmiri (Arabic script)
-            bidi = true;;
 
-        switch (PRIMARYLANGID(newLCID))
-        {
-            case LANG_ARABIC:
-            case LANG_HEBREW:
-            case LANG_URDU:
-            case LANG_FARSI:
-            case LANG_PASHTO:
-            //case LANG_UIGHUR:
-            case LANG_SYRIAC:
-            case LANG_DIVEHI:
-                bidi = true;
-        }
-    }
+    LCID newLCID = MAKELCID((DWORD)GetKeyboardLayout(0), SORT_DEFAULT);
+//    keyboardInputLocale = qt_localeFromLCID(newLCID);
+
+    bool bidi = false;
+    wchar_t LCIDFontSig[16];
+    if (GetLocaleInfo(newLCID, LOCALE_FONTSIGNATURE, LCIDFontSig, sizeof(LCIDFontSig) / sizeof(wchar_t))
+        && (LCIDFontSig[7] & (wchar_t)0x0800))
+        bidi = true;
 
     keyboardInputDirection = bidi ? Qt::RightToLeft : Qt::LeftToRight;
 }
@@ -760,7 +693,7 @@ void QKeyMapperPrivate::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     keyLayout[vk_key]->qtKey[8] = fallbackKey;
 
     // If this vk_key a Dead Key
-    if (MapVirtualKey(vk_key, 2) & 0x80008000) { // (High-order dead key on Win 95 is 0x8000)
+    if (MapVirtualKey(vk_key, 2) & 0x80000000) {
         // Push a Space, then the original key through the low-level ToAscii functions.
         // We do this because these functions (ToAscii / ToUnicode) will alter the internal state of
         // the keyboard driver By doing the following, we set the keyboard driver state back to what
@@ -837,13 +770,13 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
     bool isNumpad = (msg.wParam >= VK_NUMPAD0 && msg.wParam <= VK_NUMPAD9);
     quint32 nModifiers = 0;
 
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_NT || QSysInfo::WindowsVersion & QSysInfo::WV_CE_based) {
+#if defined(QT_OS_WINCE)
         nModifiers |= (GetKeyState(VK_SHIFT  ) < 0 ? ShiftAny : 0);
         nModifiers |= (GetKeyState(VK_CONTROL) < 0 ? ControlAny : 0);
         nModifiers |= (GetKeyState(VK_MENU   ) < 0 ? AltAny : 0);
         nModifiers |= (GetKeyState(VK_LWIN   ) < 0 ? MetaLeft : 0);
         nModifiers |= (GetKeyState(VK_RWIN   ) < 0 ? MetaRight : 0);
-    } else {
+#else
         // Map native modifiers to some bit representation
         nModifiers |= (GetKeyState(VK_LSHIFT  ) & 0x80 ? ShiftLeft : 0);
         nModifiers |= (GetKeyState(VK_RSHIFT  ) & 0x80 ? ShiftRight : 0);
@@ -857,7 +790,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
         nModifiers |= (GetKeyState(VK_CAPITAL ) & 0x01 ? CapsLock : 0);
         nModifiers |= (GetKeyState(VK_NUMLOCK ) & 0x01 ? NumLock : 0);
         nModifiers |= (GetKeyState(VK_SCROLL  ) & 0x01 ? ScrollLock : 0);
-    }
+#endif // QT_OS_WINCE
+
     if (msg.lParam & ExtendedKey)
         nModifiers |= msg.lParam & ExtendedKey;
 
@@ -870,12 +804,12 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
 
     // Now we know enough to either have MapVirtualKey or our own keymap tell us if it's a deadkey
     bool isDeadKey = isADeadKey(msg.wParam, state)
-                     || MapVirtualKey(msg.wParam, 2) & 0x80008000; // High-order on 95 is 0x8000
+                     || MapVirtualKey(msg.wParam, 2) & 0x80000000;
 
     // A multi-character key not found by our look-ahead
     if (msgType == WM_CHAR) {
         QString s;
-        QChar ch = wmchar_to_unicode(msg.wParam);
+        QChar ch = QChar((ushort)msg.wParam);
         if (!ch.isNull())
             s += ch;
 
@@ -886,7 +820,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
     // Input method characters not found by our look-ahead
     else if (msgType == WM_IME_CHAR) {
         QString s;
-        QChar ch = imechar_to_unicode(msg.wParam);
+        QChar ch = QChar((ushort)msg.wParam);
         if (!ch.isNull())
             s += ch;
 
@@ -917,8 +851,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
                     }
                 } else if (msgType == WM_KEYUP) {
                     if (dirStatus == VK_LSHIFT
-                        && (msg.wParam == VK_SHIFT && GetKeyState(VK_LCONTROL)
-                        || msg.wParam == VK_CONTROL && GetKeyState(VK_LSHIFT))) {
+                        && ((msg.wParam == VK_SHIFT && GetKeyState(VK_LCONTROL))
+                        || (msg.wParam == VK_CONTROL && GetKeyState(VK_LSHIFT)))) {
                             k0 = q->sendKeyEvent(widget, grab, QEvent::KeyPress, Qt::Key_Direction_L, 0,
                                                  QString(), false, 0,
                                                  scancode, msg.wParam, nModifiers);
@@ -927,8 +861,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
                                                  scancode, msg.wParam, nModifiers);
                             dirStatus = 0;
                         } else if (dirStatus == VK_RSHIFT
-                                   && (msg.wParam == VK_SHIFT && GetKeyState(VK_RCONTROL)
-                                   || msg.wParam == VK_CONTROL && GetKeyState(VK_RSHIFT))) {
+                                   && ( (msg.wParam == VK_SHIFT && GetKeyState(VK_RCONTROL))
+                                   || (msg.wParam == VK_CONTROL && GetKeyState(VK_RSHIFT)))) {
                                 k0 = q->sendKeyEvent(widget, grab, QEvent::KeyPress, Qt::Key_Direction_R,
                                                      0, QString(), false, 0,
                                                      scancode, msg.wParam, nModifiers);
@@ -1050,11 +984,9 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
                                 : msgType == WM_IME_KEYDOWN ? WM_IME_CHAR : WM_SYSCHAR);
 
             QChar uch;
-            if (winPeekMessage(&wm_char, 0, charType, charType, PM_REMOVE)) {
+            if (PeekMessage(&wm_char, 0, charType, charType, PM_REMOVE)) {
                 // Found a ?_CHAR
-                uch = charType == WM_IME_CHAR
-                                    ? imechar_to_unicode(wm_char.wParam)
-                                    : wmchar_to_unicode(wm_char.wParam);
+                uch = QChar((ushort)wm_char.wParam);
                 if (msgType == WM_SYSKEYDOWN && uch.isLetter() && (msg.lParam & KF_ALTDOWN))
                     uch = uch.toLower(); // (See doc of WM_SYSCHAR) Alt-letter
                 if (!code && !uch.row())
@@ -1067,7 +999,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
             // to find the correct key using the current message parameters & keyboard state.
             if (uch.isNull() && msgType == WM_IME_KEYDOWN) {
                 BYTE keyState[256];
-                WCHAR newKey[3] = {0};
+                wchar_t newKey[3] = {0};
                 GetKeyboardState(keyState);
                 int val = ToUnicode(vk_key, scancode, keyState, newKey, 2,  0);
                 if (val == 1) {
@@ -1085,18 +1017,10 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
                     uch = QChar(QLatin1Char(0x7f)); // Windows doesn't know this one.
                 } else {
                     if (msgType != WM_SYSKEYDOWN || !code) {
-                        UINT map;
-                        QT_WA({
-                            map = MapVirtualKey(msg.wParam, 2);
-                        } , {
-                            map = MapVirtualKeyA(msg.wParam, 2);
-                            // High-order bit is 0x8000 on '95
-                            if (map & 0x8000)
-                                map = (map^0x8000)|0x80000000;
-                        });
+                        UINT map = MapVirtualKey(msg.wParam, 2);
                         // If the high bit of the return value is set, it's a deadkey
                         if (!(map & 0x80000000))
-                            uch = wmchar_to_unicode((DWORD)map);
+                            uch = QChar((ushort)map);
                     }
                 }
                 if (!code && !uch.row())
@@ -1237,6 +1161,8 @@ bool QKeyMapper::sendKeyEvent(QWidget *widget, bool grab,
         if (QApplicationPrivate::instance()->qt_tryAccelEvent(widget, &a))
             return true;
     }
+#else
+    Q_UNUSED(grab);
 #endif
     if (!widget->isEnabled())
         return false;
