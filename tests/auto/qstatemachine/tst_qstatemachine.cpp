@@ -285,8 +285,11 @@ void tst_QStateMachine::transitionFromRootState()
     QStateMachine machine;
     QState *root = machine.rootState();
     QState *s1 = new QState(root);
+    EventTransition *trans = new EventTransition(QEvent::User, s1);
     QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: cannot add transition from root state");
-    root->addTransition(new EventTransition(QEvent::User, s1));
+    root->addTransition(trans);
+    QCOMPARE(trans->sourceState(), (QState*)0);
+    delete trans;
 }
 
 void tst_QStateMachine::transitionEntersParent()
@@ -3113,6 +3116,8 @@ void tst_QStateMachine::specificTargetValueOfAnimation()
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(object->property("foo").toDouble(), 2.0);
     QCOMPARE(anim->endValue().toDouble(), 10.0);
+
+    delete anim;
 }
 
 void tst_QStateMachine::addDefaultAnimation()
@@ -3145,6 +3150,8 @@ void tst_QStateMachine::addDefaultAnimation()
 
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(object->property("foo").toDouble(), 2.0);
+
+    delete object;
 }
 
 void tst_QStateMachine::addDefaultAnimationWithUnusedAnimation()
@@ -3224,6 +3231,9 @@ void tst_QStateMachine::removeDefaultAnimation()
 
     machine.removeDefaultAnimation(anim2);
     QCOMPARE(machine.defaultAnimations().size(), 0);
+
+    delete anim;
+    delete anim2;
 }
 
 void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
@@ -3264,6 +3274,9 @@ void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
 
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(counter.counter, 2); // specific animation started and stopped
+
+    delete defaultAnimation;
+    delete moreSpecificAnimation;
 }
 
 /*
