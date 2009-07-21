@@ -29,9 +29,9 @@ namespace Phonon
         class MediaObject;
 
         /**
-         * @short AudioOutputInterface42 implementation for MMF.
+         * @short AudioOutputInterface implementation for MMF.
          *
-         * Implements the AudioOutputInterface42 for Symbian/S60's MMF
+         * Implements the AudioOutputInterface for Symbian/S60's MMF
          * framework.
          *
          * This class has a very small role, we simply access CDrmPlayerUtility
@@ -47,9 +47,11 @@ namespace Phonon
          * @author Frans Englich<frans.englich@nokia.com>
          */
         class AudioOutput : public QObject
-                          , public AudioOutputInterface42
+                          , public AudioOutputInterface
         {
             Q_OBJECT
+            Q_INTERFACES(Phonon::AudioOutputInterface)
+
         public:
             AudioOutput(Backend *backend, QObject *parent);
             virtual qreal volume() const;

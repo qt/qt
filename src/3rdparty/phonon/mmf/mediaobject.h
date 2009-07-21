@@ -52,6 +52,7 @@ namespace Phonon
         {
             Q_OBJECT
             Q_INTERFACES(Phonon::MediaObjectInterface)
+
         public:
             MediaObject(QObject *parent);
             virtual ~MediaObject();
