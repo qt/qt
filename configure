@@ -3769,7 +3769,7 @@ elif [ "$Edition" = "OpenSource" ]; then
             read acceptance
         fi
         echo
-        if [ "$acceptance" = "yes" ]; then
+        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
             break
         elif [ "$acceptance" = "no" ]; then
             echo "You are not licensed to use this software."
