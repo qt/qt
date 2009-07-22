@@ -388,16 +388,6 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     case DBUS_TYPE_DOUBLE:
         qIterAppend(&iterator, ba, *signature, arg.constData());
         return true;
-
-    case DBUS_TYPE_STRING:
-    case DBUS_TYPE_OBJECT_PATH:
-    case DBUS_TYPE_SIGNATURE: {
-        const QByteArray data =
-            reinterpret_cast<const QString *>(arg.constData())->toUtf8();
-        const char *rawData = data.constData();
-        qIterAppend(&iterator, ba, *signature, &rawData);
-        return true;
-    }
 #else
     case DBUS_TYPE_BYTE:
         append( qvariant_cast<uchar>(arg) );
@@ -426,6 +416,8 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     case DBUS_TYPE_DOUBLE:
         append( arg.toDouble() );
         return true;
+#endif
+
     case DBUS_TYPE_STRING:
         append( arg.toString() );
         return true;
@@ -435,7 +427,6 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     case DBUS_TYPE_SIGNATURE:
         append( qvariant_cast<QDBusSignature>(arg) );
         return true;
-#endif
 
     // compound types:
     case DBUS_TYPE_VARIANT:
