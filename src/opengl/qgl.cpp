@@ -1866,6 +1866,27 @@ QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_prem
     return result;
 }
 
+/*! \internal */
+QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format, bool clean)
+{
+    const qint64 key = image.cacheKey();
+    QGLTexture *texture = textureCacheLookup(key, target);
+    if (texture) {
+        glBindTexture(target, texture->id);
+        return texture;
+    }
+
+    if (!texture)
+        texture = bindTexture(image, target, format, key, clean);
+    // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
+    Q_ASSERT(texture);
+
+    if (texture->id > 0)
+        const_cast<QImage &>(image).data_ptr()->is_cached = true;
+
+    return texture;
+}
+
 QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
                                       const qint64 key, bool clean)
 {
@@ -2011,16 +2032,12 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 
     if (!texture)
         texture = bindTexture(pixmap.toImage(), target, format, key, clean);
-
-    // We should never return 0 as callers shouldn't need to null-check
-    static QGLTexture invalidTexture;
-    if (!texture)
-        texture = &invalidTexture;
+    // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
+    Q_ASSERT(texture);
 
     if (texture->id > 0)
         const_cast<QPixmap &>(pixmap).data_ptr()->is_cached = true;
 
-    Q_ASSERT(texture);
     return texture;
 }
 
@@ -2096,7 +2113,8 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format)
 {
     Q_D(QGLContext);
-    return d->bindTexture(image, GLenum(target), GLint(format), false);
+    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false);
+    return texture->id;
 }
 #endif
 
@@ -2116,7 +2134,8 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format)
 {
     Q_D(QGLContext);
-    return d->bindTexture(pixmap, GLenum(target), GLint(format), false);
+    QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), false, false);
+    return texture->id;
 }
 #endif
 

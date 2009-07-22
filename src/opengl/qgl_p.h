@@ -208,6 +208,7 @@ class QGLContextPrivate
 public:
     explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {groupResources = new QGLContextGroupResources;}
     ~QGLContextPrivate() {if (!groupResources->refs.deref()) delete groupResources;}
+    QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, bool clean);
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, const qint64 key,
                        bool clean = false);
     QGLTexture *bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean, bool canInvert = false);
