@@ -603,12 +603,22 @@ void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
 
     AnchorData *data;
     if (!spacing) {
-        // If we anchor to the layout edges or if we anchor
-        // Right->Right or Left->Left, our default spacing will be 0
-        if (firstItem == q || secondItem == q || firstEdge == secondEdge)
-            data = new AnchorData(0);
-        else
-            data = new AnchorData;  // otherwise, ask the style later
+        // If firstItem or secondItem is the layout itself, the spacing will default to 0.
+        // Otherwise, the following matrix is used (questionmark means that the spacing
+        // is queried from the style):
+        //                from
+        //  to      Left    HCenter Right
+        //  Left    0       0       ?
+        //  HCenter 0       0       0
+        //  Right   ?       0       0
+        if (firstItem != q
+            && secondItem != q
+            && pickEdge(firstEdge, Horizontal) != QGraphicsAnchorLayout::HCenter
+            && oppositeEdge(firstEdge) == secondEdge) {
+            data = new AnchorData;      // ask the style later
+        } else {
+            data = new AnchorData(0);   // spacing should be 0
+        }
         addAnchor(firstItem, firstEdge, secondItem, secondEdge, data);
     } else if (*spacing >= 0) {
         data = new AnchorData(*spacing);
