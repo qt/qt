@@ -76,13 +76,13 @@ class QFxItemPrivate : public QGraphicsItemPrivate
 public:
     QFxItemPrivate()
     : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
-      _baselineOffset(0), _rotation(0.),
+      _baselineOffset(0),
       _classComplete(true), _componentComplete(true), _keepMouse(false), 
       _anchorLines(0),
       _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
       options(QFxItem::NoOption),
       widthValid(false), heightValid(false), width(0), height(0), 
-      paintmargin(0), scale(1)
+      paintmargin(0)
     {}
     ~QFxItemPrivate() 
     { delete _anchors; }
@@ -149,7 +149,6 @@ public:
     QList<QmlComponent*> _qmlnewcomp;
 
     QmlNullableValue<qreal> _baselineOffset;
-    float _rotation;
 
     bool _classComplete:1;
     bool _componentComplete:1;
@@ -189,10 +188,8 @@ public:
     qreal width;
     qreal height;
     qreal paintmargin;
-    qreal scale;
 
-    QPointF transformOrigin() const;
-    QTransform transform;
+    QPointF computeTransformOrigin() const;
 
     void gvRemoveMouseFilter();
     void gvAddMouseFilter();

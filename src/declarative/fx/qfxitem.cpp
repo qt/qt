@@ -308,12 +308,6 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::scaleChanged()
-
-    This signal is emitted when the scale of the item changes.
-*/
-
-/*!
     \fn void QFxItem::stateChanged(const QString &state)
 
     This signal is emitted when the \a state of the item changes.
@@ -1334,29 +1328,6 @@ void QFxItem::setBaselineOffset(qreal offset)
  */
 
 /*!
-  \property QFxItem::rotation
-  This property holds the rotation of the item in degrees.
-
-  This specifies how many degrees to rotate the item around its transformOrigin.
-  The default rotation is 0 degrees (i.e. not rotated at all).
-*/
-qreal QFxItem::rotation() const
-{
-    Q_D(const QFxItem);
-    return d->_rotation;
-}
-
-void QFxItem::setRotation(qreal rotation)
-{
-    Q_D(QFxItem);
-    if (d->_rotation == rotation)
-        return;
-    d->_rotation = rotation;
-    setTransform(d->transform);
-    emit rotationChanged();
-}
-
-/*!
   \qmlproperty real Item::scale
   This property holds the scale of the item.
 
@@ -1390,21 +1361,6 @@ void QFxItem::setRotation(qreal rotation)
   }
   \endqml
   \endtable
-*/
-
-/*!
-  \property QFxItem::scale
-  This property holds the scale of the item.
-
-  A scale of less than 1 means the item will be displayed smaller than
-  normal, and a scale of greater than 1 means the item will be
-  displayed larger than normal.  A negative scale means the item will
-  be mirrored.
-
-  By default, items are displayed at a scale of 1 (i.e. at their
-  normal size).
-
-  Scaling is from the item's transformOrigin.
 */
 
 /*!
@@ -1837,7 +1793,7 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     baseline.anchorLine = QFxAnchorLine::Baseline;
 }
 
-QPointF QFxItemPrivate::transformOrigin() const
+QPointF QFxItemPrivate::computeTransformOrigin() const
 {
     Q_Q(const QFxItem);
 
@@ -1980,14 +1936,14 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
     Q_D(QFxItem);
     if (origin != d->origin) {
         d->origin = origin;
-        update();
+        QPointF to = d->computeTransformOrigin();
+        QGraphicsItem::setTransformOrigin(to.x(), to.y());
     }
 }
 
 QPointF QFxItem::transformOriginPoint() const
 {
-    Q_D(const QFxItem);
-    return d->transformOrigin();
+    return QGraphicsItem::transformOrigin();
 }
 
 qreal QFxItem::width() const
@@ -2080,59 +2036,9 @@ bool QFxItem::heightValid() const
     return d->heightValid;
 }
 
-qreal QFxItem::scale() const
-{
-    Q_D(const QFxItem);
-    return d->scale;
-}
-
-void QFxItem::setScale(qreal s)
-{
-    Q_D(QFxItem);
-    if (d->scale == s)
-        return;
-
-    d->scale = s;
-    setTransform(d->transform);
-
-    emit scaleChanged();
-}
-
 QRect QFxItem::itemBoundingRect()
 {
     return boundingRect().toAlignedRect();
-}
-
-QTransform QFxItem::transform() const
-{
-    Q_D(const QFxItem);
-    return d->transform;
-}
-
-//### optimize (perhaps cache scale and rot transforms, and have dirty flags)
-//### we rely on there not being an "if (d->transform == m) return;" check
-void QFxItem::setTransform(const QTransform &m)
-{
-    Q_D(QFxItem);
-    d->transform = m;
-    QTransform scaleTransform, rotTransform;
-    if (d->scale != 1) {
-        QPointF to = transformOriginPoint();
-        if (to.x() != 0. || to.y() != 0.)
-            scaleTransform.translate(to.x(), to.y());
-        scaleTransform.scale(d->scale, d->scale);
-        if (to.x() != 0. || to.y() != 0.)
-            scaleTransform.translate(-to.x(), -to.y());
-    }
-    if (d->_rotation != 0) {
-        QPointF to = d->transformOrigin();
-        if (to.x() != 0. || to.y() != 0.)
-            rotTransform.translate(to.x(), to.y());
-        rotTransform.rotate(d->_rotation);
-        if (to.x() != 0. || to.y() != 0.)
-            rotTransform.translate(-to.x(), -to.y());
-    }
-    QGraphicsItem::setTransform(scaleTransform * rotTransform * d->transform);
 }
 
 QFxItem *QFxItem::mouseGrabberItem() const

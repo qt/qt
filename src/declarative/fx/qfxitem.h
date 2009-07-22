@@ -142,8 +142,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine baseline READ baseline CONSTANT FINAL)
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
-    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged) // ## remove me
-    Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged) // ### remove me
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
@@ -205,12 +203,6 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
-    qreal rotation() const;
-    void setRotation(qreal);
-
-    qreal scale() const;
-    void setScale(qreal);
-
     QList<QFxTransform *> *transform();
 
     bool isClassComplete() const;
@@ -244,9 +236,6 @@ public:
     void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
-
-    QTransform transform() const; // ### remove me
-    void setTransform(const QTransform &); // ### remove me
 
     QFxItem *mouseGrabberItem() const;
 
