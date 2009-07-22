@@ -40,28 +40,20 @@
 ****************************************************************************/
 
 /*!
-    \page classes.html
-    \title Qt's Classes
+    \page obsoleteclasses.html
+    \group obsolete
+    \title Obsolete Classes
     \ingroup classlists
+    \ingroup groups
 
-    This is a list of all Qt classes. For a shorter list of the most
-    frequently used Qt classes, see \l{Qt's Main Classes}. For a list
-    of the classes provided for compatibility with Qt3, see \l{Qt 3
-    compatibility classes}. For classes that have been deprecated, see
-    the \l{Obsolete Classes} list.
+    \brief Qt classes that are obsolete (deprecated).
 
-    \generatelist classes
+    This is a list of Qt classes that are obsolete (deprecated). These
+    classes are provided to keep old source code working but they are
+    no longer maintained. We strongly advise against using these
+    classes in new code.
 
-    \sa {Qt 3 Compatibility Classes}, {Qt's Modules}, {Obsolete Classes}
-*/
+    \generatelist obsoleteclasses
 
-/*!
-    \page namespaces.html
-    \title Qt's Namespaces
-    \ingroup classlists
-
-    This is a list of the main namespaces in Qt. For a list of classes in
-    Qt, see \l{Qt's Classes}.
-
-    \generatelist{namespaces}
+    \sa {Qt's Classes}, {Qt's Modules}
 */
