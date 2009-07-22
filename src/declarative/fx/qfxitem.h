@@ -230,8 +230,6 @@ public:
     void setTransformOrigin(TransformOrigin);
     QPointF transformOriginPoint() const;
 
-    QRect itemBoundingRect(); // ### remove me
-
     void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);

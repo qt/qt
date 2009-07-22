@@ -2028,11 +2028,6 @@ bool QFxItem::heightValid() const
     return d->heightValid;
 }
 
-QRect QFxItem::itemBoundingRect()
-{
-    return boundingRect().toAlignedRect();
-}
-
 QFxItem *QFxItem::mouseGrabberItem() const
 {
     QGraphicsScene *s = scene();
