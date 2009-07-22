@@ -402,7 +402,7 @@ extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
-               bool _clean = true, bool _yInverted = false)
+               bool _clean = false, bool _yInverted = false)
         : context(ctx), id(tx_id), target(tx_target), clean(_clean), yInverted(_yInverted)
 #if defined(Q_WS_X11)
             , boundPixmap(0)
@@ -413,14 +413,19 @@ public:
         if (clean) {
             QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
             QGLContext *ctx = const_cast<QGLContext *>(context);
-            bool switch_context = current && current != ctx && !qgl_share_reg()->checkSharing(current, ctx);
+            Q_ASSERT(ctx);
+            bool switch_context = current != ctx && !qgl_share_reg()->checkSharing(current, ctx);
             if (switch_context)
                 ctx->makeCurrent();
 #if defined(Q_WS_X11)
+            // Although glXReleaseTexImage is a glX call, it must be called while there
+            // is a current context - the context the pixmap was bound to a texture in.
+            // Otherwise the release doesn't do anything and you get BadDrawable errors
+            // when you come to delete the context.
             deleteBoundPixmap();
 #endif
             glDeleteTextures(1, &id);
-            if (switch_context)
+            if (switch_context && current)
                 current->makeCurrent();
         }
      }

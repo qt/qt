@@ -1630,22 +1630,10 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qi
 void QGLTexture::deleteBoundPixmap()
 {
     if (boundPixmap) {
-        // Although glXReleaseTexImage is a glX call, it must be called while there
-        // is a current context - the context the pixmap was bound to a texture in.
-        // Otherwise the relese doesn't do anything and you get BadDrawable errors
-        // when you come to delete the context.
-
-        QGLContext *oldContext = const_cast<QGLContext*>(QGLContext::currentContext());
-        if (oldContext != context)
-            context->makeCurrent();
         glXReleaseTexImageEXT(QX11Info::display(), boundPixmap, GLX_FRONT_LEFT_EXT);
-        if (oldContext && oldContext != context)
-            oldContext->makeCurrent();
-
         glXDestroyPixmap(QX11Info::display(), boundPixmap);
+        boundPixmap = 0;
     }
-
-    boundPixmap = 0;
 }
 
 
