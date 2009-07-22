@@ -1,5 +1,5 @@
-<!DOCTYPE RCC><RCC version="1.0">
-    <qresource>
+<RCC>
+    <qresource prefix="/" >
         <file>images/16bpp.bmp</file>
         <file>images/4bpp-rle.bmp</file>
         <file>images/YCbCr_cmyk.jpg</file>
@@ -47,5 +47,14 @@
         <file>images/tst7.png</file>
         <file>images/transparent.xpm</file>
         <file>images/trolltech.gif</file>
+        <file>images/qt.gif</file>
+        <file>images/qt1.gif</file>
+        <file>images/qt2.gif</file>
+        <file>images/qt3.gif</file>
+        <file>images/qt4.gif</file>
+        <file>images/qt5.gif</file>
+        <file>images/qt6.gif</file>
+        <file>images/qt7.gif</file>
+        <file>images/qt8.gif</file>
     </qresource>
 </RCC>

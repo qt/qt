@@ -136,6 +136,7 @@ private slots:
 
 #if defined QTEST_HAVE_GIF
     void gifHandlerBugs();
+    void animatedGif();
 #endif
 
     void readCorruptImage_data();
@@ -669,6 +670,18 @@ void tst_QImageReader::gifHandlerBugs()
         QImage im1 = io1.read(); QImage im2 = io2.read();
         QVERIFY(!im1.isNull());  QVERIFY(!im2.isNull());
         QCOMPARE(im1.convertToFormat(QImage::Format_ARGB32), im2.convertToFormat(QImage::Format_ARGB32));
+    }
+}
+
+void tst_QImageReader::animatedGif()
+{
+    QImageReader io(prefix + "qt.gif");
+    QImage image= io.read();
+    int i=0;
+    while(!image.isNull()){
+        QString frameName = QString(prefix + "qt%1.gif").arg(++i);
+        QCOMPARE(image, QImage(frameName));
+        image=io.read();
     }
 }
 #endif
