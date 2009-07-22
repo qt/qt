@@ -175,7 +175,8 @@ public:
     virtual ~QFxItem();
 
     QFxItem *parentItem() const;
-    void setParentItem(QFxItem *parent); // ## setParentItem
+    void setParentItem(QFxItem *parent);
+    void setParent(QFxItem *parent) { setParentItem(parent); }
 
     QmlList<QObject *> *data();
     QmlList<QFxItem *> *children();
