@@ -2155,6 +2155,8 @@ QSignalEvent::~QSignalEvent()
 
   Constructs a new QWrappedEvent object with the given \a object
   and \a event.
+
+  The QWrappedEvent object takes ownership of \a event.
 */
 QWrappedEvent::QWrappedEvent(QObject *object, QEvent *event)
     : QEvent(QEvent::Wrapped), m_object(object), m_event(event)
@@ -2166,6 +2168,7 @@ QWrappedEvent::QWrappedEvent(QObject *object, QEvent *event)
 */
 QWrappedEvent::~QWrappedEvent()
 {
+    delete m_event;
 }
 
 /*!

@@ -1926,21 +1926,42 @@ QPainterPath QGraphicsScene::selectionArea() const
 }
 
 /*!
+    \since 4.6
+
     Sets the selection area to \a path. All items within this area are
     immediately selected, and all items outside are unselected. You can get
     the list of all selected items by calling selectedItems().
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     For an item to be selected, it must be marked as \e selectable
     (QGraphicsItem::ItemIsSelectable).
 
     \sa clearSelection(), selectionArea()
 */
-void QGraphicsScene::setSelectionArea(const QPainterPath &path)
+void QGraphicsScene::setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform)
 {
-    setSelectionArea(path, Qt::IntersectsItemShape);
+    setSelectionArea(path, Qt::IntersectsItemShape, deviceTransform);
 }
 
 /*!
+    \obsolete
+    \overload
+
+    Sets the selection area to \a path.
+
+    This function is deprecated and leads to incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
+*/
+void QGraphicsScene::setSelectionArea(const QPainterPath &path)
+{
+    setSelectionArea(path, Qt::IntersectsItemShape, QTransform());
+}
+
+/*!
+    \obsolete
     \overload
     \since 4.3
 
@@ -2673,15 +2694,17 @@ void QGraphicsScene::clearFocus()
 
 /*!
     \property QGraphicsScene::stickyFocus
-    \brief whether or not clicking the scene will clear focus
+    \brief whether clicking into the scene background will clear focus
 
     \since 4.6
 
-    If this property is false (the default), then clicking on the scene
-    background or on an item that does not accept focus, will clear
-    focus. Otherwise, focus will remain unchanged.
+    In a QGraphicsScene with stickyFocus set to true, focus will remain
+    unchanged when the user clicks into the scene background or on an item
+    that does not accept focus. Otherwise, focus will be cleared.
 
-    The focus change happens in response to a mouse press. You can reimplement
+    By default, this property is false.
+
+    Focus changes in response to a mouse press. You can reimplement
     mousePressEvent() in a subclass of QGraphicsScene to toggle this property
     based on where the user has clicked.
 

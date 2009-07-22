@@ -196,12 +196,19 @@ public:
 #endif
 };
 
+struct QGLContextGroupResources
+{
+    QGLContextGroupResources() : refs(1) { }
+    QGLExtensionFuncs extensionFuncs;
+    QAtomicInt refs;
+};
+
 class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {}
-    ~QGLContextPrivate() {}
+    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {groupResources = new QGLContextGroupResources;}
+    ~QGLContextPrivate() {if (!groupResources->refs.deref()) delete groupResources;}
     GLuint bindTexture(const QImage &image, GLenum target, GLint format, const qint64 key,
                        bool clean = false);
     GLuint bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean);
@@ -257,14 +264,14 @@ public:
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
 
-    QGLExtensionFuncs extensionFuncs;
+    QGLContextGroupResources *groupResources;
     GLint max_texture_size;
 
     GLuint current_fbo;
     QPaintEngine *active_engine;
 
 #ifdef Q_WS_WIN
-    static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->extensionFuncs; }
+    static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->groupResources->extensionFuncs; }
 #endif
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
@@ -371,62 +378,21 @@ struct QGLThreadContext {
 };
 extern QThreadStorage<QGLThreadContext *> qgl_context_storage;
 
-typedef QMultiHash<const QGLContext *, const QGLContext *> QGLSharingHash;
 class QGLShareRegister
 {
 public:
     QGLShareRegister() {}
     ~QGLShareRegister() { reg.clear(); }
 
-    bool checkSharing(const QGLContext *context1, const QGLContext *context2, const QGLContext * skip=0) {
-        if (context1 == context2)
-            return true;
-        QList<const QGLContext *> shares = reg.values(context1);
-        for (int k=0; k<shares.size(); ++k) {
-            const QGLContext *ctx = shares.at(k);
-            if (ctx == skip) // avoid an indirect circular loop (infinite recursion)
-                continue;
-            if (ctx == context2)
-                return true;
-            if (checkSharing(ctx, context2, context1))
-                return true;
-        }
-        return false;
-    }
-
-    void addShare(const QGLContext *context, const QGLContext *share) {
-        reg.insert(context, share); // context sharing works both ways
-        reg.insert(share, context);
-    }
-
-    void removeShare(const QGLContext *context) {
-        QGLSharingHash::iterator it = reg.begin();
-        while (it != reg.end()) {
-            if (it.key() == context || it.value() == context)
-                it = reg.erase(it);
-            else
-                ++it;
-        }
-    }
-
-    void replaceShare(const QGLContext *oldContext, const QGLContext *newContext) {
-        QGLSharingHash::iterator it = reg.begin();
-        while (it != reg.end()) {
-            if (it.key() == oldContext)
-                reg.insert(newContext, it.value());
-            else if (it.value() == oldContext)
-                reg.insert(it.key(), newContext);
-            ++it;
-        }
-        removeShare(oldContext);
-    }
-
-    QList<const QGLContext *> shares(const QGLContext *context) {
-        return reg.values(context);
-    }
-
+    bool checkSharing(const QGLContext *context1, const QGLContext *context2);
+    void addShare(const QGLContext *context, const QGLContext *share);
+    QList<const QGLContext *> shares(const QGLContext *context);
+    void removeShare(const QGLContext *context);
 private:
-    QGLSharingHash reg;
+    // Use a context's 'groupResources' pointer to uniquely identify a group.
+    typedef QList<const QGLContext *> ContextList;
+    typedef QHash<const QGLContextGroupResources *, ContextList> SharingHash;
+    SharingHash reg;
 };
 
 extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
@@ -463,6 +429,29 @@ inline GLenum qt_gl_preferredTextureTarget()
            : GL_TEXTURE_2D;
 #endif
 }
+
+// One resource per group of shared contexts.
+class QGLContextResource : public QObject
+{
+    Q_OBJECT
+public:
+    typedef void (*FreeFunc)(void *);
+    QGLContextResource(FreeFunc f, QObject *parent = 0);
+    ~QGLContextResource();
+    // Set resource 'value' for 'key' and all its shared contexts.
+    void insert(const QGLContext *key, void *value);
+    // Return resource for 'key' or a shared context.
+    void *value(const QGLContext *key);
+    // Free resource for 'key' and all its shared contexts.
+    void remove(const QGLContext *key);
+private slots:
+    // Remove entry 'key' from cache and delete resource if there are no shared contexts.
+    void aboutToDestroyContext(const QGLContext *key);
+private:
+    typedef QHash<const QGLContext *, void *> ResourceHash;
+    ResourceHash m_resources;
+    FreeFunc free;
+};
 
 QT_END_NAMESPACE
 

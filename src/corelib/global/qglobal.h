@@ -665,7 +665,8 @@ namespace QT_NAMESPACE {}
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
+//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
 #    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
@@ -2407,28 +2408,15 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_QFUTURE
 #endif
 
-/*
-    Turn off certain features for compilers that have problems parsing
-    the code.
-*/
-#if (defined(Q_CC_HPACC) && defined(QT_ARCH_PARISC)) \
-    || defined(Q_CC_MIPS) \
-    || defined(Q_CC_XLC)
-// HP aCC A.03.*, MIPSpro, and xlC cannot handle
-// the template function declarations for the QtConcurrent functions
-#  define QT_NO_QFUTURE
-#  define QT_NO_CONCURRENT
-#endif
-
-// MSVC 6.0, MSVC .NET 2002, and old versions of Sun CC can`t handle the map(), etc templates,
+// MSVC 6.0 and MSVC .NET 2002,  can`t handle the map(), etc templates,
 // but the QFuture class compiles.
-#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300) || (defined (__SUNPRO_CC) && __SUNPRO_CC <= 0x590)
+#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300)
 #  define QT_NO_CONCURRENT
 #endif
 
-// Mingw uses a gcc 3 version which has problems with some of the
-// map/filter overloads. So does IRIX and Solaris.
-#if (defined(Q_OS_IRIX) || defined(Q_CC_MINGW) || defined (Q_OS_SOLARIS)) && (__GNUC__ < 4)
+// gcc 3 version has problems with some of the
+// map/filter overloads.
+#if defined(Q_CC_GNU) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
 #endif

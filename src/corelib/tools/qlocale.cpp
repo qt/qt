@@ -5299,7 +5299,11 @@ struct p5s_deleter
 {
     ~p5s_deleter()
     {
-        Bfree(p5s);
+        while (p5s) {
+            Bigint *next = p5s->next;
+            Bfree(p5s);
+            p5s = next;
+        }
     }
 };
 

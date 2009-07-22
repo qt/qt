@@ -510,7 +510,7 @@ private:
 
 void tst_Moc::initTestCase()
 {
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("qmake", QStringList() << "-query" << "QT_INSTALL_HEADERS");
     QVERIFY(proc.waitForFinished());
@@ -555,7 +555,7 @@ void tst_Moc::oldStyleCasts()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("/oldstyle-casts.h")));
     QVERIFY(proc.waitForFinished());
@@ -585,7 +585,7 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("extraqualification.h")));
     QVERIFY(proc.waitForFinished());
@@ -627,7 +627,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.setWorkingDirectory(QString(SRCDIR) + "/task71021");
     proc.start("moc", QStringList("../Header"));
@@ -835,7 +835,7 @@ void tst_Moc::warnOnMultipleInheritance()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     QStringList args;
     args << "-I" << qtIncludePath + "/QtGui"
@@ -858,7 +858,7 @@ void tst_Moc::forgottenQInterface()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     QStringList args;
     args << "-I" << qtIncludePath + "/QtCore"
@@ -940,7 +940,7 @@ void tst_Moc::frameworkSearchPath()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     QStringList args;
     args << "-F" << srcify(".")
          << srcify("interface-from-framework.h")
@@ -978,7 +978,7 @@ void tst_Moc::templateGtGt()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
@@ -994,7 +994,7 @@ void tst_Moc::templateGtGt()
 
 void tst_Moc::defineMacroViaCmdline()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
 
     QStringList args;
@@ -1082,7 +1082,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("warn-on-property-without-read.h")));
     QVERIFY(proc.waitForFinished());

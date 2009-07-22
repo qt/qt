@@ -93,7 +93,8 @@ namespace QPatternist
         Q_DISABLE_COPY(QtXmlPatterns)
     };
 
-    static inline QString formatKeyword(const QString &keyword)
+    // don't make this function static, otherwise xlC 7 cannot find it
+    inline QString formatKeyword(const QString &keyword)
     {
         return QLatin1String("<span class='XQuery-keyword'>")   +
                escape(keyword)                                  +

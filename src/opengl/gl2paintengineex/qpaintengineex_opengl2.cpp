@@ -115,6 +115,7 @@ public Q_SLOTS:
                 glDeleteFramebuffers(1, &m_fbo);
                 if (m_width || m_height)
                     glDeleteTextures(1, &m_texture);
+                ctx = 0;
             } else {
                 // since the context holding the texture is shared, and
                 // about to be destroyed, we have to transfer ownership
@@ -151,10 +152,17 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
 {
-    glDeleteFramebuffers(1, &m_fbo);
+    if (ctx) {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != ctx)
+            ctx->makeCurrent();
+        glDeleteFramebuffers(1, &m_fbo);
 
-    if (m_width || m_height)
-        glDeleteTextures(1, &m_texture);
+        if (m_width || m_height)
+            glDeleteTextures(1, &m_texture);
+        if (oldContext && oldContext != ctx)
+            oldContext->makeCurrent();
+    }
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
@@ -266,10 +274,6 @@ extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 {
-    if (shaderManager) {
-        delete shaderManager;
-        shaderManager = 0;
-    }
 }
 
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
@@ -295,6 +299,7 @@ void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMod
 QColor QGL2PaintEngineExPrivate::premultiplyColor(QColor c, GLfloat opacity)
 {
     qreal alpha = c.alphaF() * opacity;
+    c.setAlphaF(alpha);
     c.setRedF(c.redF() * alpha);
     c.setGreenF(c.greenF() * alpha);
     c.setBlueF(c.blueF() * alpha);
@@ -338,9 +343,6 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
     }
 }
 
-
-Q_GLOBAL_STATIC(QGL2GradientCache, qt_opengl_gradient_cache)
-
 void QGL2PaintEngineExPrivate::updateBrushTexture()
 {
 //     qDebug("QGL2PaintEngineExPrivate::updateBrushTexture()");
@@ -361,7 +363,10 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
 
         // We apply global opacity in the fragment shaders, so we always pass 1.0
         // for opacity to the cache.
-        GLuint texId = qt_opengl_gradient_cache()->getBuffer(*g, 1.0, ctx);
+        GLuint texId = QGL2GradientCache::cacheForContext(ctx)->getBuffer(*g, 1.0);
+
+        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        glBindTexture(GL_TEXTURE_2D, texId);
 
         if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
@@ -369,9 +374,6 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
             updateTextureFilter(GL_TEXTURE_2D, GL_MIRRORED_REPEAT_IBM, true);
         else
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, true);
-
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        glBindTexture(GL_TEXTURE_2D, texId);
     }
     else if (style == Qt::TexturePattern) {
         const QPixmap& texPixmap = currentBrush->texture();
@@ -1209,11 +1211,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
 
-    if (d->shaderManager) {
-        d->shaderManager->setDirty();
-    } else {
-        d->shaderManager = new QGLEngineShaderManager(d->ctx);
-    }
+    d->shaderManager = QGLEngineShaderManager::managerForContext(d->ctx);
+    d->shaderManager->setDirty();
 
     glViewport(0, 0, d->width, d->height);
 
