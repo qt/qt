@@ -460,70 +460,6 @@ void QFxItem::setItemParent(QFxItem *parent)
 }
 
 /*!
-  \internal
-  \property QFxItem::moveToParent
-  Playing around with view2view transitions.
- */
-
-/*!
-  \internal
- */
-void QFxItem::moveToParent(QFxItem *parent)
-{
-    if (parent && itemParent()) {
-        QPointF me = itemParent()->mapToScene(QPointF(0,0));
-        QPointF them = parent->mapToScene(QPointF(0,0));
-
-        QPointF themx = parent->mapToScene(QPointF(1,0));
-        QPointF themy = parent->mapToScene(QPointF(0,1));
-
-        themx -= them;
-        themy -= them;
-
-        setItemParent(parent);
-
-        // XXX - this is silly and will only work in a few cases
-
-        /*
-            xDiff = rx * themx_x + ry * themy_x
-            yDiff = rx * themx_y + ry * themy_y
-         */
-
-        qreal rx = 0;
-        qreal ry = 0;
-        qreal xDiff = them.x() - me.x();
-        qreal yDiff = them.y() - me.y();
-
-
-        if (themx.x() == 0.) {
-            ry = xDiff / themy.x();
-            rx = (yDiff - ry * themy.y()) / themx.y();
-        } else if (themy.x() == 0.) {
-            rx = xDiff / themx.x();
-            ry = (yDiff - rx * themx.y()) / themy.y();
-        } else if (themx.y() == 0.) {
-            ry = yDiff / themy.y();
-            rx = (xDiff - ry * themy.x()) / themx.x();
-        } else if (themy.y() == 0.) {
-            rx = yDiff / themx.y();
-            ry = (xDiff - rx * themx.x()) / themy.x();
-        } else {
-            qreal div = (themy.x() * themx.y() - themy.y() * themx.x());
-
-            if (div != 0.) 
-                rx = (themx.y() * xDiff - themx.x() * yDiff) / div;
-
-           if (themy.y() != 0.) ry = (yDiff - rx * themx.y()) / themy.y();
-        }
-
-        setX(x() - rx);
-        setY(y() - ry);
-    } else {
-        setItemParent(parent);
-    }
-}
-
-/*!
     Returns the QFxItem parent of this item.
 */
 QFxItem *QFxItem::itemParent() const
@@ -2097,8 +2033,9 @@ void QFxItem::childrenChanged()
 void QFxItem::setPaintMargin(qreal margin)
 {
     Q_D(QFxItem);
-    if (margin < d->paintmargin)
-        update(); // schedule repaint of old boundingRect
+    if (margin == d->paintmargin)
+        return;
+    prepareGeometryChange();
     d->paintmargin = margin;
 }
 
@@ -2235,6 +2172,7 @@ void QFxItem::setWidth(qreal w)
 
     qreal oldWidth = d->width;
 
+    prepareGeometryChange();
     d->width = w;
     update();
 
@@ -2250,6 +2188,7 @@ void QFxItem::setImplicitWidth(qreal w)
 
     qreal oldWidth = d->width;
 
+    prepareGeometryChange();
     d->width = w;
     update();
 
@@ -2278,6 +2217,7 @@ void QFxItem::setHeight(qreal h)
 
     qreal oldHeight = d->height;
 
+    prepareGeometryChange();
     d->height = h;
     update();
 
@@ -2293,6 +2233,7 @@ void QFxItem::setImplicitHeight(qreal h)
 
     qreal oldHeight = d->height;
 
+    prepareGeometryChange();
     d->height = h;
     update();
 

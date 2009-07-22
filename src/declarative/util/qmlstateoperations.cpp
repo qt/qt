@@ -52,11 +52,69 @@ QT_BEGIN_NAMESPACE
 class QmlParentChangePrivate : public QObjectPrivate
 {
 public:
-    QmlParentChangePrivate() : target(0), parent(0) {}
+    QmlParentChangePrivate() : target(0), parent(0), origParent(0) {}
 
-    QObject *target;
-    QObject *parent;
+    QFxItem *target;
+    QFxItem *parent;
+    QFxItem *origParent;
+
+    void doChange(QFxItem *targetParent);
 };
+
+void QmlParentChangePrivate::doChange(QFxItem *targetParent)
+{
+    if (targetParent && target && target->itemParent()) {
+        QPointF me = target->itemParent()->mapToScene(QPointF(0,0));
+        QPointF them = targetParent->mapToScene(QPointF(0,0));
+
+        QPointF themx = targetParent->mapToScene(QPointF(1,0));
+        QPointF themy = targetParent->mapToScene(QPointF(0,1));
+
+        themx -= them;
+        themy -= them;
+
+        target->setItemParent(targetParent);
+
+        // XXX - this is silly and will only work in a few cases
+
+        /*
+            xDiff = rx * themx_x + ry * themy_x
+            yDiff = rx * themx_y + ry * themy_y
+         */
+
+        qreal rx = 0;
+        qreal ry = 0;
+        qreal xDiff = them.x() - me.x();
+        qreal yDiff = them.y() - me.y();
+
+
+        if (themx.x() == 0.) {
+            ry = xDiff / themy.x();
+            rx = (yDiff - ry * themy.y()) / themx.y();
+        } else if (themy.x() == 0.) {
+            rx = xDiff / themx.x();
+            ry = (yDiff - rx * themx.y()) / themy.y();
+        } else if (themx.y() == 0.) {
+            ry = yDiff / themy.y();
+            rx = (xDiff - ry * themy.x()) / themx.x();
+        } else if (themy.y() == 0.) {
+            rx = yDiff / themx.y();
+            ry = (xDiff - rx * themx.x()) / themy.x();
+        } else {
+            qreal div = (themy.x() * themx.y() - themy.y() * themx.x());
+
+            if (div != 0.)
+                rx = (themx.y() * xDiff - themx.x() * yDiff) / div;
+
+           if (themy.y() != 0.) ry = (yDiff - rx * themx.y()) / themy.y();
+        }
+
+        target->setX(target->x() - rx);
+        target->setY(target->y() - ry);
+    } else if (target) {
+        target->setItemParent(targetParent);
+    }
+}
 
 /*!
     \preliminary
@@ -76,32 +134,32 @@ QmlParentChange::~QmlParentChange()
 
 /*!
     \qmlproperty Object ParentChange::target
-    This property holds the object to be reparented
+    This property holds the item to be reparented
 */
 
-QObject *QmlParentChange::object() const
+QFxItem *QmlParentChange::object() const
 {
     Q_D(const QmlParentChange);
     return d->target;
 }
-void QmlParentChange::setObject(QObject *target)
+void QmlParentChange::setObject(QFxItem *target)
 {
     Q_D(QmlParentChange);
     d->target = target;
 }
 
 /*!
-    \qmlproperty Object ParentChange::parent
-    This property holds the parent for the object in this state
+    \qmlproperty Item ParentChange::parent
+    This property holds the parent for the item in this state
 */
 
-QObject *QmlParentChange::parent() const
+QFxItem *QmlParentChange::parent() const
 {
     Q_D(const QmlParentChange);
     return d->parent;
 }
 
-void QmlParentChange::setParent(QObject *parent)
+void QmlParentChange::setParent(QFxItem *parent)
 {
     Q_D(QmlParentChange);
     d->parent = parent;
@@ -113,25 +171,29 @@ QmlStateOperation::ActionList QmlParentChange::actions()
     if (!d->target || !d->parent)
         return ActionList();
 
-    QString propName(QLatin1String("moveToParent"));
-    QmlMetaProperty prop(d->target, propName);
-    if (!prop.isValid()) {
-        qmlInfo(this) << d->target->metaObject()->className()
-                      << "has no property named" << propName;
-        return ActionList();
-    }else if (!prop.isWritable()){
-        qmlInfo(this) << d->target->metaObject()->className() << propName
-                      << "is not a writable property and cannot be set.";
-        return ActionList();
-    }
-    QVariant cur = prop.read();
-
     Action a;
-    a.property = prop;
-    a.fromValue = cur;
-    a.toValue = qVariantFromValue(d->parent);
+    a.event = this;
 
     return ActionList() << a;
+}
+
+void QmlParentChange::execute()
+{
+    Q_D(QmlParentChange);
+    if (d->target)
+        d->origParent = d->target->itemParent();
+    d->doChange(d->parent);
+}
+
+bool QmlParentChange::isReversable()
+{
+    return true;
+}
+
+void QmlParentChange::reverse()
+{
+    Q_D(QmlParentChange);
+    d->doChange(d->origParent);
 }
 
 class QmlRunScriptPrivate : public QObjectPrivate

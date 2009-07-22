@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
     \brief The QFxGraphicsObjectContainer class allows you to add QGraphicsObjects into Fluid UI applications.
 */
 
+QML_DEFINE_NOCREATE_TYPE(QGraphicsObject)
 QML_DEFINE_TYPE(QFxGraphicsObjectContainer, GraphicsObjectContainer)
 
 QFxGraphicsObjectContainer::QFxGraphicsObjectContainer(QFxItem *parent)

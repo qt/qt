@@ -100,7 +100,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(QFxItem * parent READ itemParent WRITE setItemParent NOTIFY parentChanged DESIGNABLE false FINAL)
-    Q_PROPERTY(QFxItem * moveToParent READ itemParent WRITE moveToParent NOTIFY parentChanged DESIGNABLE false)
     Q_PROPERTY(QString id READ id WRITE setId)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
@@ -164,8 +163,6 @@ public:
     QFxItem *itemParent() const;
     QFxItem *parentItem() const;
     void setItemParent(QFxItem *parent);
-
-    void moveToParent(QFxItem *parent);
 
     QString id() const;
     void setId(const QString &);

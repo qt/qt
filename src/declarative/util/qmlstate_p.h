@@ -69,12 +69,15 @@ public:
         property = a.property;
         specifiedObject = a.specifiedObject;
         specifiedProperty = a.specifiedProperty;
+        event = a.event;
         if (state == StartState) {
             value = a.fromValue;
             binding = property.binding();
+            reverseEvent = true;
         } else {
             value = a.toValue;
             binding = a.toBinding;
+            reverseEvent = false;
         }
     }
 
@@ -83,6 +86,8 @@ public:
     QmlBinding *binding;
     QObject *specifiedObject;
     QString specifiedProperty;
+    ActionEvent *event;
+    bool reverseEvent;
 };
 
 class QmlStatePrivate : public QObjectPrivate
