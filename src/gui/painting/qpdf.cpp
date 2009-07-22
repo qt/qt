@@ -964,8 +964,7 @@ QPdfBaseEngine::QPdfBaseEngine(QPdfBaseEnginePrivate &dd, PaintEngineFeatures f)
 
 void QPdfBaseEngine::drawPoints (const QPointF *points, int pointCount)
 {
-    Q_D(QPdfBaseEngine);
-    if (!points || !d->hasPen)
+    if (!points)
         return;
 
     QPainterPath p;
@@ -995,6 +994,12 @@ void QPdfBaseEngine::drawRects (const QRectF *rects, int rectCount)
         return;
 
     Q_D(QPdfBaseEngine);
+    if (d->useAlphaEngine) {
+        QAlphaPaintEngine::drawRects(rects, rectCount);
+        if (!continueCall())
+            return;
+    }
+
     if (d->clipEnabled && d->allClipped)
         return;
     if (!d->hasPen && !d->hasBrush)
