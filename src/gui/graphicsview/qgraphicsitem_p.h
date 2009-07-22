@@ -122,6 +122,7 @@ public:
         index(-1),
         siblingIndex(-1),
         depth(0),
+        focusProxy(0),
         acceptedMouseButtons(0x1f),
         visible(1),
         explicitlyHidden(0),
@@ -409,6 +410,7 @@ public:
     int index;
     int siblingIndex;
     int depth;
+    QGraphicsItem *focusProxy;
 
     // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;

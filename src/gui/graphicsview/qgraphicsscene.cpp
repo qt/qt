@@ -491,6 +491,13 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     item->d_func()->scene = 0;
 
+    // Unregister focus proxy.
+    QMultiHash<QGraphicsItem *, QGraphicsItem *>::iterator it = focusProxyReverseMap.find(item);
+    while (it != focusProxyReverseMap.end() && it.key() == item) {
+        it.value()->d_ptr->focusProxy = 0;
+        it = focusProxyReverseMap.erase(it);
+    }
+
     // Remove from parent, or unregister from toplevels.
     if (QGraphicsItem *parentItem = item->parentItem()) {
         if (parentItem->scene()) {
@@ -554,6 +561,58 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
         emit q->selectionChanged();
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
+                                               Qt::FocusReason focusReason)
+{
+    Q_Q(QGraphicsScene);
+    if (item == focusItem)
+        return;
+    if (item && (!(item->flags() & QGraphicsItem::ItemIsFocusable)
+                 || !item->isVisible() || !item->isEnabled())) {
+        item = 0;
+    }
+
+    if (item) {
+        q->setFocus(focusReason);
+        if (item == focusItem)
+            return;
+    }
+
+    if (focusItem) {
+        QFocusEvent event(QEvent::FocusOut, focusReason);
+        lastFocusItem = focusItem;
+        focusItem = 0;
+        sendEvent(lastFocusItem, &event);
+
+        if (lastFocusItem
+            && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+            // Reset any visible preedit text
+            QInputMethodEvent imEvent;
+            sendEvent(lastFocusItem, &imEvent);
+
+            // Close any external input method panel
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->inputContext()->reset();
+        }
+    }
+
+    if (item) {
+        if (item->isWidget()) {
+            // Update focus child chain.
+            static_cast<QGraphicsWidget *>(item)->d_func()->setFocusWidget();
+        }
+
+        focusItem = item;
+        QFocusEvent event(QEvent::FocusIn, focusReason);
+        sendEvent(item, &event);
+    }
+
+    updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -2597,49 +2656,10 @@ QGraphicsItem *QGraphicsScene::focusItem() const
 void QGraphicsScene::setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReason)
 {
     Q_D(QGraphicsScene);
-    if (item == d->focusItem)
-        return;
-    if (item && (!(item->flags() & QGraphicsItem::ItemIsFocusable)
-                 || !item->isVisible() || !item->isEnabled())) {
-        item = 0;
-    }
-
-    if (item) {
-        setFocus(focusReason);
-        if (item == d->focusItem)
-            return;
-    }
-
-    if (d->focusItem) {
-        QFocusEvent event(QEvent::FocusOut, focusReason);
-        d->lastFocusItem = d->focusItem;
-        d->focusItem = 0;
-        d->sendEvent(d->lastFocusItem, &event);
-
-        if (d->lastFocusItem
-            && (d->lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
-            // Reset any visible preedit text
-            QInputMethodEvent imEvent;
-            d->sendEvent(d->lastFocusItem, &imEvent);
-
-            // Close any external input method panel
-            for (int i = 0; i < d->views.size(); ++i)
-                d->views.at(i)->inputContext()->reset();
-        }
-    }
-
-    if (item) {
-        if (item->isWidget()) {
-            // Update focus child chain.
-            static_cast<QGraphicsWidget *>(item)->d_func()->setFocusWidget();
-        }
-
-        d->focusItem = item;
-        QFocusEvent event(QEvent::FocusIn, focusReason);
-        d->sendEvent(item, &event);
-    }
-
-    d->updateInputMethodSensitivityInViews();
+    if (item)
+        item->setFocus(focusReason);
+    else
+        d->setFocusItemHelper(item, focusReason);
 }
 
 /*!
