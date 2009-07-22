@@ -2017,24 +2017,6 @@ QPointF QFxItem::transformOriginPoint() const
     return d->transformOrigin();
 }
 
-qreal QFxItem::z() const
-{
-    return zValue();
-}
-
-void QFxItem::setZ(qreal z)
-{
-    if (z == this->z())
-        return;
-
-    if (z < 0)
-        setFlag(QGraphicsItem::ItemStacksBehindParent, true);
-    else
-        setFlag(QGraphicsItem::ItemStacksBehindParent, false);
-
-    setZValue(z);
-}
-
 qreal QFxItem::width() const
 {
     Q_D(const QFxItem);

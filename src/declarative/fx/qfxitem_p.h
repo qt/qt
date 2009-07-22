@@ -93,8 +93,9 @@ public:
             q->setItemParent(parent);
         _baselineOffset.invalidate();
         q->setAcceptedMouseButtons(Qt::NoButton);
-        q->setFlag(QGraphicsItem::ItemHasNoContents, true);
-        q->setFlag(QGraphicsItem::ItemIsFocusable, true);
+        q->setFlags(QGraphicsItem::ItemHasNoContents |
+                    QGraphicsItem::ItemIsFocusable |
+                    QGraphicsItem::ItemNegativeZStacksBehindParent);
         mouseSetsFocus = false;
     }
 
