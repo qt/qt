@@ -869,6 +869,9 @@ void QFtpPI::connected()
 #if defined(QFTPPI_DEBUG)
 //    qDebug("QFtpPI state: %d [connected()]", state);
 #endif
+    // try to improve performance by setting TCP_NODELAY
+    commandSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
     emit connectState(QFtp::Connected);
 }
 
