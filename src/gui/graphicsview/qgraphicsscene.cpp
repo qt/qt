@@ -542,7 +542,7 @@ void QGraphicsScenePrivate::_q_updateIndex()
         // Regenerate the tree.
         if (regenerateIndex) {
             regenerateIndex = false;
-            bspTree.initialize(q->sceneRect(), depth);
+            bspTree.initialize(sceneRect, depth);
             unindexedItems = indexedItems;
             lastItemCount = indexedItems.size();
             q->update();
