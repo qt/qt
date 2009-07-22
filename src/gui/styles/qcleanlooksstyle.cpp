@@ -1746,7 +1746,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             int maxWidth = rect.width() - 4;
             int minWidth = 4;
             qreal progress = qMax(bar->progress, bar->minimum); // workaround for bug in QProgressBar
-            int progressBarWidth = (progress - bar->minimum) * qreal(maxWidth) / qMax(1.0, qreal(bar->maximum) - bar->minimum);
+            int progressBarWidth = (progress - bar->minimum) * qreal(maxWidth) / qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum);
             int width = indeterminate ? maxWidth : qMax(minWidth, progressBarWidth);
 
             bool reverse = (!vertical && (bar->direction == Qt::RightToLeft)) || vertical;
