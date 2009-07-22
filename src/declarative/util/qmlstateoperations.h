@@ -43,6 +43,7 @@
 #define QMLSTATEOPERATIONS_H
 
 #include <QtDeclarative/qmlstate.h>
+#include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
 
@@ -51,24 +52,28 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlParentChangePrivate;
-class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation
+class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation, public ActionEvent
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlParentChange)
 
-    Q_PROPERTY(QObject *target READ object WRITE setObject)
-    Q_PROPERTY(QObject *parent READ parent WRITE setParent)
+    Q_PROPERTY(QFxItem *target READ object WRITE setObject)
+    Q_PROPERTY(QFxItem *parent READ parent WRITE setParent)
 public:
     QmlParentChange(QObject *parent=0);
     ~QmlParentChange();
 
-    QObject *object() const;
-    void setObject(QObject *);
+    QFxItem *object() const;
+    void setObject(QFxItem *);
 
-    QObject *parent() const;
-    void setParent(QObject *);
+    QFxItem *parent() const;
+    void setParent(QFxItem *);
 
     virtual ActionList actions();
+
+    virtual void execute();
+    virtual bool isReversable();
+    virtual void reverse();
 };
 
 class QmlRunScriptPrivate;
