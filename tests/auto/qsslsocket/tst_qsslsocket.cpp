@@ -1388,9 +1388,7 @@ void tst_QSslSocket::verifyMode()
     QVERIFY(!socket.waitForEncrypted());
 
     QList<QSslError> expectedErrors = QList<QSslError>()
-                                      << QSslError(QSslError::UnableToGetLocalIssuerCertificate, socket.peerCertificate())
-                                      << QSslError(QSslError::CertificateUntrusted, socket.peerCertificate())
-                                      << QSslError(QSslError::UnableToVerifyFirstCertificate, socket.peerCertificate());
+                                      << QSslError(QSslError::SelfSignedCertificate, socket.peerCertificate());
     QCOMPARE(socket.sslErrors(), expectedErrors);
     socket.abort();
 
