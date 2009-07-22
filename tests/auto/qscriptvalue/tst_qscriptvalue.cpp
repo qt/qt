@@ -1653,7 +1653,6 @@ void tst_QScriptValue::isError()
     for (int i = 0; i < errors.size(); ++i) {
         QScriptValue ctor = eng.globalObject().property(errors.at(i));
         QVERIFY(ctor.isFunction());
-        QEXPECT_FAIL("", "Error.prototype should itself be an Error object", Continue);
         QVERIFY(ctor.property("prototype").isError());
     }
     QVERIFY(!eng.globalObject().isError());
