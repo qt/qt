@@ -1039,7 +1039,7 @@ extern "C" {
 
 - (void) insertText:(id)aString
 {
-    if ([aString length]) {
+    if ([aString length] && composing) {
         // Send the commit string to the widget.
         QString commitText;
         if ([aString isKindOfClass:[NSAttributedString class]]) {
@@ -1052,7 +1052,14 @@ extern "C" {
         QInputMethodEvent e;
         e.setCommitString(commitText);
         qt_sendSpontaneousEvent(qwidget, &e);
+    } else {
+        // The key sequence "`q" on a French Keyboard will generate two calls to insertText before
+        // it returns from interpretKeyEvents. The first call will turn off 'composing' and accept
+        // the "`" key. The last keyDown event needs to be processed by the widget to get the
+        // character "q". The string parameter is ignored for the second call.
+        sendKeyEvents = true;
     }
+
     composingText->clear();
 }
 
