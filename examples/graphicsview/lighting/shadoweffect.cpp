@@ -43,8 +43,8 @@
 
 #include <math.h>
 
-ShadowEffect::ShadowEffect(QGraphicsItem *source, QObject *parent)
-    : QGraphicsShadowEffect(parent)
+ShadowEffect::ShadowEffect(QGraphicsItem *source)
+    : QGraphicsShadowEffect()
     , m_lightSource(source)
 {
     setBlurRadius(8);

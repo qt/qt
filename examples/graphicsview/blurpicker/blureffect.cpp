@@ -43,7 +43,7 @@
 
 #include <QDebug>
 
-BlurEffect::BlurEffect(QObject *parent)
+BlurEffect::BlurEffect()
     : QGraphicsBlurEffect()
     , m_baseLine(200)
 {

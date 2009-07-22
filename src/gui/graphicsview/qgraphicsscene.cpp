@@ -3928,8 +3928,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 #endif
 
     // Render using effect, works now only for no cache mode
-    if (noCache && itemd->hasEffect && item->effect()) {
-        item->effect()->drawItem(item, painter, option, widget);
+    if (noCache && itemd->hasEffect && item->graphicsEffect()) {
+        item->graphicsEffect()->drawItem(item, painter, option, widget);
         return;
     }
 

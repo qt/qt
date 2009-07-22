@@ -48,7 +48,7 @@
 class BlurEffect: public QGraphicsBlurEffect
 {
 public:
-    BlurEffect(QObject *parent = 0);
+    BlurEffect();
 
     void setBaseLine(qreal y) { m_baseLine = y; }
 

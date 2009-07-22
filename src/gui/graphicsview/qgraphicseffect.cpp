@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgraphicseffect.h"
+#include "qgraphicseffect_p.h"
 
 #ifndef QT_NO_GRAPHICSVIEW
 
@@ -47,9 +47,6 @@
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qgraphicsscene.h>
 #include <QtGui/qpainter.h>
-
-#include <private/qobject_p.h>
-#include <private/qpixmapfilter_p.h>
 
 /*
 
@@ -105,19 +102,11 @@
 
 */
 
-/*!
-    \internal
-*/
-class QGraphicsEffectPrivate : public QObjectPrivate
+QGraphicsEffect::QGraphicsEffect()
+    : QObject(*new QGraphicsEffectPrivate, 0)
 {
-    Q_DECLARE_PUBLIC(QGraphicsEffect)
-public:
-    QGraphicsEffectPrivate() {}
-};
-
-QGraphicsEffect::QGraphicsEffect(QObject *parent)
-    : QObject(*new QGraphicsEffectPrivate, parent)
-{
+    Q_D(QGraphicsEffect);
+    d->parentItem = 0;
 }
 
 QGraphicsEffect::~QGraphicsEffect()
@@ -134,9 +123,11 @@ QRectF QGraphicsEffect::boundingRectFor(const QGraphicsItem *item)
 
 /*! \internal
 */
-QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd, QObject *parent)
-    : QObject(dd, parent)
+QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd)
+    : QObject(dd, 0)
 {
+    Q_D(QGraphicsEffect);
+    d->parentItem = 0;
 }
 
 // this helper function is only for subclasses of QGraphicsEffect
@@ -151,27 +142,8 @@ QPixmap* QGraphicsEffect::drawItemOnPixmap(QPainter *painter, QGraphicsItem *ite
     return item->scene()->drawItemOnPixmap(painter, item, option, widget, flags);
 }
 
-/*!
-    \internal
-*/
-class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsGrayscaleEffect)
-public:
-    QGraphicsGrayscaleEffectPrivate() {
-        filter = new QPixmapColorizeFilter;
-        filter->setColor(Qt::black);
-    }
-
-    ~QGraphicsGrayscaleEffectPrivate() {
-        delete filter;
-    }
-
-    QPixmapColorizeFilter *filter;
-};
-
-QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate, parent)
+QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
+    : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)
 {
 }
 
@@ -201,26 +173,8 @@ void QGraphicsGrayscaleEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
-/*!
-    \internal
-*/
-class QGraphicsColorizeEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsColorizeEffect)
-public:
-    QGraphicsColorizeEffectPrivate() {
-        filter = new QPixmapColorizeFilter;
-    }
-
-    ~QGraphicsColorizeEffectPrivate() {
-        delete filter;
-    }
-
-    QPixmapColorizeFilter *filter;
-};
-
-QGraphicsColorizeEffect::QGraphicsColorizeEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsColorizeEffectPrivate, parent)
+QGraphicsColorizeEffect::QGraphicsColorizeEffect()
+    : QGraphicsEffect(*new QGraphicsColorizeEffectPrivate)
 {
 }
 
@@ -262,21 +216,8 @@ void QGraphicsColorizeEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
-/*!
-    \internal
-*/
-class QGraphicsPixelizeEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsPixelizeEffect)
-public:
-    QGraphicsPixelizeEffectPrivate()
-        : pixelSize(3) { }
-
-    int pixelSize;
-};
-
-QGraphicsPixelizeEffect::QGraphicsPixelizeEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsPixelizeEffectPrivate, parent)
+QGraphicsPixelizeEffect::QGraphicsPixelizeEffect()
+    : QGraphicsEffect(*new QGraphicsPixelizeEffectPrivate)
 {
 }
 
@@ -338,27 +279,8 @@ void QGraphicsPixelizeEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
-/*!
-    \internal
-*/
-class QGraphicsBlurEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
-public:
-    QGraphicsBlurEffectPrivate()
-    {
-        filter = new QPixmapBlurFilter;
-    }
-    ~QGraphicsBlurEffectPrivate()
-    {
-        delete filter;
-    }
-
-    QPixmapBlurFilter *filter;
-};
-
-QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
+QGraphicsBlurEffect::QGraphicsBlurEffect()
+    : QGraphicsEffect(*new QGraphicsBlurEffectPrivate)
 {
 }
 
@@ -471,23 +393,8 @@ void QGraphicsBlurEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
-/*!
-    \internal
-*/
-class QGraphicsBloomEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
-public:
-    QGraphicsBloomEffectPrivate()
-        : blurRadius(6)
-        , opacity(0.7) { }
-
-    int blurRadius;
-    qreal opacity;
-};
-
-QGraphicsBloomEffect::QGraphicsBloomEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsBloomEffectPrivate, parent)
+QGraphicsBloomEffect::QGraphicsBloomEffect()
+    : QGraphicsEffect(*new QGraphicsBloomEffectPrivate)
 {
 }
 
@@ -588,27 +495,8 @@ void QGraphicsBloomEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
-/*!
-    \internal
-*/
-class QGraphicsFrameEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsFrameEffect)
-public:
-    QGraphicsFrameEffectPrivate()
-        : color(Qt::blue)
-        , width(5)
-        , alpha(0.6)
-    {
-    }
-
-    QColor color;
-    qreal width;
-    qreal alpha;
-};
-
-QGraphicsFrameEffect::QGraphicsFrameEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsFrameEffectPrivate, parent)
+QGraphicsFrameEffect::QGraphicsFrameEffect()
+    : QGraphicsEffect(*new QGraphicsFrameEffectPrivate)
 {
 }
 
@@ -693,28 +581,8 @@ void QGraphicsFrameEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->restore();
 }
 
-
-/*!
-    \internal
-*/
-class QGraphicsShadowEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsShadowEffect)
-public:
-    QGraphicsShadowEffectPrivate()
-        : offset(4,4)
-        , radius(8)
-        , alpha(0.7)
-    {
-    }
-
-    QPointF offset;
-    int radius;
-    qreal alpha;
-};
-
-QGraphicsShadowEffect::QGraphicsShadowEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsShadowEffectPrivate, parent)
+QGraphicsShadowEffect::QGraphicsShadowEffect()
+    : QGraphicsEffect(*new QGraphicsShadowEffectPrivate)
 {
 }
 

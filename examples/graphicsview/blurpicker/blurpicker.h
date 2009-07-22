@@ -67,7 +67,6 @@ private:
 private:
     qreal m_index;
     QGraphicsScene m_scene;
-    BlurEffect *m_blurEffect;
     QList<QGraphicsItem*> m_icons;
     QTimeLine m_timeLine;
 };

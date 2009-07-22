@@ -79,17 +79,15 @@ void BlurPicker::updateIconPositions()
         pos -= QPointF(40, 40);
         icon->setPos(pos);
         baseline = qMax(baseline, ys);
+        static_cast<BlurEffect *>(icon->effect())->setBaseLine(baseline);
     }
 
-    m_blurEffect->setBaseLine(baseline);
     m_scene.update();
 }
 
 void BlurPicker::setupScene()
 {
     m_scene.setSceneRect(-200, -120, 400, 240);
-
-    m_blurEffect = new BlurEffect(this);
 
     QStringList names;
     names << ":/images/accessories-calculator.png";
@@ -105,7 +103,7 @@ void BlurPicker::setupScene()
         QPixmap pixmap(names[i]);
         QGraphicsPixmapItem *icon = m_scene.addPixmap(pixmap);
         icon->setZValue(1);
-        icon->setEffect(m_blurEffect);
+        icon->setGraphicsEffect(new BlurEffect);
         m_icons << icon;
     }
 

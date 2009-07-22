@@ -88,8 +88,6 @@ void Lighting::setupScene()
     m_lightSource = m_scene.addPixmap(pixmap);
     m_lightSource->setZValue(2);
 
-    m_shadowEffect = new ShadowEffect(m_lightSource, this);
-
     for (int i = -2; i < 3; ++i)
         for (int j = -2; j < 3; ++j) {
             QAbstractGraphicsShapeItem *item;
@@ -100,7 +98,7 @@ void Lighting::setupScene()
 
             item->setPen(QPen(Qt::black));
             item->setBrush(QBrush(Qt::white));
-            item->setEffect(m_shadowEffect);
+            item->setGraphicsEffect(new ShadowEffect(m_lightSource));
             item->setZValue(1);
             item->setPos(i * 80, j * 80);
             m_scene.addItem(item);

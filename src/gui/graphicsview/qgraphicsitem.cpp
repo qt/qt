@@ -552,7 +552,7 @@
 
 #ifndef QT_NO_GRAPHICSVIEW
 
-#include "qgraphicseffect.h"
+#include "qgraphicseffect_p.h"
 #include "qgraphicsscene.h"
 #include "qgraphicsscene_p.h"
 #include "qgraphicssceneevent.h"
@@ -1180,6 +1180,8 @@ QGraphicsItem::~QGraphicsItem()
     else
         d_ptr->setParentItemHelper(0);
 
+    QGraphicsEffect *e = graphicsEffect();
+    delete e;
     delete d_ptr->transformData;
     delete d_ptr;
 
@@ -2190,11 +2192,11 @@ void QGraphicsItem::setOpacity(qreal opacity)
 }
 
 /*!
+    Returns a pointer to this item's effect if it has one; otherwise 0.
+
     \since 4.6
-    Returns this item's \e effect if it has one; otherwise,
-    returns 0.
 */
-QGraphicsEffect *QGraphicsItem::effect() const
+QGraphicsEffect *QGraphicsItem::graphicsEffect() const
 {
     QGraphicsEffect *fx = 0;
     if (d_ptr->hasEffect)
@@ -2204,22 +2206,41 @@ QGraphicsEffect *QGraphicsItem::effect() const
 }
 
 /*!
+    Sets \a effect as the item's effect. If there already is an effect installed
+    on this item, QGraphicsItem won't let you install another. You must first
+    delete the existing effect (returned by graphicsEffect()) before you can call
+    setGraphicsEffect() with the new effect.
+
+    If \a effect is the installed on a different item, setGraphicsEffect() will remove
+    the effect from the item and install it on this item.
+
+    \note This function will apply the effect on itself and all its children.
+
     \since 4.6
-    Sets \e effect as the item's effect. It will replace the previous effect
-    the item might have.
 */
-void QGraphicsItem::setEffect(QGraphicsEffect *effect)
+void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 {
     if (effect) {
-       d_ptr->hasEffect = true;
-       d_ptr->setExtra(QGraphicsItemPrivate::ExtraEffect, QVariant::fromValue(effect));
+        if (QGraphicsEffect *currentEffect = this->graphicsEffect()) {
+            if (currentEffect != effect) {
+                qWarning("QGraphicsItem::setEffect: Attempting to set QGraphicsEffect "
+                         "%p on %p, which already has an effect", effect, this);
+            }
+            return;
+        }
+
+        if (effect->d_func()->parentItem)
+            effect->d_func()->parentItem->setGraphicsEffect(0);
+        effect->d_func()->parentItem = this;
+        d_ptr->hasEffect = true;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraEffect, QVariant::fromValue(effect));
     } else {
-       d_ptr->hasEffect = false;
-       d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffect);
-       void *ptr = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectPixmap).value<void*>();
-       QPixmap *pixmap = reinterpret_cast<QPixmap*>(ptr);
-       delete pixmap;
-       d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffectPixmap);
+        d_ptr->hasEffect = false;
+        d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffect);
+        void *ptr = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectPixmap).value<void*>();
+        QPixmap *pixmap = reinterpret_cast<QPixmap*>(ptr);
+        delete pixmap;
+        d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffectPixmap);
     }
 
     update();
@@ -2236,7 +2257,7 @@ void QGraphicsItem::setEffect(QGraphicsEffect *effect)
 */
 QRectF QGraphicsItem::effectiveBoundingRect() const
 {
-    QGraphicsEffect *fx = effect();
+    QGraphicsEffect *fx = graphicsEffect();
     if (fx)
         return fx->boundingRectFor(this);
 
