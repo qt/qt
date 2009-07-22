@@ -1273,10 +1273,9 @@ void tst_QScriptValue::toVariant()
     }
 
     {
-        QRegExp rx = QRegExp("[0-9a-z]+");
+        QRegExp rx = QRegExp("[0-9a-z]+", Qt::CaseSensitive, QRegExp::RegExp2);
         QScriptValue rxObject = eng.newRegExp(rx);
         QVariant var = rxObject.toVariant();
-        QEXPECT_FAIL("", "toRegExp() is broken (doesn't remember patternSyntax of original regexp)", Continue);
         QCOMPARE(var, QVariant(rx));
     }
 
