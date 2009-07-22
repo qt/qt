@@ -443,7 +443,7 @@ QSize QProgressBar::minimumSizeHint() const
 QString QProgressBar::text() const
 {
     Q_D(const QProgressBar);
-    if (d->maximum == 0 || d->value < d->minimum
+    if ((d->maximum == 0 && d->minimum == 0) || d->value < d->minimum
             || (d->value == INT_MIN && d->minimum == INT_MIN))
         return QString();
 
