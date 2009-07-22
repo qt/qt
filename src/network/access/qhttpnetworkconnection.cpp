@@ -409,6 +409,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
             channels[i].bytesTotal = channels[i].request.contentLength();
         } else {
+            socket->flush(); // ### Remove this when pipelining is implemented. We want less TCP packets!
             channels[i].state = WaitingState;
             break;
         }
@@ -1198,6 +1199,10 @@ void QHttpNetworkConnectionPrivate::_q_connected()
     QAbstractSocket *socket = qobject_cast<QAbstractSocket*>(q->sender());
     if (!socket)
         return; // ### error
+
+    // improve performance since we get the request sent by the kernel ASAP
+    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
     int i = indexOf(socket);
     // ### FIXME: if the server closes the connection unexpectedly, we shouldn't send the same broken request again!
     //channels[i].reconnectAttempts = 2;
