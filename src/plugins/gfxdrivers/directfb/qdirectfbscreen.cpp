@@ -1254,11 +1254,21 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     d_ptr->dfbSurface->SetColor(d_ptr->dfbSurface,
                                 color.red(), color.green(), color.blue(),
                                 color.alpha());
-    const QVector<QRect> rects = region.rects();
-    for (int i=0; i<rects.size(); ++i) {
-        const QRect &r = rects.at(i);
-        d_ptr->dfbSurface->FillRectangle(d_ptr->dfbSurface,
-                                         r.x(), r.y(), r.width(), r.height());
+    const int n = region.numRects();
+    if (n > 1) {
+        const QRect r = region.boundingRect();
+        d_ptr->dfbSurface->FillRectangle(d_ptr->dfbSurface, r.x(), r.y(), r.width(), r.height());
+    } else {
+        const QVector<QRect> rects = region.rects();
+        QVarLengthArray<DFBRectangle, 32> rectArray(n);
+        for (int i=0; i<n; ++i) {
+            const QRect &r = rects.at(i);
+            rectArray[i].x = r.x();
+            rectArray[i].y = r.y();
+            rectArray[i].w = r.width();
+            rectArray[i].h = r.height();
+        }
+        d_ptr->dfbSurface->FillRectangles(d_ptr->dfbSurface, rectArray.constData(), n);
     }
 }
 
