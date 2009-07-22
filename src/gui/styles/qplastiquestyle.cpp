@@ -2571,8 +2571,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 painter->setTransform(m, true);
             }
 
-            double vc6_workaround = ((bar->progress - qint64(bar->minimum)) / qMax(double(1.0), double(qint64(bar->maximum) - qint64(bar->minimum))) * rect.width());
-            int progressIndicatorPos = int(vc6_workaround);
+            int progressIndicatorPos = (bar->progress - qreal(bar->minimum)) / qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum) * rect.width();
 
             bool flip = (!vertical && (((bar->direction == Qt::RightToLeft) && !inverted)
                                        || ((bar->direction == Qt::LeftToRight) && inverted))) || (vertical && ((!inverted && !bottomToTop) || (inverted && bottomToTop)));

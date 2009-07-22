@@ -2075,8 +2075,8 @@ void QGtkStyle::drawControl(ControlElement element,
             }
             if (vertical)
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // flip width and height
-            const int progressIndicatorPos = (bar->progress - bar->minimum) * rect.width() /
-                                              qMax(1, bar->maximum - bar->minimum);
+            const int progressIndicatorPos = (bar->progress - qreal(bar->minimum)) * rect.width() /
+                                              qMax(1.0, qreal(bar->maximum) - bar->minimum);
             if (progressIndicatorPos >= 0 && progressIndicatorPos <= rect.width())
                 leftRect = QRect(rect.left(), rect.top(), progressIndicatorPos, rect.height());
             if (vertical)
