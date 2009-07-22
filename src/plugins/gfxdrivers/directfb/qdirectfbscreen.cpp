@@ -141,6 +141,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCr
 {
     if (img.isNull()) // assert?
         return 0;
+
     if (QDirectFBScreen::getSurfacePixelFormat(img.format()) == DSPF_UNKNOWN) {
         QImage image = img.convertToFormat(img.hasAlphaChannel()
                                            ? d_ptr->alphaPixmapFormat
@@ -321,10 +322,10 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
     DFBResult result = dfbSurface->Blit(dfbSurface, imgSurface, 0, 0, 0);
     if (result != DFB_OK)
         DirectFBError("QDirectFBScreen::copyToDFBSurface()", result);
+    imgSurface->Release(imgSurface);
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
 #endif
-    imgSurface->Release(imgSurface);
 #else // QT_NO_DIRECTFB_PREALLOCATED
     Q_ASSERT(image.format() == pixmapFormat);
     int bpl;

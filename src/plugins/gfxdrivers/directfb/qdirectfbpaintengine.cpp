@@ -466,7 +466,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     d->blit(r, imgSurface, sr);
     if (release) {
 #if (Q_DIRECTFB_VERSION >= 0x010000)
-        imgSurface->ReleaseSource(imgSurface);
+        d->surface->ReleaseSource(d->surface);
 #endif
         imgSurface->Release(imgSurface);
     }
