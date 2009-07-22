@@ -11,7 +11,7 @@ class Window : public QMainWindow
 {
     Q_OBJECT
 public:
-    Window(QWidget *parent = 0);
+    Window(const QStringList &arguments, QWidget *parent = 0);
 
 private slots:
     void on_anchors_cellChanged(int row, int column);

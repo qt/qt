@@ -21,7 +21,7 @@ static QString nodeName(QGraphicsLayoutItem *item)
 #define _QUOTEMACRO(x) #x
 #define QUOTEMACRO(x) _QUOTEMACRO(x)
 
-Window::Window(QWidget *parent)
+Window::Window(const QStringList &arguments, QWidget *parent)
     : QMainWindow(parent), m_inAddAnchor(false)
 {
     m_ui.setupUi(this);
@@ -41,6 +41,12 @@ Window::Window(QWidget *parent)
     WidgetChooserDelegate *delegate = new WidgetChooserDelegate(&m_layoutItems, m_layout, m_ui.anchors);
     m_ui.anchors->setItemDelegate(delegate);
 
+    if (arguments.count() >= 2) {
+        QString fileName = QString::fromAscii("%1/xml/%2.xml").arg(QUOTEMACRO(PRO_FILE_PWD), arguments.at(1));
+        if (!loadLayout(fileName, m_layout)) {
+            QMessageBox::warning(this, tr("Not found"), tr("Could not find %1").arg(fileName));
+        }
+    }
 }
 
 void Window::findLayoutFiles()
