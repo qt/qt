@@ -111,9 +111,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged) // ### name? Move to own class?
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)  // ### see above
-    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged FINAL) // ### use method in QGO
-    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged FINAL)
-    Q_PROPERTY(qreal z READ z WRITE setZ FINAL)
+    Q_PROPERTY(qreal z READ z WRITE setZ FINAL) // ### use method in QGO
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
@@ -130,11 +128,11 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
     Q_PROPERTY(QList<QFxTransform *>* transform READ transform) // ## QGI/QGO
-    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin) // movbe to QGI
+    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin) // ### move to QGI
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
 
-    typedef QHash<QString, QFxItem *> QmlChildren;
+    typedef QHash<QString, QFxItem *> QmlChildren; // ###
 
 public:
     enum Option { NoOption = 0x00000000,
@@ -213,11 +211,7 @@ public:
     void setOptions(Options, bool set = true);
 
     qreal z() const;
-    QPointF pos() const;
-    void setX(qreal);
-    void setY(qreal);
-    virtual void setZ(qreal);
-    void setPos(const QPointF &);
+    void setZ(qreal);
 
     qreal width() const;
     void setWidth(qreal);

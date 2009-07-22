@@ -205,6 +205,14 @@ public:
         QGraphicsItemPrivate::setFocusItemForArea(b);
         q->focusChanged(b);
     }
+
+    virtual void setPosHelper(const QPointF &pos)
+    {
+        Q_Q(QFxItem);
+        QRectF oldGeometry(this->pos.x(), this->pos.y(), width, height);
+        QGraphicsItemPrivate::setPosHelper(pos);
+        q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), width, height), oldGeometry);
+    }
 };
 
 QT_END_NAMESPACE

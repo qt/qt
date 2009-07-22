@@ -1974,14 +1974,6 @@ void QFxItem::parentChanged(QFxItem *, QFxItem *)
 }
 
 /*!
-    Returns the item's (0, 0) point relative to its parent.
- */
-QPointF QFxItem::pos() const
-{
-    return QPointF(x(),y());
-}
-
-/*!
     Returns the item's (0, 0) point mapped to scene coordinates.
  */
 QPointF QFxItem::scenePos() const
@@ -2035,32 +2027,6 @@ QPointF QFxItem::transformOriginPoint() const
 qreal QFxItem::z() const
 {
     return zValue();
-}
-
-void QFxItem::setX(qreal x)
-{
-    if (x == this->x())
-        return;
-
-    qreal oldX = this->x();
-
-    QGraphicsItem::setPos(x, y());
-
-    geometryChanged(QRectF(this->x(), y(), width(), height()), 
-                    QRectF(oldX, y(), width(), height()));
-}
-
-void QFxItem::setY(qreal y)
-{
-    if (y == this->y())
-        return;
-
-    qreal oldY = this->y();
-
-    QGraphicsItem::setPos(x(), y);
-
-    geometryChanged(QRectF(x(), this->y(), width(), height()), 
-                    QRectF(x(), oldY, width(), height()));
 }
 
 void QFxItem::setZ(qreal z)
@@ -2164,17 +2130,6 @@ bool QFxItem::heightValid() const
 {
     Q_D(const QFxItem);
     return d->heightValid;
-}
-
-void QFxItem::setPos(const QPointF &point)
-{
-    qreal oldX = x();
-    qreal oldY = y();
-
-    QGraphicsItem::setPos(point);
-
-    geometryChanged(QRectF(x(), y(), width(), height()), 
-                    QRectF(oldX, oldY, width(), height()));
 }
 
 qreal QFxItem::scale() const
