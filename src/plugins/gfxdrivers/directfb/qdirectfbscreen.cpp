@@ -1096,7 +1096,7 @@ bool QDirectFBScreen::initDevice()
 #endif
 
 #ifndef QT_NO_QWS_CURSOR
-#ifdef QT_NO_DIRECTFB_WM
+#if defined QT_NO_DIRECTFB_WM || defined QT_NO_DIRECTFB_LAYER
     QScreenCursor::initSoftwareCursor();
 #else
     qt_screencursor = new QDirectFBScreenCursor;
