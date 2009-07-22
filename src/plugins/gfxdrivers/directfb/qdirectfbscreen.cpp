@@ -1204,7 +1204,8 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
                                                        ? static_cast<QDirectFBWindowSurface*>(s) : 0;
             if (dfbWindowSurface) {
                 IDirectFBSurface *surface = dfbWindowSurface->directFBSurface();
-                if (d_ptr->directFBFlags & BoundingRectFlip || insideWindow.numRects() == 1) {
+                const int n = insideWindow.numRects();
+                if (n == 1 || d_ptr->directFBFlags & BoundingRectFlip) {
                     const QRect source = (insideWindow.boundingRect().intersected(windowGeometry)).translated(-windowGeometry.topLeft());
                     const DFBRectangle rect = {
                         source.x(), source.y(), source.width(), source.height()
@@ -1214,17 +1215,21 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
                                             windowGeometry.y() + source.y());
                 } else {
                     const QVector<QRect> rects = insideWindow.rects();
-                    const int count = rects.size();
-                    Q_ASSERT(count > 1);
-                    for (int i=0; i<count; ++i) {
+                    QVarLengthArray<DFBRectangle, 16> dfbRectangles(n);
+                    QVarLengthArray<DFBPoint, 16> dfbPoints(n);
+
+                    for (int i=0; i<n; ++i) {
                         const QRect source = (rects.at(i).intersected(windowGeometry)).translated(-windowGeometry.topLeft());
-                        const DFBRectangle rect = {
-                            source.x(), source.y(), source.width(), source.height()
-                        };
-                        d_ptr->dfbSurface->Blit(d_ptr->dfbSurface, surface, &rect,
-                                                windowGeometry.x() + source.x(),
-                                                windowGeometry.y() + source.y());
+                        DFBRectangle &rect = dfbRectangles[i];
+                        rect.x = source.x();
+                        rect.y = source.y();
+                        rect.w = source.width();
+                        rect.h = source.height();
+                        dfbPoints[i].x = (windowGeometry.x() + source.x());
+                        dfbPoints[i].y = (windowGeometry.y() + source.y());
                     }
+                    d_ptr->dfbSurface->BatchBlit(d_ptr->dfbSurface, surface, dfbRectangles.constData(),
+                                                 dfbPoints.constData(), n);
                 }
             }
         }

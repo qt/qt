@@ -356,12 +356,13 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
 #endif
     }
 
+    const QRect windowGeometry = QDirectFBWindowSurface::geometry();
+    IDirectFBSurface *primarySurface = screen->dfbSurface();
     if (mode == Offscreen) {
-        IDirectFBSurface *primarySurface = screen->dfbSurface();
         primarySurface->SetBlittingFlags(primarySurface, DSBLIT_NOFX);
-        const QRect windowGeometry = QDirectFBWindowSurface::geometry();
         const QRect windowRect(0, 0, windowGeometry.width(), windowGeometry.height());
-        if (boundingRectFlip || region.numRects() == 1) {
+        const int n = region.numRects();
+        if (n == 1 || boundingRectFlip ) {
             const QRect regionBoundingRect = region.boundingRect().translated(offset);
             const QRect source = windowRect & regionBoundingRect;
             const DFBRectangle rect = {
@@ -372,39 +373,45 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
                                  windowGeometry.y() + source.y());
         } else {
             const QVector<QRect> rects = region.rects();
-            const int count = rects.size();
-            for (int i=0; i<count; ++i) {
+            QVarLengthArray<DFBRectangle, 16> dfbRectangles(n);
+            QVarLengthArray<DFBPoint, 16> dfbPoints(n);
+
+            for (int i=0; i<n; ++i) {
                 const QRect &r = rects.at(i).translated(offset);
                 const QRect source = windowRect & r;
-                const DFBRectangle rect = {
-                    source.x(), source.y(), source.width(), source.height()
-                };
-                primarySurface->Blit(primarySurface, dfbSurface, &rect,
-                                     windowGeometry.x() + source.x(),
-                                     windowGeometry.y() + source.y());
+                DFBRectangle &rect = dfbRectangles[i];
+                rect.x = source.x();
+                rect.y = source.y();
+                rect.w = source.width();
+                rect.h = source.height();
+                dfbPoints[i].x = (windowGeometry.x() + source.x());
+                dfbPoints[i].y = (windowGeometry.y() + source.y());
             }
+            primarySurface->BatchBlit(primarySurface, dfbSurface, dfbRectangles.constData(),
+                                      dfbPoints.constData(), n);
         }
-        if (QScreenCursor *cursor = QScreenCursor::instance()) {
-            const QRect cursorRectangle = cursor->boundingRect();
-            if (cursor->isVisible() && !cursor->isAccelerated()
-                && region.intersects(cursorRectangle.translated(-(offset + windowGeometry.topLeft())))) {
-                const QImage image = cursor->image();
+    }
 
-                IDirectFBSurface *surface = screen->createDFBSurface(image, QDirectFBScreen::DontTrackSurface);
-                primarySurface->SetBlittingFlags(primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
-                primarySurface->Blit(primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
-                surface->Release(surface);
+    if (QScreenCursor *cursor = QScreenCursor::instance()) {
+        const QRect cursorRectangle = cursor->boundingRect();
+        if (cursor->isVisible() && !cursor->isAccelerated()
+            && region.intersects(cursorRectangle.translated(-(offset + windowGeometry.topLeft())))) {
+            const QImage image = cursor->image();
+
+            IDirectFBSurface *surface = screen->createDFBSurface(image, QDirectFBScreen::DontTrackSurface);
+            primarySurface->SetBlittingFlags(primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
+            primarySurface->Blit(primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
+            surface->Release(surface);
 #if (Q_DIRECTFB_VERSION >= 0x010000)
-                primarySurface->ReleaseSource(primarySurface);
+            primarySurface->ReleaseSource(primarySurface);
 #endif
-            }
         }
-
+    }
+    if (mode == Offscreen) {
         screen->flipSurface(primarySurface, flipFlags, region, offset + windowGeometry.topLeft());
     } else {
         screen->flipSurface(dfbSurface, flipFlags, region, offset);
     }
-
 
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };
