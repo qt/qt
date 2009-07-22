@@ -1166,6 +1166,8 @@ while [ "$#" -gt 0 ]; do
         else
             if  [ "$VAL" = "opengl" ]; then
                 CFG_GRAPHICS_SYSTEM="opengl"
+            elif [ "$VAL" = "openvg" ]; then
+                CFG_GRAPHICS_SYSTEM="openvg"
             elif [ "$VAL" = "raster" ]; then
                 CFG_GRAPHICS_SYSTEM="raster"
             else
@@ -5612,6 +5614,12 @@ if [ "$CFG_OPENVG" != "no" ]; then
     fi
 fi
 
+# if openvg is disabled and the user specified graphicssystem vg, disable it...
+if [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && [ "$CFG_OPENVG" = "no" ]; then
+    echo "OpenVG Graphics System is disabled due to missing OpenVG support..."
+    CFG_GRAPHICS_SYSTEM=default
+fi
+
 if [ "$CFG_PTMALLOC" != "no" ]; then
     # build ptmalloc, copy .a file to lib/
     echo "Building ptmalloc. Please wait..."
@@ -6638,6 +6646,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 if [ "$PLATFORM_QWS" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
     [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
+    [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
 fi
 
 # X11/Unix/Mac only configs
