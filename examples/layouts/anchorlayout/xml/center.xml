@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<anchorlayout>
+    <item id="item_1">
+        <property name="minimumSize">
+            <size width="0" height="0"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="1.67772e+07" height="1.67772e+07"/>
+        </property>
+    </item>
+    <item id="item_2">
+        <property name="minimumSize">
+            <size width="0" height="0"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="1.67772e+07" height="1.67772e+07"/>
+        </property>
+    </item>
+    <item id="item_3">
+        <property name="minimumSize">
+            <size width="0" height="0"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="1.67772e+07" height="1.67772e+07"/>
+        </property>
+    </item>
+    <item id="item_4">
+        <property name="minimumSize">
+            <size width="0" height="0"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="1.67772e+07" height="1.67772e+07"/>
+        </property>
+    </item>
+    <anchor first="this.Left" second="item_1.Left"/>
+    <anchor first="item_1.Right" second="item_2.Left"/>
+    <anchor first="item_2.Right" second="item_3.Left"/>
+    <anchor first="item_3.Right" second="this.Right"/>
+    <anchor first="item_2.HCenter" second="item_4.Left"/>
+    <anchor first="item_4.Right" second="this.Right"/>
+    <anchor first="this.Top" second="item_1.Top"/>
+    <anchor first="this.Top" second="item_2.Top"/>
+    <anchor first="this.Top" second="item_3.Top"/>
+    <anchor first="item_1.Bottom" second="item_4.Top"/>
+</anchorlayout>

@@ -220,7 +220,6 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
     Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     AnchorVertex *v = g.rootVertex();
-    QGraphicsAnchorLayout::Edge layoutEdge = oppositeEdge(v->m_edge);
 
     if (!v)
         return;
@@ -228,6 +227,9 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
     QStack<AnchorVertex *> stack;
     stack.push(v);
     QVector<AnchorVertex*> candidates;
+
+    const QGraphicsAnchorLayout::Edge centerEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
+    const QGraphicsAnchorLayout::Edge layoutEdge = oppositeEdge(v->m_edge);
 
     // walk depth-first.
     while (!stack.isEmpty()) {
@@ -295,8 +297,23 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
                     // after the sequential anchor.
                     if (intervalTo - intervalFrom >= 2) {
                         // simplify in the range [intervalFrom, intervalTo]
+
+                        // Trim off internal center anchors (Left-Center/Center-Right) from the
+                        // start and the end of the sequence. We never want to simplify internal
+                        // center anchors where there is an external anchor connected to the center.
                         AnchorVertex *intervalVertexFrom = intervalFrom == 0 ? beforeSequence : candidates.at(intervalFrom - 1);
+                        if (intervalVertexFrom->m_edge == centerEdge
+                            && intervalVertexFrom->m_item == candidates.at(intervalFrom)->m_item) {
+                            ++intervalFrom;
+                            intervalVertexFrom = candidates.at(intervalFrom - 1);
+                        }
                         AnchorVertex *intervalVertexTo = intervalTo <= candidates.count() ? candidates.at(intervalTo - 1) : afterSequence;
+                        if (intervalVertexTo->m_edge == centerEdge
+                            && intervalVertexTo->m_item == candidates.at(intervalTo - 2)->m_item) {
+                            --intervalTo;
+                            intervalVertexTo = candidates.at(intervalTo - 1);
+                        }
+
                         QVector<AnchorVertex*> subCandidates;
                         if (forward) {
                            subCandidates = candidates.mid(intervalFrom, intervalTo - intervalFrom - 1);
@@ -323,7 +340,6 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
         if (endOfSequence)
             candidates.clear();
 
-        QGraphicsAnchorLayout::Edge centerEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
         for (int i = 0; i < count; ++i) {
             AnchorVertex *next = vertices.at(i);
             if (next->m_item == q && next->m_edge == centerEdge)
@@ -800,6 +816,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
 
     //simplifyGraph(Horizontal);
     //simplifyGraph(Vertical);
+    //Q_Q(QGraphicsAnchorLayout);
     //q->dumpGraph();
     //restoreSimplifiedGraph(Horizontal);    // should not be here, but currently crashes if not
     //restoreSimplifiedGraph(Vertical);    // should not be here, but currently crashes if not
