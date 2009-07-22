@@ -136,7 +136,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
     : engine(QAbstractFileEngine::create(path))
       , path(path)
-      , nameFilters(nameFilters)
+      , nameFilters(nameFilters.contains(QLatin1String("*")) ? QStringList() : nameFilters)
       , filters(QDir::NoFilter == filters ? QDir::AllEntries : filters)
       , iteratorFlags(flags)
 {
@@ -270,10 +270,9 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
         return false;
 
     // name filter
-#ifndef QT_NO_REGEXP 
-    const bool hasNameFilters = !nameFilters.isEmpty() && !(nameFilters.contains(QLatin1String("*")));
+#ifndef QT_NO_REGEXP
     // Pass all entries through name filters, except dirs if the AllDirs
-    if (hasNameFilters && !((filters & QDir::AllDirs) && fi.isDir())) {
+    if (!nameFilters.isEmpty() && !((filters & QDir::AllDirs) && fi.isDir())) {
         bool matched = false;
         for (int i = 0; i < nameFilters.size(); ++i) {
             QRegExp regexp(nameFilters.at(i),
@@ -377,7 +376,7 @@ QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(path, QStringList(QLatin1String("*")), filters, flags))
+    : d(new QDirIteratorPrivate(path, QStringList(), filters, flags))
 {
     d->q = this;
 }
@@ -395,7 +394,7 @@ QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorF
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(path, QStringList(QLatin1String("*")), QDir::NoFilter, flags))
+    : d(new QDirIteratorPrivate(path, QStringList(), QDir::NoFilter, flags))
 {
     d->q = this;
 }
