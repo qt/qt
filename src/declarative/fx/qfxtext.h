@@ -125,8 +125,6 @@ public:
     bool smoothTransform() const;
     void setSmoothTransform(bool);
 
-    virtual QString propertyInfo() const;
-
     void paintContents(QPainter &p);
 
     virtual void componentComplete();

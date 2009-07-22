@@ -139,8 +139,6 @@ public:
     QAction *forwardAction() const;
     QAction *stopAction() const;
 
-    virtual QString propertyInfo() const;
-
     QWebPage *page() const;
     void setPage(QWebPage *page);
 

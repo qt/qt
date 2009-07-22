@@ -203,8 +203,6 @@ public:
     QFxParticleMotion *motion() const;
     void setMotion(QFxParticleMotion *);
 
-    virtual QString propertyInfo() const;
-
     void paintContents(QPainter &p);
 
 protected:

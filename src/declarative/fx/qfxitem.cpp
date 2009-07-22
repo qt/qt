@@ -1732,13 +1732,6 @@ QList<QFxTransform *> *QFxItem::transform()
 }
 
 
-/*! \internal
-*/
-QString QFxItem::propertyInfo() const
-{
-    return QString();
-}
-
 /*!
   Creates a new child of the given component \a type.  The
   newChildCreated() signal will be emitted when and if the child is

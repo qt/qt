@@ -91,7 +91,6 @@ public:
     QUrl source() const;
     virtual void setSource(const QUrl &url);
 
-    virtual QString propertyInfo() const;
     void paintContents(QPainter &painter);
 
 Q_SIGNALS:

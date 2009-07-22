@@ -197,8 +197,6 @@ public:
 
     QList<QFxTransform *> *transform();
 
-    virtual QString propertyInfo() const; // ### unused, remove me
-
     bool isClassComplete() const;
     bool isComponentComplete() const;
 

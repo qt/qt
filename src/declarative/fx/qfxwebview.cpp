@@ -507,11 +507,6 @@ void QFxWebView::drawContents(QPainter *p, const QRect &r)
     page()->mainFrame()->render(p,r);
 }
 
-QString QFxWebView::propertyInfo() const
-{
-    return page()->mainFrame()->url().toString();
-}
-
 static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
 {
     QEvent::Type t;
