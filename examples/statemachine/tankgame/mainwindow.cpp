@@ -160,7 +160,7 @@ void MainWindow::init()
     connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
 
     m_machine = new QStateMachine(this);
-    QState *stoppedState = new QState(m_machine->rootState());
+    QState *stoppedState = new QState(m_machine);
     stoppedState->setObjectName("stoppedState");
     stoppedState->assignProperty(runGameAction, "enabled", true);
     stoppedState->assignProperty(stopGameAction, "enabled", false);
@@ -188,14 +188,14 @@ void MainWindow::init()
     stoppedState->setInitialState(hs);
 
 //! [0]
-    m_runningState = new QState(QState::ParallelStates, m_machine->rootState());
+    m_runningState = new QState(QState::ParallelStates, m_machine);
 //! [0]
     m_runningState->setObjectName("runningState");
     m_runningState->assignProperty(addTankAction, "enabled", false);
     m_runningState->assignProperty(runGameAction, "enabled", false);
     m_runningState->assignProperty(stopGameAction, "enabled", true);
 
-    QState *gameOverState = new QState(m_machine->rootState());
+    QState *gameOverState = new QState(m_machine);
     gameOverState->setObjectName("gameOverState");
     gameOverState->assignProperty(stopGameAction, "enabled", false);
     connect(gameOverState, SIGNAL(entered()), this, SLOT(gameOver()));
