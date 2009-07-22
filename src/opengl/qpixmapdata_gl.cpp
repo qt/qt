@@ -303,6 +303,8 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     return img;
 }
 
+extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
+
 QImage QGLPixmapData::toImage() const
 {
     if (!isValid())
@@ -319,7 +321,6 @@ QImage QGLPixmapData::toImage() const
     }
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
-    extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
     return qt_gl_read_texture(QSize(w, h), true, true);
 }
