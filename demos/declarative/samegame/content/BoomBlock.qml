@@ -1,6 +1,7 @@
 Item { id:block
     property bool dying: false
     property bool spawned: false
+    property bool selected: false
     property int type: 0
     property int targetX: 0
     property int targetY: 0

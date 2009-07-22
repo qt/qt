@@ -292,7 +292,7 @@ QmlContext::~QmlContext()
             d->childExpressions.begin();
             iter != d->childExpressions.end();
             ++iter) {
-        (*iter)->d->ctxt = 0;
+        (*iter)->d_func()->ctxt = 0;
     }
 
     for (int ii = 0; ii < d->contextObjects.count(); ++ii) {

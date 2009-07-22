@@ -13,7 +13,6 @@
 
 #include <qfxview.h>
 
-#include "qmlbindablevalue.h"
 #include "qmlviewer.h"
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>

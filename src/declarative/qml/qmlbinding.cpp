@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <qml.h>
-#include "qmlbindablevalue.h"
-#include "qmlbindablevalue_p.h"
+#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include <qmlcontext.h>
 #include <qmlinfo.h>
 #include <QVariant>
@@ -54,46 +54,47 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
 
-QmlBindableValuePrivate::QmlBindableValuePrivate()
+QmlBindingPrivate::QmlBindingPrivate()
 : inited(false), updating(false), enabled(true), mePtr(0)
 {
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlBindableValue);
-QmlBindableValue::QmlBindableValue(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(ctxt, data, rc, obj)
+QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, QObject *parent)
+: QmlExpression(ctxt, data, rc, obj, *new QmlBindingPrivate)
 {
+    setParent(parent);
 }
 
-QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, QmlContext *ctxt, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(ctxt, str, obj)
+QmlBinding::QmlBinding(const QString &str, QObject *obj, QmlContext *ctxt, QObject *parent)
+: QmlExpression(ctxt, str, obj, *new QmlBindingPrivate)
 {
+    setParent(parent);
 }
 
-QmlBindableValue::~QmlBindableValue()
+QmlBinding::~QmlBinding()
 {
-    Q_D(QmlBindableValue);
+    Q_D(QmlBinding);
     if(d->mePtr)
         *(d->mePtr) = 0;
 }
 
-void QmlBindableValue::setTarget(const QmlMetaProperty &prop)
+void QmlBinding::setTarget(const QmlMetaProperty &prop)
 {
-    Q_D(QmlBindableValue);
+    Q_D(QmlBinding);
     d->property = prop;
 
     update();
 }
 
-QmlMetaProperty QmlBindableValue::property() const 
+QmlMetaProperty QmlBinding::property() const 
 {
-   Q_D(const QmlBindableValue);
+   Q_D(const QmlBinding);
    return d->property; 
 }
 
-void QmlBindableValue::init()
+void QmlBinding::init()
 {
-    Q_D(QmlBindableValue);
+    Q_D(QmlBinding);
 
     if (d->inited)
         return;
@@ -101,24 +102,18 @@ void QmlBindableValue::init()
     update();
 }
 
-void QmlBindableValue::setExpression(const QString &expr)
+void QmlBinding::forceUpdate()
 {
-    QmlExpression::setExpression(expr);
-    update();
-}
-
-void QmlBindableValue::forceUpdate()
-{
-    Q_D(QmlBindableValue);
+    Q_D(QmlBinding);
     if (!d->inited)
         init();
     else
         update();
 }
 
-void QmlBindableValue::update()
+void QmlBinding::update()
 {
-    Q_D(QmlBindableValue);
+    Q_D(QmlBinding);
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindableValueUpdate> bu;
@@ -135,7 +130,7 @@ void QmlBindableValue::update()
             Q_ASSERT(idx != -1);
 
             void *a[1];
-            QmlBindableValue *t = this;
+            QmlBinding *t = this;
             a[0] = (void *)&t;
             QMetaObject::metacall(d->property.object(), 
                                   QMetaObject::WriteProperty,
@@ -164,21 +159,21 @@ void QmlBindableValue::update()
     }
 }
 
-void QmlBindableValue::valueChanged()
+void QmlBinding::valueChanged()
 {
     update();
 }
 
-void QmlBindableValue::setEnabled(bool e)
+void QmlBinding::setEnabled(bool e)
 {
-    Q_D(QmlBindableValue);
+    Q_D(QmlBinding);
     d->enabled = e;
     setTrackChange(e);
 }
 
-bool QmlBindableValue::enabled() const
+bool QmlBinding::enabled() const
 {
-    Q_D(const QmlBindableValue);
+    Q_D(const QmlBinding);
 
     return d->enabled;
 }

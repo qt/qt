@@ -345,8 +345,7 @@ void QmlFollow::setDamping(qreal damping)
     to 0 to be considered equal to zero. This will depend on the usage of the value.
     For pixel positions, 0.25 would suffice. For scale, 0.005 will suffice.
 
-    The default is 0.01. Small performance improvements can result in tuning this
-    value.
+    The default is 0.01. Tuning this value can provide small performance improvements.
 */
 qreal QmlFollow::epsilon() const
 {

@@ -44,7 +44,7 @@
 #include <qml.h>
 #include <private/qfxperf_p.h>
 #include <QStringList>
-#include <qmlbindablevalue.h>
+#include "qmlbinding.h"
 #include <qmlcontext.h>
 #include "qmlboundsignal_p.h"
 #include <math.h>
@@ -260,7 +260,7 @@ QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
 
   \value Unknown The category is unknown.  This will never be returned from propertyCategory()
   \value InvalidProperty The property is invalid.
-  \value Bindable The property is a QmlBindableValue.
+  \value Bindable The property is a QmlBinding.
   \value List The property is a QList pointer
   \value QmlList The property is a QmlList pointer
   \value Object The property is a QObject derived type pointer
@@ -294,7 +294,7 @@ QmlMetaPropertyPrivate::propertyCategory() const
         int type = propertyType();
         if (type == QmlMetaProperty::Invalid)
             category = QmlMetaProperty::InvalidProperty;
-        else if (type == qMetaTypeId<QmlBindableValue *>())
+        else if (type == qMetaTypeId<QmlBinding *>())
             category = QmlMetaProperty::Bindable;
         else if (QmlMetaType::isList(type))
             category = QmlMetaProperty::List;
@@ -323,7 +323,7 @@ QmlMetaProperty::propertyCategory(const QMetaProperty &prop)
         else
             type = prop.type();
 
-        if (type == qMetaTypeId<QmlBindableValue *>())
+        if (type == qMetaTypeId<QmlBinding *>())
             return Bindable;
         else if (QmlMetaType::isList(type))
             return List;
@@ -510,7 +510,7 @@ QMetaProperty QmlMetaProperty::property() const
     Returns the binding associated with this property, or 0 if no binding 
     exists.
 */
-QmlBindableValue *QmlMetaProperty::binding() const
+QmlBinding *QmlMetaProperty::binding() const
 {
     if (!isProperty() || type() & Attached)
         return 0;
@@ -519,8 +519,8 @@ QmlBindableValue *QmlMetaProperty::binding() const
     for (QObjectList::ConstIterator iter = children.begin();
             iter != children.end(); ++iter) {
         QObject *child = *iter;
-        if (child->metaObject() == &QmlBindableValue::staticMetaObject) {
-            QmlBindableValue *v = static_cast<QmlBindableValue *>(child);
+        if (child->metaObject() == &QmlBinding::staticMetaObject) {
+            QmlBinding *v = static_cast<QmlBinding *>(child);
             if (v->property() == *this)
                 return v;
         }
@@ -535,7 +535,7 @@ QmlBindableValue *QmlMetaProperty::binding() const
     \a binding will be enabled, and the returned binding (if any) will be
     disabled.
 */
-QmlBindableValue *QmlMetaProperty::setBinding(QmlBindableValue *binding) const
+QmlBinding *QmlMetaProperty::setBinding(QmlBinding *binding) const
 {
     if (!isProperty() || type() & Attached)
         return 0;
@@ -544,8 +544,8 @@ QmlBindableValue *QmlMetaProperty::setBinding(QmlBindableValue *binding) const
     for (QObjectList::ConstIterator iter = children.begin();
             iter != children.end(); ++iter) {
         QObject *child = *iter;
-        if (child->metaObject() == &QmlBindableValue::staticMetaObject) {
-            QmlBindableValue *v = static_cast<QmlBindableValue *>(child);
+        if (child->metaObject() == &QmlBinding::staticMetaObject) {
+            QmlBinding *v = static_cast<QmlBinding *>(child);
             if (v->property() == *this && v->enabled()) {
 
                 v->setEnabled(false);

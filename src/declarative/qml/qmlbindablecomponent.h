@@ -39,14 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDABLEVALUE_H
-#define QMLBINDABLEVALUE_H
+#ifndef QMLBINDABLECOMPONENT_H
+#define QMLBINDABLECOMPONENT_H
 
-#include <QtCore/QObject>
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmlexpression.h>
+#include <QtDeclarative/qmlcomponent.h>
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -54,45 +55,37 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlExpression;
+class QmlBindableComponentPrivate;
+class QmlEngine;
 class QmlContext;
-class QmlBindableValuePrivate;
-class Q_DECLARATIVE_EXPORT QmlBindableValue : public QmlPropertyValueSource, 
-                                              public QmlExpression
+class Q_DECLARATIVE_EXPORT QmlBindableComponent : public QmlComponent
 {
-Q_OBJECT
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlBindableComponent)
+    friend class QmlEngine;
 public:
-    QmlBindableValue(const QString &, QObject *, QmlContext *, QObject *parent=0);
-    QmlBindableValue(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
-    ~QmlBindableValue();
+    QmlBindableComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
+    QmlBindableComponent(QmlEngine *, QObject *parent=0);
+    Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged);
+    Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged);
+    Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged);
+    Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged);
 
-    virtual void setTarget(const QmlMetaProperty &);
-    QmlMetaProperty property() const;
+    Q_INVOKABLE QScriptValue createObject();
 
-    Q_CLASSINFO("DefaultProperty", "expression")
-    Q_PROPERTY(QString expression READ expression WRITE setExpression)
-    virtual void setExpression(const QString &);
-
-    void init();
-    void forceUpdate();
-
-    void setEnabled(bool);
-    bool enabled() const;
-
-public Q_SLOTS:
-    void update();
-
-protected:
-    virtual void valueChanged();
-
-private:
-    Q_DECLARE_PRIVATE(QmlBindableValue)
+    void setContext(QmlContext* c);
+Q_SIGNALS:
+    void isNullChanged();
+    void isErrorChanged();
+    void isReadyChanged();
+    void isLoadingChanged();
+private slots:
+    void statusChange(QmlComponent::Status newStatus);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlBindableValue)
+QML_DECLARE_TYPE(QmlBindableComponent)
 
 QT_END_HEADER
-
-#endif // QMLBINDABLEVALUE_H
+#endif

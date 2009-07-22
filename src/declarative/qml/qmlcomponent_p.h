@@ -88,7 +88,7 @@ public:
     int count;
     QmlCompiledData *cc;
 
-    QList<QmlEnginePrivate::SimpleList<QmlBindableValue> > bindValues;
+    QList<QmlEnginePrivate::SimpleList<QmlBinding> > bindValues;
     QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
 
     bool completePending;
