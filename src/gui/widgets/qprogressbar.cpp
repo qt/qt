@@ -447,7 +447,7 @@ QString QProgressBar::text() const
             || (d->value == INT_MIN && d->minimum == INT_MIN))
         return QString();
 
-    qint64 totalSteps = qint64(d->maximum) - qint64(d->minimum);
+    int totalSteps = d->maximum - d->minimum;
 
     QString result = d->format;
     result.replace(QLatin1String("%m"), QString::number(totalSteps));
@@ -461,7 +461,7 @@ QString QProgressBar::text() const
         return result;
     }
 
-    int progress = int(((qreal(d->value) - qreal(d->minimum)) * 100.0) / totalSteps);
+    int progress = (d->value - d->minimum) * 100 / totalSteps;
     result.replace(QLatin1String("%p"), QString::number(progress));
     return result;
 }
