@@ -226,8 +226,6 @@ public:
     void setImplicitHeight(qreal);
     bool heightValid() const; // ### better name?
 
-    QPointF scenePos() const; // ### remove me
-
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
     QPointF transformOriginPoint() const;

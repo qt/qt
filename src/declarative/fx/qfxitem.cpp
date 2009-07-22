@@ -1896,14 +1896,6 @@ void QFxItem::parentChanged(QFxItem *, QFxItem *)
 }
 
 /*!
-    Returns the item's (0, 0) point mapped to scene coordinates.
- */
-QPointF QFxItem::scenePos() const
-{
-    return mapToScene(QPointF(0, 0));
-}
-
-/*!
     \enum QFxItem::TransformOrigin
 
     Controls the point about which simple transforms like scale apply.
