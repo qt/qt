@@ -354,7 +354,7 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the parent of the item changes.
 
-    \sa setItemParent()
+    \sa setParentItem()
 */
 
 /*!
@@ -440,22 +440,23 @@ QFxItem::~QFxItem()
     \property QFxItem::parent
     This property holds the parent of the item.
 */
-void QFxItem::setItemParent(QFxItem *parent)
+void QFxItem::setParentItem(QFxItem *parent)
 {
-    setParent(parent);
+    QFxItem *oldParent = parentItem();
+    if (parent == oldParent || !parent) return;
+
+    QObject::setParent(parent);
+    QGraphicsObject::setParentItem(parent);
+
+    parentChanged(parent, oldParent);
 }
 
 /*!
     Returns the QFxItem parent of this item.
 */
-QFxItem *QFxItem::itemParent() const
-{
-    return qobject_cast<QFxItem *>(QGraphicsItem::parentItem());
-}
-
 QFxItem *QFxItem::parentItem() const
 {
-    return itemParent();
+    return qobject_cast<QFxItem *>(QGraphicsObject::parentItem());
 }
 
 /*!
@@ -849,7 +850,7 @@ void QFxItem::qmlLoaded()
             qWarning() << d->_qmlcomp->errors();
         QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
         if (qmlChild) {
-            qmlChild->setItemParent(this);
+            qmlChild->setParentItem(this);
             d->_qmlChildren.insert(d->_qml.toString(), qmlChild);
             d->qmlItem = qmlChild;
         } else {
@@ -1037,8 +1038,8 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyPress(&ke);
     event->setAccepted(ke.isAccepted());
-    if (itemParent() && !ke.isAccepted())
-        itemParent()->keyPressEvent(event);
+    if (parentItem() && !ke.isAccepted())
+        parentItem()->keyPressEvent(event);
 }
 
 /*!
@@ -1049,8 +1050,8 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyRelease(&ke);
     event->setAccepted(ke.isAccepted());
-    if (itemParent() && !ke.isAccepted())
-        itemParent()->keyReleaseEvent(event);
+    if (parentItem() && !ke.isAccepted())
+        parentItem()->keyReleaseEvent(event);
 }
 
 /*!
@@ -2269,22 +2270,6 @@ void QFxItem::setOptions(Options options, bool set)
         else
             d->gvRemoveMouseFilter();
     }
-}
-
-/*!
-    \fn void QFxItem::setParent(QFxItem *parent)
-
-    Sets the parent of the item to \a parent.
- */
-void QFxItem::setParent(QFxItem *p)
-{
-    if (p == parent() || !p) return;
-
-    QObject::setParent(p);
-
-    QFxItem *oldParent = itemParent();
-    setParentItem(p);
-    parentChanged(p, oldParent);
 }
 
 void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)

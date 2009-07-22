@@ -113,7 +113,7 @@ void QFxComponentInstance::create()
             QFxItem *objitem = qobject_cast<QFxItem *>(obj);
             if (objitem) {
                 d->instance = objitem;
-                objitem->setItemParent(this);
+                objitem->setParentItem(this);
                 objitem->setFocus(true);
                 connect(objitem, SIGNAL(widthChanged()), this, SLOT(updateSize()));
                 connect(objitem, SIGNAL(heightChanged()), this, SLOT(updateSize()));

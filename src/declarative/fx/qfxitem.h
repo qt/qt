@@ -121,7 +121,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QFxItem * parent READ itemParent WRITE setItemParent NOTIFY parentChanged DESIGNABLE false FINAL)
+    Q_PROPERTY(QFxItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
     Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
@@ -176,9 +176,8 @@ public:
     QFxItem(QFxItem *parent = 0);
     virtual ~QFxItem();
 
-    QFxItem *itemParent() const; // ### remove me
     QFxItem *parentItem() const;
-    void setItemParent(QFxItem *parent); // ## setParentItem
+    void setParentItem(QFxItem *parent); // ## setParentItem
 
     QmlList<QObject *> *data();
     QmlList<QFxItem *> *children();
@@ -239,8 +238,6 @@ public:
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
     QPointF transformOriginPoint() const;
-
-    void setParent(QFxItem *);
 
     QRect itemBoundingRect(); // ### remove me
 

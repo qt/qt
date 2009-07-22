@@ -92,7 +92,7 @@ public:
         Q_Q(QFxItem);
 
         if (parent)
-            q->setItemParent(parent);
+            q->setParentItem(parent);
         _baselineOffset.invalidate();
         q->setAcceptedMouseButtons(Qt::NoButton);
         q->setFlags(QGraphicsItem::ItemHasNoContents |

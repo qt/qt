@@ -1615,7 +1615,7 @@ void QFxListView::createdItem(int index, QFxItem *item)
 {
     Q_D(QFxListView);
     if (d->requestedIndex != index) {
-        item->setItemParent(viewport());
+        item->setParentItem(viewport());
         d->unrequestedItems.insert(item, index);
         if (d->orient == Qt::Vertical)
             item->setY(d->positionAt(index));

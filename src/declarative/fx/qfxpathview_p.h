@@ -96,7 +96,7 @@ public:
         requestedIndex = modelIndex;
         QFxItem *item = model->item(modelIndex);
         if (item)
-            item->setItemParent(q);
+            item->setParentItem(q);
         requestedIndex = -1;
         return item;
     }
