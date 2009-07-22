@@ -79,7 +79,7 @@ bool QResourceFileEngineIterator::hasNext() const
             that->index = 0;
     }
 
-    return index <= entries.size();
+    return index < entries.size();
 }
 
 QString QResourceFileEngineIterator::currentFileName() const
