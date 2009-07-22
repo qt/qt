@@ -406,7 +406,6 @@ void tst_QScriptValue::toString()
             "})()");
         QVERIFY(!eng.hasUncaughtException());
         QVERIFY(objectObject.isObject());
-        QEXPECT_FAIL("", "Should return an error string", Continue);
         QCOMPARE(objectObject.toString(), QString::fromLatin1("TypeError: Function.prototype.toString called on incompatible object"));
         QVERIFY(eng.hasUncaughtException());
         eng.clearExceptions();
