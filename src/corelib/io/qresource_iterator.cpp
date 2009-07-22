@@ -75,8 +75,7 @@ bool QResourceFileEngineIterator::hasNext() const
         // Initialize and move to the next entry.
         QResourceFileEngineIterator *that = const_cast<QResourceFileEngineIterator *>(this);
         that->entries = resource.children();
-        if (!that->entries.isEmpty())
-            that->index = 0;
+        that->index = 0;
     }
 
     return index < entries.size();
