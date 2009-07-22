@@ -2276,7 +2276,7 @@ void tst_QScriptExtQObject::findChild()
         QCOMPARE(result.isNull(), true);
     }
 
-    {    
+    {
         QScriptValue result = m_engine->evaluate("myObject.findChild('myChildObject')");
         QCOMPARE(result.isQObject(), true);
         QCOMPARE(result.toQObject(), child);
@@ -2287,7 +2287,6 @@ void tst_QScriptExtQObject::findChild()
 
 void tst_QScriptExtQObject::findChildren()
 {
-    QSKIP("Not implemented", SkipAll);
     QObject *child = new QObject(m_myObject);
     child->setObjectName(QLatin1String("myChildObject"));
 
@@ -2353,6 +2352,35 @@ void tst_QScriptExtQObject::findChildren()
         QVERIFY(count == 0);
     }
 
+    // matchall regexp
+    {
+        QScriptValue result = m_engine->evaluate("myObject.findChildren(/.*/)");
+        QVERIFY(result.isArray());
+        int count = 3;
+        QCOMPARE(result.property("length").toInt32(), count);
+        for (int i = 0; i < 3; ++i) {
+            QObject *o = result.property(i).toQObject();
+            if (o == namelessChild || o == child || o == anotherChild)
+                --count;
+        }
+        QVERIFY(count == 0);
+    }
+
+    // matchall regexp my*
+    {
+        QScriptValue result = m_engine->evaluate("myObject.findChildren(new RegExp(\"^my.*\"))");
+        QCOMPARE(result.isArray(), true);
+        QCOMPARE(result.property(QLatin1String("length")).toNumber(), 2.0);
+        QObject *o1 = result.property(QLatin1String("0")).toQObject();
+        QObject *o2 = result.property(QLatin1String("1")).toQObject();
+        if (o1 != child) {
+            QCOMPARE(o1, anotherChild);
+            QCOMPARE(o2, child);
+        } else {
+            QCOMPARE(o1, child);
+            QCOMPARE(o2, anotherChild);
+        }
+    }
     delete anotherChild;
     delete namelessChild;
     delete child;

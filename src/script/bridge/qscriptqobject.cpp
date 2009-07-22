@@ -27,6 +27,9 @@
 #include "JSFunction.h"
 #include "JSString.h"
 #include "JSValue.h"
+#include "JSArray.h"
+#include "RegExpObject.h"
+#include "RegExpConstructor.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1535,7 +1538,53 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *exec, JSC::JSObject*,
                                                                JSC::JSValue thisValue, const JSC::ArgList &args)
 {
-    return throwError(exec, JSC::GeneralError, "QObject.prototype.findChildren not implemented");
+    // extract the QObject
+    if (!thisValue.isObject(&QScriptObject::info))
+        return throwError(exec, JSC::TypeError, "this object is not a QObject");
+    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(thisValue));
+    QScriptObjectDelegate *delegate = scriptObject->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::QtObject))
+        return throwError(exec, JSC::TypeError, "this object is not a QObject");
+    const QObject *const obj = static_cast<QObjectDelegate*>(delegate)->value();
+
+    // find the children
+    QList<QObject *> children;
+    if (args.size() != 0) {
+        const JSC::JSValue arg = args.at(0);
+        if (arg.isObject(&JSC::RegExpObject::info)) {
+            const QObjectList allChildren= obj->children();
+
+            JSC::RegExpObject *const regexp = JSC::asRegExpObject(arg);
+
+            const int allChildrenCount = allChildren.size();
+            for (int i = 0; i < allChildrenCount; ++i) {
+                QObject *const child = allChildren.at(i);
+                const JSC::UString childName = qtStringToJSCUString(child->objectName());
+                JSC::RegExpConstructor* regExpConstructor = exec->lexicalGlobalObject()->regExpConstructor();
+                int position;
+                int length;
+                regExpConstructor->performMatch(regexp->regExp(), childName, 0, position, length);
+                if (position >= 0)
+                    children.append(child);
+            }
+        } else {
+            const QString name = QScript::qtStringFromJSCUString(args.at(0).toString(exec));
+            children = qFindChildren<QObject*>(obj, name);
+        }
+    } else {
+        children = qFindChildren<QObject*>(obj, QString());
+    }
+    // create the result array with the children
+    const int length = children.size();
+    JSC::JSArray *const result = JSC::constructEmptyArray(exec, length);
+
+    QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    for (int i = 0; i < length; ++i) {
+        QObject *const child = children.at(i);
+        result->put(exec, i, engine->newQObject(child, QScriptEngine::QtOwnership, opt));
+    }
+    return JSC::JSValue(result);
 }
 
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncToString(JSC::ExecState *exec, JSC::JSObject*,
