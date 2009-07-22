@@ -3514,16 +3514,21 @@ QString HtmlGenerator::getLink(const Atom *atom,
         else {
             *node = relative;
         }
-#if 0        
+
         if (*node) {
             if ((*node)->status() == Node::Obsolete) {
                 if (relative) {
                     if (relative->parent() != *node) {
                         if (relative->status() != Node::Obsolete) {
+                            relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
+                                                               .arg(atom->string())
+                                                               .arg(marker->plainFullName(relative)));
+#if 0                            
                             qDebug() << "Link to Obsolete entity"
                                      << (*node)->name();
                             qDebug() << "  relative entity"
                                      << relative->name();
+#endif                            
                         }
                     }
                 }
@@ -3543,7 +3548,7 @@ QString HtmlGenerator::getLink(const Atom *atom,
             //qDebug() << "Node Status:" << (*node)->status();
 #endif                
         }
-#endif
+
         while (!path.isEmpty()) {
             targetAtom = tre->findTarget(path.first(), *node);
             if (targetAtom == 0)
