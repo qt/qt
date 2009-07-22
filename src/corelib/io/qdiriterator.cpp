@@ -119,6 +119,10 @@ public:
     const QDir::Filters filters;
     const QDirIterator::IteratorFlags iteratorFlags;
 
+#ifndef QT_NO_REGEXP
+    QVector<QRegExp> nameRegExps;
+#endif
+
     QStack<QAbstractFileEngineIterator *> fileEngineIterators;
     QFileInfo currentFileInfo;
     QFileInfo nextFileInfo;
@@ -140,6 +144,15 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
       , filters(QDir::NoFilter == filters ? QDir::AllEntries : filters)
       , iteratorFlags(flags)
 {
+#ifndef QT_NO_REGEXP
+    nameRegExps.reserve(nameFilters.size());
+    for (int i = 0; i < nameFilters.size(); ++i)
+        nameRegExps.append(
+            QRegExp(nameFilters.at(i),
+                    (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive,
+                    QRegExp::Wildcard));
+#endif
+
     // Populate fields for hasNext() and next()
     pushDirectory(QFileInfo(path));
     advance();
@@ -274,11 +287,11 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     // Pass all entries through name filters, except dirs if the AllDirs
     if (!nameFilters.isEmpty() && !((filters & QDir::AllDirs) && fi.isDir())) {
         bool matched = false;
-        for (int i = 0; i < nameFilters.size(); ++i) {
-            QRegExp regexp(nameFilters.at(i),
-                            (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive,
-                            QRegExp::Wildcard);
-            if (regexp.exactMatch(fileName)) {
+        for (QVector<QRegExp>::const_iterator iter = nameRegExps.constBegin(),
+                                              end = nameRegExps.constEnd();
+                iter != end; ++iter) {
+
+            if (iter->exactMatch(fileName)) {
                 matched = true;
                 break;
             }
