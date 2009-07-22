@@ -1879,6 +1879,13 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 
 /*!
   Sets the model's role names to \a roleNames.
+
+  This function is provided to allow mapping of role identifiers to
+  role property names in Declarative UI.  This function must be called
+  before the model is used.  Modifying the role names after the model
+  has been set may result in undefined behaviour.
+
+  \sa roleNames()
 */
 void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
 {
@@ -1888,11 +1895,12 @@ void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
 
 /*!
   Returns the model's role names.
+
+  \sa setRoleNames
 */
 const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
 {
     Q_D(const QAbstractItemModel);
-    qDebug() << "roles" << d->roleNames;
     return d->roleNames;
 }
 
