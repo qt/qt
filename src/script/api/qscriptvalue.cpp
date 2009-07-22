@@ -1237,6 +1237,14 @@ QString QScriptValue::toString() const
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
         JSC::UString str = d->jscValue.toString(exec);
+        if (exec && exec->hadException()) {
+            JSC::JSValue savedException2;
+            QScriptValuePrivate::saveException(exec, &savedException2);
+            if (!str.size())
+                str = savedException2.toString(exec);
+            if (!eng_p->uncaughtException)
+                eng_p->uncaughtException = savedException2;
+        }
         QScriptValuePrivate::restoreException(exec, savedException);
         return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
     }

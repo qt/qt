@@ -392,11 +392,8 @@ void tst_QScriptValue::toString()
             "  o.toString = function() { throw new Error('toString'); };"
             "  return o;"
             "})()");
-        QEXPECT_FAIL("", "Should produce an error message (or should it?)", Continue);
         QCOMPARE(objectObject.toString(), QLatin1String("Error: toString"));
-        QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
         QVERIFY(eng.hasUncaughtException());
-        QEXPECT_FAIL("", "Should produce an error message (or should it?)", Continue);
         QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: toString"));
     }
     {
@@ -411,7 +408,6 @@ void tst_QScriptValue::toString()
         QVERIFY(objectObject.isObject());
         QEXPECT_FAIL("", "Should return an error string", Continue);
         QCOMPARE(objectObject.toString(), QString::fromLatin1("TypeError: Function.prototype.toString called on incompatible object"));
-        QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
         QVERIFY(eng.hasUncaughtException());
         eng.clearExceptions();
     }
