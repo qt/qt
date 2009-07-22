@@ -1368,8 +1368,10 @@ void QMessageBox::setVisible(bool visible)
 /*!
     \overload
 
-    Opens the dialog and connects its accepted() signal to the slot specified
-    by \a receiver and \a member.
+    Opens the dialog and connects its finished() or buttonClicked() signal to
+    the slot specified by \a receiver and \a member. If the slot in \a member
+    has a pointer for its first parameter the connection is to buttonClicked(),
+    otherwise the connection is to finished().
 
     The signal will be disconnected from the slot when the dialog is closed.
 */
