@@ -17,6 +17,11 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QScript
+{
+    QString qtStringFromJSCUString(const JSC::UString &str);
+}
+
 /*!
   \since 4.4
   \class QScriptString
@@ -58,11 +63,12 @@ QScriptStringPrivate::~QScriptStringPrivate()
 /*!
   \internal
 */
-void QScriptStringPrivate::init(QScriptString &q, const QString &value)
+void QScriptStringPrivate::init(QScriptString &q, QScriptEngine *engine, const JSC::Identifier &value)
 {
     Q_ASSERT(!q.isValid());
     q.d_ptr = new QScriptStringPrivate();
-    q.d_ptr->value = value;
+    q.d_ptr->identifier = value;
+    q.d_ptr->engine = engine;
     q.d_ptr->ref.ref();
 }
 
@@ -90,15 +96,6 @@ QScriptString::QScriptString(const QScriptString &other)
 QScriptString::~QScriptString()
 {
     if (d_ptr && !d_ptr->ref.deref()) {
-//    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-#if 0
-        if (isValid()) {
-            d_ptr->engine->uninternString(d_ptr);
-        } else {
-            // the engine has already been deleted
-            delete d_ptr;
-        }
-#endif
         delete d_ptr;
         d_ptr = 0;
     }
@@ -112,7 +109,6 @@ QScriptString &QScriptString::operator=(const QScriptString &other)
     if (d_ptr == other.d_ptr)
         return *this;
     if (d_ptr && !d_ptr->ref.deref()) {
-//        Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
         delete d_ptr;
     }
     d_ptr = other.d_ptr;
@@ -128,7 +124,7 @@ QScriptString &QScriptString::operator=(const QScriptString &other)
 bool QScriptString::isValid() const
 {
     Q_D(const QScriptString);
-    return (d != 0);
+    return (d && d->engine);
 }
 
 /*!
@@ -138,9 +134,15 @@ bool QScriptString::isValid() const
 bool QScriptString::operator==(const QScriptString &other) const
 {
     Q_D(const QScriptString);
-    // ### change back once proper string handles are implemented
-    return toString() == other.toString();
-//    return (d == other.d_func());
+    if (d == other.d_func())
+        return true;
+    if (!d || !other.d_func())
+        return false;
+    if (d->engine != other.d_func()->engine)
+        return false;
+    if (!d->engine)
+        return true;
+    return d->identifier == other.d_func()->identifier;
 }
 
 /*!
@@ -149,10 +151,7 @@ bool QScriptString::operator==(const QScriptString &other) const
 */
 bool QScriptString::operator!=(const QScriptString &other) const
 {
-    Q_D(const QScriptString);
-    // ### change back once proper string handles are implemented
-    return toString() != other.toString();
-//    return (d != other.d_func());
+    return !operator==(other);
 }
 
 /*!
@@ -164,9 +163,9 @@ bool QScriptString::operator!=(const QScriptString &other) const
 QString QScriptString::toString() const
 {
     Q_D(const QScriptString);
-    if (!d)
+    if (!d || !d->engine)
         return QString();
-    return d->value;
+    return QScript::qtStringFromJSCUString(d->identifier.ustring());
 }
 
 /*!

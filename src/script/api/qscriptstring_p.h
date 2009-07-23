@@ -28,20 +28,31 @@
 #ifndef QT_NO_SCRIPT
 
 #include <QtCore/qstring.h>
+#include <QtCore/qpointer.h>
+#include "qscriptengine.h"
+
+#include "Identifier.h"
+
 
 QT_BEGIN_NAMESPACE
 
 class QScriptString;
+class QScriptEngine;
 class QScriptStringPrivate
 {
 public:
     QScriptStringPrivate();
     ~QScriptStringPrivate();
 
-    static void init(QScriptString &q, const QString &value);
+    static void init(QScriptString &q, QScriptEngine *engine, const JSC::Identifier &value);
 
     QBasicAtomicInt ref;
-    QString value;
+#ifndef QT_NO_QOBJECT
+    QPointer<QScriptEngine> engine;
+#else
+    void *engine;
+#endif
+    JSC::Identifier identifier;
 };
 
 QT_END_NAMESPACE

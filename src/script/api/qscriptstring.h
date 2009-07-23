@@ -44,7 +44,7 @@ public:
 
 private:
     QScriptStringPrivate *d_ptr;
-
+    friend class QScriptValue;
     Q_DECLARE_PRIVATE(QScriptString)
 };
 

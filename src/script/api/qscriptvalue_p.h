@@ -104,7 +104,8 @@ public:
 
     static QScriptValuePrivate *get(const QScriptValue &q);
 
-    QScriptValue property(const QString &name, int resolveMode) const;
+    QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
+    QScriptValue property(const QString &, int resolveMode) const;
     QScriptValue property(quint32 index, int resolveMode) const;
 
     QScriptValue toPublic() {

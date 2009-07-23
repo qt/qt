@@ -16,6 +16,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
+#include "qscriptstring_p.h"
 
 #include "JSArray.h"
 #include "JSGlobalObject.h"
@@ -332,11 +333,17 @@ bool isFunction(JSC::JSValue value);
 
 QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
 {
-    Q_ASSERT(type == JSC);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
     JSC::ExecState *exec = eng_p->currentFrame;
     JSC::UString jscName = QScript::qtStringToJSCUString(name);
-    JSC::Identifier id = JSC::Identifier(exec, jscName);
+    return property(JSC::Identifier(exec, jscName), resolveMode);
+}
+
+QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+{
+    Q_ASSERT(type == JSC);
+    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::JSObject *object = jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
@@ -1698,47 +1705,7 @@ void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
     Q_D(QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return;
-    QScriptEngine *valueEngine = value.engine();
-    if (valueEngine && (valueEngine != d->engine)) {
-        qWarning("QScriptValue::setProperty(%s) failed: "
-                 "cannot set value created in a different engine",
-                 qPrintable(name));
-        return;
-    }
-    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    JSC::JSValue jscValue = eng_p->scriptValueToJSCValue(value);
-    JSC::UString jscName = QScript::qtStringToJSCUString(name);
-    JSC::ExecState *exec = eng_p->currentFrame;
-    JSC::Identifier id = JSC::Identifier(exec, jscName);
-    if (!jscValue) {
-        JSC::asObject(d->jscValue)->deleteProperty(exec, id);
-    } else {
-        if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
-            if (jscValue.isObject()) {
-                if (flags & QScriptValue::PropertyGetter)
-                    JSC::asObject(d->jscValue)->defineGetter(exec, id, JSC::asObject(jscValue));
-                if (flags & QScriptValue::PropertySetter)
-                    JSC::asObject(d->jscValue)->defineSetter(exec, id, JSC::asObject(jscValue));
-            }
-        } else {
-            if (flags != QScriptValue::KeepExistingFlags) {
-                if (JSC::asObject(d->jscValue)->hasOwnProperty(exec, id))
-                    JSC::asObject(d->jscValue)->deleteProperty(exec, id);
-                unsigned attribs = 0;
-                if (flags & QScriptValue::ReadOnly)
-                    attribs |= JSC::ReadOnly;
-                if (flags & QScriptValue::SkipInEnumeration)
-                    attribs |= JSC::DontEnum;
-                if (flags & QScriptValue::Undeletable)
-                    attribs |= JSC::DontDelete;
-                attribs |= flags & QScriptValue::UserRange;
-                JSC::asObject(d->jscValue)->putWithAttributes(exec, id, jscValue, attribs);
-            } else {
-                JSC::PutPropertySlot slot;
-                JSC::asObject(d->jscValue)->put(exec, id, jscValue, slot);
-            }
-        }
-    }
+    setProperty(engine()->toStringHandle(name), value, flags);
 }
 
 /*!
@@ -1853,8 +1820,10 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
 QScriptValue QScriptValue::property(const QScriptString &name,
                                     const ResolveFlags &mode) const
 {
-    // ### simplified for now
-    return property(name.toString(), mode);
+    Q_D(const QScriptValue);
+    if (!d || !d->isJSC() || !d->jscValue.isObject() || !name.isValid())
+        return QScriptValue();
+    return d->property(name.d_ptr->identifier, mode);
 }
 
 /*!
@@ -1874,8 +1843,49 @@ void QScriptValue::setProperty(const QScriptString &name,
                                const QScriptValue &value,
                                const PropertyFlags &flags)
 {
-    // ### simplified for now
-    setProperty(name.toString(), value, flags);
+    Q_D(QScriptValue);
+    if (!d || !d->isJSC() || !d->jscValue.isObject() || !name.isValid())
+        return;
+    QScriptEngine *valueEngine = value.engine();
+    if (valueEngine && (valueEngine != d->engine)) {
+        qWarning("QScriptValue::setProperty(%s) failed: "
+                 "cannot set value created in a different engine",
+                 qPrintable(name.toString()));
+        return;
+    }
+    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
+    JSC::ExecState *exec = eng_p->currentFrame;
+    JSC::JSValue jscValue = eng_p->scriptValueToJSCValue(value);
+    JSC::Identifier id = name.d_ptr->identifier;
+    if (!jscValue) {
+        JSC::asObject(d->jscValue)->deleteProperty(exec, id);
+    } else {
+        if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
+            if (jscValue.isObject()) {
+                if (flags & QScriptValue::PropertyGetter)
+                    JSC::asObject(d->jscValue)->defineGetter(exec, id, JSC::asObject(jscValue));
+                if (flags & QScriptValue::PropertySetter)
+                    JSC::asObject(d->jscValue)->defineSetter(exec, id, JSC::asObject(jscValue));
+            }
+        } else {
+            if (flags != QScriptValue::KeepExistingFlags) {
+                if (JSC::asObject(d->jscValue)->hasOwnProperty(exec, id))
+                    JSC::asObject(d->jscValue)->deleteProperty(exec, id);
+                unsigned attribs = 0;
+                if (flags & QScriptValue::ReadOnly)
+                    attribs |= JSC::ReadOnly;
+                if (flags & QScriptValue::SkipInEnumeration)
+                    attribs |= JSC::DontEnum;
+                if (flags & QScriptValue::Undeletable)
+                    attribs |= JSC::DontDelete;
+                attribs |= flags & QScriptValue::UserRange;
+                JSC::asObject(d->jscValue)->putWithAttributes(exec, id, jscValue, attribs);
+            } else {
+                JSC::PutPropertySlot slot;
+                JSC::asObject(d->jscValue)->put(exec, id, jscValue, slot);
+            }
+        }
+    }
 }
 
 /*!
@@ -1887,13 +1897,29 @@ void QScriptValue::setProperty(const QScriptString &name,
 QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
                                                         const ResolveFlags &mode) const
 {
+    if (!isObject())
+        return 0;
+    return propertyFlags(engine()->toStringHandle(name), mode);
+
+}
+
+/*!
+  \since 4.4
+
+  Returns the flags of the property with the given \a name, using the
+  given \a mode to resolve the property.
+
+  \sa property()
+*/
+QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &name,
+                                                        const ResolveFlags &mode) const
+{
     Q_D(const QScriptValue);
     if (!isObject())
         return 0;
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->currentFrame;
-    JSC::UString jscName = QScript::qtStringToJSCUString(name);
-    JSC::Identifier id = JSC::Identifier(exec, jscName);
+    JSC::Identifier id = name.d_ptr->identifier;
     unsigned attribs = 0;
     if (!JSC::asObject(d->jscValue)->getPropertyAttributes(exec, id, attribs))
         return 0;
@@ -1913,21 +1939,6 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
         result |= QScriptValue::QObjectMember;
     result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);
     return result;
-}
-
-/*!
-  \since 4.4
-
-  Returns the flags of the property with the given \a name, using the
-  given \a mode to resolve the property.
-
-  \sa property()
-*/
-QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &name,
-                                                        const ResolveFlags &mode) const
-{
-    // ### simplified for now
-    return propertyFlags(name.toString(), mode);
 }
 
 /*!

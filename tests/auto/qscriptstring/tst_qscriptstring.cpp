@@ -129,9 +129,7 @@ void tst_QScriptString::test()
 
         delete eng2;
 
-        QEXPECT_FAIL("", "String handles aren't properly implemented yet", Continue);
         QVERIFY(!oneInterned.isValid());
-        QEXPECT_FAIL("", "String handles aren't properly implemented yet", Continue);
         QVERIFY(!twoInterned.isValid());
     }
 }

@@ -3592,7 +3592,6 @@ void tst_QScriptEngine::reentrancy()
         QScriptEngine eng2;
         QScriptString s1 = eng1.toStringHandle("foo");
         QScriptString s2 = eng2.toStringHandle("foo");
-        QEXPECT_FAIL("", "String handles aren't properly implemented yet", Continue);
         QVERIFY(s1 != s2);
     }
     {
