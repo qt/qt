@@ -43,6 +43,7 @@
 #define QFXIMAGE_H
 
 #include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qfxscalegrid.h>
 #include <QtNetwork/qnetworkreply.h>
 
 

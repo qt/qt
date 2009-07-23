@@ -48,9 +48,7 @@
 #include <QtDeclarative/qfxanchors.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/qfxscalegrid.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmlstate.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qfont.h>
 
