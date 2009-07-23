@@ -291,9 +291,6 @@ QTimerInfoList::QTimerInfoList()
         msPerTick = 0;
     }
 #else
-#  if defined(Q_OS_MAC)
-    useMonotonicTimers = true;
-#  endif
     // using monotonic timers unconditionally
     getTime(currentTime);
 #endif
@@ -307,7 +304,7 @@ timeval QTimerInfoList::updateCurrentTime()
     return currentTime;
 }
 
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
+#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
 
 /*
   Returns true if the real time clock has changed by more than 10%
@@ -342,19 +339,7 @@ bool QTimerInfoList::timeChanged(timeval *delta)
 
 void QTimerInfoList::getTime(timeval &t)
 {
-#if defined(Q_OS_MAC)
-    {
-        static mach_timebase_info_data_t info = {0,0};
-        if (info.denom == 0)
-            mach_timebase_info(&info);
-
-        uint64_t cpu_time = mach_absolute_time();
-        uint64_t nsecs = cpu_time * (info.numer / info.denom);
-        t.tv_sec = nsecs * 1e-9;
-        t.tv_usec = nsecs * 1e-3 - (t.tv_sec * 1e6);
-        return;
-    }
-#elif !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
+#if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
     if (useMonotonicTimers) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -394,10 +379,21 @@ void QTimerInfoList::repairTimersIfNeeded()
 
 void QTimerInfoList::getTime(timeval &t)
 {
+#if defined(Q_OS_MAC)
+    static mach_timebase_info_data_t info = {0,0};
+    if (info.denom == 0)
+        mach_timebase_info(&info);
+
+    uint64_t cpu_time = mach_absolute_time();
+    uint64_t nsecs = cpu_time * (info.numer / info.denom);
+    t.tv_sec = nsecs * 1e-9;
+    t.tv_usec = nsecs * 1e-3 - (t.tv_sec * 1e6);
+#else
     timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     t.tv_sec = ts.tv_sec;
     t.tv_usec = ts.tv_nsec / 1000;
+#endif
 }
 
 void QTimerInfoList::repairTimersIfNeeded()
