@@ -104,7 +104,7 @@ void QmlFollowPrivate::tick(int time)
             return;
         // Real men solve the spring DEs using RK4.
         // We'll do something much simpler which gives a result that looks fine.
-        int count = (elapsed+8) / 16;
+        int count = elapsed / 16;
         for (int i = 0; i < count; ++i) {
             qreal diff = srcVal - currentValue;
             if (modulus != 0.0 && qAbs(diff) > modulus / 2) {
