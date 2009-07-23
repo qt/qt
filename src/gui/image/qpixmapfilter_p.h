@@ -78,6 +78,7 @@ public:
         ConvolutionFilter,
         ColorizeFilter,
         DropShadowFilter,
+        BlurFilter,
 
         UserFilter = 1024
     };
@@ -156,6 +157,33 @@ public:
     QPointF offset() const;
     void setOffset(const QPointF &offset);
     inline void setOffset(qreal dx, qreal dy) { setOffset(QPointF(dx, dy)); }
+};
+
+class QPixmapBlurFilterPrivate;
+
+class Q_GUI_EXPORT QPixmapBlurFilter : public QPixmapFilter
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPixmapBlurFilter)
+
+public:
+    QPixmapBlurFilter(QObject *parent = 0);
+    ~QPixmapBlurFilter();
+
+    enum BlurQuality
+    {
+        Fast,
+        High
+    };
+
+    BlurQuality blurQuality() const;
+    void setBlurQuality(BlurQuality blurQuality);
+
+    qreal blurRadius() const;
+    void setBlurRadius(qreal blurRadius);
+
+    QRectF boundingRectFor(const QRectF &rect) const;
+    void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;
 };
 
 QT_END_NAMESPACE

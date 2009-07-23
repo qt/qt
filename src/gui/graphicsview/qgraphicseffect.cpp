@@ -346,9 +346,15 @@ class QGraphicsBlurEffectPrivate : public QGraphicsEffectPrivate
     Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
 public:
     QGraphicsBlurEffectPrivate()
-        : blurRadius(4) { }
+    {
+        filter = new QPixmapBlurFilter;
+    }
+    ~QGraphicsBlurEffectPrivate()
+    {
+        delete filter;
+    }
 
-    int blurRadius;
+    QPixmapBlurFilter *filter;
 };
 
 QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
@@ -428,22 +434,19 @@ static QImage blurred(const QImage& image, const QRect& rect, int radius)
 int QGraphicsBlurEffect::blurRadius() const
 {
     Q_D(const QGraphicsBlurEffect);
-    return d->blurRadius;
+    return int(d->filter->blurRadius());
 }
 
 void QGraphicsBlurEffect::setBlurRadius(int radius)
 {
     Q_D(QGraphicsBlurEffect);
-    d->blurRadius = radius;
+    d->filter->setBlurRadius(radius);
 }
 
 QRectF QGraphicsBlurEffect::boundingRectFor(const QGraphicsItem *item)
 {
     Q_D(const QGraphicsBlurEffect);
-    qreal delta = d->blurRadius * 3;
-    QRectF blurRect = item->boundingRect();
-    blurRect.adjust(-delta, -delta, delta, delta);
-    return blurRect;
+    return d->filter->boundingRectFor(item->boundingRect());
 }
 
 void QGraphicsBlurEffect::drawItem(QGraphicsItem *item, QPainter *painter,
@@ -461,15 +464,10 @@ void QGraphicsBlurEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     if (!pixmap)
         return;
 
-    // blur routine
-    int radius = d->blurRadius;
-    QImage img = pixmap->toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    img = blurred(img, img.rect(), radius);
-
-    // Draw using an untransformed painter.
+    // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(deviceRect.topLeft() - QPointF(radius * 3, radius * 3), img);
+    d->filter->draw(painter, deviceRect.topLeft(), *pixmap, pixmap->rect());
     painter->setWorldTransform(restoreTransform);
 }
 
