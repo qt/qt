@@ -616,6 +616,7 @@ void QmlXmlListModel::requestFinished()
 {
     Q_D(QmlXmlListModel);
     if (d->reply->error() != QNetworkReply::NoError) {
+        disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
         d->reply = 0;
         d->status = Error;
@@ -623,6 +624,7 @@ void QmlXmlListModel::requestFinished()
         d->status = Idle;
         QByteArray data = d->reply->readAll();
         d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, data, &d->roleObjects);
+        disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
         d->reply = 0;
     }
