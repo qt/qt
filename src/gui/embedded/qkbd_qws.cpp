@@ -453,8 +453,9 @@ void QWSKeyboardHandler::endAutoRepeat()
     Maps \a keycode according to a keymap and sends that key event to the
     \l{Qt for Embedded Linux} server application.
  
-    Please see the QWS_KEYBOARD documentation for a description on how to
-    create and use keymap files.
+    Please see the \l{Qt for Embedded Linux Character Input} and the \l
+    {kmap2qmap} documentations for a description on how to create and use
+    keymap files.
 
     The key event is identified by its \a keycode value and the \a isPress
     and \a autoRepeat parameters.
@@ -474,9 +475,6 @@ void QWSKeyboardHandler::endAutoRepeat()
     The return value indicates if the actual QWSKeyboardHandler
     implementation needs to take care of a special action, like console
     switching or LED handling.
-
-    Standard Linux console keymaps can be found at the
-    \l {http://lct.sourceforege.net}{LCT project}
 
     If standard Linux console keymaps are used, \a keycode must be one of the
     standardized values defined in \c /usr/include/linux/input.h
