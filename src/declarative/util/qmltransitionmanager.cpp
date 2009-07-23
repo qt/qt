@@ -196,7 +196,10 @@ void QmlTransitionManager::transition(const QList<Action> &list,
     // transition
     foreach(const Action &action, applyList) {
         if (action.event) {
-            action.event->execute();
+            if (action.event->isReversable() && action.reverseEvent)
+                action.event->reverse();
+            else
+                action.event->execute();
         } else {
             action.property.write(action.toValue);
         }

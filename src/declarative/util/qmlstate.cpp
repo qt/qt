@@ -74,7 +74,7 @@ ActionEvent::~ActionEvent()
 {
 }
 
-QString ActionEvent::name() const
+QString ActionEvent::typeName() const
 {
     return QString();
 }
@@ -360,13 +360,13 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         if (action.event) {
             if (!action.event->isReversable())
                 continue;
-            for (jj = 0; jj < d->revertList.count(); ++jj) {
+            /*for (jj = 0; jj < d->revertList.count(); ++jj) {
                 ActionEvent *event = d->revertList.at(jj).event;
-                if (event && event->name() == action.event->name()) {
+                if (event && event->typeName() == action.event->typeName()) {
                     found = true;
                     break;
                 }
-            }
+            }*/ //### not a close enough match
         } else {
             action.fromBinding = action.property.binding();
 
