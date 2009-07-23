@@ -95,7 +95,13 @@ void QmlTransitionManagerPrivate::applyBindings()
         if (action.toBinding) {
             action.property.setBinding(action.toBinding);
             action.toBinding->forceUpdate();
+        } else if (action.event) {
+            if (action.reverseEvent)
+                action.event->reverse();
+            else
+                action.event->execute();
         }
+
     }
 
     bindingsList.clear();
@@ -113,6 +119,13 @@ void QmlTransitionManager::transition(const QList<Action> &list,
             d->bindingsList << action;
         if (action.fromBinding)
             action.property.setBinding(0); // Disable current binding
+        if (action.event && action.event->changesBindings()) {  //### assume isReversable()?
+            d->bindingsList << action;
+            if (action.reverseEvent)
+                action.event->clearReverseBindings();
+            else
+                action.event->clearForwardBindings();
+        }
     }
 
     // Animated transitions need both the start and the end value for
@@ -126,13 +139,22 @@ void QmlTransitionManager::transition(const QList<Action> &list,
 
     if (!d->bindingsList.isEmpty()) {
 
+        //### do extra actions here?
+
         // Apply all the property and binding changes
-        foreach(const Action &action, applyList) {
+        for (int ii = 0; ii < applyList.size(); ++ii) {
+            const Action &action = applyList.at(ii);
             if (action.toBinding) {
                 action.property.setBinding(action.toBinding);
                 action.toBinding->forceUpdate();
             } else if (!action.event) {
                 action.property.write(action.toValue);
+            } else if (action.event->isReversable()) {
+                if (action.reverseEvent)
+                    action.event->reverse();
+                else
+                    action.event->execute();
+                applyList << action.event->extraActions();
             }
         }
 
@@ -141,16 +163,28 @@ void QmlTransitionManager::transition(const QList<Action> &list,
             Action *action = &applyList[ii];
             if (action->event)
                 continue;
-
             const QmlMetaProperty &prop = action->property;
-            if (action->toBinding) 
+            if (action->toBinding || !action->toValue.isValid()) {  //### is this always right (used for exta actions)
                 action->toValue = prop.read();
+            }
         }
 
         // Revert back to the original values
         foreach(const Action &action, applyList) {
-            if (action.event)
+            if (action.event) {
+                if (action.event->isReversable()) {
+                    if (action.reverseEvent) {   //reverse the reverse
+                        action.event->clearForwardBindings();
+                        action.event->execute();
+                        action.event->clearReverseBindings();
+                    } else {
+                        action.event->clearReverseBindings();
+                        action.event->reverse();
+                        action.event->clearForwardBindings();
+                    }
+                }
                 continue;
+            }
 
             if (action.toBinding)
                 action.property.setBinding(0); // Make sure this is disabled during the transition
@@ -195,12 +229,12 @@ void QmlTransitionManager::transition(const QList<Action> &list,
     // applied at the end in applyBindings() to avoid any nastiness mid 
     // transition
     foreach(const Action &action, applyList) {
-        if (action.event) {
+        if (action.event && !action.event->changesBindings()) {
             if (action.event->isReversable() && action.reverseEvent)
                 action.event->reverse();
             else
                 action.event->execute();
-        } else {
+        } else if (!action.event) {
             action.property.write(action.toValue);
         }
     }

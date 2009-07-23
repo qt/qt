@@ -85,9 +85,17 @@ class ActionEvent
 public:
     virtual ~ActionEvent();
     virtual QString typeName() const;
+
     virtual void execute();
-    virtual bool isReversable();    //### revertable is probably more correct (same below)
+    virtual bool isReversable();
     virtual void reverse();
+
+    //virtual bool hasExtraActions();
+    virtual QList<Action> extraActions();
+
+    virtual bool changesBindings();
+    virtual void clearForwardBindings();
+    virtual void clearReverseBindings();
 };
 
 class QmlStateGroup;

@@ -292,11 +292,14 @@ public:
     QFxAnchorLine right;
     QFxAnchorLine top;
     QFxAnchorLine bottom;
-
     QFxAnchorLine origLeft;
     QFxAnchorLine origRight;
     QFxAnchorLine origTop;
     QFxAnchorLine origBottom;
+    qreal origX;
+    qreal origY;
+    qreal origWidth;
+    qreal origHeight;
 };
 
 QmlSetAnchors::QmlSetAnchors(QObject *parent)
@@ -313,18 +316,6 @@ QmlSetAnchors::ActionList QmlSetAnchors::actions()
     Action a;
     a.event = this;
     return ActionList() << a;
-}
-
-QString QmlSetAnchors::name() const
-{
-    Q_D(const QmlSetAnchors);
-    return d->name;
-}
-
-void QmlSetAnchors::setName(const QString &name)
-{
-    Q_D(QmlSetAnchors);
-    d->name = name;
 }
 
 QFxItem *QmlSetAnchors::object() const
@@ -406,22 +397,6 @@ void QmlSetAnchors::execute()
     if (!d->target)
         return;
 
-    //save original anchors
-    d->origLeft = d->target->anchors()->left();
-    d->origRight = d->target->anchors()->right();
-    d->origTop = d->target->anchors()->top();
-    d->origBottom = d->target->anchors()->bottom();
-
-    //reset any anchors that have been specified
-    if (d->resetList.contains(QLatin1String("left")))
-        d->target->anchors()->resetLeft();
-    if (d->resetList.contains(QLatin1String("right")))
-        d->target->anchors()->resetRight();
-    if (d->resetList.contains(QLatin1String("top")))
-        d->target->anchors()->resetTop();
-    if (d->resetList.contains(QLatin1String("bottom")))
-        d->target->anchors()->resetBottom();
-
     //set any anchors that have been specified
     if (d->left.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setLeft(d->left);
@@ -444,16 +419,6 @@ void QmlSetAnchors::reverse()
     if (!d->target)
         return;
 
-    //reset any anchors that were set in the state
-    if (d->left.anchorLine != QFxAnchorLine::Invalid)
-        d->target->anchors()->resetLeft();
-    if (d->right.anchorLine != QFxAnchorLine::Invalid)
-        d->target->anchors()->resetRight();
-    if (d->top.anchorLine != QFxAnchorLine::Invalid)
-        d->target->anchors()->resetTop();
-    if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
-        d->target->anchors()->resetBottom();
-
     //restore previous anchors
     if (d->origLeft.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setLeft(d->origLeft);
@@ -469,6 +434,83 @@ void QmlSetAnchors::reverse()
 QString QmlSetAnchors::typeName() const
 {
     return QLatin1String("SetAnchors");
+}
+
+QList<Action> QmlSetAnchors::extraActions()
+{
+    Q_D(QmlSetAnchors);
+    QList<Action> extra;
+
+    //### try to be smarter about which ones we add.
+    //    or short-circuit later on if they haven't actually changed.
+    //    we shouldn't set explicit width if there wasn't one before.
+    if (d->target) {
+        Action a;
+        a.fromValue = d->origX;
+        a.property = QmlMetaProperty(d->target, "x");
+        extra << a;
+
+        a.fromValue = d->origY;
+        a.property = QmlMetaProperty(d->target, "y");
+        extra << a;
+
+        a.fromValue = d->origWidth;
+        a.property = QmlMetaProperty(d->target, "width");
+        extra << a;
+
+        a.fromValue = d->origHeight;
+        a.property = QmlMetaProperty(d->target, "height");
+        extra << a;
+    }
+    
+    return extra;
+}
+
+bool QmlSetAnchors::changesBindings()
+{
+    return true;
+}
+
+void QmlSetAnchors::clearForwardBindings()
+{
+    Q_D(QmlSetAnchors);
+    d->origLeft = d->target->anchors()->left();
+    d->origRight = d->target->anchors()->right();
+    d->origTop = d->target->anchors()->top();
+    d->origBottom = d->target->anchors()->bottom();
+    d->origX = d->target->x();
+    d->origY = d->target->y();
+    d->origWidth = d->target->width();
+    d->origHeight = d->target->height();
+
+    //reset any anchors that have been specified
+    if (d->resetList.contains(QLatin1String("left")))
+        d->target->anchors()->resetLeft();
+    if (d->resetList.contains(QLatin1String("right")))
+        d->target->anchors()->resetRight();
+    if (d->resetList.contains(QLatin1String("top")))
+        d->target->anchors()->resetTop();
+    if (d->resetList.contains(QLatin1String("bottom")))
+        d->target->anchors()->resetBottom();
+}
+
+void QmlSetAnchors::clearReverseBindings()
+{
+    Q_D(QmlSetAnchors);
+    d->origX = d->target->x();
+    d->origY = d->target->y();
+    d->origWidth = d->target->width();
+    d->origHeight = d->target->height();
+
+    //reset any anchors that were set in the state
+    if (d->left.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetLeft();
+    if (d->right.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetRight();
+    if (d->top.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetTop();
+    if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetBottom();
 }
 
 QT_END_NAMESPACE

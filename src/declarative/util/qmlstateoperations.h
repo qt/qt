@@ -108,7 +108,6 @@ class Q_DECLARATIVE_EXPORT QmlSetAnchors : public QmlStateOperation, public Acti
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlSetAnchors)
 
-    Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QFxItem *target READ object WRITE setObject)
     Q_PROPERTY(QString reset READ reset WRITE setReset)
     Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft)
@@ -121,9 +120,6 @@ public:
     ~QmlSetAnchors();
 
     virtual ActionList actions();
-
-    QString name() const;
-    void setName(const QString &);
 
     QFxItem *object() const;
     void setObject(QFxItem *);
@@ -147,6 +143,10 @@ public:
     virtual bool isReversable();
     virtual void reverse();
     virtual QString typeName() const;
+    virtual QList<Action> extraActions();
+    virtual bool changesBindings();
+    virtual void clearForwardBindings();
+    virtual void clearReverseBindings();
 };
 
 QT_END_NAMESPACE
