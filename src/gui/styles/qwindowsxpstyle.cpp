@@ -1202,7 +1202,8 @@ QRect QWindowsXPStyle::subElementRect(SubElement sr, const QStyleOption *option,
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             MARGINS borderSize;
             if (widget) {
-                HTHEME theme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget), L"Button");
+                XPThemeData buttontheme(widget, 0, QLatin1String("Button"));
+                HTHEME theme = buttontheme.handle();
                 if (theme) {
                     int stateId;
                     if (!(option->state & State_Enabled))
@@ -1918,8 +1919,8 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
         {
             name = QLatin1String("BUTTON");
             partId = BP_PUSHBUTTON;
-            bool justFlat = (btn->features & QStyleOptionButton::Flat) && !(flags & (State_On|State_Sunken))
-                || (btn->features & QStyleOptionButton::CommandLinkButton
+            bool justFlat = ((btn->features & QStyleOptionButton::Flat) && !(flags & (State_On|State_Sunken)))
+                || ((btn->features & QStyleOptionButton::CommandLinkButton)
                     && !(flags & State_MouseOver)
                     && !(btn->features & QStyleOptionButton::DefaultButton));
             if (!(flags & State_Enabled) && !(btn->features & QStyleOptionButton::Flat))
@@ -3244,7 +3245,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
             if (theme.isValid()) {
                 SIZE size;
                 pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
-                res = (pm == PM_IndicatorWidth ? size.cx : res = size.cy);
+                res = (pm == PM_IndicatorWidth) ? size.cx : size.cy;
             }
         }
         break;
@@ -3256,7 +3257,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
             if (theme.isValid()) {
                 SIZE size;
                 pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
-                res = (pm == PM_ExclusiveIndicatorWidth ? size.cx : res = size.cy);
+                res = (pm == PM_ExclusiveIndicatorWidth) ? size.cx : size.cy;
             }
         }
         break;
@@ -3536,6 +3537,8 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
                     rect = QRect(frameWidth + hPad, controlTop + vPad, iconSize.width(), iconSize.height());
                 }
                 break;
+            default:
+                break;
             }
         }
         break;
@@ -3561,6 +3564,9 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
 
             case SC_ComboBoxListBoxPopup:
                 rect = cmb->rect;
+                break;
+
+            default:
                 break;
             }
         }
@@ -3626,7 +3632,8 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
     case CT_LineEdit:
     case CT_ComboBox:
         {
-            HTHEME theme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget), L"Button");
+            XPThemeData buttontheme(widget, 0, QLatin1String("Button"));
+            HTHEME theme = buttontheme.handle();
             MARGINS borderSize;
             if (theme) {
                 int result = pGetThemeMargins(theme,
@@ -3802,6 +3809,8 @@ QPixmap QWindowsXPStyle::standardPixmap(StandardPixmap standardPixmap, const QSt
             }
         }
         break;
+    default:
+        break;
     }
     return QWindowsStyle::standardPixmap(standardPixmap, option, widget);
 }
@@ -3922,6 +3931,8 @@ QIcon QWindowsXPStyle::standardIconImplementation(StandardPixmap standardIcon,
                 return d->dockFloat;
 
         }
+        break;
+    default:
         break;
     }
 

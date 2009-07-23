@@ -356,7 +356,7 @@ QSslSocket::~QSslSocket()
     want to ignore the errors and continue connecting, you must call
     ignoreSslErrors(), either from inside a slot function connected to
     the sslErrors() signal, or prior to entering encrypted mode. If
-    ignoreSslErrors is not called, the connection is dropped, signal
+    ignoreSslErrors() is not called, the connection is dropped, signal
     disconnected() is emitted, and QSslSocket returns to the
     UnconnectedState.
 
@@ -1592,7 +1592,33 @@ void QSslSocket::startServerEncryption()
 void QSslSocket::ignoreSslErrors()
 {
     Q_D(QSslSocket);
-    d->ignoreSslErrors = true;
+    d->ignoreAllSslErrors = true;
+}
+
+/*!
+    \overload
+    \since 4.6
+
+    This method tells QSslSocket to ignore only the errors given in \a
+    errors.
+
+    Note that you can set the expected certificate in the SSL error:
+    If, for instance, you want to connect to a server that uses
+    a self-signed certificate, consider the following snippet:
+
+    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 6
+
+    Multiple calls to this function will replace the list of errors that
+    were passed in previous calls.
+    You can clear the list of errors you want to ignore by calling this
+    function with an empty list.
+
+    \sa sslErrors()
+*/
+void QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    Q_D(QSslSocket);
+    d->ignoreErrorsList = errors;
 }
 
 /*!
@@ -1732,7 +1758,11 @@ void QSslSocketPrivate::init()
     mode = QSslSocket::UnencryptedMode;
     autoStartHandshake = false;
     connectionEncrypted = false;
-    ignoreSslErrors = false;
+    ignoreAllSslErrors = false;
+
+    // we don't want to clear the ignoreErrorsList, so
+    // that it is possible setting it before connecting
+//    ignoreErrorsList.clear();
 
     readBuffer.clear();
     writeBuffer.clear();

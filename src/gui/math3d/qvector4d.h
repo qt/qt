@@ -276,13 +276,14 @@ inline QPointF QVector4D::toPointF() const
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QVector4D &vector);
 #endif
 
+#ifndef QT_NO_DATASTREAM
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QVector4D &);
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QVector4D &);
+#endif
+
 #endif
 
 QT_END_NAMESPACE
-
-#ifndef QT_NO_VECTOR4D
-Q_DECLARE_METATYPE(QVector4D)
-#endif
 
 QT_END_HEADER
 

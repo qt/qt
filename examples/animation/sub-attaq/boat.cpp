@@ -142,14 +142,14 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
 
     //We setup the state machien of the boat
     machine = new QStateMachine(this);
-    QState *moving = new QState(machine->rootState());
+    QState *moving = new QState(machine);
     StopState *stopState = new StopState(this, moving);
     machine->setInitialState(moving);
     moving->setInitialState(stopState);
     MoveStateRight *moveStateRight = new MoveStateRight(this, moving);
     MoveStateLeft *moveStateLeft = new MoveStateLeft(this, moving);
-    LaunchStateRight *launchStateRight = new LaunchStateRight(this, machine->rootState());
-    LaunchStateLeft *launchStateLeft = new LaunchStateLeft(this, machine->rootState());
+    LaunchStateRight *launchStateRight = new LaunchStateRight(this, machine);
+    LaunchStateLeft *launchStateLeft = new LaunchStateLeft(this, machine);
 
     //then setup the transitions for the rightMove state
     KeyStopTransition *leftStopRight = new KeyStopTransition(this, QEvent::KeyPress, Qt::Key_Left);
@@ -216,10 +216,10 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
     launchStateLeft->addTransition(historyState);
     launchStateRight->addTransition(historyState);
 
-    QFinalState *final = new QFinalState(machine->rootState());
+    QFinalState *final = new QFinalState(machine);
 
     //This state play the destroyed animation
-    QAnimationState *destroyedState = new QAnimationState(machine->rootState());
+    QAnimationState *destroyedState = new QAnimationState(machine);
     destroyedState->setAnimation(destroyAnimation);
 
     //Play a nice animation when the boat is destroyed

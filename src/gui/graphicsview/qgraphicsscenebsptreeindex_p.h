@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,11 +53,7 @@
 #ifndef QGRAPHICSBSPTREEINDEX_H
 #define QGRAPHICSBSPTREEINDEX_H
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
+#include <QtCore/qglobal.h>
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
@@ -65,9 +61,10 @@ QT_MODULE(Gui)
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_bsp_p.h"
 
-#include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qlist.h>
+
+QT_BEGIN_NAMESPACE
 
 static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
@@ -204,10 +201,8 @@ static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
     return !(t1 >= b2 || t2 >= b1);
 }
 
-#endif // QT_NO_GRAPHICSVIEW
-
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QT_NO_GRAPHICSVIEW
 
 #endif // QGRAPHICSBSPTREEINDEX_H

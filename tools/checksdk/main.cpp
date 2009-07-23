@@ -46,17 +46,17 @@
 
 void usage()
 {
-    qDebug() << "SDK Scanner - Convenience Tool to setup your environment";
-    qDebug() << "              for crosscompilation to Windows CE";
-    qDebug() << "Options:";
-    qDebug() << "-help                This output";
-    qDebug() << "-list                List all available SDKs";
-    qDebug() << "-sdk <name>          Select specified SDK.";
-    qDebug() << "                     Note: SDK names with spaces need to be";
-    qDebug() << "                     specified in parenthesis";
-    qDebug() << "                     default: Windows Mobile 5.0 Pocket PC SDK (ARMV4I)";
-    qDebug() << "-script <file>       Create a script file which can be launched";
-    qDebug() << "                     to setup your environment for specified SDK";
+    printf("SDK Scanner - Convenience Tool to setup your environment\n");
+    printf("              for crosscompilation to Windows CE\n");
+    printf("Options:\n");
+    printf("-help                This output\n");
+    printf("-list                List all available SDKs\n");
+    printf("-sdk <name>          Select specified SDK.\n");
+    printf("                     Note: SDK names with spaces need to be\n");
+    printf("                     specified in parenthesis\n");
+    printf("                     default: Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\n");
+    printf("-script <file>       Create a script file which can be launched\n");
+    printf("                     to setup your environment for specified SDK\n");
 }
 
 int main(int argc, char **argv)
@@ -106,9 +106,12 @@ int main(int argc, char **argv)
     QList<CeSdkInfo> list = handler.listAll();
 
     if (operationList) {
-        qDebug() << "Available SDKs:";
-        for (QList<CeSdkInfo>::iterator it = list.begin(); it != list.end(); ++it)
-            qDebug() << "SDK Name:" << it->name();
+        printf("Available SDKs:\n");
+        for (QList<CeSdkInfo>::iterator it = list.begin(); it != list.end(); ++it) {
+            printf("SDK Name: ");
+            printf(qPrintable(it->name()));
+            printf("\n");
+        }
         return 0;
     }
 
@@ -132,10 +135,13 @@ int main(int argc, char **argv)
             includePath = QString::fromLatin1("INCLUDE=") + it->includePath();
             libPath = QString::fromLatin1("LIB=") + it->libPath();
             if (scriptFile.isEmpty()) {
-                qDebug() << "Please set up your environment with the following paths:";
-                qDebug() << qPrintable(binPath);
-                qDebug() << qPrintable(includePath);
-                qDebug() << qPrintable(libPath);
+                printf("Please set up your environment with the following paths:\n");
+                printf(qPrintable(binPath));
+                printf("\n");
+                printf(qPrintable(includePath));
+                printf("\n");
+                printf(qPrintable(libPath));
+                printf("\n");
                 return 0;
             } else {
                 QFile file(scriptFile);

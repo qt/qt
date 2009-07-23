@@ -571,10 +571,21 @@ void tst_QDir::entryList()
         return;
     }
 
-    for (int i=0; i<max; ++i)
-        QCOMPARE(actual[i], expected[i]);
+    bool doContentCheck = true;
+#ifdef Q_OS_UNIX
+    if (qstrcmp(QTest::currentDataTag(), "QDir::AllEntries | QDir::Writable") == 0) {
+        // for root, everything is writeable
+        if (::getuid() == 0)
+            doContentCheck = false;
+    }
+#endif
 
-    QCOMPARE(actual.count(), expected.count());
+    if (doContentCheck) {
+        for (int i=0; i<max; ++i)
+            QCOMPARE(actual[i], expected[i]);
+
+        QCOMPARE(actual.count(), expected.count());
+    }
 
     QFile::remove(SRCDIR "entrylist/writable");
     QFile::remove(SRCDIR "entrylist/linktofile");

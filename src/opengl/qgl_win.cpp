@@ -1413,7 +1413,7 @@ void QGLWidget::setContext(QGLContext *context,
     }
 
     if (!d->glcx->isValid()) {
-        bool wasSharing = shareContext || oldcx && oldcx->isSharing();
+        bool wasSharing = shareContext || (oldcx && oldcx->isSharing());
         d->glcx->create(shareContext ? shareContext : oldcx);
         // the above is a trick to keep disp lists etc when a
         // QGLWidget has been reparented, so remove the sharing

@@ -96,6 +96,10 @@ QXmlNamePool::~QXmlNamePool()
 {
 }
 
+QXmlNamePool::QXmlNamePool(QPatternist::NamePool *namePool) : d(QExplicitlySharedDataPointer<QPatternist::NamePool>(namePool))
+{
+}
+
 /*!
   Assigns the \a other name pool to this one.
  */

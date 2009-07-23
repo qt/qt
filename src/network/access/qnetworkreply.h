@@ -134,6 +134,7 @@ public:
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &configuration);
+    void ignoreSslErrors(const QList<QSslError> &errors);
 #endif
 
 public Q_SLOTS:

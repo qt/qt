@@ -52,6 +52,7 @@
 #include "qdebug.h"
 #include <private/qfontengine_ft_p.h>
 #include <private/qt_x11_p.h>
+#include <private/qpixmap_x11_p.h>
 #ifdef Q_OS_HPUX
 // for GLXPBuffer
 #include <private/qglpixelbuffer_p.h>
@@ -1515,5 +1516,125 @@ void QGLExtensions::init()
         nvidiaFboNeedsFinish = nvidiaDriverVersion >= 90.0 && nvidiaDriverVersion < 100.0;
     }
 }
+
+
+typedef void (*qt_glXBindTexImageEXT)(Display*, GLXDrawable, int, const int*);
+typedef void (*qt_glXReleaseTexImageEXT)(Display*, GLXDrawable, int);
+static qt_glXBindTexImageEXT glXBindTexImageEXT = 0;
+static qt_glXReleaseTexImageEXT glXReleaseTexImageEXT = 0;
+static bool qt_resolved_texture_from_pixmap = false;
+
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qint64 key, bool canInvert)
+{
+    Q_Q(QGLContext);
+
+    if (pm->data_ptr()->classId() != QPixmapData::X11Class)
+        return 0;
+    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pm->data_ptr());
+    const QX11Info *x11Info = qt_x11Info(pm);
+
+
+    // Check to see if we have NPOT texture support
+    // TODO: Use GLX_TEXTURE_RECTANGLE_EXT texture target on systems without npot textures
+    if ( !(QGLExtensions::glExtensions & QGLExtensions::NPOTTextures) &&
+         !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0))
+        return 0;
+
+    if (!qt_resolved_texture_from_pixmap) {
+        qt_resolved_texture_from_pixmap = true;
+
+        QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
+        if (glxExt.contains(QLatin1String("GLX_EXT_texture_from_pixmap"))) {
+#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
+            void *handle = dlopen(NULL, RTLD_LAZY);
+            if (handle) {
+                glXBindTexImageEXT = (qt_glXBindTexImageEXT) dlsym(handle, "glXBindTexImageEXT");
+                glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) dlsym(handle, "glXReleaseTexImageEXT");
+                dlclose(handle);
+            }
+            if (!glXBindTexImageEXT)
+#endif
+            {
+                extern const QString qt_gl_library_name();
+                QLibrary lib(qt_gl_library_name());
+                glXBindTexImageEXT = (qt_glXBindTexImageEXT) lib.resolve("glXBindTexImageEXT");
+                glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) lib.resolve("glXReleaseTexImageEXT");
+            }
+        }
+    }
+
+    if (!glXBindTexImageEXT)
+        return 0;
+
+#if !defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
+    return 0;
+#else
+    GLXFBConfig    *configList = 0;
+    GLXFBConfig     glxPixmapConfig;
+    int             configCount = 0;
+    bool            hasAlpha = pixmapData->hasAlphaChannel();
+
+    int configAttribs[] = {
+        hasAlpha ? GLX_BIND_TO_TEXTURE_RGBA_EXT : GLX_BIND_TO_TEXTURE_RGB_EXT, True,
+        GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
+        GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_BIT_EXT,
+        // QGLContext::bindTexture() can't return an inverted texture, but QPainter::drawPixmap() can:
+        GLX_Y_INVERTED_EXT, canInvert ? GLX_DONT_CARE : False,
+        XNone
+//        GLX_BIND_TO_MIPMAP_TEXTURE_EXT, False,
+//        GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_1D_BIT_EXT or GLX_TEXTURE_2D_BIT_EXT or GLX_TEXTURE_RECTANGLE_BIT_EXT
+    };
+    configList = glXChooseFBConfig(x11Info->display(), x11Info->screen(), configAttribs, &configCount);
+    if (!configList)
+        return 0;
+    glxPixmapConfig = configList[0];
+    XFree(configList);
+
+    GLXPixmap glxPixmap;
+    int pixmapAttribs[] = {
+        GLX_TEXTURE_FORMAT_EXT, hasAlpha ? GLX_TEXTURE_FORMAT_RGBA_EXT : GLX_TEXTURE_FORMAT_RGB_EXT,
+        GLX_TEXTURE_TARGET_EXT, GLX_TEXTURE_2D_EXT,
+        GLX_MIPMAP_TEXTURE_EXT, False,
+        XNone
+//        GLX_TEXTURE_FORMAT_EXT, GLX_TEXTURE_FORMAT_RGBA_EXT or GLX_TEXTURE_FORMAT_RGB_EXT or GLX_TEXTURE_FORMAT_NONE_EXT,
+//        GLX_TEXTURE_TARGET_EXT, GLX_TEXTURE_2D_EXT or GLX_TEXTURE_RECTANGLE_EXT,
+//        GLX_MIPMAP_TEXTURE_EXT, True or False,
+    };
+
+    // Wrap the X Pixmap into a GLXPixmap:
+    glxPixmap = glXCreatePixmap(x11Info->display(), glxPixmapConfig, pixmapData->handle(), pixmapAttribs);
+
+    if (!glxPixmap)
+        return 0;
+
+    int yInverted;
+    glXGetFBConfigAttrib(x11Info->display(), glxPixmapConfig, GLX_Y_INVERTED_EXT, &yInverted);
+
+    GLuint textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glXBindTexImageEXT(x11Info->display(), glxPixmap, GLX_FRONT_LEFT_EXT, 0);
+
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, canInvert, yInverted);
+    texture->boundPixmap = glxPixmap;
+
+    // We assume the cost of bound pixmaps is zero
+    QGLTextureCache::instance()->insert(q, key, texture, 0);
+
+    return texture;
+#endif //!defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
+}
+
+void QGLTexture::deleteBoundPixmap()
+{
+    if (boundPixmap) {
+        glXReleaseTexImageEXT(QX11Info::display(), boundPixmap, GLX_FRONT_LEFT_EXT);
+        glXDestroyPixmap(QX11Info::display(), boundPixmap);
+        boundPixmap = 0;
+    }
+}
+
 
 QT_END_NAMESPACE

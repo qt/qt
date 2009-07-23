@@ -230,17 +230,17 @@ void GraphicsScene::setupScene(const QList<QAction *> &actions)
     QStateMachine *machine = new QStateMachine(this);
 
     //This state is when the player is playing
-    PlayState *gameState = new PlayState(this,machine->rootState());
+    PlayState *gameState = new PlayState(this,machine);
 
     //Final state
-    QFinalState *final = new QFinalState(machine->rootState());
+    QFinalState *final = new QFinalState(machine);
 
     //Animation when the player enter in the game
-    QAnimationState *lettersMovingState = new QAnimationState(machine->rootState());
+    QAnimationState *lettersMovingState = new QAnimationState(machine);
     lettersMovingState->setAnimation(lettersGroupMoving);
 
     //Animation when the welcome screen disappear
-    QAnimationState *lettersFadingState = new QAnimationState(machine->rootState());
+    QAnimationState *lettersFadingState = new QAnimationState(machine);
     lettersFadingState->setAnimation(lettersGroupFading);
 
     //if new game then we fade out the welcome screen and start playing

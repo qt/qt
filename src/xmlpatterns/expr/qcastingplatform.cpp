@@ -83,7 +83,7 @@ Item CastingPlatform<TSubClass, issueError>::cast(const Item &sourceValue,
     else
     {
         bool castImpossible = false;
-        const AtomicCaster::Ptr caster(locateCaster(sourceValue.type(), context, castImpossible));
+        const AtomicCaster::Ptr caster(locateCaster(sourceValue.type(), context, castImpossible, static_cast<const TSubClass *>(this), targetType()));
 
         if(!issueError && castImpossible)
         {
@@ -112,7 +112,7 @@ bool CastingPlatform<TSubClass, issueError>::prepareCasting(const ReportContext:
                         or numeric at compile time. We'll do lookup at runtime instead. */
 
     bool castImpossible = false;
-    m_caster = locateCaster(sourceType, context, castImpossible);
+    m_caster = locateCaster(sourceType, context, castImpossible, static_cast<const TSubClass *>(this), targetType());
 
     return !castImpossible;
 }
@@ -120,20 +120,22 @@ bool CastingPlatform<TSubClass, issueError>::prepareCasting(const ReportContext:
 template <typename TSubClass, const bool issueError>
 AtomicCaster::Ptr CastingPlatform<TSubClass, issueError>::locateCaster(const ItemType::Ptr &sourceType,
                                                                        const ReportContext::Ptr &context,
-                                                                       bool &castImpossible) const
+                                                                       bool &castImpossible,
+                                                                       const SourceLocationReflection *const location,
+                                                                       const ItemType::Ptr &targetType)
 {
     Q_ASSERT(sourceType);
-    Q_ASSERT(targetType());
+    Q_ASSERT(targetType);
 
     const AtomicCasterLocator::Ptr locator(static_cast<AtomicType *>(
-            targetType().data())->casterLocator());
+            targetType.data())->casterLocator());
     if(!locator)
     {
         if(issueError)
         {
             context->error(QtXmlPatterns::tr("No casting is possible with %1 as the target type.")
-                                        .arg(formatType(context->namePool(), targetType())),
-                                       ReportContext::XPTY0004, static_cast<const TSubClass *>(this));
+                                        .arg(formatType(context->namePool(), targetType)),
+                                       ReportContext::XPTY0004, location);
         }
         else
             castImpossible = true;
@@ -141,15 +143,15 @@ AtomicCaster::Ptr CastingPlatform<TSubClass, issueError>::locateCaster(const Ite
         return AtomicCaster::Ptr();
     }
 
-    const AtomicCaster::Ptr caster(static_cast<const AtomicType *>(sourceType.data())->accept(locator, static_cast<const TSubClass *>(this)));
+    const AtomicCaster::Ptr caster(static_cast<const AtomicType *>(sourceType.data())->accept(locator, location));
     if(!caster)
     {
         if(issueError)
         {
             context->error(QtXmlPatterns::tr("It is not possible to cast from %1 to %2.")
                                             .arg(formatType(context->namePool(), sourceType))
-                                            .arg(formatType(context->namePool(), targetType())),
-                                       ReportContext::XPTY0004, static_cast<const TSubClass *>(this));
+                                            .arg(formatType(context->namePool(), targetType)),
+                                       ReportContext::XPTY0004, location);
         }
         else
             castImpossible = true;

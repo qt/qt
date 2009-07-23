@@ -79,7 +79,8 @@ public:
     QSslSocket::SslMode mode;
     bool autoStartHandshake;
     bool connectionEncrypted;
-    bool ignoreSslErrors;
+    bool ignoreAllSslErrors;
+    QList<QSslError> ignoreErrorsList;
     bool* readyReadEmittedPointer;
 
     QRingBuffer readBuffer;

@@ -1360,7 +1360,7 @@
     inside. Both widgets and spacers can be used inside containers.
 
     Stacked widgets, tab widgets, and toolboxes are handled specially in \QD.
-    Norwally, when adding pages (tabs, pages, compartments) to these containers
+    Normally, when adding pages (tabs, pages, compartments) to these containers
     in your own code, you need to supply existing widgets, either as
     placeholders or containing child widgets. In \QD, these are automatically
     created for you, so you can add child objects to each page straight away.

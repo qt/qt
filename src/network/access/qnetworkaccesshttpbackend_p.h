@@ -85,6 +85,7 @@ public:
     virtual void copyFinished(QIODevice *);
 #ifndef QT_NO_OPENSSL
     virtual void ignoreSslErrors();
+    virtual void ignoreSslErrors(const QList<QSslError> &errors);
 
     virtual void fetchSslConfiguration(QSslConfiguration &configuration) const;
     virtual void setSslConfiguration(const QSslConfiguration &configuration);
@@ -112,7 +113,8 @@ private:
 
 #ifndef QT_NO_OPENSSL
     QSslConfiguration *pendingSslConfiguration;
-    bool pendingIgnoreSslErrors;
+    bool pendingIgnoreAllSslErrors;
+    QList<QSslError> pendingIgnoreSslErrorsList;
 #endif
 
     void disconnectFromHttp();

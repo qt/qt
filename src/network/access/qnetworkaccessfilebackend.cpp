@@ -263,7 +263,11 @@ bool QNetworkAccessFileBackend::readMoreFromFile()
 
         data.resize(actuallyRead);
         totalBytes += actuallyRead;
-        writeDownstreamData(data);
+
+        QByteDataBuffer list;
+        list.append(data);
+        data.clear(); // important because of implicit sharing!
+        writeDownstreamData(list);
     }
     return true;
 }

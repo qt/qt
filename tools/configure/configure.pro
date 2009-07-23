@@ -32,6 +32,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qlist.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qlocale.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qvector.h \
+           $$QT_SOURCE_TREE/src/corelib/codecs/qutfcodec_p.h \
            $$QT_SOURCE_TREE/src/corelib/codecs/qtextcodec.h \
            $$QT_SOURCE_TREE/src/corelib/global/qglobal.h \
            $$QT_SOURCE_TREE/src/corelib/global/qnumeric.h \
@@ -64,6 +65,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlistdata.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlocale.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvector.cpp \
+           $$QT_SOURCE_TREE/src/corelib/codecs/qutfcodec.cpp \
            $$QT_SOURCE_TREE/src/corelib/codecs/qtextcodec.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qglobal.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qnumeric.cpp \

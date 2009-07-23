@@ -100,11 +100,17 @@ void ColoringMessageHandler::handleMessage(QtMsgType type,
         }
         case QtFatalMsg:
         {
-            Q_ASSERT(!sourceLocation.isNull());
             const QString errorCode(identifier.fragment());
             Q_ASSERT(!errorCode.isEmpty());
             QUrl uri(identifier);
             uri.setFragment(QString());
+
+            QString location;
+
+            if(sourceLocation.isNull())
+                location = QXmlPatternistCLI::tr("Unknown location");
+            else
+                location = QString::fromLatin1(sourceLocation.uri().toEncoded());
 
             QString errorId;
             /* If it's a standard error code, we don't want to output the
@@ -117,7 +123,7 @@ void ColoringMessageHandler::handleMessage(QtMsgType type,
             if(hasLine)
             {
                 writeUncolored(QXmlPatternistCLI::tr("Error %1 in %2, at line %3, column %4: %5").arg(colorify(errorId, ErrorCode),
-                                                                                                  colorify(QString::fromLatin1(sourceLocation.uri().toEncoded()), Location),
+                                                                                                  colorify(location, Location),
                                                                                                   colorify(QString::number(sourceLocation.line()), Location),
                                                                                                   colorify(QString::number(sourceLocation.column()), Location),
                                                                                                   colorifyDescription(description)));
@@ -125,7 +131,7 @@ void ColoringMessageHandler::handleMessage(QtMsgType type,
             else
             {
                 writeUncolored(QXmlPatternistCLI::tr("Error %1 in %2: %3").arg(colorify(errorId, ErrorCode),
-                                                                           colorify(QString::fromLatin1(sourceLocation.uri().toEncoded()), Location),
+                                                                           colorify(location, Location),
                                                                            colorifyDescription(description)));
             }
             break;

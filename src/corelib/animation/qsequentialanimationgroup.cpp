@@ -269,8 +269,10 @@ QSequentialAnimationGroup::~QSequentialAnimationGroup()
 
 /*!
     Adds a pause of \a msecs to this animation group.
-    The pause is considered as a special type of animation, thus count() will be
+    The pause is considered as a special type of animation, thus 
+    \l{QAnimationGroup::animationCount()}{animationCount} will be 
     increased by one.
+
     \sa insertPauseAt(), QAnimationGroup::addAnimation()
 */
 QPauseAnimation *QSequentialAnimationGroup::addPause(int msecs)

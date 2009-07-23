@@ -61,6 +61,7 @@ void QContiguousCacheData::dump() const
     \ingroup tools
     \ingroup shared
     \reentrant
+    \since 4.6
 
     The QContiguousCache class provides an efficient way of caching items for
     display in a user interface view.  Unlike QCache, it adds a restriction
@@ -95,7 +96,7 @@ MyRecord record(int row) const
     in the case where the requested row is a long way from the currently cached
     items. If there is a gap between where the new item is inserted and the currently
     cached items then the existing cached items are first removed to retain
-    the contiguous nature of the cache.  Hence it is important to take some care then
+    the contiguous nature of the cache. Hence it is important to take some care then
     when using insert() in order to avoid unwanted clearing of the cache.
 
     The range of valid indexes for the QContiguousCache class are from
@@ -104,9 +105,9 @@ MyRecord record(int row) const
     than INT_MAX can result in the indexes of the cache being invalid.
     When the cache indexes are invalid it is important to call
     normalizeIndexes() before calling any of containsIndex(), firstIndex(),
-    lastIndex(), at() or the [] operator.  Calling these
-    functions when the cache has invalid indexes will result in undefined
-    behavior.  The indexes can be checked by using areIndexesValid()
+    lastIndex(), at() or \l{QContiguousCache::operator[]()}{operator[]()}.
+    Calling these functions when the cache has invalid indexes will result in
+    undefined behavior. The indexes can be checked by using areIndexesValid()
 
     In most cases the indexes will not exceed 0 to INT_MAX, and
     normalizeIndexes() will not need to be used.
@@ -190,8 +191,6 @@ MyRecord record(int row) const
 
 /*! \fn int QContiguousCache::count() const
 
-    \overload
-
     Same as size().
 */
 
@@ -258,14 +257,15 @@ MyRecord record(int row) const
 
 /*! \fn T &QContiguousCache::operator[](int i)
 
-    Returns the item at index position \a i as a modifiable reference.  If
+    Returns the item at index position \a i as a modifiable reference. If
     the cache does not contain an item at the given index position \a i
     then it will first insert an empty item at that position.
 
     In most cases it is better to use either at() or insert().
 
-    Note that using non-const operators can cause QContiguousCache to do a deep
-    copy.
+    \note This non-const overload of operator[] requires QContiguousCache 
+    to make a deep copy. Use at() for read-only access to a non-const 
+    QContiguousCache.
 
     \sa insert(), at()
 */
