@@ -68,27 +68,24 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWindowsFileSystemWatcherEngineThread;
+
+// Even though QWindowsFileSystemWatcherEngine is derived of QThread
+// via QFileSystemWatcher, it does not start a thread.
+// Instead QWindowsFileSystemWatcher creates QWindowsFileSystemWatcherEngineThreads
+// to do the actually watching.
 class QWindowsFileSystemWatcherEngine : public QFileSystemWatcherEngine
 {
     Q_OBJECT
-
 public:
     QWindowsFileSystemWatcherEngine();
     ~QWindowsFileSystemWatcherEngine();
-
-    void run();
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
 
     void stop();
 
-private:
-    void wakeup();
-
-    QMutex mutex;
-    QVector<HANDLE> handles;
-    int msg;
 
     class Handle
     {
@@ -97,13 +94,12 @@ private:
         uint flags;
 
         Handle()
-            : handle(INVALID_HANDLE_VALUE), flags(0u)
+                : handle(INVALID_HANDLE_VALUE), flags(0u)
         { }
         Handle(const Handle &other)
-            : handle(other.handle), flags(other.flags)
+                : handle(other.handle), flags(other.flags)
         { }
     };
-    QHash<QString, Handle> handleForDir;
 
     class PathInfo {
     public:
@@ -118,7 +114,7 @@ private:
         QDateTime lastModified;
 
         PathInfo &operator=(const QFileInfo &fileInfo)
-        {
+                           {
             ownerId = fileInfo.ownerId();
             groupId = fileInfo.groupId();
             permissions = fileInfo.permissions();
@@ -134,8 +130,35 @@ private:
                     || lastModified != fileInfo.lastModified());
         }
     };
-    QHash<HANDLE, QHash<QString, PathInfo> > pathInfoForHandle;
+private:
+    QList<QWindowsFileSystemWatcherEngineThread *> threads;
+
 };
+
+class QWindowsFileSystemWatcherEngineThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    QWindowsFileSystemWatcherEngineThread();
+    ~QWindowsFileSystemWatcherEngineThread();
+    void run();
+    void stop();
+    void wakeup();
+
+    QMutex mutex;
+    QVector<HANDLE> handles;
+    int msg;
+
+    QHash<QString, QWindowsFileSystemWatcherEngine::Handle> handleForDir;
+
+    QHash<HANDLE, QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo> > pathInfoForHandle;
+
+Q_SIGNALS:
+    void fileChanged(const QString &path, bool removed);
+    void directoryChanged(const QString &path, bool removed);
+};
+
 #endif // QT_NO_FILESYSTEMWATCHER
 
 QT_END_NAMESPACE

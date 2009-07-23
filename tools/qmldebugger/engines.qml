@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     height: 100
     id: Root

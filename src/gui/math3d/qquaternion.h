@@ -324,13 +324,14 @@ inline QVector4D QQuaternion::toVector4D() const
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QQuaternion &q);
 #endif
 
+#ifndef QT_NO_DATASTREAM
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QQuaternion &);
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QQuaternion &);
+#endif
+
 #endif
 
 QT_END_NAMESPACE
-
-#ifndef QT_NO_QUATERNION
-Q_DECLARE_METATYPE(QQuaternion)
-#endif
 
 QT_END_HEADER
 

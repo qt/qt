@@ -151,14 +151,14 @@ int main(int argc, char **argv)
 //! [3]
 
 //! [4]
-    QState *compute = new QState(machine.rootState());
+    QState *compute = new QState(&machine);
     compute->assignProperty(&factorial, "fac", 1);
     compute->assignProperty(&factorial, "x", 6);
     compute->addTransition(new FactorialLoopTransition(&factorial));
 //! [4]
 
 //! [5]
-    QFinalState *done = new QFinalState(machine.rootState());
+    QFinalState *done = new QFinalState(&machine);
     FactorialDoneTransition *doneTransition = new FactorialDoneTransition(&factorial);
     doneTransition->setTargetState(done);
     compute->addTransition(doneTransition);

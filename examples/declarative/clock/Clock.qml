@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     id: Clock
     width: 200; height: 200

@@ -128,6 +128,11 @@ namespace QPatternist
         static QPatternist::ItemTypePtr typeFromKind(const QXmlNodeModelIndex::NodeKind nodeKind);
 
         /**
+         * Normalizes an @p uri by resolving it to the application directory if empty.
+         */
+        static QUrl normalizeQueryURI(const QUrl &uri);
+
+        /**
          * @short Determines whether @p consists only of whitespace. Characters
          * considered whitespace are the ones for which QChar::isSpace() returns @c true for.
          *

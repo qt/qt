@@ -70,8 +70,8 @@ The Person class implementation is quite basic.  The property accessors simply
 return members of the object instance.
 
 The implementation must also include the QML_DEFINE_TYPE() macro.  This macro
-registers the Person class with QML, and defines the mapping between the C++
-and QML class names.
+registers the Person class with QML as a type in the People library version 1.0,
+and defines the mapping between the C++ and QML class names.
 
 \section1 Running the example
 

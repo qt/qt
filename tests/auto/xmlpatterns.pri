@@ -19,3 +19,17 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
     else: XMLPATTERNS_SDK = $${XMLPATTERNS_SDK}_debug
 }
 
+INCLUDEPATH += \
+               $$QT_SOURCE_TREE/src/xmlpatterns/acceltree \
+               $$QT_SOURCE_TREE/src/xmlpatterns/api \
+               $$QT_SOURCE_TREE/src/xmlpatterns/data \
+               $$QT_SOURCE_TREE/src/xmlpatterns/environment \
+               $$QT_SOURCE_TREE/src/xmlpatterns/expr \
+               $$QT_SOURCE_TREE/src/xmlpatterns/functions \
+               $$QT_SOURCE_TREE/src/xmlpatterns/iterators \
+               $$QT_SOURCE_TREE/src/xmlpatterns/janitors \
+               $$QT_SOURCE_TREE/src/xmlpatterns/parser \
+               $$QT_SOURCE_TREE/src/xmlpatterns/projection \
+               $$QT_SOURCE_TREE/src/xmlpatterns/schema \
+               $$QT_SOURCE_TREE/src/xmlpatterns/type \
+               $$QT_SOURCE_TREE/src/xmlpatterns/utils

@@ -558,6 +558,49 @@ QDebug operator<<(QDebug dbg, const QVector3D &vector)
 
 #endif
 
-#endif
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QVector3D &vector)
+    \relates QVector3D
+
+    Writes the given \a vector to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QVector3D &vector)
+{
+    stream << double(vector.x()) << double(vector.y())
+           << double(vector.z());
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
+    \relates QVector3D
+
+    Reads a 3D vector from the given \a stream into the given \a vector
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
+{
+    double x, y, z;
+    stream >> x;
+    stream >> y;
+    stream >> z;
+    vector.setX(qreal(x));
+    vector.setY(qreal(y));
+    vector.setZ(qreal(z));
+    return stream;
+}
+
+#endif // QT_NO_DATASTREAM
+
+#endif // QT_NO_VECTOR3D
 
 QT_END_NAMESPACE

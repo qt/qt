@@ -168,8 +168,15 @@ void PatternPlatform::applyFlags(const Flags flags, QRegExp &patternP)
     // TODO Apply the other flags, like 'x'.
 }
 
+QRegExp PatternPlatform::parsePattern(const QString &pattern,
+                                      const ReportContext::Ptr &context) const
+{
+    return parsePattern(pattern, context, this);
+}
+
 QRegExp PatternPlatform::parsePattern(const QString &patternP,
-                                      const DynamicContext::Ptr &context) const
+                                      const ReportContext::Ptr &context,
+                                      const SourceLocationReflection *const location)
 {
     if(patternP == QLatin1String("(.)\\3") ||
        patternP == QLatin1String("\\3")    ||
@@ -177,7 +184,7 @@ QRegExp PatternPlatform::parsePattern(const QString &patternP,
     {
         context->error(QLatin1String("We don't want to hang infinitely on K2-MatchesFunc-9, "
                                      "10 and 11. See Trolltech task 148505."),
-                       ReportContext::FOER0000, this);
+                       ReportContext::FOER0000, location);
         return QRegExp();
     }
 
@@ -189,14 +196,8 @@ QRegExp PatternPlatform::parsePattern(const QString &patternP,
      * QChar::category(). */
     rewrittenPattern.replace(QLatin1String("[\\i-[:]]"), QLatin1String("[a-zA-Z_]"));
     rewrittenPattern.replace(QLatin1String("[\\c-[:]]"), QLatin1String("[a-zA-Z0-9_\\-\\.]"));
-    rewrittenPattern.replace(QLatin1String("\\i"), QLatin1String("[a-zA-Z:_]"));
-    rewrittenPattern.replace(QLatin1String("\\c"), QLatin1String("[a-zA-Z0-9:_\\-\\.]"));
-    rewrittenPattern.replace(QLatin1String("\\p{L}"), QLatin1String("[a-zA-Z]"));
-    rewrittenPattern.replace(QLatin1String("\\p{Lu}"), QLatin1String("[A-Z]"));
-    rewrittenPattern.replace(QLatin1String("\\p{Ll}"), QLatin1String("[a-z]"));
-    rewrittenPattern.replace(QLatin1String("\\p{Nd}"), QLatin1String("[0-9]"));
 
-    QRegExp retval(rewrittenPattern);
+    QRegExp retval(rewrittenPattern, Qt::CaseSensitive, QRegExp::W3CXmlSchema11);
 
     if(retval.isValid())
         return retval;
@@ -204,7 +205,7 @@ QRegExp PatternPlatform::parsePattern(const QString &patternP,
     {
         context->error(QtXmlPatterns::tr("%1 is an invalid regular expression pattern: %2")
                                         .arg(formatExpression(patternP), retval.errorString()),
-                                   ReportContext::FORX0002, this);
+                                   ReportContext::FORX0002, location);
         return QRegExp();
     }
 }

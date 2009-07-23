@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Image {
     id: Loading; source: "pics/loading.png"; transformOrigin: "Center"
     rotation: NumberAnimation {

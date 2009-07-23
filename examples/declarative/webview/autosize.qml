@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // The WebView size is determined by the width, height,
 // idealWidth, and idealHeight properties.
 Rect {

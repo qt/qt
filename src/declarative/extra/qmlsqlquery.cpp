@@ -56,8 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QmlSqlBind, SqlBind)
-QML_DEFINE_TYPE(QmlSqlQuery, SqlQuery)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SqlBind,QmlSqlBind)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SqlQuery,QmlSqlQuery)
 
 class QmlSqlBindPrivate : public QObjectPrivate
 {

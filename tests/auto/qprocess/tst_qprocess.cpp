@@ -50,6 +50,10 @@
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -143,6 +147,7 @@ private slots:
     void startFinishStartFinish();
     void invalidProgramString_data();
     void invalidProgramString();
+    void processEventsInAReadyReadSlot();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -156,6 +161,7 @@ protected slots:
     void restartProcess();
     void waitForReadyReadInAReadyReadSlotSlot();
     void waitForBytesWrittenInABytesWrittenSlotSlot();
+    void processEventsInAReadyReadSlotSlot();
     
 private:
     QProcess *process;
@@ -2130,5 +2136,35 @@ void tst_QProcess::invalidProgramString()
     QVERIFY(!QProcess::startDetached(programString));
 }
 
+//-----------------------------------------------------------------------------
+void tst_QProcess::processEventsInAReadyReadSlot()
+{
+#ifdef Q_OS_WINCE
+    QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
+#endif
+
+    QProcess process;
+    QVERIFY(QObject::connect(&process, SIGNAL(readyReadStandardOutput()), this, SLOT(processEventsInAReadyReadSlotSlot())));
+
+    for (int i = 0; i < 10; ++i) {
+        QCOMPARE(process.state(), QProcess::NotRunning);
+
+#ifdef Q_OS_MAC
+        process.start("testProcessOutput/testProcessOutput.app");
+#else
+        process.start("testProcessOutput/testProcessOutput");
+#endif
+
+        QVERIFY(process.waitForFinished(10000));
+    }
+}
+
+//-----------------------------------------------------------------------------
+void tst_QProcess::processEventsInAReadyReadSlotSlot()
+{
+    qApp->processEvents();
+}
+
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"
+#endif

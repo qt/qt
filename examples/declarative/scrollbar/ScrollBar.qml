@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     id: ScrollBar
     // The properties that define the scrollbar's state.

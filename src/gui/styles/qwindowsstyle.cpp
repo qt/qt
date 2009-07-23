@@ -1061,6 +1061,8 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
             }
         }
         break;
+    default:
+        break;
     }
     if (!desktopIcon.isNull()) {
         return desktopIcon;
@@ -1375,11 +1377,8 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
-            QString pixmapName;
-            pixmapName.sprintf("%s-%s-%d-%d-%d-%lld",
-                               "$qt_ia", metaObject()->className(),
-                               uint(opt->state), pe,
-                               size, opt->palette.cacheKey());
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-") + QLatin1String(metaObject()->className()), opt, QSize(size, size))
+                  + QLatin1Char('-') + QString::number(pe);                               
             if (!QPixmapCache::find(pixmapName, pixmap)) {
                 int border = size/5;
                 int sqsize = 2*(size/2);

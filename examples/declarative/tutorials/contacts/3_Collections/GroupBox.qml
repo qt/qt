@@ -1,3 +1,5 @@
+import Qt 4.6
+
 FocusRealm {
     id: groupBox
     width: Math.max(270, subItem.width+40)

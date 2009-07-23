@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     id: mainrect
     width: 200; height: 200

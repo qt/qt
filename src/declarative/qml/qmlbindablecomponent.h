@@ -72,6 +72,7 @@ public:
     Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged);
 
     Q_INVOKABLE QScriptValue createObject();
+    Q_INVOKABLE QString errorsString() const;
 
     void setContext(QmlContext* c);
 Q_SIGNALS:

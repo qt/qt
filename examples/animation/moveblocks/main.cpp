@@ -108,8 +108,7 @@ class StateSwitcher : public QState
     Q_OBJECT
 public:
     StateSwitcher(QStateMachine *machine)
-        : QState(machine->rootState()), m_machine(machine),
-          m_stateCount(0), m_lastIndex(0)
+        : QState(machine), m_stateCount(0), m_lastIndex(0)
     { }
 //![10]
 
@@ -120,7 +119,7 @@ public:
         while ((n = (qrand() % m_stateCount + 1)) == m_lastIndex)
         { }
         m_lastIndex = n;
-        m_machine->postEvent(new StateSwitchEvent(n));
+        machine()->postEvent(new StateSwitchEvent(n));
     }
     virtual void onExit(QEvent *) {}
 //![11]
@@ -135,7 +134,6 @@ public:
 //![12]
 
 private:
-    QStateMachine *m_machine;
     int m_stateCount;
     int m_lastIndex;
 };

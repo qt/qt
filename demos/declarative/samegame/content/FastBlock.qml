@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect { id:block
     //Note: These properties are the interface used to control the blocks
     property bool dying: false
@@ -13,8 +15,11 @@ Rect { id:block
     opacity: 0
     y: targetY
     x: targetX
-    //y: Behavior { NumberAnimation { properties:"y"; duration: 200 } }
-    //opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
+
+    MouseRegion {
+        id: gameMR; anchors.fill: parent
+        onClicked: handleClick(Math.floor(parent.x/width), Math.floor(parent.y/height));
+    }
 
     states: [
 

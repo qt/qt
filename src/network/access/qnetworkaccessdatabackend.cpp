@@ -117,7 +117,11 @@ void QNetworkAccessDataBackend::open()
             setHeader(QNetworkRequest::ContentLengthHeader, payload.size());
             emit metaDataChanged();
 
-            writeDownstreamData(payload);
+            QByteDataBuffer list;
+            list.append(payload);
+            payload.clear(); // important because of implicit sharing!
+            writeDownstreamData(list);
+
             finished();
             return;
         }

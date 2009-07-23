@@ -60,11 +60,10 @@ namespace QStyleHelper {
 
 QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
 {
-    QString tmp;
     const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
-    tmp.sprintf("%s-%d-%d-%lld-%dx%d-%d", key.toLatin1().constData(), uint(option->state),
-                complexOption ? uint(complexOption->activeSubControls) : uint(0),
-                option->palette.cacheKey(), size.width(), size.height(), option->direction);
+    QString tmp = QString::fromLatin1("%1-%2-%3-%4-%5-%6x%7").arg(key).arg(uint(option->state)).arg(option->direction)
+                   .arg(complexOption ? uint(complexOption->activeSubControls) : uint(0))
+                   .arg(option->palette.cacheKey()).arg(size.width()).arg(size.height());
 #ifndef QT_NO_SPINBOX
     if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
         tmp.append(QLatin1Char('-'));
