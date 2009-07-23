@@ -1,7 +1,7 @@
 
 #global defaults
 isEmpty(QMAKE_MOC) {
-    win32:QMAKE_MOC = $$[QT_INSTALL_BINS]\moc.exe
+    contains(QMAKE_HOST.os,Windows):QMAKE_MOC = $$[QT_INSTALL_BINS]\moc.exe
     else:QMAKE_MOC = $$[QT_INSTALL_BINS]/moc
 }
 isEmpty(MOC_DIR):MOC_DIR = .
@@ -84,7 +84,7 @@ INCREDIBUILD_XGE += moc_source
 
 #make sure we can include these files
 moc_dir_short = $$MOC_DIR
-win32:moc_dir_short ~= s,^.:,/,
+contains(QMAKE_HOST.os,Windows):moc_dir_short ~= s,^.:,/,
 contains(moc_dir_short, ^[/\\\\].*):INCLUDEPATH += $$MOC_DIR
 else:INCLUDEPATH += $$OUT_PWD/$$MOC_DIR
 
