@@ -62,6 +62,8 @@ class Q_DECLARATIVE_EXPORT QmlFolderListModel : public QListModelInterface, publ
 
     Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
     Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters)
+    Q_PROPERTY(SortField sortField READ sortField WRITE setSortField)
+    Q_PROPERTY(bool sortReversed READ sortReversed WRITE setSortReversed)
 
 public:
     QmlFolderListModel(QObject *parent = 0);
@@ -81,6 +83,14 @@ public:
     virtual void classComplete();
 
     Q_INVOKABLE bool isFolder(int index) const;
+
+    enum SortField { Unsorted, Name, Time, Size, Type };
+    SortField sortField() const;
+    void setSortField(SortField field);
+    Q_ENUMS(SortField)
+
+    bool sortReversed() const;
+    void setSortReversed(bool rev);
 
 Q_SIGNALS:
     void folderChanged();
