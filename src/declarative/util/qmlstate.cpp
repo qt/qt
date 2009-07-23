@@ -54,14 +54,14 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
 Action::Action() 
-: restore(true), actionDone(false), fromBinding(0), toBinding(0), event(0), 
+: restore(true), actionDone(false), reverseEvent(false), fromBinding(0), toBinding(0), event(0),
   specifiedObject(0)
 {
 }
 
 Action::Action(QObject *target, const QString &propertyName, 
                const QVariant &value)
-: restore(true), actionDone(false), toValue(value), fromBinding(0), 
+: restore(true), actionDone(false), reverseEvent(false), toValue(value), fromBinding(0),
   toBinding(0), event(0), specifiedObject(target), 
   specifiedProperty(propertyName)
 {
@@ -80,6 +80,15 @@ QString ActionEvent::name() const
 }
 
 void ActionEvent::execute()
+{
+}
+
+bool ActionEvent::isReversable()
+{
+    return false;
+}
+
+void ActionEvent::reverse()
 {
 }
 
@@ -345,23 +354,33 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     for (int ii = 0; ii < applyList.count(); ++ii) {
         Action &action = applyList[ii];
 
-        if (action.event)
-            continue;
-
-        action.fromBinding = action.property.binding();
-
         bool found = false;
+
         int jj;
-        for (jj = 0; jj < d->revertList.count(); ++jj) {
-            if (d->revertList.at(jj).property == action.property) {
-                found = true;
-                break;
+        if (action.event) {
+            if (!action.event->isReversable())
+                continue;
+            for (jj = 0; jj < d->revertList.count(); ++jj) {
+                ActionEvent *event = d->revertList.at(jj).event;
+                if (event && event->name() == action.event->name()) {
+                    found = true;
+                    break;
+                }
+            }
+        } else {
+            action.fromBinding = action.property.binding();
+
+            for (jj = 0; jj < d->revertList.count(); ++jj) {
+                if (d->revertList.at(jj).property == action.property) {
+                    found = true;
+                    break;
+                }
             }
         }
 
         if (!found) {
             if (!action.restore) {
-                action.deleteFromBinding(); 
+                action.deleteFromBinding();
             } else {
                 // Only need to revert the applyList action if the previous
                 // state doesn't have a higher priority revert already
@@ -394,8 +413,10 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             a.fromValue = cur;
             a.toValue = d->revertList.at(ii).value;
             a.toBinding = d->revertList.at(ii).binding;
-            a.specifiedObject = d->revertList.at(ii).specifiedObject; //###
+            a.specifiedObject = d->revertList.at(ii).specifiedObject;
             a.specifiedProperty = d->revertList.at(ii).specifiedProperty;
+            a.event = d->revertList.at(ii).event;
+            a.reverseEvent = d->revertList.at(ii).reverseEvent;
             applyList << a;
             // Store these special reverts in the reverting list
             d->reverting << d->revertList.at(ii).property;

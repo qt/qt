@@ -71,6 +71,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
 #include <qmlcomponent.h>
+#include <qmlbindablecomponent.h>
 #include "private/qmlmetaproperty_p.h"
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
@@ -601,19 +602,20 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    QmlComponent* c;
+    QmlBindableComponent* c;
     QmlEngine* activeEngine = qobject_cast<QmlEngine*>(
             engine->globalObject().property(QLatin1String("qmlEngine")).toQObject());
+    QmlContext* context =activeEngine->d_func()->currentExpression->context();
     if(ctxt->argumentCount() != 1 || !activeEngine){
-        c = new QmlComponent(activeEngine);
+        c = new QmlBindableComponent(activeEngine);
     }else{
-        QUrl url = QUrl(activeEngine->d_func()->currentExpression->context()
-                ->resolvedUrl(ctxt->argument(0).toString()));
+        QUrl url = QUrl(context->resolvedUrl(ctxt->argument(0).toString()));
         if(!url.isValid()){
             url = QUrl(ctxt->argument(0).toString());
         }
-        c = new QmlComponent(activeEngine, url, activeEngine);
+        c = new QmlBindableComponent(activeEngine, url, activeEngine);
     }
+    c->setContext(context);
     return engine->newQObject(c);
 }
 

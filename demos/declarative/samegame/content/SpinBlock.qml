@@ -15,7 +15,7 @@ Item { id:block
                 } else {
                     "pics/gnome/greenStone.gif"; 
                 }
-        playing: selected
+        paused: !selected
     }
     opacity: 0
     y: targetY

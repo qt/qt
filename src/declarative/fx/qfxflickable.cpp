@@ -1019,7 +1019,7 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxFlickable);
     QGraphicsSceneMouseEvent mouseEvent(event->type());
-    QRectF myRect = mapToScene(QRectF(0, 0, width(), height()));
+    QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
     QFxItem *grabber = static_cast<QFxItem*>(mouseGrabberItem());
     if ((d->stealMouse || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab())) {
         mouseEvent.setAccepted(false);

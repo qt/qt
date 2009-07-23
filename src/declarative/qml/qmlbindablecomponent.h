@@ -39,10 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef QFXGRAPHICSOBJECTCONTAINER_H
-#define QFXGRAPHICSOBJECTCONTAINER_H
+#ifndef QMLBINDABLECOMPONENT_H
+#define QMLBINDABLECOMPONENT_H
 
-#include <QtDeclarative/qfxitem.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcomponent.h>
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -50,34 +55,37 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QGraphicsObject;
-
-class Q_DECLARATIVE_EXPORT QFxGraphicsObjectContainer : public QFxItem
+class QmlBindableComponentPrivate;
+class QmlEngine;
+class QmlContext;
+class Q_DECLARATIVE_EXPORT QmlBindableComponent : public QmlComponent
 {
     Q_OBJECT
-
-    Q_CLASSINFO("DefaultProperty", "graphicsObject")
-    Q_PROPERTY(QGraphicsObject *graphicsObject READ graphicsObject WRITE setGraphicsObject)
-
+    Q_DECLARE_PRIVATE(QmlBindableComponent)
+    friend class QmlEngine;
 public:
-    QFxGraphicsObjectContainer(QFxItem *parent = 0);
-    ~QFxGraphicsObjectContainer();
+    QmlBindableComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
+    QmlBindableComponent(QmlEngine *, QObject *parent=0);
+    Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged);
+    Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged);
+    Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged);
+    Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged);
 
-    QGraphicsObject *graphicsObject() const;
-    void setGraphicsObject(QGraphicsObject *);
+    Q_INVOKABLE QScriptValue createObject();
 
-protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-
-private:
-    QGraphicsObject *_graphicsObject;
+    void setContext(QmlContext* c);
+Q_SIGNALS:
+    void isNullChanged();
+    void isErrorChanged();
+    void isReadyChanged();
+    void isLoadingChanged();
+private slots:
+    void statusChange(QmlComponent::Status newStatus);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QGraphicsObject)
-QML_DECLARE_TYPE(QFxGraphicsObjectContainer)
+QML_DECLARE_TYPE(QmlBindableComponent)
 
 QT_END_HEADER
-
-#endif // QFXGRAPHICSOBJECTCONTAINER_H
+#endif

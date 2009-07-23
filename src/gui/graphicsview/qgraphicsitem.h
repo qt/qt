@@ -100,7 +100,8 @@ public:
         ItemUsesExtendedStyleOption = 0x200,
         ItemHasNoContents = 0x400,
         ItemSendsGeometryChanges = 0x800,
-        ItemAcceptsInputMethod = 0x1000
+        ItemAcceptsInputMethod = 0x1000,
+        ItemNegativeZStacksBehindParent = 0x2000
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
@@ -510,9 +511,9 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_OBJECT
     Q_PROPERTY(QGraphicsObject * parent READ parentObject WRITE setParentItem NOTIFY parentChanged DESIGNABLE false)
     Q_PROPERTY(QString id READ objectName WRITE setObjectName)
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged FINAL)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
-    Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)

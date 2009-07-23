@@ -39,45 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QFXGRAPHICSOBJECTCONTAINER_H
-#define QFXGRAPHICSOBJECTCONTAINER_H
+#ifndef QMLBINDABLECOMPONENT_P_H
+#define QMLBINDABLECOMPONENT_P_H
 
-#include <QtDeclarative/qfxitem.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qmlcomponent.h"
+#include "qmlbindablecomponent.h"
+#include "qmlcomponent_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QGraphicsObject;
-
-class Q_DECLARATIVE_EXPORT QFxGraphicsObjectContainer : public QFxItem
+class QmlContext;
+class QmlBindableComponentPrivate : public QmlComponentPrivate
 {
-    Q_OBJECT
-
-    Q_CLASSINFO("DefaultProperty", "graphicsObject")
-    Q_PROPERTY(QGraphicsObject *graphicsObject READ graphicsObject WRITE setGraphicsObject)
-
+    Q_DECLARE_PUBLIC(QmlBindableComponent)
 public:
-    QFxGraphicsObjectContainer(QFxItem *parent = 0);
-    ~QFxGraphicsObjectContainer();
+    QmlBindableComponentPrivate() : QmlComponentPrivate(),
+        prevStatus(QmlBindableComponent::Null), ctxt(0)
+    { }
 
-    QGraphicsObject *graphicsObject() const;
-    void setGraphicsObject(QGraphicsObject *);
-
-protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-
-private:
-    QGraphicsObject *_graphicsObject;
+    QmlComponent::Status prevStatus;
+    QmlContext* ctxt;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QGraphicsObject)
-QML_DECLARE_TYPE(QFxGraphicsObjectContainer)
-
-QT_END_HEADER
-
-#endif // QFXGRAPHICSOBJECTCONTAINER_H
+#endif

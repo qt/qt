@@ -327,6 +327,10 @@
     \value ItemAcceptsInputMethod The item supports input methods typically
     used for Asian languages.
     This flag was introduced in Qt 4.6.
+
+    \value ItemNegativeZStacksBehindParent The item automatically stacks
+    it's parent if it's z-value is negative.
+    This flag was introduced in Qt 4.6.
 */
 
 /*!
@@ -3725,6 +3729,13 @@ void QGraphicsItem::setZValue(qreal z)
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
 
     itemChange(ItemZValueHasChanged, newZVariant);
+
+    if(d_ptr->flags & ItemNegativeZStacksBehindParent) {
+        if (z < 0)
+            setFlag(QGraphicsItem::ItemStacksBehindParent, true);
+        else
+            setFlag(QGraphicsItem::ItemStacksBehindParent, false);
+    }
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->zChanged();

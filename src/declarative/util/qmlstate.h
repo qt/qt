@@ -63,6 +63,7 @@ public:
 
     bool restore:1;
     bool actionDone:1;
+    bool reverseEvent:1;
 
     QmlMetaProperty property;
     QVariant fromValue;
@@ -84,6 +85,8 @@ public:
     virtual ~ActionEvent();
     virtual QString name() const;
     virtual void execute();
+    virtual bool isReversable();
+    virtual void reverse();
 };
 
 class QmlStateGroup;

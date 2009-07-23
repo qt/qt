@@ -411,7 +411,7 @@ void QFxPathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
     int idx = 0;
     for (; idx < d->items.count(); ++idx) {
         QRectF rect = d->items.at(idx)->boundingRect();
-        rect = d->items.at(idx)->mapToScene(rect);
+        rect = d->items.at(idx)->mapToScene(rect).boundingRect();
         if (rect.contains(scenePoint))
             break;
     }
@@ -495,7 +495,7 @@ bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxPathView);
     QGraphicsSceneMouseEvent mouseEvent(event->type());
-    QRectF myRect = mapToScene(QRectF(0, 0, width(), height()));
+    QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
     QFxItem *grabber = static_cast<QFxItem*>(mouseGrabberItem());
     if ((d->stealMouse || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab())) {
         mouseEvent.setAccepted(false);
@@ -581,7 +581,7 @@ void QFxPathViewPrivate::regenerate()
             return;
         }
         items.append(item);
-        item->setZ(i);
+        item->setZValue(i);
     }
     q->refill();
 }
@@ -639,7 +639,7 @@ void QFxPathView::refill()
                 d->firstIndex %= d->model->count();
                 int index = (d->firstIndex + d->items.count())%d->model->count();
                 d->items << d->getItem(index);
-                d->items.last()->setZ(wrapIndex);
+                d->items.last()->setZValue(wrapIndex);
                 d->pathOffset++;
                 d->pathOffset=d->pathOffset % d->items.count();
             }
@@ -652,7 +652,7 @@ void QFxPathView::refill()
                 if (d->firstIndex < 0)
                     d->firstIndex = d->model->count() - 1;
                 d->items.prepend(d->getItem(d->firstIndex));
-                d->items.first()->setZ(d->firstIndex);
+                d->items.first()->setZValue(d->firstIndex);
                 d->pathOffset--;
                 if (d->pathOffset < 0)
                     d->pathOffset = d->items.count() - 1;
@@ -675,7 +675,7 @@ void QFxPathView::itemsInserted(int modelIndex, int count)
     if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
             QFxItem *item = d->getItem(modelIndex + i);
-            item->setZ(modelIndex + i);
+            item->setZValue(modelIndex + i);
             d->items.insert(modelIndex + i, item);
         }
         refill();

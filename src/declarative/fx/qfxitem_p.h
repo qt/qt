@@ -54,6 +54,7 @@
 //
 
 #include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qmlstate.h>
 #include <private/qmlnullablevalue_p.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcontext.h>
@@ -76,7 +77,7 @@ public:
     : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
       _baselineOffset(0), _rotation(0.),
       _classComplete(true), _componentComplete(true), _keepMouse(false), 
-      visible(true), _anchorLines(0), visibleOp(1), 
+      _anchorLines(0),
       _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
       options(QFxItem::NoOption),
       widthValid(false), heightValid(false), width(0), height(0), 
@@ -93,8 +94,9 @@ public:
             q->setItemParent(parent);
         _baselineOffset.invalidate();
         q->setAcceptedMouseButtons(Qt::NoButton);
-        q->setFlag(QGraphicsItem::ItemHasNoContents, true);
-        q->setFlag(QGraphicsItem::ItemIsFocusable, true);
+        q->setFlags(QGraphicsItem::ItemHasNoContents |
+                    QGraphicsItem::ItemIsFocusable |
+                    QGraphicsItem::ItemNegativeZStacksBehindParent);
         mouseSetsFocus = false;
     }
 
@@ -151,7 +153,6 @@ public:
     bool _classComplete:1;
     bool _componentComplete:1;
     bool _keepMouse:1;
-    bool visible:1;
 
     QmlChildren _qmlChildren;
 
@@ -172,8 +173,6 @@ public:
             new AnchorLines(const_cast<QFxItem *>(q));
         return _anchorLines;
     }
-
-    float visibleOp;
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
@@ -207,6 +206,14 @@ public:
         Q_Q(QFxItem);
         QGraphicsItemPrivate::setFocusItemForArea(b);
         q->focusChanged(b);
+    }
+
+    virtual void setPosHelper(const QPointF &pos)
+    {
+        Q_Q(QFxItem);
+        QRectF oldGeometry(this->pos.x(), this->pos.y(), width, height);
+        QGraphicsItemPrivate::setPosHelper(pos);
+        q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), width, height), oldGeometry);
     }
 };
 

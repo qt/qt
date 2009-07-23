@@ -575,12 +575,6 @@ void QFxTextPrivate::updateSize()
 // ### text layout handling should be profiled and optimized as needed
 // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
 
-QString QFxText::propertyInfo() const
-{
-    Q_D(const QFxText);
-    return QChar(QLatin1Char('\"')) + d->text + QChar(QLatin1Char('\"'));
-}
-
 void QFxTextPrivate::drawOutline()
 {
     QPixmap img = QPixmap(imgCache.size());

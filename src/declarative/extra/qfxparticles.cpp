@@ -1041,12 +1041,6 @@ void QFxParticles::setMotion(QFxParticleMotion *motion)
     d->motion = motion;
 }
 
-QString QFxParticles::propertyInfo() const
-{
-    Q_D(const QFxParticles);
-    return d->url.toString();
-}
-
 void QFxParticlesPainter::updateSize()
 {
     const int parentX = parentItem()->x();

@@ -1128,53 +1128,38 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
                                        TransitionDirection direction)
 {
     Q_D(QmlParentChangeAction);
+    Q_UNUSED(modified);
     Q_UNUSED(direction);
 
     struct QmlParentChangeActionData : public QAbstractAnimationAction
     {
         QmlStateActions actions;
+        bool reverse;
         virtual void doAction()
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
                 const Action &action = actions.at(ii);
-                QmlBehaviour::_ignore = true;
-                action.property.write(action.toValue);
-                QmlBehaviour::_ignore = false;
+                if (reverse)
+                    action.event->reverse();
+                else
+                    action.event->execute();
             }
         }
     };
 
     QmlParentChangeActionData *data = new QmlParentChangeActionData;
 
-    QSet<QObject *> objs;
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
-        QObject *obj = action.property.object();
-        QString propertyName = action.property.name();
-
-        if ((!target() || target() == obj) && propertyName == QString(QLatin1String("moveToParent"))) {
-            objs.insert(obj);
+        //### should we still use target to filter?
+        if (action.event /*&& action.event->name() == d->parentChange*/) {  //###
             Action myAction = action;
-
-            /*if (d->value.isValid())
-                myAction.toValue = d->value;*/
-
-            modified << action.property;
+            data->reverse = action.reverseEvent;
             data->actions << myAction;
-            action.fromValue = myAction.toValue;
+            action.actionDone = true;
         }
     }
-
-    /*if (d->value.isValid() && target() && !objs.contains(target())) {
-        QObject *obj = target();
-        for (int jj = 0; jj < props.count(); ++jj) {
-            Action myAction;
-            myAction.property = QmlMetaProperty(obj, props.at(jj));
-            myAction.toValue = d->value;
-            data->actions << myAction;
-        }
-    }*/
 
     if (data->actions.count()) {
         d->cpa->setAnimAction(data, QAbstractAnimation::DeleteWhenStopped);
