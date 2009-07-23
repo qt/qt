@@ -482,7 +482,7 @@ int Q3DockAreaLayout::widthForHeight(int h) const
     \img qmainwindow-qdockareas.png QMainWindow's Q3DockAreas
 
     \target lines
-    \section2 Lines.
+    \section1 Lines.
 
     Q3DockArea uses the concept of lines. A line is a horizontal
     region which may contain dock windows side-by-side. A dock area
