@@ -73,6 +73,7 @@ public:
     QmlBinding *toBinding;
     ActionEvent *event;
 
+    //strictly for matching
     QObject *specifiedObject;
     QString specifiedProperty;
 
@@ -85,7 +86,7 @@ public:
     virtual ~ActionEvent();
     virtual QString typeName() const;
     virtual void execute();
-    virtual bool isReversable();
+    virtual bool isReversable();    //### revertable is probably more correct (same below)
     virtual void reverse();
 };
 
