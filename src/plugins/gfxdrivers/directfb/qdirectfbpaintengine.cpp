@@ -608,6 +608,8 @@ void QDirectFBPaintEngine::drawTextItem(const QPointF &p,
 
 void QDirectFBPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
+    if (brush.style() == Qt::NoBrush)
+        return;
     RASTERFALLBACK(FILL_PATH, path, brush, VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
@@ -618,6 +620,8 @@ void QDirectFBPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 {
     Q_D(QDirectFBPaintEngine);
+    if (brush.style() == Qt::NoBrush)
+        return;
     d->updateClip();
     if (!d->unsupportedCompositionMode
         && !(d->transformationType & (QDirectFBPaintEnginePrivate::RectsUnsupported))
