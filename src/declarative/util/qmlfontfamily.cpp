@@ -66,7 +66,7 @@ public:
     QNetworkReply *reply;
 };
 
-QML_DEFINE_TYPE(QmlFontFamily,FontFamily)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontFamily,QmlFontFamily)
 
 /*!
     \qmlclass FontFamily QmlFontFamily
