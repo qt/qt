@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy)
+QML_DEFINE_TYPE(Qt,4.6,KeyProxy,QFxKeyProxy)
 
 /*!
     \qmlclass KeyProxy

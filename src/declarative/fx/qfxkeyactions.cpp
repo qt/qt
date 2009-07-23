@@ -44,7 +44,7 @@
 #include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxKeyActions,KeyActions)
+QML_DEFINE_TYPE(Qt,4.6,KeyActions,QFxKeyActions)
 
 class QFxKeyActionsPrivate
 {

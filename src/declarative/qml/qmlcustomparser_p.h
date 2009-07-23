@@ -112,8 +112,8 @@ public:
     virtual QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
     virtual void setCustomData(QObject *, const QByteArray &);
 };
-#define QML_DEFINE_CUSTOM_TYPE(TYPE, NAME, CUSTOMTYPE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterCustomType<TYPE>(#NAME, #TYPE, new CUSTOMTYPE));
+#define QML_DEFINE_CUSTOM_TYPE(URI, VERSION, NAME, TYPE, CUSTOMTYPE) \
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterCustomType<TYPE>(#URI, #VERSION, #NAME, #TYPE, new CUSTOMTYPE));
 
 QT_END_NAMESPACE
 

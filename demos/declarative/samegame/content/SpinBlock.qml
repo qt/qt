@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item { id:block
     //Note: These properties are the interface used to control the blocks
     property bool dying: false

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     id: MainWindow;
     width: 320; height: 270; color: "black"

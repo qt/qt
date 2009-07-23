@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // The WebView supports QML data through the HTML OBJECT tag
 Rect {
     color:"blue"

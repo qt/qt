@@ -1,3 +1,5 @@
+import Qt 4.6
+
 GridView {
     id: MyGrid
     property int offset: 0

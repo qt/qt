@@ -1,3 +1,5 @@
+import Qt 4.6
+
 ContentWrapper {
     id: Container; width: parent.width; height: contents.height
     children: [

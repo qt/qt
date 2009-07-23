@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     id: Switch
     width: Groove.width; height: Groove.height

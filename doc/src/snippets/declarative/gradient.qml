@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     width: 100; height: 100
     gradient: Gradient {

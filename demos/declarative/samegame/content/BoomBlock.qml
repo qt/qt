@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item { id:block
     property bool dying: false
     property bool spawned: false

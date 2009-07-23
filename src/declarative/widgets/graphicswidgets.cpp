@@ -59,7 +59,7 @@ public:
         static_cast<QGraphicsView *>(parent())->setScene(scene);
     }
 };
-QML_DEFINE_EXTENDED_TYPE(QGraphicsView,QGraphicsView,QGraphicsViewDeclarativeUI)
+QML_DEFINE_EXTENDED_TYPE(Qt,4.6,QGraphicsView,QGraphicsView,QGraphicsViewDeclarativeUI)
 
 class QGraphicsSceneDeclarativeUI : public QObject
 {
@@ -111,7 +111,7 @@ private:
     };
     Children _children;
 };
-QML_DEFINE_EXTENDED_TYPE(QGraphicsScene,QGraphicsScene,QGraphicsSceneDeclarativeUI)
+QML_DEFINE_EXTENDED_TYPE(Qt,4.6,QGraphicsScene,QGraphicsScene,QGraphicsSceneDeclarativeUI)
 
 class QGraphicsWidgetDeclarativeUI : public QObject
 {
@@ -164,7 +164,7 @@ private:
     QmlConcreteList<QObject *> _data;
 };
 
-QML_DEFINE_EXTENDED_TYPE(QGraphicsWidget,QGraphicsWidget,QGraphicsWidgetDeclarativeUI)
+QML_DEFINE_EXTENDED_TYPE(Qt,4.6,QGraphicsWidget,QGraphicsWidget,QGraphicsWidgetDeclarativeUI)
 
 QML_DEFINE_INTERFACE(QGraphicsItem)
 

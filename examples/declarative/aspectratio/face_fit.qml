@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // Here, we implement a hybrid of the "scale to fit" and "scale and crop"
 // behaviours which will crop up to 25% from *one* dimension if necessary
 // to fully scale the other. This is a realistic algorithm, for example

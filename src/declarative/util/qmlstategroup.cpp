@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-QML_DEFINE_TYPE(QmlStateGroup,StateGroup)
+QML_DEFINE_TYPE(Qt,4.6,StateGroup,QmlStateGroup)
 
 class QmlStateGroupPrivate : public QObjectPrivate
 {

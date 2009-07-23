@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // The WebView background is transparent
 // if the HTML does not specify a background
 Rect {

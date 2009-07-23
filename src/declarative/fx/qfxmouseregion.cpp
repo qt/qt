@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 static const int DragThreshold = 5;
 static const int PressAndHoldDelay = 800;
 
-QML_DEFINE_TYPE(QFxDrag,Drag)
+QML_DEFINE_TYPE(Qt,4.6,Drag,QFxDrag)
 QFxDrag::QFxDrag(QObject *parent)
 : QObject(parent), _target(0), _xmin(0), _xmax(0), _ymin(0), _ymax(0)
 {
@@ -233,7 +233,7 @@ void QFxDrag::setYmax(int m)
     position of the release of the click, and whether the click wasHeld.
 */
 
-QML_DEFINE_TYPE(QFxMouseRegion,MouseRegion)
+QML_DEFINE_TYPE(Qt,4.6,MouseRegion,QFxMouseRegion)
 
 /*!
     \internal

@@ -52,7 +52,7 @@
 #include <QPainter>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxText,Text)
+QML_DEFINE_TYPE(Qt,4.6,Text,QFxText)
 
 /*!
     \qmlclass Text QFxText

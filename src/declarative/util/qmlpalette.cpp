@@ -52,7 +52,7 @@ public:
     QPalette::ColorGroup group;
 };
 
-QML_DEFINE_TYPE(QmlPalette,Palette)
+QML_DEFINE_TYPE(Qt,4.6,Palette,QmlPalette)
 
 /*!
     \internal

@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QML_DEFINE_NOCREATE_TYPE(QGraphicsObject)
-QML_DEFINE_TYPE(QFxGraphicsObjectContainer, GraphicsObjectContainer)
+QML_DEFINE_TYPE(Qt,4.6,GraphicsObjectContainer,QFxGraphicsObjectContainer)
 
 QFxGraphicsObjectContainer::QFxGraphicsObjectContainer(QFxItem *parent)
 : QFxItem(parent), _graphicsObject(0)

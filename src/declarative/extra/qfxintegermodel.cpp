@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QFxIntegerModel, IntegerModel)
+QML_DEFINE_TYPE(Qt,4.6,IntegerModel,QFxIntegerModel)
 
 class QFxIntegerModelPrivate
 {

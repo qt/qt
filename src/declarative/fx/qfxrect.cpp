@@ -45,9 +45,9 @@
 #include <QPainter>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxPen,Pen)
-QML_DEFINE_TYPE(QFxGradientStop,GradientStop)
-QML_DEFINE_TYPE(QFxGradient,Gradient)
+QML_DEFINE_TYPE(Qt,4.6,Pen,QFxPen)
+QML_DEFINE_TYPE(Qt,4.6,GradientStop,QFxGradientStop)
+QML_DEFINE_TYPE(Qt,4.6,Gradient,QFxGradient)
 
 /*!
     \internal
@@ -185,7 +185,7 @@ void QFxGradient::doUpdate()
     emit updated();
 }
 
-QML_DEFINE_TYPE(QFxRect,Rect)
+QML_DEFINE_TYPE(Qt,4.6,Rect,QFxRect)
 
 /*!
     \qmlclass Rect QFxRect

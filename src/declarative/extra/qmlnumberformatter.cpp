@@ -210,6 +210,6 @@ void QmlNumberFormatter::classComplete()
     d->classComplete = true;
     d->updateText();
 }
-QML_DEFINE_TYPE(QmlNumberFormatter, NumberFormatter);
+QML_DEFINE_TYPE(Qt,4.6,NumberFormatter,QmlNumberFormatter);
 
 QT_END_NAMESPACE

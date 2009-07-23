@@ -51,7 +51,7 @@ public:
     QFont font;
 };
 
-QML_DEFINE_TYPE(QmlFont,Font)
+QML_DEFINE_TYPE(Qt,4.6,Font,QmlFont)
 
 /*!
     \internal

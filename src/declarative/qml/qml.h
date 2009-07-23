@@ -73,17 +73,14 @@ QT_MODULE(Declarative)
 
 QT_BEGIN_NAMESPACE
 
-//#define QML_FORCE_NAMESPACE "Qt/4.6/"
-#define QML_FORCE_NAMESPACE
-
 #define QML_DEFINE_INTERFACE(INTERFACE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<INTERFACE *>::instance(qmlRegisterInterface<INTERFACE>(#INTERFACE)); 
 
-#define QML_DEFINE_EXTENDED_TYPE(TYPE, NAME, EXTENSION) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(QML_FORCE_NAMESPACE #NAME, #TYPE));
+#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION, NAME, TYPE, EXTENSION) \
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, #VERSION, #NAME, #TYPE));
 
-#define QML_DEFINE_TYPE(TYPE, NAME) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterType<TYPE>(QML_FORCE_NAMESPACE #NAME, #TYPE));
+#define QML_DEFINE_TYPE(URI, VERSION, NAME, TYPE) \
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterType<TYPE>(#URI, #VERSION, #NAME, #TYPE));
 
 #define QML_DEFINE_EXTENDED_NOCREATE_TYPE(TYPE, EXTENSION) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#TYPE));

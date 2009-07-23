@@ -126,7 +126,7 @@ QmlStateOperation::QmlStateOperation(QObjectPrivate &dd, QObject *parent)
     \sa {states-transitions}{States and Transitions}
 */
 
-QML_DEFINE_TYPE(QmlState,State)
+QML_DEFINE_TYPE(Qt,4.6,State,QmlState)
 QmlState::QmlState(QObject *parent)
 : QObject(*(new QmlStatePrivate), parent)
 {

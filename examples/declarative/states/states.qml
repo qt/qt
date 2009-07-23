@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     id: Page
     width: 300; height: 300; color: "white"

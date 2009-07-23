@@ -47,14 +47,14 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxPath,Path)
+QML_DEFINE_TYPE(Qt,4.6,Path,QFxPath)
 QML_DEFINE_NOCREATE_TYPE(QFxPathElement)
 QML_DEFINE_NOCREATE_TYPE(QFxCurve)
-QML_DEFINE_TYPE(QFxPathAttribute,PathAttribute)
-QML_DEFINE_TYPE(QFxPathPercent,PathPercent)
-QML_DEFINE_TYPE(QFxPathLine,PathLine)
-QML_DEFINE_TYPE(QFxPathQuad,PathQuad)
-QML_DEFINE_TYPE(QFxPathCubic,PathCubic)
+QML_DEFINE_TYPE(Qt,4.6,PathAttribute,QFxPathAttribute)
+QML_DEFINE_TYPE(Qt,4.6,PathPercent,QFxPathPercent)
+QML_DEFINE_TYPE(Qt,4.6,PathLine,QFxPathLine)
+QML_DEFINE_TYPE(Qt,4.6,PathQuad,QFxPathQuad)
+QML_DEFINE_TYPE(Qt,4.6,PathCubic,QFxPathCubic)
 
 /*!
     \qmlclass PathElement

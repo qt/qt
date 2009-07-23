@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect { 
     radius: 5; 
     pen.width: 1; 

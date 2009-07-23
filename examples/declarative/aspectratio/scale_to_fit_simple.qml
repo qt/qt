@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // Here, we implement "Scale to Fit" behaviour, using the
 // preserveAspect property.
 //

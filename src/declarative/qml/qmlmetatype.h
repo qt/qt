@@ -59,7 +59,7 @@ class QmlCustomParser;
 class Q_DECLARATIVE_EXPORT QmlMetaType
 {
 public:
-    static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
+    static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, const char *, const char *, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
     static int registerInterface(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *);
 
     static bool copy(int type, void *data, const void *copy = 0);
@@ -163,7 +163,7 @@ int qmlRegisterType(const char *typeName)
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 
+    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0,
             &T::staticMetaObject,
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),
@@ -173,7 +173,7 @@ int qmlRegisterType(const char *typeName)
 }
 
 template<typename T>
-int qmlRegisterType(const char *qmlName, const char *typeName)
+int qmlRegisterType(const char *uri, const char *version, const char *qmlName, const char *typeName)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
@@ -182,7 +182,7 @@ int qmlRegisterType(const char *qmlName, const char *typeName)
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>, qmlName, 
+    return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>, uri, version, qmlName, 
             &T::staticMetaObject,
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),
@@ -210,7 +210,7 @@ int qmlRegisterExtendedType(const char *typeName)
         attachedMo = QmlPrivate::attachedPropertiesMetaObject<T>();
     }
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 
+    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0,
             &T::staticMetaObject, attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
             QmlPrivate::StaticCastSelector<T,QObject>::cast(), 
@@ -218,7 +218,7 @@ int qmlRegisterExtendedType(const char *typeName)
 }
 
 template<typename T, typename E>
-int qmlRegisterExtendedType(const char *qmlName, const char *typeName)
+int qmlRegisterExtendedType(const char *uri, const char *version, const char *qmlName, const char *typeName)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
@@ -237,7 +237,7 @@ int qmlRegisterExtendedType(const char *qmlName, const char *typeName)
     }
 
     return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>, 
-            qmlName, 
+            uri, version, qmlName, 
             &T::staticMetaObject,
             attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
@@ -262,7 +262,7 @@ int qmlRegisterInterface(const char *typeName)
 }
 
 template<typename T>
-int qmlRegisterCustomType(const char *qmlName, const char *typeName, QmlCustomParser *parser)
+int qmlRegisterCustomType(const char *uri, const char *version, const char *qmlName, const char *typeName, QmlCustomParser *parser)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
@@ -271,7 +271,7 @@ int qmlRegisterCustomType(const char *qmlName, const char *typeName, QmlCustomPa
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>, qmlName, 
+    return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>, uri, version, qmlName, 
             &T::staticMetaObject,
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),

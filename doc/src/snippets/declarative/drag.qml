@@ -1,3 +1,5 @@
+import Qt 4.6
+
 //! [0]
 Rect {
     id: blurtest; width: 600; height: 200; color: "white"

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // ![0]
 BirthdayParty {
     onPartyStarted: print("This party started rockin' at " + time);

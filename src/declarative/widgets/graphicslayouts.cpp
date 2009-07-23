@@ -89,7 +89,7 @@ private:
     Qt::Alignment _alignment;
 };
 
-QML_DEFINE_TYPE(QGraphicsLinearLayoutStretchItemObject,QGraphicsLinearLayoutStretchItem)
+QML_DEFINE_TYPE(Qt,4.6,QGraphicsLinearLayoutStretchItem,QGraphicsLinearLayoutStretchItemObject)
 
 QGraphicsLinearLayoutStretchItemObject::QGraphicsLinearLayoutStretchItemObject(QObject *parent)
         : QObject(parent)
@@ -103,7 +103,7 @@ QSizeF QGraphicsLinearLayoutStretchItemObject::sizeHint(Qt::SizeHint which, cons
     return QSizeF();
 }
 
-QML_DEFINE_TYPE(QGraphicsLinearLayoutObject,QGraphicsLinearLayout)
+QML_DEFINE_TYPE(Qt,4.6,QGraphicsLinearLayout,QGraphicsLinearLayoutObject)
 
 QGraphicsLinearLayoutObject::QGraphicsLinearLayoutObject(QObject *parent)
 : QObject(parent), _children(this)
@@ -246,7 +246,7 @@ private:
     Qt::Alignment _alignment;
 };
 
-QML_DEFINE_TYPE(QGraphicsGridLayoutObject,QGraphicsGridLayout)
+QML_DEFINE_TYPE(Qt,4.6,QGraphicsGridLayout,QGraphicsGridLayoutObject)
 
 
 QGraphicsGridLayoutObject::QGraphicsGridLayoutObject(QObject *parent)

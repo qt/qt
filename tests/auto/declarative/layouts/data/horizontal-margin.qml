@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     width: 640
     height: 480

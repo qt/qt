@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     color: "#ffffff"
     width: 320; height: 240

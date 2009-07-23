@@ -56,6 +56,7 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qlocale.h>
+//#include <ctypes.h>
 #include <QtCore/qcryptographichash.h>
 #include <private/qmlcustomparser_p.h>
 
@@ -416,26 +417,35 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     return index;
 }
 
-int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func, const char *cname, const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
+int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func, const char *uri, const char *version, const char *cname, const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
     Q_UNUSED(object);
     QWriteLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
 
-    QString name = QLatin1String(cname);
+    QByteArray name = cname;
 
     for (int ii = 0; ii < name.count(); ++ii) {
-        QChar ch = name.at(ii);
-        if (!ch.isLetterOrNumber() && ch != QChar::fromLatin1('/') && ch != QChar::fromLatin1('.')) {
+        if (!isalnum(name.at(ii))) {
             qWarning("QmlMetaType: Invalid QML name %s", cname);
             return -1;
         }
     }
 
+    // XXX Only adding specified version. Need all relevant versions!
+    if (uri) {
+        if (version)
+            name = QByteArray(uri) + '/' + version + '/' + name;
+        else
+            name = QByteArray(uri) + '/' + name;
+    } else {
+        Q_ASSERT(!version);
+    }
+
     int index = data->types.count();
 
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
-                                func, cname, mo, attach, attachMo, pStatus, extFunc,
+                                func, name, mo, attach, attachMo, pStatus, extFunc,
                                 extmo, index, parser);
 
     data->types.append(type);
