@@ -50,10 +50,8 @@ var fillFound;
 var floodBoard;
 
 var lastHoveredIdx = -2
-function handleHover(x,y, btn)
+function handleHover(xIdx,yIdx, btn)
 {
-    xIdx = Math.floor(x/tileSize);
-    yIdx = Math.floor(y/tileSize);
     if(index(xIdx, yIdx) == lastHoveredIdx)
         return;
     lastHoveredIdx = index(xIdx, yIdx);
@@ -67,11 +65,9 @@ function handleHover(x,y, btn)
     //Could use the fillFound value to tell the player how many stones/points
 }
 
-function handleClick(x,y)
+function handleClick(xIdx,yIdx)
 {
     //NOTE: Be careful with vars named x,y - they can set to the calling object
-    xIdx = Math.floor(x/tileSize);
-    yIdx = Math.floor(y/tileSize);
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)

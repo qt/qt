@@ -20,10 +20,6 @@ Rect {
             anchors.fill: parent
         }
 
-        MouseRegion { id: gameMR; anchors.fill: parent;
-            onClicked: handleClick(mouseX, mouseY);
-            onPositionChanged: handleHover(mouseX, mouseY);
-        }
     }
     HorizontalLayout {
         anchors.top: gameCanvas.bottom

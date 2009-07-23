@@ -13,8 +13,11 @@ Rect { id:block
     opacity: 0
     y: targetY
     x: targetX
-    //y: Behavior { NumberAnimation { properties:"y"; duration: 200 } }
-    //opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
+
+    MouseRegion {
+        id: gameMR; anchors.fill: parent
+        onClicked: handleClick(Math.floor(parent.x/width), Math.floor(parent.y/height));
+    }
 
     states: [
 
