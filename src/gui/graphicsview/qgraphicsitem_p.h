@@ -122,6 +122,7 @@ public:
         index(-1),
         siblingIndex(-1),
         depth(0),
+        focusProxy(0),
         acceptedMouseButtons(0x1f),
         visible(1),
         explicitlyHidden(0),
@@ -409,6 +410,7 @@ public:
     int index;
     int siblingIndex;
     int depth;
+    QGraphicsItem *focusProxy;
 
     // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
@@ -438,7 +440,7 @@ public:
 
     // New 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 12;
+    quint32 flags : 13;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -451,7 +453,7 @@ public:
     quint32 acceptedTouchBeginEvent : 1;
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
-    quint32 unused : 7; // feel free to use
+    quint32 unused : 6; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
