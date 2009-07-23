@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // ![0]
 BirthdayParty {
     speaker: HappyBirthday { name: "Bob Jones" }

@@ -41,6 +41,7 @@
 
 #include "qmldom.h"
 #include "qmldom_p.h"
+#include "private/qmlcompositetypedata_p.h"
 #include "private/qmlcompiler_p.h"
 #include "private/qmlengine_p.h"
 #include <QtCore/QByteArray>

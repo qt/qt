@@ -808,6 +808,8 @@ bool QGraphicsLayoutItem::isLayout() const
 }
 
 /*!
+    \since 4.6
+
     Returns whether a layout should delete this item in its destructor.
     If its true, then the layout will delete it. If its false, then it is
     assumed that another object has the ownership of it, and the layout won't
@@ -834,6 +836,8 @@ bool QGraphicsLayoutItem::ownedByLayout() const
     return d_func()->ownedByLayout;
 }
 /*!
+    \since 4.6
+
     Sets whether a layout should delete this item in its destructor or not.
     \a ownership must be true to in order for the layout to delete it.
     \sa ownedByLayout()

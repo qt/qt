@@ -112,6 +112,16 @@ namespace QPatternistSDK
     class Q_PATTERNISTSDK_EXPORT TestSuite : public TestContainer
     {
     public:
+        /**
+         * Describes the type of test suite.
+         */
+        enum SuiteType
+        {
+            XQuerySuite,    ///< The test suite for XQuery
+            XsltSuite,      ///< The test suite for XSLT
+            XsdSuite        ///< The test suite for XML Schema
+        };
+
         TestSuite();
 
         virtual QVariant data(const Qt::ItemDataRole role, int column) const;
@@ -148,7 +158,7 @@ namespace QPatternistSDK
         static TestSuite *openCatalog(const QUrl &catalogFile,
                                       QString &errorMsg,
                                       const bool useExclusionList,
-                                      const bool isXSLTCatalog = false);
+                                      SuiteType type);
 
         void toXML(XMLWriter &receiver, TestCase *const tc) const;
 
@@ -177,7 +187,7 @@ namespace QPatternistSDK
                                       QString &errorMsg,
                                       const QUrl &fileName,
                                       const bool useExclusionList,
-                                      const bool isXSLTCatalog);
+                                      SuiteType type);
         QString m_version;
         QDate m_designDate;
     };

@@ -445,7 +445,7 @@ void QFxBaseLayout::applyRemove(const QList<QPair<QString, QVariant> >& changes,
     applyTransition(changes,target, remove());
 }
 
-QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VerticalLayout,QFxVerticalLayout)
 /*!
   \qmlclass VerticalLayout
   \brief The VerticalLayout item arranges its children in a vertical layout.
@@ -648,7 +648,7 @@ void QFxVerticalLayout::doLayout()
     setMovingItem(0);
 }
 
-QML_DEFINE_TYPE(QFxHorizontalLayout,HorizontalLayout)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalLayout,QFxHorizontalLayout)
 /*!
   \qmlclass HorizontalLayout
   \brief The HorizontalLayout item arranges its children in a horizontal layout.
@@ -813,7 +813,7 @@ void QFxHorizontalLayout::doLayout()
     setWidth(hoffset);
 }
 
-QML_DEFINE_TYPE(QFxGridLayout,GridLayout)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridLayout,QFxGridLayout)
 
 /*!
   \qmlclass GridLayout QFxGridLayout

@@ -480,12 +480,7 @@ void QmlViewer::setSkin(const QString& skinDirectory)
 void QmlViewer::setAutoRecord(int from, int to)
 {
     record_autotime = to-from;
-    if (from) {
-        autoStartTimer.start(from,this);
-    } else {
-        autoTimer.start();
-        setRecording(true);
-    }
+    autoStartTimer.start(from,this);
 }
 
 void QmlViewer::setRecordArgs(const QStringList& a)

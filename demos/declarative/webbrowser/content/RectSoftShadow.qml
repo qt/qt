@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     Image {
         source: "pics/softshadow-left.sci"

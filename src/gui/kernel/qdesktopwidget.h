@@ -56,6 +56,9 @@ class QDesktopWidgetPrivate;
 class Q_GUI_EXPORT QDesktopWidget : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(bool virtualDesktop READ isVirtualDesktop)
+    Q_PROPERTY(int screenCount READ screenCount NOTIFY screenCountChanged)
+    Q_PROPERTY(int primaryScreen READ primaryScreen)
 public:
     QDesktopWidget();
     ~QDesktopWidget();
@@ -63,6 +66,7 @@ public:
     bool isVirtualDesktop() const;
 
     int numScreens() const;
+    int screenCount() const;
     int primaryScreen() const;
 
     int screenNumber(const QWidget *widget = 0) const;
@@ -85,6 +89,7 @@ public:
 Q_SIGNALS:
     void resized(int);
     void workAreaResized(int);
+    void screenCountChanged(int);
 
 protected:
     void resizeEvent(QResizeEvent *e);
@@ -96,6 +101,9 @@ private:
     friend class QApplication;
     friend class QApplicationPrivate;
 };
+
+inline int QDesktopWidget::screenCount() const
+{ return numScreens(); }
 
 QT_END_NAMESPACE
 

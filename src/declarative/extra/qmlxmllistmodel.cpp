@@ -58,8 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(XmlListModelRole, XmlRole)
-QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlRole,XmlListModelRole)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlListModel,QmlXmlListModel)
 
 class QmlXmlListModelPrivate;
 struct QmlXmlRoleList : public QmlConcreteList<XmlListModelRole *>

@@ -104,7 +104,7 @@ enum Op {
 
 } // namespace QSOperator
 
-namespace QmlJS { 
+namespace QmlJS {
 class NameId;
 namespace AST {
 
@@ -213,7 +213,9 @@ public:
         Kind_UiPublicMember,
         Kind_UiQualifiedId,
         Kind_UiScriptBinding,
-        Kind_UiSourceElement
+        Kind_UiSourceElement,
+        Kind_UiAttributeList,
+        Kind_UiAttribute
     };
 
     inline Node()
@@ -2181,6 +2183,56 @@ public:
     UiObjectMemberList *members;
 };
 
+class UiAttributeList: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiAttributeList)
+
+    UiAttributeList(UiAttribute *attribute)
+        : attribute(attribute), next(this)
+    { kind = K; }
+
+    UiAttributeList(UiAttributeList *previous, UiAttribute *attribute)
+        : attribute(attribute)
+    {
+        next = previous->next;
+        previous->next = this;
+        kind = K;
+    }
+
+    UiAttributeList *finish()
+    {
+        UiAttributeList *head = next;
+        next = 0;
+        return head;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiAttribute *attribute;
+    UiAttributeList *next;
+};
+
+class UiAttribute: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiAttribute)
+
+    UiAttribute(NameId *name, ExpressionNode *value = 0)
+        : name(name), value(value)
+    { kind = K; }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    NameId *name;
+    ExpressionNode *value;
+    SourceLocation atToken;
+    SourceLocation nameToken;
+    SourceLocation equalToken;
+};
+
 class UiQualifiedId: public Node
 {
 public:
@@ -2279,6 +2331,9 @@ class UiObjectMember: public Node
 public:
     virtual SourceLocation firstSourceLocation() const = 0;
     virtual SourceLocation lastSourceLocation() const = 0;
+
+// attributes
+    UiAttributeList *attributes;
 };
 
 class UiObjectMemberList: public Node
@@ -2286,16 +2341,21 @@ class UiObjectMemberList: public Node
 public:
     QMLJS_DECLARE_AST_NODE(UiObjectMemberList)
 
-    UiObjectMemberList(UiObjectMember *member)
+    UiObjectMemberList(UiAttributeList *attributes, UiObjectMember *member)
         : next(this), member(member)
-    { kind = K; }
+    {
+        kind = K;
+        member->attributes = attributes;
+    }
 
-    UiObjectMemberList(UiObjectMemberList *previous, UiObjectMember *member)
+    UiObjectMemberList(UiObjectMemberList *previous, UiAttributeList *attributes,
+                       UiObjectMember *member)
         : member(member)
     {
         kind = K;
         next = previous->next;
         previous->next = this;
+        member->attributes = attributes;
     }
 
     virtual void accept0(Visitor *visitor);

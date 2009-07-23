@@ -141,9 +141,9 @@ private:
 
     struct BindingContext {
         BindingContext()
-            : stack(0), object(0) {}
+            : stack(0), owner(0), object(0) {}
         BindingContext(QmlParser::Object *o)
-            : stack(0), object(o) {}
+            : stack(0), owner(0), object(o) {}
         BindingContext incr() const {
             BindingContext rv(object);
             rv.stack = stack + 1;
@@ -151,6 +151,7 @@ private:
         }
         bool isSubContext() const { return stack != 0; }
         int stack;
+        int owner;
         QmlParser::Object *object;
     };
 
@@ -171,6 +172,9 @@ private:
     bool buildGroupedProperty(QmlParser::Property *prop,
                               QmlParser::Object *obj,
                               const BindingContext &ctxt);
+    bool buildValueTypeProperty(QObject *type, 
+                                QmlParser::Object *obj, 
+                                const BindingContext &ctxt);
     bool buildListProperty(QmlParser::Property *prop,
                            QmlParser::Object *obj,
                            const BindingContext &ctxt);
@@ -208,12 +212,14 @@ private:
     void genValueProperty(QmlParser::Property *prop, QmlParser::Object *obj);
     void genListProperty(QmlParser::Property *prop, QmlParser::Object *obj);
     void genPropertyAssignment(QmlParser::Property *prop, 
-                               QmlParser::Object *obj);
+                               QmlParser::Object *obj,
+                               QmlParser::Property *valueTypeProperty = 0);
     void genLiteralAssignment(const QMetaProperty &prop, 
                               QmlParser::Value *value);
     void genBindingAssignment(QmlParser::Value *binding, 
                               QmlParser::Property *prop, 
-                              QmlParser::Object *obj);
+                              QmlParser::Object *obj,
+                              QmlParser::Property *valueTypeProperty = 0);
 
 
     int componentTypeRef();
@@ -257,6 +263,7 @@ private:
 
     QList<QmlError> exceptions;
     QmlCompiledData *output;
+    QmlEngine *engine;
 };
 QT_END_NAMESPACE
 

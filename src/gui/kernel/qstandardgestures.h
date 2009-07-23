@@ -42,11 +42,10 @@
 #ifndef QSTANDARDGESTURES_H
 #define QSTANDARDGESTURES_H
 
-#include "qevent.h"
-#include "qbasictimer.h"
-#include "qdebug.h"
+#include <QtGui/qevent.h>
+#include <QtCore/qbasictimer.h>
 
-#include "qgesture.h"
+#include <QtGui/qgesture.h>
 
 QT_BEGIN_HEADER
 

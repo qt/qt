@@ -176,11 +176,17 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::FetchObject:
         qWarning() << idx << "\t" << line << "\t" << "FETCH\t\t\t" << instr->fetch.property;
         break;
+    case QmlInstruction::FetchValueType:
+        qWarning() << idx << "\t" << line << "\t" << "FETCH_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type;
+        break;
     case QmlInstruction::PopFetchedObject:
         qWarning() << idx << "\t" << line << "\t" << "POP";
         break;
     case QmlInstruction::PopQList:
         qWarning() << idx << "\t" << line << "\t" << "POP_QLIST";
+        break;
+    case QmlInstruction::PopValueType:
+        qWarning() << idx << "\t" << line << "\t" << "POP_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type;
         break;
     case QmlInstruction::Defer:
         qWarning() << idx << "\t" << line << "\t" << "DEFER" << "\t\t" << instr->defer.deferCount;

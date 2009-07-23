@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     property string text: "Hello World!"
     property int show: 0

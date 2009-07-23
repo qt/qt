@@ -716,6 +716,9 @@ void tst_QSettings::testErrorHandling()
 #ifdef QT_BUILD_INTERNAL
 #ifdef Q_OS_WIN
     QSKIP("Windows doesn't support most file modes, including read-only directories, so this test is moot.", SkipAll);
+#elif defined(Q_OS_UNIX)
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't work, since file perms do not bother him", SkipAll);
 #else
     QFETCH(int, filePerms);
     QFETCH(int, dirPerms);
@@ -724,8 +727,7 @@ void tst_QSettings::testErrorHandling()
     QFETCH(int, statusAfterGet);
     QFETCH(int, statusAfterSetAndSync);
 
-
-	system(QString("chmod 700 %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
+    system(QString("chmod 700 %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
     system(QString("chmod -R u+rwx %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
     system(QString("rm -fr %1").arg(settingsPath("someDir")).toLatin1());
 

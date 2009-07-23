@@ -139,6 +139,7 @@ public:
         FetchQmlList,             /* fetchQmlList */ 
         FetchQList,               /* fetch */
         FetchObject,              /* fetch */
+        FetchValueType,           /* fetchValue */
 
         //
         // Stack manipulation
@@ -147,6 +148,7 @@ public:
         //    PopQList - Remove a list from the list stack
         PopFetchedObject,
         PopQList,
+        PopValueType,            /* fetchValue */
 
         // 
         // Deferred creation
@@ -177,16 +179,21 @@ public:
         } setId;
         struct {
             int property;
+            int owner;
         } assignValueSource;
         struct {
             int property;
             int value;
             short context;
-            short category;
+            short owner;
         } assignBinding;
         struct {
             int property;
         } fetch;
+        struct {
+            int property;
+            int type;
+        } fetchValue;
         struct {
             int property;
             int type;

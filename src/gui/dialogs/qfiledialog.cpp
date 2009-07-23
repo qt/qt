@@ -1604,12 +1604,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    //If workingDirectory returned a different path than the initial one,
-    //it means that the initial path was invalid. There is no point to try select a file
-    if (args.directory != QFileInfo(dir).path())
-        args.selection = QString();
-    else
-        args.selection = QFileDialogPrivate::initialSelection(dir);
+    args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFile;
     args.options = options;
@@ -1687,18 +1682,13 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
                                           QString *selectedFilter,
                                           Options options)
 {
-    if (qt_filedialog_open_filenames_hook)
+    if (qt_filedialog_open_filenames_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_open_filenames_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    //If workingDirectory returned a different path than the initial one,
-    //it means that the initial path was invalid. There is no point to try select a file
-    if (args.directory != QFileInfo(dir).path())
-        args.selection = QString();
-    else
-        args.selection = QFileDialogPrivate::initialSelection(dir);
+    args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFiles;
     args.options = options;
@@ -1778,18 +1768,13 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
                                      QString *selectedFilter,
                                      Options options)
 {
-    if (qt_filedialog_save_filename_hook)
+    if (qt_filedialog_save_filename_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_save_filename_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    //If workingDirectory returned a different path than the initial one,
-    //it means that the initial path was invalid. There is no point to try select a file
-    if (args.directory != QFileInfo(dir).path())
-        args.selection = QString();
-    else
-        args.selection = QFileDialogPrivate::initialSelection(dir);
+    args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = AnyFile;
     args.options = options;
@@ -1858,7 +1843,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
                                           const QString &dir,
                                           Options options)
 {
-    if (qt_filedialog_existing_directory_hook)
+    if (qt_filedialog_existing_directory_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_existing_directory_hook(parent, caption, dir, options);
     QFileDialogArgs args;
     args.parent = parent;

@@ -142,9 +142,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
     QStack<ListInstance> qliststack;
 
-    QStack<QmlMetaProperty> pushedProperties;
-
     vmeErrors.clear();
+    QmlEnginePrivate *ep = ctxt->engine()->d_func();
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         QmlInstruction &instr = comp->bytecode[ii];
@@ -533,12 +532,13 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::StoreCompiledBinding:
             {
-                QObject *target = stack.top();
+                QObject *target = 
+                    stack.at(stack.count() - 1 - instr.assignBinding.owner);
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignBinding.context);
 
-                QmlMetaProperty mp(target, instr.assignBinding.property,
-                                   (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
+                QmlMetaProperty mp;
+                mp.restore(instr.assignBinding.property, target, ctxt);
 
                 QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, 0);
                 bindValues.append(bind);
@@ -553,12 +553,13 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::StoreBinding:
             {
-                QObject *target = stack.top();
+                QObject *target = 
+                    stack.at(stack.count() - 1 - instr.assignBinding.owner);
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignBinding.context);
 
-                QmlMetaProperty mp(target, instr.assignBinding.property, 
-                                   (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
+                QmlMetaProperty mp;
+                mp.restore(instr.assignBinding.property, target, ctxt);
 
                 QmlBinding *bind = new QmlBinding(primitives.at(instr.assignBinding.value), context, ctxt);
                 bindValues.append(bind);
@@ -574,12 +575,14 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::StoreValueSource:
             {
-                QObject *assign = stack.pop();
                 QmlPropertyValueSource *vs = 
-                    static_cast<QmlPropertyValueSource *>(assign);
-                QObject *target = stack.top();
+                    static_cast<QmlPropertyValueSource *>(stack.pop());
+                QObject *target = 
+                    stack.at(stack.count() - 1 - instr.assignValueSource.owner);
+                QmlMetaProperty prop;
+                prop.restore(instr.assignValueSource.property, target, ctxt);
                 vs->setParent(target);
-                vs->setTarget(QmlMetaProperty(target, instr.assignValueSource.property));
+                vs->setTarget(prop);
             }
             break;
 
@@ -762,6 +765,25 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             }
             break;
 
+        case QmlInstruction::FetchValueType:
+            {
+                QObject *target = stack.top();
+                QmlValueType *valueHandler = 
+                    ep->valueTypes[instr.fetchValue.type];
+                valueHandler->read(target, instr.fetchValue.property);
+                stack.push(valueHandler);
+            }
+            break;
+
+        case QmlInstruction::PopValueType:
+            {
+                QmlValueType *valueHandler = 
+                    static_cast<QmlValueType *>(stack.pop());
+                QObject *target = stack.top();
+                valueHandler->write(target, instr.fetchValue.property);
+            }
+            break;
+
         default:
             qFatal("QmlCompiledData: Internal error - unknown instruction %d", instr.type);
             break;
@@ -778,7 +800,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
         return 0;
     }
 
-    QmlEnginePrivate *ep = ctxt->engine()->d_func();
     if (bindValues.count)
         ep->bindValues << bindValues;
     if (parserStatus.count)

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     width: 800
     height: 800

@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QmlTimer,Timer)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Timer,QmlTimer)
 
 class QmlTimerPrivate : public QObjectPrivate
 {

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // Inline HTML with loose formatting can be
 // set on the html property.
 WebView {

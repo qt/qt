@@ -62,18 +62,22 @@ class QmlMetaPropertyPrivate
 {
 public:
     QmlMetaPropertyPrivate()
-        : context(0), coreIdx(-1), type(QmlMetaProperty::Invalid), attachedFunc(-1), 
+        : context(0), coreIdx(-1), valueTypeIdx(-1), valueTypeId(0),
+          type(QmlMetaProperty::Invalid), attachedFunc(-1), 
           object(0), propType(-1), category(QmlMetaProperty::Unknown) {}
     QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
         : name(other.name), signal(other.signal), context(other.context), 
-          coreIdx(other.coreIdx), type(other.type), attachedFunc(other.attachedFunc), 
-          object(other.object), propType(other.propType),
-          category(other.category) {}
+          coreIdx(other.coreIdx), valueTypeIdx(other.valueTypeIdx), 
+          valueTypeId(other.valueTypeId), type(other.type), 
+          attachedFunc(other.attachedFunc), object(other.object), 
+          propType(other.propType), category(other.category) {}
 
     QString name;
     QMetaMethod signal;
     QmlContext *context;
     int coreIdx;
+    int valueTypeIdx;
+    int valueTypeId;
     uint type;
     int attachedFunc;
     QObject *object;
@@ -89,6 +93,9 @@ public:
 
     void writeSignalProperty(const QVariant &);
     void writeValueProperty(const QVariant &);
+
+    static quint32 saveValueType(int, int);
+    static quint32 saveProperty(int);
 };
 
 QT_END_NAMESPACE

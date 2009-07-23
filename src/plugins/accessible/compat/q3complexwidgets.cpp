@@ -274,7 +274,7 @@ QString Q3AccessibleTitleBar::text(Text t, int child) const
             return Q3TitleBar::tr("Contains commands to manipulate the window");
         case 3:
             if (window && window->isMinimized())
-                return Q3TitleBar::tr("Puts a minimized back to normal");
+                return Q3TitleBar::tr("Puts a minimized window back to normal");
             return Q3TitleBar::tr("Moves the window out of the way");
         case 4:
             if (window && window->isMaximized())

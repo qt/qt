@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,6 +74,8 @@
 
     \sa QGraphicsScene, QGraphicsView, QGraphicsSceneIndex
 */
+
+#include <QtCore/qglobal.h>
 
 #ifndef QT_NO_GRAPHICSVIEW
 
@@ -542,6 +544,7 @@ void QGraphicsSceneBspTreeIndex::clear()
     d->indexedItems.clear();
     d->unindexedItems.clear();
     d->untransformableItems.clear();
+    d->regenerateIndex = true;
 }
 
 /*!

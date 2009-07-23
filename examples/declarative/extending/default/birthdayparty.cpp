@@ -20,4 +20,4 @@ QmlList<Person *> *BirthdayParty::guests()
     return &m_guests;
 }
 
-QML_DEFINE_TYPE(BirthdayParty, BirthdayParty);
+QML_DEFINE_TYPE(People, 1, 0, 0, BirthdayParty, BirthdayParty);

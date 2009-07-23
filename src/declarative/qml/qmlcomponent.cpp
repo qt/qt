@@ -43,6 +43,7 @@
 #include "qmlcomponent_p.h"
 #include "qmlcompiler_p.h"
 #include "private/qmlcontext_p.h"
+#include "private/qmlcompositetypedata_p.h"
 #include "private/qmlengine_p.h"
 #include "qmlvme_p.h"
 #include "qml.h"
@@ -95,7 +96,7 @@ Item {
 }
     \endqml
 */
-QML_DEFINE_TYPE(QmlComponent,Component);
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Component,QmlComponent);
 
 /*!
     \enum QmlComponent::Status
@@ -387,30 +388,6 @@ QList<QmlError> QmlComponent::errors() const
         return d->errors;
     else
         return QList<QmlError>();
-}
-
-/*!
-    Return the list of errors that occured during the last compile or create
-    operation, as a single string.  An empty string is returned if isError()
-    is not set.
-
-    This function is similar to errors(), except more useful when called from
-    QML. C++ code should usually use errors().
-
-    \sa errors()
-*/
-QString QmlComponent::errorsString() const
-{
-    Q_D(const QmlComponent);
-    QString ret;
-    if(!isError())
-        return ret;
-    foreach(const QmlError &e, d->errors) {
-        ret += e.url().toString() + QLatin1String(":") + 
-               QString::number(e.line()) + QLatin1String(" ") + 
-               e.description() + QLatin1String("\n");
-    }
-    return ret;
 }
 
 /*!

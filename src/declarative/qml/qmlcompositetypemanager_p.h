@@ -65,66 +65,8 @@ class QmlCompiledData;
 class QmlComponentPrivate;
 class QmlComponent;
 class QmlDomDocument;
-struct QmlCompositeTypeData : public QmlRefCount
-{
-    QmlCompositeTypeData();
-    virtual ~QmlCompositeTypeData();
 
-    enum Status { 
-        Invalid,
-        Complete,
-        Error,
-        Waiting
-    };
-    Status status;
-    enum ErrorType {
-        NoError,
-        AccessError,
-        GeneralError
-    };
-    ErrorType errorType;
-
-    QList<QmlError> errors;
-
-    QmlEngine::Imports imports;
-
-    QList<QmlCompositeTypeData *> dependants;
-
-    // Return a QmlComponent if the QmlCompositeTypeData is not in the Waiting 
-    // state.  The QmlComponent is owned by the QmlCompositeTypeData, so a 
-    // reference should be kept to keep the QmlComponent alive.
-    QmlComponent *toComponent(QmlEngine *);
-    // Return a QmlCompiledData if possible, or 0 if an error
-    // occurs
-    QmlCompiledData *toCompiledComponent(QmlEngine *);
-
-    struct TypeReference 
-    {
-        TypeReference();
-
-        QmlType *type;
-        QmlCompositeTypeData *unit;
-    };
-
-    QList<TypeReference> types;
-
-    // Add or remove p as a waiter.  When the QmlCompositeTypeData becomes 
-    // ready, the QmlComponentPrivate::typeDataReady() method will be invoked on
-    // p.  The waiter is automatically removed when the typeDataReady() method
-    // is invoked, so there is no need to call remWaiter() in this case.
-    void addWaiter(QmlComponentPrivate *p);
-    void remWaiter(QmlComponentPrivate *p);
-
-private:
-    friend class QmlCompositeTypeManager;
-    friend class QmlCompiler;
-    friend class QmlDomDocument;
-
-    QmlScriptParser data;
-    QList<QmlComponentPrivate *> waiters;
-    QmlComponent *component;
-    QmlCompiledData *compiledComponent;
-};
+struct QmlCompositeTypeData;
 
 class QmlCompositeTypeManager : public QObject
 {

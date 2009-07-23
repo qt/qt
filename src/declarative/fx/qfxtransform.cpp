@@ -199,7 +199,7 @@ void QFxScale::update()
     QFxTransform::update();
 }
 
-QML_DEFINE_TYPE(QFxScale, Scale)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QFxScale)
 
 
 /*!
@@ -218,7 +218,7 @@ QML_DEFINE_TYPE(QFxScale, Scale)
     \endqml
 */
 
-QML_DEFINE_TYPE(QFxAxis, Axis)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Axis,QFxAxis)
 
 QFxAxis::QFxAxis(QObject *parent)
 : QObject(parent), _startX(0), _startY(0), _endX(0), _endY(0), _endZ(0)
@@ -391,7 +391,7 @@ void QFxRotation::update()
     QFxTransform::update();
 }
 
-QML_DEFINE_TYPE(QFxRotation, Rotation)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QFxRotation)
 
 /*!
     \qmlclass Rotation3D
@@ -403,7 +403,7 @@ QML_DEFINE_TYPE(QFxRotation, Rotation)
     \image axisrotation.png
 */
 
-QML_DEFINE_TYPE(QFxRotation3D,Rotation3D)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation3D,QFxRotation3D)
 
 QFxRotation3D::QFxRotation3D(QObject *parent)
 : QFxTransform(parent), _angle(0), _dirty(true)
@@ -529,7 +529,7 @@ Image {
   \endqml
 */
 
-QML_DEFINE_TYPE(QFxTranslation3D,Translation3D)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Translation3D,QFxTranslation3D)
 
 QFxTranslation3D::QFxTranslation3D(QObject *parent)
 : QFxTransform(parent), _distance(0), _dirty(true)
@@ -627,7 +627,7 @@ void QFxTranslation3D::update()
   OpenGL. When running under software rasterization it has no effect.
 */
 
-QML_DEFINE_TYPE(QFxPerspective,Perspective)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Perspective,QFxPerspective)
 
 QFxPerspective::QFxPerspective(QObject *parent)
     : QFxTransform(parent)
@@ -724,7 +724,7 @@ QFxPerspective::~QFxPerspective()
 
     \image squish.png
 */
-QML_DEFINE_TYPE(QFxSquish,Squish)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Squish,QFxSquish)
 
 QFxSquish::QFxSquish(QObject *parent)
     : QFxTransform(parent)

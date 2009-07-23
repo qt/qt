@@ -1,1 +1,1 @@
-2:5:Cannot nest non-QObject property "value"
+2:5:Invalid property access

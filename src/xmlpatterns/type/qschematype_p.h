@@ -57,6 +57,7 @@
 #include "qxmlname.h"
 
 template<typename N, typename M> class QHash;
+template<typename N> class QList;
 
 QT_BEGIN_HEADER
 
@@ -80,6 +81,7 @@ namespace QPatternist
 
         typedef QExplicitlySharedDataPointer<SchemaType> Ptr;
         typedef QHash<QXmlName, SchemaType::Ptr> Hash;
+        typedef QList<SchemaType::Ptr> List;
 
         /**
          * Schema types are divided into different categories such as
@@ -117,6 +119,18 @@ namespace QPatternist
             NoDerivation            = 16
         };
 
+        /**
+         * Describes the derivation constraints that are given by the 'final' or 'block' attributes.
+         */
+        enum DerivationConstraint
+        {
+            RestrictionConstraint = 1,
+            ExtensionConstraint = 2,
+            ListConstraint = 4,
+            UnionConstraint = 8
+        };
+        Q_DECLARE_FLAGS(DerivationConstraints, DerivationConstraint)
+
         SchemaType();
         virtual ~SchemaType();
 
@@ -135,6 +149,11 @@ namespace QPatternist
          * this SchemaType is derived from its base type
          */
         virtual DerivationMethod derivationMethod() const = 0;
+
+        /**
+         * Determines what derivation constraints exists for the type.
+         */
+        virtual DerivationConstraints derivationConstraints() const = 0;
 
         /**
          * Determines whether the type is an abstract type.
@@ -202,7 +221,7 @@ namespace QPatternist
          * @note Do not re-implement this function, but instead override category()
          * and let it return an appropriate value.
          */
-        bool isSimpleType() const;
+        virtual bool isSimpleType() const;
 
         /**
          * Determines whether the type is a complex type, by introspecting
@@ -211,8 +230,15 @@ namespace QPatternist
          * @note Do not re-implement this function, but instead override category()
          * and let it return an appropriate value.
          */
-        bool isComplexType() const;
+        virtual bool isComplexType() const;
+
+        /**
+         * Returns whether the value has been defined by a schema (is not a built in type).
+         */
+        virtual bool isDefinedBySchema() const;
     };
+
+    Q_DECLARE_OPERATORS_FOR_FLAGS(SchemaType::DerivationConstraints)
 }
 
 QT_END_NAMESPACE

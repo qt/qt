@@ -71,11 +71,12 @@ Custom C++ types are made available to QML using these two macros:
 \quotation
 \code
 #define QML_DECLARE_TYPE(T)
-#define QML_DEFINE_TYPE(T,QmlName)
+#define QML_DEFINE_TYPE(URI,VMAJ,VFROM,VTO,QmlName,T)
 \endcode
 
 Register the C++ type \a T with the QML system, and make it available in QML
-under the name \a QmlName.  \a T and \a QmlName may be the same.
+under the name \a QmlName in library URI version VMAJ.VFROM to VMAJ.VTO.
+\a T and \a QmlName may be the same.
 
 Generally the QML_DECLARE_TYPE() macro should be included immediately following
 the type declaration (usually in its header file), and the QML_DEFINE_TYPE() 

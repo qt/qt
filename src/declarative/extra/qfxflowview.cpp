@@ -373,7 +373,7 @@ void QFxFlowView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-QML_DEFINE_TYPE(QFxFlowView,FlowView);
+QML_DEFINE_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, FlowView, QFxFlowView);
 
 QT_END_NAMESPACE
 

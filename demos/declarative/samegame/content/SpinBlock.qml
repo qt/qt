@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item { id:block
     //Note: These properties are the interface used to control the blocks
     property bool dying: false
@@ -16,6 +18,9 @@ Item { id:block
                     "pics/gnome/greenStone.gif"; 
                 }
         paused: !selected
+        paused: Behavior { to: true; from: false;
+            NumberAnimation { properties:"currentFrame"; to:0; duration: 200}
+        }
     }
     opacity: 0
     y: targetY
@@ -23,6 +28,12 @@ Item { id:block
     y: Behavior { NumberAnimation { properties:"y"; duration: 200 } }
     x: Behavior { NumberAnimation { properties:"x"; duration: 200 } }
     opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
+    MouseRegion {
+        id: gameMR; anchors.fill: parent
+        onClicked: handleClick(Math.floor(parent.x/width), Math.floor(parent.y/height));
+        onEntered: handleHover(Math.floor(parent.x/width), Math.floor(parent.y/height));
+        onExited: handleHover(Math.floor(parent.x/width), Math.floor(parent.y/height));
+    }
 
     states: [
 

@@ -170,7 +170,7 @@ static QByteArray getData(int cf, IDataObject *pDataObj)
         if (pDataObj->GetData(&formatetc, &s) == S_OK) {
             char szBuffer[4096];
             ULONG actualRead = 0;
-            LARGE_INTEGER pos = {0, 0};
+            LARGE_INTEGER pos = {{0, 0}};
             //Move to front (can fail depending on the data model implemented)
             HRESULT hr = s.pstm->Seek(pos, STREAM_SEEK_SET, NULL);
             while(SUCCEEDED(hr)){

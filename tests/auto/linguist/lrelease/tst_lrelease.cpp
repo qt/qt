@@ -200,7 +200,7 @@ void tst_lrelease::compressed()
 
 void tst_lrelease::idbased()
 {
-    QVERIFY(!QProcess::execute("lrelease -idbased testdata/idbased.ts"));
+    QVERIFY(!QProcess::execute(binDir + "/lrelease -idbased testdata/idbased.ts"));
 
     QTranslator translator;
     QVERIFY(translator.load("testdata/idbased.qm"));

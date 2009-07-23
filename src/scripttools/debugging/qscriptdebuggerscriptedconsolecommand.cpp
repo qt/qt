@@ -460,7 +460,7 @@ void QScriptDebuggerScriptedConsoleCommandJob::handleResponse(
 }
 
 /*!
-  \reimp
+  \internal
 */
 QString QScriptDebuggerScriptedConsoleCommand::name() const
 {
@@ -469,7 +469,7 @@ QString QScriptDebuggerScriptedConsoleCommand::name() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QString QScriptDebuggerScriptedConsoleCommand::group() const
 {
@@ -478,7 +478,7 @@ QString QScriptDebuggerScriptedConsoleCommand::group() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QString QScriptDebuggerScriptedConsoleCommand::shortDescription() const
 {
@@ -487,7 +487,7 @@ QString QScriptDebuggerScriptedConsoleCommand::shortDescription() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QString QScriptDebuggerScriptedConsoleCommand::longDescription() const
 {
@@ -496,7 +496,7 @@ QString QScriptDebuggerScriptedConsoleCommand::longDescription() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QStringList QScriptDebuggerScriptedConsoleCommand::aliases() const
 {
@@ -505,7 +505,7 @@ QStringList QScriptDebuggerScriptedConsoleCommand::aliases() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QStringList QScriptDebuggerScriptedConsoleCommand::seeAlso() const
 {
@@ -514,7 +514,7 @@ QStringList QScriptDebuggerScriptedConsoleCommand::seeAlso() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QStringList QScriptDebuggerScriptedConsoleCommand::argumentTypes() const
 {
@@ -523,7 +523,7 @@ QStringList QScriptDebuggerScriptedConsoleCommand::argumentTypes() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QStringList QScriptDebuggerScriptedConsoleCommand::subCommands() const
 {
@@ -532,7 +532,7 @@ QStringList QScriptDebuggerScriptedConsoleCommand::subCommands() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 QScriptDebuggerConsoleCommandJob *QScriptDebuggerScriptedConsoleCommand::createJob(
     const QStringList &arguments,

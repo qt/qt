@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include "qgl_p.h"
 #include "qgl.h"
 
 #include "private/qpixmapdata_p.h"
@@ -80,10 +81,11 @@ public:
     void fill(const QColor &color);
     bool hasAlphaChannel() const;
     QImage toImage() const;
-    QPaintEngine* paintEngine() const;
+    QPaintEngine *paintEngine() const;
 
     GLuint bind(bool copyBack = true) const;
     GLuint textureId() const;
+    QGLTexture *texture() const;
 
     bool isValidContext(const QGLContext *ctx) const;
 
@@ -116,10 +118,10 @@ private:
     QImage fillImage(const QColor &color) const;
 
     mutable QGLFramebufferObject *m_renderFbo;
-    mutable GLuint m_textureId;
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
     mutable QImage m_source;
+    mutable QGLTexture m_texture;
 
     // the texture is not in sync with the source image
     mutable bool m_dirty;

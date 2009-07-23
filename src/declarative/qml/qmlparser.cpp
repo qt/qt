@@ -78,6 +78,8 @@ QmlParser::Object::~Object()
         prop->release();
     foreach(Property *prop, groupedProperties)
         prop->release();
+    foreach(Property *prop, valueTypeProperties)
+        prop->release();
 }
 
 const QMetaObject *Object::metaObject() const
@@ -119,6 +121,12 @@ void QmlParser::Object::addGroupedProperty(Property *p)
 {
     p->addref();
     groupedProperties << p;
+}
+
+void QmlParser::Object::addValueTypeProperty(Property *p)
+{
+    p->addref();
+    valueTypeProperties << p;
 }
 
 Property *QmlParser::Object::getProperty(const QByteArray &name, bool create)

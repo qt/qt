@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     id: rect
     width: 120; height: 200; color: "white"

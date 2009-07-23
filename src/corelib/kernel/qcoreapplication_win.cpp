@@ -280,7 +280,7 @@ QT_END_INCLUDE_NAMESPACE
 // The values below should never change. Note that none of the usual
 // WM_...FIRST & WM_...LAST values are in the list, as they normally have other
 // WM_... representations
-struct {
+struct KnownWM {
     uint WM;
     const char* str;
 } knownWM[] =
@@ -582,7 +582,7 @@ struct {
  { 0,0 }}; // End of known messages
 
 // Looks up the WM_ message in the table above
-const char* findWMstr(uint msg)
+static const char* findWMstr(uint msg)
 {
     uint i = 0;
     const char* result = 0;

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect { id: page; width: 800; height: 800; color:"black"
     Script { source: "dynamic.js" }
     property bool extendStars: false;

@@ -77,6 +77,7 @@
 #include <qwidget.h>
 #include <qdesktopwidget.h>
 #include <qevent.h>
+#include <qpixmapcache.h>
 #include <private/qevent_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
@@ -1144,6 +1145,51 @@ QString qt_mac_get_pasteboardString()
         return qt_mac_NSStringToQString(text);
     } else {
         return QString();
+    }
+}
+
+QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)
+{
+    QPixmap ret(width, height);
+    ret.fill(QColor(0, 0, 0, 0));
+
+    CGRect rect = CGRectMake(0, 0, width, height);
+
+    CGContextRef ctx = qt_mac_cg_context(&ret);
+    CGAffineTransform old_xform = CGContextGetCTM(ctx);
+    CGContextConcatCTM(ctx, CGAffineTransformInvert(old_xform));
+    CGContextConcatCTM(ctx, CGAffineTransformIdentity);
+
+    ::RGBColor b;
+    b.blue = b.green = b.red = 255*255;
+    PlotIconRefInContext(ctx, &rect, kAlignNone, kTransformNone, &b, kPlotIconRefNormalFlags, icon);
+    CGContextRelease(ctx);
+    return ret;
+}
+
+void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayIcon, QIcon *retIcon, QStyle::StandardPixmap standardIcon)
+{
+    int size = 16;
+    while (size <= 128) {
+
+        const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size);
+        QPixmap mainIcon;
+        if (standardIcon >= QStyle::SP_CustomBase) {
+            mainIcon = qt_mac_convert_iconref(icon, size, size);
+        } else if (QPixmapCache::find(cacheKey, mainIcon) == false) {
+            mainIcon = qt_mac_convert_iconref(icon, size, size);
+            QPixmapCache::insert(cacheKey, mainIcon);
+        }
+
+        if (overlayIcon) {
+            int littleSize = size / 2;
+            QPixmap overlayPix = qt_mac_convert_iconref(overlayIcon, littleSize, littleSize);
+            QPainter painter(&mainIcon);
+            painter.drawPixmap(size - littleSize, size - littleSize, overlayPix);
+        }
+
+        retIcon->addPixmap(mainIcon);
+        size += size;  // 16 -> 32 -> 64 -> 128
     }
 }
 

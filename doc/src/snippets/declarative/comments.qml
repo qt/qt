@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Text {
     text: "Hello world!"    //a basic greeting
     /*

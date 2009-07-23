@@ -44,6 +44,7 @@
 
 #include <QtGui/qscreen_qws.h>
 #include <directfb.h>
+#include <directfb_version.h>
 
 QT_BEGIN_HEADER
 
@@ -51,8 +52,24 @@ QT_MODULE(Gui)
 
 #define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
 
-class QDirectFBScreenPrivate;
+#include <QDebug>
+#define DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(F)                         \
+    static inline F operator~(F f) { return F(~int(f)); } \
+    static inline F operator&(F left, F right) { return F(int(left) & int(right)); } \
+    static inline F operator|(F left, F right) { return F(int(left) | int(right)); } \
+    static inline F &operator|=(F &left, F right) { left = (left | right); return left; } \
+    static inline F &operator&=(F &left, F right) { left = (left & right); return left; }
 
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBInputDeviceCapabilities);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBWindowDescriptionFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceDescriptionFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceCapabilities);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceLockFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceBlittingFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceDrawingFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceFlipFlags);
+
+class QDirectFBScreenPrivate;
 class Q_GUI_EXPORT QDirectFBScreen : public QScreen
 {
 public:

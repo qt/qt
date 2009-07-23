@@ -1,3 +1,5 @@
+import Qt 4.6
+
 //! [0]
 Rect { width: 220; height: 20; color: "white"
     Component { id: Dot

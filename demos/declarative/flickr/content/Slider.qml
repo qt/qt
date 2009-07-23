@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     id: Slider; width: 400; height: 16
 

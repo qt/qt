@@ -81,6 +81,8 @@
 %token T_RESERVED_WORD "reserved word"
 %token T_MULTILINE_STRING_LITERAL "multiline string literal"
 
+%token T_AT "@"
+
 --- context keywords.
 %token T_PUBLIC "public"
 %token T_IMPORT "import"
@@ -271,6 +273,8 @@ public:
       AST::UiObjectMemberList *UiObjectMemberList;
       AST::UiArrayMemberList *UiArrayMemberList;
       AST::UiQualifiedId *UiQualifiedId;
+      AST::UiAttributeList *UiAttributeList;
+      AST::UiAttribute *UiAttribute;
     };
 
 public:
@@ -667,25 +671,93 @@ case $rule_number: {
 } break;
 ./
 
-UiRootMember: UiObjectDefinition ;
+UiRootMember: UiAnnotation UiObjectDefinition ;
 /.
 case $rule_number: {
-    sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(), sym(1).UiObjectMember);
+    sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(),
+        sym(1).UiAttributeList, sym(2).UiObjectMember);
 } break;
 ./
 
-UiObjectMemberList: UiObjectMember ;
+UiAnnotation: Empty ;
+UiAnnotation: UiAttributeList ;
 /.
 case $rule_number: {
-    sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(), sym(1).UiObjectMember);
+    sym(1).UiAttributeList = sym(1).UiAttributeList->finish();
 } break;
 ./
 
-UiObjectMemberList: UiObjectMemberList UiObjectMember ;
+UiAttributeList: UiAttribute ;
+/.
+case $rule_number: {
+    sym(1).UiAttributeList = makeAstNode<AST::UiAttributeList>(driver->nodePool(), sym(1).UiAttribute);
+} break;
+./
+
+UiAttributeList: UiAttributeList UiAttribute ;
+/.
+case $rule_number: {
+    sym(1).UiAttributeList = makeAstNode<AST::UiAttributeList>(driver->nodePool(),
+        sym(1).UiAttributeList, sym(2).UiAttribute);
+} break;
+./
+
+UiAttributeName: JsIdentifier ;
+UiAttributeName: ReservedIdentifier ;
+
+UiAttribute: T_AT UiAttributeName ;
+/.
+case $rule_number: {
+    AST::UiAttribute *ast = makeAstNode<AST::UiAttribute>(driver->nodePool(), sym(2).sval);
+    ast->atToken = loc(1);
+    ast->nameToken = loc(2);
+    sym(1).UiAttribute = ast;
+} break;
+./
+
+UiAttribute: T_AT UiAttributeName T_EQ UiAttributeValue ;
+/.
+case $rule_number: {
+    AST::UiAttribute *ast = makeAstNode<AST::UiAttribute>(driver->nodePool(),
+        sym(2).sval, sym(4).Expression);
+    ast->atToken = loc(1);
+    ast->nameToken = loc(2);
+    ast->equalToken = loc(3);
+    sym(1).UiAttribute = ast;
+} break;
+./
+
+UiAttributeValue: UiAttributeName ;
+/.
+case $rule_number: {
+  AST::IdentifierExpression *node = makeAstNode<AST::IdentifierExpression> (driver->nodePool(), sym(1).sval);
+  node->identifierToken = loc(1);
+  sym(1).Node = node;
+} break;
+./
+
+UiAttributeValue: T_NUMERIC_LITERAL ;
+/.
+case $rule_number: {
+  AST::NumericLiteral *node = makeAstNode<AST::NumericLiteral> (driver->nodePool(), sym(1).dval, lexer->flags);
+  node->literalToken = loc(1);
+  sym(1).Node = node;
+} break;
+./
+
+UiObjectMemberList: UiAnnotation UiObjectMember ;
+/.
+case $rule_number: {
+    sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(),
+        sym(1).UiAttributeList, sym(2).UiObjectMember);
+} break;
+./
+
+UiObjectMemberList: UiObjectMemberList UiAnnotation UiObjectMember ;
 /.
 case $rule_number: {
     AST::UiObjectMemberList *node = makeAstNode<AST:: UiObjectMemberList> (driver->nodePool(),
-        sym(1).UiObjectMemberList, sym(2).UiObjectMember);
+        sym(1).UiObjectMemberList, sym(2).UiAttributeList, sym(3).UiObjectMember);
     sym(1).Node = node;
 } break;
 ./
@@ -697,11 +769,20 @@ case $rule_number: {
 } break;
 ./
 
-UiArrayMemberList: UiArrayMemberList T_COMMA UiObjectDefinition ;
+UiArrayMemberList: UiAttributeList UiObjectDefinition ;
 /.
 case $rule_number: {
+    sym(2).UiObjectMember->attributes = sym(1).UiAttributeList->finish();
+    sym(1).Node = makeAstNode<AST::UiArrayMemberList> (driver->nodePool(), sym(2).UiObjectMember);
+} break;
+./
+
+UiArrayMemberList: UiArrayMemberList T_COMMA UiAnnotation UiObjectDefinition ;
+/.
+case $rule_number: {
+    sym(4).UiObjectMember->attributes = sym(3).UiAttributeList;
     AST::UiArrayMemberList *node = makeAstNode<AST::UiArrayMemberList> (driver->nodePool(),
-        sym(1).UiArrayMemberList, sym(3).UiObjectMember);
+        sym(1).UiArrayMemberList, sym(4).UiObjectMember);
     node->commaToken = loc(2);
     sym(1).Node = node;
 } break;

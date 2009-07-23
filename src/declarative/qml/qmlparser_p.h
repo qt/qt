@@ -147,10 +147,12 @@ namespace QmlParser
         void addSignalProperty(Property *);
         void addAttachedProperty(Property *);
         void addGroupedProperty(Property *);
+        void addValueTypeProperty(Property *);
         QList<Property *> valueProperties;
         QList<Property *> signalProperties;
         QList<Property *> attachedProperties;
         QList<Property *> groupedProperties;
+        QList<Property *> valueTypeProperties;
 
         // The bytes to cast instances by to get to the QmlParserStatus 
         // interface.  -1 indicates the type doesn't support this interface.
