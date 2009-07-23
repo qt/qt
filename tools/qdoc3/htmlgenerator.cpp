@@ -1848,6 +1848,9 @@ HtmlGenerator::generateAnnotatedList(const Node *relative,
     foreach (const QString &name, nodeMap.keys()) {
         const Node *node = nodeMap[name];
 
+        if (node->status() == Node::Obsolete)
+            continue;
+
         if (++row % 2 == 1)
             out() << "<tr valign=\"top\" class=\"odd\">";
         else

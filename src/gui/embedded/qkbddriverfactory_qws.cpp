@@ -47,10 +47,7 @@
 #include "qkbdtty_qws.h"
 #include "qkbdlinuxinput_qws.h"
 #include "qkbdum_qws.h"
-#include "qkbdsl5000_qws.h"
 #include "qkbdvfb_qws.h"
-#include "qkbdyopy_qws.h"
-#include "qkbdvr41xx_qws.h"
 #include <stdlib.h>
 #include "private/qfactoryloader_p.h"
 #include "qkbddriverplugin_qws.h"
@@ -104,18 +101,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 QWSKeyboardHandler *QKbdDriverFactory::create(const QString& key, const QString& device)
 {
     QString driver = key.toLower();
-#ifndef QT_NO_QWS_KBD_SL5000
-    if (driver == QLatin1String("sl5000") || driver.isEmpty())
-        return new QWSSL5000KeyboardHandler(device);
-#endif
-#ifndef QT_NO_QWS_KBD_YOPY
-    if (driver == QLatin1String("yopy") || driver.isEmpty())
-        return new QWSYopyKeyboardHandler(device);
-#endif
-#ifndef QT_NO_QWS_KBD_VR41XX
-    if (driver == QLatin1String("vr41xx") || driver.isEmpty())
-        return new QWSVr41xxKeyboardHandler(device);
-#endif
 #ifndef QT_NO_QWS_KEYBOARD
 # ifndef QT_NO_QWS_KBD_TTY
     if (driver == QLatin1String("tty") || driver.isEmpty())
@@ -158,15 +143,6 @@ QStringList QKbdDriverFactory::keys()
 {
     QStringList list;
 
-#ifndef QT_NO_QWS_KBD_SL5000
-    list << QLatin1String("SL5000");
-#endif
-#ifndef QT_NO_QWS_KBD_YOPY
-    list << QLatin1String("YOPY");
-#endif
-#ifndef QT_NO_QWS_KBD_VR41XX
-    list << QLatin1String("VR41xx");
-#endif
 #ifndef QT_NO_QWS_KBD_TTY
     list << QLatin1String("TTY");
 #endif
