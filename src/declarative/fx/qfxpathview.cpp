@@ -581,7 +581,7 @@ void QFxPathViewPrivate::regenerate()
             return;
         }
         items.append(item);
-        item->setZ(i);
+        item->setZValue(i);
     }
     q->refill();
 }
@@ -639,7 +639,7 @@ void QFxPathView::refill()
                 d->firstIndex %= d->model->count();
                 int index = (d->firstIndex + d->items.count())%d->model->count();
                 d->items << d->getItem(index);
-                d->items.last()->setZ(wrapIndex);
+                d->items.last()->setZValue(wrapIndex);
                 d->pathOffset++;
                 d->pathOffset=d->pathOffset % d->items.count();
             }
@@ -652,7 +652,7 @@ void QFxPathView::refill()
                 if (d->firstIndex < 0)
                     d->firstIndex = d->model->count() - 1;
                 d->items.prepend(d->getItem(d->firstIndex));
-                d->items.first()->setZ(d->firstIndex);
+                d->items.first()->setZValue(d->firstIndex);
                 d->pathOffset--;
                 if (d->pathOffset < 0)
                     d->pathOffset = d->items.count() - 1;
@@ -675,7 +675,7 @@ void QFxPathView::itemsInserted(int modelIndex, int count)
     if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
             QFxItem *item = d->getItem(modelIndex + i);
-            item->setZ(modelIndex + i);
+            item->setZValue(modelIndex + i);
             d->items.insert(modelIndex + i, item);
         }
         refill();

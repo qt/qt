@@ -134,7 +134,7 @@ void QFxFlowView::refresh()
         for (int ii = 0; ii < m_model->count(); ++ii) {
             if (QFxItem *item = m_model->item(ii)) {
                 item->setParent(this);
-                item->setZ(0);
+                item->setZValue(0);
                 m_items << item;
             }
         }
@@ -298,7 +298,7 @@ void QFxFlowView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         if (r.contains(event->pos())) {
             m_dragItem = item;
-            m_dragItem->setZ(1);
+            m_dragItem->setZValue(1);
             m_dragOffset = r.topLeft() - event->pos();
             event->accept();
             return;
@@ -318,7 +318,7 @@ void QFxFlowView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
     if (m_dragItem) {
-        m_dragItem->setZ(0);
+        m_dragItem->setZValue(0);
 
         clearTimeLine();
 

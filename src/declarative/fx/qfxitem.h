@@ -48,9 +48,7 @@
 #include <QtDeclarative/qfxanchors.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/qfxscalegrid.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmlstate.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qfont.h>
 
@@ -100,7 +98,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(QFxItem * parent READ itemParent WRITE setItemParent NOTIFY parentChanged DESIGNABLE false FINAL)
-    Q_PROPERTY(QString id READ id WRITE setId) // ### remove
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
     Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
@@ -111,7 +108,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged) // ### name? Move to own class?
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)  // ### see above
-    Q_PROPERTY(qreal z READ z WRITE setZ FINAL) // ### use method in QGO
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
@@ -160,9 +156,6 @@ public:
     QFxItem *parentItem() const;
     void setItemParent(QFxItem *parent); // ## setParentItem
 
-    QString id() const; // ### remove me
-    void setId(const QString &);
-
     QmlList<QObject *> *data();
     QmlList<QFxItem *> *children();
     QmlList<QObject *> *resources();
@@ -207,9 +200,6 @@ public:
 
     Options options() const;
     void setOptions(Options, bool set = true);
-
-    qreal z() const;
-    void setZ(qreal);
 
     qreal width() const;
     void setWidth(qreal);

@@ -1068,34 +1068,6 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
 */
 
 /*!
-  \property QFxItem::id
-  This property holds the identifier for the item.
-  
-  The identifier can be used in bindings and other expressions to
-  refer to the item. For example:
-
-  \qml
-  Text { id: myText; ... }
-  Text { text: myText.text }
-  \endqml
-
-  The identifier is available throughout the \l {components}{component}
-  where it is declared.  The identifier must be unique in thecomponent.
-*/
-QString QFxItem::id() const
-{
-    Q_D(const QFxItem);
-    return d->_id;
-}
-
-void QFxItem::setId(const QString &id)
-{
-    Q_D(QFxItem);
-    setObjectName(id);
-    d->_id = id;
-}
-
-/*!
     \internal
 */
 QFxAnchorLine QFxItem::left() const
@@ -2015,24 +1987,6 @@ QPointF QFxItem::transformOriginPoint() const
 {
     Q_D(const QFxItem);
     return d->transformOrigin();
-}
-
-qreal QFxItem::z() const
-{
-    return zValue();
-}
-
-void QFxItem::setZ(qreal z)
-{
-    if (z == this->z())
-        return;
-
-    if (z < 0)
-        setFlag(QGraphicsItem::ItemStacksBehindParent, true);
-    else
-        setFlag(QGraphicsItem::ItemStacksBehindParent, false);
-
-    setZValue(z);
 }
 
 qreal QFxItem::width() const

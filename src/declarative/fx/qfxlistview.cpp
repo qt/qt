@@ -423,7 +423,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         }
         // complete
         model->completeItem();
-        listItem->item->setZ(modelIndex + 1);
+        listItem->item->setZValue(modelIndex + 1);
         listItem->item->setParent(q->viewport());
         if (orient == Qt::Vertical)
             QObject::connect(listItem->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));

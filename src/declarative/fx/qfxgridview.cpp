@@ -358,7 +358,7 @@ FxGridItem *QFxGridViewPrivate::createItem(int modelIndex)
         listItem->index = modelIndex;
         // complete
         model->completeItem();
-        listItem->item->setZ(modelIndex + 1);
+        listItem->item->setZValue(modelIndex + 1);
         listItem->item->setParent(q->viewport());
     }
     requestedIndex = 0;
