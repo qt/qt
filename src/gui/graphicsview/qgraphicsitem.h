@@ -440,8 +440,6 @@ protected:
     void removeFromIndex();
     void prepareGeometryChange();
 
-    QPixmap *effectPixmap();
-
 private:
     Q_DISABLE_COPY(QGraphicsItem)
     Q_DECLARE_PRIVATE(QGraphicsItem)

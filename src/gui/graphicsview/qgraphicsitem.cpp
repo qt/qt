@@ -552,7 +552,6 @@
 
 #ifndef QT_NO_GRAPHICSVIEW
 
-#include "qgraphicseffect_p.h"
 #include "qgraphicsscene.h"
 #include "qgraphicsscene_p.h"
 #include "qgraphicssceneevent.h"
@@ -1180,8 +1179,7 @@ QGraphicsItem::~QGraphicsItem()
     else
         d_ptr->setParentItemHelper(0);
 
-    QGraphicsEffect *e = graphicsEffect();
-    delete e;
+    delete d_ptr->graphicsEffect;
     delete d_ptr->transformData;
     delete d_ptr;
 
@@ -2198,11 +2196,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
 */
 QGraphicsEffect *QGraphicsItem::graphicsEffect() const
 {
-    QGraphicsEffect *fx = 0;
-    if (d_ptr->hasEffect)
-        fx = d_ptr->extra(QGraphicsItemPrivate::ExtraEffect).value<QGraphicsEffect*>();
-
-    return fx;
+    return d_ptr->graphicsEffect;
 }
 
 /*!
@@ -2220,30 +2214,29 @@ QGraphicsEffect *QGraphicsItem::graphicsEffect() const
 */
 void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 {
-    if (effect) {
-        if (QGraphicsEffect *currentEffect = this->graphicsEffect()) {
-            if (currentEffect != effect) {
-                qWarning("QGraphicsItem::setEffect: Attempting to set QGraphicsEffect "
-                         "%p on %p, which already has an effect", effect, this);
-            }
-            return;
-        }
+    if (d_ptr->graphicsEffect == effect)
+        return;
 
-        if (effect->d_func()->parentItem)
-            effect->d_func()->parentItem->setGraphicsEffect(0);
-        effect->d_func()->parentItem = this;
-        d_ptr->hasEffect = true;
-        d_ptr->setExtra(QGraphicsItemPrivate::ExtraEffect, QVariant::fromValue(effect));
-    } else {
-        d_ptr->hasEffect = false;
-        d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffect);
-        void *ptr = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectPixmap).value<void*>();
-        QPixmap *pixmap = reinterpret_cast<QPixmap*>(ptr);
-        delete pixmap;
-        d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffectPixmap);
+    if (d_ptr->graphicsEffect && effect) {
+        qWarning("QGraphicsItem::setGraphicsEffect: Attempting to set QGraphicsEffect "
+                 "%p on %p, which already has an effect installed", effect, this);
+        return;
     }
 
-    update();
+    if (!effect) {
+        // Unset current effect.
+        QGraphicsEffectPrivate *oldEffectPrivate = d_ptr->graphicsEffect->d_func();
+        d_ptr->graphicsEffect = 0;
+        if (oldEffectPrivate)
+            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
+    } else {
+        // Set new effect.
+        effect->d_func()->setGraphicsEffectSource(new QGraphicsItemEffectSource(this));
+        d_ptr->graphicsEffect = effect;
+    }
+
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->markDirty(this);
 }
 
 /*!
@@ -2257,10 +2250,8 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 */
 QRectF QGraphicsItem::effectiveBoundingRect() const
 {
-    QGraphicsEffect *fx = graphicsEffect();
-    if (fx)
-        return fx->boundingRectFor(this);
-
+    if (d_ptr->graphicsEffect)
+        return d_ptr->graphicsEffect->boundingRect();
     return boundingRect();
 }
 
@@ -2291,42 +2282,6 @@ QRectF QGraphicsItem::sceneEffectiveBoundingRect() const
     QRectF br = effectiveBoundingRect();
     br.translate(offset);
     return !parentItem ? br : parentItem->sceneTransform().mapRect(br);
-}
-
-/*!
-    \internal
-
-    Used by QGraphicsScene.
-*/
-QPixmap *QGraphicsItem::effectPixmap()
-{
-    if (!d_ptr->hasEffect)
-        return 0;
-
-    // the exact size of the pixmap is not a big deal
-    // as long as it contains the effective bounding rect
-    // TODO: use smart resizing etc
-    // TODO: store per device and do everything in device coordinate?
-    // TODO: use layer
-    QRect rect = effectiveBoundingRect().toAlignedRect();
-
-    void *ptr = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectPixmap).value<void*>();
-    QPixmap *pixmap = reinterpret_cast<QPixmap*>(ptr);
-    bool avail = true;
-    if (!pixmap)
-        avail = false;
-    if (avail && pixmap->size() != rect.size())
-        avail = false;
-
-    if (!avail) {
-        delete pixmap;
-        pixmap = new QPixmap(rect.size());
-        pixmap->fill(Qt::transparent);
-        ptr = reinterpret_cast<void*>(pixmap);
-        d_ptr->setExtra(QGraphicsItemPrivate::ExtraEffectPixmap, QVariant::fromValue(ptr));
-    }
-
-    return pixmap;
 }
 
 /*!

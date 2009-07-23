@@ -281,11 +281,6 @@ protected:
                            const QStyleOptionGraphicsItem options[],
                            QWidget *widget = 0);
 
-    QPixmap* drawItemOnPixmap(QPainter *painter, QGraphicsItem *item,
-                      const QStyleOptionGraphicsItem *option, QWidget *widget, int flags);
-
-
-
 protected Q_SLOTS:
     bool focusNextPrevChild(bool next);
 

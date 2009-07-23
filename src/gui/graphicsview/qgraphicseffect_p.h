@@ -61,12 +61,31 @@
 
 QT_BEGIN_NAMESPACE
 
+class QGraphicsEffectSource
+{
+public:
+    QGraphicsEffectSource() {}
+    virtual ~QGraphicsEffectSource() {}
+    virtual void detach() = 0;
+    virtual QRectF boundingRect() = 0;
+    virtual void draw(QPainter *p) = 0;
+    virtual bool drawIntoPixmap(QPixmap *, const QTransform & = QTransform()) = 0;
+};
+
 class QGraphicsEffectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:
-    QGraphicsEffectPrivate(): parentItem(0) {}
-    QGraphicsItem *parentItem;
+    QGraphicsEffectPrivate() : source(0) {}
+    QGraphicsEffectSource *source;
+    inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)
+    {
+        if (source) {
+            source->detach();
+            delete source;
+        }
+        source = newSource;
+    }
 };
 
 class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
@@ -106,8 +125,10 @@ class QGraphicsBlurEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
 public:
-    QGraphicsBlurEffectPrivate() : blurRadius(4) {}
+    QGraphicsBlurEffectPrivate() : filter(new QPixmapBlurFilter), blurRadius(4) {}
+    ~QGraphicsBlurEffectPrivate() { delete filter; }
 
+    QPixmapBlurFilter *filter;
     int blurRadius;
 };
 

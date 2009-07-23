@@ -57,6 +57,7 @@
 #include "qset.h"
 #include "qpixmapcache.h"
 #include "qgraphicsview_p.h"
+#include "qgraphicseffect_p.h"
 
 #include <QtCore/qpoint.h>
 
@@ -103,8 +104,6 @@ public:
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
         ExtraBoundingRegionGranularity,
-        ExtraEffect,
-        ExtraEffectPixmap,
         ExtraGestures
     };
 
@@ -122,6 +121,7 @@ public:
         scene(0),
         parent(0),
         transformData(0),
+        graphicsEffect(0),
         index(-1),
         siblingIndex(-1),
         depth(0),
@@ -151,7 +151,6 @@ public:
         allChildrenDirty(0),
         fullUpdatePending(0),
         flags(0),
-        hasEffect(0),
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
@@ -409,6 +408,7 @@ public:
     QList<QGraphicsItem *> children;
     struct TransformData;
     TransformData *transformData;
+    QGraphicsEffect *graphicsEffect;
     QTransform sceneTransform;
     int index;
     int siblingIndex;
@@ -443,7 +443,6 @@ public:
     // New 32 bits
     quint32 fullUpdatePending : 1;
     quint32 flags : 12;
-    quint32 hasEffect : 1;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -509,6 +508,44 @@ struct QGraphicsItemPrivate::TransformData {
             x *= *postmultiplyTransform;
         return x;
     }
+};
+
+class QGraphicsItemEffectSource : public QGraphicsEffectSource
+{
+public:
+    QGraphicsItemEffectSource(QGraphicsItem *i)
+        : QGraphicsEffectSource(), item(i), option(0), widget(0)
+    {}
+
+    inline void detach()
+    { item->setGraphicsEffect(0); }
+
+    inline QRectF boundingRect()
+    { return item->boundingRect(); }
+
+    inline void draw(QPainter *painter)
+    { item->paint(painter, option, widget); }
+
+    inline bool drawIntoPixmap(QPixmap *pixmap, const QTransform &itemToPixmapTransform)
+    {
+        pixmap->fill(Qt::transparent);
+        QPainter pixmapPainter(pixmap);
+        if (!itemToPixmapTransform.isIdentity())
+            pixmapPainter.setWorldTransform(itemToPixmapTransform);
+        item->paint(&pixmapPainter, option, widget);
+        return true;
+    }
+
+    inline void setPaintInfo(const QStyleOptionGraphicsItem *o, QWidget *w)
+    { option = o; widget = w; }
+
+    void resetPaintInfo()
+    { option = 0; widget = 0; }
+
+private:
+    QGraphicsItem *item;
+    const QStyleOptionGraphicsItem *option;
+    QWidget *widget;
 };
 
 /*!

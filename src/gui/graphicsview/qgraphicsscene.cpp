@@ -3928,8 +3928,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 #endif
 
     // Render using effect, works now only for no cache mode
-    if (noCache && itemd->hasEffect && item->graphicsEffect()) {
-        item->graphicsEffect()->drawItem(item, painter, option, widget);
+    if (noCache && itemd->graphicsEffect) {
+        itemd->graphicsEffect->draw(painter);
         return;
     }
 
@@ -4228,62 +4228,6 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     }
 }
 
-// FIXME: merge this with drawItems (needs refactoring)
-QPixmap* QGraphicsScene::drawItemOnPixmap(QPainter *painter,
-                                          QGraphicsItem *item,
-                                          const QStyleOptionGraphicsItem *option,
-                                          QWidget *widget,
-                                          int flags)
-{
-    // TODO: use for choosing item or device coordinate
-    // FIXME: how about source, dest, and exposed rects?
-    Q_UNUSED(flags);
-
-    // Item's (local) bounding rect, including the effect
-    QRectF brect = item->effectiveBoundingRect();
-    QRectF adjustedBrect(brect);
-    _q_adjustRect(&adjustedBrect);
-    if (adjustedBrect.isEmpty())
-        return 0;
-
-    // Find the item's bounds in device coordinates.
-    QRectF deviceBounds = painter->worldTransform().mapRect(brect);
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return 0;
-
-    // If widget, check if it intersects or not
-    QRect viewRect = widget ? widget->rect() : QRect();
-    if (widget && !viewRect.intersects(deviceRect))
-        return 0;
-
-    // Create offscreen pixmap
-    // TODO: use the pixmap from the layer
-    QPixmap *targetPixmap = item->effectPixmap();
-    if (!targetPixmap)
-        targetPixmap = new QPixmap(deviceRect.size());
-
-    // FIXME: this is brute force
-    QRegion pixmapExposed;
-    pixmapExposed += targetPixmap->rect();
-
-    // Construct an item-to-pixmap transform.
-    QPointF p = deviceRect.topLeft();
-    QTransform itemToPixmap = painter->worldTransform();
-    if (!p.isNull())
-        itemToPixmap *= QTransform::fromTranslate(-p.x(), -p.y());
-
-    // Calculate the style option's exposedRect.
-    QStyleOptionGraphicsItem fxOption = *option;
-    fxOption.exposedRect = brect.adjusted(-1, -1, 1, 1);
-
-    // Render
-    _q_paintIntoCache(targetPixmap, item, pixmapExposed, itemToPixmap, painter->renderHints(),
-                      &fxOption, false);
-
-    return targetPixmap;
-}
-
 void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const viewTransform,
                                       QRegion *exposedRegion, QWidget *widget)
 {
@@ -4412,10 +4356,20 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);
 
-        if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget && !item->d_ptr->hasEffect)
+        QGraphicsItemEffectSource *source = item->d_ptr->graphicsEffect
+                                            ? static_cast<QGraphicsItemEffectSource *>
+                                              (item->d_ptr->graphicsEffect->d_func()->source)
+                                            : 0;
+        if (source)
+            source->setPaintInfo(&styleOptionTmp, widget);
+
+        if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget && !source)
             item->paint(painter, &styleOptionTmp, widget);
         else
             drawItemHelper(item, painter, &styleOptionTmp, widget, painterStateProtection);
+
+        if (source)
+            source->resetPaintInfo();
 
         if (savePainter)
             painter->restore();

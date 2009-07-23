@@ -98,7 +98,7 @@ void Lighting::setupScene()
 
             item->setPen(QPen(Qt::black));
             item->setBrush(QBrush(Qt::white));
-            item->setGraphicsEffect(new ShadowEffect(m_lightSource));
+            item->setGraphicsEffect(new ShadowEffect(item, m_lightSource));
             item->setZValue(1);
             item->setPos(i * 80, j * 80);
             m_scene.addItem(item);

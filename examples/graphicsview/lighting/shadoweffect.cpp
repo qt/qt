@@ -43,14 +43,14 @@
 
 #include <math.h>
 
-ShadowEffect::ShadowEffect(QGraphicsItem *source)
+ShadowEffect::ShadowEffect(QGraphicsItem *item, QGraphicsItem *source)
     : QGraphicsShadowEffect()
-    , m_lightSource(source)
+    , item(item), m_lightSource(source)
 {
     setBlurRadius(8);
 }
 
-void ShadowEffect::adjustForItem(const QGraphicsItem *item)
+void ShadowEffect::adjustForItem()
 {
     QPointF delta = item->pos() - m_lightSource->pos();
     setShadowOffset(delta.toPoint() / 30);
@@ -61,15 +61,14 @@ void ShadowEffect::adjustForItem(const QGraphicsItem *item)
     setOpacity(qBound(0.4, 1 - dd / 200.0, 0.7));
 }
 
-QRectF ShadowEffect::boundingRectFor(const QGraphicsItem *item)
+QRectF ShadowEffect::boundingRect() const
 {
-    adjustForItem(item);
-    return QGraphicsShadowEffect::boundingRectFor(item);
+    const_cast<ShadowEffect *>(this)->adjustForItem();
+    return QGraphicsShadowEffect::boundingRect();
 }
 
-void ShadowEffect::drawItem(QGraphicsItem *item, QPainter *painter,
-                                       const QStyleOptionGraphicsItem *option, QWidget *widget)
+void ShadowEffect::draw(QPainter *painter)
 {
-    adjustForItem(item);
-    QGraphicsShadowEffect::drawItem(item, painter, option, widget);
+    adjustForItem();
+    QGraphicsShadowEffect::draw(painter);
 }
