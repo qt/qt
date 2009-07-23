@@ -309,17 +309,11 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
                     || (!fi.exists() && fi.isSymLink())))
         return false;
 
-
-    if (!includeSystem && !dotOrDotDot && ((fi.exists() && !fi.isFile() && !fi.isDir() && !fi.isSymLink())
-                                           || (!fi.exists() && fi.isSymLink()))) {
-        return false;
-    }
-
     // skip directories
     const bool skipDirs = !(filters & (QDir::Dirs | QDir::AllDirs));
     if (skipDirs && fi.isDir()) {
-        if (!(includeHidden && !dotOrDotDot && fi.isHidden())
-              || (includeSystem && !fi.exists() && fi.isSymLink()))
+        if (!((includeHidden && !dotOrDotDot && fi.isHidden())
+              || (includeSystem && !fi.exists() && fi.isSymLink())))
             return false;
     }
 
