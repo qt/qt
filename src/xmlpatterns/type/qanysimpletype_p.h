@@ -73,6 +73,8 @@ namespace QPatternist
     class AnySimpleType : public AnyType
     {
     public:
+        typedef QExplicitlySharedDataPointer<AnySimpleType> Ptr;
+        typedef QList<AnySimpleType::Ptr> List;
         friend class BuiltinTypes;
 
         virtual ~AnySimpleType();
@@ -104,6 +106,16 @@ namespace QPatternist
          * @returns DERIVATION_RESTRICTION
          */
         virtual SchemaType::DerivationMethod derivationMethod() const;
+
+        /**
+         * Always returns @c true.
+         */
+        virtual bool isSimpleType() const;
+
+        /**
+         * Always returns @c false.
+         */
+        virtual bool isComplexType() const;
 
     protected:
         AnySimpleType();

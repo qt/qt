@@ -323,7 +323,7 @@ QScriptDebuggerBackend *QScriptEngineDebuggerFrontend::backend() const
 }
 
 /*!
-  \reimp
+  \internal
 */
 void QScriptEngineDebuggerFrontend::processCommand(int id, const QScriptDebuggerCommand &command)
 {

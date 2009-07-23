@@ -1051,6 +1051,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT
 
     Role role = accessible->role(varID.lVal);
     if (role != NoRole) {
+        if (role == LayeredPane)
+            role = QAccessible::Pane;
         (*pvarRole).vt = VT_I4;
         (*pvarRole).lVal = role;
     } else {

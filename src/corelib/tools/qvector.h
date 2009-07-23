@@ -415,7 +415,9 @@ void QVector<T>::free(Data *x)
 {
     if (QTypeInfo<T>::isComplex) {
         T* b = x->array;
-        T* i = b + reinterpret_cast<QVectorData *>(x)->size;
+        union { QVectorData *d; Data *p; } u;
+        u.p = x;
+        T* i = b + u.d->size;
         while (i-- != b)
              i->~T();
     }

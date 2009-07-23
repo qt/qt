@@ -303,9 +303,7 @@ namespace Phonon
 
             setConnected(0);
             setConnectedType(defaultMediaType);
-            if (m_direction == PINDIR_INPUT) {
-                setMemoryAllocator(0);
-            }
+            setMemoryAllocator(0);
             return S_OK;
         }
 
@@ -443,8 +441,8 @@ namespace Phonon
 
         HRESULT QPin::checkOutputMediaTypesConnection(IPin *pin)
         {
-            IEnumMediaTypes *emt = 0;
-            HRESULT hr = pin->EnumMediaTypes(&emt);
+            ComPointer<IEnumMediaTypes> emt;
+            HRESULT hr = pin->EnumMediaTypes(emt.pparam());
             if (hr != S_OK) {
                 return hr;
             }

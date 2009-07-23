@@ -355,7 +355,11 @@ void QNetworkAccessFtpBackend::ftpDone()
 
 void QNetworkAccessFtpBackend::ftpReadyRead()
 {
-    writeDownstreamData(ftp->readAll());
+    QByteArray data = ftp->readAll();
+    QByteDataBuffer list;
+    list.append(data);
+    data.clear(); // important because of implicit sharing!
+    writeDownstreamData(list);
 }
 
 void QNetworkAccessFtpBackend::ftpRawCommandReply(int code, const QString &text)

@@ -1244,7 +1244,7 @@ Q3DateEdit::Order Q3DateEdit::order() const
 }
 
 
-/*! \reimp
+/*! \internal
 
 */
 void Q3DateEdit::stepUp()
@@ -1276,7 +1276,7 @@ void Q3DateEdit::stepUp()
 
 
 
-/*! \reimp
+/*! \internal
 
 */
 
@@ -1440,7 +1440,7 @@ bool Q3DateEdit::outOfRange(int y, int m, int d) const
     return false; /* assume ok */
 }
 
-/*!  \reimp
+/*!  \internal
 
 */
 
@@ -1534,7 +1534,7 @@ void Q3DateEdit::addNumber(int sec, int num)
 }
 
 
-/*! \reimp
+/*! \internal
 
 */
 
@@ -1681,7 +1681,7 @@ void Q3DateEdit::removeFirstNumber(int sec)
     d->ed->repaint(d->ed->rect());
 }
 
-/*! \reimp
+/*! \internal
 
 */
 
@@ -2059,7 +2059,7 @@ void Q3TimeEdit::timerEvent(QTimerEvent *)
 }
 
 
-/*! \reimp
+/*! \internal
 
 */
 
@@ -2105,7 +2105,7 @@ void Q3TimeEdit::stepUp()
 }
 
 
-/*! \reimp
+/*! \internal
 
 */
 
@@ -2173,7 +2173,7 @@ QString Q3TimeEdit::sectionFormattedText(int sec)
 }
 
 
-/*! \reimp
+/*! \internal
 
 */
 
@@ -2308,7 +2308,7 @@ bool Q3TimeEdit::outOfRange(int h, int m, int s) const
     return true;
 }
 
-/*! \reimp
+/*! \internal
 
 */
 
@@ -2477,7 +2477,7 @@ void Q3TimeEdit::removeFirstNumber(int sec)
     d->ed->repaint(d->ed->rect());
 }
 
-/*! \reimp
+/*! \internal
 
 */
 void Q3TimeEdit::removeLastNumber(int sec)

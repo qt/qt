@@ -1264,6 +1264,7 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value Map  a QVariantMap
     \value Matrix  a QMatrix
     \value Transform  a QTransform
+    \value Matrix4x4  a QMatrix4x4
     \value Palette  a QPalette
     \value Pen  a QPen
     \value Pixmap  a QPixmap
@@ -1271,6 +1272,7 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value PointArray  a QPointArray
     \value PointF  a QPointF
     \value Polygon a QPolygon
+    \value Quaternion  a QQuaternion
     \value Rect  a QRect
     \value RectF  a QRectF
     \value RegExp  a QRegExp
@@ -1286,6 +1288,9 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value UInt  a \l uint
     \value ULongLong a \l qulonglong
     \value Url  a QUrl
+    \value Vector2D  a QVector2D
+    \value Vector3D  a QVector3D
+    \value Vector4D  a QVector4D
 
     \value UserType Base value for user-defined types.
 
@@ -1677,7 +1682,7 @@ QVariant::QVariant(Qt::GlobalColor color) { create(62, &color); }
     Note that return values in the ranges QVariant::Char through
     QVariant::RegExp and QVariant::Font through QVariant::Transform
     correspond to the values in the ranges QMetaType::QChar through
-    QMetaType::QRegExp and QMetaType::QFont through QMetaType::QTransform.
+    QMetaType::QRegExp and QMetaType::QFont through QMetaType::QQuaternion.
 
     Pay particular attention when working with char and QChar
     variants.  Note that there is no QVariant constructor specifically

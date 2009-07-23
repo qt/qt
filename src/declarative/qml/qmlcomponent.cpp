@@ -390,30 +390,6 @@ QList<QmlError> QmlComponent::errors() const
 }
 
 /*!
-    Return the list of errors that occured during the last compile or create
-    operation, as a single string.  An empty string is returned if isError()
-    is not set.
-
-    This function is similar to errors(), except more useful when called from
-    QML. C++ code should usually use errors().
-
-    \sa errors()
-*/
-QString QmlComponent::errorsString() const
-{
-    Q_D(const QmlComponent);
-    QString ret;
-    if(!isError())
-        return ret;
-    foreach(const QmlError &e, d->errors) {
-        ret += e.url().toString() + QLatin1String(":") + 
-               QString::number(e.line()) + QLatin1String(" ") + 
-               e.description() + QLatin1String("\n");
-    }
-    return ret;
-}
-
-/*!
     Return the component URL.  This is the URL passed to either the constructor,
     or the loadUrl() or setData() methods.
 */

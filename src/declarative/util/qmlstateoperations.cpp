@@ -142,6 +142,7 @@ QFxItem *QmlParentChange::object() const
     Q_D(const QmlParentChange);
     return d->target;
 }
+
 void QmlParentChange::setObject(QFxItem *target)
 {
     Q_D(QmlParentChange);
@@ -194,6 +195,11 @@ void QmlParentChange::reverse()
 {
     Q_D(QmlParentChange);
     d->doChange(d->origParent);
+}
+
+QString QmlParentChange::typeName() const
+{
+    return QLatin1String("ParentChange");
 }
 
 class QmlRunScriptPrivate : public QObjectPrivate

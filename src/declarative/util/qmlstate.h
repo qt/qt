@@ -83,7 +83,7 @@ class ActionEvent
 {
 public:
     virtual ~ActionEvent();
-    virtual QString name() const;
+    virtual QString typeName() const;
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();

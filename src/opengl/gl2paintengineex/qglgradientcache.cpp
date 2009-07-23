@@ -46,6 +46,28 @@
 
 QT_BEGIN_NAMESPACE
 
+static void QGL2GradientCache_free(void *ptr)
+{
+    delete reinterpret_cast<QGL2GradientCache *>(ptr);
+}
+
+Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_gradient_caches, (QGL2GradientCache_free))
+
+QGL2GradientCache *QGL2GradientCache::cacheForContext(const QGLContext *context)
+{
+    QGL2GradientCache *p = reinterpret_cast<QGL2GradientCache *>(qt_gradient_caches()->value(context));
+    if (!p) {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != context)
+            const_cast<QGLContext *>(context)->makeCurrent();
+        p = new QGL2GradientCache;
+        qt_gradient_caches()->insert(context, p);
+        if (oldContext && oldContext != context)
+            oldContext->makeCurrent();
+    }
+    return p;
+}
+
 void QGL2GradientCache::cleanCache() {
     QGLGradientColorTableHash::const_iterator it = cache.constBegin();
     for (; it != cache.constEnd(); ++it) {
@@ -55,13 +77,8 @@ void QGL2GradientCache::cleanCache() {
     cache.clear();
 }
 
-GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity, const QGLContext *ctx)
+GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
 {
-    if (buffer_ctx && !qgl_share_reg()->checkSharing(buffer_ctx, ctx))
-        cleanCache();
-
-    buffer_ctx = ctx;
-
     quint64 hash_val = 0;
 
     QGradientStops stops = gradient.stops();

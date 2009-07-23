@@ -50,12 +50,20 @@
  \class tst_SuiteTest
  \internal
  \since 4.5
- \brief Base class for tst_XmlPatternsXQTS and tst_XmlPatternsXSLTS.
+ \brief Base class for tst_XmlPatternsXQTS, tst_XmlPatternsXSLTS and tst_XmlPatternsXSDTS.
  */
 class tst_SuiteTest : public QObject
                     , private TestFundament
 {
     Q_OBJECT
+
+public:
+    enum SuiteType
+    {
+        XQuerySuite,
+        XsltSuite,
+        XsdSuite
+    };
 
 protected:
     /**
@@ -65,7 +73,7 @@ protected:
      * @p alwaysRun is @c true if the test should always be run,
      * regardless of if the file runTests exists.
      */
-    tst_SuiteTest(const bool isXSLT,
+    tst_SuiteTest(SuiteType type,
                   const bool alwaysRun = false);
 
     /**
@@ -91,7 +99,7 @@ private:
     const QString   m_existingBaseline;
     const QString   m_candidateBaseline;
     const bool      m_abortRun;
-    const bool      m_isXSLT;
+    const SuiteType m_suiteType;
 };
 
 #endif

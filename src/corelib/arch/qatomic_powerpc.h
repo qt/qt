@@ -101,8 +101,6 @@ template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 { return false; }
 
-QT_BEGIN_NAMESPACE
-
 #if defined(Q_CC_GNU)
 
 #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2) \

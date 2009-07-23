@@ -69,19 +69,6 @@ Item IdFN::mapToItem(const QString &id,
 }
 
 /**
- * @short Helper class for StringSplitter
- *
- * Needed by the QAbstractXmlForwardIterator sub-class.
- *
- * @relates StringSplitter
- */
-template<>
-bool qIsForwardIteratorEnd(const QString &unit)
-{
-    return unit.isNull();
-}
-
-/**
  * @short Helper class for IdFN.
  *
  * StringSplitter takes an Iterator which delivers strings of this kind:

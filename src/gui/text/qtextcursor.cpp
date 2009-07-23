@@ -1856,6 +1856,8 @@ bool QTextCursor::atStart() const
 }
 
 /*!
+    \since 4.6
+
     Returns true if the cursor is at the end of the document;
     otherwise returns false.
 

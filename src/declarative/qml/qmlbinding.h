@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlExpression;
 class QmlContext;
 class QmlBindingPrivate;
 class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression
@@ -84,9 +83,9 @@ private:
     Q_DECLARE_PRIVATE(QmlBinding)
 };
 
-Q_DECLARE_METATYPE(QmlBinding*);
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlBinding);
 
 QT_END_HEADER
 

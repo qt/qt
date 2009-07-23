@@ -417,6 +417,7 @@
     \o \l{xmlpatterns/qobjectxmlmodel}{QObject XML Model Example}
     \o \l{xmlpatterns/xquery/globalVariables}{C++ Source Code Analyzer Example}
     \o \l{xmlpatterns/trafficinfo}{Traffic Info}\raisedaster
+    \o \l{xmlpatterns/schema}{XML Schema Validation}\raisedaster
     \endlist
 
     \section1 Inter-Process Communication

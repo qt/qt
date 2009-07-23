@@ -220,7 +220,8 @@ void MainWindow::on_actionOpen_triggered()
     if(fileName.isNull())
         return;
 
-    openCatalog(QUrl::fromLocalFile(fileName), true, false);
+    m_currentSuiteType = TestSuite::XQuerySuite;
+    openCatalog(QUrl::fromLocalFile(fileName), true, TestSuite::XQuerySuite);
 }
 
 void MainWindow::on_actionOpenXSLTSCatalog_triggered()
@@ -234,18 +235,34 @@ void MainWindow::on_actionOpenXSLTSCatalog_triggered()
     if(fileName.isNull())
         return;
 
-    openCatalog(QUrl::fromLocalFile(fileName), true, true);
+    m_currentSuiteType = TestSuite::XsltSuite;
+    openCatalog(QUrl::fromLocalFile(fileName), true, TestSuite::XsltSuite);
+}
+
+void MainWindow::on_actionOpenXSDTSCatalog_triggered()
+{
+    const QString fileName(QFileDialog::getOpenFileName(this,
+                                                        QLatin1String("Open Test Suite Catalog"),
+                                                        m_previousOpenedCatalog.toLocalFile(),
+                                                        QLatin1String("Test Suite Catalog file (*.xml)")));
+
+    /* "If the user presses Cancel, it returns a null string." */
+    if(fileName.isNull())
+        return;
+
+    m_currentSuiteType = TestSuite::XsdSuite;
+    openCatalog(QUrl::fromLocalFile(fileName), true, TestSuite::XsdSuite);
 }
 
 void MainWindow::openCatalog(const QUrl &fileName,
                              const bool reportError,
-                             const bool isXSLT)
+                             const TestSuite::SuiteType suiteType)
 {
     setCurrentFile(fileName);
     m_previousOpenedCatalog = fileName;
 
     QString errorMsg;
-    TestSuite *const loadedSuite = TestSuite::openCatalog(fileName, errorMsg, false, isXSLT);
+    TestSuite *const loadedSuite = TestSuite::openCatalog(fileName, errorMsg, false, suiteType);
 
     if(!loadedSuite)
     {
@@ -334,12 +351,12 @@ void MainWindow::readSettings()
     focusURI->setText(settings.value(QLatin1String("focusURI")).toString());
     isXSLT20->setChecked(settings.value(QLatin1String("isXSLT20")).toBool());
     compileOnly->setChecked(settings.value(QLatin1String("compileOnly")).toBool());
+    m_currentSuiteType = (TestSuite::SuiteType)settings.value(QLatin1String("PreviousSuiteType"), isXSLT20->isChecked() ? TestSuite::XsltSuite : TestSuite::XQuerySuite).toInt();
 
     /* Open the previously opened catalog. */
     if(!m_previousOpenedCatalog.isEmpty())
     {
-        /* We don't know what kind of catalog it is, so we just take a chance. */
-        openCatalog(m_previousOpenedCatalog, false, isXSLT20->isChecked());
+        openCatalog(m_previousOpenedCatalog, false, m_currentSuiteType);
     }
 
     sourceInput->setPlainText(settings.value(QLatin1String("sourceInput")).toString());
@@ -393,6 +410,7 @@ void MainWindow::writeSettings()
     settings.setValue(QLatin1String("size"), size());
     settings.setValue(QLatin1String("sourceInput"), sourceInput->toPlainText());
     settings.setValue(QLatin1String("PreviousOpenedCatalogFile"), m_previousOpenedCatalog);
+    settings.setValue(QLatin1String("PreviousSuiteType"), m_currentSuiteType);
     settings.setValue(QLatin1String("SelectedTab"), sourceTab->currentIndex());
     settings.setValue(QLatin1String("ResultViewMethod"),
                       testResultView->resultViewSelection->currentIndex());
@@ -470,7 +488,7 @@ void MainWindow::openRecentFile()
 {
     const QAction *const action = qobject_cast<QAction *>(sender());
     if(action)
-        openCatalog(action->data().toUrl(), true, false);
+        openCatalog(action->data().toUrl(), true, TestSuite::XQuerySuite);
 }
 
 void MainWindow::closeEvent(QCloseEvent *ev)

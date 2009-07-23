@@ -243,13 +243,14 @@ inline QPointF QVector2D::toPointF() const
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QVector2D &vector);
 #endif
 
+#ifndef QT_NO_DATASTREAM
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QVector2D &);
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QVector2D &);
+#endif
+
 #endif
 
 QT_END_NAMESPACE
-
-#ifndef QT_NO_VECTOR2D
-Q_DECLARE_METATYPE(QVector2D)
-#endif
 
 QT_END_HEADER
 

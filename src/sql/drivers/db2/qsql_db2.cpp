@@ -59,6 +59,8 @@
 #define SQL_BIGUINT_TYPE quint64
 #endif
 
+#define UNICODE
+
 #include <sqlcli1.h>
 
 #include <string.h>

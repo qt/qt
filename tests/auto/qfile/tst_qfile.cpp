@@ -382,6 +382,12 @@ void tst_QFile::open()
 
     QFETCH( bool, ok );
 
+#ifdef Q_OS_UNIX
+    if (::getuid() == 0)
+        // root and Chuck Norris don't care for file permissions. Skip.
+        QSKIP("Running this test as root doesn't make sense", SkipAll);
+#endif
+
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     QEXPECT_FAIL("noreadfile", "Windows does not currently support non-readable files.", Abort);
 #endif
@@ -2493,14 +2499,20 @@ void tst_QFile::map()
 
     file.close();
 
-    // Change permissions on a file, just to confirm it would fail
-    QFile::Permissions originalPermissions = file.permissions();
-    QVERIFY(file.setPermissions(QFile::ReadOther));
-    QVERIFY(!file.open(QFile::ReadWrite));
-    memory = file.map(offset, size);
-    QCOMPARE(file.error(), QFile::PermissionsError);
-    QVERIFY(!memory);
-    QVERIFY(file.setPermissions(originalPermissions));
+#ifdef Q_OS_UNIX
+    if (::getuid() != 0)
+        // root always has permissions
+#endif
+    {
+        // Change permissions on a file, just to confirm it would fail
+        QFile::Permissions originalPermissions = file.permissions();
+        QVERIFY(file.setPermissions(QFile::ReadOther));
+        QVERIFY(!file.open(QFile::ReadWrite));
+        memory = file.map(offset, size);
+        QCOMPARE(file.error(), QFile::PermissionsError);
+        QVERIFY(!memory);
+        QVERIFY(file.setPermissions(originalPermissions));
+    }
 
     QVERIFY(file.remove());
 }
