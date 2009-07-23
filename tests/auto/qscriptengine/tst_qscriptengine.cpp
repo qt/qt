@@ -123,6 +123,9 @@ private slots:
     void reentrancy();
     void incDecNonObjectProperty();
     void installTranslatorFunctions();
+
+    void qRegExpInport_data();
+    void qRegExpInport();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -229,7 +232,7 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.prototype().isValid(), true);
         QCOMPARE(fun.prototype().isFunction(), true);
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
-        
+
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
     }
@@ -251,7 +254,7 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.prototype().isValid(), true);
         QCOMPARE(fun.prototype().isFunction(), true);
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
-        
+
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
     }
@@ -2759,7 +2762,7 @@ void tst_QScriptEngine::numberClass()
         QCOMPARE(ctor.propertyFlags("MIN_VALUE"), flags);
         QVERIFY(ctor.property("NaN").isNumber());
         QCOMPARE(ctor.propertyFlags("NaN"), flags);
-        QVERIFY(ctor.property("NEGATIVE_INFINITY").isNumber()); 
+        QVERIFY(ctor.property("NEGATIVE_INFINITY").isNumber());
         QCOMPARE(ctor.propertyFlags("NEGATIVE_INFINITY"), flags);
         QVERIFY(ctor.property("POSITIVE_INFINITY").isNumber());
         QCOMPARE(ctor.propertyFlags("POSITIVE_INFINITY"), flags);
@@ -2982,7 +2985,7 @@ void tst_QScriptEngine::functionExpression()
                  "  else\n"
                  "    function baz() { return 'baz'; }\n"
                  "  return (arg == 'bar') ? bar : baz;\n"
-                 "}"); 
+                 "}");
     QVERIFY(!eng.globalObject().property("bar").isValid());
     QVERIFY(!eng.globalObject().property("baz").isValid());
     QVERIFY(eng.evaluate("foo").isFunction());
@@ -3770,6 +3773,59 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
     }
 }
+
+static QRegExp minimal(QRegExp r) { r.setMinimal(true); return r; }
+
+void tst_QScriptEngine::qRegExpInport_data()
+{
+    QTest::addColumn<QRegExp>("rx");
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("matched");
+
+    QTest::newRow("normal")  << QRegExp("(test|foo)") << "test _ foo _ test _ Foo";
+    QTest::newRow("normal2")  << QRegExp("(Test|Foo)") << "test _ foo _ test _ Foo";
+    QTest::newRow("case insensitive)")  << QRegExp("(test|foo)", Qt::CaseInsensitive) << "test _ foo _ test _ Foo";
+    QTest::newRow("case insensitive2)")  << QRegExp("(Test|Foo)", Qt::CaseInsensitive) << "test _ foo _ test _ Foo";
+    QTest::newRow("b(a*)(b*)")  << QRegExp("b(a*)(b*)", Qt::CaseInsensitive) << "aaabbBbaAabaAaababaaabbaaab";
+    QTest::newRow("greedy")  << QRegExp("a*(a*)", Qt::CaseInsensitive, QRegExp::RegExp2) << "aaaabaaba";
+    // this one will fail because we do not support the QRegExp::RegExp in JSC
+    //QTest::newRow("not_greedy")  << QRegExp("a*(a*)", Qt::CaseInsensitive, QRegExp::RegExp) << "aaaabaaba";
+    QTest::newRow("willcard")  << QRegExp("*.txt", Qt::CaseSensitive, QRegExp::Wildcard) << "file.txt";
+    QTest::newRow("willcard 2")  << QRegExp("a?b.txt", Qt::CaseSensitive, QRegExp::Wildcard) << "ab.txt abb.rtc acb.txt";
+    QTest::newRow("slash")  << QRegExp("g/.*/s", Qt::CaseInsensitive, QRegExp::RegExp2) << "string/string/string";
+    QTest::newRow("slash2")  << QRegExp("g / .* / s", Qt::CaseInsensitive, QRegExp::RegExp2) << "string / string / string";
+    QTest::newRow("fixed")  << QRegExp("a*aa.a(ba)*a\\ba", Qt::CaseInsensitive, QRegExp::FixedString) << "aa*aa.a(ba)*a\\ba";
+    QTest::newRow("fixed insensitive")  << QRegExp("A*A", Qt::CaseInsensitive, QRegExp::FixedString) << "a*A A*a A*A a*a";
+    QTest::newRow("fixed sensitive")  << QRegExp("A*A", Qt::CaseSensitive, QRegExp::FixedString) << "a*A A*a A*A a*a";
+    QTest::newRow("html")  << QRegExp("<b>(.*)</b>", Qt::CaseSensitive, QRegExp::RegExp2) << "<b>bold</b><i>italic</i><b>bold</b>";
+    QTest::newRow("html minimal")  << minimal(QRegExp("<b>(.*)</b>", Qt::CaseSensitive, QRegExp::RegExp2)) << "<b>bold</b><i>italic</i><b>bold</b>";
+    QTest::newRow("aaa")  << QRegExp("a{2,5}") << "aAaAaaaaaAa";
+    QTest::newRow("aaa minimal")  << minimal(QRegExp("a{2,5}")) << "aAaAaaaaaAa";
+    QTest::newRow("minimal")  << minimal(QRegExp(".*\\} [*8]")) << "}?} ?} *";
+}
+
+void tst_QScriptEngine::qRegExpInport()
+{
+    QFETCH(QRegExp, rx);
+    QFETCH(QString, string);
+
+    QScriptEngine eng;
+    QScriptValue rexp;
+    rexp = eng.newRegExp(rx);
+
+    QCOMPARE(rexp.isValid(), true);
+    QCOMPARE(rexp.isRegExp(), true);
+    QVERIFY(rexp.isFunction());
+
+    QScriptValue func = eng.evaluate("(function(string, regexp) { return string.match(regexp); })");
+    QScriptValue result = func.call(QScriptValue(),  QScriptValueList() << string << rexp);
+
+    rx.indexIn(string);
+    for (int i = 0; i <= rx.numCaptures(); i++)  {
+        QCOMPARE(result.property(i).toString(), rx.cap(i));
+    }
+}
+
 
 QTEST_MAIN(tst_QScriptEngine)
 #include "tst_qscriptengine.moc"

@@ -1435,7 +1435,46 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue buf[2];
     JSC::ArgList args(buf, sizeof(buf));
-    JSC::UString jscPattern = QScript::qtStringToJSCUString(regexp.pattern());
+
+    //convert the pattern to a ECMAScript pattern
+    extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+    QString pattern = qt_regexp_toCanonical(regexp.pattern(), regexp.patternSyntax());
+    if (regexp.isMinimal()) {
+        QString ecmaPattern;
+        int len = pattern.length();
+        ecmaPattern.reserve(len);
+        int i = 0;
+        const QChar *wc = pattern.unicode();
+        bool inBracket = false;
+        while (i < len) {
+            QChar c = wc[i++];
+            ecmaPattern += c;
+            switch (c.unicode()) {
+            case '?':
+            case '+':
+            case '*':
+            case '}':
+                if (!inBracket)
+                    ecmaPattern += QLatin1Char('?');
+                break;
+            case '\\':
+                if (i < len)
+                    ecmaPattern += wc[i++];
+                break;
+            case '[':
+                inBracket = true;
+                break;
+            case ']':
+                inBracket = false;
+                break;
+            default:
+                break;
+            }
+        }
+        pattern = ecmaPattern;
+    }
+
+    JSC::UString jscPattern = QScript::qtStringToJSCUString(pattern);
     QString flags;
     if (regexp.caseSensitivity() == Qt::CaseInsensitive)
         flags.append(QLatin1Char('i'));
