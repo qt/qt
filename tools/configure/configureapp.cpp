@@ -3109,7 +3109,9 @@ void Configure::buildQmake()
 
 void Configure::buildHostTools()
 {
-    dictionary[ "DONE" ] = "yes";
+    if (dictionary[ "NOPROCESS" ] == "yes")
+        dictionary[ "DONE" ] = "yes";
+
     if (!dictionary.contains("XQMAKESPEC"))
         return;
 
