@@ -121,7 +121,7 @@ public:
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
 
-    Type type() const { return OpenGL; }
+    Type type() const { return OpenGL2; }
 
     void setState(QPainterState *s);
     QPainterState *createState(QPainterState *orig) const;
@@ -133,9 +133,11 @@ public:
     }
     virtual void sync();
 
+    const QGLContext* context();
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
+
 
 class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
 {

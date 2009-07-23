@@ -690,6 +690,12 @@ void QGL2PaintEngineEx::sync()
     d->needsSync = true;
 }
 
+const QGLContext *QGL2PaintEngineEx::context()
+{
+    Q_D(QGL2PaintEngineEx);
+    return d->ctx;
+}
+
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 {
     if (newMode == mode)
