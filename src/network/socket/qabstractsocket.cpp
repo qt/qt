@@ -1568,6 +1568,7 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
     Sets the option \a option to the value described by \a value.
 
     \sa socketOption()
+    \since 4.6
 */
 void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, QVariant value)
 {
@@ -1589,6 +1590,7 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, QVar
     Returns the value of the \a option option.
 
     \sa setSocketOption()
+    \since 4.6
 */
 QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 {
