@@ -95,7 +95,7 @@ Item {
 }
     \endqml
 */
-QML_DEFINE_TYPE(Qt,4.6,Component,QmlComponent);
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Component,QmlComponent);
 
 /*!
     \enum QmlComponent::Status

@@ -357,6 +357,6 @@ void QmlSetProperties::setIsExplicit(bool e)
     d->isExplicit = e;
 }
 
-QML_DEFINE_CUSTOM_TYPE(Qt, 4.6, SetProperties, QmlSetProperties, QmlSetPropertiesParser)
+QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, SetProperties, QmlSetProperties, QmlSetPropertiesParser)
 
 QT_END_NAMESPACE

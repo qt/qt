@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QML_DEFINE_NOCREATE_TYPE(QFxContents)
-QML_DEFINE_TYPE(Qt,4.6,Item,QFxItem)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QFxItem)
 
 /*!
     \group group_animation

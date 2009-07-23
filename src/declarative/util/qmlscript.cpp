@@ -99,7 +99,7 @@ public:
     avoided.
 */
 
-QML_DEFINE_TYPE(Qt,4.6,Script,QmlScript)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Script,QmlScript)
 QmlScript::QmlScript(QObject *parent) : QObject(*(new QmlScriptPrivate), parent)
 {
 }

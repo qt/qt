@@ -63,7 +63,7 @@ public:
     QmlNullableValue<QVariant> value;
 };
 
-QML_DEFINE_TYPE(Qt,4.6,Bind,QmlBind)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Bind,QmlBind)
 /*!
     \qmlclass Bind QmlBind
     \brief The Bind element allows arbitrary property bindings to be created.

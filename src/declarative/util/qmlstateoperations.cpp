@@ -122,7 +122,7 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent)
     \brief The ParentChange element allows you to reparent an object in a state.
 */
 
-QML_DEFINE_TYPE(Qt,4.6,ParentChange,QmlParentChange)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParentChange,QmlParentChange)
 QmlParentChange::QmlParentChange(QObject *parent)
     : QmlStateOperation(*(new QmlParentChangePrivate), parent)
 {
@@ -209,7 +209,7 @@ public:
     \qmlclass RunScript QmlRunScript
     \brief The RunScript element allows you to run a script in a state.
 */
-QML_DEFINE_TYPE(Qt,4.6,RunScript,QmlRunScript)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,RunScript,QmlRunScript)
 QmlRunScript::QmlRunScript(QObject *parent)
 : QmlStateOperation(*(new QmlRunScriptPrivate), parent)
 {

@@ -228,7 +228,7 @@ void QFxFlickablePrivate::updateBeginningEnd()
 
 static const int FlickThreshold = 5;
 
-QML_DEFINE_TYPE(Qt,4.6,Flickable,QFxFlickable)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QFxFlickable)
 
 /*!
     \qmlclass Flickable

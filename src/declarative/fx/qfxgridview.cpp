@@ -1,5 +1,3 @@
-import Qt 4.6
-
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
@@ -1428,7 +1426,7 @@ QObject *QFxGridView::qmlAttachedProperties(QObject *obj)
     return QFxGridViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(QFxGridView,GridView)
+QML_DEFINE_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, GridView, QFxGridView)
 
 QT_END_NAMESPACE
 
