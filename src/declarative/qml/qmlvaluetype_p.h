@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLMETAPROPERTY_P_H
-#define QMLMETAPROPERTY_P_H
+#ifndef QMLVALUETYPE_P_H
+#define QMLVALUETYPE_P_H
 
 //
 //  W A R N I N G
@@ -53,51 +53,58 @@
 // We mean it.
 //
 
-#include "qmlmetaproperty.h"
+#include <QtCore/qobject.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlContext;
-class QmlMetaPropertyPrivate
+class QmlValueType : public QObject
 {
+    Q_OBJECT
 public:
-    QmlMetaPropertyPrivate()
-        : context(0), coreIdx(-1), valueTypeIdx(-1), valueTypeId(0),
-          type(QmlMetaProperty::Invalid), attachedFunc(-1), 
-          object(0), propType(-1), category(QmlMetaProperty::Unknown) {}
-    QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
-        : name(other.name), signal(other.signal), context(other.context), 
-          coreIdx(other.coreIdx), valueTypeIdx(other.valueTypeIdx), 
-          valueTypeId(other.valueTypeId), type(other.type), 
-          attachedFunc(other.attachedFunc), object(other.object), 
-          propType(other.propType), category(other.category) {}
-
-    QString name;
-    QMetaMethod signal;
-    QmlContext *context;
-    int coreIdx;
-    int valueTypeIdx;
-    int valueTypeId;
-    uint type;
-    int attachedFunc;
-    QObject *object;
-    int propType;
-
-    mutable QmlMetaProperty::PropertyCategory category;
-
-    QObject *attachedObject() const;
-    void findSignalInt(QObject *, const QString &);
-
-    int propertyType() const;
-    QmlMetaProperty::PropertyCategory propertyCategory() const;
-
-    void writeSignalProperty(const QVariant &);
-    void writeValueProperty(const QVariant &);
-
-    static quint32 saveValueType(int, int);
-    static quint32 saveProperty(int);
+    QmlValueType(QObject *parent = 0);
+    virtual void read(QObject *, int) = 0;
+    virtual void write(QObject *, int) = 0;
 };
 
+class QmlValueTypeFactory
+{
+public:
+    QmlValueTypeFactory();
+    ~QmlValueTypeFactory();
+    static QmlValueType *valueType(int);
+
+    QmlValueType *valueTypes[QVariant::UserType - 1]; 
+    QmlValueType *operator[](int idx) const { return valueTypes[idx]; }
+};
+
+class QmlRectValueType : public QmlValueType
+{
+    Q_PROPERTY(int x READ x WRITE setX);
+    Q_PROPERTY(int y READ y WRITE setY);
+    Q_PROPERTY(int width READ width WRITE setWidth);
+    Q_PROPERTY(int height READ height WRITE setHeight);
+    Q_OBJECT
+public:
+    QmlRectValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    int x() const;
+    int y() const;
+    void setX(int);
+    void setY(int);
+    
+    int width() const;
+    int height() const;
+    void setWidth(int);
+    void setHeight(int);
+
+private:
+    QRect rect;
+};
 QT_END_NAMESPACE
 
-#endif // QMLMETAPROPERTY_P_H
+#endif  // QMLVALUETYPE_P_H

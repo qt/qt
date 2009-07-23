@@ -39,65 +39,93 @@
 **
 ****************************************************************************/
 
-#ifndef QMLMETAPROPERTY_P_H
-#define QMLMETAPROPERTY_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qmlmetaproperty.h"
+#include "qmlvaluetype_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlContext;
-class QmlMetaPropertyPrivate
+QmlValueTypeFactory::QmlValueTypeFactory()
 {
-public:
-    QmlMetaPropertyPrivate()
-        : context(0), coreIdx(-1), valueTypeIdx(-1), valueTypeId(0),
-          type(QmlMetaProperty::Invalid), attachedFunc(-1), 
-          object(0), propType(-1), category(QmlMetaProperty::Unknown) {}
-    QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
-        : name(other.name), signal(other.signal), context(other.context), 
-          coreIdx(other.coreIdx), valueTypeIdx(other.valueTypeIdx), 
-          valueTypeId(other.valueTypeId), type(other.type), 
-          attachedFunc(other.attachedFunc), object(other.object), 
-          propType(other.propType), category(other.category) {}
+    // ### Optimize
+    for (int ii = 0; ii < (QVariant::UserType - 1); ++ii)
+        valueTypes[ii] = valueType(ii);
+}
 
-    QString name;
-    QMetaMethod signal;
-    QmlContext *context;
-    int coreIdx;
-    int valueTypeIdx;
-    int valueTypeId;
-    uint type;
-    int attachedFunc;
-    QObject *object;
-    int propType;
+QmlValueTypeFactory::~QmlValueTypeFactory()
+{
+    for (int ii = 0; ii < (QVariant::UserType - 1); ++ii)
+        delete valueTypes[ii];
+}
 
-    mutable QmlMetaProperty::PropertyCategory category;
+QmlValueType *QmlValueTypeFactory::valueType(int t)
+{
+    switch (t) {
+    case QVariant::Rect:
+        return new QmlRectValueType;
+    default:
+        return 0;
+    }
+}
 
-    QObject *attachedObject() const;
-    void findSignalInt(QObject *, const QString &);
+QmlValueType::QmlValueType(QObject *parent)
+: QObject(parent)
+{
+}
 
-    int propertyType() const;
-    QmlMetaProperty::PropertyCategory propertyCategory() const;
+QmlRectValueType::QmlRectValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
 
-    void writeSignalProperty(const QVariant &);
-    void writeValueProperty(const QVariant &);
+void QmlRectValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &rect, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
 
-    static quint32 saveValueType(int, int);
-    static quint32 saveProperty(int);
-};
+void QmlRectValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &rect, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+int QmlRectValueType::x() const
+{
+    return rect.x();
+}
+
+int QmlRectValueType::y() const
+{
+    return rect.y();
+}
+
+void QmlRectValueType::setX(int x)
+{
+    rect.moveLeft(x);
+}
+
+void QmlRectValueType::setY(int y)
+{
+    rect.moveTop(y);
+}
+
+int QmlRectValueType::width() const
+{
+    return rect.width();
+}
+
+int QmlRectValueType::height() const
+{
+    return rect.height();
+}
+
+void QmlRectValueType::setWidth(int w)
+{
+    rect.setWidth(w);
+}
+
+void QmlRectValueType::setHeight(int h)
+{
+    rect.setHeight(h);
+}
 
 QT_END_NAMESPACE
-
-#endif // QMLMETAPROPERTY_P_H

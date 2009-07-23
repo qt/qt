@@ -128,7 +128,8 @@ class MyTypeObject : public QObject
     Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty);
     Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty);
     Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty);
-    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty);
+    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged);
+    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2);
     Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
     Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
     Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
@@ -290,6 +291,15 @@ public:
     }
     void setRectProperty(const QRect &v) {
         rectPropertyValue = v;
+        emit rectPropertyChanged();
+    }
+
+    QRect rectPropertyValue2;
+    QRect rectProperty2() const {
+       return rectPropertyValue2;
+    }
+    void setRectProperty2(const QRect &v) {
+        rectPropertyValue2 = v;
     }
 
     QRectF rectFPropertyValue;
@@ -315,6 +325,11 @@ public:
     void setVariantProperty(const QVariant &v) {
         variantPropertyValue = v;
     }
+
+    void doAction() { emit action(); }
+signals:
+    void action();
+    void rectPropertyChanged();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
 QML_DECLARE_TYPE(MyTypeObject);

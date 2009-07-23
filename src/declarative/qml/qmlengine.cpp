@@ -148,6 +148,7 @@ void QmlEnginePrivate::init()
     scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
+    valueTypeClass = new QmlValueTypeScriptClass(q);
     rootContext = new QmlContext(q,true);
 #ifdef QT_SCRIPTTOOLS_LIB
     if (qmlDebugger()){
@@ -189,7 +190,7 @@ Q_GLOBAL_STATIC(FunctionCache, functionCache);
 
 QScriptClass::QueryFlags
 QmlEnginePrivate::queryObject(const QString &propName,
-                                  uint *id, QObject *obj)
+                              uint *id, QObject *obj)
 {
     QScriptClass::QueryFlags rv = 0;
 
@@ -223,8 +224,15 @@ QmlEnginePrivate::queryObject(const QString &propName,
     return rv;
 }
 
+struct QmlValueTypeReference {
+    QmlValueType *type;
+    QGuard<QObject> object;
+    int property;
+};
+Q_DECLARE_METATYPE(QmlValueTypeReference);
+
 QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
-                                                  QObject *obj, uint id)
+                                              QObject *obj, uint id)
 {
     if (id == QmlScriptClass::FunctionId) {
         QScriptValue sobj = scriptEngine.newQObject(obj);
@@ -236,10 +244,20 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
         if (!prop.isValid())
             return QScriptValue();
 
-        QVariant var = prop.read();
         if (prop.needsChangedNotifier())
             capturedProperties << CapturedProperty(prop);
-        QObject *varobj = QmlMetaType::toQObject(var);
+
+        int propType = prop.propertyType();
+        if (propType < QVariant::UserType && valueTypes[propType]) {
+            QmlValueTypeReference ref;
+            ref.type = valueTypes[propType];
+            ref.object = obj;
+            ref.property = prop.coreIndex();
+            return scriptEngine.newObject(valueTypeClass, scriptEngine.newVariant(QVariant::fromValue(ref)));
+        }
+
+        QVariant var = prop.read();
+        QObject *varobj = (propType < QVariant::UserType)?0:QmlMetaType::toQObject(var);
         if (!varobj)
             varobj = qvariant_cast<QObject *>(var);
         if (varobj) {
@@ -679,6 +697,32 @@ QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
 {
 }
 
+QVariant QmlScriptClass::toVariant(QmlEngine *engine, const QScriptValue &val)
+{
+    QmlEnginePrivate *ep = 
+        static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
+
+    QScriptClass *sc = val.scriptClass();
+    if (!sc) {
+        return val.toVariant();
+    } else if (sc == ep->contextClass) {
+        return QVariant();
+    } else if (sc == ep->objectClass) {
+        return QVariant::fromValue(val.data().toQObject());
+    } else if (sc == ep->valueTypeClass) {
+        QmlValueTypeReference ref = 
+            qvariant_cast<QmlValueTypeReference>(val.data().toVariant());
+
+        if (!ref.object)
+            return QVariant();
+        
+        QMetaProperty p = ref.object->metaObject()->property(ref.property);
+        return p.read(ref.object);
+    }
+
+    return QVariant();
+}
+
 /////////////////////////////////////////////////////////////
 /*
     The QmlContextScriptClass handles property access for a QmlContext
@@ -805,16 +849,85 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
     QmlMetaProperty prop;
     prop.restore(id, obj);
 
-    QVariant v;
-    QObject *data = value.data().toQObject();
-    if (data) {
-        v = QVariant::fromValue(data);
-    } else {
-        v = value.toVariant();
-    }
+    QVariant v = QmlScriptClass::toVariant(engine, value);
     prop.write(v);
 
     scriptEngine->currentContext()->setActivationObject(oldact);
+}
+
+/////////////////////////////////////////////////////////////
+QmlValueTypeScriptClass::QmlValueTypeScriptClass(QmlEngine *bindEngine)
+: QmlScriptClass(bindEngine)
+{
+}
+
+QmlValueTypeScriptClass::~QmlValueTypeScriptClass()
+{
+}
+
+QmlValueTypeScriptClass::QueryFlags 
+QmlValueTypeScriptClass::queryProperty(const QScriptValue &object,
+                                       const QScriptString &name,
+                                       QueryFlags flags, uint *id)
+{
+    QmlValueTypeReference ref = 
+        qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
+
+    if (!ref.object)
+        return 0;
+
+    QByteArray propName = name.toString().toUtf8();
+
+    int idx = ref.type->metaObject()->indexOfProperty(propName.constData());
+    if (idx == -1)
+        return 0;
+    *id = idx;
+
+    QMetaProperty prop = ref.object->metaObject()->property(idx);
+
+    QmlValueTypeScriptClass::QueryFlags rv = 
+        QmlValueTypeScriptClass::HandlesReadAccess;
+    if (prop.isWritable())
+        rv |= QmlValueTypeScriptClass::HandlesWriteAccess;
+
+    return rv;
+}
+
+QScriptValue QmlValueTypeScriptClass::property(const QScriptValue &object,
+                                               const QScriptString &name, 
+                                               uint id)
+{
+    QmlValueTypeReference ref = 
+        qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
+
+    if (!ref.object)
+        return QScriptValue();
+
+    ref.type->read(ref.object, ref.property);
+
+    QMetaProperty p = ref.type->metaObject()->property(id);
+    QVariant rv = p.read(ref.type);
+
+    return static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine))->scriptEngine.newVariant(rv);
+}
+
+void QmlValueTypeScriptClass::setProperty(QScriptValue &object,
+                                          const QScriptString &name,
+                                          uint id,
+                                          const QScriptValue &value)
+{
+    QmlValueTypeReference ref = 
+        qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
+
+    if (!ref.object)
+        return;
+
+    QVariant v = QmlScriptClass::toVariant(engine, value);
+
+    ref.type->read(ref.object, ref.property);
+    QMetaProperty p = ref.type->metaObject()->property(id);
+    p.write(ref.type, v);
+    ref.type->write(ref.object, ref.property);
 }
 
 /////////////////////////////////////////////////////////////
@@ -914,13 +1027,7 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
     QmlMetaProperty prop;
     prop.restore(id, obj);
 
-    QVariant v;
-    QObject *data = value.data().toQObject();
-    if (data) {
-        v = QVariant::fromValue(data);
-    } else {
-        v = value.toVariant();
-    }
+    QVariant v = QmlScriptClass::toVariant(engine, value);
     prop.write(v);
 
     scriptEngine->currentContext()->setActivationObject(oldact);

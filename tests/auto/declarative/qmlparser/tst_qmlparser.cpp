@@ -44,6 +44,7 @@ private slots:
     void attachedProperties();
     void dynamicObjects();
     void customVariantTypes();
+    void valueTypes();
 
     // regression tests for crashes
     void crash1();
@@ -429,6 +430,31 @@ void tst_qmlparser::customVariantTypes()
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->customType().a, 10);
+}
+
+void tst_qmlparser::valueTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("valueTypes.txt"));
+    MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rectProperty(), QRect(10, 11, 12, 13));
+    QCOMPARE(object->rectProperty2(), QRect(10, 11, 12, 13));
+    QCOMPARE(object->intProperty(), 10);
+    object->doAction();
+    QCOMPARE(object->rectProperty(), QRect(12, 11, 14, 13));
+    QCOMPARE(object->rectProperty2(), QRect(12, 11, 14, 13));
+    QCOMPARE(object->intProperty(), 12);
+
+    QmlMetaProperty p = QmlMetaProperty::createProperty(object, "rectProperty.x");
+    QCOMPARE(p.read(), QVariant(12));
+    p.write(13);
+    QCOMPARE(p.read(), QVariant(13));
+
+    quint32 r = p.save();
+    QmlMetaProperty p2;
+    p2.restore(r, object);
+    QCOMPARE(p2.read(), QVariant(13));
 }
 
 void tst_qmlparser::crash1()

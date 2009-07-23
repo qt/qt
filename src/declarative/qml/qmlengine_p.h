@@ -66,6 +66,7 @@
 #include <private/qpodvector_p.h>
 #include <QtDeclarative/qml.h>
 #include <private/qmlbasicscript_p.h>
+#include <private/qmlvaluetype_p.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlexpression.h>
@@ -80,6 +81,7 @@ class QmlExpression;
 class QmlBasicScriptNodeCache;
 class QmlContextScriptClass;
 class QmlObjectScriptClass;
+class QmlValueTypeScriptClass;
 class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -120,6 +122,7 @@ public:
 
     QmlContextScriptClass *contextClass;
     QmlObjectScriptClass *objectClass;
+    QmlValueTypeScriptClass *valueTypeClass;
 
     QmlContext *setCurrentBindContext(QmlContext *);
     QStack<QmlContext *> activeContexts;
@@ -167,6 +170,8 @@ public:
     quint32 getUniqueId() const {
         return uniqueId++;
     }
+
+    QmlValueTypeFactory valueTypes;
 };
 
 class QmlScriptClass : public QScriptClass
@@ -187,6 +192,7 @@ public:
 
     QmlScriptClass(QmlEngine *);
 
+    static QVariant toVariant(QmlEngine *, const QScriptValue &);
 protected:
     QmlEngine *engine;
 };
@@ -217,6 +223,24 @@ public:
 
     virtual QScriptValue prototype () const;
     QScriptValue prototypeObject;
+
+    virtual QueryFlags queryProperty(const QScriptValue &object,
+                                     const QScriptString &name,
+                                     QueryFlags flags, uint *id);
+    virtual QScriptValue property(const QScriptValue &object,
+                                  const QScriptString &name, 
+                                  uint id);
+    virtual void setProperty(QScriptValue &object,
+                             const QScriptString &name,
+                             uint id,
+                             const QScriptValue &value);
+};
+
+class QmlValueTypeScriptClass : public QmlScriptClass
+{
+public:
+    QmlValueTypeScriptClass(QmlEngine *);
+    ~QmlValueTypeScriptClass();
 
     virtual QueryFlags queryProperty(const QScriptValue &object,
                                      const QScriptString &name,
