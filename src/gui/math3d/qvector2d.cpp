@@ -410,6 +410,46 @@ QDebug operator<<(QDebug dbg, const QVector2D &vector)
 
 #endif
 
-#endif
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QVector2D &vector)
+    \relates QVector2D
+
+    Writes the given \a vector to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QVector2D &vector)
+{
+    stream << double(vector.x()) << double(vector.y());
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
+    \relates QVector2D
+
+    Reads a 2D vector from the given \a stream into the given \a vector
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
+{
+    double x, y;
+    stream >> x;
+    stream >> y;
+    vector.setX(qreal(x));
+    vector.setY(qreal(y));
+    return stream;
+}
+
+#endif // QT_NO_DATASTREAM
+
+#endif // QT_NO_VECTOR2D
 
 QT_END_NAMESPACE
