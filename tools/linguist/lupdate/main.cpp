@@ -485,6 +485,9 @@ int main(int argc, char **argv)
                 fetchedTor.load(*it, cd, QLatin1String("java"));
                 //fetchtr_java(*it, &fetchedTor, defaultContext, true, codecForSource);
             }
+            else if (it->endsWith(QLatin1String(".jui"), Qt::CaseInsensitive)) {
+                fetchedTor.load(*it, cd, QLatin1String("jui"));
+            }
             else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive)) {
                 fetchedTor.load(*it, cd, QLatin1String("ui"));
                 //fetchedTor.load(*it + QLatin1String(".h"), cd, QLatin1String("cpp"));
