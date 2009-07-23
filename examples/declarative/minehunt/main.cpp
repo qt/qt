@@ -52,7 +52,7 @@ private:
 };
 
 QML_DECLARE_TYPE(Tile);
-QML_DEFINE_TYPE(Tile,Tile);
+QML_DEFINE_TYPE(0,0,0,0,Tile,Tile);
 
 class MyWidget : public QWidget
 {

@@ -73,11 +73,11 @@ Boy::Boy(QObject * parent)
 {
 }
 
-QML_DEFINE_TYPE(Boy, Boy);
+QML_DEFINE_TYPE(People, 1, 0, 0, Boy, Boy);
 
 Girl::Girl(QObject * parent)
 : Person(parent)
 {
 }
 
-QML_DEFINE_TYPE(Girl, Girl);
+QML_DEFINE_TYPE(People, 1, 0, 0, Girl, Girl);

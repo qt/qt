@@ -173,12 +173,12 @@
     \section1 Defining QML Types
 
     The QML engine has no intrinsic knowledge of any class types.  Instead
-    the programmer must define the C++ types, and their corresponding QML
-    name.  
+    the programmer must define the C++ types, their corresponding QML
+    name, library namespace, and version availability.
     
     \code
     #define QML_DECLARE_TYPE(T)
-    #define QML_DEFINE_TYPE(T,QmlName)
+    #define QML_DEFINE_TYPE(URI,VMAJ,VFROM,VTO,QmlName,T)
     \endcode
 
     Adding these macros to your library or executable automatically makes the 
