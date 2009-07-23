@@ -2005,10 +2005,15 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     JSC::JSValue callee = d->jscValue;
     JSC::CallData callData;
     JSC::CallType callType = callee.getCallData(callData);
+    JSC::JSValue savedException;
+    QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, jscArgs);
     if (exec->hadException()) {
-        eng_p->uncaughtException = exec->exception();
+        if (!eng_p->uncaughtException)
+            eng_p->uncaughtException = exec->exception();
         result = exec->exception();
+    } else {
+        QScriptValuePrivate::restoreException(exec, savedException);
     }
     return eng_p->scriptValueFromJSCValue(result);
 }
@@ -2081,10 +2086,15 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     JSC::JSValue callee = d->jscValue;
     JSC::CallData callData;
     JSC::CallType callType = callee.getCallData(callData);
+    JSC::JSValue savedException;
+    QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, applyArgs);
     if (exec->hadException()) {
-        eng_p->uncaughtException = exec->exception();
+        if (!eng_p->uncaughtException)
+            eng_p->uncaughtException = exec->exception();
         result = exec->exception();
+    } else {
+        QScriptValuePrivate::restoreException(exec, savedException);
     }
     return eng_p->scriptValueFromJSCValue(result);
 }
@@ -2128,10 +2138,15 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     JSC::JSValue callee = d->jscValue;
     JSC::ConstructData constructData;
     JSC::ConstructType constructType = callee.getConstructData(constructData);
+    JSC::JSValue savedException;
+    QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, jscArgs);
     if (exec->hadException()) {
-        eng_p->uncaughtException = exec->exception();
+        if (!eng_p->uncaughtException)
+            eng_p->uncaughtException = exec->exception();
         result = JSC::asObject(exec->exception());
+    } else {
+        QScriptValuePrivate::restoreException(exec, savedException);
     }
     return eng_p->scriptValueFromJSCValue(result);
 }
@@ -2182,11 +2197,16 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     JSC::JSValue callee = d->jscValue;
     JSC::ConstructData constructData;
     JSC::ConstructType constructType = callee.getConstructData(constructData);
+    JSC::JSValue savedException;
+    QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, applyArgs);
     if (exec->hadException()) {
-        eng_p->uncaughtException = exec->exception();
+        if (!eng_p->uncaughtException)
+            eng_p->uncaughtException = exec->exception();
         if (exec->exception().isObject())
             result = JSC::asObject(exec->exception());
+    } else {
+        QScriptValuePrivate::restoreException(exec, savedException);
     }
     return eng_p->scriptValueFromJSCValue(result);
 }
