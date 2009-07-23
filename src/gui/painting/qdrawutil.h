@@ -133,7 +133,7 @@ Q_GUI_EXPORT QT3_SUPPORT void qDrawArrow(QPainter *p, Qt::ArrowType type, Qt::GU
                           const QPalette &pal, bool enabled);
 #endif
 
-struct Q_GUI_EXPORT QMargins
+struct QMargins
 {
     inline QMargins(int margin = 0)
         : top(margin),
@@ -151,7 +151,7 @@ struct Q_GUI_EXPORT QMargins
     int right;
 };
 
-struct Q_GUI_EXPORT QTileRules
+struct QTileRules
 {
     inline QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule = Qt::Stretch)
             : horizontal(horizontalRule), vertical(verticalRule) {}
@@ -168,8 +168,7 @@ Q_GUI_EXPORT void qDrawBorderPixmap(QPainter *painter,
                                     const QRect &sourceRect, 
                                     const QMargins &sourceMargins, 
                                     const QTileRules &rules = QTileRules());
-
-Q_GUI_EXPORT inline void qDrawBorderPixmap(QPainter *painter, 
+inline void qDrawBorderPixmap(QPainter *painter, 
                                            const QRect &target, 
                                            const QMargins &margins, 
                                            const QPixmap &pixmap)

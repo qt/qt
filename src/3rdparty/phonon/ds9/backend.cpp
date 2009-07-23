@@ -50,7 +50,7 @@ namespace Phonon
         Backend::Backend(QObject *parent, const QVariantList &)
             : QObject(parent)
         {
-			::CoInitialize(0);
+            ::CoInitialize(0);
 
             //registering meta types
             qRegisterMetaType<HRESULT>("HRESULT");
@@ -61,7 +61,7 @@ namespace Phonon
         {
             m_audioOutputs.clear();
             m_audioEffects.clear();
-			::CoUninitialize();
+            ::CoUninitialize();
         }
 
         QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &args)
@@ -216,7 +216,7 @@ namespace Phonon
                     LPOLESTR str = 0;
                     HRESULT hr = mon->GetDisplayName(0,0, &str);
                     if (SUCCEEDED(hr)) {
-                        QString name = QString::fromUtf16((unsigned short*)str); 
+                        QString name = QString::fromUtf16((unsigned short*)str);
 						ComPointer<IMalloc> alloc;
 						::CoGetMalloc(1, alloc.pparam());
                         alloc->Free(str);

@@ -169,6 +169,7 @@ public:
     QList<QSslError> sslErrors() const;
 
     static bool supportsSsl();
+    void ignoreSslErrors(const QList<QSslError> &errors);
 
 public Q_SLOTS:
     void startClientEncryption();

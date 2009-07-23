@@ -14,7 +14,7 @@
 #include "contact.h"
 #include "qmltypes.h"
 
-QML_DEFINE_TYPE(Contact,Contact);
+QML_DEFINE_TYPE(0,0,0,0,Contact,Contact);
 Contact::Contact() : QObject(0)
 {
     m_firstName = "John";
@@ -70,13 +70,13 @@ void Contact::addEmail(QString &newEmail)
     emit emailsChanged();
 }
 
-QML_DEFINE_TYPE(Address,Address);
+QML_DEFINE_TYPE(0,0,0,0,Address,Address);
 Address::Address()
 : _number(0)
 {
 }
 
-QML_DEFINE_TYPE(PhoneNumber, PhoneNumber);
+QML_DEFINE_TYPE(0,0,0,0,PhoneNumber, PhoneNumber);
 PhoneNumber::PhoneNumber()
 : _type(HomePhone)
 {

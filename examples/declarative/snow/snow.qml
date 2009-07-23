@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     id: ImagePanel
     width: 1024

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 BirthdayParty {
     celebrant: Boy {
         name: "Bob Jones"

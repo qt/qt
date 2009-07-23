@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
     gradient: Gradient {
         GradientStop { position: 0; color: "black" }

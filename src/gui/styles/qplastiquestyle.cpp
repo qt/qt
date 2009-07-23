@@ -730,16 +730,6 @@ static QColor mergedColors(const QColor &colorA, const QColor &colorB, int facto
     return tmp;
 }
 
-static QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
-{
-    QString tmp;
-    const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
-    tmp.sprintf("%s-%d-%d-%d-%lld-%dx%d", key.toLatin1().constData(), uint(option->state),
-                option->direction, complexOption ? uint(complexOption->activeSubControls) : uint(0),
-                option->palette.cacheKey(), size.width(), size.height());
-    return tmp;
-}
-
 static void qt_plastique_draw_gradient(QPainter *painter, const QRect &rect, const QColor &gradientStart,
                                        const QColor &gradientStop)
 {
@@ -1512,7 +1502,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
                 rect.adjust(2, 0, -2, 0);
         }
 #endif
-        QString pixmapName = uniqueName(QLatin1String("toolbarhandle"), option, rect.size());
+        QString pixmapName = QStyleHelper::uniqueName(QLatin1String("toolbarhandle"), option, rect.size());
         if (!QPixmapCache::find(pixmapName, cache)) {
             cache = QPixmap(rect.size());
             cache.fill(Qt::transparent);
@@ -2581,8 +2571,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 painter->setTransform(m, true);
             }
 
-            double vc6_workaround = ((bar->progress - qint64(bar->minimum)) / qMax(double(1.0), double(qint64(bar->maximum) - qint64(bar->minimum))) * rect.width());
-            int progressIndicatorPos = int(vc6_workaround);
+            int progressIndicatorPos = (bar->progress - qreal(bar->minimum)) / qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum) * rect.width();
 
             bool flip = (!vertical && (((bar->direction == Qt::RightToLeft) && !inverted)
                                        || ((bar->direction == Qt::LeftToRight) && inverted))) || (vertical && ((!inverted && !bottomToTop) || (inverted && bottomToTop)));
@@ -2777,7 +2766,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             // contents
             painter->setPen(QPen());
 
-            QString progressBarName = uniqueName(QLatin1String("progressBarContents"),
+            QString progressBarName = QStyleHelper::uniqueName(QLatin1String("progressBarContents"),
                                                  option, rect.size());
             QPixmap cache;
             if (!QPixmapCache::find(progressBarName, cache) && rect.height() > 7) {
@@ -2837,7 +2826,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
         // Draws the header in tables.
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QPixmap cache;
-            QString pixmapName = uniqueName(QLatin1String("headersection"), option, option->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("headersection"), option, option->rect.size());
             pixmapName += QString::number(- int(header->position));
             pixmapName += QString::number(- int(header->orientation));
 
@@ -3084,7 +3073,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
         // Draws a menu bar item; File, Edit, Help etc..
         if ((option->state & State_Selected)) {
             QPixmap cache;
-            QString pixmapName = uniqueName(QLatin1String("menubaritem"), option, option->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("menubaritem"), option, option->rect.size());
             if (!QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(option->rect.size());
                 cache.fill(Qt::white);
@@ -3447,7 +3436,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             bool reverse = scrollBar->direction == Qt::RightToLeft;
             bool sunken = scrollBar->state & State_Sunken;
 
-            QString addLinePixmapName = uniqueName(QLatin1String("scrollbar_addline"), option, option->rect.size());
+            QString addLinePixmapName = QStyleHelper::uniqueName(QLatin1String("scrollbar_addline"), option, option->rect.size());
             QPixmap cache;
             if (!QPixmapCache::find(addLinePixmapName, cache)) {
                 cache = QPixmap(option->rect.size());
@@ -3519,7 +3508,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             bool sunken = scrollBar->state & State_Sunken;
             bool horizontal = scrollBar->orientation == Qt::Horizontal;
 
-            QString groovePixmapName = uniqueName(QLatin1String("scrollbar_groove"), option, option->rect.size());
+            QString groovePixmapName = QStyleHelper::uniqueName(QLatin1String("scrollbar_groove"), option, option->rect.size());
             if (sunken)
                 groovePixmapName += QLatin1String("-sunken");
             if (element == CE_ScrollBarAddPage)
@@ -3578,7 +3567,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 button2.setRect(scrollBarSubLine.left(), scrollBarSubLine.bottom() - (scrollBarExtent - 1), scrollBarSubLine.width(), scrollBarExtent);
             }
 
-            QString subLinePixmapName = uniqueName(QLatin1String("scrollbar_subline"), option, button1.size());
+            QString subLinePixmapName = QStyleHelper::uniqueName(QLatin1String("scrollbar_subline"), option, button1.size());
             QPixmap cache;
             if (!QPixmapCache::find(subLinePixmapName, cache)) {
                 cache = QPixmap(button1.size());
@@ -3653,7 +3642,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
 
             // The slider
             if (option->rect.isValid()) {
-                QString sliderPixmapName = uniqueName(QLatin1String("scrollbar_slider"), option, option->rect.size());
+                QString sliderPixmapName = QStyleHelper::uniqueName(QLatin1String("scrollbar_slider"), option, option->rect.size());
                 if (horizontal)
                     sliderPixmapName += QLatin1String("-horizontal");
 
@@ -3873,7 +3862,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             }
 
             if ((option->subControls & SC_SliderHandle) && handle.isValid()) {
-                QString handlePixmapName = uniqueName(QLatin1String("slider_handle"), option, handle.size());
+                QString handlePixmapName = QStyleHelper::uniqueName(QLatin1String("slider_handle"), option, handle.size());
                 if (ticksAbove && !ticksBelow)
                     handlePixmapName += QLatin1String("-flipped");
                 if ((option->activeSubControls & SC_SliderHandle) && (option->state & State_Sunken))

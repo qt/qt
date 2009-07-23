@@ -96,12 +96,12 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 
     Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged)
 
-    Q_PROPERTY(QObject* reload READ reloadAction)
-    Q_PROPERTY(QObject* back READ backAction)
-    Q_PROPERTY(QObject* forward READ forwardAction)
-    Q_PROPERTY(QObject* stop READ stopAction)
+    Q_PROPERTY(QObject* reload READ reloadAction CONSTANT)
+    Q_PROPERTY(QObject* back READ backAction CONSTANT)
+    Q_PROPERTY(QObject* forward READ forwardAction CONSTANT)
+    Q_PROPERTY(QObject* stop READ stopAction CONSTANT)
 
-    Q_PROPERTY(QObject* settings READ settingsObject)
+    Q_PROPERTY(QObject* settings READ settingsObject CONSTANT)
 
 public:
     QFxWebView(QFxItem *parent=0);

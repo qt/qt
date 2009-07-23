@@ -1563,7 +1563,10 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
                     }
                     // middle rectangle
                     if (top.bottom() < bottom.top()) {
-                        middle.setTop(top.bottom() + 1);
+                        if (gridSize().isValid() && !gridSize().isNull())
+                            middle.setTop(top.top() + gridSize().height());
+                        else
+                            middle.setTop(top.bottom() + 1);
                         middle.setLeft(qMin(top.left(), bottom.left()));
                         middle.setBottom(bottom.top() - 1);
                         middle.setRight(qMax(top.right(), bottom.right()));
@@ -1590,7 +1593,10 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
                         // only set middle if the
                         middle.setTop(0);
                         middle.setBottom(ch);
-                        middle.setLeft(left.right() + 1);
+                        if (gridSize().isValid() && !gridSize().isNull())
+                            middle.setLeft(left.left() + gridSize().width());
+                        else
+                            middle.setLeft(left.right() + 1);
                         middle.setRight(right.left() - 1);
                     } else if (left.bottom() < right.top()) {
                         left.setBottom(right.top() - 1);

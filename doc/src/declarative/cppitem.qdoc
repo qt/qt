@@ -65,7 +65,7 @@ In order for your type to be usable in QML, you must register it:
 
 \code
 QML_DECLARE_TYPE(TypeName);
-QML_DEFINE_TYPE(TypeName,QmlName);
+QML_DEFINE_TYPE(ModuleUri,ModuleMajorVersion,ModuleMinorVersionFrom,ModuleMinorVersionTo,QmlName,TypeName);
 \endcode
 
 These macros make the C++ \e TypeName available from the declarative markup language under the name \e QmlName.
@@ -74,9 +74,9 @@ Of course there's nothing stopping you using the same name for both the C++ and 
 For example:
 \code
 QML_DECLARE_TYPE(MyCircle);
-QML_DEFINE_TYPE(MyCircle,Circle);
+QML_DEFINE_TYPE(MyLib,1,0,5,Circle,MyCircle);
 \endcode
-would make the \e MyCircle class accessable though the \c Circle type in QML.
+would make the \e MyCircle class accessable though the \c Circle type in QML whenever MyLib 1.0 to 1.5 is imported.
 
 
 \section1 Creating a new 'Fx' item in C++

@@ -147,7 +147,7 @@ QmlPackageAttached *QmlPackage::qmlAttachedProperties(QObject *o)
     return new QmlPackageAttached(o);
 }
 
-QML_DEFINE_TYPE(QmlPackage, Package)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Package,QmlPackage)
 
 QT_END_NAMESPACE
 

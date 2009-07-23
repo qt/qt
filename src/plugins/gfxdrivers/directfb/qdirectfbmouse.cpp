@@ -71,7 +71,7 @@ private:
     DFBEvent event;
     uint bytesRead;
 
-private slots:
+private Q_SLOTS:
     void readMouseData();
 };
 
@@ -101,7 +101,7 @@ QDirectFBMouseHandlerPrivate::QDirectFBMouseHandlerPrivate(QDirectFBMouseHandler
 #endif
 
     DFBInputDeviceCapabilities caps;
-    caps = DFBInputDeviceCapabilities(DICAPS_BUTTONS | DICAPS_AXES);
+    caps = DICAPS_BUTTONS | DICAPS_AXES;
     result = fb->CreateInputEventBuffer(fb, caps, DFB_TRUE, &eventBuffer);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBMouseHandler: "

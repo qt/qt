@@ -1,8 +1,8 @@
 HEADERS += $$PWD/qabstractdatetime_p.h              \
            $$PWD/qabstractduration_p.h              \
            $$PWD/qabstractfloatcasters_p.h          \
-           $$PWD/qabstractfloat_p.h                 \
            $$PWD/qabstractfloatmathematician_p.h    \
+           $$PWD/qabstractfloat_p.h                 \
            $$PWD/qanyuri_p.h                        \
            $$PWD/qatomiccaster_p.h                  \
            $$PWD/qatomiccasters_p.h                 \
@@ -14,8 +14,8 @@ HEADERS += $$PWD/qabstractdatetime_p.h              \
            $$PWD/qbase64binary_p.h                  \
            $$PWD/qboolean_p.h                       \
            $$PWD/qcommonvalues_p.h                  \
+           $$PWD/qcomparisonfactory_p.h             \
            $$PWD/qdate_p.h                          \
-           $$PWD/qschemadatetime_p.h                \
            $$PWD/qdaytimeduration_p.h               \
            $$PWD/qdecimal_p.h                       \
            $$PWD/qderivedinteger_p.h                \
@@ -24,19 +24,21 @@ HEADERS += $$PWD/qabstractdatetime_p.h              \
            $$PWD/qgday_p.h                          \
            $$PWD/qgmonthday_p.h                     \
            $$PWD/qgmonth_p.h                        \
-           $$PWD/qgyear_p.h                         \
            $$PWD/qgyearmonth_p.h                    \
+           $$PWD/qgyear_p.h                         \
            $$PWD/qhexbinary_p.h                     \
            $$PWD/qinteger_p.h                       \
            $$PWD/qitem_p.h                          \
            $$PWD/qnodebuilder_p.h                   \
-           $$PWD/qschemanumeric_p.h                 \
            $$PWD/qqnamevalue_p.h                    \
            $$PWD/qresourceloader_p.h                \
-           $$PWD/qsorttuple.cpp                     \
+           $$PWD/qschemadatetime_p.h                \
+           $$PWD/qschemanumeric_p.h                 \
            $$PWD/qschematime_p.h                    \
+           $$PWD/qsorttuple.cpp                     \
            $$PWD/quntypedatomic_p.h                 \
            $$PWD/qvalidationerror_p.h               \
+           $$PWD/qvaluefactory_p.h                  \
            $$PWD/qyearmonthduration_p.h
 
 SOURCES += $$PWD/qabstractdatetime.cpp        \
@@ -53,8 +55,8 @@ SOURCES += $$PWD/qabstractdatetime.cpp        \
            $$PWD/qbase64binary.cpp            \
            $$PWD/qboolean.cpp                 \
            $$PWD/qcommonvalues.cpp            \
+           $$PWD/qcomparisonfactory.cpp       \
            $$PWD/qdate.cpp                    \
-           $$PWD/qschemadatetime.cpp          \
            $$PWD/qdaytimeduration.cpp         \
            $$PWD/qdecimal.cpp                 \
            $$PWD/qduration.cpp                \
@@ -68,11 +70,13 @@ SOURCES += $$PWD/qabstractdatetime.cpp        \
            $$PWD/qitem.cpp                    \
            $$PWD/qnodebuilder.cpp             \
            $$PWD/qnodemodel.cpp               \
-           $$PWD/qschemanumeric.cpp           \
            $$PWD/qqnamevalue.cpp              \
            $$PWD/qresourceloader.cpp          \
-           $$PWD/qsorttuple.cpp               \
+           $$PWD/qschemadatetime.cpp          \
+           $$PWD/qschemanumeric.cpp           \
            $$PWD/qschematime.cpp              \
+           $$PWD/qsorttuple.cpp               \
            $$PWD/quntypedatomic.cpp           \
            $$PWD/qvalidationerror.cpp         \
+           $$PWD/qvaluefactory.cpp            \
            $$PWD/qyearmonthduration.cpp

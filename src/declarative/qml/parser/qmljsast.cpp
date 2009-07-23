@@ -839,9 +839,29 @@ void UiProgram::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
+void UiAttributeList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        for (UiAttributeList *it = this; it; it = it->next)
+            acceptChild(it->attribute, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void UiAttribute::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        acceptChild(value, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
 void UiPublicMember::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(attributes, visitor);
         acceptChild(expression, visitor);
     }
 
@@ -851,6 +871,7 @@ void UiPublicMember::accept0(Visitor *visitor)
 void UiObjectDefinition::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(attributes, visitor);
         acceptChild(qualifiedTypeNameId, visitor);
         acceptChild(initializer, visitor);
     }
@@ -871,6 +892,7 @@ void UiObjectInitializer::accept0(Visitor *visitor)
 void UiObjectBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(attributes, visitor);
         acceptChild(qualifiedId, visitor);
         acceptChild(qualifiedTypeNameId, visitor);
         acceptChild(initializer, visitor);
@@ -882,6 +904,7 @@ void UiObjectBinding::accept0(Visitor *visitor)
 void UiScriptBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(attributes, visitor);
         acceptChild(qualifiedId, visitor);
         acceptChild(statement, visitor);
     }
@@ -892,6 +915,7 @@ void UiScriptBinding::accept0(Visitor *visitor)
 void UiArrayBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(attributes, visitor);
         acceptChild(qualifiedId, visitor);
         for (UiArrayMemberList *it = members; it; it = it->next)
             acceptChild(it->member, visitor);
@@ -949,6 +973,7 @@ void UiImportList::accept0(Visitor *visitor)
 void UiSourceElement::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(attributes, visitor);
         acceptChild(sourceElement, visitor);
     }
 

@@ -83,7 +83,6 @@ public:
     bool isLoading() const;
 
     QList<QmlError> errors() const;
-    Q_INVOKABLE QString errorsString() const;
 
     QUrl url() const;
 

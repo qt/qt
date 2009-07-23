@@ -55,7 +55,7 @@
 #include <QtCore/QList>
 #include <QtCore/QVector>
 #include <QtCore/QSharedData>
-
+#include <QtCore/QString>
 
 QT_BEGIN_HEADER
 
@@ -72,6 +72,19 @@ template<typename T>
 inline bool qIsForwardIteratorEnd(const T &unit)
 {
     return !unit;
+}
+
+/**
+ * @short Helper class for StringSplitter
+ *
+ * Needed by the QAbstractXmlForwardIterator sub-class.
+ *
+ * @relates StringSplitter
+ */
+template<>
+inline bool qIsForwardIteratorEnd(const QString &unit)
+{
+    return unit.isNull();
 }
 
 template<typename T> class QAbstractXmlForwardIterator;

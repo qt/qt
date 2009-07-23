@@ -341,6 +341,7 @@
 
 /*!
     \fn QSharedPointer<X> QSharedPointer::objectCast() const
+    \since 4.6
 
     Performs a \l qobject_cast() from this pointer's type to \tt X and
     returns a QSharedPointer that shares the reference. If this
@@ -737,6 +738,7 @@
 /*!
     \fn QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &other)
     \relates QSharedPointer
+    \since 4.6
 
     Returns a shared pointer to the pointer held by \a other, using a
     \l qobject_cast() to type \tt X to obtain an internal pointer of the
@@ -754,6 +756,7 @@
     \fn QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &other)
     \relates QSharedPointer
     \relates QWeakPointer
+    \since 4.6
 
     Returns a shared pointer to the pointer held by \a other, using a
     \l qobject_cast() to type \tt X to obtain an internal pointer of the

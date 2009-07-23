@@ -57,6 +57,8 @@ namespace Phonon
 
         BackendNode::~BackendNode()
         {
+            //this will remove the filter from the graph
+            mediaObjectDestroyed();
         }
 
         void BackendNode::setMediaObject(MediaObject *mo)

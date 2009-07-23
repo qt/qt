@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Rect {
   id: container;
   width: 600;

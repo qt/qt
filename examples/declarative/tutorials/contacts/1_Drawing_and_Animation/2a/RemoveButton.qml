@@ -1,3 +1,5 @@
+import Qt 4.6
+
 //! [0]
 Rect {
     id: removeButton

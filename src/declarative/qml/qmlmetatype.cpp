@@ -56,6 +56,7 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qlocale.h>
+//#include <ctypes.h>
 #include <QtCore/qcryptographichash.h>
 #include <private/qmlcustomparser_p.h>
 
@@ -416,26 +417,66 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     return index;
 }
 
-int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func, const char *cname, const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
+int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func,
+        const char *uri, int version_maj, int version_min_from, int version_min_to, const char *cname,
+        const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
+        int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
+{
+    QByteArray version;
+    if (uri && (version_maj || version_min_from || version_min_to)) {
+        if (version_min_from != version_min_to) {
+            int r=-1;
+            for (int min=version_min_from; min<=version_min_to; ++min) {
+                int e = registerType(id,func,uri,version_maj,min,min,cname,mo,attach,attachMo,pStatus,object,extFunc,extmo,parser);
+                if (e<0) return -1;
+                if (r<0) r = e;
+            }
+            return r; // returns index of FIRST version of type (not currently used anywhere though)
+        }
+        version = QByteArray::number(version_maj) + '.' + QByteArray::number(version_min_from);
+    } else {
+        // No URI? No version!
+        Q_ASSERT(!version_maj && !version_min_from && !version_min_to);
+    }
+    return registerType(id,func,uri,version,cname,mo,attach,attachMo,pStatus,object,extFunc,extmo,parser);
+}
+
+
+int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func,
+        const char *uri, const char *version, const char *cname,
+        const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
+        int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
     Q_UNUSED(object);
-    QWriteLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
+    QByteArray name = cname;
 
-    QString name = QLatin1String(cname);
+    if (uri) {
+        if (version) {
+            name = QByteArray(uri) + '/' + version + '/' + name;
+        } else {
+            name = QByteArray(uri) + '/' + name;
+        }
+    } else {
+        // No URI? No version!
+        Q_ASSERT(!version);
+    }
 
-    for (int ii = 0; ii < name.count(); ++ii) {
-        QChar ch = name.at(ii);
-        if (!ch.isLetterOrNumber() && ch != QChar::fromLatin1('/') && ch != QChar::fromLatin1('.')) {
-            qWarning("QmlMetaType: Invalid QML name %s", cname);
-            return -1;
+    if (cname) {
+        for (int ii = 0; cname[ii]; ++ii) {
+            if (!isalnum(cname[ii])) {
+                qWarning("QmlMetaType: Invalid QML name %s", cname);
+                return -1;
+            }
         }
     }
+
+    QWriteLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
 
     int index = data->types.count();
 
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
-                                func, cname, mo, attach, attachMo, pStatus, extFunc,
+                                func, name, mo, attach, attachMo, pStatus, extFunc,
                                 extmo, index, parser);
 
     data->types.append(type);
@@ -458,7 +499,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     data->qmllists.setBit(id.qmlListId, true);
     data->lists.setBit(id.listId, true);
 
-    return index;
+    return index; // Note: multi-version call only uses first.
 }
 
 int QmlMetaType::qmlParserStatusCast(int userType)
@@ -634,7 +675,7 @@ int QmlMetaType::attachedPropertiesFuncId(const QByteArray &name)
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
 
-    QmlType *type = data->nameToType.value(name);
+    QmlType *type = data->nameToType.value("Qt/4.6/"+name); // XXX Should not hard-code namespace
     if (type && type->attachedPropertiesFunction())
         return type->index();
     else

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 // ListModel allows free form list models to be defined and populated.
 // Be sure to name the file the same as the id.
 ListModel {

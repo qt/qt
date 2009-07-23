@@ -1,3 +1,5 @@
+import Qt 4.6
+
 Item {
     property var text
     signal clicked

@@ -1,3 +1,5 @@
+import Qt 4.6
+
 //! [define properties and signals]
 Rect {
     id: removeButton

@@ -318,7 +318,7 @@ void QmlFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex
         emit itemsChanged(start.row(), end.row() - start.row() + 1, roles());
 }
 
-QML_DEFINE_TYPE(QmlFolderListModel,FolderListModel)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FolderListModel,QmlFolderListModel)
 
 QT_END_NAMESPACE
 

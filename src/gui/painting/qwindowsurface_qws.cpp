@@ -421,7 +421,8 @@ QWSWindowSurface::QWSWindowSurface(QWidget *widget)
 QWSWindowSurface::~QWSWindowSurface()
 {
 #ifdef Q_BACKINGSTORE_SUBSURFACES
-    winIdToSurfaceMap()->remove(winId());
+    if (d_ptr->winId)
+        winIdToSurfaceMap()->remove(d_ptr->winId);
 #endif
 
     delete d_ptr;

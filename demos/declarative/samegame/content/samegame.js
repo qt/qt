@@ -50,10 +50,8 @@ var fillFound;
 var floodBoard;
 
 var lastHoveredIdx = -2
-function handleHover(x,y, btn)
+function handleHover(xIdx,yIdx, btn)
 {
-    xIdx = Math.floor(x/tileSize);
-    yIdx = Math.floor(y/tileSize);
     if(index(xIdx, yIdx) == lastHoveredIdx)
         return;
     lastHoveredIdx = index(xIdx, yIdx);
@@ -67,11 +65,9 @@ function handleHover(x,y, btn)
     //Could use the fillFound value to tell the player how many stones/points
 }
 
-function handleClick(x,y)
+function handleClick(xIdx,yIdx)
 {
     //NOTE: Be careful with vars named x,y - they can set to the calling object
-    xIdx = Math.floor(x/tileSize);
-    yIdx = Math.floor(y/tileSize);
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)
@@ -166,9 +162,8 @@ function victoryCheck()
 {
     //awards bonuses
     deservesBonus = true;
-    for(xIdx=maxX-1; xIdx>=0; xIdx--)
-        if(board[index(xIdx, maxY - 1)] != null)
-            deservesBonus = false;
+    if(board[index(0, maxY - 1)] != null)
+        deservesBonus = false;
     if(deservesBonus)
         gameCanvas.score += 500;
     //Checks for game over
@@ -180,7 +175,8 @@ function victoryCheck()
 
 function noMoreMoves()
 {
-    return !floodMoveCheck(0, maxY-1, -1);
+    moreMoves = floodMoveCheck(0, maxY-1, -1);
+    return !moreMoves; 
 }
 
 function floodMoveCheck(xIdx, yIdx, type)
@@ -192,7 +188,9 @@ function floodMoveCheck(xIdx, yIdx, type)
     myType = board[index(xIdx, yIdx)].type;
     if(type == myType)
         return true;
-    return floodMoveCheck(xIdx + 1, yIdx, myType) || floodMoveCheck(xIdx, yIdx - 1, myType);
+    var at = myType;
+    var bt = myType;
+    return floodMoveCheck(xIdx + 1, yIdx, at) || floodMoveCheck(xIdx, yIdx - 1, bt);
 }
 
 //Need a simpler method of doing this?

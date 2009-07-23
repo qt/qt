@@ -1095,18 +1095,22 @@ void QTreeView::scrollTo(const QModelIndex &index, ScrollHint hint)
         } else if (hint == PositionAtTop || (hint == EnsureVisible && item < top)) {
             verticalScrollBar()->setValue(item);
         } else { // PositionAtBottom or PositionAtCenter
-            int itemLocation = item;
+            const int currentItemHeight = d->itemHeight(item);
             int y = (hint == PositionAtCenter
-                     ? area.height() / 2
+                 //we center on the current item with a preference to the top item (ie. -1)
+                     ? area.height() / 2 + currentItemHeight - 1
+                 //otherwise we simply take the whole space
                      : area.height());
-            while (y > 0 && item > 0)
-                y -= d->itemHeight(item--);
-            // end up half over the top of the area
-            if (y < 0 && item < itemLocation)
-                ++item;
-            // end up half over the bottom of the area
-            if (item >= 0 && item < itemLocation)
-                ++item;
+            if (y > currentItemHeight) {
+                while (item >= 0) {
+                    y -= d->itemHeight(item);
+                    if (y < 0) { //there is no more space left
+                        item++;
+                        break;
+                    }
+                    item--;
+                }
+            }
             verticalScrollBar()->setValue(item);
         }
     } else { // ScrollPerPixel
@@ -2849,7 +2853,7 @@ int QTreeView::rowHeight(const QModelIndex &index) const
 }
 
 /*!
-  \reimp
+  \internal
 */
 void QTreeView::horizontalScrollbarAction(int action)
 {
