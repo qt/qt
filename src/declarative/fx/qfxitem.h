@@ -228,7 +228,6 @@ public:
 
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
-    QPointF transformOriginPoint() const;
 
     void setPaintMargin(qreal margin);
     QRectF boundingRect() const;

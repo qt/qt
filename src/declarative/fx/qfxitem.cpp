@@ -1928,14 +1928,8 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
     Q_D(QFxItem);
     if (origin != d->origin) {
         d->origin = origin;
-        QPointF to = d->computeTransformOrigin();
-        QGraphicsItem::setTransformOrigin(to.x(), to.y());
+        QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
     }
-}
-
-QPointF QFxItem::transformOriginPoint() const
-{
-    return QGraphicsItem::transformOrigin();
 }
 
 qreal QFxItem::width() const
