@@ -703,7 +703,43 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             // Icon set to null -> set context pane picture to default
             contextPane->SetPictureToDefaultL();
         }
+    } else {
+        // Context pane does not exist, try setting small icon to title pane
+        TRect titlePaneRect;
+        TBool found = AknLayoutUtils::LayoutMetricsRect( AknLayoutUtils::ETitlePane, titlePaneRect );
+        CAknTitlePane* titlePane = S60->titlePane();          
+        if (found && titlePane) { // We have title pane with valid metrics
+            // The API to get title_pane graphics size is not public -> assume square space based 
+            // on titlebar font height. CAknBitmap would be optimum, wihtout setting the size, since
+            // then title pane would automatically scale the bitmap. Unfortunately it is not public API
+            const CFont * font = AknLayoutUtils::FontFromId(EAknLogicalFontTitleFont);
+            TSize iconSize(font->HeightInPixels(), font->HeightInPixels());
+                
+            QIcon icon = q->windowIcon();
+            if (!icon.isNull()) {
+                // Valid icon -> set it as an title pane small picture
+                QSize size = icon.actualSize(QSize(iconSize.iWidth, iconSize.iHeight));
+                QPixmap pm = icon.pixmap(size);
+                QBitmap mask = pm.mask();
+                if (mask.isNull()) {
+                    mask = QBitmap(pm.size());
+                    mask.fill(Qt::color1);
+                }
+
+                // Convert to CFbsBitmp
+                // TODO: When QPixmap is adapted to use native CFbsBitmap,
+                // it could be set directly to context pane
+                CFbsBitmap* nBitmap = qt_pixmapToNativeBitmapL(pm, false);
+                CFbsBitmap* nMask = qt_pixmapToNativeBitmapL(mask, true);
+
+                titlePane->SetSmallPicture( nBitmap, nMask, ETrue );
+            } else {
+                // Icon set to null -> set context pane picture to default
+                titlePane->SetSmallPicture( NULL, NULL, EFalse );
+            }
+        }
     }
+    
 #else
         Q_UNUSED(forceReset)
 #endif
