@@ -108,7 +108,7 @@
     \section1 Keymaps
 
     Starting with 4.6, \l {Qt for Embedded Linux} has gained support for
-    user defined keymaps.  Keymap handling is supported by the builtin
+    user defined keymaps.  Keymap handling is supported by the built-in
     keyboard drivers \c TTY and \c LinuxInput.  Custom keyboard drivers can
     use the existing keymap handling code via
     QWSKeyboardHandler::processKeycode().
@@ -124,7 +124,7 @@
 
     \snippet doc/src/snippets/code/doc_src_emb-charinput.qdoc 2
 
-    The \c <driver> argument are \c TTY, \c LinuxInput and \l
+    The \c <driver> arguments are \c TTY, \c LinuxInput and \l
     {QKbdDriverPlugin::keys()}{keys} identifying custom drivers, and the
     driver specific options are typically a device, e.g., \c /dev/tty0.
 
@@ -142,17 +142,17 @@
     \row \o \c /dev/xxx \o
     Open the specified device, instead of the driver's default device.
     \row \o \c repeat-delay=<d> \o
-    Time in milliseconds until auto-repeat kicks in.
+    Time (in milliseconds) until auto-repeat kicks in.
     \row \o \c repeat-rate=<r> \o
-    Time in milliseconds specifying interval between auto-repeats.
+    Time (in milliseconds) specifying the interval between auto-repeats.
     \row \o \c keymap=xx.qmap \o
     File name of a keymap file in Qt's \c qmap format. See \l {kmap2qmap}
-    for instructions on how to create thoes files.\br Please note that the
-    file name can of course also be the name of a QResource.
+    for instructions on how to create thoes files.\br Note that the file
+    name can of course also be the name of a QResource.
     \row \o \c disable-zap \o
     Disable the QWS server "Zap" shortcut \bold{Ctrl+Alt+Backspace}
     \row \o \c enable-compose \o
-    Activate Latin-1 composing features in the builtin US keymap. You can
+    Activate Latin-1 composing features in the built-in US keymap. You can
     use the right \c AltGr or right \c Alt is used as a dead key modifier,
     while \c AltGr+.  is the compose key.  For example:
     \list

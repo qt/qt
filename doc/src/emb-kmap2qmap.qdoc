@@ -66,7 +66,7 @@
     kmap2qmap i386/qwertz/de-latin1-nodeadkeys.kmap include/compose.latin1.inc de-latin1-nodeadkeys.qmap
     \endcode
 
-    \c kmap2qmap doesn't support all the (pseudo) symbols that the Linux
+    \c kmap2qmap does not support all the (pseudo) symbols that the Linux
     kernel supports.  If you are converting a standard keymap you will get a
     lot of warnings for things like \c Show_Registers, \c Hex_A, etc.: you
     can safely ignore those.
