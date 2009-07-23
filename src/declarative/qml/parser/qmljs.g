@@ -782,7 +782,7 @@ UiArrayMemberList: UiArrayMemberList T_COMMA UiAnnotation UiObjectDefinition ;
 case $rule_number: {
     sym(4).UiObjectMember->attributes = sym(3).UiAttributeList;
     AST::UiArrayMemberList *node = makeAstNode<AST::UiArrayMemberList> (driver->nodePool(),
-        sym(1).UiArrayMemberList, sym(3).UiObjectMember);
+        sym(1).UiArrayMemberList, sym(4).UiObjectMember);
     node->commaToken = loc(2);
     sym(1).Node = node;
 } break;
