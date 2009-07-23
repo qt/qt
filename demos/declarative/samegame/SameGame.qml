@@ -28,9 +28,9 @@ Rect {
         anchors.topMargin: 10
         anchors.horizontalCenter: parent.horizontalCenter
         MediaButton { id: btnA; text: "New Game"; onClicked: {initBoard();} }
-        MediaButton { id: btnB; text: "Swap Theme"; onClicked: {swapTileSrc(); dialog.opacity = 1;
+        MediaButton { id: btnB; text: "Swap Tiles"; onClicked: {swapTileSrc(); dialog.opacity = 1;
             dialog.text="Takes effect next game.";} }
-        Text{ text: "Score: " + gameCanvas.score; width:100 }
+        Text{ text: "Score: " + gameCanvas.score; width:120; font.size:14 }
     }
     SameDialog {
         id: dialog

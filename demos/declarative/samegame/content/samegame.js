@@ -1,5 +1,6 @@
 /* This script file handles the game logic */
 
+//Note that X/Y referred to here are in game coordinates
 var maxX = 10;//Nums are for tileSize 40
 var maxY = 15;
 var tileSize = 40;
@@ -19,6 +20,7 @@ function swapTileSrc(){
     }
 }
 
+//Index function used instead of a 2D array
 function index(xIdx,yIdx){
     return xIdx + (yIdx * maxX);
 }
@@ -31,12 +33,14 @@ function initBoard()
             board[i].destroy();
     }
 
+    //Game size is as many rows/cols fit in the GameCanvas
     maxX = Math.floor(gameCanvas.width/tileSize);
     maxY = Math.floor(gameCanvas.height/tileSize);
     maxIndex = maxX*maxY;
+
+    //Initialize Board
     board = new Array(maxIndex);
     gameCanvas.score = 0;
-
     for(xIdx=0; xIdx<maxX; xIdx++){
         for(yIdx=0; yIdx<maxY; yIdx++){
             board[index(xIdx,yIdx)] = null;
@@ -46,32 +50,39 @@ function initBoard()
     //TODO: a flag that handleMouse uses to ignore clicks when we're loading
 }
 
-var fillFound;
-var floodBoard;
+var fillFound;//Set after a floodFill call to the number of tiles found
+var floodBoard;//Set to 1 if the floodFill ticks off that node (mostly used by floodFill)
 
 var lastHoveredIdx = -2
 function handleHover(xIdx,yIdx, btn)
 {
+    //Turn UI x,y into Game x,y
     if(index(xIdx, yIdx) == lastHoveredIdx)
         return;
-    lastHoveredIdx = index(xIdx, yIdx);
     //if(btn != 0)
     //    return;
+    //Sets 'selected' on tile underneath and all connected
     floodFill(xIdx, yIdx, -1, "hover");
-    for(i=0; i<maxIndex; i++){
-        if(floodBoard[i] != 1 && board[i] != null)
-            board[i].selected = false;
-    }
     //Could use the fillFound value to tell the player how many stones/points
+
+    //Resets any previously selected
+    if(board[lastHoveredIdx] != null){
+        lastX = lastHoveredIdx % maxX;
+        lastY = Math.floor(lastHoveredIdx / maxX);
+        floodFill(lastX, lastY, -1, "unhover");
+    }
+    lastHoveredIdx = index(xIdx, yIdx);
 }
 
+//NOTE: Be careful with vars named x,y, as the calling object's x,y are still in scope
 function handleClick(xIdx,yIdx)
 {
-    //NOTE: Be careful with vars named x,y - they can set to the calling object
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)
         return;
+    //If it's a valid tile, remove it and all connected
+    //floodFill does nothing if it's not connected to any other tiles.
     floodFill(xIdx,yIdx, -1, "kill");
     if(fillFound <= 0)
         return;
@@ -80,7 +91,17 @@ function handleClick(xIdx,yIdx)
     victoryCheck();
 }
 
-//cmd = "kill" is the removal case, cmd = "hover" is the mouse overed case
+/*
+  the floodFill function does something on all tiles connected to the
+  given Game position. Connected requires the adjacency of one or more
+  tiles of the same type. Note that if there is no tile, or the tile
+  is not adjacent to a similar typed tile, then it will not do anything.
+
+  Since many things need this flood functionality, a string command is
+  given telling it what to do with these tiles.
+
+  cmd = "kill" is the removal case, cmd = "hover" sets selection
+*/
 function floodFill(xIdx,yIdx,type, cmd)
 {
     if(board[index(xIdx, yIdx)] == null)
@@ -111,9 +132,11 @@ function floodFill(xIdx,yIdx,type, cmd)
     }
     if(cmd == "kill"){
         board[index(xIdx,yIdx)].dying = true;
-        board[index(xIdx,yIdx)] = null;//They'll have to destroy themselves(can we do that?)
+        board[index(xIdx,yIdx)] = null;
     }else if(cmd == "hover"){
         board[index(xIdx,yIdx)].selected = true;
+    }else if(cmd == "unhover"){
+        board[index(xIdx,yIdx)].selected = false;
     }else{
         print ("Flood Error");
     }
@@ -160,10 +183,11 @@ function shuffleDown()
 
 function victoryCheck()
 {
-    //awards bonuses
+    //awards bonuses for no tiles left
     deservesBonus = true;
-    if(board[index(0, maxY - 1)] != null)
-        deservesBonus = false;
+    for(xIdx=maxX-1; xIdx>=0; xIdx--)
+        if(board[index(xIdx, maxY - 1)] != null)
+            deservesBonus = false;
     if(deservesBonus)
         gameCanvas.score += 500;
     //Checks for game over
@@ -175,10 +199,10 @@ function victoryCheck()
 
 function noMoreMoves()
 {
-    moreMoves = floodMoveCheck(0, maxY-1, -1);
-    return !moreMoves; 
+    return !floodMoveCheck(0, maxY-1, -1);
 }
 
+//only floods up and right, to see if it can find adjacent same-typed tiles 
 function floodMoveCheck(xIdx, yIdx, type)
 {
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
@@ -188,17 +212,19 @@ function floodMoveCheck(xIdx, yIdx, type)
     myType = board[index(xIdx, yIdx)].type;
     if(type == myType)
         return true;
-    var at = myType;
-    var bt = myType;
-    return floodMoveCheck(xIdx + 1, yIdx, at) || floodMoveCheck(xIdx, yIdx - 1, bt);
+    aT = myType;
+    bT = myType;
+    return floodMoveCheck(xIdx + 1, yIdx, aT) || floodMoveCheck(xIdx, yIdx - 1, bT);
 }
 
+//If the component isn't ready, then the signal doesn't include the game x,y
+//So we store any x,y sent that we couldn't create at the time, and use those
+//if we are triggered by the signal.
 //Need a simpler method of doing this?
 var waitStack = new Array(maxIndex);
 var waitTop = -1;
 
 function finishCreatingBlock(xIdx,yIdx){
-    //TODO: Doc that the 'x', 'y' that were here are hidden properties from the calling QFxItem
     if(component.isReady){
         if(xIdx == undefined){
             //Called without arguments, create a previously stored (xIdx,yIdx)
