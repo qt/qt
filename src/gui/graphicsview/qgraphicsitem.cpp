@@ -307,8 +307,6 @@
     QStyleOptionGraphicsItem::exposedRect or QStyleOptionGraphicsItem::matrix.
     By default, the exposedRect is initialized to the item's boundingRect and
     the matrix is untransformed. Enable this flag for more fine-grained values.
-    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
-    and is always initialized to 1.
     Use QStyleOptionGraphicsItem::levelOfDetailFromTransform for a more
     fine-grained value.
 
@@ -1237,7 +1235,7 @@ void QGraphicsItem::setGroup(QGraphicsItemGroup *group)
     Returns a pointer to this item's parent item. If this item does not have a
     parent, 0 is returned.
 
-    \sa setParentItem(), children()
+    \sa setParentItem(), childItems()
 */
 QGraphicsItem *QGraphicsItem::parentItem() const
 {
@@ -1353,7 +1351,7 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
     the parent. You should not \l{QGraphicsScene::addItem()}{add} the
     item to the scene yourself.
 
-    \sa parentItem(), children()
+    \sa parentItem(), childItems()
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *parent)
 {
@@ -2298,10 +2296,10 @@ bool QGraphicsItem::acceptsHoverEvents() const
     stays "hovered" until the cursor leaves its area, including its
     children's areas.
 
-    If a parent item handles child events (setHandlesChildEvents()), it will
-    receive hover move, drag move, and drop events as the cursor passes
-    through its children, but it does not receive hover enter and hover leave,
-    nor drag enter and drag leave events on behalf of its children.
+    If a parent item handles child events, it will receive hover move,
+    drag move, and drop events as the cursor passes through its
+    children, but it does not receive hover enter and hover leave, nor
+    drag enter and drag leave events on behalf of its children.
 
     A QGraphicsWidget with window decorations will accept hover events
     regardless of the value of acceptHoverEvents().
@@ -2715,7 +2713,7 @@ void QGraphicsItem::ungrabKeyboard()
     For convenience, you can also call scenePos() to determine the
     item's position in scene coordinates, regardless of its parent.
 
-    \sa x(), y(), setPos(), matrix(), {The Graphics View Coordinate System}
+    \sa x(), y(), setPos(), transform(), {The Graphics View Coordinate System}
 */
 QPointF QGraphicsItem::pos() const
 {
@@ -9706,13 +9704,10 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     setParentItem().
 
     The boundingRect() function of QGraphicsItemGroup returns the
-    bounding rectangle of all items in the item group. In addition,
-    item groups have handlesChildEvents() enabled by default, so all
-    events sent to a member of the group go to the item group (i.e.,
-    selecting one item in a group will select them all).
-    QGraphicsItemGroup ignores the ItemIgnoresTransformations flag on its
-    children (i.e., with respect to the geometry of the group item, the
-    children are treated as if they were transformable).
+    bounding rectangle of all items in the item group.
+    QGraphicsItemGroup ignores the ItemIgnoresTransformations flag on
+    its children (i.e., with respect to the geometry of the group
+    item, the children are treated as if they were transformable).
 
     There are two ways to construct an item group. The easiest and
     most common approach is to pass a list of items (e.g., all
