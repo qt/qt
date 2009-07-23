@@ -277,7 +277,7 @@ QmlRunScript::ActionList QmlRunScript::actions()
     \brief The SetAnchors element allows you to change anchors in a state.
 */
 
-QML_DEFINE_TYPE(QmlSetAnchors,SetAnchors)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SetAnchors,QmlSetAnchors)
 
 class QmlSetAnchorsPrivate : public QObjectPrivate
 {
