@@ -1153,7 +1153,9 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
         Action &action = actions[ii];
 
         //### should we still use target to filter?
-        if (action.event /*&& action.event->name() == d->parentChange*/) {  //###
+        //### still need type-specific matching
+        if (action.event
+            && action.event->typeName() == QLatin1String("ParentChange")) {
             Action myAction = action;
             data->reverse = action.reverseEvent;
             data->actions << myAction;
