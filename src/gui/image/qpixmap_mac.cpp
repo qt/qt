@@ -1169,25 +1169,6 @@ IconRef qt_mac_create_iconref(const QPixmap &px)
 }
 #endif
 
-QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)
-{
-    QPixmap ret(width, height);
-    ret.fill(QColor(0, 0, 0, 0));
-
-    CGRect rect = CGRectMake(0, 0, width, height);
-
-    CGContextRef ctx = qt_mac_cg_context(&ret);
-    CGAffineTransform old_xform = CGContextGetCTM(ctx);
-    CGContextConcatCTM(ctx, CGAffineTransformInvert(old_xform));
-    CGContextConcatCTM(ctx, CGAffineTransformIdentity);
-
-    ::RGBColor b;
-    b.blue = b.green = b.red = 255*255;
-    PlotIconRefInContext(ctx, &rect, kAlignNone, kTransformNone, &b, kPlotIconRefNormalFlags, icon);
-    CGContextRelease(ctx);
-    return ret;
-}
-
 /*! \internal */
 QPaintEngine* QMacPixmapData::paintEngine() const
 {

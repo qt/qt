@@ -1206,7 +1206,7 @@ bool QDoubleSpinBoxPrivate::isIntermediateValue(const QString &str) const
         return false;
     }
     if (doright) {
-        QSBDEBUG("match %lld min_left %lld max_left %lld", match, min_left, max_left);
+        QSBDEBUG() << "match" << match << "min_left" << min_left << "max_left" << max_left;
         if (!doleft) {
             if (min_left == max_left) {
                 const bool ret = isIntermediateValueHelper(qAbs(left),
@@ -1473,7 +1473,7 @@ QString QDoubleSpinBoxPrivate::textFromValue(const QVariant &f) const
 
 static bool isIntermediateValueHelper(qint64 num, qint64 min, qint64 max, qint64 *match)
 {
-    QSBDEBUG("%lld %lld %lld", num, min, max);
+    QSBDEBUG() << num << min << max;
 
     if (num >= min && num <= max) {
         if (match)

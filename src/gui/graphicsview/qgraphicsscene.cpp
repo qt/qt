@@ -1587,9 +1587,15 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 }
 
 /*!
+    \obsolete
+
     Returns all visible items at position \a pos in the scene. The items are
     listed in descending stacking order (i.e., the first item in the list is the
     top-most item, and the last item is the bottom-most item).
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \sa itemAt()
 */
@@ -1600,9 +1606,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
-
     \overload
+    \obsolete
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a rectangle.
@@ -1610,29 +1615,57 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a rectangle are returned.
 
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
+
     \sa itemAt()
 */
-QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode) const
+QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(rect, mode, Qt::AscendingOrder);
+    return d->index->items(rectangle, mode, Qt::AscendingOrder);
 }
 
 /*!
     \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode) const
+    \obsolete
     \since 4.3
 
     This convenience function is equivalent to calling items(QRectF(\a x, \a y, \a w, \a h), \a mode).
+    
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
+*/
+
+/*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h,
+        Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+    \overload
+    \since 4.6
+
+    Returns all visible items that, depending on \a mode, are either inside or
+    intersect with the rectangle defined by \a x, \a y, \a w and \a h, in a list
+    sorted using \a order.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 */
 
 /*!
     \overload
+    \obsolete
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the polygon \a polygon.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \sa itemAt()
 */
@@ -1644,12 +1677,17 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 
 /*!
     \overload
+    \obsolete
 
     Returns all visible items that, depending on \a path, are either inside or
     intersect with the path \a path.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \sa itemAt()
 */
@@ -1660,13 +1698,16 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemS
 }
 
 /*!
+    \since 4.6
+
     Returns all visible items that, depending on \a mode, are at the specified \a pos
-    and return a list sorted using \a order.
+    in a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with \a pos are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1679,6 +1720,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
 
 /*!
     \overload
+    \since 4.6
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a rect and return a list sorted using \a order.
@@ -1686,7 +1728,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a rect are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1699,6 +1742,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
 
 /*!
     \overload
+    \since 4.6
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a polygon and return a list sorted using \a order.
@@ -1706,7 +1750,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1718,7 +1763,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 }
 
 /*!
-   \overload
+    \overload
+    \since 4.6
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a path and return a list sorted using \a order.
@@ -1726,7 +1772,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1767,37 +1814,77 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 }
 
 /*!
-    \fn QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
+    \overload
+    \obsolete
 
     Returns the topmost visible item at the specified \a position, or 0 if
     there are no items at this position.
 
     \note The topmost item is the one with the highest Z-value.
 
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
+
     \sa items(), collidingItems(), QGraphicsItem::setZValue()
 */
-QGraphicsItem *QGraphicsScene::itemAt(const QPointF &pos) const
+QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
 {
-    QList<QGraphicsItem *> itemsAtPoint = items(pos);
+    QList<QGraphicsItem *> itemsAtPoint = items(position);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
 
-QGraphicsItem *QGraphicsScene::itemAt(const QPointF &pos, const QTransform &deviceTransform) const
+/*!
+    \since 4.6
+
+    Returns the topmost visible item at the specified \a position, or 0
+    if there are no items at this position.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
+
+    \note The topmost item is the one with the highest Z-value.
+
+    \sa items(), collidingItems(), QGraphicsItem::setZValue()
+    */
+QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform &deviceTransform) const
 {
-    QList<QGraphicsItem *> itemsAtPoint = items(pos, Qt::IntersectsItemShape,
+    QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
                                                 Qt::AscendingOrder, deviceTransform);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
 
 /*!
+    \fn QGraphicsScene::itemAt(qreal x, qreal y, const QTransform &deviceTransform) const
+    \overload
+    \since 4.6
+
+    Returns the topmost item at the position specified by (\a x, \a
+    y), or 0 if there are no items at this position.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
+
+    This convenience function is equivalent to calling \c
+    {itemAt(QPointF(x, y), deviceTransform)}.
+
+    \note The topmost item is the one with the highest Z-value.
+*/
+
+/*!
     \fn QGraphicsScene::itemAt(qreal x, qreal y) const
     \overload
+    \obsolete
 
     Returns the topmost item at the position specified by (\a x, \a
     y), or 0 if there are no items at this position.
 
     This convenience function is equivalent to calling \c
     {itemAt(QPointF(x, y))}.
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \note The topmost item is the one with the highest Z-value.
 */
@@ -1839,21 +1926,42 @@ QPainterPath QGraphicsScene::selectionArea() const
 }
 
 /*!
+    \since 4.6
+
     Sets the selection area to \a path. All items within this area are
     immediately selected, and all items outside are unselected. You can get
     the list of all selected items by calling selectedItems().
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     For an item to be selected, it must be marked as \e selectable
     (QGraphicsItem::ItemIsSelectable).
 
     \sa clearSelection(), selectionArea()
 */
-void QGraphicsScene::setSelectionArea(const QPainterPath &path)
+void QGraphicsScene::setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform)
 {
-    setSelectionArea(path, Qt::IntersectsItemShape);
+    setSelectionArea(path, Qt::IntersectsItemShape, deviceTransform);
 }
 
 /*!
+    \obsolete
+    \overload
+
+    Sets the selection area to \a path.
+
+    This function is deprecated and leads to incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
+*/
+void QGraphicsScene::setSelectionArea(const QPainterPath &path)
+{
+    setSelectionArea(path, Qt::IntersectsItemShape, QTransform());
+}
+
+/*!
+    \obsolete
     \overload
     \since 4.3
 
@@ -1869,10 +1977,13 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectio
 
 /*!
     \overload
-    \since 4.3
+    \since 4.6
 
     Sets the selection area to \a path using \a mode to determine if items are
     included in the selection area.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa clearSelection(), selectionArea()
 */
@@ -2665,13 +2776,17 @@ void QGraphicsScene::clearFocus()
 
 /*!
     \property QGraphicsScene::stickyFocus
-    \brief whether or not clicking the scene will clear focus
+    \brief whether clicking into the scene background will clear focus
 
-    If this property is false (the default), then clicking on the scene
-    background or on an item that does not accept focus, will clear
-    focus. Otherwise, focus will remain unchanged.
+    \since 4.6
 
-    The focus change happens in response to a mouse press. You can reimplement
+    In a QGraphicsScene with stickyFocus set to true, focus will remain
+    unchanged when the user clicks into the scene background or on an item
+    that does not accept focus. Otherwise, focus will be cleared.
+
+    By default, this property is false.
+
+    Focus changes in response to a mouse press. You can reimplement
     mousePressEvent() in a subclass of QGraphicsScene to toggle this property
     based on where the user has clicked.
 

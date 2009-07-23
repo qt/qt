@@ -960,6 +960,11 @@ inline float *QMatrix4x4::data()
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QMatrix4x4 &m);
 #endif
 
+#ifndef QT_NO_DATASTREAM
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QMatrix4x4 &);
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QMatrix4x4 &);
+#endif
+
 template <int N, int M>
 QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal, float>& matrix)
 {
@@ -988,10 +993,6 @@ QGenericMatrix<N, M, qreal, float> qGenericMatrixFromMatrix4x4(const QMatrix4x4&
 #endif
 
 QT_END_NAMESPACE
-
-#ifndef QT_NO_MATRIX4X4
-Q_DECLARE_METATYPE(QMatrix4x4)
-#endif
 
 QT_END_HEADER
 

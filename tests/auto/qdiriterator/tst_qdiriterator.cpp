@@ -183,17 +183,28 @@ void tst_QDirIterator::iterateRelativeDirectory()
     QFETCH(QStringList, entries);
 
     QDirIterator it(dirName, nameFilters, filters, flags);
-    QStringList iteratorList;
-    while (it.hasNext())
-        iteratorList << it.next();
-
-    // The order of QDirIterator returning items differs on some platforms.
-    // Thus it is not guaranteed that all paths will be returned relative
-    // and we need to assure we have two valid StringLists to compare. So
-    // we make all entries absolute for comparison.
     QStringList list;
-    foreach(QString item, iteratorList)
-        list.append(QFileInfo(item).canonicalFilePath());
+    while (it.hasNext()) {
+        QString next = it.next();
+
+        QString fileName = it.fileName();
+        QString filePath = it.filePath();
+        QString path = it.path();
+
+        QFileInfo info = it.fileInfo();
+
+        QCOMPARE(path, dirName);
+        QCOMPARE(next, filePath);
+
+        QCOMPARE(info, QFileInfo(next));
+        QCOMPARE(fileName, info.fileName());
+        QCOMPARE(filePath, info.filePath());
+
+        // Using canonical file paths for final comparison
+        list << info.canonicalFilePath();
+    }
+
+    // The order of items returned by QDirIterator is not guaranteed.
     list.sort();
 
     QStringList sortedEntries;

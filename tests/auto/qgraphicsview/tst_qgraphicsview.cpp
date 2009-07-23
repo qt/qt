@@ -3338,6 +3338,15 @@ void tst_QGraphicsView::render()
 {
     // ### This test can be much more thorough - see QGraphicsScene::render.
     QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(200, 200);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
     RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
     RenderTester *r3 = new RenderTester(QRectF(0, 50, 50, 50));
@@ -3347,14 +3356,7 @@ void tst_QGraphicsView::render()
     scene.addItem(r3);
     scene.addItem(r4);
 
-    QGraphicsView view(&scene);
-    view.setFrameStyle(0);
-    view.resize(200, 200);
-    view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(200);
+    qApp->processEvents();
 
     QCOMPARE(r1->paints, 1);
     QCOMPARE(r2->paints, 1);

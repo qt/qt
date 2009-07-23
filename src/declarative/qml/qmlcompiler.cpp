@@ -63,6 +63,7 @@
 #include <private/qmlcomponent_p.h>
 #include "parser/qmljsast_p.h"
 #include <private/qmlvmemetaobject_p.h>
+#include "qmlmetaproperty_p.h"
 
 #include "qmlscriptparser_p.h"
 
@@ -76,7 +77,7 @@ using namespace QmlParser;
     Instantiate a new QmlCompiler.
 */
 QmlCompiler::QmlCompiler()
-: output(0)
+: output(0), engine(0)
 {
 }
 
@@ -571,6 +572,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
     Object *root = unit->data.tree();
     Q_ASSERT(root);
 
+    this->engine = engine;
     compileTree(root);
 
     if (!isError()) {
@@ -583,6 +585,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
     compileState = ComponentCompileState();
     savedCompileStates.clear();
     output = 0;
+    this->engine = 0;
 
     return !isError();
 }
@@ -874,6 +877,27 @@ void QmlCompiler::genObjectBody(QmlParser::Object *obj)
 
         QmlInstruction pop;
         pop.type = QmlInstruction::PopFetchedObject;
+        pop.line = prop->location.start.line;
+        output->bytecode << pop;
+    }
+
+    foreach(Property *prop, obj->valueTypeProperties) {
+        QmlInstruction fetch;
+        fetch.type = QmlInstruction::FetchValueType;
+        fetch.fetchValue.property = prop->index;
+        fetch.fetchValue.type = prop->type;
+        fetch.line = prop->location.start.line;
+
+        output->bytecode << fetch;
+
+        foreach(Property *vprop, prop->value->valueProperties) {
+            genPropertyAssignment(vprop, prop->value, prop);
+        }
+
+        QmlInstruction pop;
+        pop.type = QmlInstruction::PopValueType;
+        pop.fetchValue.property = prop->index;
+        pop.fetchValue.type = prop->type;
         pop.line = prop->location.start.line;
         output->bytecode << pop;
     }
@@ -1273,7 +1297,8 @@ void QmlCompiler::genListProperty(QmlParser::Property *prop,
 }
 
 void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop, 
-                                        QmlParser::Object *obj)
+                                        QmlParser::Object *obj,
+                                        QmlParser::Property *valueTypeProperty)
 {
     for (int ii = 0; ii < prop->values.count(); ++ii) {
         QmlParser::Value *v = prop->values.at(ii);
@@ -1314,12 +1339,19 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
             QmlInstruction store;
             store.type = QmlInstruction::StoreValueSource;
             store.line = v->object->location.start.line;
-            store.assignValueSource.property = prop->index;
+            if (valueTypeProperty) {
+                store.assignValueSource.property = QmlMetaPropertyPrivate::saveValueType(valueTypeProperty->index, prop->index);
+                store.assignValueSource.owner = 1;
+            } else {
+                store.assignValueSource.property = 
+                    QmlMetaPropertyPrivate::saveProperty(prop->index);
+                store.assignValueSource.owner = 0;
+            }
             output->bytecode << store;
 
         } else if (v->type == Value::PropertyBinding) {
 
-            genBindingAssignment(v, prop, obj);
+            genBindingAssignment(v, prop, obj, valueTypeProperty);
 
         } else if (v->type == Value::Literal) {
 
@@ -1419,18 +1451,89 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
     Q_ASSERT(prop->type != 0);
     Q_ASSERT(prop->index != -1);
 
-    // Load the nested property's meta type
-    prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
-    if (!prop->value->metatype)
-        COMPILE_EXCEPTION(prop, "Cannot nest non-QObject property" << prop->name);
+    if (prop->type < QVariant::UserType) {
+        QmlEnginePrivate *ep = 
+            static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
+        if (ep->valueTypes[prop->type]) {
+            COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type], 
+                                                 prop->value, ctxt.incr()));
+            obj->addValueTypeProperty(prop);
+        } else {
+            COMPILE_EXCEPTION(prop, "Invalid property access");
+        }
 
-    obj->addGroupedProperty(prop);
+    } else {
+        // Load the nested property's meta type
+        prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
+        if (!prop->value->metatype)
+            COMPILE_EXCEPTION(prop, "Cannot nest non-QObject property" << 
+                                    prop->name);
 
-    COMPILE_CHECK(buildSubObject(prop->value, ctxt.incr()));
+        obj->addGroupedProperty(prop);
+
+        COMPILE_CHECK(buildSubObject(prop->value, ctxt.incr()));
+    }
 
     return true;
 }
 
+bool QmlCompiler::buildValueTypeProperty(QObject *type, 
+                                         QmlParser::Object *obj,
+                                         const BindingContext &ctxt)
+{
+    if (obj->defaultProperty)
+        COMPILE_EXCEPTION(obj, "Invalid property use");
+    obj->metatype = type->metaObject();
+
+    foreach (Property *prop, obj->properties) {
+        int idx = type->metaObject()->indexOfProperty(prop->name.constData());
+        if (idx == -1)
+            COMPILE_EXCEPTION(prop, "Cannot assign to non-existant property");
+        QMetaProperty p = type->metaObject()->property(idx);
+        prop->index = idx;
+        prop->type = p.userType();
+
+        if (prop->value || prop->values.count() != 1)
+            COMPILE_EXCEPTION(prop, "Invalid property use");
+
+        Value *value = prop->values.at(0);
+
+        if (value->object) {
+            const QMetaObject *c = 
+                output->types.at(value->object->type).metaObject();
+            bool isPropertyValue = false; 
+            while (c && !isPropertyValue) {
+                isPropertyValue = 
+                    (c == &QmlPropertyValueSource::staticMetaObject);
+                c = c->superClass();
+            }
+
+            if (!isPropertyValue) {
+                COMPILE_EXCEPTION(prop, "Invalid property use");
+            } else {
+                COMPILE_CHECK(buildObject(value->object, ctxt));
+                value->type = Value::ValueSource;
+            }
+
+        } else if (value->value.isScript()) {
+            // ### Check for writability
+            BindingReference reference;
+            reference.expression = value->value;
+            reference.property = prop;
+            reference.value = value;
+            reference.bindingContext = ctxt;
+            reference.bindingContext.owner++;
+            addBindingReference(reference);
+            value->type = Value::PropertyBinding;
+        } else  {
+            COMPILE_CHECK(testLiteralAssignment(p, value));
+            value->type = Value::Literal;
+        }
+        obj->addValueProperty(prop);
+    }
+
+    return true;
+}
 
 // Build assignments to QML lists.  QML lists are properties of type
 // QList<T *> * and QmlList<T *> *.
@@ -1951,13 +2054,12 @@ bool QmlCompiler::buildBinding(QmlParser::Value *value,
 
 void QmlCompiler::genBindingAssignment(QmlParser::Value *binding, 
                                        QmlParser::Property *prop, 
-                                       QmlParser::Object *obj)
+                                       QmlParser::Object *obj,
+                                       QmlParser::Property *valueTypeProperty)
 {
     Q_ASSERT(compileState.bindings.contains(binding));
 
     const BindingReference &ref = compileState.bindings.value(binding);
-
-    QMetaProperty mp = obj->metaObject()->property(prop->index);
 
     QmlInstruction store;
     int dataRef;
@@ -1969,10 +2071,19 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
         store.type = QmlInstruction::StoreCompiledBinding;
     }
 
-    store.assignBinding.property = prop->index;
+    Q_ASSERT(ref.bindingContext.owner == 0 ||
+             (ref.bindingContext.owner != 0 && valueTypeProperty));
+    if (ref.bindingContext.owner) {
+        store.assignBinding.property = 
+            QmlMetaPropertyPrivate::saveValueType(valueTypeProperty->index, 
+                                                  prop->index);
+    } else {
+        store.assignBinding.property = 
+            QmlMetaPropertyPrivate::saveProperty(prop->index);
+    }
     store.assignBinding.value = dataRef;
-    store.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
     store.assignBinding.context = ref.bindingContext.stack;
+    store.assignBinding.owner = ref.bindingContext.owner;
 
     output->bytecode << store;
 }

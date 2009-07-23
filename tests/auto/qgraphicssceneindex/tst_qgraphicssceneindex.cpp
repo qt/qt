@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,6 +66,7 @@ private slots:
     void movingItems();
     void connectedToSceneRectChanged();
     void items();
+    void clear();
 
 private:
     void common_data();
@@ -265,6 +266,39 @@ void tst_QGraphicsSceneIndex::items()
     // Move from unindexed items into untransformable items.
     QTest::qWait(50);
     QCOMPARE(scene.items().size(), 3);
+}
+
+void tst_QGraphicsSceneIndex::clear()
+{
+    class MyItem : public QGraphicsItem
+    {
+    public:
+        MyItem(QGraphicsItem *parent = 0) : QGraphicsItem(parent), numPaints(0) {}
+        int numPaints;
+    protected:
+        QRectF boundingRect() const { return QRectF(0, 0, 10, 10); }
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+        { ++numPaints; }
+    };
+
+    QGraphicsScene scene;
+    scene.setSceneRect(0, 0, 100, 100);
+    scene.addItem(new MyItem);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+    scene.clear();
+
+    // Make sure the index is re-generated after QGraphicsScene::clear();
+    // otherwise no items will be painted.
+    MyItem *item = new MyItem;
+    scene.addItem(item);
+    qApp->processEvents();
+    QCOMPARE(item->numPaints, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)

@@ -57,6 +57,7 @@ class QStringList;
 class QVariant;
 struct QMetaObject;
 class QmlContext;
+class QmlEngine;
 
 class QmlMetaPropertyPrivate;
 class Q_DECLARATIVE_EXPORT QmlMetaProperty
@@ -78,7 +79,7 @@ public:
     QmlMetaProperty(QObject *, const QString &, QmlContext *);
     QmlMetaProperty(const QmlMetaProperty &);
     QmlMetaProperty &operator=(const QmlMetaProperty &);
-    QmlMetaProperty(QObject *, int, PropertyCategory = Unknown, QmlContext * = 0);
+    QmlMetaProperty(QObject *, int, QmlContext * = 0);
     ~QmlMetaProperty();
 
     static QStringList properties(QObject *);
@@ -93,7 +94,7 @@ public:
     bool connectNotifier(QObject *dest, int method) const;
 
     quint32 save() const;
-    void restore(quint32, QObject *);
+    void restore(quint32, QObject *, QmlContext * = 0);
 
     QMetaMethod method() const;
 
@@ -101,7 +102,8 @@ public:
                 Property = 0x01, 
                 SignalProperty = 0x02,
                 Default = 0x08,
-                Attached = 0x10 };
+                Attached = 0x10,
+                ValueTypeProperty = 0x20 };
 
     Type type() const;
     bool isProperty() const;
@@ -112,7 +114,6 @@ public:
     QObject *object() const;
 
     PropertyCategory propertyCategory() const;
-    static PropertyCategory propertyCategory(const QMetaProperty &);
 
     int propertyType() const;
     const char *propertyTypeName() const;

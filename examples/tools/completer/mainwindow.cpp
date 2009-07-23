@@ -78,6 +78,12 @@ MainWindow::MainWindow(QWidget *parent)
 //! [0]
 
 //! [1]
+    QLabel *maxVisibleLabel = new QLabel;
+    maxVisibleLabel->setText(tr("Max Visible Items"));
+    maxVisibleSpinBox = new QSpinBox;
+    maxVisibleSpinBox->setRange(3,25);
+    maxVisibleSpinBox->setValue(10);
+
     wrapCheckBox = new QCheckBox;
     wrapCheckBox->setText(tr("Wrap around completions"));
     wrapCheckBox->setChecked(true);
@@ -90,6 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(modelCombo, SIGNAL(activated(int)), this, SLOT(changeModel()));
     connect(modeCombo, SIGNAL(activated(int)), this, SLOT(changeMode(int)));
     connect(caseCombo, SIGNAL(activated(int)), this, SLOT(changeCase(int)));
+    connect(maxVisibleSpinBox, SIGNAL(valueChanged(int)), this, SLOT(changeMaxVisible(int)));
 //! [2]
 
 //! [3]
@@ -99,9 +106,10 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(modelLabel, 0, 0); layout->addWidget(modelCombo, 0, 1);
     layout->addWidget(modeLabel, 1, 0);  layout->addWidget(modeCombo, 1, 1);
     layout->addWidget(caseLabel, 2, 0);  layout->addWidget(caseCombo, 2, 1);
-    layout->addWidget(wrapCheckBox, 3, 0);
-    layout->addWidget(contentsLabel, 4, 0, 1, 2);
-    layout->addWidget(lineEdit, 5, 0, 1, 2);
+    layout->addWidget(maxVisibleLabel, 3, 0); layout->addWidget(maxVisibleSpinBox, 3, 1);
+    layout->addWidget(wrapCheckBox, 4, 0);
+    layout->addWidget(contentsLabel, 5, 0, 1, 2);
+    layout->addWidget(lineEdit, 6, 0, 1, 2);
     centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
 
@@ -205,6 +213,7 @@ void MainWindow::changeModel()
 {
     delete completer;
     completer = new QCompleter(this);
+    completer->setMaxVisibleItems(maxVisibleSpinBox->value());
 
     switch (modelCombo->currentIndex()) {
     default:
@@ -256,9 +265,16 @@ void MainWindow::changeModel()
 //! [14]
 
 //! [15]
+void MainWindow::changeMaxVisible(int max)
+{
+    completer->setMaxVisibleItems(max);
+}
+//! [15]
+
+//! [16]
 void MainWindow::about()
 {
     QMessageBox::about(this, tr("About"), tr("This example demonstrates the "
         "different features of the QCompleter class."));
 }
-//! [15]
+//! [16]

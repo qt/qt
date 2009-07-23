@@ -139,7 +139,7 @@ DataModel::DataModel(QObject *parent)
 
 QStringList DataModel::normalizedTranslations(const MessageItem &m) const
 {
-    return Translator::normalizedTranslations(m.message(), m_language, m_country);
+    return Translator::normalizedTranslations(m.message(), m_numerusForms.count());
 }
 
 ContextItem *DataModel::contextItem(int context) const

@@ -353,8 +353,10 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
             << qTableName("bug_249059");
 
     QSqlQuery q(0, db);
-    if (db.driverName().startsWith("QPSQL"))
+    if (db.driverName().startsWith("QPSQL")) {
         q.exec("drop schema " + qTableName("qtestschema") + " cascade");
+        q.exec("drop schema " + qTableName("qtestScHeMa") + " cascade");
+    }
 
     if (testWhiteSpaceNames(db.driverName()))
         tableNames <<  db.driver()->escapeIdentifier(qTableName("qtest") + " test", QSqlDriver::TableName);
@@ -558,19 +560,19 @@ void tst_QSqlDatabase::whitespaceInIdentifiers()
         QString tableName = qTableName("qtest") + " test";
         QVERIFY(db.tables().contains(tableName, Qt::CaseInsensitive));
 
-        QSqlRecord rec = db.record(tableName);
+        QSqlRecord rec = db.record(db.driver()->escapeIdentifier(tableName, QSqlDriver::TableName));
         QCOMPARE(rec.count(), 1);
         QCOMPARE(rec.fieldName(0), QString("test test"));
         if(db.driverName().startsWith("QOCI"))
-            QCOMPARE(rec.field(0).type(), QVariant::String);
+            QCOMPARE(rec.field(0).type(), QVariant::Double);
         else
             QCOMPARE(rec.field(0).type(), QVariant::Int);
 
-        QSqlIndex idx = db.primaryIndex(tableName);
+        QSqlIndex idx = db.primaryIndex(db.driver()->escapeIdentifier(tableName, QSqlDriver::TableName));
         QCOMPARE(idx.count(), 1);
         QCOMPARE(idx.fieldName(0), QString("test test"));
         if(db.driverName().startsWith("QOCI"))
-            QCOMPARE(idx.field(0).type(), QVariant::String);
+            QCOMPARE(idx.field(0).type(), QVariant::Double);
         else
             QCOMPARE(idx.field(0).type(), QVariant::Int);
     } else {
@@ -1522,7 +1524,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     QSqlQuery q(db);
 
     QString schemaName = qTableName("qtestScHeMa");
-    QString tableName = qTableName("qtestTaBlE");
+    QString tableName = qTableName("qtest");
     QString field1Name = QString("fIeLdNaMe");
     QString field2Name = QString("ZuLu");
 
@@ -1540,7 +1542,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     rec.append(fld1);
     rec.append(fld2);
 
-    QVERIFY_SQL(q, exec(drv->sqlStatement(QSqlDriver::SelectStatement, schemaName + '.' + tableName, rec, false)));
+    QVERIFY_SQL(q, exec(drv->sqlStatement(QSqlDriver::SelectStatement, db.driver()->escapeIdentifier(schemaName, QSqlDriver::TableName) + '.' + db.driver()->escapeIdentifier(tableName, QSqlDriver::TableName), rec, false)));
 
     rec = q.record();
     QCOMPARE(rec.count(), 2);
@@ -2271,15 +2273,15 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     QSqlQuery query(db);
     QString procedureName = qTableName("posteventProc");
 
-    QSqlDriver *driver=db.driver();
-    QVERIFY_SQL(*driver, subscribeToNotification(procedureName));
+    QSqlDriver &driver=*(db.driver());
+    QVERIFY_SQL(driver, subscribeToNotification(procedureName));
     QSignalSpy spy(db.driver(), SIGNAL(notification(const QString&)));
     query.exec(QString("NOTIFY \"%1\"").arg(procedureName));
     QCoreApplication::processEvents();
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QVERIFY(arguments.at(0).toString() == procedureName);
-    QVERIFY_SQL(*driver, unsubscribeFromNotification(procedureName));
+    QVERIFY_SQL(driver, unsubscribeFromNotification(procedureName));
 }
 
 void tst_QSqlDatabase::sqlite_bindAndFetchUInt()

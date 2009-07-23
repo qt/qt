@@ -1,8 +1,8 @@
 // IMPORTANT!!!! If you want to add testdata to this file,
 // always add it to the end in order to not change the linenumbers of translations!!!
 
-#include <QtCore>
-
+#define QTCORE <QtCore>
+#include QTCORE // Hidden from lupdate, but compiles
 
 //
 // Test 'lacks Q_OBJECT' reporting on namespace scopes
