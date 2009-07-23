@@ -39,13 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QMLENGINE_H
-#define QMLENGINE_H
+#ifndef QMLFONTFAMILY_H
+#define QMLFONTFAMILY_H
 
-#include <QtCore/qurl.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qmap.h>
-#include <QtScript/qscriptvalue.h>
+#include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
 
@@ -53,66 +51,36 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlComponent;
-class QmlEnginePrivate;
-class QmlImportsPrivate;
-class QmlExpression;
-class QmlContext;
-class QmlType;
-class QUrl;
-class QScriptEngine;
-class QScriptContext;
-class QNetworkAccessManager;
-class Q_DECLARATIVE_EXPORT QmlEngine : public QObject
+class QmlFontFamilyPrivate;
+class Q_DECLARATIVE_EXPORT QmlFontFamily : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlFontFamily)
+
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+
 public:
-    QmlEngine(QObject *p = 0);
-    virtual ~QmlEngine();
+    QmlFontFamily(QObject *parent = 0);
+    ~QmlFontFamily();
 
-    QmlContext *rootContext();
+    QUrl source() const;
+    void setSource(const QUrl &url);
 
-    void clearComponentCache();
+    QString name() const;
+    void setName(const QString &name);
 
+private Q_SLOTS:
+    void replyFinished();
 
-    void addImportPath(const QString& dir);
-
-    void setNetworkAccessManager(QNetworkAccessManager *);
-    QNetworkAccessManager *networkAccessManager() const;
-
-    QUrl baseUrl() const;
-    void setBaseUrl(const QUrl &);
-
-    static QmlContext *contextForObject(const QObject *);
-    static void setContextForObject(QObject *, QmlContext *);
-
-    static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
-
-    static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
-    static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
-
-private:
-    // LK: move to the private class
-    QScriptEngine *scriptEngine();
-    friend class QFxItem; // XXX
-    friend class QmlScriptPrivate; 
-    friend class QmlCompositeTypeManager; 
-    friend class QmlCompiler; 
-    friend class QmlScriptClass;
-    friend class QmlContext;
-    friend class QmlContextPrivate;
-    friend class QmlExpression;
-    friend class QmlExpressionPrivate;
-    friend class QmlBasicScript;
-    friend class QmlVME;
-    friend class QmlComponent;
-    friend class QmlContextScriptClass; //###
-    friend class QmlObjectScriptClass;      //###
-    Q_DECLARE_PRIVATE(QmlEngine)
+Q_SIGNALS:
+    void nameChanged();
 };
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QmlFontFamily)
+
 QT_END_HEADER
 
-#endif // QMLENGINE_H
+#endif // QMLFONTFAMILY_H
