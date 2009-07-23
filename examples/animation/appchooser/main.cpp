@@ -134,7 +134,7 @@ int main(int argc, char **argv)
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
-    QState *group = new QState(machine.rootState());
+    QState *group = new QState(&machine);
     group->setObjectName("group");
     QRect selectedRect(86, 86, 128, 128);
 

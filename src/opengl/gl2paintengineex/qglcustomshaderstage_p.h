@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,38 +39,52 @@
 **
 ****************************************************************************/
 
-#include "mainwindow.h"
-#include "animationdialog.h"
-#include "stickman.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QMenuBar>
-#include <QApplication>
+#ifndef QGL_CUSTOM_SHADER_STAGE_H
+#define QGL_CUSTOM_SHADER_STAGE_H
 
-MainWindow::MainWindow(StickMan *stickMan)
+#include <QGLShaderProgram>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(OpenGL)
+
+class QGLCustomShaderStagePrivate;
+class Q_OPENGL_EXPORT QGLCustomShaderStage
 {
-    initActions(stickMan);
-}
+    Q_DECLARE_PRIVATE(QGLCustomShaderStage);
+public:
+    QGLCustomShaderStage();
+    virtual ~QGLCustomShaderStage();
+    virtual void setUniforms(QGLShaderProgram*) = 0;
 
-MainWindow::~MainWindow()
-{
-}
+    void setUniformsDirty();
+    bool setOnPainter(QPainter*);
+    const char* source();
 
-void MainWindow::initActions(StickMan *stickMan)
-{
-    AnimationDialog *dialog = new AnimationDialog(stickMan, this);
-    dialog->show();
+protected:
+    void setSource(const QByteArray&);
 
-    QMenu *fileMenu = menuBar()->addMenu("&File");
-    QAction *loadAction = fileMenu->addAction("&Open");
-    QAction *saveAction = fileMenu->addAction("&Save");
-    QAction *exitAction = fileMenu->addAction("E&xit");
+private:
+    QGLCustomShaderStagePrivate* d_ptr;
+};
 
-    QMenu *animationMenu = menuBar()->addMenu("&Animation");
-    QAction *newAnimationAction = animationMenu->addAction("&New animation");
 
-    connect(loadAction, SIGNAL(triggered()), dialog, SLOT(loadAnimation()));
-    connect(saveAction, SIGNAL(triggered()), dialog, SLOT(saveAnimation()));
-    connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
-    connect(newAnimationAction, SIGNAL(triggered()), dialog, SLOT(newAnimation()));
+QT_END_NAMESPACE
 
-}
+QT_END_HEADER
+
+
+#endif

@@ -1166,6 +1166,8 @@ while [ "$#" -gt 0 ]; do
         else
             if  [ "$VAL" = "opengl" ]; then
                 CFG_GRAPHICS_SYSTEM="opengl"
+            elif [ "$VAL" = "openvg" ]; then
+                CFG_GRAPHICS_SYSTEM="openvg"
             elif [ "$VAL" = "raster" ]; then
                 CFG_GRAPHICS_SYSTEM="raster"
             else
@@ -3769,7 +3771,7 @@ elif [ "$Edition" = "OpenSource" ]; then
             read acceptance
         fi
         echo
-        if [ "$acceptance" = "yes" ]; then
+        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
             break
         elif [ "$acceptance" = "no" ]; then
             echo "You are not licensed to use this software."
@@ -5612,6 +5614,12 @@ if [ "$CFG_OPENVG" != "no" ]; then
     fi
 fi
 
+# if openvg is disabled and the user specified graphicssystem vg, disable it...
+if [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && [ "$CFG_OPENVG" = "no" ]; then
+    echo "OpenVG Graphics System is disabled due to missing OpenVG support..."
+    CFG_GRAPHICS_SYSTEM=default
+fi
+
 if [ "$CFG_PTMALLOC" != "no" ]; then
     # build ptmalloc, copy .a file to lib/
     echo "Building ptmalloc. Please wait..."
@@ -6057,6 +6065,7 @@ fi
 #
 canBuildQtXmlPatterns="yes"
 canBuildWebKit="$HAVE_STL"
+canBuildQtConcurrent="yes"
 
 # WebKit requires stdint.h
 "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stdint "Stdint" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6088,9 +6097,9 @@ case "$XPLATFORM" in
 	case "$(${QMAKE_CONF_COMPILER} -dumpversion)" in
 	    4*|3.4*)
 		;;
-	    3.3*)
-		canBuildWebKit="no"
-		;;
+            3.3*)
+                canBuildWebKit="no"
+                ;;
 	    *)
 		canBuildWebKit="no"
 		canBuildQtXmlPatterns="no"
@@ -6098,29 +6107,71 @@ case "$XPLATFORM" in
 	esac
 	;;
     solaris-cc*)
-	# Check the compiler version
-	case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
-	    *)
-		canBuildWebKit="no"
-		canBuildQtXmlPatterns="no"
-		;;
-	esac
-	;;
+        # Check the compiler version
+        case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
+            5.[012345678])
+                canBuildWebKit="no"
+                canBuildQtXmlPatterns="no"
+                canBuildQtConcurrent="no"
+                ;;
+            5.9)
+                canBuildWebKit="no"
+                ;;
+        esac
+        ;;
     hpux-acc*)
 	canBuildWebKit="no"
 	canBuildQtXmlPatterns="no"
+        canBuildQtConcurrent="no"
 	;;
     hpuxi-acc*)
 	canBuildWebKit="no"
 	;;
     aix-xlc*)
-	canBuildWebKit="no"
-	canBuildQtXmlPatterns="no"
-	;;
+        # Get the xlC version
+        cat > xlcver.c <<EOF
+#include <stdio.h>
+int main()
+{
+    printf("%d.%d\n", __xlC__ >> 8, __xlC__ & 0xFF);
+    return 0;
+}
+EOF
+        xlcver=
+        if ${QMAKE_CONF_COMPILER} -o xlcver xlcver.c >/dev/null 2>/dev/null; then
+            xlcver=`./xlcver 2>/dev/null`
+            rm -f ./xlcver
+        fi
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            if [ -n "$xlcver" ]; then
+                echo Found IBM xlC version: $xlcver.
+            else
+                echo Could not determine IBM xlC version, assuming oldest supported.
+            fi
+        fi
+
+        case "$xlcver" in
+            [123456].*)
+                canBuildWebKit="no"
+                canBuildQtXmlPatterns="no"
+                canBuildQtConcurrent="no"
+                ;;
+            *)
+                canBuildWebKit="no"
+                ;;
+        esac
+        ;;
     irix-cc*)
         canBuildWebKit="no"
+        canBuildQtConcurrent="no"
 	;;
 esac
+
+CFG_CONCURRENT="yes"
+if [ "$canBuildQtConcurrent" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT"
+    CFG_CONCURRENT="no"
+fi
 
 if [ "$CFG_XMLPATTERNS" = "yes" -a "$CFG_EXCEPTIONS" = "no" ]; then
     echo "QtXmlPatterns was requested, but it can't be built due to exceptions being disabled."
@@ -6638,6 +6689,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 if [ "$PLATFORM_QWS" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
     [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
+    [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
 fi
 
 # X11/Unix/Mac only configs
@@ -7030,6 +7082,7 @@ echo "Qt 3 compatibility .. $CFG_QT3SUPPORT"
 [ "$CFG_DBUS" = "no" ]     && echo "QtDBus module ....... no"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module ....... yes (run-time)"
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module ....... yes (linked)"
+echo "QtConcurrent code.... $CFG_CONCURRENT"
 echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"

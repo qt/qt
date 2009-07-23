@@ -175,6 +175,9 @@ void tst_QDirectPainter::setGeometry()
 
 void tst_QDirectPainter::regionSynchronization()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("Test requires QProcess", SkipAll);
+#else
     QRect dpRect(10, 10, 50, 50);
 
     // Start the direct painter in a different process
@@ -211,6 +214,7 @@ void tst_QDirectPainter::regionSynchronization()
     QVERIFY(i > 100); // sanity check
 
     proc.kill();
+#endif
 }
 
 class MyObject : public QObject

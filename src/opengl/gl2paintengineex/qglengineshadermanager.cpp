@@ -49,6 +49,28 @@
 
 QT_BEGIN_NAMESPACE
 
+static void QGLEngineShaderManager_free(void *ptr)
+{
+    delete reinterpret_cast<QGLEngineShaderManager *>(ptr);
+}
+
+Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_shader_managers, (QGLEngineShaderManager_free))
+
+QGLEngineShaderManager *QGLEngineShaderManager::managerForContext(const QGLContext *context)
+{
+    QGLEngineShaderManager *p = reinterpret_cast<QGLEngineShaderManager *>(qt_shader_managers()->value(context));
+    if (!p) {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != context)
+            const_cast<QGLContext *>(context)->makeCurrent();
+        p = new QGLEngineShaderManager(const_cast<QGLContext *>(context));
+        qt_shader_managers()->insert(context, p);
+        if (oldContext && oldContext != context)
+            oldContext->makeCurrent();
+    }
+    return p;
+}
+
 const char* QGLEngineShaderManager::qglEngineShaderSourceCode[] = {
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
@@ -286,6 +308,37 @@ void QGLEngineShaderManager::setCompositionMode(QPainter::CompositionMode mode)
     shaderProgNeedsChanging = true; //###
 }
 
+void QGLEngineShaderManager::setCustomStage(QGLCustomShaderStage* stage)
+{
+    customSrcStage = stage;
+    shaderProgNeedsChanging = true;
+}
+
+void QGLEngineShaderManager::removeCustomStage(QGLCustomShaderStage* stage)
+{
+    Q_UNUSED(stage); // Currently we only support one at a time...
+
+    QGLShader* compiledShader = compiledShaders[CustomImageSrcFragmentShader];
+
+    if (!compiledShader)
+        return;
+
+    // Remove any shader programs which has this as the srcPixel shader:
+    for (int i = 0; i < cachedPrograms.size(); ++i) {
+        QGLEngineShaderProg &prog = cachedPrograms[i];
+        if (prog.srcPixelFragShader == compiledShader) {
+            delete prog.program;
+            cachedPrograms.removeOne(prog);
+            break;
+        }
+    }
+
+    delete compiledShader;
+    compiledShaders[CustomImageSrcFragmentShader] = 0;
+    shaderProgNeedsChanging = true;
+}
+
+
 QGLShaderProgram* QGLEngineShaderManager::currentProgram()
 {
     return currentShaderProg->program;
@@ -309,6 +362,12 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 {
     if (!shaderProgNeedsChanging)
         return false;
+
+    bool useCustomSrc = customSrcStage != 0;
+    if (useCustomSrc && srcPixelType != QGLEngineShaderManager::ImageSrc) {
+        useCustomSrc = false;
+        qWarning("QGLEngineShaderManager - Ignoring custom shader stage for non image src");
+    }
 
     QGLEngineShaderProg requiredProgram;
     requiredProgram.program = 0;
@@ -341,7 +400,11 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
             qCritical("QGLEngineShaderManager::useCorrectShaderProg() - I'm scared, Qt::NoBrush style is set");
             break;
         case QGLEngineShaderManager::ImageSrc:
-            srcPixelFragShaderName = ImageSrcFragmentShader;
+            srcPixelFragShaderName = useCustomSrc ? CustomImageSrcFragmentShader : ImageSrcFragmentShader;
+            positionVertexShaderName = PositionOnlyVertexShader;
+            break;
+        case QGLEngineShaderManager::NonPremultipliedImageSrc:
+            srcPixelFragShaderName = NonPremultipliedImageSrcFragmentShader;
             positionVertexShaderName = PositionOnlyVertexShader;
             break;
         case QGLEngineShaderManager::PatternSrc:
@@ -352,10 +415,6 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
             srcPixelFragShaderName = TextureBrushSrcWithPatternFragmentShader;
             positionVertexShaderName = isAffine ? AffinePositionWithTextureBrushVertexShader
                                                 : PositionWithTextureBrushVertexShader;
-            break;
-        case QGLEngineShaderManager::NonPremultipliedImageSrc:
-            srcPixelFragShaderName = NonPremultipliedImageSrcFragmentShader;
-            positionVertexShaderName = PositionOnlyVertexShader;
             break;
         case Qt::SolidPattern:
             srcPixelFragShaderName = SolidBrushSrcFragmentShader;
@@ -478,60 +537,63 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache
+    bool foundProgramInCache = false;
     for (int i = 0; i < cachedPrograms.size(); ++i) {
-        QGLEngineShaderProg &prog = cachedPrograms[i];
-        if (    (prog.mainVertexShader == requiredProgram.mainVertexShader)
-             && (prog.positionVertexShader == requiredProgram.positionVertexShader)
-             && (prog.mainFragShader == requiredProgram.mainFragShader)
-             && (prog.srcPixelFragShader == requiredProgram.srcPixelFragShader)
-             && (prog.compositionFragShader == requiredProgram.compositionFragShader) )
-        {
-            currentShaderProg = &prog;
-            currentShaderProg->program->enable();
-            shaderProgNeedsChanging = false;
-            return true;
+        if (cachedPrograms[i] == requiredProgram) {
+            currentShaderProg = &cachedPrograms[i];
+            foundProgramInCache = true;
+            break;
         }
     }
 
-    // Shader program not found in cache, create it now.
-    requiredProgram.program = new QGLShaderProgram(ctx, this);
-    requiredProgram.program->addShader(requiredProgram.mainVertexShader);
-    requiredProgram.program->addShader(requiredProgram.positionVertexShader);
-    requiredProgram.program->addShader(requiredProgram.mainFragShader);
-    requiredProgram.program->addShader(requiredProgram.srcPixelFragShader);
-    requiredProgram.program->addShader(requiredProgram.maskFragShader);
-    requiredProgram.program->addShader(requiredProgram.compositionFragShader);
+    // If the shader program's not found in the cache, create it now.
+    while (!foundProgramInCache) {
+        requiredProgram.program = new QGLShaderProgram(ctx, this);
+        requiredProgram.program->addShader(requiredProgram.mainVertexShader);
+        requiredProgram.program->addShader(requiredProgram.positionVertexShader);
+        requiredProgram.program->addShader(requiredProgram.mainFragShader);
+        requiredProgram.program->addShader(requiredProgram.srcPixelFragShader);
+        requiredProgram.program->addShader(requiredProgram.maskFragShader);
+        requiredProgram.program->addShader(requiredProgram.compositionFragShader);
 
-    // We have to bind the vertex attribute names before the program is linked:
-    requiredProgram.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
-    if (useTextureCoords)
-        requiredProgram.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+        // We have to bind the vertex attribute names before the program is linked:
+        requiredProgram.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
+        if (useTextureCoords)
+            requiredProgram.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
-    requiredProgram.program->link();
-    if (!requiredProgram.program->isLinked()) {
-        QString error;
-        qWarning() <<  "Shader program failed to link,"
+        requiredProgram.program->link();
+        if (!requiredProgram.program->isLinked()) {
+            QString error;
+            qWarning() <<  "Shader program failed to link,"
 #if defined(QT_DEBUG)
-              << '\n'
-              << "  Shaders Used:" << '\n'
-              << "    mainVertexShader = "     << requiredProgram.mainVertexShader->objectName()  << '\n'
-              << "    positionVertexShader = " << requiredProgram.positionVertexShader->objectName() << '\n'
-              << "    mainFragShader = "       << requiredProgram.mainFragShader->objectName() << '\n'
-              << "    srcPixelFragShader = "   << requiredProgram.srcPixelFragShader->objectName() << '\n'
-              << "    maskFragShader = "       << requiredProgram.maskFragShader->objectName() << '\n'
-              << "    compositionFragShader = "<< requiredProgram.compositionFragShader->objectName() << '\n'
+                  << '\n'
+                  << "  Shaders Used:" << '\n'
+                  << "    mainVertexShader = "     << requiredProgram.mainVertexShader->objectName()  << '\n'
+                  << "    positionVertexShader = " << requiredProgram.positionVertexShader->objectName() << '\n'
+                  << "    mainFragShader = "       << requiredProgram.mainFragShader->objectName() << '\n'
+                  << "    srcPixelFragShader = "   << requiredProgram.srcPixelFragShader->objectName() << '\n'
+                  << "    maskFragShader = "       << requiredProgram.maskFragShader->objectName() << '\n'
+                  << "    compositionFragShader = "<< requiredProgram.compositionFragShader->objectName() << '\n'
 #endif
-              << "  Error Log:" << '\n'
-              << "    " << requiredProgram.program->log();
-        qWarning() << error;
-    }
-    else {
+                  << "  Error Log:" << '\n'
+                  << "    " << requiredProgram.program->log();
+            qWarning() << error;
+            delete requiredProgram.program;
+            break;
+        }
+
         cachedPrograms.append(requiredProgram);
         // taking the address here is safe since
         // cachePrograms isn't resized anywhere else
         currentShaderProg = &cachedPrograms.last();
-        currentShaderProg->program->enable();
     }
+
+    if (currentShaderProg) {
+        currentShaderProg->program->enable();
+        if (useCustomSrc)
+            customSrcStage->setUniforms(currentShaderProg->program);
+    }
+
     shaderProgNeedsChanging = false;
     return true;
 }
@@ -542,7 +604,14 @@ void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderNa
         return;
 
     QGLShader *newShader = new QGLShader(type, ctx, this);
-    newShader->compile(qglEngineShaderSourceCode[name]);
+
+    const char* sourceCode;
+    if (name == CustomImageSrcFragmentShader)
+        sourceCode = customSrcStage->source();
+    else
+        sourceCode = qglEngineShaderSourceCode[name];
+
+    newShader->compile(sourceCode);
 
 #if defined(QT_DEBUG)
     // Name the shader for easier debugging

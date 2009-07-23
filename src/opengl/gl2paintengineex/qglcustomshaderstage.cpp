@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,20 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "qglcustomshaderstage_p.h"
+#include "qglengineshadermanager_p.h"
+#include "qpaintengineex_opengl2_p.h"
+#include <private/qpainter_p.h>
 
-#include <QMainWindow>
-
-class StickMan;
-class MainWindow: public QMainWindow
+class QGLCustomShaderStagePrivate
 {
 public:
-    MainWindow(StickMan *stickMan);
-    ~MainWindow();
+    QGLCustomShaderStagePrivate() :
+        m_manager(0) {}
 
-private:
-    void initActions(StickMan *stickMan);
+    QGLEngineShaderManager* m_manager;
+    QByteArray              m_source;
 };
 
-#endif
+
+
+
+QGLCustomShaderStage::QGLCustomShaderStage()
+    : d_ptr(new QGLCustomShaderStagePrivate)
+{
+}
+
+QGLCustomShaderStage::~QGLCustomShaderStage()
+{
+    Q_D(QGLCustomShaderStage);
+    if (d->m_manager)
+        d->m_manager->removeCustomStage(this);
+}
+
+void QGLCustomShaderStage::setUniformsDirty()
+{
+    Q_D(QGLCustomShaderStage);
+    if (d->m_manager)
+        d->m_manager->setDirty(); // ### Probably a bit overkill!
+}
+
+bool QGLCustomShaderStage::setOnPainter(QPainter* p)
+{
+    Q_D(QGLCustomShaderStage);
+    if (p->paintEngine()->type() != QPaintEngine::OpenGL2) {
+        qWarning("QGLCustomShaderStage::setOnPainter() - paint engine not OpenGL2");
+        return false;
+    }
+
+    // Might as well go through the paint engine to get to the context
+    const QGLContext* ctx = static_cast<QGL2PaintEngineEx*>(p->paintEngine())->context();
+    d->m_manager = QGLEngineShaderManager::managerForContext(ctx);
+    Q_ASSERT(d->m_manager);
+
+    d->m_manager->setCustomStage(this);
+    return true;
+}
+
+const char* QGLCustomShaderStage::source()
+{
+    Q_D(QGLCustomShaderStage);
+    return d->m_source.constData();
+}
+
+void QGLCustomShaderStage::setSource(const QByteArray& s)
+{
+    Q_D(QGLCustomShaderStage);
+    d->m_source = s;
+}

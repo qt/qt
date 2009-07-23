@@ -1382,6 +1382,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
 */
 void tst_QApplication::desktopSettingsAware()
 {
+#ifndef QT_NO_PROCESS
     QProcess testProcess;
 #ifdef Q_OS_WINCE
     int argc = 0;
@@ -1399,6 +1400,7 @@ void tst_QApplication::desktopSettingsAware()
     QVERIFY(testProcess.waitForFinished(10000));
     QCOMPARE(int(testProcess.state()), int(QProcess::NotRunning));
     QVERIFY(int(testProcess.error()) != int(QProcess::Crashed));
+#endif
 }
 
 void tst_QApplication::setActiveWindow()

@@ -337,11 +337,10 @@ bool Moc::testFunctionAttribute(Token tok, FunctionDef *def)
 bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 {
     def->isVirtual = false;
-    while (test(INLINE) || test(STATIC) || test(VIRTUAL)
-           || testFunctionAttribute(def)) {
-        if (lookup() == VIRTUAL)
-            def->isVirtual = true;
-    }
+    //skip modifiers and attributes
+    while (test(INLINE) || test(STATIC) ||
+        (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
+        || testFunctionAttribute(def)) {}
     bool templateFunction = (lookup() == TEMPLATE);
     def->type = parseType();
     if (def->type.name.isEmpty()) {
@@ -429,11 +428,10 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
 {
     def->isVirtual = false;
-    while (test(EXPLICIT) || test(INLINE) || test(STATIC) || test(VIRTUAL)
-           || testFunctionAttribute(def)) {
-        if (lookup() == VIRTUAL)
-            def->isVirtual = true;
-    }
+    //skip modifiers and attributes
+    while (test(INLINE) || test(STATIC) ||
+        (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
+        || testFunctionAttribute(def)) {}
     bool tilde = test(TILDE);
     def->type = parseType();
     if (def->type.name.isEmpty())
@@ -862,7 +860,7 @@ void Moc::parseSignals(ClassDef *def)
         funcDef.access = FunctionDef::Protected;
         parseFunction(&funcDef);
         if (funcDef.isVirtual)
-            error("Signals cannot be declared virtual");
+            warning("Signals cannot be declared virtual");
         if (funcDef.inlineCode)
             error("Not a signal declaration");
         def->signalList += funcDef;

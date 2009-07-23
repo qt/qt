@@ -44,13 +44,15 @@
     \title Qt's Classes
     \ingroup classlists
 
-    This is a list of all Qt classes excluding the \l{Qt 3
-    compatibility classes}. For a shorter list that only includes the
-    most frequently used classes, see \l{Qt's Main Classes}.
+    This is a list of all Qt classes. For a shorter list of the most
+    frequently used Qt classes, see \l{Qt's Main Classes}. For a list
+    of the classes provided for compatibility with Qt3, see \l{Qt 3
+    compatibility classes}. For classes that have been deprecated, see
+    the \l{Obsolete Classes} list.
 
     \generatelist classes
 
-    \sa {Qt 3 Compatibility Classes}, {Qt's Modules}
+    \sa {Qt 3 Compatibility Classes}, {Qt's Modules}, {Obsolete Classes}
 */
 
 /*!

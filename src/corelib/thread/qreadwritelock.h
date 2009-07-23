@@ -190,7 +190,8 @@ inline QWriteLocker::QWriteLocker(QReadWriteLock *areadWriteLock)
 class Q_CORE_EXPORT QReadWriteLock
 {
 public:
-    inline explicit QReadWriteLock() { }
+    enum RecursionMode { NonRecursive, Recursive };
+    inline explicit QReadWriteLock(RecursionMode = NonRecursive) { }
     inline ~QReadWriteLock() { }
 
     static inline void lockForRead() { }

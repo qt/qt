@@ -205,12 +205,16 @@
     The use of custom shader code is supported by the engine for drawImage and
     drawPixmap calls. This is implemented via hooks in the fragment pipeline.
     The custom shader is passed to the engine as a partial fragment shader
-    (QGLCustomizedShader). The shader will implement a pre-defined method name
-    which Qt's fragment pipeline will call. There are two different hooks which
-    can be implemented as custom shader code:
+    (QGLCustomShaderStage). The shader will implement a pre-defined method name
+    which Qt's fragment pipeline will call:
 
-        mediump vec4 customShader(sampler2d src, vec2 srcCoords)
-        mediump vec4 customShaderWithDest(sampler2d dest, sampler2d src, vec2 srcCoords)
+        lowp vec4 customShader()
+
+    Depending on the custom type, the custom shader has a small API it can use
+    to read pixels. The basic custom type is for image/pixmap drawing and thus
+    can use the following to sample the src texture (non-premultiplied)
+
+        lowp vec4 QSampleSrcPixel(mediump vec2 coords)
 
 */
 
@@ -220,6 +224,8 @@
 #include <QGLShader>
 #include <QGLShaderProgram>
 #include <QPainter>
+#include <private/qgl_p.h>
+#include <private/qglcustomshaderstage_p.h>
 
 QT_BEGIN_HEADER
 
@@ -239,6 +245,17 @@ struct QGLEngineShaderProg
     QGLShaderProgram*   program;
 
     QVector<uint> uniformLocations;
+
+    bool operator==(const QGLEngineShaderProg& other) {
+        // We don't care about the program
+        return ( mainVertexShader      == other.mainVertexShader &&
+                 positionVertexShader  == other.positionVertexShader &&
+                 mainFragShader        == other.mainFragShader &&
+                 srcPixelFragShader    == other.srcPixelFragShader &&
+                 maskFragShader        == other.maskFragShader &&
+                 compositionFragShader == other.compositionFragShader
+               );
+    }
 };
 
 /*
@@ -304,6 +321,8 @@ public:
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
+    void setCustomStage(QGLCustomShaderStage* stage);
+    void removeCustomStage(QGLCustomShaderStage* stage);
 
     uint getUniformLocation(Uniform id);
 
@@ -313,6 +332,8 @@ public:
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
     QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer
+
+    static QGLEngineShaderManager *managerForContext(const QGLContext *context);
 
     enum ShaderName {
         MainVertexShader,
@@ -343,6 +364,7 @@ public:
         ImageSrcFragmentShader,
         ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
+        CustomImageSrcFragmentShader,
         SolidBrushSrcFragmentShader,
         TextureBrushSrcFragmentShader,
         TextureBrushSrcWithPatternFragmentShader,
@@ -398,6 +420,7 @@ private:
     MaskType                    maskType;
     bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
+    QGLCustomShaderStage*       customSrcStage;
 
     QGLShaderProgram*     blitShaderProg;
     QGLShaderProgram*     simpleShaderProg;

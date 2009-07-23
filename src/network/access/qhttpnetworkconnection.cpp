@@ -261,7 +261,12 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 #ifndef QT_NO_NETWORKPROXY
     }
 #endif
-    // set the gzip header
+
+    // If the request had a accept-encoding set, we better not mess
+    // with it. If it was not set, we announce that we understand gzip
+    // and remember this fact in request.d->autoDecompress so that
+    // we can later decompress the HTTP reply if it has such an
+    // encoding.
     value = request.headerField("accept-encoding");
     if (value.isEmpty()) {
 #ifndef QT_NO_COMPRESS
@@ -335,8 +340,9 @@ bool QHttpNetworkConnectionPrivate::ensureConnection(QAbstractSocket *socket)
 #ifndef QT_NO_OPENSSL
             QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
             sslSocket->connectToHostEncrypted(connectHost, connectPort);
-            if (channels[index].ignoreSSLErrors)
+            if (channels[index].ignoreAllSslErrors)
                 sslSocket->ignoreSslErrors();
+            sslSocket->ignoreSslErrors(channels[index].ignoreSslErrorsList);
 #else
             emitReplyError(socket, channels[index].reply, QNetworkReply::ProtocolUnknownError);
 #endif
@@ -1443,15 +1449,32 @@ void QHttpNetworkConnection::ignoreSslErrors(int channel)
     if (channel == -1) { // ignore for all channels
         for (int i = 0; i < d->channelCount; ++i) {
             static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors();
-            d->channels[i].ignoreSSLErrors = true;
+            d->channels[i].ignoreAllSslErrors = true;
         }
 
     } else {
         static_cast<QSslSocket *>(d->channels[channel].socket)->ignoreSslErrors();
-        d->channels[channel].ignoreSSLErrors = true;
+        d->channels[channel].ignoreAllSslErrors = true;
     }
 }
 
+void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int channel)
+{
+    Q_D(QHttpNetworkConnection);
+    if (!d->encrypt)
+        return;
+
+    if (channel == -1) { // ignore for all channels
+        for (int i = 0; i < d->channelCount; ++i) {
+            static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors(errors);
+            d->channels[i].ignoreSslErrorsList = errors;
+        }
+
+    } else {
+        static_cast<QSslSocket *>(d->channels[channel].socket)->ignoreSslErrors(errors);
+        d->channels[channel].ignoreSslErrorsList = errors;
+    }
+}
 
 #endif //QT_NO_OPENSSL
 

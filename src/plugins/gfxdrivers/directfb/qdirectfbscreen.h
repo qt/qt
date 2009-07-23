@@ -44,6 +44,7 @@
 
 #include <QtGui/qscreen_qws.h>
 #include <directfb.h>
+#include <directfb_version.h>
 
 QT_BEGIN_HEADER
 

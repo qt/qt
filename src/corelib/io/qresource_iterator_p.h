@@ -71,8 +71,8 @@ public:
     QString currentFileName() const;
 
 private:
-    QStringList entries;
-    int index;
+    mutable QStringList entries;
+    mutable int index;
 };
 
 QT_END_NAMESPACE

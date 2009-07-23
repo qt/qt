@@ -535,7 +535,7 @@ struct QGLExtensionFuncs
 #endif
 
 #ifndef GL_MAX_SAMPLES_EXT
-#define GL_MAX_SAMPLES_EXT                                      0x8D5
+#define GL_MAX_SAMPLES_EXT                                      0x8D57
 #endif
 
 #ifndef GL_DRAW_FRAMEBUFFER_EXT

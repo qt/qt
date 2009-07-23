@@ -3727,7 +3727,7 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
     gi.dwSequenceID  = 0;
 
     QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
-    BOOL bResult = qAppPriv->GetGestureInfo((HGESTUREINFO)msg.lParam, &gi);
+    BOOL bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
 
     const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
     QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
@@ -3765,7 +3765,7 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
         if (dwErr > 0)
             qWarning() << "translateGestureEvent: error = " << dwErr;
     }
-    qAppPriv->CloseGestureInfoHandle((HGESTUREINFO)msg.lParam);
+    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
     return true;
 }
 
@@ -3951,17 +3951,17 @@ void QSessionManager::cancel()
 #endif //QT_NO_SESSIONMANAGER
 
 
-qt_RegisterTouchWindowPtr QApplicationPrivate::RegisterTouchWindow = 0;
-qt_GetTouchInputInfoPtr QApplicationPrivate::GetTouchInputInfo = 0;
-qt_CloseTouchInputHandlePtr QApplicationPrivate::CloseTouchInputHandle = 0;
+PtrRegisterTouchWindow QApplicationPrivate::RegisterTouchWindow = 0;
+PtrGetTouchInputInfo QApplicationPrivate::GetTouchInputInfo = 0;
+PtrCloseTouchInputHandle QApplicationPrivate::CloseTouchInputHandle = 0;
 
 void QApplicationPrivate::initializeMultitouch_sys()
 {
     QLibrary library(QLatin1String("user32"));
     // MinGW (g++ 3.4.5) accepts only C casts.
-    RegisterTouchWindow = (qt_RegisterTouchWindowPtr)(library.resolve("RegisterTouchWindow"));
-    GetTouchInputInfo = (qt_GetTouchInputInfoPtr)(library.resolve("GetTouchInputInfo"));
-    CloseTouchInputHandle = (qt_CloseTouchInputHandlePtr)(library.resolve("CloseTouchInputHandle"));
+    RegisterTouchWindow = (PtrRegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
+    GetTouchInputInfo = (PtrGetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
+    CloseTouchInputHandle = (PtrCloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
 
     touchInputIDToTouchPointID.clear();
 }

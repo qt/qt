@@ -712,6 +712,13 @@ void QHttpNetworkReply::ignoreSslErrors()
         d->connection->ignoreSslErrors();
 }
 
+void QHttpNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    Q_D(QHttpNetworkReply);
+    if (d->connection)
+        d->connection->ignoreSslErrors(errors);
+}
+
 
 #endif //QT_NO_OPENSSL
 

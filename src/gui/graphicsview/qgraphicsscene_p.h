@@ -130,6 +130,8 @@ public:
     QGraphicsWidget *tabFocusFirst;
     QGraphicsWidget *activeWindow;
     int activationRefCount;
+    void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason);
+    QMultiHash<QGraphicsItem *, QGraphicsItem *> focusProxyReverseMap;
 
     QList<QGraphicsWidget *> popupWidgets;
     void addPopup(QGraphicsWidget *widget);

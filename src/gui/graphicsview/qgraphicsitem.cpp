@@ -2575,6 +2575,8 @@ void QGraphicsItem::setHandlesChildEvents(bool enabled)
 */
 bool QGraphicsItem::hasFocus() const
 {
+    if (d_ptr->focusProxy)
+        return d_ptr->focusProxy->hasFocus();
     return (d_ptr->scene && d_ptr->scene->focusItem() == this);
 }
 
@@ -2600,12 +2602,16 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 {
     if (!d_ptr->scene || !isEnabled() || hasFocus() || !(d_ptr->flags & ItemIsFocusable))
         return;
-    if (isVisible()) {
+    QGraphicsItem *item = this;
+    QGraphicsItem *f;
+    while ((f = item->d_ptr->focusProxy))
+        item = f;
+    if (item->isVisible()) {
         // Visible items immediately gain focus from scene.
-        d_ptr->scene->setFocusItem(this, focusReason);
-    } else if (d_ptr->isWidget) {
+        d_ptr->scene->d_func()->setFocusItemHelper(item, focusReason);
+    } else if (item->d_ptr->isWidget) {
         // Just set up subfocus.
-        static_cast<QGraphicsWidget *>(this)->d_func()->setFocusWidget();
+        static_cast<QGraphicsWidget *>(item)->d_func()->setFocusWidget();
     }
 }
 
@@ -2628,9 +2634,69 @@ void QGraphicsItem::clearFocus()
         // Invisible widget items with focus must explicitly clear subfocus.
         static_cast<QGraphicsWidget *>(this)->d_func()->clearFocusWidget();
     }
-    if (d_ptr->scene->focusItem() == this) {
+    if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
         d_ptr->scene->setFocusItem(0);
+    }
+}
+
+/*!
+    \since 4.6
+
+    Returns this item's focus proxy, or 0 if the item
+    does not have any focus proxy.
+
+    \sa setFocusProxy()
+*/
+QGraphicsItem *QGraphicsItem::focusProxy() const
+{
+    return d_ptr->focusProxy;
+}
+
+/*!
+    \since 4.6
+
+    Sets the item's focus proxy to \a item.
+
+    If an item has a focus proxy, the focus proxy will receive
+    input focus when the item gains input focus. The item itself
+    will still have focus (i.e., hasFocus() will return true),
+    but only the focus proxy will receive the keyboard input.
+
+    A focus proxy can itself have a focus proxy, and so on. In
+    such case, keyboard input will be handled by the outermost
+    focus proxy.
+
+    \sa focusProxy()
+*/
+void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
+{
+    if (item == d_ptr->focusProxy)
+        return;
+    if (item == this) {
+        qWarning("QGraphicsItem::setFocusProxy: cannot assign self as focus proxy");
+        return;
+    }
+    if (item) {
+        if (item->d_ptr->scene != d_ptr->scene) {
+            qWarning("QGraphicsItem::setFocusProxy: focus proxy must be in same scene");
+            return;
+        }
+        for (QGraphicsItem *f = item->focusProxy(); f != 0; f = f->focusProxy()) {
+            if (f == this) {
+                qWarning("QGraphicsItem::setFocusProxy: %p is already in the focus proxy chain", item);
+                return;
+            }
+        }
+    }
+
+    QGraphicsItem *lastFocusProxy = d_ptr->focusProxy;
+    d_ptr->focusProxy = item;
+    if (d_ptr->scene) {
+        if (lastFocusProxy)
+            d_ptr->scene->d_func()->focusProxyReverseMap.remove(lastFocusProxy, this);
+        if (item)
+            d_ptr->scene->d_func()->focusProxyReverseMap.insert(item, this);
     }
 }
 

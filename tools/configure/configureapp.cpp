@@ -3109,6 +3109,7 @@ void Configure::buildQmake()
 
 void Configure::buildHostTools()
 {
+    dictionary[ "DONE" ] = "yes";
     if (!dictionary.contains("XQMAKESPEC"))
         return;
 
@@ -3332,7 +3333,6 @@ void Configure::generateMakefiles()
     } else {
         cout << "Processing of project files have been disabled." << endl;
         cout << "Only use this option if you really know what you're doing." << endl << endl;
-        dictionary[ "DONE" ] = "yes";
         return;
     }
 }

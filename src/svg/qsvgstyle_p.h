@@ -281,6 +281,7 @@ private:
     qreal m_oldOpacity;
     QString m_gradientId;
     bool m_gradientResolved;
+    bool m_fillSet;
 };
 
 class QSvgViewportFillStyle : public QSvgStyleProperty

@@ -280,6 +280,7 @@ void QNetworkAccessDebugPipeBackend::socketConnected()
 
 bool QNetworkAccessDebugPipeBackend::waitForDownstreamReadyRead(int ms)
 {
+    Q_UNUSED(ms);
     qCritical("QNetworkAccess: Debug pipe backend does not support waitForReadyRead()");
     return false;
 }

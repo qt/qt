@@ -182,8 +182,9 @@ public:
 
     QList<QGraphicsItem *> selectedItems() const;
     QPainterPath selectionArea() const;
-    void setSelectionArea(const QPainterPath &path);
-    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode);
+    void setSelectionArea(const QPainterPath &path); // ### obsolete
+    void setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform);
+    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode); // ### obsolete
     void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode, const QTransform &deviceTransform);
 
     QGraphicsItemGroup *createItemGroup(const QList<QGraphicsItem *> &items);

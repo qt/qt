@@ -60,6 +60,11 @@
 #include "qregion.h"
 #include "qsizepolicy.h"
 #include "qtextformat.h"
+#include "qmatrix4x4.h"
+#include "qvector2d.h"
+#include "qvector3d.h"
+#include "qvector4d.h"
+#include "qquaternion.h"
 
 #include "private/qvariant_p.h"
 
@@ -148,6 +153,31 @@ static void construct(QVariant::Private *x, const void *copy)
         v_construct<QColor>(x, &color);
         break;
     }
+#ifndef QT_NO_MATRIX4X4
+    case QVariant::Matrix4x4:
+        v_construct<QMatrix4x4>(x, copy);
+        break;
+#endif
+#ifndef QT_NO_VECTOR2D
+    case QVariant::Vector2D:
+        v_construct<QVector2D>(x, copy);
+        break;
+#endif
+#ifndef QT_NO_VECTOR3D
+    case QVariant::Vector3D:
+        v_construct<QVector3D>(x, copy);
+        break;
+#endif
+#ifndef QT_NO_VECTOR4D
+    case QVariant::Vector4D:
+        v_construct<QVector4D>(x, copy);
+        break;
+#endif
+#ifndef QT_NO_QUATERNION
+    case QVariant::Quaternion:
+        v_construct<QQuaternion>(x, copy);
+        break;
+#endif
     default:
         qcoreVariantHandler()->construct(x, copy);
         return;
@@ -221,6 +251,31 @@ static void clear(QVariant::Private *d)
     case QVariant::Pen:
         v_clear<QPen>(d);
         break;
+#ifndef QT_NO_MATRIX4X4
+    case QVariant::Matrix4x4:
+        v_clear<QMatrix4x4>(d);
+        break;
+#endif
+#ifndef QT_NO_VECTOR2D
+    case QVariant::Vector2D:
+        v_clear<QVector2D>(d);
+        break;
+#endif
+#ifndef QT_NO_VECTOR3D
+    case QVariant::Vector3D:
+        v_clear<QVector3D>(d);
+        break;
+#endif
+#ifndef QT_NO_VECTOR4D
+    case QVariant::Vector4D:
+        v_clear<QVector4D>(d);
+        break;
+#endif
+#ifndef QT_NO_QUATERNION
+    case QVariant::Quaternion:
+        v_clear<QVector4D>(d);
+        break;
+#endif
     default:
         qcoreVariantHandler()->clear(d);
         return;
@@ -266,7 +321,26 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::KeySequence:
 #endif
     case QVariant::Pen:
+#ifndef QT_NO_MATRIX4X4
+    case QVariant::Matrix4x4:
+#endif
         break;
+#ifndef QT_NO_VECTOR2D
+    case QVariant::Vector2D:
+        return v_cast<QVector2D>(d)->isNull();
+#endif
+#ifndef QT_NO_VECTOR3D
+    case QVariant::Vector3D:
+        return v_cast<QVector3D>(d)->isNull();
+#endif
+#ifndef QT_NO_VECTOR4D
+    case QVariant::Vector4D:
+        return v_cast<QVector4D>(d)->isNull();
+#endif
+#ifndef QT_NO_QUATERNION
+    case QVariant::Quaternion:
+        return v_cast<QQuaternion>(d)->isNull();
+#endif
     default:
         return qcoreVariantHandler()->isNull(d);
     }
@@ -326,6 +400,26 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 #endif
     case QVariant::Pen:
         return *v_cast<QPen>(a) == *v_cast<QPen>(b);
+#ifndef QT_NO_MATRIX4X4
+    case QVariant::Matrix4x4:
+        return *v_cast<QMatrix4x4>(a) == *v_cast<QMatrix4x4>(b);
+#endif
+#ifndef QT_NO_VECTOR2D
+    case QVariant::Vector2D:
+        return *v_cast<QVector2D>(a) == *v_cast<QVector2D>(b);
+#endif
+#ifndef QT_NO_VECTOR3D
+    case QVariant::Vector3D:
+        return *v_cast<QVector3D>(a) == *v_cast<QVector3D>(b);
+#endif
+#ifndef QT_NO_VECTOR4D
+    case QVariant::Vector4D:
+        return *v_cast<QVector4D>(a) == *v_cast<QVector4D>(b);
+#endif
+#ifndef QT_NO_QUATERNION
+    case QVariant::Quaternion:
+        return *v_cast<QQuaternion>(a) == *v_cast<QQuaternion>(b);
+#endif
     default:
         break;
     }
@@ -513,6 +607,31 @@ static void streamDebug(QDebug dbg, const QVariant &v)
     case QVariant::Pen:
         dbg.nospace() << qvariant_cast<QPen>(v);
         break;
+#ifndef QT_NO_MATRIX4X4
+    case QVariant::Matrix4x4:
+        dbg.nospace() << qvariant_cast<QMatrix4x4>(v);
+        break;
+#endif
+#ifndef QT_NO_VECTOR2D
+    case QVariant::Vector2D:
+        dbg.nospace() << qvariant_cast<QVector2D>(v);
+        break;
+#endif
+#ifndef QT_NO_VECTOR3D
+    case QVariant::Vector3D:
+        dbg.nospace() << qvariant_cast<QVector3D>(v);
+        break;
+#endif
+#ifndef QT_NO_VECTOR4D
+    case QVariant::Vector4D:
+        dbg.nospace() << qvariant_cast<QVector4D>(v);
+        break;
+#endif
+#ifndef QT_NO_QUATERNION
+    case QVariant::Quaternion:
+        dbg.nospace() << qvariant_cast<QQuaternion>(v);
+        break;
+#endif
     default:
         qcoreVariantHandler()->debugStream(dbg, v);
         break;
@@ -596,6 +715,21 @@ Q_DECL_METATYPE_HELPER(QTextLength)
 Q_DECL_METATYPE_HELPER(QTextFormat)
 Q_DECL_METATYPE_HELPER(QMatrix)
 Q_DECL_METATYPE_HELPER(QTransform)
+#ifndef QT_NO_MATRIX4X4
+Q_DECL_METATYPE_HELPER(QMatrix4x4)
+#endif
+#ifndef QT_NO_VECTOR2D
+Q_DECL_METATYPE_HELPER(QVector2D)
+#endif
+#ifndef QT_NO_VECTOR3D
+Q_DECL_METATYPE_HELPER(QVector3D)
+#endif
+#ifndef QT_NO_VECTOR4D
+Q_DECL_METATYPE_HELPER(QVector4D)
+#endif
+#ifndef QT_NO_QUATERNION
+Q_DECL_METATYPE_HELPER(QQuaternion)
+#endif
 
 #ifdef QT_NO_DATASTREAM
 #  define Q_IMPL_METATYPE_HELPER(TYPE) \
@@ -645,7 +779,32 @@ static const QMetaTypeGuiHelper qVariantGuiHelper[] = {
     Q_IMPL_METATYPE_HELPER(QTextLength),
     Q_IMPL_METATYPE_HELPER(QTextFormat),
     Q_IMPL_METATYPE_HELPER(QMatrix),
-    Q_IMPL_METATYPE_HELPER(QTransform)
+    Q_IMPL_METATYPE_HELPER(QTransform),
+#ifndef QT_NO_MATRIX4X4
+    Q_IMPL_METATYPE_HELPER(QMatrix4x4),
+#else
+    {0, 0, 0, 0},
+#endif
+#ifndef QT_NO_VECTOR2D
+    Q_IMPL_METATYPE_HELPER(QVector2D),
+#else
+    {0, 0, 0, 0},
+#endif
+#ifndef QT_NO_VECTOR3D
+    Q_IMPL_METATYPE_HELPER(QVector3D),
+#else
+    {0, 0, 0, 0},
+#endif
+#ifndef QT_NO_VECTOR4D
+    Q_IMPL_METATYPE_HELPER(QVector4D),
+#else
+    {0, 0, 0, 0},
+#endif
+#ifndef QT_NO_QUATERNION
+    Q_IMPL_METATYPE_HELPER(QQuaternion)
+#else
+    {0, 0, 0, 0}
+#endif
 };
 
 static const QVariant::Handler *qt_guivariant_last_handler = 0;

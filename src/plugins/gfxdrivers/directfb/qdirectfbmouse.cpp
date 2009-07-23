@@ -71,7 +71,7 @@ private:
     DFBEvent event;
     uint bytesRead;
 
-private slots:
+private Q_SLOTS:
     void readMouseData();
 };
 
