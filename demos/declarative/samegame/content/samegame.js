@@ -166,9 +166,8 @@ function victoryCheck()
 {
     //awards bonuses
     deservesBonus = true;
-    for(xIdx=maxX-1; xIdx>=0; xIdx--)
-        if(board[index(xIdx, maxY - 1)] != null)
-            deservesBonus = false;
+    if(board[index(0, maxY - 1)] != null)
+        deservesBonus = false;
     if(deservesBonus)
         gameCanvas.score += 500;
     //Checks for game over
@@ -180,7 +179,8 @@ function victoryCheck()
 
 function noMoreMoves()
 {
-    return !floodMoveCheck(0, maxY-1, -1);
+    moreMoves = floodMoveCheck(0, maxY-1, -1);
+    return !moreMoves; 
 }
 
 function floodMoveCheck(xIdx, yIdx, type)
@@ -192,7 +192,9 @@ function floodMoveCheck(xIdx, yIdx, type)
     myType = board[index(xIdx, yIdx)].type;
     if(type == myType)
         return true;
-    return floodMoveCheck(xIdx + 1, yIdx, myType) || floodMoveCheck(xIdx, yIdx - 1, myType);
+    var at = myType;
+    var bt = myType;
+    return floodMoveCheck(xIdx + 1, yIdx, at) || floodMoveCheck(xIdx, yIdx - 1, bt);
 }
 
 //Need a simpler method of doing this?
