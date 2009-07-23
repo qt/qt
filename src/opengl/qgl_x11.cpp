@@ -82,6 +82,25 @@ extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
 #define GLX_SAMPLES_ARB         100001
 #endif
 
+#ifndef GLX_EXT_texture_from_pixmap
+#define GLX_TEXTURE_2D_BIT_EXT             0x00000002
+#define GLX_TEXTURE_RECTANGLE_BIT_EXT      0x00000004
+#define GLX_BIND_TO_TEXTURE_RGB_EXT        0x20D0
+#define GLX_BIND_TO_TEXTURE_RGBA_EXT       0x20D1
+#define GLX_BIND_TO_MIPMAP_TEXTURE_EXT     0x20D2
+#define GLX_BIND_TO_TEXTURE_TARGETS_EXT    0x20D3
+#define GLX_Y_INVERTED_EXT                 0x20D4
+#define GLX_TEXTURE_FORMAT_EXT             0x20D5
+#define GLX_TEXTURE_TARGET_EXT             0x20D6
+#define GLX_MIPMAP_TEXTURE_EXT             0x20D7
+#define GLX_TEXTURE_FORMAT_NONE_EXT        0x20D8
+#define GLX_TEXTURE_FORMAT_RGB_EXT         0x20D9
+#define GLX_TEXTURE_FORMAT_RGBA_EXT        0x20DA
+#define GLX_TEXTURE_2D_EXT                 0x20DC
+#define GLX_TEXTURE_RECTANGLE_EXT          0x20DD
+#define GLX_FRONT_LEFT_EXT                 0x20DE
+#endif
+
 /*
   The qt_gl_choose_cmap function is internal and used by QGLWidget::setContext()
   and GLX (not Windows).  If the application can't find any sharable
