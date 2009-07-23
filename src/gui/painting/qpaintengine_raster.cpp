@@ -1101,6 +1101,9 @@ void QRasterPaintEnginePrivate::systemStateChanged()
 #ifdef QT_DEBUG_DRAW
     qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
 #endif
+
+    exDeviceRect = deviceRect;
+
     Q_Q(QRasterPaintEngine);
     q->state()->strokeFlags |= QPaintEngine::DirtyClipRegion;
     q->state()->fillFlags |= QPaintEngine::DirtyClipRegion;

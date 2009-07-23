@@ -296,12 +296,12 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
             d->activeStroker = 0;
         } else {
             // ### re-enable...
-//             if (pen.isCosmetic()) {
-//                 d->dashStroker->setClipRect(d->deviceRect);
-//             } else {
-//                 QRectF clipRect = s->matrix.inverted().mapRect(QRectF(d->deviceRect));
-//                 d->dashStroker->setClipRect(clipRect);
-//             }
+            if (pen.isCosmetic()) {
+                d->dasher.setClipRect(d->exDeviceRect);
+            } else {
+                QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
+                d->dasher.setClipRect(clipRect);
+            }
             d->dasher.setDashPattern(pen.dashPattern());
             d->dasher.setDashOffset(pen.dashOffset());
             d->activeStroker = &d->dasher;

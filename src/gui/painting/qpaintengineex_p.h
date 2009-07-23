@@ -150,6 +150,8 @@ public:
     StrokeHandler *strokeHandler;
     QStrokerOps *activeStroker;
     QPen strokerPen;
+
+    QRect exDeviceRect;
 };
 
 class QPixmapFilter;
