@@ -679,15 +679,6 @@ void QFxTextEdit::geometryChanged(const QRectF &newGeometry,
 }
 
 /*!
-   \internal
-*/
-QString QFxTextEdit::propertyInfo() const
-{
-    Q_D(const QFxTextEdit);
-    return QChar(QLatin1Char('\"')) + d->text + QChar(QLatin1Char('\"'));
-}
-
-/*!
     Ensures any delayed caching or data loading the class
     needs to performed is complete.
 */

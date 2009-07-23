@@ -52,7 +52,7 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
+QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 
 QmlBindingPrivate::QmlBindingPrivate()
 : inited(false), updating(false), enabled(true), mePtr(0)

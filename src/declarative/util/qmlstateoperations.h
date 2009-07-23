@@ -74,6 +74,7 @@ public:
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();
+    virtual QString typeName() const;
 };
 
 class QmlRunScriptPrivate;
@@ -94,7 +95,7 @@ public:
     QString script() const;
     void setScript(const QString &);
     
-    virtual QString name() const;
+    QString name() const;
     void setName(const QString &);
 
     virtual void execute();

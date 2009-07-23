@@ -388,12 +388,6 @@ void QFxImage::paintContents(QPainter &p)
     }
 }
 
-QString QFxImage::propertyInfo() const
-{
-    Q_D(const QFxImage);
-    return d->url.toString();
-}
-
 /*!
     \qmlproperty enum Image::status
 
