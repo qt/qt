@@ -1036,7 +1036,7 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 }
 
 
-struct QmlEngine::ImportedNamespace {
+struct QmlEnginePrivate::ImportedNamespace {
     QStringList urls;
     QStringList versions;
     QList<bool> isLibrary;
@@ -1100,27 +1100,27 @@ struct QmlEngine::ImportedNamespace {
 
 class QmlImportsPrivate {
 public:
-    bool add(const QUrl& base, const QString& uri, const QString& prefix, const QString& version, QmlEngine::ImportType importType, const QStringList& importPath)
+    bool add(const QUrl& base, const QString& uri, const QString& prefix, const QString& version, QmlScriptParser::Import::Type importType, const QStringList& importPath)
     {
-        QmlEngine::ImportedNamespace *s;
+        QmlEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
-            if (importType == QmlEngine::LibraryImport && version.isEmpty()) {
+            if (importType == QmlScriptParser::Import::Library && version.isEmpty()) {
                 // unversioned library imports are always qualified - if only by final URI component
                 int lastdot = uri.lastIndexOf(QLatin1Char('.'));
                 QString defaultprefix = uri.mid(lastdot+1);
                 s = set.value(defaultprefix);
                 if (!s)
-                    set.insert(defaultprefix,(s=new QmlEngine::ImportedNamespace));
+                    set.insert(defaultprefix,(s=new QmlEnginePrivate::ImportedNamespace));
             } else {
                 s = &unqualifiedset;
             }
         } else {
             s = set.value(prefix);
             if (!s)
-                set.insert(prefix,(s=new QmlEngine::ImportedNamespace));
+                set.insert(prefix,(s=new QmlEnginePrivate::ImportedNamespace));
         }
         QString url = uri;
-        if (importType == QmlEngine::LibraryImport) {
+        if (importType == QmlScriptParser::Import::Library) {
             url.replace(QLatin1Char('.'),QLatin1Char('/'));
             bool found = false;
             foreach (QString p, importPath) {
@@ -1139,13 +1139,13 @@ public:
         }
         s->urls.append(url);
         s->versions.append(version);
-        s->isLibrary.append(importType == QmlEngine::LibraryImport);
+        s->isLibrary.append(importType == QmlScriptParser::Import::Library);
         return true;
     }
 
     QUrl find(const QString& type) const
     {
-        const QmlEngine::ImportedNamespace *s = 0;
+        const QmlEnginePrivate::ImportedNamespace *s = 0;
         int slash = type.indexOf(QLatin1Char('/'));
         if (slash >= 0) {
             while (!s) {
@@ -1169,7 +1169,7 @@ public:
 
     QmlType *findBuiltin(const QByteArray& type, QByteArray* found=0)
     {
-        QmlEngine::ImportedNamespace *s = 0;
+        QmlEnginePrivate::ImportedNamespace *s = 0;
         int slash = type.indexOf('/');
         if (slash >= 0) {
             while (!s) {
@@ -1190,29 +1190,29 @@ public:
             return 0;
     }
 
-    QmlEngine::ImportedNamespace *findNamespace(const QString& type)
+    QmlEnginePrivate::ImportedNamespace *findNamespace(const QString& type)
     {
         return set.value(type);
     }
 
 private:
-    QmlEngine::ImportedNamespace unqualifiedset;
-    QHash<QString,QmlEngine::ImportedNamespace* > set;
+    QmlEnginePrivate::ImportedNamespace unqualifiedset;
+    QHash<QString,QmlEnginePrivate::ImportedNamespace* > set;
 };
 
-QmlEngine::Imports::Imports() :
+QmlEnginePrivate::Imports::Imports() :
     d(new QmlImportsPrivate)
 {
 }
 
-QmlEngine::Imports::~Imports()
+QmlEnginePrivate::Imports::~Imports()
 {
 }
 
 /*!
   Sets the base URL to be used for all relative file imports added.
 */
-void QmlEngine::Imports::setBaseUrl(const QUrl& url)
+void QmlEnginePrivate::Imports::setBaseUrl(const QUrl& url)
 {
     base = url;
 }
@@ -1236,6 +1236,8 @@ void QmlEngine::addImportPath(const QString& path)
 }
 
 /*!
+  \internal
+
   Adds information to \a imports such that subsequent calls to resolveType()
   will resolve types qualified by \a prefix by considering types found at the given \a uri.
 
@@ -1247,16 +1249,17 @@ void QmlEngine::addImportPath(const QString& path)
 
   The base URL must already have been set with Import::setBaseUrl().
 */
-bool QmlEngine::addToImport(Imports* imports, const QString& uri, const QString& prefix, const QString& version, ImportType importType) const
+bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, const QString& version, QmlScriptParser::Import::Type importType) const
 {
-    Q_D(const QmlEngine);
-    bool ok = imports->d->add(imports->base,uri,prefix,version,importType,d->fileImportPath);
+    bool ok = imports->d->add(imports->base,uri,prefix,version,importType,fileImportPath);
     if (qmlImportTrace()) 
-        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << version << (importType==LibraryImport ? "Library" : "File") << ": " << ok;
+        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << version << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;
 }
 
 /*!
+  \internal
+
   Using the given \a imports, the given (namespace qualified) \a type is resolved to either
   an ImportedNamespace stored at \a ns_return,
   a QmlType stored at \a type_return, or
@@ -1266,7 +1269,7 @@ bool QmlEngine::addToImport(Imports* imports, const QString& uri, const QString&
 
   \sa addToImport()
 */
-bool QmlEngine::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return) const
+bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return) const
 {
     if (ns_return) {
         *ns_return = imports.d->findNamespace(QLatin1String(type));
@@ -1301,6 +1304,8 @@ bool QmlEngine::resolveType(const Imports& imports, const QByteArray& type, QmlT
 }
 
 /*!
+  \internal
+
   Searching \e only in the namespace \a ns (previously returned in a call to
   resolveType(), \a type is found and returned to either
   a QmlType stored at \a type_return, or
@@ -1308,7 +1313,7 @@ bool QmlEngine::resolveType(const Imports& imports, const QByteArray& type, QmlT
 
   If either return pointer is 0, the corresponding search is not done.
 */
-void QmlEngine::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const
+void QmlEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const
 {
     if (type_return) {
         *type_return = ns->findBuiltin(type);

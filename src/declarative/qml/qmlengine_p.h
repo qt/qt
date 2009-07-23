@@ -172,6 +172,22 @@ public:
     }
 
     QmlValueTypeFactory valueTypes;
+
+    struct Imports {
+        Imports();
+        ~Imports();
+        void setBaseUrl(const QUrl& url);
+        QUrl baseUrl() const { return base; }
+    private:
+        friend class QmlEnginePrivate;
+        QUrl base;
+        QmlImportsPrivate *d;
+    };
+    struct ImportedNamespace;
+    bool addToImport(Imports*, const QString& uri, const QString& prefix, const QString& version, QmlScriptParser::Import::Type type) const;
+    bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return=0) const;
+    void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
+
 };
 
 class QmlScriptClass : public QScriptClass
