@@ -456,6 +456,9 @@ void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
 {
     Q_Q(QGraphicsAnchorLayout);
 
+    Q_ASSERT(internalVertex(q, QGraphicsAnchorLayout::HCenter) == NULL);
+    Q_ASSERT(internalVertex(q, QGraphicsAnchorLayout::VCenter) == NULL);
+
     removeAnchor(q, QGraphicsAnchorLayout::Left, q, QGraphicsAnchorLayout::Right);
     removeAnchor(q, QGraphicsAnchorLayout::Top, q, QGraphicsAnchorLayout::Bottom);
 }
@@ -568,11 +571,6 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         return;
     }
 
-    // Check if vertex is used by other than the internal anchors
-    AnchorVertex *center = internalVertex(item, centerEdge);
-    if (graph[orientation].adjacentVertices(center).count() > 2)
-        return;
-
     // Orientation code
     QGraphicsAnchorLayout::Edge firstEdge;
     QGraphicsAnchorLayout::Edge lastEdge;
@@ -586,8 +584,10 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
     }
 
     AnchorVertex *first = internalVertex(item, firstEdge);
+    AnchorVertex *center = internalVertex(item, centerEdge);
     AnchorVertex *last = internalVertex(item, lastEdge);
-    Q_ASSERT(first && last);
+    Q_ASSERT(first && center && last);
+    Q_ASSERT(graph[orientation].adjacentVertices(center).count() == 2);
 
     // Create new anchor
     AnchorData *oldData = graph[orientation].edgeData(first, center);
@@ -792,6 +792,12 @@ void QGraphicsAnchorLayoutPrivate::removeInternalVertex(QGraphicsLayoutItem *ite
     } else {
         // Update reference count
         m_vertexList.insert(pair, v);
+
+        if ((v.second == 2) &&
+            ((edge == QGraphicsAnchorLayout::HCenter) ||
+             (edge == QGraphicsAnchorLayout::VCenter))) {
+            removeCenterAnchors(item, edge);
+        }
     }
 }
 

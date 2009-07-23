@@ -200,9 +200,6 @@ void QGraphicsAnchorLayout::removeAnchor(QGraphicsLayoutItem *firstItem, Edge fi
     }
 
     d->removeAnchor(firstItem, firstEdge, secondItem, secondEdge);
-    d->removeCenterAnchors(firstItem, firstEdge);
-    d->removeCenterAnchors(secondItem, secondEdge);
-
     invalidate();
 }
 
