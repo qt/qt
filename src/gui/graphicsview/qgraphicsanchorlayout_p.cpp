@@ -420,11 +420,11 @@ QGraphicsAnchorLayoutPrivate::edgeOrientation(QGraphicsAnchorLayout::Edge edge)
 /*!
   \internal
 
-  Create two internal anchors to connect the layout edges and its
-  central anchorage point.
-  These anchors doesn't have size restrictions other than the fact they
-  should always have the same size, which is something we enforce later,
-  when creating restrictions for the Simplex solver.
+  Create internal anchors to connect the layout edges (Left to Right and
+  Top to Bottom).
+
+  These anchors doesn't have size restrictions, that will be enforced by
+  other anchors and items in the layout.
 */
 void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
 {
@@ -432,40 +432,20 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     QGraphicsLayoutItem *layout = q;
 
     // Horizontal
-    QSimplexConstraint *c = new QSimplexConstraint;
     AnchorData *data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
     addAnchor(layout, QGraphicsAnchorLayout::Left, layout,
-              QGraphicsAnchorLayout::HCenter, data);
+              QGraphicsAnchorLayout::Right, data);
     data->skipInPreferred = 1;
-    c->variables.insert(data, 1.0);
-
-    data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
-    addAnchor(layout, QGraphicsAnchorLayout::HCenter,
-              layout, QGraphicsAnchorLayout::Right, data);
-    data->skipInPreferred = 1;
-    c->variables.insert(data, -1.0);
-
-    itemCenterConstraints[Horizontal].append(c);
 
     // Set the Layout Left edge as the root of the horizontal graph.
     AnchorVertex *v = internalVertex(layout, QGraphicsAnchorLayout::Left);
     graph[Horizontal].setRootVertex(v);
 
     // Vertical
-    c = new QSimplexConstraint;
     data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
     addAnchor(layout, QGraphicsAnchorLayout::Top, layout,
-              QGraphicsAnchorLayout::VCenter, data);
+              QGraphicsAnchorLayout::Bottom, data);
     data->skipInPreferred = 1;
-    c->variables.insert(data, 1.0);
-
-    data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
-    addAnchor(layout, QGraphicsAnchorLayout::VCenter,
-              layout, QGraphicsAnchorLayout::Bottom, data);
-    data->skipInPreferred = 1;
-    c->variables.insert(data, -1.0);
-
-    itemCenterConstraints[Vertical].append(c);
 
     // Set the Layout Top edge as the root of the vertical graph.
     v = internalVertex(layout, QGraphicsAnchorLayout::Top);
@@ -476,10 +456,8 @@ void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    removeAnchor(q, QGraphicsAnchorLayout::Left, q, QGraphicsAnchorLayout::HCenter);
-    removeAnchor(q, QGraphicsAnchorLayout::HCenter, q, QGraphicsAnchorLayout::Right);
-    removeAnchor(q, QGraphicsAnchorLayout::Top, q, QGraphicsAnchorLayout::VCenter);
-    removeAnchor(q, QGraphicsAnchorLayout::VCenter, q, QGraphicsAnchorLayout::Bottom);
+    removeAnchor(q, QGraphicsAnchorLayout::Left, q, QGraphicsAnchorLayout::Right);
+    removeAnchor(q, QGraphicsAnchorLayout::Top, q, QGraphicsAnchorLayout::Bottom);
 }
 
 void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
@@ -505,6 +483,17 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
               QGraphicsAnchorLayout::Bottom, data);
 }
 
+/*!
+  \internal
+
+  By default, each item in the layout is represented internally as
+  a single anchor in each direction. For instance, from Left to Right.
+
+  However, to support anchorage of items to the center of items, we
+  must split this internal anchor into two half-anchors. From Left
+  to Center and then from Center to Right, with the restriction that
+  these anchors must have the same time at all times.
+*/
 void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge)
 {
@@ -1110,6 +1099,25 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromDefaults(Orientation or
     }
 }
 
+/*!
+  \internal
+
+  For graph edges ("anchors") that represent items, this method updates their
+  intrinsic size restrictions, based on the item size hints.
+
+  ################################################################################
+  ### TODO: This method is not simplification ready. The fact that the graph may
+            have been simplified means that not all anchors exist in the graph.
+            This causes the Q_ASSERT(data) calls below to fail.
+
+            A possible approach is to use a recursive method that goes through
+            all edges in the graph updating their sizes based on their kind, i.e.:
+             - Anchors -> update their size based on the style defaults
+             - ItemAnchors -> update their size based on the item sizeHints
+             - SimplificationAnchors -> call "update()" on its children and then
+               calculate its own sizes
+  ################################################################################
+*/
 void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orientation)
 {
     QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> beginningKey;
@@ -1153,6 +1161,7 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
         AnchorData *data;
         if (center == 0) {
             data = graph[orientation].edgeData(beginning, end);
+            Q_ASSERT(data);
             // Set the anchor nominal sizes to those of the corresponding item
             data->minSize = min;
             data->prefSize = pref;
@@ -1175,6 +1184,7 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
 
             // Same as above, for each half
             data = graph[orientation].edgeData(beginning, center);
+            Q_ASSERT(data);
             data->minSize = min;
             data->prefSize = pref;
             data->maxSize = max;
@@ -1183,6 +1193,7 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
             data->sizeAtMaximum = pref;
 
             data = graph[orientation].edgeData(center, end);
+            Q_ASSERT(data);
             data->minSize = min;
             data->prefSize = pref;
             data->maxSize = max;
@@ -1303,20 +1314,28 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
     Q_Q(QGraphicsAnchorLayout);
 
     // Find layout vertices and edges for the current orientation.
-    AnchorVertex *layoutFirstVertex =
-        internalVertex(q, orientation == Horizontal ?
-                       QGraphicsAnchorLayout::Left : QGraphicsAnchorLayout::Top);
+    AnchorVertex *layoutFirstVertex = \
+        internalVertex(q, pickEdge(QGraphicsAnchorLayout::Left, orientation));
 
-    AnchorVertex *layoutCentralVertex =
-        internalVertex(q, orientation == Horizontal ?
-                       QGraphicsAnchorLayout::HCenter : QGraphicsAnchorLayout::VCenter);
+    AnchorVertex *layoutCentralVertex = \
+        internalVertex(q, pickEdge(QGraphicsAnchorLayout::HCenter, orientation));
 
-    AnchorVertex *layoutLastVertex =
-        internalVertex(q, orientation == Horizontal ?
-                       QGraphicsAnchorLayout::Right : QGraphicsAnchorLayout::Bottom);
+    AnchorVertex *layoutLastVertex = \
+        internalVertex(q, pickEdge(QGraphicsAnchorLayout::Right, orientation));
 
-    AnchorData *edgeL1 = graph[orientation].edgeData(layoutFirstVertex, layoutCentralVertex);
-    AnchorData *edgeL2 = graph[orientation].edgeData(layoutCentralVertex, layoutLastVertex);
+    Q_ASSERT(layoutFirstVertex && layoutLastVertex);
+
+    AnchorData *edgeL1 = NULL;
+    AnchorData *edgeL2 = NULL;
+
+    // The layout may have a single anchor between Left and Right or two half anchors
+    // passing through the center
+    if (layoutCentralVertex) {
+        edgeL1 = graph[orientation].edgeData(layoutFirstVertex, layoutCentralVertex);
+        edgeL2 = graph[orientation].edgeData(layoutCentralVertex, layoutLastVertex);
+    } else {
+        edgeL1 = graph[orientation].edgeData(layoutFirstVertex, layoutLastVertex);
+    }
 
     QLinkedList<QSimplexConstraint *> remainingConstraints;
     for (int i = 0; i < constraints[orientation].count(); ++i) {
@@ -1331,7 +1350,8 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
     QSet<QSimplexVariable *> trunkVariables;
 
     trunkVariables += edgeL1;
-    trunkVariables += edgeL2;
+    if (edgeL2)
+        trunkVariables += edgeL2;
 
     bool dirty;
     bool hasNonTrunkConstraints = false;
