@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <private/qmlcompositetypedata_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlscriptparser_p.h>
 #include <QtDeclarative/qmlengine.h>
@@ -246,7 +247,7 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
         unit->errors << unit->data.errors();
     } else {
         foreach (QmlScriptParser::Import imp, unit->data.imports()) {
-            if (!engine->addToImport(&unit->imports, imp.uri, imp.qualifier, imp.version, imp.type==QmlScriptParser::Import::Library ? QmlEngine::LibraryImport : QmlEngine::FileImport)) {
+            if (!engine->d_func()->addToImport(&unit->imports, imp.uri, imp.qualifier, imp.version, imp.type)) {
                 QmlError error;
                 error.setUrl(url);
                 error.setDescription(tr("Import %1 unavailable").arg(imp.uri));
@@ -322,7 +323,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         }
 
         QUrl url;
-        if (!engine->resolveType(unit->imports, type, &ref.type, &url)) {
+        if (!engine->d_func()->resolveType(unit->imports, type, &ref.type, &url)) {
             // XXX could produce error message here.
         }
 

@@ -43,6 +43,7 @@
 #include "qmlcomponent_p.h"
 #include "qmlcompiler_p.h"
 #include "private/qmlcontext_p.h"
+#include "private/qmlcompositetypedata_p.h"
 #include "private/qmlengine_p.h"
 #include "qmlvme_p.h"
 #include "qml.h"
