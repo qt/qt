@@ -1460,7 +1460,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         data.whichData |= kMenuItemDataCmdKey;
         data.whichData |= kMenuItemDataCmdKeyModifiers;
         data.whichData |= kMenuItemDataCmdKeyGlyph;
-        if (!accel.isEmpty()) {
+        if (accel.count() == 1) {
             qt_mac_get_accel(accel[0], (quint32*)&data.cmdKeyModifiers, (quint32*)&data.cmdKeyGlyph);
             if (data.cmdKeyGlyph == 0)
                 data.cmdKey = (UniChar)accel[0];
@@ -1468,7 +1468,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
 #else
         [item setSubmenu:0];
         // No key equivalent set for multiple key QKeySequence.
-        if (!accel.isEmpty() && accel.count() == 1) {
+        if (accel.count() == 1) {
             [item setKeyEquivalent:keySequenceToKeyEqivalent(accel)];
             [item setKeyEquivalentModifierMask:keySequenceModifierMask(accel)];
         } else {
