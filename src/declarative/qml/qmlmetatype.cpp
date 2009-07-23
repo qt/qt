@@ -675,7 +675,7 @@ int QmlMetaType::attachedPropertiesFuncId(const QByteArray &name)
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
 
-    QmlType *type = data->nameToType.value(name);
+    QmlType *type = data->nameToType.value("Qt/4.6/"+name); // XXX Should not hard-code namespace
     if (type && type->attachedPropertiesFunction())
         return type->index();
     else

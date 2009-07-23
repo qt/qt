@@ -1011,7 +1011,7 @@ bool QmlCompiler::buildSubObject(Object *obj, const BindingContext &ctxt)
 
 int QmlCompiler::componentTypeRef()
 {
-    QmlType *t = QmlMetaType::qmlType("Component");
+    QmlType *t = QmlMetaType::qmlType("Qt/4.6/Component");
     for (int ii = output->types.count() - 1; ii >= 0; --ii) {
         if (output->types.at(ii).type == t)
             return ii;
@@ -1123,7 +1123,7 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
             COMPILE_EXCEPTION(prop, "Attached properties cannot be used here");
         }
 
-        QmlType *type = QmlMetaType::qmlType(prop->name);
+        QmlType *type = QmlMetaType::qmlType("Qt/4.6/"+prop->name); // XXX Should not hard-code namespace
 
         if (!type || !type->attachedPropertiesType())
             COMPILE_EXCEPTION(prop, "Non-existant attached object");
@@ -1394,7 +1394,7 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
                                         const BindingContext &ctxt)
 {
     Q_ASSERT(prop->value);
-    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
+    int id = QmlMetaType::attachedPropertiesFuncId("Qt/4.6/"+prop->name); // XXX Should not hard-code namespace
     Q_ASSERT(id != -1); // This is checked in compileProperty()
 
     prop->index = id;
