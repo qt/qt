@@ -166,9 +166,6 @@ QMacPixmapData::QMacPixmapData(PixelType type)
     : QPixmapData(type, MacClass), has_alpha(0), has_mask(0),
       uninit(true), pixels(0), pixelsToFree(0), bytesPerRow(0),
       cg_data(0), cg_dataBeingReleased(0), cg_mask(0),
-#ifndef QT_MAC_NO_QUICKDRAW
-      qd_data(0), qd_alpha(0),
-#endif
       pengine(0)
 {
 }
@@ -494,13 +491,6 @@ int QMacPixmapData::metric(QPaintDevice::PaintDeviceMetric theMetric) const
 QMacPixmapData::~QMacPixmapData()
 {
     validDataPointers.remove(this);
-#ifndef QT_MAC_NO_QUICKDRAW
-    macQDDisposeAlpha();
-    if (qd_data) {
-        DisposeGWorld(qd_data);
-        qd_data = 0;
-    }
-#endif
     if (cg_mask) {
         CGImageRelease(cg_mask);
         cg_mask = 0;
@@ -589,47 +579,8 @@ void QMacPixmapData::macGetAlphaChannel(QMacPixmapData *pix, bool asMask) const
 void QMacPixmapData::macSetHasAlpha(bool b)
 {
     has_alpha = b;
-#ifndef QT_MAC_NO_QUICKDRAW
-    macQDDisposeAlpha(); //let it get created lazily
-#endif
     macReleaseCGImageRef();
 }
-
-#ifndef QT_MAC_NO_QUICKDRAW
-void QMacPixmapData::macQDDisposeAlpha()
-{
-    if (qd_alpha) {
-        DisposeGWorld(qd_alpha);
-        qd_alpha = 0;
-    }
-}
-
-void QMacPixmapData::macQDUpdateAlpha()
-{
-    macQDDisposeAlpha(); // get rid of alpha pixmap
-    if (!has_alpha && !has_mask)
-        return;
-
-    //setup
-    Rect rect;
-    SetRect(&rect, 0, 0, w, h);
-    const int params = alignPix | stretchPix | newDepth;
-    NewGWorld(&qd_alpha, 32, &rect, 0, 0, params);
-    int *dptr = (int *)GetPixBaseAddr(GetGWorldPixMap(qd_alpha)), *drow;
-    unsigned short dbpr = GetPixRowBytes(GetGWorldPixMap(qd_alpha));
-    const int *sptr = (int*)pixels, *srow;
-    const uint sbpr = bytesPerRow;
-    uchar clr;
-    for (int y = 0; y < h; ++y) {
-        drow = (int*)((char *)dptr + (y * dbpr));
-        srow = (int*)((char *)sptr + (y * sbpr));
-        for (int x=0; x < w; x++) {
-            clr = qAlpha(*(srow + x));
-            *(drow + x) = qRgba(~clr, ~clr, ~clr, 0);
-        }
-    }
-}
-#endif
 
 void QMacPixmapData::macCreateCGImageRef()
 {
@@ -979,31 +930,12 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     relocated.
 
     \warning This function is only available on Mac OS X.
+    \warning As of Qt 4.6, this function \em{always} returns zero.
 */
 
 Qt::HANDLE QPixmap::macQDHandle() const
 {
-#ifndef QT_MAC_NO_QUICKDRAW
-    QMacPixmapData *d = static_cast<QMacPixmapData*>(data);
-    if (!d->qd_data) { //create the qd data
-        Rect rect;
-        SetRect(&rect, 0, 0, d->w, d->h);
-        unsigned long qdformat = k32ARGBPixelFormat;
-        GWorldFlags qdflags = 0;
-        //we play such games so we can use the same buffer in CG as QD this
-        //makes our merge much simpler, at some point the hacks will go away
-        //because QD will be removed, but until that day this keeps them coexisting
-        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
-            qdformat = k32BGRAPixelFormat;
-
-        if(NewGWorldFromPtr(&d->qd_data, qdformat, &rect, 0, 0, qdflags,
-                            (char*)d->pixels, d->bytesPerRow) != noErr)
-            qWarning("Qt: internal: QPixmap::init error (%d %d %d %d)", rect.left, rect.top, rect.right, rect.bottom);
-    }
-    return d->qd_data;
-#else
     return 0;
-#endif
 }
 
 /*! \internal
@@ -1013,18 +945,11 @@ Qt::HANDLE QPixmap::macQDHandle() const
     long as it can be relocated.
 
     \warning This function is only available on Mac OS X.
+    \warning As of Qt 4.6, this function \em{always} returns zero.
 */
 
 Qt::HANDLE QPixmap::macQDAlphaHandle() const
 {
-#ifndef QT_MAC_NO_QUICKDRAW
-    QMacPixmapData *d = static_cast<QMacPixmapData*>(data);
-    if (d->has_alpha || d->has_mask) {
-        if (!d->qd_alpha) //lazily created
-            d->macQDUpdateAlpha();
-        return d->qd_alpha;
-    }
-#endif
     return 0;
 }
 
@@ -1094,7 +1019,6 @@ IconRef qt_mac_create_iconref(const QPixmap &px)
     if (px.isNull())
         return 0;
 
-    QMacSavedPortInfo pi; //save the current state
     //create icon
     IconFamilyHandle iconFamily = reinterpret_cast<IconFamilyHandle>(NewHandle(0));
     //create data

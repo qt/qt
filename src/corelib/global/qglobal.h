@@ -319,10 +319,6 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#ifdef QT_MAC_USE_COCOA
-#define QT_MAC_NO_QUICKDRAW 1
-#endif
-
 #ifdef __LSB_VERSION__
 #  if __LSB_VERSION__ < 40
 #    error "This version of the Linux Standard Base is unsupported"
