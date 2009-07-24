@@ -190,10 +190,11 @@ bool QProgressBarPrivate::repaintRequired() const
     with setValue(). The progress bar can be rewound to the
     beginning with reset().
 
-    If minimum and maximum both are set to 0, the bar shows a busy indicator
-    instead of a percentage of steps. This is useful, for example, when using
-    QFtp or QHttp to download items when they are unable to determine the
-    size of the item being downloaded.
+    If minimum and maximum both are set to 0, the bar shows a busy
+    indicator instead of a percentage of steps. This is useful, for
+    example, when using QFtp or QNetworkAccessManager to download
+    items when they are unable to determine the size of the item being
+    downloaded.
 
     \table
     \row \o \inlineimage macintosh-progressbar.png Screenshot of a Macintosh style progress bar

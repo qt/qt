@@ -1977,7 +1977,7 @@
 
     \table
     \header \o Qt 3 function              \o Qt 4 equivalents
-    \row    \o QImageIO::description()    \o QImageWriter::description()
+    \row    \o QImageIO::description()    \o QImageWriter::text()
     \row    \o QImageIO::fileName()       \o QImageReader::fileName() and QImageWriter::fileName()
     \row    \o QImageIO::format()         \o QImageReader::format() and QImageWriter::format()
     \row    \o QImageIO::gamma()          \o QImageWriter::gamma()
@@ -1988,7 +1988,7 @@
     \row    \o QImageIO::parameters()     \o N/A
     \row    \o QImageIO::quality()        \o QImageWriter::quality()
     \row    \o QImageIO::read()           \o QImageReader::read()
-    \row    \o QImageIO::setDescription() \o QImageWriter::setDescription()
+    \row    \o QImageIO::setDescription() \o QImageWriter::setText()
     \row    \o QImageIO::setFileName()    \o QImageReader::setFileName() and QImageWriter::setFileName()
     \row    \o QImageIO::setFormat()      \o QImageReader::setFormat() and QImageWriter::setFormat()
     \row    \o QImageIO::setGamma()       \o QImageWriter::setGamma()
@@ -2350,8 +2350,9 @@
     Q3NetworkProtocolFactory<T>, and Q3NetworkOperation and have been
     moved to the Qt3Support library.
 
-    In Qt 4 applications, you can use classes like QFtp and QHttp
-    directly to perform file-related actions on a remote host.
+    In Qt 4 applications, you can use classes like QFtp and
+    QNetworkAccessManager directly to perform file-related actions on
+    a remote host.
 
     \section1 QObject
 
@@ -3241,12 +3242,11 @@
     moved to the Qt3Support library. In Qt 4, there is no
     direct equivalent to Q3SocketDevice:
 
-    \list
-    \o If you use Q3SocketDevice in a thread to perform blocking network
-    I/O (a technique encouraged by the \e{Qt Quarterly} article
-    \l{http://doc.trolltech.com/qq/qq09-networkthread.html}{Unblocking Networking}),
-    you can now use QTcpSocket, QFtp, or QHttp instead, which can now be used from
-    non-GUI threads.
+    \list \o If you use Q3SocketDevice in a thread to perform blocking
+    network I/O (a technique encouraged by the \e{Qt Quarterly}
+    article \l{http://doc.trolltech.com/qq/qq09-networkthread.html}
+    {Unblocking Networking}), you can now use QTcpSocket, QFtp, or
+    QNetworkAccessManager, which can be used from non-GUI threads.
 
     \o If you use Q3SocketDevice for UDP, you can now use QUdpSocket instead.
 

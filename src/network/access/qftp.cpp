@@ -1388,7 +1388,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     \warning The current version of QFtp doesn't fully support
     non-Unix FTP servers.
 
-    \sa QHttp, QNetworkAccessManager, QNetworkRequest, QNetworkReply,
+    \sa QNetworkAccessManager, QNetworkRequest, QNetworkReply,
         {FTP Example}
 */
 
@@ -1733,8 +1733,8 @@ int QFtp::setTransferMode(TransferMode mode)
     Enables use of the FTP proxy on host \a host and port \a
     port. Calling this function with \a host empty disables proxying.
 
-    QFtp does not support FTP-over-HTTP proxy servers. Use QHttp for
-    this.
+    QFtp does not support FTP-over-HTTP proxy servers. Use
+    QNetworkAccessManager for this.
 */
 int QFtp::setProxy(const QString &host, quint16 port)
 {

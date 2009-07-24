@@ -145,11 +145,11 @@
     \l{QFtp::commandFinished()}{commandFinished()} signal with the
     command ID for each command that is executed. 
 
-    \o \e{Data transfer progress indicators.} QFtp emits
-    signals whenever data is transferred
-    (QFtp::dataTransferProgress(), QHttp::dataReadProgress(), and
-    QHttp::dataSendProgress()). You could connect these signals to
-    QProgressBar::setProgress() or QProgressDialog::setProgress(),
+    \o \e{Data transfer progress indicators.} QFtp emits signals
+    whenever data is transferred (QFtp::dataTransferProgress(),
+    QNetworkReply::downloadProgress(), and
+    QNetworkReply::uploadProgress()).  You could connect these signals
+    to QProgressBar::setProgress() or QProgressDialog::setProgress(),
     for example.
 
     \o \e{QIODevice support.} The class supports convenient
@@ -196,10 +196,10 @@
     will then stop immediately.
 
     QTcpSocket works asynchronously and emits signals to report status
-    changes and errors, just like QHttp and QFtp. It relies on the
-    event loop to detect incoming data and to automatically flush
-    outgoing data. You can write data to the socket using
-    QTcpSocket::write(), and read data using
+    changes and errors, just like QNetworkAccessManager and QFtp. It
+    relies on the event loop to detect incoming data and to
+    automatically flush outgoing data. You can write data to the
+    socket using QTcpSocket::write(), and read data using
     QTcpSocket::read(). QTcpSocket represents two independent streams
     of data: one for reading and one for writing.
 

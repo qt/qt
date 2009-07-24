@@ -109,9 +109,10 @@
     of programming, with the networking logic concentrated in one or
     two functions instead of spread across multiple slots.
 
-    QFtp and QHttp use QTcpSocket internally to implement the FTP and
-    HTTP protocols. Both classes work asynchronously and can schedule
-    (i.e., queue) requests.
+    QFtp and QNetworkAccessManager and its associated classes use
+    QTcpSocket internally to implement the FTP and HTTP protocols. The
+    classes work asynchronously and can schedule (i.e., queue)
+    requests.
 
     The network module contains four helper classes: QHostAddress,
     QHostInfo, QUrl, and QUrlInfo. QHostAddress stores an IPv4 or IPv6
@@ -198,8 +199,7 @@
     level QNetworkProtocol and QUrlOperator abstraction has been
     eliminated. These classes attempted the impossible (unify FTP and
     HTTP under one roof), and unsurprisingly failed at that. Qt 4
-    still provides QFtp and QHttp classes, but only with the more
-    mature API that appeared in Qt 3.1.
+    still provides QFtp, and it also proveds the QNetworkAccessManager.
 
     The QSocket class in Qt 3 has been renamed QTcpSocket. The new
     class is reentrant and supports blocking. It's also easier to
