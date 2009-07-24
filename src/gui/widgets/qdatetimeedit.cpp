@@ -1936,7 +1936,6 @@ QDateTime QDateTimeEditPrivate::validateAndInterpret(QString &input, int &positi
 
 /*!
   \internal
-  \reimp
 */
 
 QString QDateTimeEditPrivate::textFromValue(const QVariant &f) const
@@ -1947,7 +1946,6 @@ QString QDateTimeEditPrivate::textFromValue(const QVariant &f) const
 
 /*!
   \internal
-  \reimp
 
   This function's name is slightly confusing; it is not to be confused
   with QAbstractSpinBox::valueFromText().
@@ -2105,7 +2103,6 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
 
 /*!
   \internal
-  \reimp
 */
 
 void QDateTimeEditPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
@@ -2135,7 +2132,6 @@ void QDateTimeEditPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
 
 /*!
   \internal
-  \reimp
 */
 
 void QDateTimeEditPrivate::_q_editorCursorPositionChanged(int oldpos, int newpos)

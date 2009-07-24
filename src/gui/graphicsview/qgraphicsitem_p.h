@@ -93,12 +93,6 @@ public:
     void purge();
 };
 
-class QGestureExtraData
-{
-public:
-    QSet<int> gestures;
-};
-
 class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
@@ -108,15 +102,15 @@ public:
         ExtraCursor,
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
-        ExtraBoundingRegionGranularity,
-        ExtraGestures
+        ExtraBoundingRegionGranularity
     };
 
     enum AncestorFlag {
         NoFlag = 0,
         AncestorHandlesChildEvents = 0x1,
         AncestorClipsChildren = 0x2,
-        AncestorIgnoresTransformations = 0x4
+        AncestorIgnoresTransformations = 0x4,
+        AncestorFiltersChildEvents = 0x8
     };
 
     inline QGraphicsItemPrivate()
@@ -126,7 +120,9 @@ public:
         parent(0),
         transformData(0),
         index(-1),
+        siblingIndex(-1),
         depth(0),
+        focusProxy(0),
         acceptedMouseButtons(0x1f),
         visible(1),
         explicitlyHidden(0),
@@ -156,13 +152,15 @@ public:
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
-        geometryChanged(0),
+        geometryChanged(1),
         inDestructor(0),
         isObject(0),
         ignoreVisible(0),
         ignoreOpacity(0),
         acceptTouchEvents(0),
         acceptedTouchBeginEvent(0),
+        filtersDescendantEvents(0),
+        sceneTransformTranslateOnly(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -170,6 +168,15 @@ public:
 
     inline virtual ~QGraphicsItemPrivate()
     { }
+
+    static const QGraphicsItemPrivate *get(const QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
+    static QGraphicsItemPrivate *get(QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
 
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
                             AncestorFlag flag = NoFlag, bool enabled = false, bool root = true);
@@ -184,6 +191,7 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    void updateSceneTransformFromParent();
 
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
@@ -293,6 +301,13 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
+    void ensureSceneTransform();
+
+    inline bool hasTranslateOnlySceneTransform()
+    {
+        ensureSceneTransform();
+        return sceneTransformTranslateOnly;
+    }
 
     inline void invalidateChildrenSceneTransform()
     {
@@ -377,6 +392,7 @@ public:
     }
 
     inline QTransform transformToParent() const;
+    inline void ensureSortedChildren();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
@@ -392,31 +408,9 @@ public:
     TransformData *transformData;
     QTransform sceneTransform;
     int index;
+    int siblingIndex;
     int depth;
-
-    inline QGestureExtraData* extraGestures() const
-    {
-        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
-        if (!c) {
-            QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
-            c = new QGestureExtraData;
-            that->setExtra(ExtraGestures, qVariantFromValue<void *>(c));
-        }
-        return c;
-    }
-    QGestureExtraData* maybeExtraGestures() const
-    {
-        return (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
-    }
-    inline void removeExtraGestures()
-    {
-        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
-        delete c;
-        unsetExtra(ExtraGestures);
-    }
-    bool hasGesture(const QString &gesture) const;
-    void grabGesture(int id);
-    bool releaseGesture(int id);
+    QGraphicsItem *focusProxy;
 
     // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
@@ -431,7 +425,7 @@ public:
     quint32 handlesChildEvents : 1;
     quint32 itemDiscovered : 1;
     quint32 hasCursor : 1;
-    quint32 ancestorFlags : 3;
+    quint32 ancestorFlags : 4;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
     quint32 isWidget : 1;
@@ -443,13 +437,13 @@ public:
     quint32 inSetPosHelper : 1;
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
-    quint32 fullUpdatePending : 1;
 
     // New 32 bits
-    quint32 flags : 12;
+    quint32 fullUpdatePending : 1;
+    quint32 flags : 13;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 dirtySceneTransform  : 1;
+    quint32 dirtySceneTransform : 1;
     quint32 geometryChanged : 1;
     quint32 inDestructor : 1;
     quint32 isObject : 1;
@@ -457,7 +451,9 @@ public:
     quint32 ignoreOpacity : 1;
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
-    quint32 unused : 10; // feel free to use
+    quint32 filtersDescendantEvents : 1;
+    quint32 sceneTransformTranslateOnly : 1;
+    quint32 unused : 6; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
@@ -488,6 +484,10 @@ struct QGraphicsItemPrivate::TransformData {
         if (onlyTransform) {
             if (!postmultiplyTransform)
                 return transform;
+            if (postmultiplyTransform->isIdentity())
+                return transform;
+            if (transform.isIdentity())
+                return *postmultiplyTransform;
             QTransform x(transform);
             x *= *postmultiplyTransform;
             return x;
@@ -508,6 +508,29 @@ struct QGraphicsItemPrivate::TransformData {
     }
 };
 
+/*!
+    \internal
+*/
+inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    // Return true if sibling item1 is on top of item2.
+    const QGraphicsItemPrivate *d1 = item1->d_ptr;
+    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
+    bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
+    if (f1 != f2)
+        return f2;
+    if (d1->z != d2->z)
+        return d1->z > d2->z;
+    return d1->siblingIndex > d2->siblingIndex;
+}
+
+/*!
+    \internal
+*/
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{ return qt_closestLeaf(item2, item1); }
+
 /*
    return the full transform of the item to the parent.  This include the position and all the transform data
 */
@@ -516,6 +539,14 @@ inline QTransform QGraphicsItemPrivate::transformToParent() const
     QTransform matrix;
     combineTransformToParent(&matrix);
     return matrix;
+}
+
+inline void QGraphicsItemPrivate::ensureSortedChildren()
+{
+    if (needSortChildren) {
+        qSort(children.begin(), children.end(), qt_notclosestLeaf);
+        needSortChildren = 0;
+    }
 }
 
 QT_END_NAMESPACE

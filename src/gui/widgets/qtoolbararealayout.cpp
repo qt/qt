@@ -156,21 +156,15 @@ void QToolBarAreaLayoutLine::fitLayout()
         if (item.skip())
             continue;
 
-        QToolBarLayout *tblayout = qobject_cast<QToolBarLayout*>(item.widgetItem->widget()->layout());
-        if (tblayout)
+        if (QToolBarLayout *tblayout = qobject_cast<QToolBarLayout*>(item.widgetItem->widget()->layout()))
             tblayout->checkUsePopupMenu();
 
-        int itemMin = pick(o, item.minimumSize());
-        int itemHint = pick(o, item.sizeHint());
-        //we ensure the extraspace is not too low
-        item.size = qMax(item.size, itemHint);
-        if (item.preferredSize > 0) {
-            //preferredSize would be the default size
-            item.size = item.preferredSize;
-        }
+        const int itemMin = pick(o, item.minimumSize());
+        //preferredSize is the default if it is set, otherwise, we take the sizehint
+        item.size = item.preferredSize > 0 ? item.preferredSize : pick(o, item.sizeHint());
 
         //the extraspace is the space above the item minimum sizehint
-        int extraSpace = qMin(item.size - itemMin, extra);
+        const int extraSpace = qMin(item.size - itemMin, extra);
         item.size = itemMin + extraSpace; //that is the real size
 
         extra -= extraSpace;
@@ -932,7 +926,7 @@ void QToolBarAreaLayout::apply(bool animate)
                 if (visible && dock.o == Qt::Horizontal)
                     geo = QStyle::visualRect(dir, line.rect, geo);
 
-                layout->widgetAnimator->animate(widget, geo, animate);
+                layout->widgetAnimator.animate(widget, geo, animate);
             }
         }
     }

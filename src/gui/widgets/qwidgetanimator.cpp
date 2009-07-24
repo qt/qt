@@ -39,158 +39,80 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qtimer.h>
-#include <QtCore/qdatetime.h>
+#include <QtCore/qpropertyanimation.h>
 #include <QtGui/qwidget.h>
-#include <QtGui/qtextedit.h>
-#include <QtGui/private/qwidget_p.h>
-#include <qdebug.h>
+#include <QtGui/private/qmainwindowlayout_p.h>
 
 #include "qwidgetanimator_p.h"
 
 QT_BEGIN_NAMESPACE
 
-static const int g_animation_steps = 12;
-static const int g_animation_interval = 16;
-
-// 1000 * (x/(1 + x*x) + 0.5) on interval [-1, 1]
-static const int g_animate_function[] =
+QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout) : m_mainWindowLayout(layout)
 {
-    0, 1, 5, 12, 23, 38, 58, 84, 116, 155, 199, 251, 307, 368,
-    433, 500, 566, 631, 692, 748, 799, 844, 883, 915, 941, 961,
-    976, 987, 994, 998, 1000
-};
-static const int g_animate_function_points = sizeof(g_animate_function)/sizeof(int);
-
-static inline int animateHelper(int start, int stop, int step, int steps)
-{
-    if (start == stop)
-        return start;
-    if (step == 0)
-        return start;
-    if (step == steps)
-        return stop;
-
-    int x = g_animate_function_points*step/(steps + 1);
-    return start + g_animate_function[x]*(stop - start)/1000;
-}
-
-QWidgetAnimator::QWidgetAnimator(QObject *parent)
-    : QObject(parent)
-{
-    m_time = new QTime();
-    m_timer = new QTimer(this);
-    m_timer->setInterval(g_animation_interval);
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(animationStep()));
-}
-
-QWidgetAnimator::~QWidgetAnimator()
-{
-    delete m_time;
 }
 
 void QWidgetAnimator::abort(QWidget *w)
 {
-    if (m_animation_map.remove(w) == 0)
+#ifndef QT_NO_ANIMATION
+    AnimationMap::iterator it = m_animation_map.find(w);
+    if (it == m_animation_map.end())
         return;
-    if (m_animation_map.isEmpty()) {
-        m_timer->stop();
-        emit finishedAll();
-    }
+    QPropertyAnimation *anim = *it;
+    m_animation_map.erase(it);
+    anim->stop();
+    m_mainWindowLayout->animationFinished(w);
+#else
+    Q_UNUSED(w); //there is no animation to abort
+#endif //QT_NO_ANIMATION
 }
+
+#ifndef QT_NO_ANIMATION
+void QWidgetAnimator::animationFinished()
+{
+    QPropertyAnimation *anim = qobject_cast<QPropertyAnimation*>(sender());
+    abort(static_cast<QWidget*>(anim->targetObject()));
+}
+#endif //QT_NO_ANIMATION
 
 void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, bool animate)
 {
-    QRect final_geometry = _final_geometry;
-
     QRect r = widget->geometry();
     if (r.right() < 0 || r.bottom() < 0)
         r = QRect();
 
-    if (r.isNull() || final_geometry.isNull())
-        animate = false;
+    animate = animate && !r.isNull() && !_final_geometry.isNull();
 
+    // might make the wigdet go away by sending it to negative space
+    const QRect final_geometry = _final_geometry.isValid() || widget->isWindow() ? _final_geometry :
+        QRect(QPoint(-500 - widget->width(), -500 - widget->height()), widget->size());
+
+    if (r == final_geometry)
+        return; //the widget is already where it should be
+#ifndef QT_NO_ANIMATION
     AnimationMap::const_iterator it = m_animation_map.constFind(widget);
-    if (it == m_animation_map.constEnd()) {
-        if (r == final_geometry) {
-            emit finished(widget);
-            return;
-        }
-    } else {
-        if ((*it).r2 == final_geometry)
-            return;
-    }
-
-    if (animate) {
-        AnimationItem item(widget, r, final_geometry);
-        m_animation_map[widget] = item;
-        if (!m_timer->isActive()) {
-            m_timer->start();
-            m_time->start();
-        }
-    } else {
-        m_animation_map.remove(widget);
-        if (m_animation_map.isEmpty())
-            m_timer->stop();
-
-        if (!final_geometry.isValid() && !widget->isWindow()) {
-            // Make the wigdet go away by sending it to negative space
-            QSize s = widget->size();
-            final_geometry = QRect(-500 - s.width(), -500 - s.height(), s.width(), s.height());
-        }
-        widget->setGeometry(final_geometry);
-
-        emit finished(widget);
-
-        if (m_animation_map.isEmpty())
-            emit finishedAll();
-
+    if (it != m_animation_map.constEnd() && (*it)->endValue().toRect() == final_geometry)
         return;
-    }
-}
 
-void QWidgetAnimator::animationStep()
-{
-    int steps = (1 + m_time->restart())/g_animation_interval;
-    AnimationMap::iterator it = m_animation_map.begin();
-    while (it != m_animation_map.end()) {
-        AnimationItem &item = *it;
-
-        item.step = qMin(item.step + steps, g_animation_steps);
-
-        int x = animateHelper(item.r1.left(), item.r2.left(),
-                            item.step, g_animation_steps);
-        int y = animateHelper(item.r1.top(), item.r2.top(),
-                            item.step, g_animation_steps);
-        int w = animateHelper(item.r1.width(), item.r2.width(),
-                            item.step, g_animation_steps);
-        int h = animateHelper(item.r1.height(), item.r2.height(),
-                            item.step, g_animation_steps);
-
-        item.widget->setGeometry(x, y, w, h);
-
-        if (item.step == g_animation_steps) {
-            emit finished(item.widget);
-            AnimationMap::iterator tmp = it;
-            ++it;
-            m_animation_map.erase(tmp);
-        } else {
-            ++it;
-        }
-    }
-
-    if (m_animation_map.isEmpty()) {
-        m_timer->stop();
-        emit finishedAll();
-    }
+    QPropertyAnimation *anim = new QPropertyAnimation(widget, "geometry");
+    anim->setDuration(animate ? 200 : 0);
+    anim->setEasingCurve(QEasingCurve::InOutQuad);
+    anim->setEndValue(final_geometry);
+    m_animation_map[widget] = anim;
+    connect(anim, SIGNAL(finished()), SLOT(animationFinished()));
+    anim->start(QPropertyAnimation::DeleteWhenStopped);
+#else
+    //we do it in one shot
+    widget->setGeometry(final_geometry);
+    m_mainWindowLayout->animationFinished(widget);
+#endif //QT_NO_ANIMATION
 }
 
 bool QWidgetAnimator::animating() const
 {
-    return m_timer->isActive();
+    return !m_animation_map.isEmpty();
 }
 
-bool QWidgetAnimator::animating(QWidget *widget)
+bool QWidgetAnimator::animating(QWidget *widget) const
 {
     return m_animation_map.contains(widget);
 }

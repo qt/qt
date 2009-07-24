@@ -148,7 +148,7 @@ namespace QT_NAMESPACE {}
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
-     WIN32    - Win32 (Windows 95/98/ME and Windows NT/2000/XP)
+     WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
      WINCE    - WinCE (Windows CE 5.0)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -684,7 +684,8 @@ namespace QT_NAMESPACE {}
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
+//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
 #    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
@@ -724,7 +725,7 @@ namespace QT_NAMESPACE {}
 #      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
 #    endif
 #    if __HP_aCC-0 >= 062000
-#      define Q_DECL_EXPORT     __attribute__((visibility("default"))
+#      define Q_DECL_EXPORT     __attribute__((visibility("default")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
@@ -1503,24 +1504,13 @@ inline QT3_SUPPORT bool qSysInfo(int *wordSize, bool *bigEndian)
 
 #if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
 #if defined(QT3_SUPPORT)
-inline QT3_SUPPORT bool qt_winUnicode() { return !(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based); }
+inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
-#ifdef Q_OS_WINCE
-#define QT_WA(uni, ansi) uni
-#define QT_WA_INLINE(uni, ansi) (uni)
-#elif defined(Q_CC_MWERKS)
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) (ansi)
-#elif defined(UNICODE)
-#define QT_WA(uni, ansi) if (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based)) { uni } else { ansi }
+#define QT_WA(unicode, ansi) unicode
+#define QT_WA_INLINE(unicode, ansi) (unicode)
 
-#define QT_WA_INLINE(uni, ansi) (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based) ? uni : ansi)
-#else
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) ansi
-#endif
 #endif /* Q_WS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE
@@ -2170,7 +2160,7 @@ public:
 
     inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f; }
+    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == f ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\
@@ -2306,6 +2296,18 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #define QT_TRANSLATE_NOOP_UTF8(scope, x) (x)
 #define QT_TRANSLATE_NOOP3(scope, x, comment) {x, comment}
 #define QT_TRANSLATE_NOOP3_UTF8(scope, x, comment) {x, comment}
+
+#ifndef QT_NO_TRANSLATION // ### This should enclose the NOOPs above
+
+// Defined in qcoreapplication.cpp
+// The better name qTrId() is reserved for an upcoming function which would
+// return a much more powerful QStringFormatter instead of a QString.
+Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
+
+#define QT_TRID_NOOP(id) id
+
+#endif // QT_NO_TRANSLATION
+
 #define QDOC_PROPERTY(text)
 
 /*
@@ -2546,28 +2548,15 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_QFUTURE
 #endif
 
-/*
-    Turn off certain features for compilers that have problems parsing
-    the code.
-*/
-#if (defined(Q_CC_HPACC) && defined(QT_ARCH_PARISC)) \
-    || defined(Q_CC_MIPS) \
-    || defined(Q_CC_XLC)
-// HP aCC A.03.*, MIPSpro, and xlC cannot handle
-// the template function declarations for the QtConcurrent functions
-#  define QT_NO_QFUTURE
-#  define QT_NO_CONCURRENT
-#endif
-
-// MSVC 6.0, MSVC .NET 2002, and old versions of Sun CC can`t handle the map(), etc templates,
+// MSVC 6.0 and MSVC .NET 2002,  can`t handle the map(), etc templates,
 // but the QFuture class compiles.
-#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300) || (defined (__SUNPRO_CC) && __SUNPRO_CC <= 0x590)
+#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300)
 #  define QT_NO_CONCURRENT
 #endif
 
-// Mingw uses a gcc 3 version which has problems with some of the
-// map/filter overloads. So does IRIX and Solaris.
-#if (defined(Q_OS_IRIX) || defined(Q_CC_MINGW) || defined (Q_OS_SOLARIS)) && (__GNUC__ < 4)
+// gcc 3 version has problems with some of the
+// map/filter overloads.
+#if defined(Q_CC_GNU) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
 #endif

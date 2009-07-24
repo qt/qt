@@ -55,6 +55,7 @@
 #include <qpushbutton.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
+#include <qlineedit.h>
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
@@ -211,9 +212,11 @@ private slots:
     void noFallbackToRoot();
     void setCurrentIndex_data();
     void setCurrentIndex();
-    
+
     void task221955_selectedEditor();
     void task250754_fontChange();
+    void task200665_itemEntered();
+    void task257481_emptyEditor();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -951,12 +954,12 @@ void tst_QAbstractItemView::dragAndDropOnChild()
 class TestModel : public QStandardItemModel
 {
 public:
-    TestModel(int rows, int columns) : QStandardItemModel(rows, columns) 
+    TestModel(int rows, int columns) : QStandardItemModel(rows, columns)
     {
         setData_count = 0;
     }
 
-    virtual bool setData(const QModelIndex &/*index*/, const QVariant &/*value*/, int /*role = Qt::EditRole*/) 
+    virtual bool setData(const QModelIndex &/*index*/, const QVariant &/*value*/, int /*role = Qt::EditRole*/)
     {
         ++setData_count;
         return true;
@@ -973,20 +976,20 @@ void tst_QAbstractItemView::setItemDelegate_data()
     // default is rows, a -1 will switch to columns
     QTest::addColumn<IntList>("rowsOrColumnsWithDelegate");
     QTest::addColumn<QPoint>("cellToEdit");
-    QTest::newRow("4 columndelegates") 
-                << (IntList() << -1 << 0 << 1 << 2 << 3) 
+    QTest::newRow("4 columndelegates")
+                << (IntList() << -1 << 0 << 1 << 2 << 3)
                 << QPoint(0, 0);
-    QTest::newRow("2 identical rowdelegates on the same row") 
-                << (IntList() << 0 << 0) 
+    QTest::newRow("2 identical rowdelegates on the same row")
+                << (IntList() << 0 << 0)
                 << QPoint(0, 0);
-    QTest::newRow("2 identical columndelegates on the same column") 
-                << (IntList() << -1 << 2 << 2) 
+    QTest::newRow("2 identical columndelegates on the same column")
+                << (IntList() << -1 << 2 << 2)
                 << QPoint(2, 0);
-    QTest::newRow("2 duplicate delegates, 1 row and 1 column") 
-                << (IntList() << 0 << -1 << 2) 
+    QTest::newRow("2 duplicate delegates, 1 row and 1 column")
+                << (IntList() << 0 << -1 << 2)
                 << QPoint(2, 0);
-    QTest::newRow("4 duplicate delegates, 2 row and 2 column") 
-                << (IntList() << 0 << 0 << -1 << 2 << 2) 
+    QTest::newRow("4 duplicate delegates, 2 row and 2 column")
+                << (IntList() << 0 << 0 << -1 << 2 << 2)
                 << QPoint(2, 0);
 
 }
@@ -1008,7 +1011,7 @@ void tst_QAbstractItemView::setItemDelegate()
             if (row) {
                 v.setItemDelegateForRow(rc, delegate);
             } else {
-                v.setItemDelegateForColumn(rc, delegate);            
+                v.setItemDelegateForColumn(rc, delegate);
             }
         }
     }
@@ -1126,42 +1129,42 @@ void tst_QAbstractItemView::setCurrentIndex()
 void tst_QAbstractItemView::task221955_selectedEditor()
 {
     QPushButton *button;
-    
+
     QTreeWidget tree;
     tree.setColumnCount(2);
 
     tree.addTopLevelItem(new QTreeWidgetItem(QStringList() << "Foo" <<"1"));
     tree.addTopLevelItem(new QTreeWidgetItem(QStringList() << "Bar" <<"2"));
     tree.addTopLevelItem(new QTreeWidgetItem(QStringList() << "Baz" <<"3"));
-    
+
     QTreeWidgetItem *dummy = new QTreeWidgetItem();
     tree.addTopLevelItem(dummy);
     tree.setItemWidget(dummy, 0, button = new QPushButton("More..."));
     button->setAutoFillBackground(true);  // as recommended in doc
-    
+
     tree.show();
     tree.setFocus();
     tree.setCurrentIndex(tree.model()->index(1,0));
     QTest::qWait(100);
     QApplication::setActiveWindow(&tree);
-    
+
     QVERIFY(! tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
 
     //We set the focus to the button, the index need to be selected
-    button->setFocus();    
+    button->setFocus();
     QTest::qWait(100);
     QVERIFY(tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
-    
+
     tree.setCurrentIndex(tree.model()->index(1,0));
     QVERIFY(! tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
-    
+
     //Same thing but with the flag NoSelection,   nothing can be selected.
     tree.setFocus();
     tree.setSelectionMode(QAbstractItemView::NoSelection);
     tree.clearSelection();
     QVERIFY(tree.selectionModel()->selectedIndexes().isEmpty());
     QTest::qWait(10);
-    button->setFocus();    
+    button->setFocus();
     QTest::qWait(50);
     QVERIFY(tree.selectionModel()->selectedIndexes().isEmpty());
 }
@@ -1202,9 +1205,62 @@ void tst_QAbstractItemView::task250754_fontChange()
     QTest::qWait(30);
     //now with the huge items, the scrollbar must be visible
     QVERIFY(tree.verticalScrollBar()->isVisible());
-    
+
     qApp->setStyleSheet(app_css);
 }
+
+void tst_QAbstractItemView::task200665_itemEntered()
+{
+    //we test that view will emit entered
+    //when the scrollbar move but not the mouse itself
+    QStandardItemModel model(1000,1);
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(200);
+    QRect rect = view.visualRect(model.index(0,0));
+    QCursor::setPos( view.viewport()->mapToGlobal(rect.center()) );
+    QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
+    view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
+    QCOMPARE(spy.count(), 1);
+
+}
+
+void tst_QAbstractItemView::task257481_emptyEditor()
+{
+    QIcon icon = qApp->style()->standardIcon(QStyle::SP_ComputerIcon);
+
+    QStandardItemModel model;
+
+    model.appendRow( new QStandardItem(icon, QString()) );
+    model.appendRow( new QStandardItem(icon, "Editor works") );
+    model.appendRow( new QStandardItem( QString() ) );
+
+    QTreeView treeView;
+    treeView.setRootIsDecorated(false);
+    treeView.setModel(&model);
+    treeView.show();
+
+    treeView.edit(model.index(0,0));
+    QList<QLineEdit *> lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    QCOMPARE(lineEditors.count(), 1);
+    QVERIFY(!lineEditors.first()->size().isEmpty());
+
+    QTest::qWait(30);
+
+    treeView.edit(model.index(1,0));
+    lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    QCOMPARE(lineEditors.count(), 1);
+    QVERIFY(!lineEditors.first()->size().isEmpty());
+
+    QTest::qWait(30);
+
+    treeView.edit(model.index(2,0));
+    lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    QCOMPARE(lineEditors.count(), 1);
+    QVERIFY(!lineEditors.first()->size().isEmpty());
+}
+
 
 QTEST_MAIN(tst_QAbstractItemView)
 #include "tst_qabstractitemview.moc"

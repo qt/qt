@@ -92,10 +92,6 @@ QT_BEGIN_NAMESPACE
     Example of using complex regions:
     \snippet doc/src/snippets/code/src_gui_painting_qregion.cpp 0
 
-    \warning Due to window system limitations, the whole coordinate space for a
-    region is limited to the points between -32767 and 32767 on Windows
-    95/98/ME. You can circumvent this limitation by using a QPainterPath.
-
     \section1 Additional License Information
 
     On Embedded Linux, Windows CE and X11 platforms, parts of this class rely on

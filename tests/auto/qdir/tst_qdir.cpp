@@ -618,10 +618,21 @@ void tst_QDir::entryList()
         // lock up. The actual result depends on the file system.
         return;
     }
-    for (int i=0; i<max; ++i)
-        QCOMPARE(actual[i], expected[i]);
+    bool doContentCheck = true;
+#ifdef Q_OS_UNIX
+    if (qstrcmp(QTest::currentDataTag(), "QDir::AllEntries | QDir::Writable") == 0) {
+        // for root, everything is writeable
+        if (::getuid() == 0)
+            doContentCheck = false;
+    }
+#endif
 
-    QCOMPARE(actual.count(), expected.count());
+    if (doContentCheck) {
+        for (int i=0; i<max; ++i)
+            QCOMPARE(actual[i], expected[i]);
+
+        QCOMPARE(actual.count(), expected.count());
+    }
 
 #if defined(Q_OS_SYMBIAN)
     // Test cleanup on device requires setting the permissions back to normal

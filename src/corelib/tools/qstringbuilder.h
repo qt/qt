@@ -69,7 +69,7 @@ private:
 };
 
 
-template <typename T> class QConcatenable {};
+template <typename T> struct QConcatenable {};
 
 template <typename A, typename B>
 class QStringBuilder
@@ -200,6 +200,18 @@ template <> struct QConcatenable<const char *>
     {
         while (*a)
             *out++ = QLatin1Char(*a++);
+    }
+};
+
+template <> struct QConcatenable<QByteArray>
+{
+    typedef QByteArray type;
+    static int size(const QByteArray &ba) { return qstrnlen(ba.constData(), ba.size()); }
+    static inline void appendTo(const QByteArray &ba, QChar *&out)
+    {
+        const char *data = ba.constData();
+        while (*data)
+            *out++ = QLatin1Char(*data++);
     }
 };
 #endif

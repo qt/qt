@@ -178,7 +178,7 @@ int main(int argc, char **argv)
     QState *centeredState = new QState(rootState);
 
     // Values
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < items.count(); ++i) {
         Pixmap *item = items.at(i);
         // Ellipse
         ellipseState->assignProperty(item, "pos",
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
     rootState->setInitialState(centeredState);
 
     QParallelAnimationGroup *group = new QParallelAnimationGroup;
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < items.count(); ++i) {
         QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
         anim->setDuration(750 + i * 25);
         anim->setEasingCurve(QEasingCurve::InOutBack);
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
     trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < items.count(); ++i) {
         QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
         anim->setDuration(750 + i * 25);
         anim->setEasingCurve(QEasingCurve::InOutBack);
@@ -239,7 +239,7 @@ int main(int argc, char **argv)
     trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < items.count(); ++i) {
         QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
         anim->setDuration(750 + i * 25);
         anim->setEasingCurve(QEasingCurve::InOutBack);
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
     trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < items.count(); ++i) {
         QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
         anim->setDuration(750 + i * 25);
         anim->setEasingCurve(QEasingCurve::InOutBack);
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
     trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < items.count(); ++i) {
         QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
         anim->setDuration(750 + i * 25);
         anim->setEasingCurve(QEasingCurve::InOutBack);

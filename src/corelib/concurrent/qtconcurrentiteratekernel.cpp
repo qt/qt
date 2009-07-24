@@ -42,20 +42,14 @@
 #include "qtconcurrentiteratekernel.h"
 
 #if defined(Q_OS_MAC)
-
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <unistd.h>
-
 #elif defined(Q_OS_UNIX)
-
 #include <time.h>
 #include <unistd.h>
-
 #elif defined(Q_OS_WIN)
-
-#include <windows.h>
-
+#include <qt_windows.h>
 #endif
 
 

@@ -42,7 +42,7 @@ static const HashTableValue JSDOMParserTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMParserTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMParserTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMParserTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSDOMParserConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMParserConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMParserConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMParserConstructorTableValues, 0 };
 #else
@@ -104,7 +104,7 @@ static const HashTableValue JSDOMParserPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMParserPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMParserPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMParserPrototypeTableValues, 0 };
 #else

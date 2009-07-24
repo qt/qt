@@ -332,6 +332,22 @@
     \sa QAbstractSocket::state()
 */
 
+/*!
+    \enum QAbstractSocket::SocketOption
+    \since 4.6
+
+    This enum represents the options that can be set on a socket.
+    If desired, they can be set after having received the connected() signal from
+    the socket or after having received a new socket from a QTcpServer.
+
+    \value LowDelayOption Try to optimize the socket for low latency. For a QTcpSocket
+    this would set the TCP_NODELAY option and disable Nagle's algorithm. Set this to 1
+    to enable.
+    \value KeepAliveOption Set this to 1 to enable the SO_KEEPALIVE socket option
+
+    \sa QAbstractSocket::setSocketOption(), QAbstractSocket::socketOption()
+*/
+
 #include "qabstractsocket.h"
 #include "qabstractsocket_p.h"
 
@@ -1548,6 +1564,56 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
 
     return true;
 }
+
+/*!
+    Sets the option \a option to the value described by \a value.
+
+    \sa socketOption()
+    \since 4.6
+*/
+void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, QVariant value)
+{
+    if (!d_func()->socketEngine)
+        return;
+
+    switch (option) {
+        case LowDelayOption:
+            d_func()->socketEngine->setOption(QAbstractSocketEngine::LowDelayOption, value.toInt());
+            break;
+
+        case KeepAliveOption:
+            d_func()->socketEngine->setOption(QAbstractSocketEngine::KeepAliveOption, value.toInt());
+            break;
+    }
+}
+
+/*!
+    Returns the value of the \a option option.
+
+    \sa setSocketOption()
+    \since 4.6
+*/
+QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
+{
+    if (!d_func()->socketEngine)
+        return QVariant();
+
+    int ret = -1;
+    switch (option) {
+        case LowDelayOption:
+            ret = d_func()->socketEngine->option(QAbstractSocketEngine::LowDelayOption);
+            break;
+
+        case KeepAliveOption:
+            ret = d_func()->socketEngine->option(QAbstractSocketEngine::KeepAliveOption);
+            break;
+    }
+    if (ret == -1)
+        return QVariant();
+    else
+        return QVariant(ret);
+}
+
 
 /*
    Returns the difference between msecs and elapsed. If msecs is -1,

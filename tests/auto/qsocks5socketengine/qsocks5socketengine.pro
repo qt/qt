@@ -13,3 +13,4 @@ QT = core network
 symbian:INCPATH+=..\..\..\include\QtNetwork\private
 
 
+requires(contains(QT_CONFIG,private_tests))

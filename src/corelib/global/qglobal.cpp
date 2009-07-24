@@ -922,7 +922,7 @@ QT_BEGIN_NAMESPACE
     \fn bool qt_winUnicode()
     \relates <QtGlobal>
 
-    Use QSysInfo::WindowsVersion and QSysInfo::WV_DOS_based instead.
+    This function always returns true.
 
     \sa QSysInfo
 */
@@ -1673,15 +1673,11 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     if (winver)
         return winver;
     winver = QSysInfo::WV_NT;
-#ifndef Q_OS_WINCE
-    OSVERSIONINFOA osver;
-    osver.dwOSVersionInfoSize = sizeof(osver);
-    GetVersionExA(&osver);
-#else
-    DWORD qt_cever = 0;
     OSVERSIONINFOW osver;
     osver.dwOSVersionInfoSize = sizeof(osver);
     GetVersionEx(&osver);
+#ifdef Q_OS_WINCE
+    DWORD qt_cever = 0;
     qt_cever = osver.dwMajorVersion * 100;
     qt_cever += osver.dwMinorVersion * 10;
 #endif
@@ -1725,7 +1721,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_WINDOWS7;
         } else {
             qWarning("Qt: Untested Windows version %d.%d detected!",
-                     osver.dwMajorVersion, osver.dwMinorVersion);
+                     int(osver.dwMajorVersion), int(osver.dwMinorVersion));
             winver = QSysInfo::WV_NT_based;
         }
     }
@@ -2049,29 +2045,16 @@ QString qt_error_string(int errorCode)
         break;
     default: {
 #ifdef Q_OS_WIN
-        QT_WA({
-            unsigned short *string = 0;
-            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-                          NULL,
-                          errorCode,
-                          MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                          (LPTSTR)&string,
-                          0,
-                          NULL);
-            ret = QString::fromUtf16(string);
-            LocalFree((HLOCAL)string);
-        }, {
-            char *string = 0;
-            FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-                           NULL,
-                           errorCode,
-                           MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                           (LPSTR)&string,
-                           0,
-                           NULL);
-            ret = QString::fromLocal8Bit(string);
-            LocalFree((HLOCAL)string);
-        });
+        wchar_t *string = 0;
+        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+                      NULL,
+                      errorCode,
+                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                      string,
+                      0,
+                      NULL);
+        ret = QString::fromWCharArray(string);
+        LocalFree((HLOCAL)string);
 
         if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
             ret = QString::fromLatin1("The specified module could not be found.");
@@ -2669,6 +2652,62 @@ int qrand()
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 36
 
     \sa QT_TR_NOOP(), QT_TRANSLATE_NOOP(), {Internationalization with Qt}
+*/
+
+/*!
+    \fn QString qtTrId(const char *id, int n = -1)
+    \relates <QtGlobal>
+    \reentrant
+    \since 4.6
+
+    Returns a translated string identified by \a id.
+    If no matching string is found, the id itself is returned. This
+    should not happen under normal conditions.
+
+    If \a n >= 0, all occurrences of \c %n in the resulting string
+    are replaced with a decimal representation of \a n. In addition,
+    depending on \a n's value, the translation text may vary.
+
+    Meta data and comments can be passed as documented for QObject::tr().
+    In addition, it is possible to supply a source string template like that:
+
+    \tt{//% <C string>}
+
+    or
+
+    \tt{\begincomment% <C string> \endcomment}
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qttrid
+
+    Creating QM files suitable for use with this function requires passing
+    the \c -idbased option to the \c lrelease tool.
+
+    \warning This method is reentrant only if all translators are
+    installed \e before calling this method. Installing or removing
+    translators while performing translations is not supported. Doing
+    so will probably result in crashes or other undesirable behavior.
+
+    \sa QObject::tr(), QCoreApplication::translate(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRID_NOOP(id)
+    \relates <QtGlobal>
+    \since 4.6
+
+    Marks \a id for dynamic translation.
+    The only purpose of this macro is to provide an anchor for attaching
+    meta data like to qtTrId().
+
+    The macro expands to \a id.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qttrid_noop
+
+    \sa qtTrId(), {Internationalization with Qt}
 */
 
 /*!

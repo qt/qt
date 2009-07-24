@@ -70,6 +70,9 @@
     pendingDatagramSize() to obtain the size of the first pending
     datagram, and readDatagram() to read it.
 
+    \note An incoming datagram should be read when you receive the readyRead()
+    signal, otherwise this signal will not be emitted for the next datagram.
+
     Example:
 
     \snippet doc/src/snippets/code/src_network_socket_qudpsocket.cpp 0

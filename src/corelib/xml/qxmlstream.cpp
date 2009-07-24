@@ -567,7 +567,7 @@ bool QXmlStreamReader::atEnd() const
   returns true, hasError() returns true, and this function returns
   QXmlStreamReader::Invalid.
 
-  The exception is when error() return PrematureEndOfDocumentError.
+  The exception is when error() returns PrematureEndOfDocumentError.
   This error is reported when the end of an otherwise well-formed
   chunk of XML is reached, but the chunk doesn't represent a complete
   XML document.  In that case, parsing \e can be resumed by calling

@@ -77,27 +77,18 @@ public:
     QWin32PrintEnginePrivate *ep;
 };
 
-#ifndef Q_OS_WINCE
-// If you change this function, make sure you also change the unicode equivalent
-template <class PrintDialog, class DeviceMode>
-static PrintDialog *qt_win_make_PRINTDLG(QWidget *parent,
-                                         QPrintDialog *pdlg,
-                                         QPrintDialogPrivate *d, HGLOBAL *tempDevNames)
+static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
+                                    QPrintDialog *pdlg,
+                                    QPrintDialogPrivate *d, HGLOBAL *tempDevNames)
 {
-    PrintDialog *pd = new PrintDialog;
-    memset(pd, 0, sizeof(PrintDialog));
-    pd->lStructSize = sizeof(PrintDialog);
-
-    void *devMode = sizeof(DeviceMode) == sizeof(DEVMODEA)
-                    ? (void *) d->ep->devModeA()
-                    : (void *) d->ep->devModeW();
+    DEVMODE *devMode = d->ep->devMode;
 
     if (devMode) {
-        int size = sizeof(DeviceMode) + ((DeviceMode *) devMode)->dmDriverExtra;
+        int size = sizeof(DEVMODE) + devMode->dmDriverExtra;
         pd->hDevMode = GlobalAlloc(GHND, size);
         {
             void *dest = GlobalLock(pd->hDevMode);
-            memcpy(dest, d->ep->devMode, size);
+            memcpy(dest, devMode, size);
             GlobalUnlock(pd->hDevMode);
         }
     } else {
@@ -130,37 +121,31 @@ static PrintDialog *qt_win_make_PRINTDLG(QWidget *parent,
     if (pd->nMinPage==0 && pd->nMaxPage==0)
         pd->Flags |= PD_NOPAGENUMS;
 
+    // we don't have a 'current page' notion in the QPrinter API yet.
+    // Neither do we support more than one page range, so limit those
+    // options
+    pd->Flags |= PD_NOCURRENTPAGE;
+    pd->nStartPage = START_PAGE_GENERAL;
+    pd->nPageRanges = 1;
+    pd->nMaxPageRanges = 1;
+
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
     pd->hwndOwner = parent ? parent->winId() : 0;
-    pd->nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
-    pd->nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
+    pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
+    pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
     pd->nCopies = d->ep->num_copies;
-
-    return pd;
-}
-#endif // Q_OS_WINCE
-
-// If you change this function, make sure you also change the ansi equivalent
-template <typename T>
-static void qt_win_clean_up_PRINTDLG(T **pd)
-{
-    delete *pd;
-    *pd = 0;
 }
 
-
-// If you change this function, make sure you also change the ansi equivalent
-template <typename T>
-static void qt_win_read_back_PRINTDLG(T *pd, QPrintDialog *pdlg, QPrintDialogPrivate *d)
+static void qt_win_read_back_PRINTDLGEX(PRINTDLGEX *pd, QPrintDialog *pdlg, QPrintDialogPrivate *d)
 {
     if (pd->Flags & PD_SELECTION) {
         pdlg->setPrintRange(QPrintDialog::Selection);
         pdlg->setFromTo(0, 0);
     } else if (pd->Flags & PD_PAGENUMS) {
         pdlg->setPrintRange(QPrintDialog::PageRange);
-        pdlg->setFromTo(pd->nFromPage, pd->nToPage);
+        pdlg->setFromTo(pd->lpPageRanges[0].nFromPage, pd->lpPageRanges[0].nToPage);
     } else {
         pdlg->setPrintRange(QPrintDialog::AllPages);
         pdlg->setFromTo(0, 0);
@@ -234,34 +219,36 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
 
     HGLOBAL *tempDevNames = ep->createDevNames();
 
-    bool result;
     bool done;
-    void *pd = QT_WA_INLINE(
-        (void*)(qt_win_make_PRINTDLG<PRINTDLGW, DEVMODEW>(parent, q, this, tempDevNames)),
-        (void*)(qt_win_make_PRINTDLG<PRINTDLGA, DEVMODEA>(parent, q, this, tempDevNames))
-        );
+    bool result;
+    bool doPrinting;
+
+    PRINTPAGERANGE pageRange;
+    PRINTDLGEX pd;
+    memset(&pd, 0, sizeof(PRINTDLGEX));
+    pd.lStructSize = sizeof(PRINTDLGEX);
+    pd.lpPageRanges = &pageRange;
+    qt_win_setup_PRINTDLGEX(&pd, parent, q, this, tempDevNames);
 
     do {
         done = true;
-        QT_WA({
-            PRINTDLGW *pdw = reinterpret_cast<PRINTDLGW *>(pd);
-            result = PrintDlgW(pdw);
-            if ((pdw->Flags & PD_PAGENUMS) && (pdw->nFromPage > pdw->nToPage))
+        doPrinting = false;
+        result = (PrintDlgEx(&pd) == S_OK);
+        if (result && (pd.dwResultAction == PD_RESULT_PRINT
+                       || pd.dwResultAction == PD_RESULT_APPLY))
+        {
+            doPrinting = (pd.dwResultAction == PD_RESULT_PRINT);
+            if ((pd.Flags & PD_PAGENUMS)
+                && (pd.lpPageRanges[0].nFromPage > pd.lpPageRanges[0].nToPage))
+            {
+                pd.lpPageRanges[0].nFromPage = 1;
+                pd.lpPageRanges[0].nToPage = 1;
                 done = false;
-            if (result && pdw->hDC == 0)
+            }
+            if (pd.hDC == 0)
                 result = false;
-            else if (!result)
-                done = true;
-        }, {
-            PRINTDLGA *pda = reinterpret_cast<PRINTDLGA *>(pd);
-            result = PrintDlgA(pda);
-            if ((pda->Flags & PD_PAGENUMS) && (pda->nFromPage > pda->nToPage))
-                done = false;
-            if (result && pda->hDC == 0)
-                result = false;
-            else if (!result)
-                done = true;
-        });
+        }
+
         if (!done) {
             QMessageBox::warning(0, QPrintDialog::tr("Print"),
                                  QPrintDialog::tr("The 'From' value cannot be greater than the 'To' value."),
@@ -274,16 +261,10 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
     qt_win_eatMouseMove();
 
     // write values back...
-    if (result) {
-        QT_WA({
-            PRINTDLGW *pdw = reinterpret_cast<PRINTDLGW *>(pd);
-            qt_win_read_back_PRINTDLG(pdw, q, this);
-            qt_win_clean_up_PRINTDLG(&pdw);
-        }, {
-            PRINTDLGA *pda = reinterpret_cast<PRINTDLGA *>(pd);
-            qt_win_read_back_PRINTDLG(pda, q, this);
-            qt_win_clean_up_PRINTDLG(&pda);
-        });
+    if (result && (pd.dwResultAction == PD_RESULT_PRINT
+                   || pd.dwResultAction == PD_RESULT_APPLY))
+    {
+        qt_win_read_back_PRINTDLGEX(&pd, q, this);
         // update printer validity
         printer->d_func()->validPrinter = !ep->name.isEmpty();
     }
@@ -291,9 +272,9 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
     // Cleanup...
     GlobalFree(tempDevNames);
 
-    q->done(result);
+    q->done(result && doPrinting);
 
-    return result;
+    return result && doPrinting;
 }
 
 void QPrintDialog::setVisible(bool visible)

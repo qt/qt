@@ -6,14 +6,14 @@ include(qt-defines.qdocconf)
 
 project                 = Qt Assistant
 description             = Qt Assistant Manual
-url                     = http://doc.qtsoftware.com/4.5
+url                     = http://doc.qtsoftware.com/4.6
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 
 qhp.projects            = Assistant
 
 qhp.Assistant.file                = assistant.qhp
-qhp.Assistant.namespace           = com.trolltech.assistant.452
+qhp.Assistant.namespace           = com.trolltech.assistant.460
 qhp.Assistant.virtualFolder       = qdoc
 qhp.Assistant.indexTitle          = Qt Assistant Manual
 qhp.Assistant.extraFiles          = classic.css images/qt-logo.png images/trolltech-logo.png

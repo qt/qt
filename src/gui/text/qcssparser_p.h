@@ -223,6 +223,8 @@ enum KnownValue {
     Value_Decimal,
     Value_LowerAlpha,
     Value_UpperAlpha,
+    Value_LowerRoman,
+    Value_UpperRoman,
     Value_SmallCaps,
     Value_Uppercase,
     Value_Lowercase,

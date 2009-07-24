@@ -51,7 +51,7 @@ static const HashTableValue JSSVGViewElementTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGViewElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGViewElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGViewElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGViewElementPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGViewElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGViewElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGViewElementPrototypeTableValues, 0 };
 #else

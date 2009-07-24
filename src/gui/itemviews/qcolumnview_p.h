@@ -60,7 +60,7 @@
 #include <private/qabstractitemview_p.h>
 
 #include <QtCore/qabstractitemmodel.h>
-#include <QtCore/qtimeline.h>
+#include <QtCore/qpropertyanimation.h>
 #include <QtGui/qabstractitemdelegate.h>
 #include <QtGui/qabstractitemview.h>
 #include <QtGui/qitemdelegate.h>
@@ -148,16 +148,21 @@ public:
     void closeColumns(const QModelIndex &parent = QModelIndex(), bool build = false);
     void doLayout();
     void setPreviewWidget(QWidget *widget);
+    void checkColumnCreation(const QModelIndex &parent);
+
 
     void _q_gripMoved(int offset);
     void _q_changeCurrentColumn();
     void _q_clicked(const QModelIndex &index);
+    void _q_columnsInserted(const QModelIndex &parent, int start, int end);
 
     QList<QAbstractItemView*> columns;
     QVector<int> columnSizes; // used during init and corner moving
     bool showResizeGrips;
     int offset;
-    QTimeLine currentAnimation;
+#ifndef QT_NO_ANIMATION
+    QPropertyAnimation currentAnimation;
+#endif
     QWidget *previewWidget;
     QAbstractItemView *previewColumn;
 };

@@ -80,6 +80,9 @@ private slots:
     void opacity();
     void paths();
     void displayMode();
+    void strokeInherit();
+    void testFillInheritance();
+    void testStopOffsetOpacity();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -624,9 +627,11 @@ void tst_QSvgRenderer::testGzLoading()
     QVERIFY(autoDetectGzData.isValid());
 }
 
+#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 QByteArray qt_inflateGZipDataFrom(QIODevice *device);
 QT_END_NAMESPACE
+#endif
 
 void tst_QSvgRenderer::testGzHelper_data()
 {
@@ -659,6 +664,7 @@ void tst_QSvgRenderer::testGzHelper_data()
 
 void tst_QSvgRenderer::testGzHelper()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QByteArray, in);
     QFETCH(QByteArray, out);
 
@@ -667,6 +673,7 @@ void tst_QSvgRenderer::testGzHelper()
     QVERIFY(buffer.isReadable());
     QByteArray result = qt_inflateGZipDataFrom(&buffer);
     QCOMPARE(result, out);
+#endif
 }
 #endif
 
@@ -923,6 +930,279 @@ void tst_QSvgRenderer::displayMode()
         p.end();
         QCOMPARE(image.pixel(5, 5), expectedColors[i]);
     }
+}
+
+void tst_QSvgRenderer::strokeInherit()
+{
+    static const char *svgs[] = {
+        // Reference.
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"none\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke=\"blue\"/>"
+        "   </g>"
+        "   <g stroke=\"yellow\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke=\"green\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-width
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"0\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-width=\"20\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"10\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke-width=\"0\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-linecap
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"round\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-linecap=\"butt\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-linejoin
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"round\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-linejoin=\"miter\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-miterlimit
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"2\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-miterlimit=\"1\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-dasharray
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"1,1,1,1,1,1,3,1,3,1,3,1,1,1,1,1,1,3\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-dasharray=\"20,10\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"none\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke-dasharray=\"3,3,1\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-dashoffset
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"0\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-dashoffset=\"10\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"0\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke-dashoffset=\"4.5\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-opacity
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-opacity=\"0.5\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>"
+    };
+
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage images[COUNT];
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        images[i] = QImage(200, 30, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+        if (i != 0) {
+            QCOMPARE(images[0], images[i]);
+        }
+    }
+}
+
+void tst_QSvgRenderer::testFillInheritance()
+{
+    static const char *svgs[] = {
+        //reference
+        "<svg viewBox = \"0 0 200 200\">"
+        "    <polygon points=\"20,20 50,120 100,10 40,80 50,80\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "    <polygon points=\"20,20 50,120 100,10 40,80 50,80\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "    <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\" fill-opacity = \"0\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g fill = \"red\" fill-opacity = \"0.5\" fill-rule = \"evenodd\">"
+        "       <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\"/>"
+        "   </g>"
+        "    <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\" fill-opacity = \"0\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g  fill = \"green\" fill-rule = \"nonzero\">"
+        "       <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\" fill = \"red\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "   </g>"
+        "   <g fill-opacity = \"0.8\" fill = \"red\">"
+        "       <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\" fill-opacity = \"0\"/>"
+        "   </g>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g  fill = \"red\" >"
+        "      <g fill-opacity = \"0.5\">"
+        "         <g fill-rule = \"evenodd\">"
+        "            <g>"
+        "                <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\"/>"
+        "            </g>"
+        "         </g>"
+        "      </g>"
+        "   </g>"
+        "   <g fill-opacity = \"0.8\" >"
+        "       <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"none\"/>"
+        "   </g>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g fill = \"none\" fill-opacity = \"0\">"
+        "       <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\" fill = \"red\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "   </g>"
+        "   <g fill-opacity = \"0\" >"
+        "       <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\"/>"
+        "   </g>"
+        "</svg>"
+    };
+
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage images[COUNT];
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        images[i] = QImage(200, 200, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+        if (i != 0) {
+            QCOMPARE(images[0], images[i]);
+        }
+    }
+}
+void tst_QSvgRenderer::testStopOffsetOpacity()
+{
+    static const char *svgs[] = {
+        //reference
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>",
+        //Stop Offset
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"abc\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"-3.bc\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>",
+        //Stop Opacity
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"x.45\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"-3.abc\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"-0.xy\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"z.5\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>",
+        //Stop offset and Stop opacity
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"abc\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"x.45\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"-3.abc\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"-3.bc\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"-0.xy\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"z.5\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>"
+    };
+
+    QImage images[4];
+    QPainter p;
+
+    for (int i = 0; i < 4; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        images[i] = QImage(64, 64, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+    }
+    QCOMPARE(images[0], images[1]);
+    QCOMPARE(images[0], images[2]);
+    QCOMPARE(images[0], images[3]);
 }
 
 QTEST_MAIN(tst_QSvgRenderer)

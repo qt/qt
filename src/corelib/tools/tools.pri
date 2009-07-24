@@ -5,6 +5,7 @@ HEADERS +=  \
 	tools/qbitarray.h \
 	tools/qbytearray.h \
 	tools/qbytearraymatcher.h \
+        tools/qbytedata_p.h \
 	tools/qcache.h \
 	tools/qchar.h \
 	tools/qcontainerfwd.h \

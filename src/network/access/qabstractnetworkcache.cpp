@@ -283,6 +283,8 @@ void QNetworkCacheMetaData::setExpirationDate(const QDateTime &dateTime)
 }
 
 /*!
+    \since 4.6
+
     Returns all the attributes stored with this cache item.
 
     \sa setAttributes(), QNetworkRequest::Attribute
@@ -293,6 +295,8 @@ QNetworkCacheMetaData::AttributesMap QNetworkCacheMetaData::attributes() const
 }
 
 /*!
+    \since 4.6
+
     Sets all attributes of this cache item to be the map \a attributes.
 
     \sa attributes(), QNetworkRequest::setAttribute()

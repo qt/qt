@@ -227,11 +227,18 @@ static inline QSourceLocation fromYYLTYPE(const YYLTYPE &sourceLocator,
 }
 
 /**
+ * @internal
+ * @relates QXmlQuery
+ */
+typedef QFlags<QXmlQuery::QueryLanguage> QueryLanguages;
+
+/**
  * @short Flags invalid expressions and declarations in the currently
  * parsed language.
  *
- * Since this grammar is used for several languages: XQuery 1.0, XSL-T 2.0 and
- * XPath 2.0 inside XSL-T, it is the union of all the constructs in these
+ * Since this grammar is used for several languages: XQuery 1.0, XSL-T 2.0, and
+ * XPath 2.0 inside XSL-T, and field and selector patterns in W3C XML Schema's
+ * identity constraints, it is the union of all the constructs in these
  * languages. However, when dealing with each language individually, we
  * regularly need to disallow some expressions, such as direct element
  * constructors when parsing XSL-T, or the typeswitch when parsing XPath.
@@ -242,19 +249,46 @@ static inline QSourceLocation fromYYLTYPE(const YYLTYPE &sourceLocator,
  * instance the @c let clause, should not be flagged as an error, because it's
  * used for internal purposes.
  *
- * Hence, this function is called from each expression and declaration which is
- * unavailable in XPath.
+ * Hence, this function is called from each expression and declaration with @p
+ * allowedLanguages stating what languages it is allowed in.
  *
  * If @p isInternal is @c true, no error is raised. Otherwise, if the current
- * language is not XQuery, an error is raised.
+ * language is not in @p allowedLanguages, an error is raised.
  */
-static void disallowedConstruct(const ParserContext *const parseInfo,
-                                const YYLTYPE &sourceLocator,
-                                const bool isInternal = false)
+static void allowedIn(const QueryLanguages allowedLanguages,
+                      const ParserContext *const parseInfo,
+                      const YYLTYPE &sourceLocator,
+                      const bool isInternal = false)
 {
-    if(!isInternal && parseInfo->languageAccent != QXmlQuery::XQuery10)
+    /* We treat XPath 2.0 as a subset of XSL-T 2.0, so if XPath 2.0 is allowed
+     * and XSL-T is the language, it's ok. */
+    if(!isInternal &&
+       (!allowedLanguages.testFlag(parseInfo->languageAccent) && !(allowedLanguages.testFlag(QXmlQuery::XPath20) && parseInfo->languageAccent == QXmlQuery::XSLT20)))
     {
-        parseInfo->staticContext->error(QtXmlPatterns::tr("A construct was encountered which only is allowed in XQuery."),
+
+        QString langName;
+
+        switch(parseInfo->languageAccent)
+        {
+            case QXmlQuery::XPath20:
+                langName = QLatin1String("XPath 2.0");
+                break;
+            case QXmlQuery::XSLT20:
+                langName = QLatin1String("XSL-T 2.0");
+                break;
+            case QXmlQuery::XQuery10:
+                langName = QLatin1String("XQuery 1.0");
+                break;
+            case QXmlQuery::XmlSchema11IdentityConstraintSelector:
+                langName = QtXmlPatterns::tr("W3C XML Schema identity constraint selector");
+                break;
+            case QXmlQuery::XmlSchema11IdentityConstraintField:
+                langName = QtXmlPatterns::tr("W3C XML Schema identity constraint field");
+                break;
+        }
+
+        parseInfo->staticContext->error(QtXmlPatterns::tr("A construct was encountered "
+                                                          "which is disallowed in the current language(%1).").arg(langName),
                                         ReportContext::XPST0003,
                                         fromYYLTYPE(sourceLocator, parseInfo));
 
@@ -1560,7 +1594,7 @@ Prolog: /* Empty. */                                                            
 /* First part. */
 | Prolog DefaultNamespaceDecl
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
         if(parseInfo->hasSecondPrologPart)
             parseInfo->staticContext->error(QtXmlPatterns::tr("A default namespace declaration must occur before function, "
                                                "variable, and option declarations."), ReportContext::XPST0003, fromYYLTYPE(@$, parseInfo));
@@ -1579,7 +1613,7 @@ Prolog: /* Empty. */                                                            
     }
 | Prolog Import
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
         if(parseInfo->hasSecondPrologPart)
             parseInfo->staticContext->error(QtXmlPatterns::tr("Module imports must occur before function, "
                                                "variable, and option declarations."), ReportContext::XPST0003, fromYYLTYPE(@$, parseInfo));
@@ -1597,7 +1631,7 @@ Prolog: /* Empty. */                                                            
     }
 | Prolog OptionDecl
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
         parseInfo->hasSecondPrologPart = true;
     }
 
@@ -1705,7 +1739,7 @@ OptionalPriority: /* Empty. */                                                  
         const AtomicValue::Ptr val(Decimal::fromLexical($2));
         if(val->hasError())
         {
-            parseInfo->staticContext->error(QtXmlPatterns::tr("The value of attribute %1 must of type %2, which %3 isn't.")
+            parseInfo->staticContext->error(QtXmlPatterns::tr("The value of attribute %1 must be of type %2, which %3 isn't.")
                                                              .arg(formatKeyword(QLatin1String("priority")),
                                                                   formatType(parseInfo->staticContext->namePool(), BuiltinTypes::xsDecimal),
                                                                   formatData($2)),
@@ -1730,20 +1764,20 @@ TemplateName: NAME ElementName
 Setter: BoundarySpaceDecl                                                           /* [7] */
 | DefaultCollationDecl
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
     }
 | BaseURIDecl
 | ConstructionDecl
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
     }
 | OrderingModeDecl
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
     }
 | EmptyOrderDecl
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
     }
 | CopyNamespacesDecl
 
@@ -1755,7 +1789,7 @@ Separator: SEMI_COLON                                                           
 NamespaceDecl: DECLARE NAMESPACE NCNAME G_EQ URILiteral IsInternal Separator        /* [10] */
     {
         if(!$6)
-            disallowedConstruct(parseInfo, @$);
+            allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
 
         if($3 == QLatin1String("xmlns"))
         {
@@ -1867,7 +1901,7 @@ OptionDecl: DECLARE OPTION ElementName StringLiteral Separator                  
 
 OrderingModeDecl: DECLARE ORDERING OrderingMode Separator                           /* [14] */
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
         if(parseInfo->hasDeclaration(ParserContext::OrderingModeDecl))
         {
             parseInfo->staticContext->error(prologMessage("declare ordering"),
@@ -1964,7 +1998,7 @@ DefaultCollationDecl: DECLARE DEFAULT COLLATION StringLiteral Separator         
 
 BaseURIDecl: DECLARE BASEURI IsInternal URILiteral Separator                        /* [20] */
     {
-        disallowedConstruct(parseInfo, @$, $3);
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XSLT20), parseInfo, @$, $3);
         if(parseInfo->hasDeclaration(ParserContext::BaseURIDecl))
         {
             parseInfo->staticContext->error(prologMessage("declare base-uri"),
@@ -2026,7 +2060,7 @@ FileLocation: URILiteral                                                        
 VarDecl: DECLARE VARIABLE IsInternal DOLLAR VarName TypeDeclaration
          VariableValue OptionalDefaultValue Separator                               /* [24] */
     {
-        disallowedConstruct(parseInfo, @$, $3);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $3);
         if(variableByName($5, parseInfo))
         {
             parseInfo->staticContext->error(QtXmlPatterns::tr("A variable by name %1 has already "
@@ -2126,7 +2160,7 @@ FunctionDecl: DECLARE FUNCTION IsInternal FunctionName LPAREN ParamList RPAREN
               TypeDeclaration FunctionBody Separator                                /* [26] */
     {
         if(!$3)
-            disallowedConstruct(parseInfo, @$, $3);
+            allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $3);
 
         /* If FunctionBody is null, it is 'external', otherwise the value is the body. */
         const QXmlName::NamespaceCode ns($4.namespaceURI());
@@ -2696,7 +2730,7 @@ LetClause: LET IsInternal DOLLAR VarName TypeDeclaration ASSIGN ExprSingle
            }
            LetTail                                                                  /* [36] */
     {
-        disallowedConstruct(parseInfo, @$, $2);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $2);
 
         Q_ASSERT(parseInfo->variables.top()->name == $4);
         $$ = create(new LetClause($<expr>8, $9, parseInfo->variables.top()), @$, parseInfo);
@@ -2835,6 +2869,7 @@ SomeQuantificationExpr: SOME DOLLAR VarName TypeDeclaration IN ExprSingle
                         {$<enums.slot>$ = parseInfo->staticContext->currentRangeSlot();}
                         SomeQuantificationTail                                      /* [X] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new QuantifiedExpression($<enums.slot>8,
                                              QuantifiedExpression::Some, $<expr>6, $9), @$, parseInfo);
         parseInfo->finalizePushedVariable();
@@ -2863,6 +2898,7 @@ EveryQuantificationExpr: EVERY DOLLAR VarName TypeDeclaration IN ExprSingle
                          {$<enums.slot>$ = parseInfo->staticContext->currentRangeSlot();}
                          EveryQuantificationTail                                    /* [X] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new QuantifiedExpression($<enums.slot>8,
                                              QuantifiedExpression::Every, $<expr>6, $9), @$, parseInfo);
         parseInfo->finalizePushedVariable();
@@ -2916,7 +2952,7 @@ TypeswitchExpr: TYPESWITCH LPAREN Expr RPAREN
                 }
                 CaseClause                                                          /* [43] */
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
         parseInfo->typeswitchSource.pop();
         $$ = $6;
     }
@@ -2976,18 +3012,21 @@ CaseDefault: DEFAULT RETURN ExprSingle                                          
 
 IfExpr: IF LPAREN Expr RPAREN THEN ExprSingle ELSE ExprSingle                       /* [45] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new IfThenClause($3, $6, $8), @$, parseInfo);
     }
 
 OrExpr: AndExpr                                                                     /* [46] */
 | OrExpr OR AndExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new OrExpression($1, $3), @$, parseInfo);
     }
 
 AndExpr: ComparisonExpr                                                             /* [47] */
 | AndExpr AND ComparisonExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new AndExpression($1, $3), @$, parseInfo);
     }
 
@@ -2999,12 +3038,14 @@ ComparisonExpr: RangeExpr                                                       
 RangeExpr: AdditiveExpr                                                             /* [49] */
 | AdditiveExpr TO AdditiveExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new RangeExpression($1, $3), @$, parseInfo);
     }
 
 AdditiveExpr: MultiplicativeExpr                                                    /* [50] */
 | AdditiveExpr AdditiveOperator MultiplicativeExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new ArithmeticExpression($1, $2, $3), @$, parseInfo);
     }
 
@@ -3014,6 +3055,7 @@ AdditiveOperator: PLUS  {$$ = AtomicMathematician::Add;}                        
 MultiplicativeExpr: UnionExpr                                                       /* [51] */
 | MultiplicativeExpr MultiplyOperator UnionExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new ArithmeticExpression($1, $2, $3), @$, parseInfo);
     }
 
@@ -3025,12 +3067,18 @@ MultiplyOperator: STAR  {$$ = AtomicMathematician::Multiply;}                   
 UnionExpr: IntersectExceptExpr                                                      /* [52] */
 | UnionExpr UnionOperator IntersectExceptExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10
+                                 | QXmlQuery::XPath20
+                                 | QXmlQuery::XmlSchema11IdentityConstraintField
+                                 | QXmlQuery::XmlSchema11IdentityConstraintSelector),
+                  parseInfo, @$);
         $$ = create(new CombineNodes($1, CombineNodes::Union, $3), @$, parseInfo);
     }
 
 IntersectExceptExpr: InstanceOfExpr                                                 /* [53] */
 | IntersectExceptExpr IntersectOperator InstanceOfExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new CombineNodes($1, $2, $3), @$, parseInfo);
     }
 
@@ -3049,31 +3097,36 @@ IntersectOperator: INTERSECT                                                    
 InstanceOfExpr: TreatExpr                                                           /* [54] */
 | TreatExpr INSTANCE OF SequenceType
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new InstanceOf($1,
-        SequenceType::Ptr($4)), @$, parseInfo);
+                    SequenceType::Ptr($4)), @$, parseInfo);
     }
 
 TreatExpr: CastableExpr                                                             /* [55] */
 | CastableExpr TREAT AS SequenceType
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new TreatAs($1, $4), @$, parseInfo);
     }
 
 CastableExpr: CastExpr                                                              /* [56] */
 | CastExpr CASTABLE AS SingleType
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new CastableAs($1, $4), @$, parseInfo);
     }
 
 CastExpr: UnaryExpr                                                                 /* [57] */
 | UnaryExpr CAST AS SingleType
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new CastAs($1, $4), @$, parseInfo);
     }
 
 UnaryExpr: ValueExpr                                                                /* [58] */
 | UnaryOperator UnaryExpr
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new UnaryExpression($1, $2, parseInfo->staticContext), @$, parseInfo);
     }
 
@@ -3092,6 +3145,7 @@ ValueExpr: ValidateExpr                                                         
 
 GeneralComp: RangeExpr GeneralComparisonOperator RangeExpr                          /* [60] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new GeneralComparison($1, $2, $3, parseInfo->isBackwardsCompat.top()), @$, parseInfo);
     }
 
@@ -3125,7 +3179,7 @@ NodeOperator: IS    {$$ = QXmlNodeModelIndex::Is;}                              
 
 ValidateExpr: ValidationMode EnclosedExpr                                           /* [63] */
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
         parseInfo->staticContext->error(QtXmlPatterns::tr("The Schema Validation Feature is not supported. "
                                                           "Hence, %1-expressions may not be used.")
                                            .arg(formatKeyword("validate")),
@@ -3143,6 +3197,7 @@ ValidationMode: VALIDATE    {$$ = Validate::Strict;}                            
 
 ExtensionExpr: Pragmas EnclosedOptionalExpr                                         /* [65] */
     {
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
         /* We don't support any pragmas, so we only do the
          * necessary validation and use the fallback expression. */
 
@@ -3171,7 +3226,7 @@ Pragmas: Pragmas Pragma                                                         
 
 Pragma: PRAGMA_START PragmaName PragmaContents PRAGMA_END                           /* [66] */
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
     }
 
 PragmaContents: /* empty */                                                         /* [67] */
@@ -3241,12 +3296,14 @@ StepExpr: FilteredAxisStep                                                      
     }
 | BASEURI StringLiteral CURLY_LBRACE Expr CURLY_RBRACE                              /* [X] */
 {
+    allowedIn(QXmlQuery::XSLT20, parseInfo, @$);
     Q_ASSERT(!$2.isEmpty());
     $$ = create(new StaticBaseURIStore($2, $4), @$, parseInfo);
 }
 
 | DECLARE NAMESPACE NCNAME G_EQ STRING_LITERAL CURLY_LBRACE                         /* [X] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XSLT20), parseInfo, @$);
         parseInfo->resolvers.push(parseInfo->staticContext->namespaceBindings());
         const NamespaceResolver::Ptr resolver(new DelegatingNamespaceResolver(parseInfo->staticContext->namespaceBindings()));
         resolver->addBinding(QXmlName(parseInfo->staticContext->namePool()->allocateNamespace($5),
@@ -3449,6 +3506,36 @@ Axis: AxisToken COLONCOLON                                                      
         }
         else
             $$ = $1;
+
+        switch($1)
+        {
+            case QXmlNodeModelIndex::AxisAttribute:
+            {
+                allowedIn(QueryLanguages(  QXmlQuery::XPath20
+                                         | QXmlQuery::XQuery10
+                                         | QXmlQuery::XmlSchema11IdentityConstraintField
+                                         | QXmlQuery::XSLT20),
+                          parseInfo, @$);
+                break;
+            }
+            case QXmlNodeModelIndex::AxisChild:
+            {
+                allowedIn(QueryLanguages(  QXmlQuery::XPath20
+                                         | QXmlQuery::XQuery10
+                                         | QXmlQuery::XmlSchema11IdentityConstraintField
+                                         | QXmlQuery::XmlSchema11IdentityConstraintSelector
+                                         | QXmlQuery::XSLT20),
+                          parseInfo, @$);
+                break;
+            }
+            default:
+            {
+                allowedIn(QueryLanguages(  QXmlQuery::XPath20
+                                         | QXmlQuery::XQuery10
+                                         | QXmlQuery::XSLT20),
+                          parseInfo, @$);
+            }
+        }
     }
 
 AxisToken: ANCESTOR_OR_SELF {$$ = QXmlNodeModelIndex::AxisAncestorOrSelf  ;}
@@ -3470,6 +3557,7 @@ AbbrevForwardStep: AT_SIGN
                    }
                    NodeTest                                                         /* [72] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XSLT20 | QXmlQuery::XmlSchema11IdentityConstraintField), parseInfo, @$);
         $$ = create(new AxisStep(QXmlNodeModelIndex::AxisAttribute, $3), @$, parseInfo);
 
         parseInfo->restoreNodeTestSource();
@@ -3499,6 +3587,9 @@ AbbrevReverseStep: DOTDOT                                                       
 
 NodeTest: NameTest                                                                  /* [78] */
 | KindTest
+    {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
+    }
 
 NameTest: ElementName                                                               /* [79] */
     {
@@ -3521,6 +3612,7 @@ WildCard: STAR                                                                  
     }
 | ANY_PREFIX
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         const QXmlName::LocalNameCode c = parseInfo->staticContext->namePool()->allocateLocalName($1);
         $$ = LocalNameTest::create(parseInfo->nodeTestSource, c);
     }
@@ -3528,6 +3620,7 @@ WildCard: STAR                                                                  
 FilterExpr: PrimaryExpr                                                             /* [81] */
 | FilterExpr LBRACKET Expr RBRACKET
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(GenericPredicate::create($1, $3, parseInfo->staticContext, fromYYLTYPE(@4, parseInfo)), @$, parseInfo);
     }
 
@@ -3556,15 +3649,18 @@ Literal: NumericLiteral                                                         
 
 NumericLiteral: XPATH2_NUMBER                                                       /* [86] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = createNumericLiteral<Double>($1, @$, parseInfo);
     }
 | NUMBER
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = createNumericLiteral<Numeric>($1, @$, parseInfo);
     }
 
 VarRef: DOLLAR VarName                                                              /* [87] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = resolveVariable($2, @$, parseInfo, false);
     }
 
@@ -3580,10 +3676,12 @@ VarName: NCNAME                                                                 
 
 ParenthesizedExpr: LPAREN Expr RPAREN                                               /* [89] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = $2;
     }
 | LPAREN RPAREN
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         $$ = create(new EmptySequence, @$, parseInfo);
     }
 
@@ -3599,6 +3697,7 @@ OrderingExpr: OrderingMode EnclosedExpr                                         
 
 FunctionCallExpr: FunctionName LPAREN FunctionArguments RPAREN                      /* [93] */
     {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
         if(XPathHelper::isReservedNamespace($1.namespaceURI()) || $1.namespaceURI() == StandardNamespaces::InternalXSLT)
         { /* We got a call to a builtin function. */
             const ReflectYYLTYPE ryy(@$, parseInfo);
@@ -3641,9 +3740,12 @@ FunctionArguments: /* empty */                                                  
 
 Constructor: DirectConstructor                                                      /* [94] */
     {
-        disallowedConstruct(parseInfo, @$);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$);
     }
 | ComputedConstructor
+/* The reason we cannot call alloweIn() as the action for ComputedConstructor,
+ * is that we use the computed constructors for XSL-T, and therefore generate
+ * INTERNAL tokens. */
 
 DirectConstructor: DirElemConstructor                                               /* [95] */
 | DirCommentConstructor
@@ -4075,7 +4177,7 @@ ComputedConstructor: CompDocConstructor                                         
 
 CompDocConstructor: DOCUMENT IsInternal EnclosedExpr                                /* [110] */
     {
-        disallowedConstruct(parseInfo, @$, $2);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $2);
 
         $$ = create(new DocumentConstructor($3), @$, parseInfo);
     }
@@ -4088,7 +4190,7 @@ CompElemConstructor: ELEMENT IsInternal CompElementName
                      EnclosedOptionalExpr                                           /* [111] */
     {
         Q_ASSERT(5);
-        disallowedConstruct(parseInfo, @$, $2);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $2);
 
         Expression::Ptr effExpr;
 
@@ -4133,7 +4235,7 @@ CompAttrConstructor: ATTRIBUTE
                      CompAttributeName
                      EnclosedOptionalExpr                                           /* [113] */
     {
-        disallowedConstruct(parseInfo, @$, $2);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $2);
 
         const Expression::Ptr name(create(new AttributeNameValidator($3), @$, parseInfo));
 
@@ -4150,14 +4252,14 @@ CompTextConstructor: TEXT IsInternal EnclosedExpr                               
 
 CompCommentConstructor: COMMENT IsInternal EnclosedExpr                           /* [115] */
     {
-        disallowedConstruct(parseInfo, @$, $2);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $2);
 
         $$ = create(new CommentConstructor(createSimpleContent($3, @$, parseInfo)), @$, parseInfo);
     }
 
 CompPIConstructor: PROCESSING_INSTRUCTION CompPIName EnclosedOptionalExpr           /* [116] */
     {
-        disallowedConstruct(parseInfo, @$, $2);
+        allowedIn(QXmlQuery::XQuery10, parseInfo, @$, $2);
 
         if($3)
         {
@@ -4517,7 +4619,13 @@ PragmaName: NCNAME                                                              
 URILiteral: StringLiteral                                                           /* [140] */
 
 StringLiteral: STRING_LITERAL                                                       /* [144] */
+    {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
+    }
 | XPATH2_STRING_LITERAL
+    {
+        allowedIn(QueryLanguages(QXmlQuery::XQuery10 | QXmlQuery::XPath20), parseInfo, @$);
+    }
 
 QName: QNAME                                                      /* [154] */
     {

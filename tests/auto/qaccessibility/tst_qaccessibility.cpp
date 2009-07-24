@@ -53,12 +53,12 @@
 #include "QtTest/qtestaccessible.h"
 
 #if defined(Q_OS_WINCE)
-extern "C" bool SystemParametersInfoW(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni);
+extern "C" bool SystemParametersInfo(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni);
 #define SPI_GETPLATFORMTYPE 257
 inline bool IsValidCEPlatform() {
     wchar_t tszPlatform[64];
-    if (SystemParametersInfoW(SPI_GETPLATFORMTYPE, sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0)) {
-        QString platform = QString::fromUtf16(tszPlatform);
+    if (SystemParametersInfo(SPI_GETPLATFORMTYPE, sizeof(tszPlatform) / sizeof(*tszPlatform), tszPlatform, 0)) {
+        QString platform = QString::fromWCharArray(tszPlatform);
         if ((platform == QLatin1String("PocketPC")) || (platform == QLatin1String("Smartphone")))
             return false;
     }
@@ -2623,6 +2623,13 @@ void tst_QAccessibility::spinBoxTest()
         QVERIFY(childRect.isNull() == false);
     }
 
+    spinBox->setFocus();
+    QTestAccessibility::clearEvents();
+    QTest::keyPress(spinBox, Qt::Key_Up);
+    QTest::qWait(200);
+    EventList events = QTestAccessibility::events();
+    QTestAccessibilityEvent expectedEvent(spinBox, 0, (int)QAccessible::ValueChanged);
+    QVERIFY(events.contains(expectedEvent));
     delete spinBox;
     QTestAccessibility::clearEvents();
 #else

@@ -46,7 +46,7 @@ static const HashTableValue JSMimeTypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSMimeTypeTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSMimeTypeConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypeConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypeConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMimeTypeConstructorTableValues, 0 };
 #else
@@ -98,7 +98,7 @@ static const HashTableValue JSMimeTypePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMimeTypePrototypeTableValues, 0 };
 #else

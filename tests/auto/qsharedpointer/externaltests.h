@@ -45,6 +45,7 @@
 
 #include <QList>
 #include <QByteArray>
+#include <QStringList>
 
 QT_BEGIN_NAMESPACE
 namespace QTest {
@@ -101,6 +102,9 @@ namespace QTest {
 
         ApplicationType applicationType() const;
         void setApplicationType(ApplicationType type);
+
+        QStringList extraProgramSources() const;
+        void setExtraProgramSources(const QStringList &list);
 
         QByteArray programHeader() const;
         void setProgramHeader(const QByteArray &header);

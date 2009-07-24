@@ -377,13 +377,10 @@ void MainWindow::setCurrentFile(const QString &fileName)
     textEdit->document()->setModified(false);
     setWindowModified(false);
 
-    QString shownName;
+    QString shownName = curFile;
     if (curFile.isEmpty())
         shownName = "untitled.txt";
-    else
-        shownName = strippedName(curFile);
-
-    setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr("Application")));
+    setWindowFilePath(shownName);
 }
 //! [47]
 

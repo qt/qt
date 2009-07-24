@@ -75,6 +75,7 @@ Settings::Settings(Page* page)
 #endif
     , m_needsAdobeFrameReloadingQuirk(false)
     , m_needsKeyboardEventDisambiguationQuirks(false)
+    , m_treatsAnyTextCSSLinkAsStylesheet(false)
     , m_needsLeopardMailQuirks(false)
     , m_needsTigerMailQuirks(false)
     , m_isDOMPasteAllowed(false)
@@ -87,6 +88,7 @@ Settings::Settings(Page* page)
     , m_needsSiteSpecificQuirks(false)
     , m_fontRenderingMode(0)
     , m_webArchiveDebugModeEnabled(false)
+    , m_localFileContentSniffingEnabled(false)
     , m_inApplicationChromeMode(false)
     , m_offlineWebApplicationCacheEnabled(false)
     , m_shouldPaintCustomScrollbars(false)
@@ -314,6 +316,11 @@ void Settings::setNeedsKeyboardEventDisambiguationQuirks(bool needsQuirks)
     m_needsKeyboardEventDisambiguationQuirks = needsQuirks;
 }
 
+void Settings::setTreatsAnyTextCSSLinkAsStylesheet(bool treatsAnyTextCSSLinkAsStylesheet)
+{
+    m_treatsAnyTextCSSLinkAsStylesheet = treatsAnyTextCSSLinkAsStylesheet;
+}
+
 void Settings::setNeedsLeopardMailQuirks(bool needsQuirks)
 {
     m_needsLeopardMailQuirks = needsQuirks;
@@ -398,6 +405,11 @@ void Settings::setNeedsSiteSpecificQuirks(bool needsQuirks)
 void Settings::setWebArchiveDebugModeEnabled(bool enabled)
 {
     m_webArchiveDebugModeEnabled = enabled;
+}
+
+void Settings::setLocalFileContentSniffingEnabled(bool enabled)
+{
+    m_localFileContentSniffingEnabled = enabled;
 }
 
 void Settings::setLocalStorageDatabasePath(const String& path)

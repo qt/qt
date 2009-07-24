@@ -689,7 +689,7 @@ qmake -o Makefile hello.pro
 
 
 //! [115]
-qmake -tp vc -o hello.dsp hello.pro
+qmake -tp vc hello.pro
 //! [115]
 
 

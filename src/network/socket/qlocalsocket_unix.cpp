@@ -41,6 +41,7 @@
 
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
+#include "qnet_unix_p.h"
 
 #ifndef QT_NO_LOCALSOCKET
 
@@ -232,7 +233,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     }
 
     // create the socket
-    if (-1 == (d->connectingSocket = qSocket(PF_UNIX, SOCK_STREAM, 0))) {
+    if (-1 == (d->connectingSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0))) {
         d->errorOccurred(UnsupportedSocketOperationError,
                         QLatin1String("QLocalSocket::connectToServer"));
         return;
@@ -283,7 +284,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
     }
     ::memcpy(name.sun_path, connectingPathName.toLatin1().data(),
              connectingPathName.toLatin1().size() + 1);
-    if (-1 == qConnect(connectingSocket, (struct sockaddr *)&name, sizeof(name)) && errno != EISCONN) {
+    if (-1 == qt_safe_connect(connectingSocket, (struct sockaddr *)&name, sizeof(name))) {
         QString function = QLatin1String("QLocalSocket::connectToServer");
         switch (errno)
         {

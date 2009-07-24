@@ -140,14 +140,8 @@ static void init_wintab_functions()
     if (!qt_is_gui_used)
         return;
     QLibrary library(QLatin1String("wintab32"));
-    QT_WA({
-        ptrWTOpen = (PtrWTOpen)library.resolve("WTOpenW");
-        ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoW");
-    } , {
-        ptrWTOpen = (PtrWTOpen)library.resolve("WTOpenA");
-        ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoA");
-    });
-
+    ptrWTOpen = (PtrWTOpen)library.resolve("WTOpenW");
+    ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoW");
     ptrWTClose = (PtrWTClose)library.resolve("WTClose");
     ptrWTQueueSizeGet = (PtrWTQueueSizeGet)library.resolve("WTQueueSizeGet");
     ptrWTQueueSizeSet = (PtrWTQueueSizeSet)library.resolve("WTQueueSizeSet");
@@ -270,7 +264,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     HINSTANCE appinst  = qWinAppInst();
     HWND parentw, destroyw = 0;
-    WId id;
+    WId id = 0;
 
     QString windowClassName = qt_reg_winclass(q);
 
@@ -287,25 +281,18 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (desktop && !q->testAttribute(Qt::WA_DontShowOnScreen)) {                                // desktop widget
         popup = false;                                // force this flags off
-        if (QSysInfo::WindowsVersion != QSysInfo::WV_NT && QSysInfo::WindowsVersion != QSysInfo::WV_95)
-            data.crect.setRect(GetSystemMetrics(76 /* SM_XVIRTUALSCREEN  */), GetSystemMetrics(77 /* SM_YVIRTUALSCREEN  */),
+        data.crect.setRect(GetSystemMetrics(76 /* SM_XVIRTUALSCREEN  */), GetSystemMetrics(77 /* SM_YVIRTUALSCREEN  */),
                            GetSystemMetrics(78 /* SM_CXVIRTUALSCREEN */), GetSystemMetrics(79 /* SM_CYVIRTUALSCREEN */));
-        else
-            data.crect.setRect(0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
     }
 
     parentw = q->parentWidget() ? q->parentWidget()->effectiveWinId() : 0;
 
-#ifdef UNICODE
     QString title;
-    const TCHAR *ttitle = 0;
-#endif
-    QByteArray title95;
     int style = WS_CHILD;
     int exsty = 0;
 
     if (window) {
-        style = GetWindowLongA(window, GWL_STYLE);
+        style = GetWindowLong(window, GWL_STYLE);
         if (!style)
             qErrnoWarning("QWidget::create: GetWindowLong failed");
         topLevel = false; // #### needed for some IE plugins??
@@ -361,12 +348,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     if (flags & Qt::WindowTitleHint) {
-        QT_WA({
-            title = q->isWindow() ? qAppName() : q->objectName();
-            ttitle = (TCHAR*)title.utf16();
-        } , {
-            title95 = q->isWindow() ? qAppName().toLocal8Bit() : q->objectName().toLatin1();
-        });
+        title = q->isWindow() ? qAppName() : q->objectName();
     }
 
     // The Qt::WA_WState_Created flag is checked by translateConfigEvent() in
@@ -379,13 +361,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             destroyw = data.winid;
         id = window;
         setWinId(window);
-        LONG res = SetWindowLongA(window, GWL_STYLE, style);
+        LONG res = SetWindowLong(window, GWL_STYLE, style);
         if (!res)
             qErrnoWarning("QWidget::create: Failed to set window style");
 #ifdef _WIN64
-        res = SetWindowLongPtrA( window, GWLP_WNDPROC, (LONG_PTR)QtWndProc );
+        res = SetWindowLongPtr( window, GWLP_WNDPROC, (LONG_PTR)QtWndProc );
 #else
-        res = SetWindowLongA( window, GWL_WNDPROC, (LONG)QtWndProc );
+        res = SetWindowLong( window, GWL_WNDPROC, (LONG)QtWndProc );
 #endif
         if (!res)
             qErrnoWarning("QWidget::create: Failed to set window procedure");
@@ -436,16 +418,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             }
         }
 
-        QT_WA({
-            const TCHAR *cname = (TCHAR*)windowClassName.utf16();
-            id = CreateWindowEx(exsty, cname, ttitle, style,
-                                x, y, w, h,
-                                parentw, 0, appinst, 0);
-        } , {
-            id = CreateWindowExA(exsty, windowClassName.toLatin1(), title95, style,
-                                 x, y, w, h,
-                                 parentw, 0, appinst, 0);
-        });
+        id = CreateWindowEx(exsty, reinterpret_cast<const wchar_t *>(windowClassName.utf16()),
+                            reinterpret_cast<const wchar_t *>(title.utf16()), style,
+                            x, y, w, h,
+                            parentw, NULL, appinst, NULL);
         if (!id)
             qErrnoWarning("QWidget::create: Failed to create window");
         setWinId(id);
@@ -457,16 +433,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             SetWindowPos(id, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
         winUpdateIsOpaque();
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create child widget
-        QT_WA({
-            const TCHAR *cname = (TCHAR*)windowClassName.utf16();
-            id = CreateWindowEx(exsty, cname, ttitle, style,
-                                data.crect.left(), data.crect.top(), data.crect.width(), data.crect.height(),
+        id = CreateWindowEx(exsty, reinterpret_cast<const wchar_t *>(windowClassName.utf16()),
+                            reinterpret_cast<const wchar_t *>(title.utf16()), style,
+                            data.crect.left(), data.crect.top(), data.crect.width(), data.crect.height(),
                             parentw, NULL, appinst, NULL);
-        } , {
-            id = CreateWindowExA(exsty, windowClassName.toLatin1(), title95, style,
-                                 data.crect.left(), data.crect.top(), data.crect.width(), data.crect.height(),
-                            parentw, NULL, appinst, NULL);
-        });
         if (!id)
             qErrnoWarning("QWidget::create: Failed to create window");
         SetWindowPos(id, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -682,7 +652,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // Show borderless toplevel windows in tasklist & NavBar
     if (!parent) {
         QString txt = q->windowTitle().isEmpty()?qAppName():q->windowTitle();
-        SetWindowText(q->internalWinId(), (TCHAR*)txt.utf16());
+        SetWindowText(q->internalWinId(), (wchar_t*)txt.utf16());
     }
 #endif
     invalidateBuffer(q->rect());
@@ -767,11 +737,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
         return;
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    QT_WA({
-        SetWindowText(q->internalWinId(), (TCHAR*)caption.utf16());
-    } , {
-        SetWindowTextA(q->internalWinId(), caption.toLocal8Bit());
-    });
+    SetWindowText(q->internalWinId(), (wchar_t*)caption.utf16());
 }
 
 /*
@@ -853,11 +819,11 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                                   GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON),
                                   &(x->iconPixmap));
     if (x->winIconBig) {
-        SendMessageA(q->internalWinId(), WM_SETICON, 0 /* ICON_SMALL */, (LPARAM)x->winIconSmall);
-        SendMessageA(q->internalWinId(), WM_SETICON, 1 /* ICON_BIG */, (LPARAM)x->winIconBig);
+        SendMessage(q->internalWinId(), WM_SETICON, 0 /* ICON_SMALL */, (LPARAM)x->winIconSmall);
+        SendMessage(q->internalWinId(), WM_SETICON, 1 /* ICON_BIG */, (LPARAM)x->winIconBig);
     } else {
-        SendMessageA(q->internalWinId(), WM_SETICON, 0 /* ICON_SMALL */, (LPARAM)x->winIconSmall);
-        SendMessageA(q->internalWinId(), WM_SETICON, 1 /* ICON_BIG */, (LPARAM)x->winIconSmall);
+        SendMessage(q->internalWinId(), WM_SETICON, 0 /* ICON_SMALL */, (LPARAM)x->winIconSmall);
+        SendMessage(q->internalWinId(), WM_SETICON, 1 /* ICON_BIG */, (LPARAM)x->winIconSmall);
     }
 }
 
@@ -884,7 +850,7 @@ LRESULT CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam)
 /* Works only as long as pointer is inside the application's window,
    which is good enough for QDockWidget.
 
-   Doesn't call SetWindowsHookExA() - this function causes a system-wide
+   Doesn't call SetWindowsHookEx() - this function causes a system-wide
    freeze if any other app on the system installs a hook and fails to
    process events. */
 void QWidgetPrivate::grabMouseWhileInWindow()
@@ -908,7 +874,7 @@ void QWidget::grabMouse()
     if (!qt_nograb()) {
         if (mouseGrb)
             mouseGrb->releaseMouse();
-        journalRec = SetWindowsHookExA(WH_JOURNALRECORD, (HOOKPROC)qJournalRecordProc, GetModuleHandleA(0), 0);
+        journalRec = SetWindowsHookEx(WH_JOURNALRECORD, (HOOKPROC)qJournalRecordProc, GetModuleHandle(0), 0);
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         SetCapture(effectiveWinId());
         mouseGrb = this;
@@ -921,7 +887,7 @@ void QWidget::grabMouse(const QCursor &cursor)
     if (!qt_nograb()) {
         if (mouseGrb)
             mouseGrb->releaseMouse();
-        journalRec = SetWindowsHookExA(WH_JOURNALRECORD, (HOOKPROC)qJournalRecordProc, GetModuleHandleA(0), 0);
+        journalRec = SetWindowsHookEx(WH_JOURNALRECORD, (HOOKPROC)qJournalRecordProc, GetModuleHandle(0), 0);
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         SetCapture(effectiveWinId());
         mouseGrbCur = new QCursor(cursor);
@@ -1028,7 +994,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowFullScreen) {
                 if (d->topData()->normalGeometry.width() < 0 && !(oldstate & Qt::WindowMaximized))
                     d->topData()->normalGeometry = geometry();
-                d->topData()->savedFlags = Qt::WindowFlags(GetWindowLongA(internalWinId(), GWL_STYLE));
+                d->topData()->savedFlags = Qt::WindowFlags(GetWindowLong(internalWinId(), GWL_STYLE));
 #ifndef Q_FLATTEN_EXPOSE
                 UINT style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
 #else
@@ -1038,7 +1004,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 		    style |= WS_SYSMENU;
                 if (isVisible())
                     style |= WS_VISIBLE;
-                SetWindowLongA(internalWinId(), GWL_STYLE, style);
+                SetWindowLong(internalWinId(), GWL_STYLE, style);
                 QRect r = QApplication::desktop()->screenGeometry(this);
                 UINT swpf = SWP_FRAMECHANGED;
                 if (newstate & Qt::WindowActive)
@@ -1050,7 +1016,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 UINT style = d->topData()->savedFlags;
                 if (isVisible())
                     style |= WS_VISIBLE;
-                SetWindowLongA(internalWinId(), GWL_STYLE, style);
+                SetWindowLong(internalWinId(), GWL_STYLE, style);
 
                 UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE;
                 if (newstate & Qt::WindowActive)
@@ -1395,7 +1361,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             UINT style = top->savedFlags;
             if (q->isVisible())
                 style |= WS_VISIBLE;
-            SetWindowLongA(q->internalWinId(), GWL_STYLE, style);
+            SetWindowLong(q->internalWinId(), GWL_STYLE, style);
 
             UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE;
             if (data.window_state & Qt::WindowActive)
@@ -1410,7 +1376,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
     const bool inTopLevelResize = tlwExtra ? tlwExtra->inTopLevelResize : false;
     const bool isTranslucentWindow = !isOpaque && ptrUpdateLayeredWindowIndirect && (data.window_flags & Qt::FramelessWindowHint)
-                                     && GetWindowLongA(q->internalWinId(), GWL_EXSTYLE) & Q_WS_EX_LAYERED;
+                                     && GetWindowLong(q->internalWinId(), GWL_EXSTYLE) & Q_WS_EX_LAYERED;
 
     if (q->testAttribute(Qt::WA_WState_ConfigPending)) {        // processing config event
         if (q->internalWinId())
@@ -1578,11 +1544,11 @@ void QWidgetPrivate::winUpdateIsOpaque()
         return;
 
     if (!isOpaque && ptrUpdateLayeredWindowIndirect) {
-        SetWindowLongA(q->internalWinId(), GWL_EXSTYLE,
-            GetWindowLongA(q->internalWinId(), GWL_EXSTYLE) | Q_WS_EX_LAYERED);
+        SetWindowLong(q->internalWinId(), GWL_EXSTYLE,
+            GetWindowLong(q->internalWinId(), GWL_EXSTYLE) | Q_WS_EX_LAYERED);
     } else {
-        SetWindowLongA(q->internalWinId(), GWL_EXSTYLE,
-            GetWindowLongA(q->internalWinId(), GWL_EXSTYLE) & ~Q_WS_EX_LAYERED);
+        SetWindowLong(q->internalWinId(), GWL_EXSTYLE,
+            GetWindowLong(q->internalWinId(), GWL_EXSTYLE) & ~Q_WS_EX_LAYERED);
     }
 #endif
 }
@@ -1592,12 +1558,12 @@ void QWidgetPrivate::setConstraints_sys()
 #ifndef Q_WS_WINCE_WM
     Q_Q(QWidget);
     if (q->isWindow() && q->testAttribute(Qt::WA_WState_Created)) {
-        int style = GetWindowLongA(q->internalWinId(), GWL_STYLE);
+        int style = GetWindowLong(q->internalWinId(), GWL_STYLE);
         if (shouldShowMaximizeButton())
             style |= WS_MAXIMIZEBOX;
         else
             style &= ~WS_MAXIMIZEBOX;
-        SetWindowLongA(q->internalWinId(), GWL_STYLE, style);
+        SetWindowLong(q->internalWinId(), GWL_STYLE, style);
     }
 #endif
 }
@@ -1867,10 +1833,8 @@ void QWidgetPrivate::updateFrameStrut()
     RECT rect = {0,0,0,0};
 
     QTLWExtra *top = topData();
-    uint exstyle = QT_WA_INLINE(GetWindowLongW(q->internalWinId(), GWL_EXSTYLE),
-                                GetWindowLongA(q->internalWinId(), GWL_EXSTYLE));
-    uint style = QT_WA_INLINE(GetWindowLongW(q->internalWinId(), GWL_STYLE),
-                              GetWindowLongA(q->internalWinId(), GWL_STYLE));
+    uint exstyle = GetWindowLong(q->internalWinId(), GWL_EXSTYLE);
+    uint style = GetWindowLong(q->internalWinId(), GWL_STYLE);
 #ifndef Q_WS_WINCE
     if (AdjustWindowRectEx(&rect, style & ~(WS_OVERLAPPED), FALSE, exstyle)) {
 #else
@@ -1886,11 +1850,10 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
     Q_Q(QWidget);
 
-    if (!isOpaque && ptrUpdateLayeredWindowIndirect && (data.window_flags & Qt::FramelessWindowHint)) {
-        if (GetWindowLongA(q->internalWinId(), GWL_EXSTYLE) & Q_WS_EX_LAYERED) {
-            Q_BLENDFUNCTION blend = {AC_SRC_OVER, 0, (int)(255.0 * level), Q_AC_SRC_ALPHA};
-                    Q_UPDATELAYEREDWINDOWINFO info = {sizeof(info), NULL, NULL, NULL, NULL, NULL, 0, &blend, Q_ULW_ALPHA, NULL};
-            (*ptrUpdateLayeredWindowIndirect)(q->internalWinId(), &info);
+    if (!isOpaque && ptrUpdateLayeredWindow && (data.window_flags & Qt::FramelessWindowHint)) {
+        if (GetWindowLong(q->internalWinId(), GWL_EXSTYLE) & Q_WS_EX_LAYERED) {
+            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (int)(255.0 * level), AC_SRC_ALPHA};
+            ptrUpdateLayeredWindow(q->internalWinId(), NULL, NULL, NULL, NULL, NULL, 0, &blend, Q_ULW_ALPHA);
         }
         return;
     }
@@ -1906,15 +1869,15 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     if (!ptrSetLayeredWindowAttributes)
         return;
 
-    int wl = GetWindowLongA(q->internalWinId(), GWL_EXSTYLE);
+    int wl = GetWindowLong(q->internalWinId(), GWL_EXSTYLE);
 
     if (level != 1.0) {
         if ((wl&Q_WS_EX_LAYERED) == 0)
-            SetWindowLongA(q->internalWinId(), GWL_EXSTYLE, wl|Q_WS_EX_LAYERED);
+            SetWindowLong(q->internalWinId(), GWL_EXSTYLE, wl | Q_WS_EX_LAYERED);
     } else if (wl&Q_WS_EX_LAYERED) {
-        SetWindowLongA(q->internalWinId(), GWL_EXSTYLE, wl & ~Q_WS_EX_LAYERED);
+        SetWindowLong(q->internalWinId(), GWL_EXSTYLE, wl & ~Q_WS_EX_LAYERED);
     }
-    (*ptrSetLayeredWindowAttributes)(q->internalWinId(), 0, (int)(level * 255), Q_LWA_ALPHA);
+    ptrSetLayeredWindowAttributes(q->internalWinId(), 0, (int)(level * 255), Q_LWA_ALPHA);
 }
 #endif //Q_WS_WINCE
 

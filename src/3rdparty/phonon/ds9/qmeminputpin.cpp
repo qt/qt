@@ -28,7 +28,7 @@ namespace Phonon
     namespace DS9
     {
 
-        QMemInputPin::QMemInputPin(QBaseFilter *parent, const QVector<AM_MEDIA_TYPE> &mt, bool transform) : 
+        QMemInputPin::QMemInputPin(QBaseFilter *parent, const QVector<AM_MEDIA_TYPE> &mt, bool transform) :
             QPin(parent, PINDIR_INPUT, mt), m_shouldDuplicateSamples(true), m_transform(transform)
         {
         }
@@ -203,7 +203,7 @@ namespace Phonon
 
             for (int i = 0; i < m_outputs.count(); ++i) {
                 QPin *current = m_outputs.at(i);
-                IMediaSample *outSample = m_shouldDuplicateSamples ? 
+                IMediaSample *outSample = m_shouldDuplicateSamples ?
                     duplicateSampleForOutput(sample, current->memoryAllocator())
                     : sample;
 
@@ -261,7 +261,7 @@ namespace Phonon
         }
 
         //addition
-        //this should be used by the filter to tell it's input pins to which output they should route the samples
+        //this should be used by the filter to tell its input pins to which output they should route the samples
 
         void QMemInputPin::addOutput(QPin *output)
         {

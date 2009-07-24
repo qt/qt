@@ -178,6 +178,7 @@ void TestBaseLine::toXML(XMLWriter &receiver) const
     {
         case XML: /* Fallthrough. */
         case Fragment: /* Fallthrough. */
+        case SchemaIsValid: /* Fallthrough. */
         case Text:
         {
             QXmlAttributes inspectAtts;
@@ -343,6 +344,8 @@ TestResult::Status TestBaseLine::verify(const QString &serializedInput) const
 {
     switch(m_type)
     {
+        case SchemaIsValid:
+        /* Fall through. */
         case Text:
         {
             if(serializedInput == details())
@@ -491,6 +494,8 @@ QString TestBaseLine::displayName(const Type id)
             return QLatin1String("Inspect");
         case ExpectedError:
             return QLatin1String("ExpectedError");
+        case SchemaIsValid:
+            return QLatin1String("SchemaIsValid");
     }
 
     Q_ASSERT(false);
@@ -502,6 +507,8 @@ QString TestBaseLine::details() const
     if(m_type == Ignore) /* We're an error code. */
         return QString();
     if(m_type == ExpectedError) /* We're an error code. */
+        return m_details;
+    if(m_type == SchemaIsValid) /* We're a schema validation information . */
         return m_details;
 
     if(m_details.isEmpty())

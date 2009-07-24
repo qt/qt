@@ -224,12 +224,29 @@ public:
 
     void setFillRule(Qt::FillRule f);
     void setFillOpacity(qreal opacity);
+    void setFillStyle(QSvgStyleProperty* style);
+    void setBrush(QBrush brush);
 
     const QBrush & qbrush() const
     {
         return m_fill;
     }
 
+    qreal fillOpacity() const
+    {
+        return m_fillOpacity;
+    }
+
+    Qt::FillRule fillRule() const
+    {
+        return m_fillRule;
+    }
+
+    QSvgStyleProperty* style() const
+    {
+        return m_style;
+    }
+	
     void setGradientId(const QString &Id)
     {
         m_gradientId = Id;
@@ -240,7 +257,6 @@ public:
         return m_gradientId;
     }
 
-
     void setGradientResolved(bool resolved)
     {
         m_gradientResolved = resolved;
@@ -249,16 +265,6 @@ public:
     bool isGradientResolved() const
     {
         return m_gradientResolved;
-    }
-
-    void setFillStyle(QSvgStyleProperty* style)
-    {
-        m_style = style;
-    }
-
-    void setBrush(QBrush brush)
-    {
-        m_fill = brush;
     }
 
 private:
@@ -275,6 +281,7 @@ private:
     qreal m_oldOpacity;
     QString m_gradientId;
     bool m_gradientResolved;
+    bool m_fillSet;
 };
 
 class QSvgViewportFillStyle : public QSvgStyleProperty
@@ -345,6 +352,16 @@ public:
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 
+    void setStroke(bool stroke)
+    {
+        m_strokePresent = stroke;
+    }
+
+    bool strokePresent() const
+    {
+        return m_strokePresent;
+    }
+
     const QPen & qpen() const
     {
         return m_stroke;
@@ -359,8 +376,8 @@ private:
     // stroke-opacity    v 	v 	'inherit' | <OpacityValue.datatype>
     // stroke-width      v 	v 	'inherit' | <StrokeWidthValue.datatype>
     QPen m_stroke;
-
     QPen m_oldStroke;
+	bool m_strokePresent;
 };
 
 

@@ -58,12 +58,14 @@
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 #include <QtGui/qevent.h>
+#include <QtCore/qcoreapplication.h>
 #include "qgraphicssceneevent.h"
+#include <QtGui/qstyleoption.h>
 #include <private/qabstractscrollarea_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
+class Q_AUTOTEST_EXPORT QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsView)
 public:
@@ -83,10 +85,6 @@ public:
 
     qint64 horizontalScroll() const;
     qint64 verticalScroll() const;
-
-    QList<QGraphicsItem *> itemsInArea(const QPainterPath &path,
-                                       Qt::ItemSelectionMode mode = Qt::IntersectsItemShape,
-                                       Qt::SortOrder = Qt::AscendingOrder) const;
 
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
@@ -171,16 +169,27 @@ public:
         dirtyBoundingRect = QRect();
         dirtyRegion = QRegion();
     }
+
+    inline void dispatchPendingUpdateRequests()
+    {
+        if (qt_widget_private(viewport)->paintOnScreen())
+            QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
+        else
+            QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
+    }
+
     bool updateRect(const QRect &rect);
     bool updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;
     QRegion exposedRegion;
 
-    QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
+    QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems,
+                                     const QTransform &viewTransform) const;
 
     QPointF mapToScene(const QPointF &point) const;
     QRectF mapToScene(const QRectF &rect) const;
     static void translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent);
+    void updateInputMethodSensitivity();
 };
 
 QT_END_NAMESPACE

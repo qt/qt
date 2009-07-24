@@ -56,7 +56,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#ifndef QT_NO_SHAREDMEMORY
+#include "private/qcore_unix_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -82,7 +82,7 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
         error = QSharedMemory::AlreadyExists;
         break;
     case ENOENT:
-        errorString = QSharedMemory::tr("%1: doesn't exists").arg(function);
+        errorString = QSharedMemory::tr("%1: doesn't exist").arg(function);
         error = QSharedMemory::NotFound;
         break;
     case EMFILE:
@@ -121,7 +121,7 @@ key_t QSharedMemoryPrivate::handle()
     // ftok requires that an actual file exists somewhere
     QString fileName = makePlatformSafeKey(key);
     if (!QFile::exists(fileName)) {
-        errorString = QSharedMemory::tr("%1: unix key file doesn't exists").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::NotFound;
         return 0;
     }
@@ -152,7 +152,7 @@ int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
     if (QFile::exists(fileName))
         return 0;
 
-    int fd = open(QFile::encodeName(fileName).constData(),
+    int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
             O_EXCL | O_CREAT | O_RDWR, 0640);
     if (-1 == fd) {
         if (errno == EEXIST)

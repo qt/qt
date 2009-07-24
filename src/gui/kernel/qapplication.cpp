@@ -93,8 +93,6 @@
 
 #include "qapplication.h"
 
-#include <private/qgesturemanager_p.h>
-
 #ifdef Q_WS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
@@ -131,7 +129,7 @@ int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly
 QApplication::Type qt_appType=QApplication::Tty;
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
-QInputContext *QApplicationPrivate::inputContext;
+QInputContext *QApplicationPrivate::inputContext = 0;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
@@ -141,14 +139,6 @@ bool QApplicationPrivate::autoSipEnabled = false;
 #else
 bool QApplicationPrivate::autoSipEnabled = true;
 #endif
-
-QGestureManager* QGestureManager::instance()
-{
-    QApplicationPrivate *d = qApp->d_func();
-    if (!d->gestureManager)
-        d->gestureManager = new QGestureManager(qApp);
-    return d->gestureManager;
-}
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
@@ -172,8 +162,6 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
 #if defined(Q_WS_QWS) && !defined(QT_NO_DIRECTPAINTER)
     directPainters = 0;
 #endif
-
-    gestureManager = 0;
 
     if (!self)
         self = this;
@@ -846,6 +834,12 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 #endif // Q_WS_X11
 
 extern void qInitDrawhelperAsm();
+extern int qRegisterGuiVariant();
+extern int qUnregisterGuiVariant();
+#ifndef QT_NO_STATEMACHINE
+extern int qRegisterGuiStateMachine();
+extern int qUnregisterGuiStateMachine();
+#endif
 
 /*!
   \fn void QApplicationPrivate::initialize()
@@ -859,11 +853,9 @@ void QApplicationPrivate::initialize()
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
     // trigger registering of QVariant's GUI types
-    extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
 #ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
-    extern int qRegisterGuiStateMachine();
     qRegisterGuiStateMachine();
 #endif
 
@@ -877,12 +869,6 @@ void QApplicationPrivate::initialize()
 
     if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
         q->setAttribute(Qt::AA_NativeWindows);
-
-#if defined(Q_WS_WIN)
-    // Alien is not currently working on Windows 98
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)
-        q->setAttribute(Qt::AA_NativeWindows);
-#endif
 
 #ifdef Q_WS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
@@ -1095,11 +1081,9 @@ QApplication::~QApplication()
 
 #ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
-    extern int qUnregisterGuiStateMachine();
     qUnregisterGuiStateMachine();
 #endif
     // trigger unregistering of QVariant's GUI types
-    extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();
 }
 
@@ -3669,14 +3653,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif // !QT_NO_WHEELEVENT || !QT_NO_TABLETEVENT
     }
 
-    if (!d->grabbedGestures.isEmpty() && e->spontaneous() && receiver->isWidgetType()) {
-        const QEvent::Type t = e->type();
-        if (t != QEvent::Gesture && t != QEvent::GraphicsSceneGesture) {
-            if (QGestureManager::instance()->filterEvent(static_cast<QWidget*>(receiver), e))
-                return true;
-        }
-    }
-
     // User input and window activation makes tooltips sleep
     switch (e->type()) {
     case QEvent::Wheel:
@@ -4164,6 +4140,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = d->notify_helper(receiver, e);
         break;
 
+    case QEvent::WinGesture:
+    {
+        // only propagate the first gesture event (after the GID_BEGIN)
+        QWidget *w = static_cast<QWidget *>(receiver);
+        while (w) {
+            e->ignore();
+            res = d->notify_helper(w, e);
+            if ((res && e->isAccepted()) || w->isWindow())
+                break;
+            w = w->parentWidget();
+        }
+        break;
+    }
     default:
         res = d->notify_helper(receiver, e);
         break;
@@ -4511,13 +4500,13 @@ HRESULT qt_CoCreateGuid(GUID* guid)
 {
     // We will use the following information to create the GUID
     // 1. absolute path to application
-    wchar_t tempFilename[512];
-    if (!GetModuleFileNameW(0, tempFilename, 512))
+    wchar_t tempFilename[MAX_PATH];
+    if (!GetModuleFileName(0, tempFilename, MAX_PATH))
         return S_FALSE;
-    unsigned int hash = qHash(QString::fromUtf16((const unsigned short *) tempFilename));
+    unsigned int hash = qHash(QString::fromWCharArray(tempFilename));
     guid->Data1 = hash;
     // 2. creation time of file
-    QFileInfo info(QString::fromUtf16((const unsigned short *) tempFilename));
+    QFileInfo info(QString::fromWCharArray(tempFilename));
     guid->Data2 = qHash(info.created().toTime_t());
     // 3. current system time
     guid->Data3 = qHash(QDateTime::currentDateTime().toTime_t());
@@ -4551,10 +4540,10 @@ QSessionManager::QSessionManager(QApplication * app, QString &id, QString &key)
     GUID guid;
     CoCreateGuid(&guid);
     StringFromGUID2(guid, guidstr, 40);
-    id = QString::fromUtf16((ushort*)guidstr);
+    id = QString::fromWCharArray(guidstr);
     CoCreateGuid(&guid);
     StringFromGUID2(guid, guidstr, 40);
-    key = QString::fromUtf16((ushort*)guidstr);
+    key = QString::fromWCharArray(guidstr);
 #endif
     d->sessionId = id;
     d->sessionKey = key;
@@ -5166,57 +5155,6 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     return true;
 }
 
-/*!
-    \since 4.6
-
-    Adds custom gesture \a recognizer object.
-
-    Qt takes ownership of the provided \a recognizer.
-
-    \sa Qt::AA_EnableGestures, QGestureEvent
-*/
-void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
-{
-    QGestureManager::instance()->addRecognizer(recognizer);
-}
-
-/*!
-    \since 4.6
-
-    Removes custom gesture \a recognizer object.
-
-    \sa Qt::AA_EnableGestures, QGestureEvent
-*/
-void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
-{
-    Q_D(QApplication);
-    if (!d->gestureManager)
-        return;
-    d->gestureManager->removeRecognizer(recognizer);
-}
-
-/*!
-    \property QApplication::eventDeliveryDelayForGestures
-    \since 4.6
-
-    Specifies the \a delay before input events are delivered to the
-    gesture enabled widgets.
-
-    The delay allows to postpone widget's input event handling until
-    gestures framework can successfully recognize a gesture.
-
-    \sa QWidget::grabGesture
-*/
-void QApplication::setEventDeliveryDelayForGestures(int delay)
-{
-    QGestureManager::instance()->setEventDeliveryDelay(delay);
-}
-
-int QApplication::eventDeliveryDelayForGestures()
-{
-    return QGestureManager::instance()->eventDeliveryDelay();
-}
-
 /*! \fn QDecoration &QApplication::qwsDecoration()
     Return the QWSDecoration used for decorating windows.
 
@@ -5400,8 +5338,6 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate *d = self;
-    QApplication *q = self->q_func();
-
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
@@ -5423,7 +5359,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             if (!widget) {
                 // determine which widget this event will go to
                 if (!window)
-                    window = q->topLevelAt(touchPoint.screenPos().toPoint());
+                    window = QApplication::topLevelAt(touchPoint.screenPos().toPoint());
                 if (!window)
                     continue;
                 widget = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
@@ -5523,7 +5459,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         QTouchEvent touchEvent(eventType,
                                deviceType,
-                               q->keyboardModifiers(),
+                               QApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);

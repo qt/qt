@@ -40,7 +40,7 @@ static const HashTableValue JSWebKitPointTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitPointTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitPointTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSWebKitPointTableValues, 0 };
 #else
@@ -54,7 +54,7 @@ static const HashTableValue JSWebKitPointPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitPointPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitPointPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitPointPrototypeTableValues, 0 };
 #else

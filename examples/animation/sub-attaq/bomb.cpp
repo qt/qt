@@ -85,11 +85,11 @@ void Bomb::launch(Bomb::Direction direction)
     QStateMachine *machine = new QStateMachine(this);
 
     //This state is when the launch animation is playing
-    QAnimationState *launched = new QAnimationState(machine->rootState());
+    QAnimationState *launched = new QAnimationState(machine);
     launched->setAnimation(launchAnimation);
 
     //End
-    QFinalState *final = new QFinalState(machine->rootState());
+    QFinalState *final = new QFinalState(machine);
 
     machine->setInitialState(launched);
 

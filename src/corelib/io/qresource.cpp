@@ -56,6 +56,10 @@
 #include <qplatformdefs.h>
 #include "private/qabstractfileengine_p.h"
 
+#ifdef Q_OS_UNIX
+# include "private/qcore_unix_p.h"
+#endif
+
 //#define DEBUG_RESOURCE_MATCH
 
 QT_BEGIN_NAMESPACE

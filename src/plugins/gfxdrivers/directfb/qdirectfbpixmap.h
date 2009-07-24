@@ -71,7 +71,7 @@ public:
     virtual QImage *buffer();
     virtual int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
 
-    QImage *buffer(uint lockFlags);
+    QImage *buffer(DFBSurfaceLockFlags lockFlags);
 
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
     inline QImage::Format pixelFormat() const { return format; }

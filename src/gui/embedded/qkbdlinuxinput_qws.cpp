@@ -47,6 +47,7 @@
 #include <QStringList>
 
 #include <qplatformdefs.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <errno.h>
 #include <termios.h>
@@ -75,6 +76,7 @@ private:
     int                           m_fd;
     int                           m_tty_fd;
     struct termios                m_tty_attr;
+    int                           m_orig_kbmode;
 };
 
 QWSLinuxInputKeyboardHandler::QWSLinuxInputKeyboardHandler(const QString &device)
@@ -94,8 +96,7 @@ bool QWSLinuxInputKeyboardHandler::filterInputEvent(quint16 &, qint32 &)
 }
 
 QWSLinuxInputKbPrivate::QWSLinuxInputKbPrivate(QWSLinuxInputKeyboardHandler *h, const QString &device)
-    : m_handler(h), m_fd(-1), m_tty_fd(-1)
-
+    : m_handler(h), m_fd(-1), m_tty_fd(-1), m_orig_kbmode(K_XLATE)
 {
     setObjectName(QLatin1String("LinuxInputSubsystem Keyboard Handler"));
 
@@ -134,7 +135,10 @@ QWSLinuxInputKbPrivate::QWSLinuxInputKbPrivate(QWSLinuxInputKeyboardHandler *h, 
             struct ::termios termdata;
             tcgetattr(m_tty_fd, &termdata);
 
-            // setting this tranlation mode is also needed in INPUT mode to prevent
+            // record the original mode so we can restore it again in the destructor.
+            ::ioctl(m_tty_fd, KDGKBMODE, &m_orig_kbmode);
+
+            // setting this tranlation mode is even needed in INPUT mode to prevent
             // the shell from also interpreting codes, if the process has a tty
             // attached: e.g. Ctrl+C wouldn't copy, but kill the application.
             ::ioctl(m_tty_fd, KDSKBMODE, K_MEDIUMRAW);
@@ -151,7 +155,7 @@ QWSLinuxInputKbPrivate::QWSLinuxInputKbPrivate(QWSLinuxInputKeyboardHandler *h, 
             tcsetattr(m_tty_fd, TCSANOW, &termdata);
         }
     } else {
-        qWarning("Cannot open input device '%s': %s", qPrintable(dev), strerror(errno));
+        qWarning("Cannot open keyboard input device '%s': %s", qPrintable(dev), strerror(errno));
         return;
     }
 }
@@ -159,7 +163,7 @@ QWSLinuxInputKbPrivate::QWSLinuxInputKbPrivate(QWSLinuxInputKeyboardHandler *h, 
 QWSLinuxInputKbPrivate::~QWSLinuxInputKbPrivate()
 {
     if (m_tty_fd >= 0) {
-        ::ioctl(m_tty_fd, KDSKBMODE, K_XLATE);
+        ::ioctl(m_tty_fd, KDSKBMODE, m_orig_kbmode);
         tcsetattr(m_tty_fd, TCSANOW, &m_tty_attr);
     }
     if (m_fd >= 0)

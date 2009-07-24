@@ -72,6 +72,7 @@ class QMimeData;
 
 class QPlainTextEdit;
 class ExtraArea;
+class QPanGesture;
 
 class QPlainTextEditControl : public QTextControl
 {
@@ -177,6 +178,10 @@ public:
     void _q_cursorPositionChanged();
 
     void _q_modificationChanged(bool);
+
+    void _q_gestureTriggered();
+    int originalOffsetY;
+    QPanGesture *panGesture;
 };
 
 QT_END_NAMESPACE

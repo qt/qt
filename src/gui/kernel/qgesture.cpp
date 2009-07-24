@@ -41,88 +41,128 @@
 
 #include "qgesture.h"
 #include <private/qgesture_p.h>
+#include "qgraphicsitem.h"
 
 QT_BEGIN_NAMESPACE
 
-QString qt_getStandardGestureTypeName(Qt::GestureType type);
+
+class QEventFilterProxyGraphicsItem : public QGraphicsItem
+{
+public:
+    QEventFilterProxyGraphicsItem(QGesture *g)
+            : gesture(g)
+    {
+    }
+    bool sceneEventFilter(QGraphicsItem *, QEvent *event)
+    {
+        return gesture ? gesture->filterEvent(event) : false;
+    }
+    QRectF boundingRect() const { return QRectF(); }
+    void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) { }
+
+private:
+    QGesture *gesture;
+};
 
 /*!
     \class QGesture
     \since 4.6
 
-    \brief The QGesture class represents a gesture, containing all
-    properties that describe a gesture.
+    \brief The QGesture class is the base class for implementing custom
+    gestures.
 
-    The widget receives a QGestureEvent with a list of QGesture
-    objects that represent gestures that are occuring on it. The class
-    has a list of properties that can be queried by the user to get
-    some gesture-specific arguments (i.e. position of the tap in the
-    DoubleTap gesture).
+    This class represents both an object that recognizes a gesture out of a set
+    of input events (a gesture recognizer), and a gesture object itself that
+    can be used to get extended information about the triggered gesture.
 
-    When creating custom gesture recognizers, they might add new
-    properties to the gesture object, or custom gesture developers
-    might subclass the QGesture objects to provide some extended
-    information. However, if the gesture developer wants to add a new
-    property to the gesture object that describe coordinate (like a
-    QPoint or QRect), it is required to subclass the QGesture and
-    re-implement the \l{QGesture::}{translate()} function to make sure
-    the coordinates are translated properly when the gesture event is
-    propagated to parent widgets.
+    The class has a list of properties that can be queried by the user to get
+    some gesture-specific parameters (for example, an offset of a Pan gesture).
 
-    \sa QGestureEvent, QGestureRecognizer
+    Usually gesture recognizer implements a state machine, storing its state
+    internally in the recognizer object. The recognizer receives input events
+    through the \l{QGesture::}{filterEvent()} virtual function and decides
+    whether the event should change the state of the recognizer by emitting an
+    appropriate signal.
+
+    Input events should be either fed to the recognizer one by one with a
+    filterEvent() function, or the gesture recognizer should be attached to an
+    object it filters events for by specifying it as a parent object. The
+    QGesture object installs itself as an event filter to the parent object
+    automatically, the unsetObject() function should be used to remove an event
+    filter from the parent object. To make a
+    gesture that operates on a QGraphicsItem, both the appropriate QGraphicsView
+    should be passed as a parent object and setGraphicsItem() functions should
+    be used to attach a gesture to a graphics item.
+
+    This is a base class, to create a custom gesture type, you should subclass
+    it and implement its pure virtual functions.
+
+    \sa QPanGesture, QTapAndHoldGesture
 */
+
+/*! \fn bool QGesture::filterEvent(QEvent *event)
+
+    Parses input \a event and emits a signal when detects a gesture.
+
+    In your reimplementation of this function, if you want to filter the \a
+    event out, i.e. stop it being handled further, return true; otherwise
+    return false;
+
+    This is a pure virtual function that needs to be implemented in subclasses.
+*/
+
+/*! \fn void QGesture::started()
+
+    The signal is emitted when the gesture is started. Extended information
+    about the gesture is contained in the signal sender object.
+
+    In addition to started(), a triggered() signal should also be emitted.
+*/
+
+/*! \fn void QGesture::triggered()
+
+    The signal is emitted when the gesture is detected. Extended information
+    about the gesture is contained in the signal sender object.
+*/
+
+/*! \fn void QGesture::finished()
+
+    The signal is emitted when the gesture is finished. Extended information
+    about the gesture is contained in the signal sender object.
+*/
+
+/*! \fn void QGesture::cancelled()
+
+    The signal is emitted when the gesture is cancelled, for example the reset()
+    function is called while the gesture was in the process of emitting a
+    triggered() signal.  Extended information about the gesture is contained in
+    the sender object.
+*/
+
 
 /*!
-    Creates a new gesture object of type \a type in a \a state and
-    marks it as a child of \a parent.
+    Creates a new gesture handler object and marks it as a child of \a parent.
 
-    Usually QGesture objects should only be contructed by the
-    QGestureRecognizer classes.
+    The \a parent object is also the default event source for the gesture,
+    meaning that the gesture installs itself as an event filter for the \a
+    parent.
+
+    \sa setGraphicsItem()
 */
-QGesture::QGesture(QObject *parent, const QString &type, Qt::GestureState state)
-    : QObject(*new QGesturePrivate, parent), m_accept(0)
-{
-    Q_D(QGesture);
-    d->type = type;
-    d->state = state;
-}
-
-/*!
-    Creates a new gesture object of type \a type in a \a state and
-    marks it as a child of \a parent.
-
-    This constructor also fills some basic information about the
-    gesture like a \a startPos which describes the start point of the
-    gesture, \a lastPos - last point where the gesture happened, \a
-    pos - a current point, \a rect - a bounding rect of the gesture,
-    \a hotSpot - a center point of the gesture, \a startTime - a time
-    when the gesture has started, \a duration - how long the gesture
-    is going on.
-
-    Usually QGesture objects should only be contructed by the
-    QGestureRecognizer classes.
-*/
-QGesture::QGesture(QObject *parent, const QString &type, const QPoint &startPos,
-                   const QPoint &lastPos, const QPoint &pos, const QRect &rect,
-                   const QPoint &hotSpot, const QDateTime &startTime,
-                   uint duration, Qt::GestureState state)
+QGesture::QGesture(QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
-    Q_D(QGesture);
-    d->type = type;
-    d->state = state;
-    d->init(startPos, lastPos, pos, rect, hotSpot, startTime, duration);
+    if (parent)
+        installEventFilter(parent);
 }
 
 /*! \internal
-*/
-QGesture::QGesture(QGesturePrivate &dd, QObject *parent, const QString &type,
-                   Qt::GestureState state)
+ */
+QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
-    Q_D(QGesture);
-    d->type = type;
-    d->state = state;
+    if (parent)
+        installEventFilter(parent);
 }
 
 /*!
@@ -132,99 +172,42 @@ QGesture::~QGesture()
 {
 }
 
-/*!
-    \property QGesture::type
-
-    \brief The type of the gesture.
-*/
-QString QGesture::type() const
+/*! \internal
+ */
+bool QGesture::eventFilter(QObject *receiver, QEvent *event)
 {
-    return d_func()->type;
+    Q_D(QGesture);
+    if (d->graphicsItem && receiver == parent())
+        return false;
+    return filterEvent(event);
 }
-
 
 /*!
     \property QGesture::state
 
     \brief The current state of the gesture.
 */
+
+/*!
+  Returns the gesture recognition state.
+ */
 Qt::GestureState QGesture::state() const
 {
     return d_func()->state;
 }
 
 /*!
-    Translates the internal gesture properties that represent
-    coordinates by \a offset.
-
-    Custom gesture recognizer developer have to re-implement this
-    function if they want to store custom properties that represent
-    coordinates.
-*/
-void QGesture::translate(const QPoint &offset)
+  Sets this gesture's recognition state to \a state.
+ */
+void QGesture::setState(Qt::GestureState state)
 {
-    Q_D(QGesture);
-    d->rect.translate(offset);
-    d->hotSpot += offset;
-    d->startPos += offset;
-    d->lastPos += offset;
-    d->pos += offset;
-}
-
-/*!
-    \property QGesture::rect
-
-    \brief The bounding rect of a gesture.
-*/
-QRect QGesture::rect() const
-{
-    return d_func()->rect;
-}
-
-void QGesture::setRect(const QRect &rect)
-{
-    d_func()->rect = rect;
-}
-
-/*!
-    \property QGesture::hotSpot
-
-    \brief The center point of a gesture.
-*/
-QPoint QGesture::hotSpot() const
-{
-    return d_func()->hotSpot;
-}
-
-void QGesture::setHotSpot(const QPoint &point)
-{
-    d_func()->hotSpot = point;
-}
-
-/*!
-    \property QGesture::startTime
-
-    \brief The time when the gesture has started.
-*/
-QDateTime QGesture::startTime() const
-{
-    return d_func()->startTime;
-}
-
-/*!
-    \property QGesture::duration
-
-    \brief The duration time of a gesture.
-*/
-uint QGesture::duration() const
-{
-    return d_func()->duration;
+    d_func()->state = state;
 }
 
 /*!
     \property QGesture::startPos
 
-    \brief The start position of the pointer.
+    \brief The start position of the gesture (if relevant).
 */
 QPoint QGesture::startPos() const
 {
@@ -239,7 +222,7 @@ void QGesture::setStartPos(const QPoint &point)
 /*!
     \property QGesture::lastPos
 
-    \brief The last recorded position of the pointer.
+    \brief The last recorded position of the gesture (if relevant).
 */
 QPoint QGesture::lastPos() const
 {
@@ -254,7 +237,7 @@ void QGesture::setLastPos(const QPoint &point)
 /*!
     \property QGesture::pos
 
-    \brief The current position of the pointer.
+    \brief The current position of the gesture (if relevant).
 */
 QPoint QGesture::pos() const
 {
@@ -267,49 +250,47 @@ void QGesture::setPos(const QPoint &point)
 }
 
 /*!
-    \class QPanningGesture
-    \since 4.6
+    Sets the \a graphicsItem the gesture is filtering events for.
 
-    \brief The QPanningGesture class represents a Pan gesture,
-    providing additional information related to panning.
+    The gesture will install an event filter to the \a graphicsItem and
+    redirect them to the filterEvent() function.
 
-    This class is provided for convenience, panning direction
-    information is also contained in the QGesture object in it's
-    properties.
+    \sa graphicsItem()
 */
-
-/*! \internal
-*/
-QPanningGesture::QPanningGesture(QObject *parent)
-    : QGesture(*new QPanningGesturePrivate, parent,
-               qt_getStandardGestureTypeName(Qt::PanGesture))
+void QGesture::setGraphicsItem(QGraphicsItem *graphicsItem)
 {
-}
-
-/*! \internal
-*/
-QPanningGesture::~QPanningGesture()
-{
+    Q_D(QGesture);
+    if (d->graphicsItem && d->eventFilterProxyGraphicsItem)
+        d->graphicsItem->removeSceneEventFilter(d->eventFilterProxyGraphicsItem);
+    d->graphicsItem = graphicsItem;
+    if (!d->eventFilterProxyGraphicsItem)
+        d->eventFilterProxyGraphicsItem = new QEventFilterProxyGraphicsItem(this);
+    if (graphicsItem)
+        graphicsItem->installSceneEventFilter(d->eventFilterProxyGraphicsItem);
 }
 
 /*!
-    \property QPanningGesture::lastDirection
+    Returns the graphics item the gesture is filtering events for.
 
-    \brief The last recorded direction of panning.
+    \sa setGraphicsItem()
 */
-Qt::DirectionType QPanningGesture::lastDirection() const
+QGraphicsItem* QGesture::graphicsItem() const
 {
-    return d_func()->lastDirection;
+    return d_func()->graphicsItem;
 }
 
-/*!
-    \property QPanningGesture::direction
+/*! \fn void QGesture::reset()
 
-    \brief The current direction of panning.
+    Resets the internal state of the gesture. This function might be called by
+    the filterEvent() implementation in a derived class, or by the user to
+    cancel a gesture.  The base class implementation emits the cancelled()
+    signal if the state() of the gesture wasn't empty.
 */
-Qt::DirectionType QPanningGesture::direction() const
+void QGesture::reset()
 {
-    return d_func()->direction;
+    if (state() != Qt::NoGesture)
+        emit cancelled();
+    setState(Qt::NoGesture);
 }
 
 QT_END_NAMESPACE

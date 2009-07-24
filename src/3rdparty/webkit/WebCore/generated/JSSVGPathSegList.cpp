@@ -44,7 +44,7 @@ static const HashTableValue JSSVGPathSegListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegListTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegListTableValues, 0 };
 #else
@@ -65,7 +65,7 @@ static const HashTableValue JSSVGPathSegListPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGPathSegListPrototypeTableValues, 0 };
 #else

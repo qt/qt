@@ -39,11 +39,6 @@
 **
 ****************************************************************************/
 
-// the miscrosoft platform SDK says that the Unicode versions of
-// TextOut and GetTextExtentsPoint32 are supported on all platforms, so we use them
-// exclusively to simplify code, save a lot of conversions into the local encoding
-// and have generally better unicode support :)
-
 #include "qfont.h"
 #include "qfont_p.h"
 #include "qfontengine_p.h"
@@ -67,8 +62,7 @@ extern HDC   shared_dc();                // common dc for all fonts
 // ### maybe move to qapplication_win
 QFont qt_LOGFONTtoQFont(LOGFONT& lf, bool /*scale*/)
 {
-    QString family = QT_WA_INLINE(QString::fromUtf16((ushort*)lf.lfFaceName),
-                                   QString::fromLocal8Bit((char*)lf.lfFaceName));
+    QString family = QString::fromWCharArray(lf.lfFaceName);
     QFont qf(family);
     qf.setItalic(lf.lfItalic);
     if (lf.lfWeight != FW_DONTCARE) {

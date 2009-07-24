@@ -81,10 +81,14 @@ public:
         UnknownInterface,
         InternalError,
         UnknownObject,
+        InvalidService,
+        InvalidObjectPath,
+        InvalidInterface,
+        InvalidMember,
 
 #ifndef Q_QDOC
         // don't use this one!
-        LastErrorType = UnknownObject
+        LastErrorType = InvalidMember
 #endif
     };
 

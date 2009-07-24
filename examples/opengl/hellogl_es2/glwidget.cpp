@@ -41,6 +41,7 @@
 
 #include "glwidget.h"
 #include <QPainter>
+#include <QPaintEngine>
 #include <math.h>
 
 #include "bubble.h"
@@ -264,6 +265,8 @@ void GLWidget::paintGL()
 
     QPainter painter;
     painter.begin(this);
+
+    painter.paintEngine()->syncState();
 
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

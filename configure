@@ -570,6 +570,7 @@ CFG_DEBUG_RELEASE=no
 CFG_SHARED=yes
 CFG_SM=auto
 CFG_XSHAPE=auto
+CFG_XSYNC=auto
 CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
@@ -613,9 +614,9 @@ CFG_GFX_ON="linuxfb multiscreen"
 CFG_GFX_PLUGIN_AVAILABLE=
 CFG_GFX_PLUGIN=
 CFG_GFX_OFF=
-CFG_KBD_AVAILABLE="tty linuxinput sl5000 yopy vr41xx qvfb"
+CFG_KBD_AVAILABLE="tty linuxinput qvfb"
 CFG_KBD_ON="tty"    #default, see QMakeVar above
-CFG_MOUSE_AVAILABLE="pc bus linuxtp yopy vr41xx tslib qvfb"
+CFG_MOUSE_AVAILABLE="pc linuxtp linuxinput tslib qvfb"
 CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
 
 CFG_ARCH=
@@ -838,7 +839,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1165,6 +1166,8 @@ while [ "$#" -gt 0 ]; do
         else
             if  [ "$VAL" = "opengl" ]; then
                 CFG_GRAPHICS_SYSTEM="opengl"
+            elif [ "$VAL" = "openvg" ]; then
+                CFG_GRAPHICS_SYSTEM="openvg"
             elif [ "$VAL" = "raster" ]; then
                 CFG_GRAPHICS_SYSTEM="raster"
             else
@@ -1440,6 +1443,13 @@ while [ "$#" -gt 0 ]; do
     xshape)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XSHAPE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xsync)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XSYNC="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3517,6 +3527,10 @@ Qt/X11 only:
  $SHY  -xshape ............ Compile XShape support.
                          Requires X11/extensions/shape.h.
 
+ $SHN  -no-xsync .......... Do not compile XSync support.
+ $SHY  -xsync ............. Compile XSync support.
+                         Requires X11/extensions/sync.h.
+
  $XAN  -no-xinerama ....... Do not compile Xinerama (multihead) support.
  $XAY  -xinerama .......... Compile Xinerama support.
                          Requires X11/extensions/Xinerama.h and libXinerama.
@@ -3757,7 +3771,7 @@ elif [ "$Edition" = "OpenSource" ]; then
             read acceptance
         fi
         echo
-        if [ "$acceptance" = "yes" ]; then
+        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
             break
         elif [ "$acceptance" = "no" ]; then
             echo "You are not licensed to use this software."
@@ -5064,6 +5078,23 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 	fi
     fi
 
+    # auto-detect XSync support
+    if [ "$CFG_XSYNC" != "no" ]; then
+	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xsync "XSync" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+	    CFG_XSYNC=yes
+	else
+	    if [ "$CFG_XSYNC" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+		echo "XSync support cannot be enabled due to functionality tests!"
+		echo " Turn on verbose messaging (-v) to $0 to see the final report."
+		echo " If you believe this message is in error you may use the continue"
+		echo " switch (-continue) to $0 to continue."
+		exit 101
+	    else
+		CFG_XSYNC=no
+	    fi
+	fi
+    fi
+
     # auto-detect Xinerama support
     if [ "$CFG_XINERAMA" != "no" ]; then
 	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinerama "Xinerama" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
@@ -5583,6 +5614,12 @@ if [ "$CFG_OPENVG" != "no" ]; then
     fi
 fi
 
+# if openvg is disabled and the user specified graphicssystem vg, disable it...
+if [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && [ "$CFG_OPENVG" = "no" ]; then
+    echo "OpenVG Graphics System is disabled due to missing OpenVG support..."
+    CFG_GRAPHICS_SYSTEM=default
+fi
+
 if [ "$CFG_PTMALLOC" != "no" ]; then
     # build ptmalloc, copy .a file to lib/
     echo "Building ptmalloc. Please wait..."
@@ -5924,6 +5961,9 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_XSHAPE" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xshape"
     fi
+    if [ "$CFG_XSYNC" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG xsync"
+    fi
     if [ "$CFG_XINERAMA" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xinerama"
 	QMakeVar set QMAKE_LIBS_X11 '-lXinerama $$QMAKE_LIBS_X11'
@@ -6025,6 +6065,7 @@ fi
 #
 canBuildQtXmlPatterns="yes"
 canBuildWebKit="$HAVE_STL"
+canBuildQtConcurrent="yes"
 
 # WebKit requires stdint.h
 "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stdint "Stdint" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6056,9 +6097,9 @@ case "$XPLATFORM" in
 	case "$(${QMAKE_CONF_COMPILER} -dumpversion)" in
 	    4*|3.4*)
 		;;
-	    3.3*)
-		canBuildWebKit="no"
-		;;
+            3.3*)
+                canBuildWebKit="no"
+                ;;
 	    *)
 		canBuildWebKit="no"
 		canBuildQtXmlPatterns="no"
@@ -6066,29 +6107,71 @@ case "$XPLATFORM" in
 	esac
 	;;
     solaris-cc*)
-	# Check the compiler version
-	case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
-	    *)
-		canBuildWebKit="no"
-		canBuildQtXmlPatterns="no"
-		;;
-	esac
-	;;
+        # Check the compiler version
+        case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
+            5.[012345678])
+                canBuildWebKit="no"
+                canBuildQtXmlPatterns="no"
+                canBuildQtConcurrent="no"
+                ;;
+            5.9)
+                canBuildWebKit="no"
+                ;;
+        esac
+        ;;
     hpux-acc*)
 	canBuildWebKit="no"
 	canBuildQtXmlPatterns="no"
+        canBuildQtConcurrent="no"
 	;;
     hpuxi-acc*)
 	canBuildWebKit="no"
 	;;
     aix-xlc*)
-	canBuildWebKit="no"
-	canBuildQtXmlPatterns="no"
-	;;
+        # Get the xlC version
+        cat > xlcver.c <<EOF
+#include <stdio.h>
+int main()
+{
+    printf("%d.%d\n", __xlC__ >> 8, __xlC__ & 0xFF);
+    return 0;
+}
+EOF
+        xlcver=
+        if ${QMAKE_CONF_COMPILER} -o xlcver xlcver.c >/dev/null 2>/dev/null; then
+            xlcver=`./xlcver 2>/dev/null`
+            rm -f ./xlcver
+        fi
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            if [ -n "$xlcver" ]; then
+                echo Found IBM xlC version: $xlcver.
+            else
+                echo Could not determine IBM xlC version, assuming oldest supported.
+            fi
+        fi
+
+        case "$xlcver" in
+            [123456].*)
+                canBuildWebKit="no"
+                canBuildQtXmlPatterns="no"
+                canBuildQtConcurrent="no"
+                ;;
+            *)
+                canBuildWebKit="no"
+                ;;
+        esac
+        ;;
     irix-cc*)
         canBuildWebKit="no"
+        canBuildQtConcurrent="no"
 	;;
 esac
+
+CFG_CONCURRENT="yes"
+if [ "$canBuildQtConcurrent" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT"
+    CFG_CONCURRENT="no"
+fi
 
 if [ "$CFG_XMLPATTERNS" = "yes" -a "$CFG_EXCEPTIONS" = "no" ]; then
     echo "QtXmlPatterns was requested, but it can't be built due to exceptions being disabled."
@@ -6256,7 +6339,6 @@ esac
 #     debug release
 #     dll staticlib
 #
-#     internal
 #     nocrosscompiler
 #     GNUmake
 #     largefile
@@ -6607,6 +6689,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 if [ "$PLATFORM_QWS" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
     [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
+    [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
 fi
 
 # X11/Unix/Mac only configs
@@ -6636,6 +6719,7 @@ fi
 [ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
 [ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
 [ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
+[ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
 [ "$CFG_XINPUT" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINPUT QT_NO_TABLET"
 
 [ "$CFG_XCURSOR" = "runtime" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XCURSOR"
@@ -6735,6 +6819,9 @@ else
 fi
 if [ "$PLATFORM_MAC" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG $CFG_MAC_ARCHS"
+fi
+if [ "$CFG_DEV" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG private_tests"
 fi
 
 # Make the application arch follow the Qt arch for single arch builds.
@@ -6995,6 +7082,7 @@ echo "Qt 3 compatibility .. $CFG_QT3SUPPORT"
 [ "$CFG_DBUS" = "no" ]     && echo "QtDBus module ....... no"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module ....... yes (run-time)"
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module ....... yes (linked)"
+echo "QtConcurrent code.... $CFG_CONCURRENT"
 echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"
@@ -7094,6 +7182,7 @@ fi
 if [ "$PLATFORM_X11" = "yes" ]; then
     echo "NAS sound support ... $CFG_NAS"
     echo "XShape support ...... $CFG_XSHAPE"
+    echo "XSync support ....... $CFG_XSYNC"
     echo "Xinerama support .... $CFG_XINERAMA"
     echo "Xcursor support ..... $CFG_XCURSOR"
     echo "Xfixes support ...... $CFG_XFIXES"

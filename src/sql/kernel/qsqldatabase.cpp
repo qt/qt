@@ -1481,18 +1481,21 @@ QString QSqlDatabase::connectionName() const
 }
 
 /*!
-  Sets the default numerical precision policy used by queries created
-  on this database connection to \a precisionPolicy.
+    \since 4.6
 
-  Note: Drivers that don't support fetching numerical values with low
-  precision will ignore the precision policy. You can use
-  QSqlDriver::hasFeature() to find out whether a driver supports this
-  feature.
+    Sets the default numerical precision policy used by queries created
+    on this database connection to \a precisionPolicy.
 
-  Note: Setting the default precision policy to \a precisionPolicy
-  doesn't affect any currently active queries.
+    Note: Drivers that don't support fetching numerical values with low
+    precision will ignore the precision policy. You can use
+    QSqlDriver::hasFeature() to find out whether a driver supports this
+    feature.
 
-  \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+    Note: Setting the default precision policy to \a precisionPolicy
+    doesn't affect any currently active queries.
+
+    \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(),
+    QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
 */
 void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
@@ -1502,9 +1505,12 @@ void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy pr
 }
 
 /*!
-  Returns the current default precision policy for the database connection.
+    \since 4.6
 
-  \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+    Returns the current default precision policy for the database connection.
+
+    \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), 
+    QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
 */
 QSql::NumericalPrecisionPolicy QSqlDatabase::numericalPrecisionPolicy() const
 {

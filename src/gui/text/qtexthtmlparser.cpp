@@ -1206,6 +1206,8 @@ void QTextHtmlParserNode::setListStyle(const QVector<QCss::Value> &cssValues)
                 case QCss::Value_Decimal: hasOwnListStyle = true; listStyle = QTextListFormat::ListDecimal; break;
                 case QCss::Value_LowerAlpha: hasOwnListStyle = true; listStyle = QTextListFormat::ListLowerAlpha; break;
                 case QCss::Value_UpperAlpha: hasOwnListStyle = true; listStyle = QTextListFormat::ListUpperAlpha; break;
+                case QCss::Value_LowerRoman: hasOwnListStyle = true; listStyle = QTextListFormat::ListLowerRoman; break;
+                case QCss::Value_UpperRoman: hasOwnListStyle = true; listStyle = QTextListFormat::ListUpperRoman; break;
                 default: break;
             }
         }
@@ -1540,6 +1542,10 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                         node->listStyle = QTextListFormat::ListLowerAlpha;
                     } else if (value == QLatin1String("A")) {
                         node->listStyle = QTextListFormat::ListUpperAlpha;
+                    } else if (value == QLatin1String("i")) {
+                        node->listStyle = QTextListFormat::ListLowerRoman;
+                    } else if (value == QLatin1String("I")) {
+                        node->listStyle = QTextListFormat::ListUpperRoman;
                     } else {
                         value = value.toLower();
                         if (value == QLatin1String("square"))

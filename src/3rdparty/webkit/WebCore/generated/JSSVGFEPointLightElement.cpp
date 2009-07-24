@@ -44,7 +44,7 @@ static const HashTableValue JSSVGFEPointLightElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEPointLightElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEPointLightElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGFEPointLightElementTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSSVGFEPointLightElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEPointLightElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEPointLightElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEPointLightElementPrototypeTableValues, 0 };
 #else

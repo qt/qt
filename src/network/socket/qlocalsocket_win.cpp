@@ -48,13 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
-#define NOTIFYTIMEOUT 100
-
 void QLocalSocketPrivate::init()
 {
     Q_Q(QLocalSocket);
-    QObject::connect(&dataNotifier, SIGNAL(timeout()), q, SLOT(_q_notified()));
+    memset(&overlapped, 0, sizeof(overlapped));
     overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    dataReadNotifier = new QWinEventNotifier(overlapped.hEvent, q);
+    q->connect(dataReadNotifier, SIGNAL(activated(HANDLE)), q, SLOT(_q_notified()));
 }
 
 void QLocalSocketPrivate::setErrorString(const QString &function)
@@ -101,8 +101,10 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
        handle(INVALID_HANDLE_VALUE),
        pipeWriter(0),
        readBufferMaxSize(0),
+       actualReadBufferSize(0),
        error(QLocalSocket::UnknownSocketError),
-       readyReadEmitted(false),
+       readSequenceStarted(false),
+       pendingReadyRead(false),
        pipeClosed(false),
        state(QLocalSocket::UnconnectedState)
 {
@@ -137,25 +139,14 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     forever {
         DWORD permissions = (openMode & QIODevice::ReadOnly) ? GENERIC_READ : 0;
         permissions |= (openMode & QIODevice::WriteOnly) ? GENERIC_WRITE : 0;
-        QT_WA({
-        localSocket = CreateFileW(
-                       (TCHAR*)d->fullServerName.utf16(),   // pipe name
-                       permissions,
-                       0,              // no sharing
-                       NULL,           // default security attributes
-                       OPEN_EXISTING,  // opens existing pipe
-                       FILE_FLAG_OVERLAPPED,
-                       NULL);          // no template file
-        }, {
-        localSocket = CreateFileA(
-                       d->fullServerName.toLocal8Bit().constData(), // pipe name
-                       permissions,
-                       0,              // no sharing
-                       NULL,           // default security attributes
-                       OPEN_EXISTING,  // opens existing pipe
-                       FILE_FLAG_OVERLAPPED,
-                       NULL);          // no template file
-        });
+        localSocket = CreateFile((const wchar_t *)d->fullServerName.utf16(),   // pipe name
+                                 permissions,
+                                 0,              // no sharing
+                                 NULL,           // default security attributes
+                                 OPEN_EXISTING,  // opens existing pipe
+                                 FILE_FLAG_OVERLAPPED,
+                                 NULL);          // no template file
+
         if (localSocket != INVALID_HANDLE_VALUE)
             break;
         DWORD error = GetLastError();
@@ -165,13 +156,8 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
         }
 
         // All pipe instances are busy, so wait until connected or up to 5 seconds.
-        QT_WA({
-            if (!WaitNamedPipeW((TCHAR*)d->fullServerName.utf16(), 5000))
-                break;
-        }, {
-            if (!WaitNamedPipeA(d->fullServerName.toLocal8Bit().constData(), 5000))
-                break;
-        });
+        if (!WaitNamedPipe((const wchar_t *)d->fullServerName.utf16(), 5000))
+            break;
     }
 
     if (localSocket == INVALID_HANDLE_VALUE) {
@@ -182,7 +168,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 
     // we have a valid handle
     d->serverName = name;
-    if (setSocketDescriptor((quintptr)localSocket), openMode) {
+    if (setSocketDescriptor((quintptr)localSocket, ConnectedState, openMode)) {
         d->handle = localSocket;
         emit connected();
     }
@@ -192,82 +178,103 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 qint64 QLocalSocket::readData(char *data, qint64 maxSize)
 {
     Q_D(QLocalSocket);
-    if (d->readBuffer.isEmpty()) {
-        if (!d->readFromSocket()) {
-            if (d->pipeClosed)
-                return -1;
-            return 0;
+
+    qint64 readSoFar;
+    // If startAsyncRead() read data, copy it to its destination.
+    if (maxSize == 1 && d->actualReadBufferSize > 0) {
+        *data = d->readBuffer.getChar();
+        d->actualReadBufferSize--;
+        readSoFar = 1;
+    } else {
+        qint64 bytesToRead = qMin(qint64(d->actualReadBufferSize), maxSize);
+        readSoFar = 0;
+        while (readSoFar < bytesToRead) {
+            const char *ptr = d->readBuffer.readPointer();
+            int bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
+                                                qint64(d->readBuffer.nextDataBlockSize()));
+            memcpy(data + readSoFar, ptr, bytesToReadFromThisBlock);
+            readSoFar += bytesToReadFromThisBlock;
+            d->readBuffer.free(bytesToReadFromThisBlock);
+            d->actualReadBufferSize -= bytesToReadFromThisBlock;
         }
     }
 
-    if (!d->dataNotifier.isActive() && d->threadData->eventDispatcher)
-        d->dataNotifier.start(NOTIFYTIMEOUT);
+    if (!d->readSequenceStarted)
+        d->startAsyncRead();
+    d->checkReadyRead();
 
-    if (d->readBuffer.isEmpty())
-        return qint64(0);
-
-    // If readFromSocket() read data, copy it to its destination.
-    if (maxSize == 1) {
-        *data = d->readBuffer.getChar();
-        return 1;
-    }
-
-    qint64 bytesToRead = qMin(qint64(d->readBuffer.size()), maxSize);
-    qint64 readSoFar = 0;
-    while (readSoFar < bytesToRead) {
-        const char *ptr = d->readBuffer.readPointer();
-        int bytesToReadFromThisBlock = qMin(int(bytesToRead - readSoFar),
-                                            d->readBuffer.nextDataBlockSize());
-        memcpy(data + readSoFar, ptr, bytesToReadFromThisBlock);
-        readSoFar += bytesToReadFromThisBlock;
-        d->readBuffer.free(bytesToReadFromThisBlock);
-    }
     return readSoFar;
 }
 
 /*!
     \internal
-    read from the socket
+    Schedules or cancels a readyRead() emission depending on actual data availability
  */
-qint64 QLocalSocketPrivate::readData(char *data, qint64 maxSize)
+void QLocalSocketPrivate::checkReadyRead()
 {
-    DWORD bytesRead = 0;
-    overlapped.Offset = 0;
-    overlapped.OffsetHigh = 0;
-    bool success = ReadFile(handle, data, maxSize, &bytesRead, &overlapped);
-    if (!success && GetLastError() == ERROR_IO_PENDING)
-        if (GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE))
-            success = true;
-    if (!success) {
-        setErrorString(QLatin1String("QLocalSocket::readData"));
-        return 0;
+    if (actualReadBufferSize > 0) {
+        if (!pendingReadyRead) {
+            Q_Q(QLocalSocket);
+            QTimer::singleShot(0, q, SLOT(_q_emitReadyRead()));
+            pendingReadyRead = true;
+        }
+    } else {
+        pendingReadyRead = false;
     }
-    return bytesRead;
 }
 
 /*!
     \internal
     Reads data from the socket into the readbuffer
  */
-bool QLocalSocketPrivate::readFromSocket()
+void QLocalSocketPrivate::startAsyncRead()
 {
-    qint64 bytesToRead = bytesAvailable();
-    if (bytesToRead == 0)
-        return false;
+    do {
+        DWORD bytesToRead = bytesAvailable();
+        if (bytesToRead == 0) {
+            // There are no bytes in the pipe but we need to
+            // start the overlapped read with some buffer size.
+            bytesToRead = initialReadBufferSize;
+        }
 
-    if (readBufferMaxSize && bytesToRead
-                     > (readBufferMaxSize - readBuffer.size()))
-        bytesToRead = readBufferMaxSize - readBuffer.size();
+        if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - readBuffer.size())) {
+            bytesToRead = readBufferMaxSize - readBuffer.size();
+            if (bytesToRead == 0) {
+                // Buffer is full. User must read data from the buffer
+                // before we can read more from the pipe.
+                return;
+            }
+        }
 
-    char *ptr = readBuffer.reserve(bytesToRead);
-    qint64 readBytes = readData(ptr, bytesToRead);
-    if (readBytes == 0) {
-        readBuffer.chop(bytesToRead);
-        return false;
+        char *ptr = readBuffer.reserve(bytesToRead);
+
+        readSequenceStarted = true;
+        if (ReadFile(handle, ptr, bytesToRead, NULL, &overlapped)) {
+            completeAsyncRead();
+        } else if (GetLastError() != ERROR_IO_PENDING) {
+            setErrorString(QLatin1String("QLocalSocketPrivate::startAsyncRead"));
+            return;
+        }
+    } while (!readSequenceStarted);
+}
+
+/*!
+    \internal
+    Sets the correct size of the read buffer after a read operation.
+ */
+void QLocalSocketPrivate::completeAsyncRead()
+{
+    ResetEvent(overlapped.hEvent);
+    readSequenceStarted = false;
+
+    DWORD bytesRead;
+    if (!GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE)) {
+        setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
+        return;
     }
-    readyReadEmitted = false;
-    readBuffer.chop(int(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes)));
-    return true;
+
+    actualReadBufferSize += bytesRead;
+    readBuffer.truncate(actualReadBufferSize);
 }
 
 qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
@@ -289,11 +296,9 @@ void QLocalSocket::abort()
 /*!
     The number of bytes available from the pipe
   */
-qint64 QLocalSocketPrivate::bytesAvailable()
+DWORD QLocalSocketPrivate::bytesAvailable()
 {
     Q_Q(QLocalSocket);
-    if (q->state() != QLocalSocket::ConnectedState)
-        return 0;
     DWORD bytes;
     if (PeekNamedPipe(handle, NULL, 0, NULL, &bytes, NULL)) {
         return bytes;
@@ -316,7 +321,7 @@ qint64 QLocalSocket::bytesAvailable() const
 {
     Q_D(const QLocalSocket);
     qint64 available = QIODevice::bytesAvailable();
-    available += (qint64) d->readBuffer.size();
+    available += (qint64) d->actualReadBufferSize;
     return available;
 }
 
@@ -343,7 +348,6 @@ void QLocalSocket::close()
     QIODevice::close();
     d->state = ClosingState;
     emit stateChanged(d->state);
-    d->readyReadEmitted = false;
     emit readChannelFinished();
     d->serverName = QString();
     d->fullServerName = QString();
@@ -352,10 +356,13 @@ void QLocalSocket::close()
         disconnectFromServer();
         return;
     }
+    d->readSequenceStarted = false;
+    d->pendingReadyRead = false;
     d->pipeClosed = false;
     DisconnectNamedPipe(d->handle);
     CloseHandle(d->handle);
     d->handle = INVALID_HANDLE_VALUE;
+    ResetEvent(d->overlapped.hEvent);
     d->state = UnconnectedState;
     emit stateChanged(d->state);
     emit disconnected();
@@ -363,7 +370,6 @@ void QLocalSocket::close()
         delete d->pipeWriter;
         d->pipeWriter = 0;
     }
-    d->dataNotifier.stop();
 }
 
 bool QLocalSocket::flush()
@@ -397,12 +403,15 @@ bool QLocalSocket::setSocketDescriptor(quintptr socketDescriptor,
 {
     Q_D(QLocalSocket);
     d->readBuffer.clear();
+    d->actualReadBufferSize = 0;
     QIODevice::open(openMode);
     d->handle = (int*)socketDescriptor;
     d->state = socketState;
     emit stateChanged(d->state);
-    if (d->threadData->eventDispatcher)
-        d->dataNotifier.start(NOTIFYTIMEOUT);
+    if (d->state == ConnectedState && openMode.testFlag(QIODevice::ReadOnly)) {
+        d->startAsyncRead();
+        d->checkReadyRead();
+    }
     return true;
 }
 
@@ -416,20 +425,18 @@ void QLocalSocketPrivate::_q_canWrite()
 void QLocalSocketPrivate::_q_notified()
 {
     Q_Q(QLocalSocket);
-    if (0 != bytesAvailable()) {
-        if (readBufferMaxSize == 0 || readBuffer.size() < readBufferMaxSize) {
-            if (!readFromSocket()) {
-                return;
-            }
-            // wait until buffer is cleared before starting again
-            if (readBufferMaxSize && readBuffer.size() == readBufferMaxSize) {
-                dataNotifier.stop();
-            }
-        }
-        if (!readyReadEmitted) {
-            readyReadEmitted = true;
-            q->emit readyRead();
-        }
+    completeAsyncRead();
+    startAsyncRead();
+    pendingReadyRead = false;
+    emit q->readyRead();
+}
+
+void QLocalSocketPrivate::_q_emitReadyRead()
+{
+    if (pendingReadyRead) {
+        Q_Q(QLocalSocket);
+        pendingReadyRead = false;
+        emit q->readyRead();
     }
 }
 
@@ -462,11 +469,15 @@ bool QLocalSocket::waitForDisconnected(int msecs)
     Q_D(QLocalSocket);
     if (state() == UnconnectedState)
         return false;
+    if (!openMode().testFlag(QIODevice::ReadOnly)) {
+        qWarning("QLocalSocket::waitForDisconnected isn't supported for write only pipes.");
+        return false;
+    }
     QIncrementalSleepTimer timer(msecs);
     forever {
-        d->_q_notified();
-	if (d->pipeClosed)
-	    close();
+        d->bytesAvailable();    // to check if PeekNamedPipe fails
+        if (d->pipeClosed)
+            close();
         if (state() == UnconnectedState)
             return true;
         Sleep(timer.nextSleepTime());
@@ -486,22 +497,24 @@ bool QLocalSocket::isValid() const
 bool QLocalSocket::waitForReadyRead(int msecs)
 {
     Q_D(QLocalSocket);
-    QIncrementalSleepTimer timer(msecs);
-    forever {
-        d->_q_notified();
-        if (bytesAvailable() > 0) {
-            if (!d->readyReadEmitted) {
-                d->readyReadEmitted = true;
-                emit readyRead();
-            }
-            return true;
-        }
 
-        Sleep(timer.nextSleepTime());
-        if (timer.hasTimedOut())
-            break;
+    if (bytesAvailable() > 0)
+        return true;
+
+    if (d->state != QLocalSocket::ConnectedState)
+        return false;
+
+    Q_ASSERT(d->readSequenceStarted);
+    DWORD result = WaitForSingleObject(d->overlapped.hEvent, msecs == -1 ? INFINITE : msecs);
+    switch (result) {
+        case WAIT_OBJECT_0:
+            d->_q_notified();
+            return true;
+        case WAIT_TIMEOUT:
+            return false;
     }
 
+    qWarning("QLocalSocket::waitForReadyRead WaitForSingleObject failed with error code %d.", int(GetLastError()));
     return false;
 }
 
@@ -511,27 +524,11 @@ bool QLocalSocket::waitForBytesWritten(int msecs)
     if (!d->pipeWriter)
         return false;
 
-    QIncrementalSleepTimer timer(msecs);
-    forever {
-        if (d->pipeWriter->hadWritten())
-            return true;
-
-        if (d->pipeWriter->bytesToWrite() == 0)
-            return false;
-
-        // Wait for the pipe writer to acknowledge that it has
-        // written. This will succeed if either the pipe writer has
-        // already written the data, or if it manages to write data
-        // within the given timeout.
-        if (d->pipeWriter->waitForWrite(0))
-            return true;
-
-        Sleep(timer.nextSleepTime());
-        if (timer.hasTimedOut())
-            break;
-    }
-
-    return false;
+    // Wait for the pipe writer to acknowledge that it has
+    // written. This will succeed if either the pipe writer has
+    // already written the data, or if it manages to write data
+    // within the given timeout.
+    return d->pipeWriter->waitForWrite(msecs);
 }
 
 QT_END_NAMESPACE

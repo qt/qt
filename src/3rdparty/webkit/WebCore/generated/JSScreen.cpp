@@ -46,7 +46,7 @@ static const HashTableValue JSScreenTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSScreenTable =
+static JSC_CONST_HASHTABLE HashTable JSScreenTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSScreenTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSScreenPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSScreenPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSScreenPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSScreenPrototypeTableValues, 0 };
 #else

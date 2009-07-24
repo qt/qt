@@ -86,10 +86,14 @@ mac {
 		kernel/qcore_mac.cpp
 }
 
-unix {
+unix:!symbian {
 	SOURCES += \
-                kernel/qcrashhandler.cpp
+                kernel/qcore_unix.cpp \
+                kernel/qcrashhandler.cpp \
+                kernel/qsharedmemory_unix.cpp \
+                kernel/qsystemsemaphore_unix.cpp
 	HEADERS += \
+                kernel/qcore_unix_p.h \
 		kernel/qcrashhandler_p.h
 
         contains(QT_CONFIG, glib) {
@@ -100,25 +104,27 @@ unix {
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
             LIBS +=$$QT_LIBS_GLIB
         }
-
-        symbian {
             SOURCES += \
+                kernel/qeventdispatcher_unix.cpp
+            HEADERS += \
+                kernel/qeventdispatcher_unix_p.h
+
+   contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
+}
+
+symbian {
+	SOURCES += \
+                kernel/qcore_unix.cpp \
+                kernel/qcrashhandler.cpp \
                 kernel/qeventdispatcher_symbian.cpp \
                 kernel/qcore_symbian_p.cpp \
                 kernel/qsharedmemory_symbian.cpp \
                 kernel/qsystemsemaphore_symbian.cpp
-            HEADERS += \
+
+	HEADERS += \
+                kernel/qcore_unix_p.h \
+                kernel/qcrashhandler_p.h \
                 kernel/qeventdispatcher_symbian_p.h \
                 kernel/qcore_symbian_p.h
-        } else {
-            SOURCES += \
-                kernel/qeventdispatcher_unix.cpp \
-                kernel/qsharedmemory_unix.cpp \
-                kernel/qsystemsemaphore_unix.cpp
-            HEADERS += \
-                kernel/qeventdispatcher_unix_p.h
-        }
-
-   contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
 }
 

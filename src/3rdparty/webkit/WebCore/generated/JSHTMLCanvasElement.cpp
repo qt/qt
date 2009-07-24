@@ -45,7 +45,7 @@ static const HashTableValue JSHTMLCanvasElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLCanvasElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLCanvasElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLCanvasElementTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSHTMLCanvasElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLCanvasElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLCanvasElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLCanvasElementConstructorTableValues, 0 };
 #else
@@ -99,7 +99,7 @@ static const HashTableValue JSHTMLCanvasElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLCanvasElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLCanvasElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLCanvasElementPrototypeTableValues, 0 };
 #else

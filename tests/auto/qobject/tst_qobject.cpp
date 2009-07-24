@@ -2438,12 +2438,15 @@ void tst_QObject::recursiveSignalEmission()
 {
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
     QSKIP("Emulator builds in Symbian do not support launching processes linking to Qt", SkipAll);
-#endif
+#elif defined(QT_NO_PROCESS)
+    QSKIP("Test requires QProcess", SkipAll);
+#else
     QProcess proc;
     proc.start("./signalbug");
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
+#endif
 }
 
 void tst_QObject::blockingQueuedConnection()

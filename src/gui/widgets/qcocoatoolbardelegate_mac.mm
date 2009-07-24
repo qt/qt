@@ -43,6 +43,7 @@
 #ifdef QT_MAC_USE_COCOA
 #include <private/qmainwindowlayout_p.h>
 #include <private/qt_mac_p.h>
+#include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qcocoaview_mac_p.h>
 #include <private/qwidget_p.h>
 #include <qtoolbar.h>
@@ -99,7 +100,7 @@ QT_FORWARD_DECLARE_CLASS(QCFString);
 {
     Q_UNUSED(flag);
     Q_UNUSED(nstoolbar);
-    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(QCFString::toQString(CFStringRef(itemIdentifier)));
+    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(qt_mac_NSStringToQString(itemIdentifier));
     NSToolbarItem *item = nil;
     if (tb) {
         item = [[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier];
@@ -111,7 +112,7 @@ QT_FORWARD_DECLARE_CLASS(QCFString);
 - (void)toolbarWillAddItem:(NSNotification *)notification
 {
     NSToolbarItem *item = [[notification userInfo] valueForKey:@"item"];
-    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(QCFString::toQString(CFStringRef([item itemIdentifier])));
+    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(qt_mac_NSStringToQString([item itemIdentifier]));
     if (!tb)
         return; // I can't really do anything about this.
     [item retain];
@@ -119,12 +120,9 @@ QT_FORWARD_DECLARE_CLASS(QCFString);
 
     NSArray *items = [[qt_mac_window_for(mainWindowLayout->layoutState.mainWindow->window()) toolbar] items];
     int someIndex = 0;
-    bool foundItem = false;
     for (NSToolbarItem *i in items) {
-        if (i == item) {
-            foundItem = true;
+        if (i == item)
             break;
-        }
         ++someIndex;
     }
     mainWindowLayout->toolbarItemsCopy.insert(someIndex, item);

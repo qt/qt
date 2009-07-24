@@ -6,7 +6,8 @@ QT += sql
 wince*: {
    plugFiles.sources = ../../../plugins/sqldrivers
    plugFiles.path    = .
-   DEPLOYMENT += plugFiles 
+   DEPLOYMENT += plugFiles
+   LIBS += -lws2
 }else:symbian {
     contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
         sqlite.path = /sys/bin

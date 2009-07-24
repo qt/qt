@@ -177,46 +177,48 @@ bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) con
     return (i != -1 && (channels[i].state & ReadingState));
 }
 
-
-void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
+void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, QByteArray &qba)
 {
-    char *dst = reply.d_func()->responseData.reserve(fragment.size());
-    qMemCopy(dst, fragment.constData(), fragment.size());
+    reply.d_func()->responseData.append(qba);
+
+    // clear the original! helps with implicit sharing and
+    // avoiding memcpy when the user is reading the data
+    qba.clear();
 }
 
-void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
+void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data)
 {
-    reply.d_func()->compressedData.append(fragment);
+    reply.d_func()->responseData.append(data);
+
+    // clear the original! helps with implicit sharing and
+    // avoiding memcpy when the user is reading the data
+    data.clear();
+}
+
+void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data)
+{
+    // Work in progress: Later we will directly use a list of QByteArray or a QRingBuffer
+    // instead of one QByteArray.
+    for(int i = 0; i < data.bufferCount(); i++) {
+        QByteArray &byteData = data[i];
+        reply.d_func()->compressedData.append(byteData.constData(), byteData.size());
+    }
+    data.clear();
 }
 
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
-    return reply.d_func()->responseData.size();
+    return reply.d_func()->responseData.byteAmount();
 }
 
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const
 {
-    return reply.d_func()->responseData.nextDataBlockSize();
+    return reply.d_func()->responseData.sizeNextBlock();
 }
 
 qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
     return reply.d_func()->compressedData.size();
-}
-
-qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize)
-{
-    QRingBuffer *rb = &reply.d_func()->responseData;
-    if (maxSize == -1 || maxSize >= rb->size()) {
-        // read the whole data
-        data = rb->readAll();
-        rb->clear();
-    } else {
-        // read only the requested length
-        data.resize(maxSize);
-        rb->read(data.data(), maxSize);
-    }
-    return data.size();
 }
 
 void QHttpNetworkConnectionPrivate::eraseData(QHttpNetworkReply *reply)
@@ -261,7 +263,12 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 #ifndef QT_NO_NETWORKPROXY
     }
 #endif
-    // set the gzip header
+
+    // If the request had a accept-encoding set, we better not mess
+    // with it. If it was not set, we announce that we understand gzip
+    // and remember this fact in request.d->autoDecompress so that
+    // we can later decompress the HTTP reply if it has such an
+    // encoding.
     value = request.headerField("accept-encoding");
     if (value.isEmpty()) {
 #ifndef QT_NO_COMPRESS
@@ -335,8 +342,9 @@ bool QHttpNetworkConnectionPrivate::ensureConnection(QAbstractSocket *socket)
 #ifndef QT_NO_OPENSSL
             QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
             sslSocket->connectToHostEncrypted(connectHost, connectPort);
-            if (channels[index].ignoreSSLErrors)
+            if (channels[index].ignoreAllSslErrors)
                 sslSocket->ignoreSslErrors();
+            sslSocket->ignoreSslErrors(channels[index].ignoreSslErrorsList);
 #else
             emitReplyError(socket, channels[index].reply, QNetworkReply::ProtocolUnknownError);
 #endif
@@ -403,6 +411,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
             channels[i].bytesTotal = channels[i].request.contentLength();
         } else {
+            socket->flush(); // ### Remove this when pipelining is implemented. We want less TCP packets!
             channels[i].state = WaitingState;
             break;
         }
@@ -558,6 +567,8 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
                 reply->d_func()->totalProgress += inflated.size();
                 appendUncompressedData(*reply, inflated);
                 if (shouldEmitSignals(reply)) {
+                    // important: At the point of this readyRead(), inflated must be cleared,
+                    // else implicit sharing will trigger memcpy when the user is reading data!
                     emit reply->readyRead();
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
@@ -674,18 +685,19 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
             {
                 // use the traditional slower reading (for compressed encoding, chunked encoding,
                 // no content-length etc)
-                QBuffer fragment;
-                fragment.open(QIODevice::WriteOnly);
-                bytes = reply->d_func()->readBody(socket, &fragment);
+                QByteDataBuffer byteDatas;
+                bytes = reply->d_func()->readBody(socket, &byteDatas);
                 if (bytes) {
                     if (reply->d_func()->autoDecompress)
-                        appendCompressedData(*reply, fragment.data());
+                        appendCompressedData(*reply, byteDatas);
                     else
-                        appendUncompressedData(*reply, fragment.data());
+                        appendUncompressedData(*reply, byteDatas);
 
                     if (!reply->d_func()->autoDecompress) {
-                        reply->d_func()->totalProgress += fragment.size();
+                        reply->d_func()->totalProgress += bytes;
                         if (shouldEmitSignals(reply)) {
+                            // important: At the point of this readyRead(), the byteDatas list must be empty,
+                            // else implicit sharing will trigger memcpy when the user is reading data!
                             emit reply->readyRead();
                             // make sure that the reply is valid
                             if (channels[i].reply != reply)
@@ -1189,6 +1201,10 @@ void QHttpNetworkConnectionPrivate::_q_connected()
     QAbstractSocket *socket = qobject_cast<QAbstractSocket*>(q->sender());
     if (!socket)
         return; // ### error
+
+    // improve performance since we get the request sent by the kernel ASAP
+    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
     int i = indexOf(socket);
     // ### FIXME: if the server closes the connection unexpectedly, we shouldn't send the same broken request again!
     //channels[i].reconnectAttempts = 2;
@@ -1440,15 +1456,32 @@ void QHttpNetworkConnection::ignoreSslErrors(int channel)
     if (channel == -1) { // ignore for all channels
         for (int i = 0; i < d->channelCount; ++i) {
             static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors();
-            d->channels[i].ignoreSSLErrors = true;
+            d->channels[i].ignoreAllSslErrors = true;
         }
 
     } else {
         static_cast<QSslSocket *>(d->channels[channel].socket)->ignoreSslErrors();
-        d->channels[channel].ignoreSSLErrors = true;
+        d->channels[channel].ignoreAllSslErrors = true;
     }
 }
 
+void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int channel)
+{
+    Q_D(QHttpNetworkConnection);
+    if (!d->encrypt)
+        return;
+
+    if (channel == -1) { // ignore for all channels
+        for (int i = 0; i < d->channelCount; ++i) {
+            static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors(errors);
+            d->channels[i].ignoreSslErrorsList = errors;
+        }
+
+    } else {
+        static_cast<QSslSocket *>(d->channels[channel].socket)->ignoreSslErrors(errors);
+        d->channels[channel].ignoreSslErrorsList = errors;
+    }
+}
 
 #endif //QT_NO_OPENSSL
 

@@ -96,7 +96,7 @@ private slots:
 #ifdef Q_OS_WIN
     void handle();
 #endif
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) && defined(QT_BUILD_INTERNAL)
     void clipRectangles();
 #endif
 
@@ -865,7 +865,7 @@ void tst_QRegion::handle()
 }
 #endif
 
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) && defined(QT_BUILD_INTERNAL)
 void tst_QRegion::clipRectangles()
 {
     QRegion region(30, 30, 30, 30);
@@ -967,6 +967,7 @@ void tst_QRegion::regionToPath_data()
 
 void tst_QRegion::regionToPath()
 {
+#ifdef QT_BUILD_INTERNAL
     extern QPainterPath qt_regionToPath(const QRegion &region);
 
     QFETCH(QPainterPath, path);
@@ -1002,6 +1003,7 @@ void tst_QRegion::regionToPath()
         QCOMPARE(ia, ib);
         QCOMPARE(a.boundingRect(), b.boundingRect());
     }
+#endif
 }
 
 QTEST_MAIN(tst_QRegion)

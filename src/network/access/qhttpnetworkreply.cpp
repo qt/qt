@@ -176,13 +176,10 @@ qint64 QHttpNetworkReply::bytesAvailableNextBlock() const
         return -1;
 }
 
-QByteArray QHttpNetworkReply::read(qint64 maxSize)
+QByteArray QHttpNetworkReply::readAny()
 {
     Q_D(QHttpNetworkReply);
-    QByteArray data;
-    if (d->connection)
-        d->connection->d_func()->read(*this, data, maxSize);
-    return data;
+    return d->responseData.read();
 }
 
 bool QHttpNetworkReply::isFinished() const
@@ -195,8 +192,9 @@ bool QHttpNetworkReply::isFinished() const
 QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
+      chunkedTransferEncoding(0),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
-      autoDecompress(false), requestIsPrepared(false)
+      autoDecompress(false), responseData(), requestIsPrepared(false)
 {
 }
 
@@ -498,6 +496,9 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         state = ReadingDataState;
         fragment.clear(); // next fragment
         bodyLength = contentLength(); // cache the length
+
+        // cache isChunked() since it is called often
+        chunkedTransferEncoding = headerField("transfer-encoding").toLower().contains("chunked");
     }
     return bytes;
 }
@@ -538,7 +539,7 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
 
 bool QHttpNetworkReplyPrivate::isChunked()
 {
-    return headerField("transfer-encoding").toLower().contains("chunked");
+    return chunkedTransferEncoding;
 }
 
 bool QHttpNetworkReplyPrivate::connectionCloseEnabled()
@@ -549,17 +550,19 @@ bool QHttpNetworkReplyPrivate::connectionCloseEnabled()
 
 // note this function can only be used for non-chunked, non-compressed with
 // known content length
-qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QRingBuffer *rb)
-{   
-    quint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
-    char* dst = rb->reserve(toBeRead);
-    qint64 haveRead = socket->read(dst, toBeRead);
+qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb)
+{
+    qint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
+    QByteArray bd;
+    bd.resize(toBeRead);
+    qint64 haveRead = socket->read(bd.data(), bd.size());
     if (haveRead == -1) {
-        rb->chop(toBeRead);
+        bd.clear();
         return 0; // ### error checking here;
     }
+    bd.resize(haveRead);
 
-    rb->chop(toBeRead - haveRead);
+    rb->append(bd);
 
     if (contentRead + haveRead == bodyLength) {
         state = AllDoneState;
@@ -571,7 +574,7 @@ qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QRingBuff
 }
 
 
-qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *out)
+qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuffer *out)
 {
     qint64 bytes = 0;
     if (isChunked()) {
@@ -589,33 +592,35 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *ou
     return bytes;
 }
 
-qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QIODevice *in, QIODevice *out, qint64 size)
+qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QIODevice *in, QByteDataBuffer *out, qint64 size)
 {
     qint64 bytes = 0;
     Q_ASSERT(in);
     Q_ASSERT(out);
 
     int toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, in->bytesAvailable()));
-    QByteArray raw(toBeRead, 0);
-    while (size > 0) {
-        qint64 read = in->read(raw.data(), raw.size());
-        if (read == 0)
+    while (toBeRead > 0) {
+        QByteArray byteData;
+        byteData.resize(toBeRead);
+        qint64 haveRead = in->read(byteData.data(), byteData.size());
+        if (haveRead <= 0) {
+            // ### error checking here
+            byteData.clear();
             return bytes;
-        // ### error checking here
-        qint64 written = out->write(raw.data(), read);
-        if (written == 0)
-            return bytes;
-        if (read != written)
-            qDebug() << "### read" << read << "written" << written;
-        bytes += read;
-        size -= read;
-        out->waitForBytesWritten(-1); // throttle
+        }
+
+        byteData.resize(haveRead);
+        out->append(byteData);
+        bytes += haveRead;
+        size -= haveRead;
+
+        toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, in->bytesAvailable()));
     }
     return bytes;
 
 }
 
-qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QIODevice *in, QIODevice *out)
+qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out)
 {
     qint64 bytes = 0;
     while (in->bytesAvailable()) { // while we can read from input
@@ -636,17 +641,14 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QIODevice *in, QIODevice *
             state = AllDoneState;
             break;
         }
-        // otherwise, read data
-        qint64 readSize = qMin(in->bytesAvailable(), currentChunkSize - currentChunkRead);
-        QByteArray buffer(readSize, 0);
-        qint64 read = in->read(buffer.data(), readSize);
-        bytes += read;
-        currentChunkRead += read;
-        qint64 written = out->write(buffer);
-        Q_UNUSED(written); // Avoid compile warning when building release
-        Q_ASSERT(read == written);
+
+        // otherwise, try to read what is missing for this chunk
+        qint64 haveRead = readReplyBodyRaw (in, out, currentChunkSize - currentChunkRead);
+        currentChunkRead += haveRead;
+        bytes += haveRead;
+
         // ### error checking here
-        out->waitForBytesWritten(-1);
+
     }
     return bytes;
 }
@@ -706,6 +708,13 @@ void QHttpNetworkReply::ignoreSslErrors()
     Q_D(QHttpNetworkReply);
     if (d->connection)
         d->connection->ignoreSslErrors();
+}
+
+void QHttpNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    Q_D(QHttpNetworkReply);
+    if (d->connection)
+        d->connection->ignoreSslErrors(errors);
 }
 
 

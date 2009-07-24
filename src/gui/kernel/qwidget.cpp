@@ -82,6 +82,8 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
+#include "qstandardgestures.h"
+#include "qstandardgestures_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>
@@ -111,9 +113,9 @@
 #include "private/qgraphicsproxywidget_p.h"
 #include "QtGui/qabstractscrollarea.h"
 #include "private/qabstractscrollarea_p.h"
+#include "private/qevent_p.h"
 
 #include "private/qgraphicssystem_p.h"
-#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -131,8 +133,6 @@ Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
     qt_enable_backingstore = enable;
 }
 #endif
-
-QString qt_getStandardGestureTypeName(Qt::GestureType);
 
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
@@ -869,8 +869,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
     \o X11: This feature relies on the use of an X server that supports ARGB visuals
     and a compositing window manager.
-    \o Windows: This feature requires Windows 2000 or later. The widget needs to have
-    the Qt::FramelessWindowHint window flag set for the translucency to work.
+    \o Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
+    for the translucency to work.
     \endlist
 
 
@@ -2035,10 +2035,9 @@ void QPixmap::fill( const QWidget *widget, const QPoint &off )
     QPainter p(this);
     p.translate(-off);
     widget->d_func()->paintBackground(&p, QRect(off, size()));
-
 }
 
-static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush)
+static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     Q_ASSERT(painter);
 
@@ -2047,8 +2046,8 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoin
         // Optimize pattern filling on mac by using HITheme directly
         // when filling with the standard widget background.
         // Defined in qmacstyle_mac.cpp
-        extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush);
-        qt_mac_fill_background(painter, rgn, offset, brush);
+        extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
+        qt_mac_fill_background(painter, rgn, brush);
 #else
 #if !defined(QT_NO_STYLE_S60)
         // Defined in qs60style.cpp
@@ -2057,23 +2056,36 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoin
         if (!qt_s60_fill_background(painter, rgn, offset, brush))
 #endif // !defined(QT_NO_STYLE_S60)
         {
-            const QRegion translated = rgn.translated(offset);
-            const QRect rect(translated.boundingRect());
-            painter->setClipRegion(translated);
+            const QRect rect(rgn.boundingRect());
+            painter->setClipRegion(rgn);
             painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
         }
 #endif // Q_WS_MAC
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
-            painter->fillRect(rects.at(i).translated(offset), brush);
+            painter->fillRect(rects.at(i), brush);
     }
 }
 
-
-void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, const QPoint &offset, int flags) const
+void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int flags) const
 {
     Q_Q(const QWidget);
+
+#ifndef QT_NO_SCROLLAREA
+    bool resetBrushOrigin = false;
+    QPointF oldBrushOrigin;
+    //If we are painting the viewport of a scrollarea, we must apply an offset to the brush in case we are drawing a texture
+    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
+    if (scrollArea && scrollArea->viewport() == q) {
+        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
+        QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
+        oldBrushOrigin = painter->brushOrigin();
+        resetBrushOrigin = true;
+        painter->setBrushOrigin(-priv->contentsOffset());
+
+    }
+#endif // QT_NO_SCROLLAREA
 
     const QBrush autoFillBrush = q->palette().brush(q->backgroundRole());
 
@@ -2083,19 +2095,24 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, cons
         if (!(flags & DontSetCompositionMode) && painter->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
             painter->setCompositionMode(QPainter::CompositionMode_Source); //copy alpha straight in
 #endif
-        fillRegion(painter, rgn, offset, bg);
-
+        fillRegion(painter, rgn, bg);
     }
 
     if (q->autoFillBackground())
-        fillRegion(painter, rgn, offset, autoFillBrush);
+        fillRegion(painter, rgn, autoFillBrush);
+
 
     if (q->testAttribute(Qt::WA_StyledBackground)) {
-        painter->setClipRegion(rgn.translated(offset));
+        painter->setClipRegion(rgn);
         QStyleOption opt;
         opt.initFrom(q);
         q->style()->drawPrimitive(QStyle::PE_Widget, &opt, painter, q);
     }
+
+#ifndef QT_NO_SCROLLAREA
+    if (resetBrushOrigin)
+        painter->setBrushOrigin(oldBrushOrigin);
+#endif // QT_NO_SCROLLAREA
 }
 
 /*
@@ -4619,6 +4636,11 @@ void QWidget::unsetLayoutDirection()
     By default, this property contains a cursor with the Qt::ArrowCursor
     shape.
 
+    Some underlying window implementations will reset the cursor if it
+    leaves a widget even if the mouse is grabbed. If you want to have
+    a cursor set for all widgets, even when outside the window, consider
+    QApplication::setOverrideCursor().
+
     \sa QApplication::setOverrideCursor()
 */
 
@@ -5078,19 +5100,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
 
                     QPainter p(q);
-                    QPoint scrollAreaOffset;
-
-#ifndef QT_NO_SCROLLAREA
-                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
-                    if (scrollArea && scrollArea->viewport() == q) {
-                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
-                        QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
-                        scrollAreaOffset = priv->contentsOffset();
-                        p.translate(-scrollAreaOffset);
-                    }
-#endif // QT_NO_SCROLLAREA
-
-                    paintBackground(&p, toBePainted, scrollAreaOffset, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
+                    paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
                 }
 
                 if (!sharedPainter)
@@ -5523,8 +5533,6 @@ QString QWidget::windowIconText() const
 
     \list
     \o The file name of the specified path, obtained using QFileInfo::fileName().
-    \o An optional \c{*} character, if the \l windowModified property is set,
-    as per the Apple Human Interface Guidelines.
     \endlist
 
     On Windows and X11:
@@ -5573,7 +5581,7 @@ void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
 {
     if (extra->topextra && extra->topextra->caption.isEmpty()) {
 #ifdef Q_WS_MAC
-        setWindowTitle_helper(filePath);
+        setWindowTitle_helper(QFileInfo(filePath).fileName());
 #else
         Q_Q(QWidget);
         Q_UNUSED(filePath);
@@ -7571,7 +7579,6 @@ bool QWidget::event(QEvent *event)
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
-        case QEvent::Gesture:
             return false;
         default:
             break;
@@ -7972,9 +7979,6 @@ bool QWidget::event(QEvent *event)
         d->needWindowChange = false;
         break;
 #endif
-    case QEvent::Gesture:
-        event->ignore();
-        break;
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
@@ -8018,6 +8022,59 @@ bool QWidget::event(QEvent *event)
 #endif
         break;
     }
+#ifdef Q_WS_WIN
+    case QEvent::WinGesture: {
+        QWinGestureEvent *ev = static_cast<QWinGestureEvent*>(event);
+        QApplicationPrivate *qAppPriv = qApp->d_func();
+        QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
+        it = qAppPriv->widgetGestures.find(this);
+        if (it != qAppPriv->widgetGestures.end()) {
+            Qt::GestureState state = Qt::GestureUpdated;
+            if (qAppPriv->lastGestureId == 0)
+                state = Qt::GestureStarted;
+            QWinGestureEvent::Type type = ev->gestureType;
+            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
+                type = (QWinGestureEvent::Type)qAppPriv->lastGestureId;
+                state = Qt::GestureFinished;
+            }
+
+            QGesture *gesture = 0;
+            switch (type) {
+            case QWinGestureEvent::Pan: {
+                QPanGesture *pan = it.value().pan;
+                gesture = pan;
+                if (state == Qt::GestureStarted) {
+                    gesture->setStartPos(ev->position);
+                    gesture->setLastPos(ev->position);
+                } else {
+                    gesture->setLastPos(gesture->pos());
+                }
+                gesture->setPos(ev->position);
+                break;
+            }
+            case QWinGestureEvent::Pinch:
+                break;
+            default:
+                break;
+            }
+            if (gesture) {
+                gesture->setState(state);
+                if (state == Qt::GestureStarted)
+                    emit gesture->started();
+                emit gesture->triggered();
+                if (state == Qt::GestureFinished)
+                    emit gesture->finished();
+                event->accept();
+            }
+            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
+                qAppPriv->lastGestureId = 0;
+            } else {
+                qAppPriv->lastGestureId = type;
+            }
+        }
+        break;
+    }
+#endif
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -9986,11 +10043,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
         QInputContext *ic = d->ic;
-        if (!ic) {
-            // implicitly create input context only if we have a focus
-            if (hasFocus())
-                ic = d->inputContext();
-        }
+        if (!ic && (!on || hasFocus()))
+            ic = d->inputContext();
         if (ic) {
             if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
@@ -10105,8 +10159,8 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   By default the value of this property is 1.0.
 
-  This feature is available on Embedded Linux, Mac OS X, X11 platforms that
-  support the Composite extension, and Windows 2000 and later.
+  This feature is available on Embedded Linux, Mac OS X, Windows,
+  and X11 platforms that support the Composite extension.
 
   This feature is not available on Windows CE.
 
@@ -11155,103 +11209,6 @@ QWindowSurface *QWidget::windowSurface() const
 #endif // Q_BACKINGSTORE_SUBSURFACES
 
     return bs ? bs->windowSurface : 0;
-}
-
-/*!
-    \since 4.6
-
-    Subscribes the widget to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QWidget::grabGesture(const QString &gesture)
-{
-    Q_D(QWidget);
-    int id = d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
-    if (d->extra && d->extra->proxyWidget)
-        d->extra->proxyWidget->QGraphicsItem::d_ptr->grabGesture(id);
-    return id;
-}
-
-int QWidgetPrivate::grabGesture(int gestureId)
-{
-    gestures << gestureId;
-    ++qApp->d_func()->grabbedGestures[QGestureManager::instance()->gestureNameFromId(gestureId)];
-    return gestureId;
-}
-
-bool QWidgetPrivate::releaseGesture(int gestureId)
-{
-    QApplicationPrivate *qAppPriv = qApp->d_func();
-    if (gestures.contains(gestureId)) {
-        QString name = QGestureManager::instance()->gestureNameFromId(gestureId);
-        Q_ASSERT(qAppPriv->grabbedGestures[name] > 0);
-        --qAppPriv->grabbedGestures[name];
-        gestures.remove(gestureId);
-        return true;
-    }
-    return false;
-}
-
-bool QWidgetPrivate::hasGesture(const QString &name) const
-{
-    QGestureManager *gm = QGestureManager::instance();
-    QSet<int>::const_iterator it = gestures.begin(),
-                               e = gestures.end();
-    for (; it != e; ++it) {
-        if (gm->gestureNameFromId(*it) == name)
-            return true;
-    }
-    return false;
-}
-
-/*!
-    \since 4.6
-
-    Subscribes the widget to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QWidget::grabGesture(Qt::GestureType gesture)
-{
-    return grabGesture(qt_getStandardGestureTypeName(gesture));
-}
-
-/*!
-    \since 4.6
-
-    Unsubscribes the widget from a gesture, which is specified by the
-    \a gestureId.
-
-    \sa grabGesture(), setGestureEnabled()
-*/
-void QWidget::releaseGesture(int gestureId)
-{
-    Q_D(QWidget);
-    if (d->releaseGesture(gestureId)) {
-        if (d->extra && d->extra->proxyWidget)
-            d->extra->proxyWidget->QGraphicsItem::d_ptr->releaseGesture(gestureId);
-        QGestureManager::instance()->releaseGestureId(gestureId);
-    }
-}
-
-/*!
-    \since 4.6
-
-    If \a enable is true, the gesture with the given \a gestureId is
-    enabled; otherwise the gesture is disabled.
-
-    The id of the gesture is returned by the grabGesture().
-
-    \sa grabGesture(), releaseGesture()
-*/
-void QWidget::setGestureEnabled(int gestureId, bool enable)
-{
-    //###
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const

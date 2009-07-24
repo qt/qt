@@ -3,7 +3,7 @@ include(macros.qdocconf)
 
 project                 = Qt
 description             = Qt Reference Documentation
-url                     = http://doc.qtsoftware.com/4.5
+url                     = http://doc.qtsoftware.com/4.6
 
 edition.Console         = QtCore QtNetwork QtSql QtXml QtScript QtTest
 edition.Desktop         = QtCore QtGui QtNetwork QtOpenGL QtSql QtSvg QtXml QtScript \
@@ -100,7 +100,8 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           Q_TYPENAME \
                           Q_XML_EXPORT \
                           QDBUS_EXPORT \
-			  Q_GADGET
+			  Q_GADGET \
+			  QWEBKIT_EXPORT
 Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \

@@ -54,7 +54,7 @@
 #include <private/qcoreapplication_p.h>
 #include <private/qeventdispatcher_win_p.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 
 
 #ifndef Q_OS_WINCE
@@ -170,8 +170,7 @@ void qt_watch_adopted_thread(const HANDLE adoptedThreadHandle, QThread *qthread)
     // Start watcher thread if it is not already running.
     if (qt_adopted_thread_watcher_handle == 0) {
         if (qt_adopted_thread_wakeup == 0) {
-            qt_adopted_thread_wakeup = QT_WA_INLINE(CreateEventW(0, false, false, 0),
-                                                    CreateEventA(0, false, false, 0));
+            qt_adopted_thread_wakeup = CreateEvent(0, false, false, 0);
             qt_adopted_thread_handles.prepend(qt_adopted_thread_wakeup);
         }
 
@@ -371,11 +370,10 @@ int QThread::idealThreadCount()
 void QThread::yieldCurrentThread()
 {
 #ifndef Q_OS_WINCE
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
-        SwitchToThread();
-    else
+    SwitchToThread();
+#else
+    ::Sleep(0);
 #endif
-        ::Sleep(0);
 }
 
 void QThread::sleep(unsigned long secs)
@@ -426,17 +424,11 @@ void QThread::start(Priority priority)
         return;
     }
 
-    // Since Win 9x will have problems if the priority is idle or time critical
-    // we have to use the closest one instead
     int prio;
     d->priority = priority;
     switch (d->priority) {
     case IdlePriority:
-        if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-            prio = THREAD_PRIORITY_LOWEST;
-        } else {
-            prio = THREAD_PRIORITY_IDLE;
-        }
+        prio = THREAD_PRIORITY_IDLE;
         break;
 
     case LowestPriority:
@@ -460,11 +452,7 @@ void QThread::start(Priority priority)
         break;
 
     case TimeCriticalPriority:
-        if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-            prio = THREAD_PRIORITY_HIGHEST;
-        } else {
-            prio = THREAD_PRIORITY_TIME_CRITICAL;
-        }
+        prio = THREAD_PRIORITY_TIME_CRITICAL;
         break;
 
     case InheritPriority:
@@ -570,17 +558,11 @@ void QThread::setPriority(Priority priority)
 
     // copied from start() with a few modifications:
 
-    // Since Win 9x will have problems if the priority is idle or time critical
-    // we have to use the closest one instead
     int prio;
     d->priority = priority;
     switch (d->priority) {
     case IdlePriority:
-        if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-            prio = THREAD_PRIORITY_LOWEST;
-        } else {
-            prio = THREAD_PRIORITY_IDLE;
-        }
+        prio = THREAD_PRIORITY_IDLE;
         break;
 
     case LowestPriority:
@@ -604,11 +586,7 @@ void QThread::setPriority(Priority priority)
         break;
 
     case TimeCriticalPriority:
-        if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-            prio = THREAD_PRIORITY_HIGHEST;
-        } else {
-            prio = THREAD_PRIORITY_TIME_CRITICAL;
-        }
+        prio = THREAD_PRIORITY_TIME_CRITICAL;
         break;
 
     case InheritPriority:

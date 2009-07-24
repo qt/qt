@@ -43,7 +43,7 @@ static const HashTableValue JSSVGFEDistantLightElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEDistantLightElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEDistantLightElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFEDistantLightElementTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSSVGFEDistantLightElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEDistantLightElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEDistantLightElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEDistantLightElementPrototypeTableValues, 0 };
 #else

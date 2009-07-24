@@ -28,7 +28,9 @@
 #include "EventListener.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
+#include "JSMessageChannel.h"
 #include "JSMessageEvent.h"
+#include "JSMessagePort.h"
 #include "JSWorkerContext.h"
 #include "JSWorkerLocation.h"
 #include "JSWorkerNavigator.h"
@@ -47,7 +49,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSWorkerContext);
 
 /* Hash table */
 
-static const HashTableValue JSWorkerContextTableValues[8] =
+static const HashTableValue JSWorkerContextTableValues[9] =
 {
     { "self", DontDelete, (intptr_t)jsWorkerContextSelf, (intptr_t)setJSWorkerContextSelf },
     { "location", DontDelete, (intptr_t)jsWorkerContextLocation, (intptr_t)setJSWorkerContextLocation },
@@ -55,11 +57,12 @@ static const HashTableValue JSWorkerContextTableValues[8] =
     { "onmessage", DontDelete, (intptr_t)jsWorkerContextOnmessage, (intptr_t)setJSWorkerContextOnmessage },
     { "MessageEvent", DontDelete, (intptr_t)jsWorkerContextMessageEventConstructor, (intptr_t)setJSWorkerContextMessageEventConstructor },
     { "WorkerLocation", DontDelete, (intptr_t)jsWorkerContextWorkerLocationConstructor, (intptr_t)setJSWorkerContextWorkerLocationConstructor },
+    { "MessageChannel", DontDelete, (intptr_t)jsWorkerContextMessageChannelConstructor, (intptr_t)setJSWorkerContextMessageChannelConstructor },
     { "XMLHttpRequest", DontDelete, (intptr_t)jsWorkerContextXMLHttpRequestConstructor, (intptr_t)setJSWorkerContextXMLHttpRequestConstructor },
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerContextTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerContextTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSWorkerContextTableValues, 0 };
 #else
@@ -72,7 +75,7 @@ static const HashTableValue JSWorkerContextPrototypeTableValues[11] =
 {
     { "close", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionClose, (intptr_t)0 },
     { "importScripts", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionImportScripts, (intptr_t)0 },
-    { "postMessage", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionPostMessage, (intptr_t)1 },
+    { "postMessage", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionPostMessage, (intptr_t)2 },
     { "setTimeout", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionSetTimeout, (intptr_t)2 },
     { "clearTimeout", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionClearTimeout, (intptr_t)1 },
     { "setInterval", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionSetInterval, (intptr_t)2 },
@@ -83,7 +86,7 @@ static const HashTableValue JSWorkerContextPrototypeTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerContextPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerContextPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSWorkerContextPrototypeTableValues, 0 };
 #else
@@ -168,6 +171,11 @@ JSValue jsWorkerContextWorkerLocationConstructor(ExecState* exec, const Identifi
     return JSWorkerLocation::getConstructor(exec);
 }
 
+JSValue jsWorkerContextMessageChannelConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    return static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->messageChannel(exec);
+}
+
 JSValue jsWorkerContextXMLHttpRequestConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->xmlHttpRequest(exec);
@@ -216,6 +224,12 @@ void setJSWorkerContextWorkerLocationConstructor(ExecState* exec, JSObject* this
     static_cast<JSWorkerContext*>(thisObject)->putDirect(Identifier(exec, "WorkerLocation"), value);
 }
 
+void setJSWorkerContextMessageChannelConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    // Shadowing a built-in constructor
+    static_cast<JSWorkerContext*>(thisObject)->putDirect(Identifier(exec, "MessageChannel"), value);
+}
+
 void setJSWorkerContextXMLHttpRequestConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     // Shadowing a built-in constructor
@@ -250,9 +264,20 @@ JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionPostMessage(ExecState* exe
         return throwError(exec, TypeError);
     JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     WorkerContext* imp = static_cast<WorkerContext*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
     const UString& message = args.at(0).toString(exec);
 
-    imp->postMessage(message);
+    int argsCount = args.size();
+    if (argsCount < 2) {
+        imp->postMessage(message, ec);
+        setDOMException(exec, ec);
+        return jsUndefined();
+    }
+
+    MessagePort* messagePort = toMessagePort(args.at(1));
+
+    imp->postMessage(message, messagePort, ec);
+    setDOMException(exec, ec);
     return jsUndefined();
 }
 

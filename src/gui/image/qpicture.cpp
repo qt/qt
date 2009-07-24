@@ -949,6 +949,8 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
 }
 
 /*!
+    \internal
+
     Internal implementation of the virtual QPaintDevice::metric()
     function.
 

@@ -308,108 +308,60 @@ bool Q3Process::start( QStringList *env )
     // CreateProcess()
     bool success;
     d->newPid();
-#ifdef UNICODE
-    if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)) {
-	STARTUPINFOW startupInfo = {
-	    sizeof( STARTUPINFO ), 0, 0, 0,
-	    (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-	    0, 0, 0,
-	    STARTF_USESTDHANDLES,
-	    0, 0, 0,
-	    d->pipeStdin[0], d->pipeStdout[1], d->pipeStderr[1]
-	};
-	TCHAR *applicationName;
-	if ( appName.isNull() )
-	    applicationName = 0;
-	else
-	    applicationName = _wcsdup( (TCHAR*)appName.ucs2() );
-	TCHAR *commandLine = _wcsdup( (TCHAR*)args.ucs2() );
-	QByteArray envlist;
-	if ( env != 0 ) {
-	    int pos = 0;
-	    // add PATH if necessary (for DLL loading)
-	    QByteArray path = qgetenv( "PATH" );
-	    if ( env->grep( QRegExp(QLatin1String("^PATH="),FALSE) ).empty() && !path.isNull() ) {
-        QString tmp = QString::fromLatin1("PATH=%1").arg(QLatin1String(path.constData()));
-		uint tmpSize = sizeof(TCHAR) * (tmp.length()+1);
-		envlist.resize( envlist.size() + tmpSize );
-		memcpy( envlist.data()+pos, tmp.ucs2(), tmpSize );
-		pos += tmpSize;
-	    }
-	    // add the user environment
-	    for ( QStringList::Iterator it = env->begin(); it != env->end(); it++ ) {
-		QString tmp = *it;
-		uint tmpSize = sizeof(TCHAR) * (tmp.length()+1);
-		envlist.resize( envlist.size() + tmpSize );
-		memcpy( envlist.data()+pos, tmp.ucs2(), tmpSize );
-		pos += tmpSize;
-	    }
-	    // add the 2 terminating 0 (actually 4, just to be on the safe side)
-	    envlist.resize( envlist.size()+4 );
-	    envlist[pos++] = 0;
-	    envlist[pos++] = 0;
-	    envlist[pos++] = 0;
-	    envlist[pos++] = 0;
-	}
-	success = CreateProcessW( applicationName, commandLine,
-		0, 0, TRUE, ( comms==0 ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW )
-#ifndef Q_OS_WINCE
-		| CREATE_UNICODE_ENVIRONMENT
-#endif
-		, env==0 ? 0 : envlist.data(),
-                (TCHAR*)QDir::toNativeSeparators(workingDir.absPath()).ucs2(),
-		&startupInfo, d->pid );
-	free( applicationName );
-	free( commandLine );
-    } else
-#endif // UNICODE
-    {
-#ifndef Q_OS_WINCE
-	STARTUPINFOA startupInfo = { sizeof( STARTUPINFOA ), 0, 0, 0,
-	    (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-	    0, 0, 0,
-	    STARTF_USESTDHANDLES,
-	    0, 0, 0,
-	    d->pipeStdin[0], d->pipeStdout[1], d->pipeStderr[1]
-	};
-	QByteArray envlist;
-	if ( env != 0 ) {
-	    int pos = 0;
-	    // add PATH if necessary (for DLL loading)
-	    QByteArray path = qgetenv( "PATH" );
-	    if ( env->grep( QRegExp(QLatin1String("^PATH="),FALSE) ).empty() && !path.isNull() ) {
-            Q3CString tmp = QString::fromLatin1("PATH=%1").arg(QString::fromLatin1(path.constData())).local8Bit();
-		uint tmpSize = tmp.length() + 1;
-		envlist.resize( envlist.size() + tmpSize );
-		memcpy( envlist.data()+pos, tmp.data(), tmpSize );
-		pos += tmpSize;
-	    }
-	    // add the user environment
-	    for ( QStringList::Iterator it = env->begin(); it != env->end(); it++ ) {
-		Q3CString tmp = (*it).local8Bit();
-		uint tmpSize = tmp.length() + 1;
-		envlist.resize( envlist.size() + tmpSize );
-		memcpy( envlist.data()+pos, tmp.data(), tmpSize );
-		pos += tmpSize;
-	    }
-	    // add the terminating 0 (actually 2, just to be on the safe side)
-	    envlist.resize( envlist.size()+2 );
-	    envlist[pos++] = 0;
-	    envlist[pos++] = 0;
-	}
-	char *applicationName;
-	if ( appName.isNull() )
-	    applicationName = 0;
-	else
-	    applicationName = const_cast<char *>(appName.toLocal8Bit().data());
-	success = CreateProcessA( applicationName,
-		const_cast<char *>(args.toLocal8Bit().data()),
-		0, 0, TRUE, comms==0 ? CREATE_NEW_CONSOLE : DETACHED_PROCESS,
-		env==0 ? 0 : envlist.data(),
-                (const char*)QDir::toNativeSeparators(workingDir.absPath()).local8Bit(),
-		&startupInfo, d->pid );
-#endif // Q_OS_WINCE
+
+    STARTUPINFOW startupInfo = {
+        sizeof( STARTUPINFO ), 0, 0, 0,
+        (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+        0, 0, 0,
+        STARTF_USESTDHANDLES,
+        0, 0, 0,
+        d->pipeStdin[0], d->pipeStdout[1], d->pipeStderr[1]
+    };
+    wchar_t *applicationName;
+    if ( appName.isNull() )
+        applicationName = 0;
+    else
+        applicationName = _wcsdup( (wchar_t*)appName.utf16() );
+    wchar_t *commandLine = _wcsdup( (wchar_t*)args.utf16() );
+    QByteArray envlist;
+    if ( env != 0 ) {
+        int pos = 0;
+        // add PATH if necessary (for DLL loading)
+        QByteArray path = qgetenv( "PATH" );
+        if ( env->grep( QRegExp(QLatin1String("^PATH="),FALSE) ).empty() && !path.isNull() ) {
+            QString tmp = QString::fromLatin1("PATH=%1").arg(QLatin1String(path.constData()));
+            uint tmpSize = sizeof(wchar_t) * (tmp.length() + 1);
+            envlist.resize( envlist.size() + tmpSize );
+            memcpy( envlist.data() + pos, tmp.utf16(), tmpSize );
+            pos += tmpSize;
+        }
+        // add the user environment
+        for ( QStringList::Iterator it = env->begin(); it != env->end(); it++ ) {
+            QString tmp = *it;
+            uint tmpSize = sizeof(wchar_t) * (tmp.length() + 1);
+            envlist.resize( envlist.size() + tmpSize );
+            memcpy( envlist.data() + pos, tmp.utf16(), tmpSize );
+            pos += tmpSize;
+        }
+        // add the 2 terminating 0 (actually 4, just to be on the safe side)
+        envlist.resize( envlist.size()+4 );
+        envlist[pos++] = 0;
+        envlist[pos++] = 0;
+        envlist[pos++] = 0;
+        envlist[pos++] = 0;
     }
+    success = CreateProcess( applicationName, commandLine,
+                            0, 0, TRUE, ( comms == 0 ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW )
+#ifndef Q_OS_WINCE
+                            | CREATE_UNICODE_ENVIRONMENT
+#endif
+                            , env == 0 ? 0 : envlist.data(),
+                            (wchar_t*)QDir::toNativeSeparators(workingDir.absPath()).utf16(),
+                            &startupInfo, d->pid );
+
+    free( applicationName );
+    free( commandLine );
+
     if  ( !success ) {
 	d->deletePid();
 	return false;

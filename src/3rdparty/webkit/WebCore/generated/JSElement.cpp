@@ -117,7 +117,7 @@ static const HashTableValue JSElementTableValues[60] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSElementTable =
+static JSC_CONST_HASHTABLE HashTable JSElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 8191, JSElementTableValues, 0 };
 #else
@@ -131,7 +131,7 @@ static const HashTableValue JSElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSElementConstructorTableValues, 0 };
 #else
@@ -196,7 +196,7 @@ static const HashTableValue JSElementPrototypeTableValues[28] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSElementPrototypeTableValues, 0 };
 #else

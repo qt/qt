@@ -726,24 +726,29 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
                     tr("The function either doesn't exist in any base class "
                        "with the same signature or it exists but isn't virtual."));
             }
-#if 0 // Ideally, we would enable this check to warn whenever \reimp is used
-      // incorrectly, and only make the node internal if the function is a
-      // reimplementation of another function in a base class.
+            /*
+              Ideally, we would enable this check to warn whenever
+              \reimp is used incorrectly, and only make the node
+              internal if the function is a reimplementation of
+              another function in a base class.
+            */
             else if (from->access() == Node::Private
                      || from->parent()->access() == Node::Private) {
-                doc.location().warning(
-                    tr("Base function for '\\%1' in %2() is private or internal")
+                doc.location().warning(tr("'\\%1' in %2() should be '\\internal' because its base function is private or internal")
                     .arg(COMMAND_REIMP).arg(node->name()));
             }
-#endif
-            // Note: Setting the access to Private hides the documentation,
-            // but setting the status to Internal makes the node available
-            // in the XML output when the WebXMLGenerator is used.
+
 #if 0
             // Reimplemented functions now reported in separate sections.
+            /*
+              Note: Setting the access to Private hides the documentation,
+              but setting the status to Internal makes the node available
+              in the XML output when the WebXMLGenerator is used.
+            */
             func->setAccess(Node::Private);
             func->setStatus(Node::Internal);
-#endif            
+#endif
+            func->setReimp(true);
         }
         else {
             doc.location().warning(tr("Ignored '\\%1' in %2")

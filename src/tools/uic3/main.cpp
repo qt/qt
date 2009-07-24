@@ -114,7 +114,7 @@ int runUic3(int argc, char * argv[])
                 wrap = true;
                 if (opt == "wrap" || opt[1] == '\0') {
                     if (!(n < argc-1)) {
-                        error = "Missing name of converted ui file";
+                        error = "Missing name of converted UI file";
                         break;
                     }
                     convertedUiFile = argv[++n];
@@ -230,7 +230,7 @@ int runUic3(int argc, char * argv[])
                  "   %s  [options] -decl <uiheaderfile> <uifile>\n"
                  "\t<uiheaderfile>  name of the data file\n"
                  "   %s  [options] -wrap <converteduifile> <uifile>\n"
-                 "\t<converteduifile>  name of the converted ui file\n"
+                 "\t<converteduifile>  name of the converted UI file\n"
                  "Generate implementation:\n"
                  "   %s  [options] -impl <headerfile> <uifile>\n"
                  "\t<headerfile>    name of the declaration file\n"
@@ -254,7 +254,7 @@ int runUic3(int argc, char * argv[])
                  "\t-pch file          Add #include \"file\" as the first statement in implementation\n"
                  "\t-nofwd             Omit forward declarations of custom classes\n"
                  "\t-no-implicit-includes Do not generate #include-directives for custom classes\n"
-                 "\t-nounload          Don't unload plugins after processing\n"
+                 "\t-nounload          Do not unload plugins after processing\n"
                  "\t-tr func           Use func() instead of tr() for i18n\n"
                  "\t-L path            Additional plugin search path\n"
                  "\t-version           Display version of uic\n"

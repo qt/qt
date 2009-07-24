@@ -1376,8 +1376,9 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
             accel = qt_mac_menu_merge_accel(action);
         }
     }
+    // Show multiple key sequences as part of the menu text.
     if (accel.count() > 1)
-        text += QLatin1String(" (****)"); //just to denote a multi stroke shortcut
+        text += QLatin1String(" (") + accel.toString(QKeySequence::NativeText) + QLatin1String(")");
 
     QString finalString = qt_mac_removeMnemonics(text);
 
@@ -1459,14 +1460,15 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         data.whichData |= kMenuItemDataCmdKey;
         data.whichData |= kMenuItemDataCmdKeyModifiers;
         data.whichData |= kMenuItemDataCmdKeyGlyph;
-        if (!accel.isEmpty()) {
+        if (accel.count() == 1) {
             qt_mac_get_accel(accel[0], (quint32*)&data.cmdKeyModifiers, (quint32*)&data.cmdKeyGlyph);
             if (data.cmdKeyGlyph == 0)
                 data.cmdKey = (UniChar)accel[0];
         }
 #else
         [item setSubmenu:0];
-        if (!accel.isEmpty()) {
+        // No key equivalent set for multiple key QKeySequence.
+        if (accel.count() == 1) {
             [item setKeyEquivalent:keySequenceToKeyEqivalent(accel)];
             [item setKeyEquivalentModifierMask:keySequenceModifierMask(accel)];
         } else {

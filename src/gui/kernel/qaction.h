@@ -68,6 +68,7 @@ class Q_GUI_EXPORT QAction : public QObject
 
     Q_ENUMS(MenuRole)
     Q_ENUMS(SoftKeyRole)
+    Q_ENUMS(Priority)
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked DESIGNABLE isCheckable NOTIFY toggled)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
@@ -87,6 +88,7 @@ class Q_GUI_EXPORT QAction : public QObject
     Q_PROPERTY(MenuRole menuRole READ menuRole WRITE setMenuRole)
     Q_PROPERTY(SoftKeyRole softKeyRole READ softKeyRole WRITE setSoftKeyRole)
     Q_PROPERTY(bool iconVisibleInMenu READ isIconVisibleInMenu WRITE setIconVisibleInMenu)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority)
 
 public:
     enum MenuRole { NoRole, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
@@ -95,6 +97,9 @@ public:
                     OkSoftKey, CancelSoftKey, EditSoftKey, ViewSoftKey, BackSpaceSoftKey,
                     EndEditSoftKey, RevertEditSoftKey, DeselectSoftKey, FinishSoftKey,
                     MenuSoftKey, ContextMenuSoftKey, ExitSoftKey };
+    enum Priority { LowPriority = 0,
+                    NormalPriority = 128,
+                    HighPriority = 256};
     explicit QAction(QObject* parent);
     QAction(const QString &text, QObject* parent);
     QAction(const QIcon &icon, const QString &text, QObject* parent);
@@ -128,6 +133,9 @@ public:
 
     void setWhatsThis(const QString &what);
     QString whatsThis() const;
+
+    void setPriority(Priority priority);
+    Priority priority() const;
 
 #ifndef QT_NO_MENU
     QMenu *menu() const;

@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qstandarditemmodel.h>
+#include <qitemdelegate.h>
 #include <qcolumnview.h>
 #include "../../../src/gui/itemviews/qcolumnviewgrip_p.h"
 #ifndef Q_OS_SYMBIAN
@@ -89,6 +90,8 @@ private slots:
     void setSelectionModel();
     void visualRegionForSelection();
 
+    void dynamicModelChanges();
+
     // grip
     void moveGrip_basic();
     void moveGrip_data();
@@ -135,16 +138,10 @@ public:
     inline QModelIndex thirdLevel() { return index(0, 0, secondLevel()); }
 };
 
-class ColumnViewPrivate : public QColumnViewPrivate
-{
-public:
-    ColumnViewPrivate() : QColumnViewPrivate() {}
-};
-
 class ColumnView : public QColumnView {
 
 public:
-    ColumnView(QWidget *parent = 0) : QColumnView(*new ColumnViewPrivate, parent){}
+    ColumnView(QWidget *parent = 0) : QColumnView(parent){}
 
     QList<QPointer<QAbstractItemView> > createdColumns;
     void ScrollContentsBy(int x, int y) {scrollContentsBy(x,y); }
@@ -1002,6 +999,37 @@ void tst_QColumnView::pullRug()
         view.setCurrentIndex(QModelIndex());
     QTest::qWait(ANIMATION_DELAY);
     // don't crash
+}
+
+void tst_QColumnView::dynamicModelChanges()
+{
+    struct MyItemDelegate : public QItemDelegate
+    {
+        void paint(QPainter *painter,
+                   const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const
+        {
+            paintedIndexes += index;
+            QItemDelegate::paint(painter, option, index);
+        }
+
+        mutable QSet<QModelIndex> paintedIndexes;
+
+    } delegate;;
+    QStandardItemModel model;
+    ColumnView view;
+    view.setModel(&model);
+    view.setItemDelegate(&delegate);
+    view.show();
+
+    QStandardItem *item = new QStandardItem(QLatin1String("item"));
+    model.appendRow(item);
+
+    QTest::qWait(200); //let the time for painting to occur
+    QCOMPARE(delegate.paintedIndexes.count(), 1);
+    QCOMPARE(*delegate.paintedIndexes.begin(), model.index(0,0));
+
+
 }
 
 

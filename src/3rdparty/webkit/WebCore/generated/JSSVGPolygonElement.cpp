@@ -72,7 +72,7 @@ static const HashTableValue JSSVGPolygonElementTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPolygonElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPolygonElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGPolygonElementTableValues, 0 };
 #else
@@ -92,7 +92,7 @@ static const HashTableValue JSSVGPolygonElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPolygonElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPolygonElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGPolygonElementPrototypeTableValues, 0 };
 #else

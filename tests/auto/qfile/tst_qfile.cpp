@@ -384,10 +384,16 @@ void tst_QFile::open()
     QFile f( filename );
 
     QFETCH( bool, ok );
+
 #if defined(Q_OS_SYMBIAN)
     if (qstrcmp(QTest::currentDataTag(), "noreadfile") == 0)
         QSKIP("Symbian does not support non-readable files", SkipSingle);
+#elif defined(Q_OS_UNIX)
+    if (::getuid() == 0)
+        // root and Chuck Norris don't care for file permissions. Skip.
+        QSKIP("Running this test as root doesn't make sense", SkipAll);
 #endif
+
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     QEXPECT_FAIL("noreadfile", "Windows does not currently support non-readable files.", Abort);
 #endif
@@ -1008,57 +1014,32 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
 {
     bool neededCoInit = false;
     QString ret;
-    QT_WA({
-        IShellLink *psl;
-        HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-            neededCoInit = true;
-            CoInitialize(NULL);
-            hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        }
 
-        if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
-            IPersistFile *ppf;
-            hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
-            if (SUCCEEDED(hres))  {
-                hres = ppf->Load((LPOLESTR)linkFileName.utf16(), STGM_READ);
-                //The original path of the link is retrieved. If the file/folder
-                //was moved, the return value still have the old path.
-                if(SUCCEEDED(hres)) {
-                    wchar_t szGotPath[MAX_PATH];
-                    if (psl->GetWorkingDirectory(szGotPath, MAX_PATH) == NOERROR)
-                        ret = QString::fromUtf16((ushort*)szGotPath);
-                }
-                ppf->Release();
-            }
-            psl->Release();
-        }
-    },{
-        IShellLinkA *psl;
-        HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-            neededCoInit = true;
-            CoInitialize(NULL);
-            hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        }
+    IShellLink *psl;
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
+    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
+        neededCoInit = true;
+        CoInitialize(NULL);
+        hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
+    }
 
-        if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
-            IPersistFile *ppf;
-            hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
-            if (SUCCEEDED(hres))  {
-                hres = ppf->Load((LPOLESTR)linkFileName.utf16(), STGM_READ);
-                //The original path of the link is retrieved. If the file/folder
-                //was moved, the return value still have the old path.
-                if(SUCCEEDED(hres)) {
-                    char szGotPath[MAX_PATH];
-                    if (psl->GetWorkingDirectory(szGotPath, MAX_PATH) == NOERROR)
-                        ret = QString::fromLocal8Bit(szGotPath);
-                }
-                ppf->Release();
+    if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
+        IPersistFile *ppf;
+        hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
+        if (SUCCEEDED(hres))  {
+            hres = ppf->Load((LPOLESTR)linkFileName.utf16(), STGM_READ);
+            //The original path of the link is retrieved. If the file/folder
+            //was moved, the return value still have the old path.
+            if(SUCCEEDED(hres)) {
+                wchar_t szGotPath[MAX_PATH];
+                if (psl->GetWorkingDirectory(szGotPath, MAX_PATH) == NOERROR)
+                    ret = QString::fromWCharArray(szGotPath);
             }
-            psl->Release();
+            ppf->Release();
         }
-    });
+        psl->Release();
+    }
+
     if (neededCoInit) {
         CoUninitialize();
     }
@@ -1552,13 +1533,8 @@ void tst_QFile::largeFileSupport()
     qlonglong freespace = qlonglong(0);
 #ifdef Q_WS_WIN
     _ULARGE_INTEGER free;
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based) {
-        if (::GetDiskFreeSpaceExW((wchar_t *)QDir::currentPath().utf16(), &free, 0, 0))
-            freespace = free.QuadPart;
-    } else {
-        if (::GetDiskFreeSpaceExA(QDir::currentPath().local8Bit(), &free, 0, 0))
-            freespace = free.QuadPart;
-    }
+    if (::GetDiskFreeSpaceEx((wchar_t*)QDir::currentPath().utf16(), &free, 0, 0))
+        freespace = free.QuadPart;
     if (freespace != 0) {
 #elif defined(Q_OS_IRIX)
     struct statfs info;
@@ -1676,20 +1652,9 @@ void tst_QFile::longFileName()
     }
     {
         QFile file(fileName);
-#if defined(Q_WS_WIN)
-#if !defined(Q_OS_WINCE)
-        QT_WA({ if (false) ; }, {
-            QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
-            QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
-        });
-#else
-            QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
-            QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
-#endif
-#elif defined(Q_OS_SYMBIAN)
-        if (qstrcmp(QTest::currentDataTag(), "244 chars") == 0 ||
-            qstrcmp(QTest::currentDataTag(), "244 chars to absolutepath") == 0 )
-            QSKIP("Symbian does not support path names exceeding 256 characters", SkipSingle);
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+        QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
+        QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
 #endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
         QTextStream ts(&file);
@@ -2550,17 +2515,23 @@ void tst_QFile::map()
 
     file.close();
 
-    // No permissions for user makes no sense in Symbian
-#if !defined(Q_OS_SYMBIAN)
-    // Change permissions on a file, just to confirm it would fail
-    QFile::Permissions originalPermissions = file.permissions();
-    QVERIFY(file.setPermissions(QFile::ReadOther));
-    QVERIFY(!file.open(QFile::ReadWrite));
-    memory = file.map(offset, size);
-    QCOMPARE(file.error(), QFile::PermissionsError);
-    QVERIFY(!memory);
-    QVERIFY(file.setPermissions(originalPermissions));
+#if defined(Q_OS_SYMBIAN)
+	 if (false) // No permissions for user makes no sense in Symbian
+#elif defined(Q_OS_UNIX)
+    if (::getuid() != 0)
+        // root always has permissions
 #endif
+    {
+        // Change permissions on a file, just to confirm it would fail
+        QFile::Permissions originalPermissions = file.permissions();
+        QVERIFY(file.setPermissions(QFile::ReadOther));
+        QVERIFY(!file.open(QFile::ReadWrite));
+        memory = file.map(offset, size);
+        QCOMPARE(file.error(), QFile::PermissionsError);
+        QVERIFY(!memory);
+        QVERIFY(file.setPermissions(originalPermissions));
+    }
+
     QVERIFY(file.remove());
 }
 

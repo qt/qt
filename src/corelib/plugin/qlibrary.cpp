@@ -637,11 +637,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
             if (!pHnd) {
 #ifdef Q_OS_WIN
-                QT_WA({
-                    hTempModule = ::LoadLibraryExW((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, DONT_RESOLVE_DLL_REFERENCES);
-                } , {
-                    temporary_load = load_sys();
-                });
+                hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, DONT_RESOLVE_DLL_REFERENCES);
 #else
 #  if defined(Q_OS_SYMBIAN)
                 //Guard against accidentally trying to load non-plugin libraries by making sure the stub exists
@@ -659,7 +655,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
             QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = hTempModule
                 ? (QtPluginQueryVerificationDataFunction)
 #ifdef Q_OS_WINCE
-                    ::GetProcAddressW(hTempModule, L"qt_plugin_query_verification_data")
+                    ::GetProcAddress(hTempModule, L"qt_plugin_query_verification_data")
 #else
                     ::GetProcAddress(hTempModule, "qt_plugin_query_verification_data")
 #endif

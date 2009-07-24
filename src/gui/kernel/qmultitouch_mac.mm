@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 #ifdef QT_MAC_USE_COCOA
 
-QHash<int, QCocoaTouch*> QCocoaTouch::_currentTouches;
+QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
 QPointF QCocoaTouch::_screenReferencePos;
 QPointF QCocoaTouch::_trackpadReferencePos;
 int QCocoaTouch::_idAssignmentCount = 0;
@@ -62,7 +62,7 @@ QCocoaTouch::QCocoaTouch(NSTouch *nstouch)
 
     _touchPoint.setId(_idAssignmentCount++);
     _touchPoint.setPressure(1.0);
-    _identity = int([nstouch identity]);
+    _identity = qint64([nstouch identity]);
     _currentTouches.insert(_identity, this);
     updateTouchData(nstouch, NSTouchPhaseBegan);
 }
@@ -100,7 +100,7 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
 
 QCocoaTouch *QCocoaTouch::findQCocoaTouch(NSTouch *nstouch)
 {
-    int identity = int([nstouch identity]);
+    qint64 identity = qint64([nstouch identity]);
     if (_currentTouches.contains(identity))
         return _currentTouches.value(identity);
     return 0;

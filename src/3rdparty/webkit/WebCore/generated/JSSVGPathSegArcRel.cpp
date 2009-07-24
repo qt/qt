@@ -48,7 +48,7 @@ static const HashTableValue JSSVGPathSegArcRelTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegArcRelTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcRelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGPathSegArcRelTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSSVGPathSegArcRelPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegArcRelPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcRelPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegArcRelPrototypeTableValues, 0 };
 #else

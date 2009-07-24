@@ -41,6 +41,7 @@
 
 //#define QNATIVESOCKETENGINE_DEBUG
 #include "qnativesocketengine_p.h"
+#include "private/qnet_unix_p.h"
 #include "qiodevice.h"
 #include "qhostaddress.h"
 #include "qvarlengtharray.h"
@@ -66,6 +67,8 @@
 #include <qstring.h>
 #include <ctype.h>
 #endif
+
+#include <netinet/tcp.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -169,7 +172,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int protocol = AF_INET;
 #endif
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
-    int socket = qt_socket_socket(protocol, type, 0);
+    int socket = qt_safe_socket(protocol, type, 0);
 
     if (socket <= 0) {
         switch (errno) {
@@ -211,6 +214,8 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         return -1;
 
     int n = -1;
+    int level = SOL_SOCKET; // default
+
     switch (opt) {
     case QNativeSocketEngine::ReceiveBufferSocketOption:
         n = SO_RCVBUF;
@@ -230,11 +235,18 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     case QNativeSocketEngine::ReceiveOutOfBandData:
         n = SO_OOBINLINE;
         break;
+    case QNativeSocketEngine::LowDelayOption:
+        level = IPPROTO_TCP;
+        n = TCP_NODELAY;
+        break;
+    case QNativeSocketEngine::KeepAliveOption:
+        n = SO_KEEPALIVE;
+        break;
     }
 
     int v = -1;
     QT_SOCKOPTLEN_T len = sizeof(v);
-    if (qt_socket_getsockopt(socketDescriptor, SOL_SOCKET, n, (char *) &v, &len) != -1)
+    if (qt_socket_getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
         return v;
 
     return -1;
@@ -251,6 +263,8 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         return false;
 
     int n = 0;
+    int level = SOL_SOCKET; // default
+
     switch (opt) {
     case QNativeSocketEngine::ReceiveBufferSocketOption:
         n = SO_RCVBUF;
@@ -281,7 +295,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     }
     case QNativeSocketEngine::AddressReusable:
 #ifdef Q_OS_SYMBIAN
-    	n = SO_REUSEADDR;
+        n = SO_REUSEADDR;
 #elif SO_REUSEPORT
         n = SO_REUSEPORT;
 #else
@@ -293,10 +307,16 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     case QNativeSocketEngine::ReceiveOutOfBandData:
         n = SO_OOBINLINE;
         break;
+    case QNativeSocketEngine::LowDelayOption:
+        level = IPPROTO_TCP;
+        n = TCP_NODELAY;
+        break;
+    case QNativeSocketEngine::KeepAliveOption:
+        n = SO_KEEPALIVE;
+        break;
     }
 
-	return qt_socket_setsockopt(socketDescriptor, SOL_SOCKET, n, (char *) &v, sizeof(v)) == 0;
-
+    return qt_socket_setsockopt(socketDescriptor, level, n, (char *) &v, sizeof(v)) == 0;
 }
 
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
@@ -485,7 +505,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 
 bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 {
-    if (qt_socket_listen(socketDescriptor, backlog) < 0) {
+    if (qt_safe_listen(socketDescriptor, backlog) < 0) {
         switch (errno) {
         case EADDRINUSE:
             setError(QAbstractSocket::AddressInUseError,
@@ -512,7 +532,7 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 
 int QNativeSocketEnginePrivate::nativeAccept()
 {
-    int acceptedDescriptor = qt_socket_accept(socketDescriptor, 0, 0);
+    int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeAccept() == %i", acceptedDescriptor);
 #endif
@@ -533,7 +553,7 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
     int nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
     qint64 available = 0;
-    if (::ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
+    if (qt_safe_ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
         available = (qint64) nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -571,7 +591,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
 #ifdef Q_OS_SYMBIAN
 qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 {
-    size_t nbytes = 0;    
+    size_t nbytes = 0;
     qt_socket_ioctl(socketDescriptor, E32IONREAD, (char *) &nbytes);
     return qint64(nbytes-28);
 }
@@ -579,7 +599,7 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 {
     QVarLengthArray<char, 8192> udpMessagePeekBuffer(8192);
-    ssize_t recvResult = -1;    
+    ssize_t recvResult = -1;
 
     for (;;) {
         // the data written to udpMessagePeekBuffer is discarded, so
@@ -595,7 +615,7 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 
         udpMessagePeekBuffer.resize(udpMessagePeekBuffer.size() * 2);
     }
-    
+
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativePendingDatagramSize() == %i", recvResult);
 #endif
@@ -667,8 +687,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
     qt_ignore_sigpipe();
     ssize_t sentBytes;
     do {
-        sentBytes = qt_socket_sendto(socketDescriptor, data, len,
-                             0, sockAddrPtr, sockAddrSize);
+        sentBytes = qt_safe_sendto(socketDescriptor, data, len,
+                                   0, sockAddrPtr, sockAddrSize);
     } while (sentBytes == -1 && errno == EINTR);
 
     if (sentBytes < 0) {
@@ -870,32 +890,27 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
-#ifdef Q_OS_SYMBIAN    
+#ifdef Q_OS_SYMBIAN
     fd_set fdexec;
     FD_ZERO(&fdexec);
-    FD_SET(socketDescriptor, &fdexec);    
+    FD_SET(socketDescriptor, &fdexec);
 #endif
 
-    QTime timer;
-    timer.start();
-
     int retval;
-    do {
-        if (selectForRead)
+    if (selectForRead)
 #ifndef Q_OS_SYMBIAN
-           retval = qt_socket_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
-#else            
-           retval = qt_socket_select(socketDescriptor + 1, &fds, 0, &fdexec, timeout < 0 ? 0 : &tv); 
-#endif             
-        else
+        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
+#else
+        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, &fdexec, timeout < 0 ? 0 : &tv);
+#endif
+    else
 #ifndef Q_OS_SYMBIAN
-           retval = qt_socket_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
-#else            
-           retval = qt_socket_select(socketDescriptor + 1, 0, &fds, &fdexec, timeout < 0 ? 0 : &tv); 
-#endif                 
+        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
+#else
+        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, &fdexec, timeout < 0 ? 0 : &tv);
+#endif
 
-            
-#ifdef Q_OS_SYMBIAN            
+#ifdef Q_OS_SYMBIAN
         bool selectForExec = false;
         if(retval != 0) {
             if(retval < 0) {
@@ -905,27 +920,9 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
         }
         if(selectForExec) {
             qWarning("nativeSelect (selectForRead %d, retVal %d, errno %d) Unexpected expectfds ready in fd %d", 
-            		selectForRead, retval, errno, socketDescriptor);
+                    selectForRead, retval, errno, socketDescriptor);
 			}
-#endif            
-
-        if (retval != -1 || errno != EINTR) {
-            break;
-        }
-
-        if (timeout > 0) {
-            // recalculate the timeout
-            int t = timeout - timer.elapsed();
-            if (t < 0) {
-                // oops, timeout turned negative?
-                retval = -1;
-                break;
-            }
-
-            tv.tv_sec = t / 1000;
-            tv.tv_usec = (t % 1000) * 1000;
-        }
-    } while (true);
+#endif
 
     return retval;
 }
@@ -942,25 +939,25 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     FD_ZERO(&fdwrite);
     if (checkWrite)
         FD_SET(socketDescriptor, &fdwrite);
-    
-#ifdef Q_OS_SYMBIAN    
+
+#ifdef Q_OS_SYMBIAN
     fd_set fdexec;
     FD_ZERO(&fdexec);
-    FD_SET(socketDescriptor, &fdexec);    
-#endif    
+    FD_SET(socketDescriptor, &fdexec);
+#endif
 
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
+    int ret;
+#ifndef Q_OS_SYMBIAN
+    ret = qt_safe_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
+#else
     QTime timer;
     timer.start();
 
-    int ret;
     do {
-#ifndef Q_OS_SYMBIAN
-        ret = qt_socket_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
-#else            
         ret = qt_socket_select(socketDescriptor + 1, &fdread, &fdwrite, &fdexec, timeout < 0 ? 0 : &tv);
         bool selectForExec = false;
         if(ret != 0) {
@@ -970,18 +967,18 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
             selectForExec = FD_ISSET(socketDescriptor, &fdexec);
         }
         if(selectForExec) {
-        	qWarning("nativeSelect (checkRead %d, checkWrite %d, ret %d, errno %d): Unexpected expectfds ready in fd %d", 
-        			checkRead, checkWrite, ret, errno, socketDescriptor);
-        	if (checkRead)
-        	    FD_SET(socketDescriptor, &fdread);
-        	if (checkWrite)
-				FD_SET(socketDescriptor, &fdwrite);           	     		
-				
-            if ((ret == -1) && ( errno == ECONNREFUSED || errno == EPIPE ))				
+            qWarning("nativeSelect (checkRead %d, checkWrite %d, ret %d, errno %d): Unexpected expectfds ready in fd %d",
+                    checkRead, checkWrite, ret, errno, socketDescriptor);
+            if (checkRead)
+                FD_SET(socketDescriptor, &fdread);
+            if (checkWrite)
+                FD_SET(socketDescriptor, &fdwrite);
+
+            if ((ret == -1) && ( errno == ECONNREFUSED || errno == EPIPE ))
                 ret = 1;
-            				
+
         }
-#endif        
+
         if (ret != -1 || errno != EINTR) {
             break;
         }
@@ -999,6 +996,8 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
             tv.tv_usec = (t % 1000) * 1000;
         }
     } while (true);
+#endif
+
     if (ret <= 0)
         return ret;
     *selectForRead = FD_ISSET(socketDescriptor, &fdread);

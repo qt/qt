@@ -25,6 +25,7 @@
 #include "config.h"
 #include "HTMLFormControlElement.h"
 
+#include "ChromeClient.h"
 #include "Document.h"
 #include "EventHandler.h"
 #include "EventNames.h"
@@ -35,8 +36,10 @@
 #include "HTMLParser.h"
 #include "HTMLTokenizer.h"
 #include "MappedAttribute.h"
+#include "Page.h"
 #include "RenderBox.h"
 #include "RenderTheme.h"
+#include "ValidityState.h"
 
 namespace WebCore {
 
@@ -59,6 +62,14 @@ HTMLFormControlElement::~HTMLFormControlElement()
 {
     if (m_form)
         m_form->removeFormElement(this);
+}
+
+ValidityState* HTMLFormControlElement::validity()
+{
+    if (!m_validityState)
+        m_validityState = ValidityState::create(this);
+
+    return m_validityState.get();
 }
 
 void HTMLFormControlElement::parseMappedAttribute(MappedAttribute *attr)
@@ -242,6 +253,22 @@ bool HTMLFormControlElement::willValidate() const
     return form() && name().length() && !disabled() && !isReadOnlyFormControl();
 }
     
+void HTMLFormControlElement::dispatchFocusEvent()
+{
+    if (document()->frame() && document()->frame()->page())
+        document()->frame()->page()->chrome()->client()->formDidFocus(this);
+
+    HTMLElement::dispatchFocusEvent();
+}
+
+void HTMLFormControlElement::dispatchBlurEvent()
+{
+    if (document()->frame() && document()->frame()->page())
+        document()->frame()->page()->chrome()->client()->formDidBlur(this);
+
+    HTMLElement::dispatchBlurEvent();
+}
+
 bool HTMLFormControlElement::supportsFocus() const
 {
     return isFocusable() || (!disabled() && !document()->haveStylesheetsLoaded());

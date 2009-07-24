@@ -162,6 +162,8 @@ private slots:
     void nameprep_testsuite();
     void ace_testsuite_data();
     void ace_testsuite();
+    void std3violations_data();
+    void std3violations();
     void tldRestrictions_data();
     void tldRestrictions();
     void emptyQueryOrFragment();
@@ -3057,12 +3059,16 @@ void tst_QUrl::nameprep_testsuite_data()
         << QString() << 0 << 0;
 }
 
+#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern QString qt_nameprep(const QString &source);
+extern void qt_nameprep(QString *source, int from);
+extern bool qt_check_std3rules(const QChar *, int);
 QT_END_NAMESPACE
+#endif
 
 void tst_QUrl::nameprep_testsuite()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, in);
     QFETCH(QString, out);
     QFETCH(QString, profile);
@@ -3081,7 +3087,9 @@ void tst_QUrl::nameprep_testsuite()
                  "Investigate further", Continue);
     QEXPECT_FAIL("Larger test (expanding)",
                  "Investigate further", Continue);
-    QCOMPARE(qt_nameprep(in), out);
+    qt_nameprep(&in, 0);
+    QCOMPARE(in, out);
+#endif
 }
 
 void tst_QUrl::ace_testsuite_data()
@@ -3096,6 +3104,11 @@ void tst_QUrl::ace_testsuite_data()
     QTest::newRow("ascii-upper") << "FLUKE" << "fluke" << "fluke" << "fluke";
 
     QTest::newRow("asciifolded") << QString::fromLatin1("stra\337e") << "strasse" << "." << "strasse";
+    QTest::newRow("asciifolded-dotcom") << QString::fromLatin1("stra\337e.example.com") << "strasse.example.com" << "." << "strasse.example.com";
+    QTest::newRow("greek-mu") << QString::fromLatin1("\265V")
+                              <<"xn--v-lmb"
+                              << "."
+                              << QString::fromUtf8("\316\274v");
 
     QTest::newRow("non-ascii-lower") << QString::fromLatin1("alqualond\353")
                                      << "xn--alqualond-34a"
@@ -3128,6 +3141,9 @@ void tst_QUrl::ace_testsuite_data()
     QTest::newRow("idn-upper") << "XN--ALQUALOND-34A" << "xn--alqualond-34a"
                                << QString::fromLatin1("alqualond\353")
                                << QString::fromLatin1("alqualond\353");
+
+    QTest::newRow("separator-3002") << QString::fromUtf8("example\343\200\202com")
+                                    << "example.com" << "." << "example.com";
 }
 
 void tst_QUrl::ace_testsuite()
@@ -3138,23 +3154,83 @@ void tst_QUrl::ace_testsuite()
     QFETCH(QString, fromace);
     QFETCH(QString, unicode);
 
-    QString domain = in + canonsuffix;
-    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + canonsuffix);
-    if (fromace != ".")
-        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + canonsuffix);
-    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + canonsuffix);
+    const char *suffix = canonsuffix;
+    if (toace.contains('.'))
+        suffix = 0;
 
-    domain = in + ".troll.No";
-    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + canonsuffix);
+    QString domain = in + suffix;
+    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
     if (fromace != ".")
-        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + canonsuffix);
-    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + canonsuffix);
+        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
+    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
 
-    domain = in + ".troll.NO";
-    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + canonsuffix);
+    domain = in + (suffix ? ".troll.No" : "");
+    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
     if (fromace != ".")
-        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + canonsuffix);
-    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + canonsuffix);
+        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
+    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
+
+    domain = in + (suffix ? ".troll.NO" : "");
+    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
+    if (fromace != ".")
+        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
+    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
+}
+
+void tst_QUrl::std3violations_data()
+{
+    QTest::addColumn<QString>("source");
+    QTest::addColumn<bool>("validUrl");
+
+    QTest::newRow("too-long") << "this-domain-is-far-too-long-for-its-own-good-and-should-have-been-limited-to-63-chars" << false;
+    QTest::newRow("dash-begin") << "-x-foo" << false;
+    QTest::newRow("dash-end") << "x-foo-" << false;
+    QTest::newRow("dash-begin-end") << "-foo-" << false;
+
+    QTest::newRow("control") << "\033foo" << false;
+    QTest::newRow("bang") << "foo!" << false;
+    QTest::newRow("plus") << "foo+bar" << false;
+    QTest::newRow("dot") << "foo.bar";
+    QTest::newRow("slash") << "foo/bar" << true;
+    QTest::newRow("colon") << "foo:80" << true;
+    QTest::newRow("question") << "foo?bar" << true;
+    QTest::newRow("at") << "foo@bar" << true;
+    QTest::newRow("backslash") << "foo\\bar" << false;
+    QTest::newRow("underline") << "foo_bar" << false;
+
+    // these characters are transformed by NFKC to non-LDH characters
+    QTest::newRow("dot-like") << QString::fromUtf8("foo\342\200\244bar") << false;  // U+2024 ONE DOT LEADER
+    QTest::newRow("slash-like") << QString::fromUtf8("foo\357\274\217bar") << false;    // U+FF0F FULLWIDTH SOLIDUS
+
+    // The following should be invalid but isn't
+    // the DIVISON SLASH doesn't case-fold to a slash
+    // is this a problem with RFC 3490?
+    //QTest::newRow("slash-like2") << QString::fromUtf8("foo\342\210\225bar") << false; // U+2215 DIVISION SLASH
+}
+
+void tst_QUrl::std3violations()
+{
+    QFETCH(QString, source);
+
+    {
+        QString prepped = source;
+        qt_nameprep(&prepped, 0);
+        QVERIFY(!qt_check_std3rules(prepped.constData(), prepped.length()));
+    }
+
+    if (source.contains('.'))
+        return; // this test ends here
+
+    QUrl url;
+    url.setHost(source);
+    QVERIFY(url.host().isEmpty());
+
+    QFETCH(bool, validUrl);
+    if (validUrl)
+        return;  // test ends here for these cases
+
+    url = QUrl("http://" + source + "/some/path");
+    QVERIFY(!url.isValid());
 }
 
 void tst_QUrl::tldRestrictions_data()

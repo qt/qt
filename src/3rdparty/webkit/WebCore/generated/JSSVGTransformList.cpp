@@ -46,7 +46,7 @@ static const HashTableValue JSSVGTransformListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTransformListTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTransformListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTransformListTableValues, 0 };
 #else
@@ -69,7 +69,7 @@ static const HashTableValue JSSVGTransformListPrototypeTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTransformListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTransformListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGTransformListPrototypeTableValues, 0 };
 #else

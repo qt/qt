@@ -45,7 +45,7 @@ static const HashTableValue JSNamedNodeMapTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNamedNodeMapTable =
+static JSC_CONST_HASHTABLE HashTable JSNamedNodeMapTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSNamedNodeMapTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSNamedNodeMapConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNamedNodeMapConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSNamedNodeMapConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNamedNodeMapConstructorTableValues, 0 };
 #else
@@ -104,7 +104,7 @@ static const HashTableValue JSNamedNodeMapPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNamedNodeMapPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSNamedNodeMapPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSNamedNodeMapPrototypeTableValues, 0 };
 #else

@@ -68,10 +68,12 @@ QStringList Generator::imageDirs;
 QString Generator::outDir;
 QString Generator::project;
 
-static Text stockLink(const QString &target)
+static void singularPlural(Text& text, const NodeList& nodes)
 {
-    return Text() << Atom(Atom::Link, target) << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                  << target << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+    if (nodes.count() == 1)
+        text << " is";
+    else
+        text << " are";
 }
 
 Generator::Generator()
@@ -241,7 +243,7 @@ void Generator::generateFakeNode(const FakeNode * /* fake */,
 {
 }
 
-void Generator::generateText(const Text& text,
+bool Generator::generateText(const Text& text,
                              const Node *relative,
                              CodeMarker *marker)
 {
@@ -254,31 +256,35 @@ void Generator::generateText(const Text& text,
                          true,
                          numAtoms);
         endText(relative, marker);
+        return true;
     }
+    return false;
 }
 
 #ifdef QDOC_QML
-void Generator::generateQmlText(const Text& text,
+bool Generator::generateQmlText(const Text& text,
                                 const Node *relative,
                                 CodeMarker *marker)
 {
-    if (text.firstAtom() != 0) {
-        startText(relative, marker);
-        const Atom *atom = text.firstAtom();
-        while (atom) {
-            if (atom->type() != Atom::QmlText)
-                atom = atom->next();
-            else {
-                atom = atom->next();
-                while (atom && (atom->type() != Atom::EndQmlText)) {
-                    int n = 1 + generateAtom(atom, relative, marker);
-                    while (n-- > 0)
-                        atom = atom->next();
-                }
+    const Atom* atom = text.firstAtom();
+    if (atom == 0)
+        return false;
+
+    startText(relative, marker);
+    while (atom) {
+        if (atom->type() != Atom::QmlText)
+            atom = atom->next();
+        else {
+            atom = atom->next();
+            while (atom && (atom->type() != Atom::EndQmlText)) {
+                int n = 1 + generateAtom(atom, relative, marker);
+                while (n-- > 0)
+                    atom = atom->next();
             }
         }
-        endText(relative, marker);
     }
+    endText(relative, marker);
+    return true;
 }
 #endif
 
@@ -302,7 +308,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     }
 
     if (node->doc().isEmpty()) {
-        if (!quiet) // ### might be unnecessary
+        if (!quiet && !node->isReimp()) // ### might be unnecessary
             node->location().warning(tr("No documentation for '%1'")
                             .arg(marker->plainFullName(node)));
     }
@@ -313,7 +319,9 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                 generateReimplementedFrom(func, marker);
         }
         
-        generateText(node->doc().body(), node, marker);
+        if (!generateText(node->doc().body(), node, marker))
+            if (node->isReimp())
+                return;
 
         if (node->type() == Node::Enum) {
             const EnumNode *enume = (const EnumNode *) node;
@@ -395,7 +403,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                                 }
                             }
                         }
-                        if (needWarning)
+                        if (needWarning && !func->isReimp())
                             node->doc().location().warning(
                                 tr("Undocumented parameter '%1' in %2").arg(*a).arg(marker->plainFullName(node)));
                     }
@@ -769,64 +777,138 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
 {
     Text text;
     Text theStockLink;
-    Node::ThreadSafeness parent = node->parent()->inheritedThreadSafeness();
+    Node::ThreadSafeness threadSafeness = node->threadSafeness();
 
-    switch (node->threadSafeness()) {
+    Text rlink;
+    rlink << Atom(Atom::Link,"reentrant")
+          << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+          << "reentrant"
+          << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+
+    Text tlink;
+    tlink << Atom(Atom::Link,"thread-safe")
+          << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+          << "thread-safe"
+          << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+
+    switch (threadSafeness) {
     case Node::UnspecifiedSafeness:
         break;
     case Node::NonReentrant:
-        text << Atom::ParaLeft << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD) << "Warning:"
-             << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD) << " This "
-             << typeString(node) << " is not " << stockLink("reentrant") << "." << Atom::ParaRight;
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Warning:"
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD)
+             << " This "
+             << typeString(node)
+             << " is not "
+             << rlink
+             << "."
+             << Atom::ParaRight;
         break;
     case Node::Reentrant:
     case Node::ThreadSafe:
-        text << Atom::ParaLeft << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD);
-        if (parent == Node::ThreadSafe) {
-            text << "Warning:";
-        } else {
-            text << "Note:";
-        }
-        text << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD) << " ";
-
-        if (node->threadSafeness() == Node::ThreadSafe)
-            theStockLink = stockLink("thread-safe");
-        else
-            theStockLink = stockLink("reentrant");
+        text << Atom::ParaLeft
+             << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+             << "Note:"
+             << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD)
+             << " ";
 
         if (node->isInnerNode()) {
-            const InnerNode *innerNode = static_cast<const InnerNode *>(node);
-            text << "All the functions in this " << typeString(node) << " are "
-                 << theStockLink;
+            const InnerNode* innerNode = static_cast<const InnerNode*>(node);
+            text << "All functions in this "
+                 << typeString(node)
+                 << " are ";
+            if (threadSafeness == Node::ThreadSafe)
+                text << tlink;
+            else
+                text << rlink;
 
-            NodeList except;
+            bool exceptions = false;
+            NodeList reentrant;
+            NodeList threadsafe;
+            NodeList nonreentrant;
             NodeList::ConstIterator c = innerNode->childNodes().begin();
             while (c != innerNode->childNodes().end()) {
-                if ((*c)->threadSafeness() != Node::UnspecifiedSafeness)
-                    except.append(*c);
+                switch ((*c)->threadSafeness()) {
+                case Node::Reentrant:
+                    reentrant.append(*c);
+                    if (threadSafeness == Node::ThreadSafe)
+                        exceptions = true;
+                    break;
+                case Node::ThreadSafe:
+                    threadsafe.append(*c);
+                    if (threadSafeness == Node::Reentrant)
+                        exceptions = true;
+                    break;
+                case Node::NonReentrant:
+                    nonreentrant.append(*c);
+                    exceptions = true;
+                    break;
+                default:
+                    break;
+                }
                 ++c;
             }
-            if (except.isEmpty()) {
+            if (!exceptions) 
                 text << ".";
+            else if (threadSafeness == Node::Reentrant) {
+                if (nonreentrant.isEmpty()) {
+                    if (!threadsafe.isEmpty()) {
+                        text << ", but ";
+                        appendFullNames(text,threadsafe,innerNode,marker);
+                        singularPlural(text,threadsafe);
+                        text << " also " << tlink << ".";
+                    }
+                    else
+                        text << ".";
+                }
+                else {
+                    text << ", except for ";
+                    appendFullNames(text,nonreentrant,innerNode,marker);
+                    text << ", which";
+                    singularPlural(text,nonreentrant);
+                    text << " nonreentrant.";
+                    if (!threadsafe.isEmpty()) {
+                        text << " ";
+                        appendFullNames(text,threadsafe,innerNode,marker);
+                        singularPlural(text,threadsafe);
+                        text << " " << tlink << ".";
+                    }
+                }
             }
-            else {
-                text << ", except ";
-
-                NodeList::ConstIterator e = except.begin();
-                int index = 0;
-                while (e != except.end()) {
-                    appendFullName(text, *e, innerNode, marker);
-                    text << separator(index++, except.count());
-                    ++e;
+            else { // thread-safe
+                if (!nonreentrant.isEmpty() || !reentrant.isEmpty()) {
+                    text << ", except for ";
+                    if (!reentrant.isEmpty()) {
+                        appendFullNames(text,reentrant,innerNode,marker);
+                        text << ", which";
+                        singularPlural(text,reentrant);
+                        text << " only " << rlink;
+                        if (!nonreentrant.isEmpty())
+                            text << ", and ";
+                    }
+                    if (!nonreentrant.isEmpty()) {
+                        appendFullNames(text,nonreentrant,innerNode,marker);
+                        text << ", which";
+                        singularPlural(text,nonreentrant);
+                        text << " nonreentrant.";
+                    }
+                    text << ".";
                 }
             }
         }
         else {
-            text << "This " << typeString(node) << " is " << theStockLink << ".";
+            text << "This " << typeString(node) << " is ";
+            if (threadSafeness == Node::ThreadSafe)
+                text << tlink;
+            else
+                text << rlink;
+            text << ".";
         }
         text << Atom::ParaRight;
     }
-    generateText(text, node, marker);
+    generateText(text,node,marker);
 }
 
 void Generator::generateSince(const Node *node, CodeMarker *marker)
@@ -958,6 +1040,20 @@ void Generator::appendFullName(Text& text,
          << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
          << Atom(Atom::String, fullName)
          << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+}
+
+void Generator::appendFullNames(Text& text,
+                                const NodeList& nodes,
+                                const Node* relative,
+                                CodeMarker* marker)
+{
+    NodeList::ConstIterator n = nodes.begin();
+    int index = 0;
+    while (n != nodes.end()) {
+        appendFullName(text,*n,relative,marker);
+        text << comma(index++,nodes.count());
+        ++n;
+    }
 }
 
 void Generator::appendSortedNames(Text& text,

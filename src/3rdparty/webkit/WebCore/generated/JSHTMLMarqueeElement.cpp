@@ -39,7 +39,7 @@ static const HashTableValue JSHTMLMarqueeElementTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMarqueeElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMarqueeElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLMarqueeElementTableValues, 0 };
 #else
@@ -53,7 +53,7 @@ static const HashTableValue JSHTMLMarqueeElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMarqueeElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMarqueeElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLMarqueeElementConstructorTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLMarqueeElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMarqueeElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMarqueeElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLMarqueeElementPrototypeTableValues, 0 };
 #else

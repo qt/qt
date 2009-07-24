@@ -40,7 +40,7 @@ static const HashTableValue JSCanvasGradientPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasGradientPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasGradientPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCanvasGradientPrototypeTableValues, 0 };
 #else

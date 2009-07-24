@@ -65,7 +65,7 @@
 #endif
 
 #if defined(Q_WS_WIN)
-# include <windows.h>
+# include <qt_windows.h>
 # include <objidl.h>
 #endif
 

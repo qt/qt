@@ -10,7 +10,8 @@ QT = core sql
 wince*: {
    plugFiles.sources = ../../../plugins/sqldrivers
    plugFiles.path    = .
-   DEPLOYMENT += plugFiles 
+   DEPLOYMENT += plugFiles
+   LIBS += -lws2
 }
 
 symbian {

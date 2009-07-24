@@ -32,8 +32,7 @@ namespace WebCore {
 
 class String;
 
-class TextControlInnerElement : public HTMLDivElement
-{
+class TextControlInnerElement : public HTMLDivElement {
 public:
     TextControlInnerElement(Document*, Node* shadowParent = 0);
     
@@ -64,6 +63,7 @@ class SearchFieldCancelButtonElement : public TextControlInnerElement {
 public:
     SearchFieldCancelButtonElement(Document*);
     virtual void defaultEventHandler(Event*);
+    virtual void detach();
 private:
     bool m_capturing;
 };

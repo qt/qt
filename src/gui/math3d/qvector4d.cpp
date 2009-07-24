@@ -57,10 +57,6 @@ QT_BEGIN_NAMESPACE
     The QVector4D class can also be used to represent vertices in 4D space.
     We therefore do not need to provide a separate vertex class.
 
-    The coordinates are stored internally using the most efficient
-    representation for the GL rendering engine, which will be either
-    floating-point or fixed-point.
-
     \sa QQuaternion, QVector2D, QVector3D
 */
 
@@ -513,6 +509,51 @@ QDebug operator<<(QDebug dbg, const QVector4D &vector)
 
 #endif
 
-#endif
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
+    \relates QVector4D
+
+    Writes the given \a vector to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
+{
+    stream << double(vector.x()) << double(vector.y())
+           << double(vector.z()) << double(vector.w());
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QVector4D &vector)
+    \relates QVector4D
+
+    Reads a 4D vector from the given \a stream into the given \a vector
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QVector4D &vector)
+{
+    double x, y, z, w;
+    stream >> x;
+    stream >> y;
+    stream >> z;
+    stream >> w;
+    vector.setX(qreal(x));
+    vector.setY(qreal(y));
+    vector.setZ(qreal(z));
+    vector.setW(qreal(w));
+    return stream;
+}
+
+#endif // QT_NO_DATASTREAM
+
+#endif // QT_NO_VECTOR4D
 
 QT_END_NAMESPACE

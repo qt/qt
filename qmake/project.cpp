@@ -3261,9 +3261,9 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
             ret = "Windows";
         } else if(type == "name") {
             DWORD name_length = 1024;
-            TCHAR name[1024];
-            if(GetComputerName(name, &name_length))
-                ret = QString::fromUtf16((ushort*)name, name_length);
+            wchar_t name[1024];
+            if (GetComputerName(name, &name_length))
+                ret = QString::fromWCharArray(name);
         } else if(type == "version" || type == "version_string") {
             QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
             if(type == "version")

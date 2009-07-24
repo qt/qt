@@ -71,15 +71,15 @@ bool CeSdkHandler::parse()
     // look at the file at %VCInstallDir%/vcpackages/WCE.VCPlatform.config
     // and scan through all installed sdks...    
     m_list.clear();
-    VCInstallDir = qgetenv("VCInstallDir");
+    VCInstallDir = QString::fromLatin1(qgetenv("VCInstallDir"));
     VCInstallDir += QLatin1String("\\");
-    VSInstallDir = qgetenv("VSInstallDir");
+    VSInstallDir = QString::fromLatin1(qgetenv("VSInstallDir"));
     VSInstallDir += QLatin1String("\\");
     if (VCInstallDir.isEmpty() || VSInstallDir.isEmpty())
         return false;
 
     QDir vStudioDir(VCInstallDir);
-    if (!vStudioDir.cd("vcpackages"))
+    if (!vStudioDir.cd(QLatin1String("vcpackages")))
         return false;
 
     QFile configFile(vStudioDir.absoluteFilePath(QLatin1String("WCE.VCPlatform.config")));
@@ -118,6 +118,7 @@ bool CeSdkHandler::parse()
         qWarning() << "XML ERROR:" << xml.lineNumber() << ": " << xml.errorString();
         return false;
     }
+
     return m_list.size() > 0 ? true : false;
 }
 
