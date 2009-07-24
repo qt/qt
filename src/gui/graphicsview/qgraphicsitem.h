@@ -208,8 +208,8 @@ public:
     void setOpacity(qreal opacity);
 
     // Effect
-    QGraphicsEffect *effect() const;
-    void setEffect(QGraphicsEffect *effect);
+    QGraphicsEffect *graphicsEffect() const;
+    void setGraphicsEffect(QGraphicsEffect *effect);
     QRectF effectiveBoundingRect() const;
     QRectF sceneEffectiveBoundingRect() const;
 
@@ -442,8 +442,6 @@ protected:
     void addToIndex();
     void removeFromIndex();
     void prepareGeometryChange();
-
-    QPixmap *effectPixmap();
 
 private:
     Q_DISABLE_COPY(QGraphicsItem)

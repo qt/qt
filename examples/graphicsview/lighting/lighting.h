@@ -64,7 +64,6 @@ private:
     qreal angle;
     QGraphicsScene m_scene;
     QGraphicsItem *m_lightSource;
-    ShadowEffect *m_shadowEffect;
     QList<QGraphicsItem*> m_items;
 };
 

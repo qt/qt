@@ -48,18 +48,17 @@
 class ShadowEffect: public QGraphicsShadowEffect
 {
 public:
-    ShadowEffect(QGraphicsItem *source, QObject *parent = 0);
+    ShadowEffect(QGraphicsItem *item, QGraphicsItem *source);
 
-    QRectF boundingRectFor(const QGraphicsItem *item);
+    QRectF boundingRect() const;
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+    void draw(QPainter *painter);
 
 private:
-    void adjustForItem(const QGraphicsItem *item);
+    void adjustForItem();
 
 private:
+    QGraphicsItem *item;
     QGraphicsItem *m_lightSource;
 };
 

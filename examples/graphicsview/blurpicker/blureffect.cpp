@@ -43,28 +43,27 @@
 
 #include <QDebug>
 
-BlurEffect::BlurEffect(QObject *parent)
+BlurEffect::BlurEffect(QGraphicsItem *item)
     : QGraphicsBlurEffect()
-    , m_baseLine(200)
+    , m_baseLine(200), item(item)
 {
 }
 
-void BlurEffect::adjustForItem(const QGraphicsItem *item)
+void BlurEffect::adjustForItem()
 {
     qreal y = m_baseLine - item->pos().y();
     qreal radius = qBound(0.0, y / 32, 16.0);
     setBlurRadius(radius);
 }
 
-QRectF BlurEffect::boundingRectFor(const QGraphicsItem *item)
+QRectF BlurEffect::boundingRect() const
 {
-    adjustForItem(item);
-    return QGraphicsBlurEffect::boundingRectFor(item);
+    const_cast<BlurEffect *>(this)->adjustForItem();
+    return QGraphicsBlurEffect::boundingRect();
 }
 
-void BlurEffect::drawItem(QGraphicsItem *item, QPainter *painter,
-                                       const QStyleOptionGraphicsItem *option, QWidget *widget)
+void BlurEffect::draw(QPainter *painter)
 {
-    adjustForItem(item);
-    QGraphicsBlurEffect::drawItem(item, painter, option, widget);
+    adjustForItem();
+    QGraphicsBlurEffect::draw(painter);
 }

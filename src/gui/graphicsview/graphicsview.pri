@@ -21,7 +21,8 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicswidget.h \
     graphicsview/qgraphicswidget_p.h \
     graphicsview/qgridlayoutengine_p.h \
-    graphicsview/qgraphicseffect.h
+    graphicsview/qgraphicseffect.h \
+    graphicsview/qgraphicseffect_p.h \
 
 SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qgraphicsitem.cpp \

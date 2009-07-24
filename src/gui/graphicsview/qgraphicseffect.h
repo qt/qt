@@ -46,6 +46,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qtransform.h>
 #include <QtGui/qcolor.h>
 
 QT_FORWARD_DECLARE_CLASS(QGraphicsItem);
@@ -67,24 +68,22 @@ class QGraphicsEffectPrivate;
 class Q_GUI_EXPORT QGraphicsEffect : public QObject
 {
     Q_OBJECT
-
 public:
-
-    QGraphicsEffect(QObject *parent = 0);
+    QGraphicsEffect();
     virtual ~QGraphicsEffect();
 
-    virtual QRectF boundingRectFor(const QGraphicsItem *item);
-
-    virtual void drawItem(QGraphicsItem *item, QPainter *painter,
-                          const QStyleOptionGraphicsItem *option = 0,
-                          QWidget *widget = 0) = 0;
+    virtual QRectF boundingRect() const;
 
 protected:
-    QGraphicsEffect(QGraphicsEffectPrivate &d, QObject* parent);
-    QPixmap* drawItemOnPixmap(QPainter *painter, QGraphicsItem *item,
-                              const QStyleOptionGraphicsItem *option, QWidget *widget, int flags);
+    QGraphicsEffect(QGraphicsEffectPrivate &d);
+    virtual void draw(QPainter *painter) = 0;
+    void drawSource(QPainter *painter);
+    bool drawSourceIntoPixmap(QPixmap *pixmap, const QTransform &xform = QTransform());
+    QRectF sourceBoundingRect() const;
 
 private:
+    friend class QGraphicsScenePrivate;
+    friend class QGraphicsItem;
     Q_DECLARE_PRIVATE(QGraphicsEffect)
     Q_DISABLE_COPY(QGraphicsEffect)
 };
@@ -93,15 +92,12 @@ class QGraphicsGrayscaleEffectPrivate;
 class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
 {
     Q_OBJECT
-
 public:
-
-    QGraphicsGrayscaleEffect(QObject *parent = 0);
+    QGraphicsGrayscaleEffect();
     ~QGraphicsGrayscaleEffect();
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+protected:
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsGrayscaleEffect)
@@ -111,18 +107,15 @@ private:
 class QGraphicsColorizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect {
     Q_OBJECT
-
 public:
-
-    QGraphicsColorizeEffect(QObject *parent = 0);
+    QGraphicsColorizeEffect();
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
     void setColor(const QColor &c);
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+protected:
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsColorizeEffect)
@@ -132,18 +125,15 @@ private:
 class QGraphicsPixelizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect {
     Q_OBJECT
-
 public:
-
-    QGraphicsPixelizeEffect(QObject *parent = 0);
+    QGraphicsPixelizeEffect();
     ~QGraphicsPixelizeEffect();
 
     int pixelSize() const;
     void setPixelSize(int pixelSize);
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+protected:
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsPixelizeEffect)
@@ -153,20 +143,17 @@ private:
 class QGraphicsBlurEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect {
     Q_OBJECT
-
 public:
-
-    QGraphicsBlurEffect(QObject *parent = 0);
+    QGraphicsBlurEffect();
     ~QGraphicsBlurEffect();
 
     int blurRadius() const;
     void setBlurRadius(int blurRadius);
 
-    QRectF boundingRectFor(const QGraphicsItem *item);
+    QRectF boundingRect() const;
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+protected:
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsBlurEffect)
@@ -176,10 +163,8 @@ private:
 class QGraphicsBloomEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect {
     Q_OBJECT
-
 public:
-
-    QGraphicsBloomEffect(QObject *parent = 0);
+    QGraphicsBloomEffect();
     ~QGraphicsBloomEffect();
 
     int blurRadius() const;
@@ -188,11 +173,10 @@ public:
     qreal opacity() const;
     void setOpacity(qreal opacity);
 
-    QRectF boundingRectFor(const QGraphicsItem *item);
+    QRectF boundingRect() const;
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+protected:
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsBloomEffect)
@@ -202,10 +186,8 @@ private:
 class QGraphicsFrameEffectPrivate;
 class Q_GUI_EXPORT QGraphicsFrameEffect: public QGraphicsEffect {
     Q_OBJECT
-
 public:
-
-    QGraphicsFrameEffect(QObject *parent = 0);
+    QGraphicsFrameEffect();
     ~QGraphicsFrameEffect();
 
     QColor frameColor() const;
@@ -217,11 +199,11 @@ public:
     qreal frameOpacity() const;
     void setFrameOpacity(qreal opacity);
 
-    QRectF boundingRectFor(const QGraphicsItem *item);
+    QRectF boundingRect() const;
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+protected:
+    void draw(QPainter *painter);
+
 private:
     Q_DECLARE_PRIVATE(QGraphicsFrameEffect)
     Q_DISABLE_COPY(QGraphicsFrameEffect)
@@ -230,10 +212,8 @@ private:
 class QGraphicsShadowEffectPrivate;
 class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect {
     Q_OBJECT
-
 public:
-
-    QGraphicsShadowEffect(QObject *parent = 0);
+    QGraphicsShadowEffect();
     ~QGraphicsShadowEffect();
 
     QPointF shadowOffset() const;
@@ -247,13 +227,10 @@ public:
     qreal opacity() const;
     void setOpacity(qreal opacity);
 
-    QRectF boundingRectFor(const QGraphicsItem *item);
-
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+    QRectF boundingRect() const;
 
 protected:
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsShadowEffect)
