@@ -258,7 +258,8 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     // If the application has set WA_TranslucentBackground and not explicitly set
     // the alpha buffer size to zero, modify the format so it have an alpha channel
     QGLFormat& fmt = d->glcx->d_func()->glFormat;
-    if (testAttribute(Qt::WA_TranslucentBackground) && fmt.alphaBufferSize() == -1)
+    const bool useArgbVisual = testAttribute(Qt::WA_TranslucentBackground);
+    if (useArgbVisual && fmt.alphaBufferSize() == -1)
         fmt.setAlphaBufferSize(1);
 
     bool createFailed = false;
@@ -297,8 +298,24 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         int matchingCount = 0;
         chosenVisualInfo = XGetVisualInfo(x11Info().display(), VisualIDMask, &vi, &matchingCount);
         if (chosenVisualInfo) {
-            qDebug("Using X Visual ID (%d) provided by EGL", (int)vi.visualid);
-            vi = *chosenVisualInfo;
+            if (useArgbVisual) {
+                // Check to make sure the visual provided by EGL is ARGB
+                XRenderPictFormat *format;
+                format = XRenderFindVisualFormat(x11Info().display(), chosenVisualInfo->visual);
+                if (format->type == PictTypeDirect && format->direct.alphaMask) {
+                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+                    vi = *chosenVisualInfo;
+                }
+                else {
+                    qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this is not ARGB",
+                             nativeVisualId, (int)qeglCtx->config());
+                    vi.visualid = 0;
+                }
+            }
+            else {
+                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+                vi = *chosenVisualInfo;
+            }
             XFree(chosenVisualInfo);
         }
         else {
