@@ -384,15 +384,17 @@ void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool re
     \note The act of monitoring files and directories for
     modifications consumes system resources. This implies there is a
     limit to the number of files and directories your process can
-    monitor simultaneously. On Mac OS and all BSD variants, for
+    monitor simultaneously. On Mac OS X 10.4 and all BSD variants, for
     example, an open file descriptor is required for each monitored
-    file. The system limits the number of open file descriptors to 256
+    file. Some system limits the number of open file descriptors to 256
     by default. This means that addPath() and addPaths() will fail if
     your process tries to add more than 256 files or directories to
     the file system monitor. Also note that your process may have
     other file descriptors open in addition to the ones for files
     being monitored, and these other open descriptors also count in
-    the total.
+    the total. Mac OS X 10.5 and up use a different backend and do not
+    suffer from this issue.
+
 
     \sa QFile, QDir
 */
