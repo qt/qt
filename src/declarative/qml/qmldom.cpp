@@ -93,10 +93,10 @@ QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
     file.open(QIODevice::ReadOnly);
     QByteArray xmlData = file.readAll();
 
-    QDomDocument document;
-    document.load(xmlData);
+    QmlDomDocument document;
+    document.load(qmlengine, xmlData);
 
-    QDomObject rootObject = document.rootObject();
+    QmlDomObject rootObject = document.rootObject();
     qDebug() << rootObject.objectType();
     foreach(QmlDomProperty property, rootObject.properties())
         qDebug() << property.propertyName();
