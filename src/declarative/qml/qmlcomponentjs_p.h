@@ -54,18 +54,18 @@
 //
 
 #include "qmlcomponent.h"
-#include "qmlbindablecomponent.h"
+#include "qmlcomponentjs.h"
 #include "qmlcomponent_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QmlContext;
-class QmlBindableComponentPrivate : public QmlComponentPrivate
+class QmlComponentJSPrivate : public QmlComponentPrivate
 {
-    Q_DECLARE_PUBLIC(QmlBindableComponent)
+    Q_DECLARE_PUBLIC(QmlComponentJS)
 public:
-    QmlBindableComponentPrivate() : QmlComponentPrivate(),
-        prevStatus(QmlBindableComponent::Null), ctxt(0)
+    QmlComponentJSPrivate() : QmlComponentPrivate(),
+        prevStatus(QmlComponentJS::Null), ctxt(0)
     { }
 
     QmlComponent::Status prevStatus;

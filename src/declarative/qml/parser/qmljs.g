@@ -741,8 +741,8 @@ UiObjectMember: UiObjectDefinition ;
 UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiArrayMemberList T_RBRACKET ;
 /.
 case $rule_number: {
-    AST::UiArrayBinding *node = makeAstNode<AST::UiArrayBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
-        sym(4).UiArrayMemberList->finish());
+    AST::UiArrayBinding *node = makeAstNode<AST::UiArrayBinding> (driver->nodePool(),
+        sym(1).UiQualifiedId->finish(), sym(4).UiArrayMemberList->finish());
     node->colonToken = loc(2);
     node->lbracketToken = loc(3);
     node->rbracketToken = loc(5);
@@ -750,7 +750,7 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: UiQualifiedId T_COLON Expression UiObjectInitializer ;
+UiObjectMember: UiQualifiedId             T_COLON Expression UiObjectInitializer ;
 /.
 case $rule_number: {
   if (AST::UiQualifiedId *qualifiedId = reparseAsQualifiedId(sym(3).Expression)) {
@@ -769,6 +769,48 @@ case $rule_number: {
 } break;
 ./
 
+UiObjectMember: UiQualifiedId UiSignature T_COLON Expression UiObjectInitializer ;
+/.
+case $rule_number: {
+  if (AST::UiQualifiedId *qualifiedId = reparseAsQualifiedId(sym(4).Expression)) {
+    AST::UiObjectBinding *node = makeAstNode<AST::UiObjectBinding> (driver->nodePool(),
+      sym(1).UiQualifiedId->finish(), qualifiedId, sym(5).UiObjectInitializer);
+    node->colonToken = loc(3);
+    sym(1).Node = node;
+  } else {
+    sym(1).Node = 0;
+
+    diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, loc(2),
+      QLatin1String("Expected a type name after token `:'")));
+
+    return false; // ### recover
+  }
+} break;
+./
+
+UiObjectMember: UiQualifiedId UiSignature T_COLON Block ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId UiSignature T_COLON EmptyStatement ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId UiSignature T_COLON ExpressionStatement ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId UiSignature T_COLON IfStatement ; --- ### do we really want if statement in a binding?
+/.case $rule_number:./
+
+/.
+{
+    AST::UiScriptBinding *node = makeAstNode<AST::UiScriptBinding> (driver->nodePool(),
+        sym(1).UiQualifiedId->finish(), sym(4).Statement);
+    node->colonToken = loc(3);
+    sym(1).Node = node;
+}   break;
+./
+
+
+
 UiObjectMember: UiQualifiedId T_COLON Block ;
 /.case $rule_number:./
 
@@ -783,8 +825,8 @@ UiObjectMember: UiQualifiedId T_COLON IfStatement ; --- ### do we really want if
 
 /.
 {
-    AST::UiScriptBinding *node = makeAstNode<AST::UiScriptBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
-        sym(3).Statement);
+    AST::UiScriptBinding *node = makeAstNode<AST::UiScriptBinding> (driver->nodePool(),
+        sym(1).UiQualifiedId->finish(), sym(3).Statement);
     node->colonToken = loc(2);
     sym(1).Node = node;
 }   break;
@@ -837,27 +879,40 @@ case $rule_number: {
 } break;
 ./
 
-UiObjectMember: T_SIGNAL T_IDENTIFIER T_LPAREN UiParameterListOpt T_RPAREN ;
+UiFormal: JsIdentifier ;
+UiFormal: JsIdentifier T_AS JsIdentifier ;
+
+UiFormalList: UiFormal ;
+UiFormalList: UiFormalList T_COMMA UiFormal ;
+
+UiSignature: T_LPAREN              T_RPAREN ;
+UiSignature: T_LPAREN UiFormalList T_RPAREN ;
+
+UiObjectMember: T_SIGNAL T_IDENTIFIER T_LPAREN UiParameterListOpt T_RPAREN T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_SIGNAL T_IDENTIFIER T_LPAREN UiParameterListOpt T_RPAREN T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
     node->type = AST::UiPublicMember::Signal;
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
-    node->identifierToken = loc(3);
+    node->identifierToken = loc(2);
     node->parameters = sym(4).UiParameterList;
+    node->semicolonToken = loc(6);
     sym(1).Node = node;
 }   break;
 ./
 
-UiObjectMember: T_SIGNAL T_IDENTIFIER ;
+UiObjectMember: T_SIGNAL T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_SIGNAL T_IDENTIFIER T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
     node->type = AST::UiPublicMember::Signal;
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
-    node->identifierToken = loc(3);
+    node->identifierToken = loc(2);
+    node->semicolonToken = loc(3);
     sym(1).Node = node;
 }   break;
 ./
