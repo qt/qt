@@ -161,7 +161,6 @@ QList<QmlDomImport> QmlDomDocument::imports() const
 */
 bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl &url)
 {
-    Q_UNUSED(engine);
     d->errors.clear();
     d->imports.clear();
 
@@ -951,7 +950,7 @@ QByteArray QmlDomObject::customTypeData() const
 bool QmlDomObject::isComponent() const
 {
     return d->isVirtualComponent || 
-           (d->object && d->object->typeName == "Component");
+           (d->object && d->object->typeName == "Qt/4.6/Component");
 }
 
 /*!

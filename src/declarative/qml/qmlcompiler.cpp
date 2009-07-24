@@ -628,6 +628,8 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
     if (tr.component) 
         obj->url = tr.component->url();
+    if (tr.type)
+        obj->typeName = tr.type->qmlTypeName();
 
     // This object is a "Component" element
     if (obj->metatype == &QmlComponent::staticMetaObject) {
@@ -1714,7 +1716,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
             QmlParser::Object *root = v->object;
             QmlParser::Object *component = new QmlParser::Object;
             component->type = componentTypeRef();
-            component->typeName = "Component";
+            component->typeName = "Qt/4.6/Component";
             component->metatype = &QmlComponent::staticMetaObject;
             component->location = root->location;
             QmlParser::Value *componentValue = new QmlParser::Value;
