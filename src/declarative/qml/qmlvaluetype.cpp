@@ -61,6 +61,8 @@ QmlValueType *QmlValueTypeFactory::valueType(int t)
     switch (t) {
     case QVariant::Rect:
         return new QmlRectValueType;
+    case QVariant::Vector3D:
+        return new QmlVector3DValueType;
     default:
         return 0;
     }
@@ -126,6 +128,53 @@ void QmlRectValueType::setWidth(int w)
 void QmlRectValueType::setHeight(int h)
 {
     rect.setHeight(h);
+}
+
+QmlVector3DValueType::QmlVector3DValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
+
+void QmlVector3DValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &vector, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlVector3DValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &vector, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+qreal QmlVector3DValueType::x() const
+{
+    return vector.x();
+}
+
+qreal QmlVector3DValueType::y() const
+{
+    return vector.y();
+}
+
+qreal QmlVector3DValueType::z() const
+{
+    return vector.z();
+}
+
+void QmlVector3DValueType::setX(qreal x)
+{
+    vector.setX(x);
+}
+
+void QmlVector3DValueType::setY(qreal y)
+{
+    vector.setY(y);
+}
+
+void QmlVector3DValueType::setZ(qreal z)
+{
+    vector.setZ(z);
 }
 
 QT_END_NAMESPACE
