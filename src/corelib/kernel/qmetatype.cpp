@@ -171,6 +171,11 @@ QT_BEGIN_NAMESPACE
     \value QBitmap QBitmap
     \value QMatrix QMatrix
     \value QTransform QTransform
+    \value QMatrix4x4 QMatrix4x4
+    \value QVector2D QVector2D
+    \value QVector3D QVector3D
+    \value QVector4D QVector4D
+    \value QQuaternion QQuaternion
 
     \value User  Base value for user types
 
@@ -272,6 +277,11 @@ static const struct { const char * typeName; int type; } types[] = {
     {"QTextFormat", QMetaType::QTextFormat},
     {"QMatrix", QMetaType::QMatrix},
     {"QTransform", QMetaType::QTransform},
+    {"QMatrix4x4", QMetaType::QMatrix4x4},
+    {"QVector2D", QMetaType::QVector2D},
+    {"QVector3D", QMetaType::QVector3D},
+    {"QVector4D", QMetaType::QVector4D},
+    {"QQuaternion", QMetaType::QQuaternion},
 
     /* All Metatype builtins */
     {"void*", QMetaType::VoidStar},
@@ -670,6 +680,11 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QTextFormat:
     case QMetaType::QMatrix:
     case QMetaType::QTransform:
+    case QMetaType::QMatrix4x4:
+    case QMetaType::QVector2D:
+    case QMetaType::QVector3D:
+    case QMetaType::QVector4D:
+    case QMetaType::QQuaternion:
         if (!qMetaTypeGuiHelper)
             return false;
         qMetaTypeGuiHelper[type - FirstGuiType].saveOp(stream, data);
@@ -862,6 +877,11 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QTextFormat:
     case QMetaType::QMatrix:
     case QMetaType::QTransform:
+    case QMetaType::QMatrix4x4:
+    case QMetaType::QVector2D:
+    case QMetaType::QVector3D:
+    case QMetaType::QVector4D:
+    case QMetaType::QQuaternion:
         if (!qMetaTypeGuiHelper)
             return false;
         qMetaTypeGuiHelper[type - FirstGuiType].loadOp(stream, data);

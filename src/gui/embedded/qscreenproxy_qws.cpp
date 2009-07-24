@@ -537,7 +537,7 @@ int QProxyScreen::transformOrientation() const
 }
 
 /*!
-\reimp
+\internal
 */
 int QProxyScreen::memoryNeeded(const QString &str)
 {
@@ -548,7 +548,7 @@ int QProxyScreen::memoryNeeded(const QString &str)
 }
 
 /*!
-\reimp
+\internal
 */
 int QProxyScreen::sharedRamSize(void *ptr)
 {
@@ -559,7 +559,7 @@ int QProxyScreen::sharedRamSize(void *ptr)
 }
 
 /*!
-\reimp
+\internal
 */
 void QProxyScreen::haltUpdates()
 {
@@ -568,7 +568,7 @@ void QProxyScreen::haltUpdates()
 }
 
 /*!
-\reimp
+\internal
 */
 void QProxyScreen::resumeUpdates()
 {

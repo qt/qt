@@ -115,7 +115,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     QStateMachine *machine = new QStateMachine(this);
 
     //This state is when the boat is moving/rotating
-    QState *moving = new QState(machine->rootState());
+    QState *moving = new QState(machine);
 
     //This state is when the boat is moving from left to right
     MovementState *movement = new MovementState(this, moving);
@@ -132,7 +132,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     machine->setInitialState(moving);
 
     //End
-    QFinalState *final = new QFinalState(machine->rootState());
+    QFinalState *final = new QFinalState(machine);
 
     //If the moving animation is finished we move to the return state
     movement->addTransition(movement, SIGNAL(animationFinished()), rotation);
@@ -141,7 +141,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     rotation->addTransition(rotation, SIGNAL(animationFinished()), movement);
 
     //This state play the destroyed animation
-    QAnimationState *destroyedState = new QAnimationState(machine->rootState());
+    QAnimationState *destroyedState = new QAnimationState(machine);
     destroyedState->setAnimation(setupDestroyAnimation(this));
 
     //Play a nice animation when the submarine is destroyed

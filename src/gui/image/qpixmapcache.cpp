@@ -64,7 +64,8 @@ QT_BEGIN_NAMESPACE
     access the global pixmap cache. It creates an internal QCache
     object for caching the pixmaps.
 
-    The cache associates a pixmap with a string as a key or with a QPixmapCache::Key.
+    The cache associates a pixmap with a user-provided string as a key,
+    or with a QPixmapCache::Key that the cache generates.
     Using QPixmapCache::Key for keys is faster than using strings. The string API is
     very convenient for complex keys but the QPixmapCache::Key API will be very
     efficient and convenient for a one-to-one object-to-pixmap mapping \mdash in
@@ -90,6 +91,17 @@ static int cache_limit = 2048; // 2048 KB cache limit for embedded
 #else
 static int cache_limit = 10240; // 10 MB cache limit for desktop
 #endif
+
+/*!
+    \class QPixmapCache::Key
+    \brief The QPixmapCache::Key class can be used for efficient access
+    to the QPixmapCache.
+    \since 4.6
+
+    Use QPixmapCache::insert() to receive an instance of Key generated
+    by the pixmap cache. You can store the key in your own objects for
+    a very efficient one-to-one object-to-pixmap mapping.
+*/
 
 /*!
     Constructs an empty Key object.

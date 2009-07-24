@@ -78,7 +78,7 @@ private:
     DFBEvent event;
     int bytesRead;
 
-private slots:
+private Q_SLOTS:
     void readKeyboardData();
 };
 

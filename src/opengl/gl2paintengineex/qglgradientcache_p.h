@@ -53,12 +53,12 @@
 #include <QMultiHash>
 #include <QObject>
 #include <QtOpenGL/QtOpenGL>
+#include <private/qgl_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QGL2GradientCache : public QObject
+class QGL2GradientCache
 {
-    Q_OBJECT
     struct CacheInfo
     {
         inline CacheInfo(QGradientStops s, qreal op, QGradient::InterpolationMode mode) :
@@ -73,16 +73,12 @@ class QGL2GradientCache : public QObject
     typedef QMultiHash<quint64, CacheInfo> QGLGradientColorTableHash;
 
 public:
-    QGL2GradientCache() : QObject(), buffer_ctx(0)
-    {
-/*
-        connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
-*/
-    }
+    static QGL2GradientCache *cacheForContext(const QGLContext *context);
 
-    GLuint getBuffer(const QGradient &gradient, qreal opacity, const QGLContext *ctx);
+    QGL2GradientCache() { }
+    ~QGL2GradientCache() {cleanCache();}
+
+    GLuint getBuffer(const QGradient &gradient, qreal opacity);
     inline int paletteSize() const { return 1024; }
 
 protected:
@@ -95,15 +91,6 @@ protected:
     void cleanCache();
 
     QGLGradientColorTableHash cache;
-    const QGLContext *buffer_ctx;
-
-public slots:
-    void cleanupGLContextRefs(const QGLContext *context) {
-        if (context == buffer_ctx) {
-            cleanCache();
-            buffer_ctx = 0;
-        }
-    }
 };
 
 QT_END_NAMESPACE

@@ -67,6 +67,25 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
 
+// check for _POSIX_MONOTONIC_CLOCK support
+static bool supportsMonotonicClock()
+{
+    bool returnValue;
+
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
+    returnValue = false;
+#  if (_POSIX_MONOTONIC_CLOCK == 0)
+    // detect if the system support monotonic timers
+    long x = sysconf(_SC_MONOTONIC_CLOCK);
+    returnValue = x >= 200112L;
+#  endif
+#else
+    returnValue = true;
+#endif
+
+    return returnValue;
+}
+
 /*****************************************************************************
  UNIX signal handling
  *****************************************************************************/
@@ -262,18 +281,11 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
  */
 
 QTimerInfoList::QTimerInfoList()
+    : useMonotonicTimers(supportsMonotonicClock())
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
-    useMonotonicTimers = false;
-
-#  if (_POSIX_MONOTONIC_CLOCK == 0)
-    // detect if the system support monotonic timers
-    long x = sysconf(_SC_MONOTONIC_CLOCK);
-    useMonotonicTimers = x != -1;
-#  endif
-
     getTime(currentTime);
 
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
     if (!useMonotonicTimers) {
         // not using monotonic timers, initialize the timeChanged() machinery
         previousTime = currentTime;
@@ -290,12 +302,6 @@ QTimerInfoList::QTimerInfoList()
         ticksPerSecond = 0;
         msPerTick = 0;
     }
-#else
-#  if defined(Q_OS_MAC)
-    useMonotonicTimers = true;
-#  endif
-    // using monotonic timers unconditionally
-    getTime(currentTime);
 #endif
 
     firstTimerInfo = currentTimerInfo = 0;
@@ -307,7 +313,21 @@ timeval QTimerInfoList::updateCurrentTime()
     return currentTime;
 }
 
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
+#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
+
+template <>
+timeval qAbs(const timeval &t)
+{
+    timeval tmp = t;
+    if (tmp.tv_sec < 0) {
+        tmp.tv_sec = -tmp.tv_sec - 1;
+        tmp.tv_usec -= 1000000;
+    }
+    if (tmp.tv_sec == 0 && tmp.tv_usec < 0) {
+        tmp.tv_usec = -tmp.tv_usec;
+    }
+    return normalizedTimeval(tmp);
+}
 
 /*
   Returns true if the real time clock has changed by more than 10%
@@ -321,40 +341,32 @@ bool QTimerInfoList::timeChanged(timeval *delta)
     tms unused;
     clock_t currentTicks = times(&unused);
 
-    int elapsedTicks = currentTicks - previousTicks;
+    clock_t elapsedTicks = currentTicks - previousTicks;
     timeval elapsedTime = currentTime - previousTime;
-    int elapsedMsecTicks = (elapsedTicks * 1000) / ticksPerSecond;
-    int deltaMsecs = (elapsedTime.tv_sec * 1000 + elapsedTime.tv_usec / 1000)
-                     - elapsedMsecTicks;
 
-    if (delta) {
-	delta->tv_sec = deltaMsecs / 1000;
-	delta->tv_usec = (deltaMsecs % 1000) * 1000;
-    }
+    timeval elapsedTimeTicks;
+    elapsedTimeTicks.tv_sec = elapsedTicks / ticksPerSecond;
+    elapsedTimeTicks.tv_usec = (((elapsedTicks * 1000) / ticksPerSecond) % 1000) * 1000;
+
+    timeval dummy;
+    if (!delta)
+        delta = &dummy;
+    *delta = elapsedTime - elapsedTimeTicks;
+
     previousTicks = currentTicks;
     previousTime = currentTime;
 
     // If tick drift is more than 10% off compared to realtime, we assume that the clock has
     // been set. Of course, we have to allow for the tick granularity as well.
-
-     return (qAbs(deltaMsecs) - msPerTick) * 10 > elapsedMsecTicks;
+    timeval tickGranularity;
+    tickGranularity.tv_sec = 0;
+    tickGranularity.tv_usec = msPerTick * 1000;
+    return elapsedTimeTicks < ((qAbs(*delta) - tickGranularity) * 10);
 }
 
 void QTimerInfoList::getTime(timeval &t)
 {
-#if defined(Q_OS_MAC)
-    {
-        static mach_timebase_info_data_t info = {0,0};
-        if (info.denom == 0)
-            mach_timebase_info(&info);
-
-        uint64_t cpu_time = mach_absolute_time();
-        uint64_t nsecs = cpu_time * (info.numer / info.denom);
-        t.tv_sec = nsecs * 1e-9;
-        t.tv_usec = nsecs * 1e-3 - (t.tv_sec * 1e6);
-        return;
-    }
-#elif !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
+#if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
     if (useMonotonicTimers) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -394,10 +406,21 @@ void QTimerInfoList::repairTimersIfNeeded()
 
 void QTimerInfoList::getTime(timeval &t)
 {
+#if defined(Q_OS_MAC)
+    static mach_timebase_info_data_t info = {0,0};
+    if (info.denom == 0)
+        mach_timebase_info(&info);
+
+    uint64_t cpu_time = mach_absolute_time();
+    uint64_t nsecs = cpu_time * (info.numer / info.denom);
+    t.tv_sec = nsecs * 1e-9;
+    t.tv_usec = nsecs * 1e-3 - (t.tv_sec * 1e6);
+#else
     timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     t.tv_sec = ts.tv_sec;
     t.tv_usec = ts.tv_nsec / 1000;
+#endif
 }
 
 void QTimerInfoList::repairTimersIfNeeded()
@@ -428,7 +451,7 @@ void QTimerInfoList::timerRepair(const timeval &diff)
     // repair all timers
     for (int i = 0; i < size(); ++i) {
         register QTimerInfo *t = at(i);
-        t->timeout = t->timeout - diff;
+        t->timeout = t->timeout + diff;
     }
 }
 
@@ -626,7 +649,7 @@ int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd
                                  timeval *timeout)
 {
     Q_D(QEventDispatcherUNIX);
-    if (timeout) {
+    if (timeout && d->timerList.useMonotonicTimers) {
         // handle the case where select returns with a timeout, too
         // soon.
         timeval tvStart = d->timerList.currentTime;

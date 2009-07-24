@@ -86,6 +86,20 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
     setAttribute(QNetworkRequest::SourceIsFromCacheAttribute, true);
 
+    // set the raw headers
+    QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
+    QNetworkCacheMetaData::RawHeaderList::ConstIterator it = rawHeaders.constBegin(),
+                                                       end = rawHeaders.constEnd();
+    for ( ; it != end; ++it)
+        setRawHeader(it->first, it->second);
+
+    // handle a possible redirect
+    QVariant redirectionTarget = attributes.value(QNetworkRequest::RedirectionTargetAttribute);
+    if (redirectionTarget.isValid()) {
+        setAttribute(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
+        redirectionRequested(redirectionTarget.toUrl());
+    }
+
     // signal we're open
     metaDataChanged();
 

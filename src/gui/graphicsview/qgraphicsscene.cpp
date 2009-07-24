@@ -491,6 +491,13 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     item->d_func()->scene = 0;
 
+    // Unregister focus proxy.
+    QMultiHash<QGraphicsItem *, QGraphicsItem *>::iterator it = focusProxyReverseMap.find(item);
+    while (it != focusProxyReverseMap.end() && it.key() == item) {
+        it.value()->d_ptr->focusProxy = 0;
+        it = focusProxyReverseMap.erase(it);
+    }
+
     // Remove from parent, or unregister from toplevels.
     if (QGraphicsItem *parentItem = item->parentItem()) {
         if (parentItem->scene()) {
@@ -554,6 +561,58 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
         emit q->selectionChanged();
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
+                                               Qt::FocusReason focusReason)
+{
+    Q_Q(QGraphicsScene);
+    if (item == focusItem)
+        return;
+    if (item && (!(item->flags() & QGraphicsItem::ItemIsFocusable)
+                 || !item->isVisible() || !item->isEnabled())) {
+        item = 0;
+    }
+
+    if (item) {
+        q->setFocus(focusReason);
+        if (item == focusItem)
+            return;
+    }
+
+    if (focusItem) {
+        QFocusEvent event(QEvent::FocusOut, focusReason);
+        lastFocusItem = focusItem;
+        focusItem = 0;
+        sendEvent(lastFocusItem, &event);
+
+        if (lastFocusItem
+            && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+            // Reset any visible preedit text
+            QInputMethodEvent imEvent;
+            sendEvent(lastFocusItem, &imEvent);
+
+            // Close any external input method panel
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->inputContext()->reset();
+        }
+    }
+
+    if (item) {
+        if (item->isWidget()) {
+            // Update focus child chain.
+            static_cast<QGraphicsWidget *>(item)->d_func()->setFocusWidget();
+        }
+
+        focusItem = item;
+        QFocusEvent event(QEvent::FocusIn, focusReason);
+        sendEvent(item, &event);
+    }
+
+    updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -1926,21 +1985,42 @@ QPainterPath QGraphicsScene::selectionArea() const
 }
 
 /*!
+    \since 4.6
+
     Sets the selection area to \a path. All items within this area are
     immediately selected, and all items outside are unselected. You can get
     the list of all selected items by calling selectedItems().
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     For an item to be selected, it must be marked as \e selectable
     (QGraphicsItem::ItemIsSelectable).
 
     \sa clearSelection(), selectionArea()
 */
-void QGraphicsScene::setSelectionArea(const QPainterPath &path)
+void QGraphicsScene::setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform)
 {
-    setSelectionArea(path, Qt::IntersectsItemShape);
+    setSelectionArea(path, Qt::IntersectsItemShape, deviceTransform);
 }
 
 /*!
+    \obsolete
+    \overload
+
+    Sets the selection area to \a path.
+
+    This function is deprecated and leads to incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
+*/
+void QGraphicsScene::setSelectionArea(const QPainterPath &path)
+{
+    setSelectionArea(path, Qt::IntersectsItemShape, QTransform());
+}
+
+/*!
+    \obsolete
     \overload
     \since 4.3
 
@@ -2576,49 +2656,10 @@ QGraphicsItem *QGraphicsScene::focusItem() const
 void QGraphicsScene::setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReason)
 {
     Q_D(QGraphicsScene);
-    if (item == d->focusItem)
-        return;
-    if (item && (!(item->flags() & QGraphicsItem::ItemIsFocusable)
-                 || !item->isVisible() || !item->isEnabled())) {
-        item = 0;
-    }
-
-    if (item) {
-        setFocus(focusReason);
-        if (item == d->focusItem)
-            return;
-    }
-
-    if (d->focusItem) {
-        QFocusEvent event(QEvent::FocusOut, focusReason);
-        d->lastFocusItem = d->focusItem;
-        d->focusItem = 0;
-        d->sendEvent(d->lastFocusItem, &event);
-
-        if (d->lastFocusItem
-            && (d->lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
-            // Reset any visible preedit text
-            QInputMethodEvent imEvent;
-            d->sendEvent(d->lastFocusItem, &imEvent);
-
-            // Close any external input method panel
-            for (int i = 0; i < d->views.size(); ++i)
-                d->views.at(i)->inputContext()->reset();
-        }
-    }
-
-    if (item) {
-        if (item->isWidget()) {
-            // Update focus child chain.
-            static_cast<QGraphicsWidget *>(item)->d_func()->setFocusWidget();
-        }
-
-        d->focusItem = item;
-        QFocusEvent event(QEvent::FocusIn, focusReason);
-        d->sendEvent(item, &event);
-    }
-
-    d->updateInputMethodSensitivityInViews();
+    if (item)
+        item->setFocus(focusReason);
+    else
+        d->setFocusItemHelper(item, focusReason);
 }
 
 /*!
@@ -2673,15 +2714,17 @@ void QGraphicsScene::clearFocus()
 
 /*!
     \property QGraphicsScene::stickyFocus
-    \brief whether or not clicking the scene will clear focus
+    \brief whether clicking into the scene background will clear focus
 
     \since 4.6
 
-    If this property is false (the default), then clicking on the scene
-    background or on an item that does not accept focus, will clear
-    focus. Otherwise, focus will remain unchanged.
+    In a QGraphicsScene with stickyFocus set to true, focus will remain
+    unchanged when the user clicks into the scene background or on an item
+    that does not accept focus. Otherwise, focus will be cleared.
 
-    The focus change happens in response to a mouse press. You can reimplement
+    By default, this property is false.
+
+    Focus changes in response to a mouse press. You can reimplement
     mousePressEvent() in a subclass of QGraphicsScene to toggle this property
     based on where the user has clicked.
 

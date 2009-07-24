@@ -87,8 +87,10 @@ public:
     ChildMode childMode() const;
     void setChildMode(ChildMode mode);
 
+#ifndef QT_NO_PROPERTIES
     void assignProperty(QObject *object, const char *name,
                         const QVariant &value);
+#endif
 
 Q_SIGNALS:
     void finished();

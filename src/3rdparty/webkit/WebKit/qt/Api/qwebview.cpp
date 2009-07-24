@@ -270,7 +270,7 @@ void QWebView::setPage(QWebPage *page)
     'ftp'. The result is then passed through QUrl's tolerant parser, and
     in the case or success, a valid QUrl is returned, or else a QUrl().
 
-    \section2 Examples:
+    \section1 Examples:
 
     \list
     \o webkit.org becomes http://webkit.org

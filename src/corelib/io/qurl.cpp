@@ -2336,12 +2336,12 @@ static const NameprepCaseFoldingEntry NameprepCaseFolding[] = {
 	{ 0x1D7BB, { 0x03C3, 0x0000, 0x0000, 0x0000 } }
 };
 
-static void mapToLowerCase(QString *str)
+static void mapToLowerCase(QString *str, int from)
 {
     int N = sizeof(NameprepCaseFolding) / sizeof(NameprepCaseFolding[0]);
 
     QChar *d = 0;
-    for (int i = 0; i < str->size(); ++i) {
+    for (int i = from; i < str->size(); ++i) {
         int uc = str->at(i).unicode();
         if (uc < 0x80) {
             if (uc <= 'Z' && uc >= 'A') {
@@ -2388,11 +2388,11 @@ static bool isMappedToNothing(const QChar &ch)
 }
 
 
-static void stripProhibitedOutput(QString *str)
+static void stripProhibitedOutput(QString *str, int from)
 {
-    ushort *out = (ushort *)str->data(); 
+    ushort *out = (ushort *)str->data() + from;
     const ushort *in = out;
-    const ushort *end = out + str->size();
+    const ushort *end = (ushort *)str->data() + str->size();
     while (in < end) {
         ushort uc = *in;
         if (uc < 0x80 ||
@@ -2901,66 +2901,99 @@ static bool isBidirectionalL(const QChar &ch)
     return false;
 }
 
+#ifdef QT_BUILD_INTERNAL
+// export for tst_qurl.cpp
+Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from);
+Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len);
+#else
+// non-test build, keep the symbols for ourselves
+static void qt_nameprep(QString *source, int from);
+static bool qt_check_std3rules(const QChar *uc, int len);
+#endif
 
-Q_AUTOTEST_EXPORT QString qt_nameprep(const QString &source)
+void qt_nameprep(QString *source, int from)
 {
-    QString mapped = source;
-    
-    bool simple = true;
-    for (int i = 0; i < mapped.size(); ++i) {
-        ushort uc = mapped.at(i).unicode();
+    QChar *src = source->data(); // causes a detach, so we're sure the only one using it
+    QChar *out = src + from;
+    const QChar *e = src + source->size();
+
+    for ( ; out < e; ++out) {
+        register ushort uc = out->unicode();
         if (uc > 0x80) {
-            simple = false;
             break;
         } else if (uc >= 'A' && uc <= 'Z') {
-            mapped[i] = QChar(uc | 0x20);
+            *out = QChar(uc | 0x20);
         }
     }
-    if (simple)
-        return mapped;
-    
+    if (out == e)
+        return; // everything was mapped easily (lowercased, actually)
+    int firstNonAscii = out - src;
+
     // Characters commonly mapped to nothing are simply removed
     // (Table B.1)
-    QChar *out = mapped.data();
     const QChar *in = out;
-    const QChar *e = in + mapped.size();
     while (in < e) {
         if (!isMappedToNothing(*in))
             *out++ = *in;
         ++in;
     }
     if (out != in)
-        mapped.truncate(out - mapped.constData());
+        source->truncate(out - src);
 
     // Map to lowercase (Table B.2)
-    mapToLowerCase(&mapped);
+    mapToLowerCase(source, firstNonAscii);
 
     // Normalize to Unicode 3.2 form KC
-    mapped = mapped.normalized(QString::NormalizationForm_KC, QChar::Unicode_3_2);
+    extern void qt_string_normalize(QString *data, QString::NormalizationForm mode,
+                                    QChar::UnicodeVersion version, int from);
+    qt_string_normalize(source, QString::NormalizationForm_KC, QChar::Unicode_3_2, firstNonAscii);
 
     // Strip prohibited output
-    stripProhibitedOutput(&mapped);
+    stripProhibitedOutput(source, firstNonAscii);
 
     // Check for valid bidirectional characters
     bool containsLCat = false;
     bool containsRandALCat = false;
-    for (int j = 0; j < mapped.size() && (!containsLCat || !containsRandALCat); ++j) {
-        if (isBidirectionalL(mapped.at(j)))
+    src = source->data();
+    e = src + source->size();
+    for (in = src + from; in < e && (!containsLCat || !containsRandALCat); ++in) {
+        if (isBidirectionalL(*in))
             containsLCat = true;
-        else if (isBidirectionalRorAL(mapped.at(j)))
+        else if (isBidirectionalRorAL(*in))
             containsRandALCat = true;
     }
     if (containsRandALCat) {
-        if (containsLCat || (!isBidirectionalRorAL(mapped.at(0))
-                             || !isBidirectionalRorAL(mapped.at(mapped.size() - 1))))
-            mapped.clear();
+        if (containsLCat || (!isBidirectionalRorAL(src[from])
+                             || !isBidirectionalRorAL(e[-1])))
+            source->resize(from); // not allowed, clear the label
+    }
+}
+
+bool qt_check_std3rules(const QChar *uc, int len)
+{
+    if (len > 63)
+        return false;
+
+    for (int i = 0; i < len; ++i) {
+        register ushort c = uc[i].unicode();
+        if (c == '-' && (i == 0 || i == len - 1))
+            return false;
+
+        // verifying the absence of LDH is the same as verifying that
+        // only LDH is present
+        if (c == '-' || (c >= '0' && c <= '9')
+            || (c >= 'A' && c <= 'Z')
+            || (c >= 'a' && c <= 'z'))
+            continue;
+
+        return false;
     }
 
-    return mapped;
+    return true;
 }
 
 
-static inline char encodeDigit(uint digit)
+static inline uint encodeDigit(uint digit)
 {
   return digit + 22 + 75 * (digit < 26);
 }
@@ -2977,7 +3010,7 @@ static inline uint adapt(uint delta, uint numpoints, bool firsttime)
     return k + (((base - tmin + 1) * delta) / (delta + skew));
 }
 
-static inline void appendEncode(QByteArray* output, uint& delta, uint& bias, uint& b, uint& h)
+static inline void appendEncode(QString* output, uint& delta, uint& bias, uint& b, uint& h)
 {
     uint qq;
     uint k;
@@ -2991,17 +3024,17 @@ static inline void appendEncode(QByteArray* output, uint& delta, uint& bias, uin
         t = (k <= bias) ? tmin : (k >= bias + tmax) ? tmax : k - bias;
         if (qq < t) break;
 
-        *output += encodeDigit(t + (qq - t) % (base - t));
+        *output += QChar(encodeDigit(t + (qq - t) % (base - t)));
         qq = (qq - t) / (base - t);
     }
 
-    *output += encodeDigit(qq);
+    *output += QChar(encodeDigit(qq));
     bias = adapt(delta, h + 1, h == b);
     delta = 0;
     ++h;
 }
 
-static void toPunycodeHelper(const QChar *s, int ucLength, QByteArray *output)
+static void toPunycodeHelper(const QChar *s, int ucLength, QString *output)
 {
     uint n = initial_n;
     uint delta = 0;
@@ -3010,7 +3043,7 @@ static void toPunycodeHelper(const QChar *s, int ucLength, QByteArray *output)
     int outLen = output->length();
     output->resize(outLen + ucLength);
 
-    char *d = output->data() + outLen;
+    QChar *d = output->data() + outLen;
     bool skipped = false;
     // copy all basic code points verbatim to output.
     for (uint j = 0; j < (uint) ucLength; ++j) {
@@ -3035,7 +3068,7 @@ static void toPunycodeHelper(const QChar *s, int ucLength, QByteArray *output)
 
     // if basic code points were copied, add the delimiter character.
     if (h > 0)
-        *output += 0x2d;
+        *output += QChar(0x2d);
 
     // while there are still unprocessed non-basic code points left in
     // the input string...
@@ -3083,7 +3116,7 @@ static void toPunycodeHelper(const QChar *s, int ucLength, QByteArray *output)
     }
 
     // prepend ACE prefix
-    output->insert(outLen, "xn--");
+    output->insert(outLen, QLatin1String("xn--"));
     return;
 }
 
@@ -3144,11 +3177,15 @@ static bool qt_is_idn_enabled(const QString &domain)
     int idx = domain.lastIndexOf(QLatin1Char('.'));
     if (idx == -1)
         return false;
-    const QChar *tld = domain.constData() + idx + 1;
+
     int len = domain.size() - idx - 1;
+    QString tldString(domain.constData() + idx + 1, len);
+    qt_nameprep(&tldString, 0);
+
+    const QChar *tld = tldString.constData();
 
     if (user_idn_whitelist)
-        return user_idn_whitelist->contains(QString(tld, len));
+        return user_idn_whitelist->contains(tldString);
 
     int l = 0;
     int r = sizeof(idn_whitelist)/sizeof(const char *) - 1;
@@ -3164,46 +3201,127 @@ static bool qt_is_idn_enabled(const QString &domain)
     return equal(tld, len, idn_whitelist[i]);
 }
 
-static QString qt_from_ACE(const QString &domainMC)
+static inline bool isDotDelimiter(ushort uc)
 {
-    QString domain = domainMC.toLower();
-    int idx = domain.indexOf(QLatin1Char('.'));
-    if (idx != -1) {
-        if (!domain.contains(QLatin1String("xn--"))) {
-            bool simple = true;
-            for (int i = 0; i < domain.size(); ++i) {
-                ushort ch = domain.at(i).unicode();
-                if (ch > 'z' || ch < '-' || ch == '/' || (ch > '9' && ch < 'A') || (ch > 'Z' && ch < 'a')) {
-                    simple = false;
-                    break;
-                }
-            }
-            if (simple)
-                return domain;
-        }
-        
-        const bool isIdnEnabled = qt_is_idn_enabled(domain);
-        int lastIdx = 0;
-        QString result;
-        while (1) {
-            // Nameprep the host. If the labels in the hostname are Punycode
-            // encoded, we decode them immediately, then nameprep them.
-            QByteArray label;
-            toPunycodeHelper(domain.constData() + lastIdx, idx - lastIdx, &label);
-            result += qt_nameprep(isIdnEnabled ? QUrl::fromPunycode(label) : QString::fromLatin1(label));
-            lastIdx = idx + 1;
-            if (lastIdx < domain.size() + 1)
-                result += QLatin1Char('.');
-            else
-                break;
-            idx = domain.indexOf(QLatin1Char('.'), lastIdx);
-            if (idx == -1)
-                idx = domain.size();
-        }
-        return result;
-    } else {
-        return qt_nameprep(domain);
+    // IDNA / rfc3490 describes these four delimiters used for
+    // separating labels in unicode international domain
+    // names.
+    return uc == 0x2e || uc == 0x3002 || uc == 0xff0e || uc == 0xff61;
+}
+
+static int nextDotDelimiter(const QString &domain, int from = 0)
+{
+    const QChar *b = domain.unicode();
+    const QChar *ch = b + from;
+    const QChar *e = b + domain.length();
+    while (ch < e) {
+        if (isDotDelimiter(ch->unicode()))
+            break;
+        else
+            ++ch;
     }
+    return ch - b;
+}
+
+enum AceOperation { ToAceOnly, NormalizeAce };
+static QString qt_ACE_do(const QString &domain, AceOperation op)
+{
+    if (domain.isEmpty())
+        return domain;
+
+    QString result;
+    result.reserve(domain.length());
+
+    const bool isIdnEnabled = op == NormalizeAce ? qt_is_idn_enabled(domain) : false;
+    int lastIdx = 0;
+    QString aceForm; // this variable is here for caching
+
+    while (1) {
+        int idx = nextDotDelimiter(domain, lastIdx);
+        int labelLength = idx - lastIdx;
+        if (labelLength == 0)
+            return QString(); // two delimiters in a row -- empty label not allowed
+
+        // RFC 3490 says, about the ToASCII operation:
+        //   3. If the UseSTD3ASCIIRules flag is set, then perform these checks:
+        //
+        //     (a) Verify the absence of non-LDH ASCII code points; that is, the
+        //         absence of 0..2C, 2E..2F, 3A..40, 5B..60, and 7B..7F.
+        //
+        //     (b) Verify the absence of leading and trailing hyphen-minus; that
+        //         is, the absence of U+002D at the beginning and end of the
+        //         sequence.
+        // and:
+        //   8. Verify that the number of code points is in the range 1 to 63
+        //      inclusive.
+
+        // copy the label to the destination, which also serves as our scratch area, lowercasing it
+        int prevLen = result.size();
+        bool simple = true;
+        result.resize(prevLen + labelLength);
+        {
+            QChar *out = result.data() + prevLen;
+            const QChar *in = domain.constData() + lastIdx;
+            const QChar *e = in + labelLength;
+            for (; in < e; ++in, ++out) {
+                register ushort uc = in->unicode();
+                if (uc > 0x7f)
+                    simple = false;
+                if (uc >= 'A' && uc <= 'Z')
+                    *out = QChar(uc | 0x20);
+                else
+                    *out = *in;
+            }
+        }
+
+        if (simple && labelLength > 6) {
+            // ACE form domains contain only ASCII characters, but we can't consider them simple
+            // is this an ACE form?
+            // the shortest valid ACE domain is 6 characters long (U+0080 would be 1, but it's not allowed)
+            static const ushort acePrefixUtf16[] = { 'x', 'n', '-', '-' };
+            if (memcmp(result.constData() + prevLen, acePrefixUtf16, sizeof acePrefixUtf16) == 0)
+                simple = false;
+        }
+
+        if (simple) {
+            // fastest case: this is the common case (non IDN-domains)
+            // so we're done
+            if (!qt_check_std3rules(result.constData() + prevLen, labelLength))
+                return QString();
+        } else { 
+            // Punycode encoding and decoding cannot be done in-place
+            // That means we need one or two temporaries
+            qt_nameprep(&result, prevLen);
+            labelLength = result.length() - prevLen;
+            register int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
+            if (toReserve > aceForm.capacity())
+                aceForm.reserve(toReserve);
+            toPunycodeHelper(result.constData() + prevLen, result.size() - prevLen, &aceForm);
+
+            // We use resize()+memcpy() here because we're overwriting the data we've copied
+            if (isIdnEnabled) {
+                QString tmp = QUrl::fromPunycode(aceForm.toLatin1());
+                if (tmp.isEmpty())
+                    return QString(); // shouldn't happen, since we've just punycode-encoded it
+                result.resize(prevLen + tmp.size());
+                memcpy(result.data() + prevLen, tmp.constData(), tmp.size() * sizeof(QChar));
+            } else {
+                result.resize(prevLen + aceForm.size());
+                memcpy(result.data() + prevLen, aceForm.constData(), aceForm.size() * sizeof(QChar));
+            }
+
+            if (!qt_check_std3rules(aceForm.constData(), aceForm.size()))
+                return QString();
+        }
+
+
+        lastIdx = idx + 1;
+        if (lastIdx < domain.size() + 1)
+            result += QLatin1Char('.');
+        else
+            break;
+    }
+    return result;
 }
 
 
@@ -3246,12 +3364,27 @@ QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
 
 QString QUrlPrivate::canonicalHost() const
 {
-    if (QURL_HASFLAG(stateFlags, HostCanonicalized))
+    if (QURL_HASFLAG(stateFlags, HostCanonicalized) || host.isEmpty())
         return host;
 
     QUrlPrivate *that = const_cast<QUrlPrivate *>(this);
     QURL_SETFLAG(that->stateFlags, HostCanonicalized);
-    that->host = qt_from_ACE(host);
+    if (host.contains(QLatin1Char(':'))) {
+        // This is an IP Literal, use _IPLiteral to validate
+        QByteArray ba = host.toLatin1();
+        if (!ba.startsWith('[')) {
+            // surround the IP Literal with [ ] if it's not already done so
+            ba.reserve(ba.length() + 2);
+            ba.prepend('[');
+            ba.append(']');
+        }
+
+        const char *ptr = ba.constData();
+        if (!_IPLiteral(&ptr))
+            that->host.clear();
+    } else {
+        that->host = qt_ACE_do(host, NormalizeAce);
+    }
     return that->host;
 }
 
@@ -3737,7 +3870,10 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
             }
         }
 
-        url += QUrl::toAce(host);
+        if (host.startsWith(QLatin1Char('[')))
+            url += host.toLatin1();
+        else
+            url += QUrl::toAce(host);
         if (!(options & QUrl::RemovePort) && port != -1) {
             url += ':';
             url += QString::number(port).toAscii();
@@ -4412,8 +4548,6 @@ void QUrl::setHost(const QString &host)
     QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized | QUrlPrivate::HostCanonicalized);
 
     d->host = host;
-    if (d->host.contains(QLatin1Char(':')))
-        d->host = QLatin1Char('[') + d->host + QLatin1Char(']');
 }
 
 /*!
@@ -5425,9 +5559,9 @@ QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclu
 */
 QByteArray QUrl::toPunycode(const QString &uc)
 {
-    QByteArray output;
+    QString output;
     toPunycodeHelper(uc.constData(), uc.size(), &output);
-    return output;
+    return output.toLatin1();
 }
 
 /*!
@@ -5528,7 +5662,7 @@ QString QUrl::fromPunycode(const QByteArray &pc)
 */
 QString QUrl::fromAce(const QByteArray &domain)
 {
-    return qt_from_ACE(QString::fromLatin1(domain));
+    return qt_ACE_do(QString::fromLatin1(domain), NormalizeAce);
 }
 
 /*!
@@ -5545,26 +5679,8 @@ QString QUrl::fromAce(const QByteArray &domain)
 */
 QByteArray QUrl::toAce(const QString &domain)
 {
-    // IDNA / rfc3490 describes these four delimiters used for
-    // separating labels in unicode international domain
-    // names.
-    QString nameprepped = qt_nameprep(domain);
-    int lastIdx = 0;
-    QByteArray result;
-    for (int i = 0; i < nameprepped.size(); ++i) {
-        ushort uc = nameprepped.at(i).unicode();
-        if (uc == 0x2e || uc == 0x3002 || uc == 0xff0e || uc == 0xff61) {
-            if (lastIdx)
-                result += '.';
-            toPunycodeHelper(nameprepped.constData() + lastIdx, i - lastIdx, &result);
-            lastIdx = i + 1;
-        }
-    }
-    if (lastIdx)
-        result += '.';
-    toPunycodeHelper(nameprepped.constData() + lastIdx, nameprepped.size() - lastIdx, &result);
-    
-    return result;
+    QString result = qt_ACE_do(domain, ToAceOnly);
+    return result.toLatin1();
 }
 
 /*!

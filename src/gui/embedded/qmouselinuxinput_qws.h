@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QMOUSEYOPY_QWS_H
-#define QMOUSEYOPY_QWS_H
+#ifndef QMOUSELINUXINPUT_QWS_H
+#define QMOUSELINUXINPUT_QWS_H
 
-#include <QtGui/qmouse_qws.h>
+#include <QtGui/QWSCalibratedMouseHandler>
 
 QT_BEGIN_HEADER
 
@@ -50,31 +50,29 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#ifndef QT_NO_QWS_MOUSE_YOPY
+#ifndef QT_NO_QWS_MOUSE_LINUXINPUT
 
-// YOPY touch panel support based on changes contributed by Ron Victorelli
-// (victorrj at icubed.com) to Custom TP driver.
+class QWSLinuxInputMousePrivate;
 
-class QWSYopyMouseHandlerPrivate;
-
-class QWSYopyMouseHandler : public QWSMouseHandler
+class QWSLinuxInputMouseHandler : public QWSCalibratedMouseHandler
 {
 public:
-    explicit QWSYopyMouseHandler(const QString & = QString(),
-                                 const QString & = QString());
-    ~QWSYopyMouseHandler();
+    QWSLinuxInputMouseHandler(const QString &);
+    ~QWSLinuxInputMouseHandler();
 
-    void resume();
     void suspend();
+    void resume();
 
-protected:
-    QWSYopyMouseHandlerPrivate *d;
+private:
+    QWSLinuxInputMousePrivate *d;
+
+    friend class QWSLinuxInputMousePrivate;
 };
 
-#endif // QT_NO_QWS_MOUSE_YOPY
+#endif // QT_NO_QWS_MOUSE_LINUXINPUT
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMOUSEYOPY_QWS_H
+#endif // QMOUSELINUXINPUT_QWS_H

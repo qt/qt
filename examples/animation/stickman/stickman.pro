@@ -12,8 +12,6 @@ SOURCES += main.cpp \
 
 INCLUDEPATH += $$PWD
 
-include(editor/editor.pri)
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/animation/stickman
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS stickman.pro

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,35 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QKBDVR41XX_QWS_H
-#define QKBDVR41XX_QWS_H
+/*!
+    \page obsoleteclasses.html
+    \group obsolete
+    \title Obsolete Classes
+    \ingroup classlists
+    \ingroup groups
 
-#include <QtGui/qkbd_qws.h>
+    \brief Qt classes that are obsolete (deprecated).
 
-QT_BEGIN_HEADER
+    This is a list of Qt classes that are obsolete (deprecated). These
+    classes are provided to keep old source code working but they are
+    no longer maintained. We strongly advise against using these
+    classes in new code.
 
-QT_BEGIN_NAMESPACE
+    \generatelist obsoleteclasses
 
-QT_MODULE(Gui)
-
-#if !defined(QT_NO_QWS_KEYBOARD) && !defined(QT_NO_QWS_KBD_VR41XX)
-
-class QWSVr41xxKbPrivate;
-
-class QWSVr41xxKeyboardHandler : public QWSKeyboardHandler
-{
-public:
-    explicit QWSVr41xxKeyboardHandler(const QString&);
-    virtual ~QWSVr41xxKeyboardHandler();
-
-private:
-    QWSVr41xxKbPrivate *d;
-};
-
-#endif // QT_NO_QWS_KBD_VR41XX
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QKBDVR41XX_QWS_H
+    \sa {Qt's Classes}, {Qt's Modules}
+*/

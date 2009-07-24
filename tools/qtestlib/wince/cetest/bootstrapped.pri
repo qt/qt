@@ -35,4 +35,5 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/tools/qmap.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbitarray.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qmetatype.cpp \
-           $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp
+           $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
+           $$QT_SOURCE_TREE/src/corelib/codecs/qutfcodec.cpp

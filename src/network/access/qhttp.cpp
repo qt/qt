@@ -513,6 +513,7 @@ public:
 
 /*!
     \class QHttpHeader
+    \obsolete
     \brief The QHttpHeader class contains header information for HTTP.
 
     \ingroup io
@@ -1007,6 +1008,7 @@ public:
 
 /*!
     \class QHttpResponseHeader
+    \obsolete
     \brief The QHttpResponseHeader class contains response header information for HTTP.
 
     \ingroup io
@@ -1211,6 +1213,7 @@ public:
 
 /*!
     \class QHttpRequestHeader
+    \obsolete
     \brief The QHttpRequestHeader class contains request header information for HTTP.
 
     \ingroup io

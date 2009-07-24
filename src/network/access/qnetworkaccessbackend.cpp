@@ -165,6 +165,12 @@ void QNetworkAccessBackend::ignoreSslErrors()
     // do nothing
 }
 
+void QNetworkAccessBackend::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    Q_UNUSED(errors);
+    // do nothing
+}
+
 void QNetworkAccessBackend::fetchSslConfiguration(QSslConfiguration &) const
 {
     // do nothing

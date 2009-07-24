@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
   The assignProperty() function is used for defining property assignments that
   should be performed when a state is entered.
 
-  Top-level states must be passed QStateMachine::rootState() as their parent
+  Top-level states must be passed a QStateMachine object as their parent
   state, or added to a state machine using QStateMachine::addState().
 
   \section1 States with Child States
@@ -215,6 +215,8 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
     return result;
 }
 
+#ifndef QT_NO_PROPERTIES
+
 /*!
   Instructs this state to set the property with the given \a name of the given
   \a object to the given \a value when the state is entered.
@@ -239,10 +241,12 @@ void QState::assignProperty(QObject *object, const char *name,
     d->propertyAssignments.append(QPropertyAssignment(object, name, value));
 }
 
+#endif // QT_NO_PROPERTIES
+
 /*!
   Returns this state's error state. 
 
-  \sa QStateMachine::errorState(), QStateMachine::setErrorState()
+  \sa QStateMachine::error()
 */
 QAbstractState *QState::errorState() const
 {
@@ -256,19 +260,17 @@ QAbstractState *QState::errorState() const
   state recursively. If no error state is set for the state itself or any of 
   its ancestors, an error will cause the machine to stop executing and an error
   will be printed to the console.
-
-  \sa QStateMachine::setErrorState(), QStateMachine::errorState()
 */
 void QState::setErrorState(QAbstractState *state)
 {
     Q_D(QState);
-    if (state != 0 && state->machine() != machine()) {
-        qWarning("QState::setErrorState: error state cannot belong "
-                 "to a different state machine");
+    if (state != 0 && qobject_cast<QStateMachine*>(state)) {
+        qWarning("QStateMachine::setErrorState: root state cannot be error state");
         return;
     }
-    if (state != 0 && state->machine() != 0 && state->machine()->rootState() == state) {
-        qWarning("QStateMachine::setErrorState: root state cannot be error state");
+    if (state != 0 && (!state->machine() || ((state->machine() != machine()) && !qobject_cast<QStateMachine*>(this)))) {
+        qWarning("QState::setErrorState: error state cannot belong "
+                 "to a different state machine");
         return;
     }
 
@@ -288,12 +290,7 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         return 0;
     }
 
-    // machine() will always be non-null for root state
-    if (machine() != 0 && machine()->rootState() == this) {
-        qWarning("QState::addTransition: cannot add transition from root state");
-        return 0;
-    }
-
+    transition->setParent(this);
     const QList<QPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *t = targets.at(i);
@@ -308,7 +305,6 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
             return 0;
         }
     }
-    transition->setParent(this);
     if (machine() != 0 && machine()->configuration().contains(this))
         QStateMachinePrivate::get(machine())->registerTransitions(this);
     return transition;

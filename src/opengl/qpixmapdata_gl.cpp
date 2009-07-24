@@ -97,7 +97,6 @@ static int qt_gl_pixmap_serial = 0;
 QGLPixmapData::QGLPixmapData(PixelType type)
     : QPixmapData(type, OpenGLClass)
     , m_renderFbo(0)
-    , m_textureId(0)
     , m_engine(0)
     , m_ctx(0)
     , m_dirty(false)
@@ -113,9 +112,9 @@ QGLPixmapData::~QGLPixmapData()
     if (!shareWidget)
         return;
 
-    if (m_textureId) {
+    if (m_texture.id) {
         QGLShareContextScope ctx(shareWidget->context());
-        glDeleteTextures(1, &m_textureId);
+        glDeleteTextures(1, &m_texture.id);
     }
 }
 
@@ -148,10 +147,10 @@ void QGLPixmapData::resize(int width, int height)
     is_null = (w <= 0 || h <= 0);
     d = pixelType() == QPixmapData::PixmapType ? 32 : 1;
 
-    if (m_textureId) {
+    if (m_texture.id) {
         QGLShareContextScope ctx(qt_gl_share_widget()->context());
-        glDeleteTextures(1, &m_textureId);
-        m_textureId = 0;
+        glDeleteTextures(1, &m_texture.id);
+        m_texture.id = 0;
     }
 
     m_source = QImage();
@@ -172,9 +171,9 @@ void QGLPixmapData::ensureCreated() const
     const GLenum format = qt_gl_preferredTextureFormat();
     const GLenum target = GL_TEXTURE_2D;
 
-    if (!m_textureId) {
-        glGenTextures(1, &m_textureId);
-        glBindTexture(target, m_textureId);
+    if (!m_texture.id) {
+        glGenTextures(1, &m_texture.id);
+        glBindTexture(target, m_texture.id);
         GLenum format = m_hasAlpha ? GL_RGBA : GL_RGB;
         glTexImage2D(target, 0, format, w, h, 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -185,13 +184,15 @@ void QGLPixmapData::ensureCreated() const
     if (!m_source.isNull()) {
         const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, format);
 
-        glBindTexture(target, m_textureId);
+        glBindTexture(target, m_texture.id);
         glTexSubImage2D(target, 0, 0, 0, w, h, format,
                         GL_UNSIGNED_BYTE, tx.bits());
 
         if (useFramebufferObjects())
             m_source = QImage();
     }
+
+    m_texture.clean = false;
 }
 
 QGLFramebufferObject *QGLPixmapData::fbo() const
@@ -223,10 +224,10 @@ void QGLPixmapData::fromImage(const QImage &image,
     is_null = (w <= 0 || h <= 0);
     d = pixelType() == QPixmapData::PixmapType ? 32 : 1;
 
-    if (m_textureId) {
+    if (m_texture.id) {
         QGLShareContextScope ctx(qt_gl_share_widget()->context());
-        glDeleteTextures(1, &m_textureId);
-        m_textureId = 0;
+        glDeleteTextures(1, &m_texture.id);
+        m_texture.id = 0;
     }
 }
 
@@ -256,9 +257,9 @@ void QGLPixmapData::fill(const QColor &color)
 
     bool hasAlpha = color.alpha() != 255;
     if (hasAlpha && !m_hasAlpha) {
-        if (m_textureId) {
-            glDeleteTextures(1, &m_textureId);
-            m_textureId = 0;
+        if (m_texture.id) {
+            glDeleteTextures(1, &m_texture.id);
+            m_texture.id = 0;
             m_dirty = true;
         }
         m_hasAlpha = color.alpha() != 255;
@@ -303,6 +304,8 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     return img;
 }
 
+extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
+
 QImage QGLPixmapData::toImage() const
 {
     if (!isValid())
@@ -319,8 +322,7 @@ QImage QGLPixmapData::toImage() const
     }
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
-    extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glBindTexture(GL_TEXTURE_2D, m_texture.id);
     return qt_gl_read_texture(QSize(w, h), true, true);
 }
 
@@ -350,7 +352,7 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-        GL_TEXTURE_2D, m_textureId, 0);
+        GL_TEXTURE_2D, m_texture.id, 0);
 
     const int x0 = 0;
     const int x1 = w;
@@ -488,7 +490,7 @@ GLuint QGLPixmapData::bind(bool copyBack) const
         ensureCreated();
     }
 
-    GLuint id = m_textureId;
+    GLuint id = m_texture.id;
     glBindTexture(GL_TEXTURE_2D, id);
     return id;
 }
@@ -496,7 +498,12 @@ GLuint QGLPixmapData::bind(bool copyBack) const
 GLuint QGLPixmapData::textureId() const
 {
     ensureCreated();
-    return m_textureId;
+    return m_texture.id;
+}
+
+QGLTexture* QGLPixmapData::texture() const
+{
+    return &m_texture;
 }
 
 extern int qt_defaultDpiX();
