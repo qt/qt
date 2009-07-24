@@ -1687,17 +1687,24 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         int count = path.elementCount();
         QPointF *points = (QPointF *) path.points();
         const QPainterPath::ElementType *types = path.elements();
-        int first = 0;
-        int last;
-        while (first < count) {
-            while (first < count && types[first] != QPainterPath::MoveToElement) ++first;
-            last = first + 1;
-            while (last < count && types[last] == QPainterPath::LineToElement) ++last;
-            strokePolygonCosmetic(points + first, last - first,
-                                  path.hasImplicitClose() && last == count // only close last one..
+        if (types) {
+            int first = 0;
+            int last;
+            while (first < count) {
+                while (first < count && types[first] != QPainterPath::MoveToElement) ++first;
+                last = first + 1;
+                while (last < count && types[last] == QPainterPath::LineToElement) ++last;
+                strokePolygonCosmetic(points + first, last - first,
+                                      path.hasImplicitClose() && last == count // only close last one..
+                                      ? WindingMode
+                                      : PolylineMode);
+                first = last;
+            }
+        } else {
+            strokePolygonCosmetic(points, count,
+                                  path.hasImplicitClose()
                                   ? WindingMode
                                   : PolylineMode);
-            first = last;
         }
 
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
