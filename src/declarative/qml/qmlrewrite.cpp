@@ -61,7 +61,7 @@ void RewriteBinding::accept(AST::Node *node)
     AST::Node::acceptChild(node, this);
 }
 
-QString RewriteBinding::rewrite(QString code, unsigned position, 
+QString RewriteBinding::rewrite(QString code, unsigned position,
                                 AST::Statement *node)
 {
     TextWriter w;
@@ -97,57 +97,6 @@ bool RewriteBinding::visit(AST::ExpressionStatement *ast)
 {
     unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
     _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
-
-    return false;
-}
-
-bool RewriteBinding::visit(AST::NumericLiteral *node)
-{
-    if (node->suffix != AST::NumericLiteral::noSuffix) {
-        const int suffixLength = AST::NumericLiteral::suffixLength[node->suffix];
-        const char *suffixSpell = AST::NumericLiteral::suffixSpell[node->suffix];
-        QString pre;
-        pre += QLatin1String("qmlNumberFrom");
-        pre += QChar(QLatin1Char(suffixSpell[0])).toUpper();
-        pre += QLatin1String(&suffixSpell[1]);
-        pre += QLatin1Char('(');
-        _writer->replace(node->literalToken.begin() - _position, 0, pre);
-        _writer->replace(node->literalToken.end() - _position - suffixLength,
-                         suffixLength,
-                         QLatin1String(")"));
-    }
-
-    return false;
-}
-
-QString RewriteNumericLiterals::operator()(QString code, unsigned position, AST::Node *node)
-{
-    TextWriter w;
-    _writer = &w;
-    _position = position;
-
-    AST::Node::acceptChild(node, this);
-
-    w.write(&code);
-
-    return code;
-}
-
-bool RewriteNumericLiterals::visit(AST::NumericLiteral *node)
-{
-    if (node->suffix != AST::NumericLiteral::noSuffix) {
-        const int suffixLength = AST::NumericLiteral::suffixLength[node->suffix];
-        const char *suffixSpell = AST::NumericLiteral::suffixSpell[node->suffix];
-        QString pre;
-        pre += QLatin1String("qmlNumberFrom");
-        pre += QChar(QLatin1Char(suffixSpell[0])).toUpper();
-        pre += QLatin1String(&suffixSpell[1]);
-        pre += QLatin1Char('(');
-        _writer->replace(node->literalToken.begin() - _position, 0, pre);
-        _writer->replace(node->literalToken.end() - _position - suffixLength,
-                         suffixLength,
-                         QLatin1String(")"));
-    }
 
     return false;
 }

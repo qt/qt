@@ -82,8 +82,6 @@ public:
     virtual bool visit(UiObjectMemberList *) { return true; }
     virtual bool visit(UiArrayMemberList *) { return true; }
     virtual bool visit(UiQualifiedId *) { return true; }
-    virtual bool visit(UiAttributeList *) { return true; }
-    virtual bool visit(UiAttribute *) { return true; }
 
     virtual void endVisit(UiProgram *) {}
     virtual void endVisit(UiImportList *) {}
@@ -98,8 +96,6 @@ public:
     virtual void endVisit(UiObjectMemberList *) {}
     virtual void endVisit(UiArrayMemberList *) {}
     virtual void endVisit(UiQualifiedId *) {}
-    virtual void endVisit(UiAttributeList *) {}
-    virtual void endVisit(UiAttribute *) {}
 
     // QmlJS
     virtual bool visit(ThisExpression *) { return true; }
