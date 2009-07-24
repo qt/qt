@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsEffectSource
+class Q_GUI_EXPORT QGraphicsEffectSource
 {
 public:
     QGraphicsEffectSource() {}
@@ -72,7 +72,7 @@ public:
     virtual bool drawIntoPixmap(QPixmap *, const QTransform & = QTransform()) = 0;
 };
 
-class QGraphicsEffectPrivate : public QObjectPrivate
+class Q_GUI_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:

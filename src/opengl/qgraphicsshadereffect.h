@@ -60,22 +60,19 @@ class Q_OPENGL_EXPORT QGraphicsShaderEffect : public QGraphicsEffect
 {
     Q_OBJECT
 public:
-    QGraphicsShaderEffect(QObject *parent = 0);
+    QGraphicsShaderEffect();
     virtual ~QGraphicsShaderEffect();
 
     QByteArray pixelShaderFragment() const;
     void setPixelShaderFragment(const QByteArray& code);
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option,
-                  QWidget *widget);
-
 protected:
+    void draw(QPainter *painter);
     void setUniformsDirty();
     virtual void setUniforms(QGLShaderProgram *program);
 
 private:
-    QGraphicsShaderEffectPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(QGraphicsShaderEffect)
     Q_DISABLE_COPY(QGraphicsShaderEffect)
 
     friend class QGLCustomShaderEffectStage;

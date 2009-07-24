@@ -44,6 +44,7 @@
 #include <QtGui>
 
 #include "blureffect.h"
+#include "customshadereffect.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -79,18 +80,16 @@ void BlurPicker::updateIconPositions()
         pos -= QPointF(40, 40);
         icon->setPos(pos);
         baseline = qMax(baseline, ys);
+        if (i != 3)
+            static_cast<BlurEffect *>(icon->graphicsEffect())->setBaseLine(baseline);
     }
 
-    m_blurEffect->setBaseLine(baseline);
     m_scene.update();
 }
 
 void BlurPicker::setupScene()
 {
     m_scene.setSceneRect(-200, -120, 400, 240);
-
-    m_blurEffect = new BlurEffect(this);
-    m_customEffect = new CustomShaderEffect(this);
 
     QStringList names;
     names << ":/images/accessories-calculator.png";
@@ -107,9 +106,9 @@ void BlurPicker::setupScene()
         QGraphicsPixmapItem *icon = m_scene.addPixmap(pixmap);
         icon->setZValue(1);
         if (i == 3)
-            icon->setEffect(m_customEffect);
+            icon->setGraphicsEffect(new CustomShaderEffect());
         else
-            icon->setEffect(m_blurEffect);
+            icon->setGraphicsEffect(new BlurEffect(icon));
         m_icons << icon;
     }
 

@@ -53,8 +53,8 @@ static char const colorizeShaderCode[] =
     "    return vec4(colorize.rgb, src.a);\n"
     "}";
 
-CustomShaderEffect::CustomShaderEffect(QObject *parent)
-    : QGraphicsShaderEffect(parent),
+CustomShaderEffect::CustomShaderEffect()
+    : QGraphicsShaderEffect(),
       color(Qt::red)
 {
     setPixelShaderFragment(colorizeShaderCode);

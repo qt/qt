@@ -47,6 +47,7 @@
 #endif
 #include <QtGui/qpainter.h>
 #include <QtGui/qgraphicsitem.h>
+#include <QtGui/private/qgraphicseffect_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -160,8 +161,9 @@ void QGLCustomShaderEffectStage::setUniforms(QGLShaderProgram *program)
 
 #endif
 
-class QGraphicsShaderEffectPrivate
+class QGraphicsShaderEffectPrivate : public QGraphicsEffectPrivate
 {
+    Q_DECLARE_PUBLIC(QGraphicsShaderEffect)
 public:
     QGraphicsShaderEffectPrivate()
         : pixelShaderFragment(qglslDefaultImageFragmentShader)
@@ -180,10 +182,9 @@ public:
 /*!
     Constructs a shader effect and attaches it to \a parent.
 */
-QGraphicsShaderEffect::QGraphicsShaderEffect(QObject *parent)
-    : QGraphicsEffect(parent)
+QGraphicsShaderEffect::QGraphicsShaderEffect()
+    : QGraphicsEffect(*new QGraphicsShaderEffectPrivate())
 {
-    d_ptr = new QGraphicsShaderEffectPrivate();
 }
 
 /*!
@@ -192,9 +193,9 @@ QGraphicsShaderEffect::QGraphicsShaderEffect(QObject *parent)
 QGraphicsShaderEffect::~QGraphicsShaderEffect()
 {
 #ifdef QGL_HAVE_CUSTOM_SHADERS
-    delete d_ptr->customShaderStage;
+    Q_D(QGraphicsShaderEffect);
+    delete d->customShaderStage;
 #endif
-    delete d_ptr;
 }
 
 /*!
@@ -207,7 +208,8 @@ QGraphicsShaderEffect::~QGraphicsShaderEffect()
 */
 QByteArray QGraphicsShaderEffect::pixelShaderFragment() const
 {
-    return d_ptr->pixelShaderFragment;
+    Q_D(const QGraphicsShaderEffect);
+    return d->pixelShaderFragment;
 }
 
 /*!
@@ -231,11 +233,12 @@ QByteArray QGraphicsShaderEffect::pixelShaderFragment() const
 */
 void QGraphicsShaderEffect::setPixelShaderFragment(const QByteArray& code)
 {
-    if (d_ptr->pixelShaderFragment != code) {
-        d_ptr->pixelShaderFragment = code;
+    Q_D(QGraphicsShaderEffect);
+    if (d->pixelShaderFragment != code) {
+        d->pixelShaderFragment = code;
 #ifdef QGL_HAVE_CUSTOM_SHADERS
-        delete d_ptr->customShaderStage;
-        d_ptr->customShaderStage = 0;
+        delete d->customShaderStage;
+        d->customShaderStage = 0;
 #endif
     }
 }
@@ -243,41 +246,45 @@ void QGraphicsShaderEffect::setPixelShaderFragment(const QByteArray& code)
 /*!
     \reimp
 */
-void QGraphicsShaderEffect::drawItem
-    (QGraphicsItem *item, QPainter *painter,
-     const QStyleOptionGraphicsItem *option, QWidget *widget)
+void QGraphicsShaderEffect::draw(QPainter *painter)
 {
+    Q_D(QGraphicsShaderEffect);
+
 #ifdef QGL_HAVE_CUSTOM_SHADERS
     // Find the item's bounds in device coordinates.
-    QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
+    QTransform itemToPixmapTransform(painter->worldTransform());
+    QRectF deviceBounds = itemToPixmapTransform.mapRect(sourceBoundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
     if (deviceRect.isEmpty())
         return;
 
-    QPixmap *pixmap = QGraphicsEffect::drawItemOnPixmap(painter, item, option, widget, 0);
-    if (!pixmap)
+    if (deviceRect.x() != 0 || deviceRect.y() != 0)
+        itemToPixmapTransform *= QTransform::fromTranslate(-deviceRect.x(), -deviceRect.y());
+
+    QPixmap pixmap(deviceRect.size());
+    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
         return;
 
     // Set the custom shader on the paint engine.  The setOnPainter()
     // call may fail if the paint engine is not GL2.  In that case,
     // we fall through to drawing the pixmap normally.
-    if (!d_ptr->customShaderStage) {
-        d_ptr->customShaderStage = new QGLCustomShaderEffectStage
-            (this, d_ptr->pixelShaderFragment);
+    if (!d->customShaderStage) {
+        d->customShaderStage = new QGLCustomShaderEffectStage
+            (this, d->pixelShaderFragment);
     }
-    bool usingShader = d_ptr->customShaderStage->setOnPainter(painter);
+    bool usingShader = d->customShaderStage->setOnPainter(painter);
 
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawPixmap(deviceRect.topLeft(), *pixmap);
+    painter->drawPixmap(deviceRect.topLeft(), pixmap);
     painter->setWorldTransform(restoreTransform);
 
     // Remove the custom shader to return to normal painting operations.
     if (usingShader)
-        d_ptr->customShaderStage->removeFromPainter(painter);
+        d->customShaderStage->removeFromPainter(painter);
 #else
-    item->paint(painter, option, widget);
+    drawSource(painter);
 #endif
 }
 
@@ -294,8 +301,9 @@ void QGraphicsShaderEffect::drawItem
 void QGraphicsShaderEffect::setUniformsDirty()
 {
 #ifdef QGL_HAVE_CUSTOM_SHADERS
-    if (d_ptr->customShaderStage)
-        d_ptr->customShaderStage->setUniformsDirty();
+    Q_D(QGraphicsShaderEffect);
+    if (d->customShaderStage)
+        d->customShaderStage->setUniformsDirty();
 #endif
 }
 

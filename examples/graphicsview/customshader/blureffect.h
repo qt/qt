@@ -48,21 +48,20 @@
 class BlurEffect: public QGraphicsBlurEffect
 {
 public:
-    BlurEffect(QObject *parent = 0);
+    BlurEffect(QGraphicsItem *item);
 
     void setBaseLine(qreal y) { m_baseLine = y; }
 
-    QRectF boundingRectFor(const QGraphicsItem *item);
+    QRectF boundingRect() const;
 
-    void drawItem(QGraphicsItem *item, QPainter *painter,
-                  const QStyleOptionGraphicsItem *option = 0,
-                  QWidget *widget = 0);
+    void draw(QPainter *painter);
 
 private:
-    void adjustForItem(const QGraphicsItem *item);
+    void adjustForItem();
 
 private:
     qreal m_baseLine;
+    QGraphicsItem *item;
 };
 
 #endif // BLUREFFECT_H

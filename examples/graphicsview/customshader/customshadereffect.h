@@ -49,7 +49,7 @@
 class CustomShaderEffect: public QGraphicsShaderEffect
 {
 public:
-    CustomShaderEffect(QObject *parent = 0);
+    CustomShaderEffect();
 
     QColor effectColor() const { return color; }
     void setEffectColor(const QColor& c);
