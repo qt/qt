@@ -184,7 +184,7 @@ void QPainterPrivate::checkEmulation()
             extended = emulationEngine;
             extended->setState(state);
         }
-    } else if (emulationEngine && emulationEngine != extended) {
+    } else if (emulationEngine == extended) {
         extended = emulationEngine->real_engine;
     }
 }
