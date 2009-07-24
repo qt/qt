@@ -529,8 +529,7 @@ qint64 QFSFileEnginePrivate::nativeSize() const
                                         GetFileExInfoStandard, &attribData);
         if (!ok) {
             int errorCode = GetLastError();
-            if (errorCode != ERROR_INVALID_NAME
-                && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+            if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
                 QByteArray path = nativeFilePath;
                 // path for the FindFirstFile should not end with a trailing slash
                 while (path.endsWith('\\'))
@@ -903,8 +902,7 @@ static inline bool isDirPath(const QString &dirPath, bool *existed)
     DWORD fileAttrib = ::GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16());
     if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
         int errorCode = GetLastError();
-        if (errorCode != ERROR_INVALID_NAME
-            && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+        if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
             // path for the FindFirstFile should not end with a trailing slash
             while (path.endsWith(QLatin1Char('\\')))
                 path.chop(1);
@@ -1194,8 +1192,7 @@ bool QFSFileEnginePrivate::doStat() const
             fileAttrib = GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(fname).utf16());
             if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
                 int errorCode = GetLastError();
-                if (errorCode != ERROR_INVALID_NAME
-                    && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+                if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
                     QString path = QDir::toNativeSeparators(fname);
                     // path for the FindFirstFile should not end with a trailing slash
                     while (path.endsWith(QLatin1Char('\\')))
@@ -1810,8 +1807,7 @@ QDateTime QFSFileEngine::fileTime(FileTime time) const
         bool ok = ::GetFileAttributesEx((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(), GetFileExInfoStandard, &attribData);
         if (!ok) {
             int errorCode = GetLastError();
-            if (errorCode != ERROR_INVALID_NAME
-                && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+            if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
                 QString path = QDir::toNativeSeparators(d->filePath);
                 // path for the FindFirstFile should not end with a trailing slash
                 while (path.endsWith(QLatin1Char('\\')))
