@@ -67,7 +67,7 @@
 typedef struct __FSEventStream *FSEventStreamRef;
 typedef const struct __FSEventStream *ConstFSEventStreamRef;
 typedef const struct __CFArray *CFArrayRef;
-typedef uint FSEventStreamEventFlags;
+typedef UInt32 FSEventStreamEventFlags;
 typedef uint64_t FSEventStreamEventId;
 
 QT_BEGIN_NAMESPACE
