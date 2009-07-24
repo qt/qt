@@ -104,7 +104,7 @@ enum Op {
 
 } // namespace QSOperator
 
-namespace QmlJS { 
+namespace QmlJS {
 class NameId;
 namespace AST {
 
@@ -400,30 +400,8 @@ class NumericLiteral: public ExpressionNode
 public:
     QMLJS_DECLARE_AST_NODE(NumericLiteral)
 
-    enum Suffix { // ### keep it in sync with the Suffix enum in qmljslexer_p.h
-        noSuffix,
-        emSuffix,
-        exSuffix,
-        pxSuffix,
-        cmSuffix,
-        mmSuffix,
-        inSuffix,
-        ptSuffix,
-        pcSuffix,
-        degSuffix,
-        radSuffix,
-        gradSuffix,
-        msSuffix,
-        sSuffix,
-        hzSuffix,
-        khzSuffix
-    };
-
-    static int suffixLength[];
-    static const char *const suffixSpell[];
-
-    NumericLiteral(double v, int suffix):
-        value(v), suffix(suffix) { kind = K; }
+    NumericLiteral(double v):
+        value(v) { kind = K; }
     virtual ~NumericLiteral() {}
 
     virtual void accept0(Visitor *visitor);
@@ -436,7 +414,6 @@ public:
 
 // attributes:
     double value;
-    int suffix;
     SourceLocation literalToken;
 };
 

@@ -49,44 +49,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QmlJS { namespace AST {
 
-int NumericLiteral::suffixLength[] = {
-    0, // noSuffix
-    2, // emSuffix
-    2, // exSuffix
-    2, // pxSuffix
-    2, // cmSuffix
-    2, // mmSuffix
-    2, // inSuffix
-    2, // ptSuffix
-    2, // pcSuffix
-    3, // degSuffix
-    3, // radSuffix
-    4, // gradSuffix
-    2, // msSuffix
-    1, // sSuffix
-    2, // hzSuffix
-    3  // khzSuffix
-};
-
-const char *const NumericLiteral::suffixSpell[] = {
-    "",
-    "em",
-    "ex",
-    "px",
-    "cm",
-    "mm",
-    "in",
-    "pt",
-    "pc",
-    "deg",
-    "rad",
-    "grad",
-    "ms",
-    "s",
-    "hz",
-    "khz"
-};
-
 ExpressionNode *Node::expressionCast()
 {
     return 0;

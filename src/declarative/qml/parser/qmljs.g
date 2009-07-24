@@ -1021,7 +1021,7 @@ case $rule_number: {
 PrimaryExpression: T_NUMERIC_LITERAL ;
 /.
 case $rule_number: {
-  AST::NumericLiteral *node = makeAstNode<AST::NumericLiteral> (driver->nodePool(), sym(1).dval, lexer->flags);
+  AST::NumericLiteral *node = makeAstNode<AST::NumericLiteral> (driver->nodePool(), sym(1).dval);
   node->literalToken = loc(1);
   sym(1).Node = node;
 } break;
