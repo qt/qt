@@ -131,6 +131,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
         code[ImageSrcFragmentShader] = qglslImageSrcFragmentShader;
         code[ImageSrcWithPatternFragmentShader] = qglslImageSrcWithPatternFragmentShader;
         code[NonPremultipliedImageSrcFragmentShader] = qglslNonPremultipliedImageSrcFragmentShader;
+        code[CustomImageSrcFragmentShader] = ""; // Supplied by app.
         code[SolidBrushSrcFragmentShader] = qglslSolidBrushSrcFragmentShader;
         code[TextureBrushSrcFragmentShader] = qglslTextureBrushSrcFragmentShader;
         code[TextureBrushSrcWithPatternFragmentShader] = qglslTextureBrushSrcWithPatternFragmentShader;
@@ -547,7 +548,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     }
 
     // If the shader program's not found in the cache, create it now.
-    while (!foundProgramInCache) {
+    if (!foundProgramInCache) {
         requiredProgram.program = new QGLShaderProgram(ctx, this);
         requiredProgram.program->addShader(requiredProgram.mainVertexShader);
         requiredProgram.program->addShader(requiredProgram.positionVertexShader);
@@ -579,13 +580,12 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
                   << "    " << requiredProgram.program->log();
             qWarning() << error;
             delete requiredProgram.program;
-            break;
+        } else {
+            cachedPrograms.append(requiredProgram);
+            // taking the address here is safe since
+            // cachePrograms isn't resized anywhere else
+            currentShaderProg = &cachedPrograms.last();
         }
-
-        cachedPrograms.append(requiredProgram);
-        // taking the address here is safe since
-        // cachePrograms isn't resized anywhere else
-        currentShaderProg = &cachedPrograms.last();
     }
 
     if (currentShaderProg) {
