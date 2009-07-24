@@ -157,7 +157,7 @@ void DragController::dragExited(DragData* dragData)
     Frame* mainFrame = m_page->mainFrame();
     
     if (RefPtr<FrameView> v = mainFrame->view()) {
-        ClipboardAccessPolicy policy = m_document->securityOrigin()->isLocal() ? ClipboardReadable : ClipboardTypesReadable;
+        ClipboardAccessPolicy policy = (!m_document || m_document->securityOrigin()->isLocal()) ? ClipboardReadable : ClipboardTypesReadable;
         RefPtr<Clipboard> clipboard = dragData->createClipboard(policy);
         clipboard->setSourceOperation(dragData->draggingSourceOperationMask());
         mainFrame->eventHandler()->cancelDragAndDrop(createMouseEvent(dragData), clipboard.get());
