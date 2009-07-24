@@ -2045,7 +2045,12 @@ void tst_QFiledialog::task257579_sideBarWithNonCleanUrls()
     QCOMPARE(sidebar->urls().count(), 1);
     QVERIFY(sidebar->urls().first().toLocalFile() != url);
     QCOMPARE(sidebar->urls().first().toLocalFile(), QDir::cleanPath(url));
+
+#ifdef Q_OS_WIN
+    QCOMPARE(sidebar->model()->index(0,0).data().toString().toLower(), tempDir.dirName().toLower());
+#else
     QCOMPARE(sidebar->model()->index(0,0).data().toString(), tempDir.dirName());
+#endif
 
     //all tests are finished, we can remove the temporary dir
     QVERIFY(tempDir.rmdir(dirname));
