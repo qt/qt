@@ -157,9 +157,12 @@ void MainWindow::tableClicked(int row, int /* column */)
     mediaObject->stop();
     mediaObject->clearQueue();
 
+    if (row >= sources.size())
+        return;
+
     mediaObject->setCurrentSource(sources[row]);
 
-    if (wasPlaying) 
+    if (wasPlaying)
         mediaObject->play();
     else
         mediaObject->stop();
