@@ -59,6 +59,7 @@ class Q_DECLARATIVE_EXPORT QmlFontFamily : public QObject
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged)
 
 public:
     QmlFontFamily(QObject *parent = 0);
@@ -70,11 +71,14 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    bool isLoading() const;
+
 private Q_SLOTS:
     void replyFinished();
 
 Q_SIGNALS:
     void nameChanged();
+    void loadingChanged();
 };
 
 QT_END_NAMESPACE

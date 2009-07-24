@@ -176,8 +176,6 @@ class UiObjectMember;
 class UiObjectMemberList;
 class UiArrayMemberList;
 class UiQualifiedId;
-class UiAttributeList;
-class UiAttribute;
 
 } } // namespace AST
 

@@ -78,21 +78,6 @@ protected:
     QString rewrite(QString code, unsigned position, AST::Statement *node);
     virtual bool visit(AST::Block *ast);
     virtual bool visit(AST::ExpressionStatement *ast);
-    virtual bool visit(AST::NumericLiteral *node);
-};
-
-class RewriteNumericLiterals: protected AST::Visitor
-{
-    unsigned _position;
-    TextWriter *_writer;
-
-public:
-    QString operator()(QString code, unsigned position, AST::Node *node);
-
-protected:
-    using AST::Visitor::visit;
-
-    virtual bool visit(AST::NumericLiteral *node);
 };
 
 } // namespace QmlRewrite
