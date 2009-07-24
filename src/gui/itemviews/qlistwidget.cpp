@@ -561,6 +561,13 @@ Qt::DropActions QListModel::supportedDropActions() const
     given \a parent.
     If the parent is not specified, the item will need to be inserted into a
     list widget with QListWidget::insertItem().
+    
+    \note that this constructor inserts this same object into the model of 
+    the parent that is passed to the constructor. If the model is sorted then 
+    the behavior of the insert is undetermined since the model will call 
+    the '<' operator method on this object which has still not yet been 
+    constructed. In this case it would be better not to specify the parent
+    and use the QListWidget::insertItem method to insert the item instead.
 
     \sa type()
 */
@@ -582,6 +589,13 @@ QListWidgetItem::QListWidgetItem(QListWidget *view, int type)
     given \a text and \a parent.
     If the parent is not specified, the item will need to be inserted into a
     list widget with QListWidget::insertItem().
+    
+    \note that this constructor inserts this same object into the model of 
+    the parent that is passed to the constructor. If the model is sorted then 
+    the behavior of the insert is undetermined since the model will call 
+    the '<' operator method on this object which has still not yet been 
+    constructed. In this case it would be better not to specify the parent
+    and use the QListWidget::insertItem method to insert the item instead.
 
     \sa type()
 */
@@ -605,7 +619,14 @@ QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *view, int typ
     given \a icon, \a text and \a parent.
     If the parent is not specified, the item will need to be inserted into a
     list widget with QListWidget::insertItem().
-
+    
+    \note that this constructor inserts this same object into the model of 
+    the parent that is passed to the constructor. If the model is sorted then 
+    the behavior of the insert is undetermined since the model will call 
+    the '<' operator method on this object which has still not yet been 
+    constructed. In this case it would be better not to specify the parent
+    and use the QListWidget::insertItem method to insert the item instead.
+    
     \sa type()
 */
 QListWidgetItem::QListWidgetItem(const QIcon &icon,const QString &text,
