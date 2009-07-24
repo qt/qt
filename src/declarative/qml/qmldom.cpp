@@ -747,11 +747,11 @@ bool QmlDomObject::isValid() const
 }
 
 /*!
-    Returns the type name of this object.
+    Returns the fully-qualified type name of this object.
 
-    For example, the type of this object would be "QGraphicsWidget".
+    For example, the type of this object would be "Qt/4.6/Rect".
     \qml
-QGraphicsWidget { }
+Rect { }
     \endqml
 */
 QByteArray QmlDomObject::objectType() const
@@ -759,6 +759,23 @@ QByteArray QmlDomObject::objectType() const
     if (d->object) return d->object->typeName;
     else return QByteArray();
 }
+
+/*!
+    Returns the fully-qualified type name of this object.
+
+    For example, the type of this object would be "Qt/4.6/Rect".
+    \qml
+Rect { }
+    \endqml
+*/
+QByteArray QmlDomObject::objectClassName() const
+{
+    if (d->object)
+        return d->object->className;
+    else
+        return QByteArray();
+}
+
 
 /*!
     Returns the QML id assigned to this object, or an empty QByteArray if no id

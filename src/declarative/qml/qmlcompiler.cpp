@@ -630,6 +630,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         obj->url = tr.component->url();
     if (tr.type)
         obj->typeName = tr.type->qmlTypeName();
+    obj->className = tr.className;
 
     // This object is a "Component" element
     if (obj->metatype == &QmlComponent::staticMetaObject) {
