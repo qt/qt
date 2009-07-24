@@ -232,31 +232,31 @@ namespace QtSharedPointer {
     };
 
     template <class T>
-    struct ExternalRefCountWithContiguousData: public ExternalRefCountData
+    struct ExternalRefCountWithContiguousData: public ExternalRefCountWithDestroyFn
     {
-#ifdef Q_DECL_ALIGN
-# ifdef Q_ALIGNOF
-#   define QSP_ALIGNOF(T) Q_ALIGNOF(T)
-# else
-#   define QSP_ALIGNOF(T) (sizeof(T) >= 16 ? 16 : sizeof(T) >= 8 ? 8 : sizeof(T) >= 4 ? 4 : sizeof(T) >= 2 ? 2 : 1)
-# endif
+        typedef ExternalRefCountWithDestroyFn Parent;
+        typedef ExternalRefCountWithContiguousData Self;
+        T data;
 
-        char data[sizeof(T)] Q_DECL_ALIGN(QSP_ALIGNOF(T));
-        inline T *pointer() { return reinterpret_cast<T *>(data); }
+        static void deleter(ExternalRefCountData *self)
+        {
+            ExternalRefCountWithContiguousData *that =
+                    static_cast<ExternalRefCountWithContiguousData *>(self);
+            that->data.~T();
+        }
 
-# undef QSP_ALIGNOF
-#else
-        union {
-            char data[sizeof(T) + 16];
-            double dummy1;
-# ifndef Q_OS_DARWIN
-            long double dummy2;
-# endif
-        };
-        inline T *pointer() { return reinterpret_cast<T *>(data + 16 - (quintptr(data) & 0xf)); }
-#endif
+        static inline ExternalRefCountData *create(T **ptr)
+        {
+            DestroyerFn destroy = &deleter;
+            Self *d = static_cast<Self *>(::operator new(sizeof(Self)));
 
-        inline bool destroy() { this->pointer()->~T(); return true; }
+            // initialize the d-pointer sub-object
+            // leave d->data uninitialized
+            new (d) Parent(destroy); // can't throw
+
+            *ptr = &d->data;
+            return d;
+        }
     };
 
     template <class T>
@@ -292,12 +292,10 @@ namespace QtSharedPointer {
 
         inline void internalCreate()
         {
-            ExternalRefCountWithContiguousData<T> *dd = new ExternalRefCountWithContiguousData<T>;
-            T *ptr = dd->pointer();
-            new (ptr) T(); // create
+            T *ptr;
+            d = ExternalRefCountWithContiguousData<T>::create(&ptr);
 
             Basic<T>::internalConstruct(ptr);
-            d = dd;
         }
 
         inline ExternalRefCount() : d(0) { }
@@ -429,10 +427,13 @@ public:
     QWeakPointer<T> toWeakRef() const;
 
 public:
-    static QSharedPointer<T> create()
+    static inline QSharedPointer<T> create()
     {
         QSharedPointer<T> result;
         result.internalCreate();
+
+        // now initialize the data
+        new (result.data()) T();
         return result;
     }
 };
