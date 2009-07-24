@@ -178,18 +178,6 @@ namespace QtSharedPointer {
     };
 
     template <class T, typename Deleter>
-    struct ExternalRefCountWithSpecializedDeleter: public ExternalRefCountData
-    {
-        T *ptr;
-        Deleter deleter;
-
-        inline ExternalRefCountWithSpecializedDeleter(T *p, Deleter d)
-            : ptr(p), deleter(d)
-        { }
-        inline bool destroy() { executeDeleter(ptr, deleter); return true; }
-    };
-
-    template <class T, typename Deleter>
     struct CustomDeleter
     {
         Deleter deleter;
