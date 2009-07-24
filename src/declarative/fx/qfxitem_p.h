@@ -55,6 +55,7 @@
 
 #include <QtDeclarative/qfxitem.h>
 #include <QtDeclarative/qmlstate.h>
+#include <QtDeclarative/qfxanchors.h>
 #include <private/qmlnullablevalue_p.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcontext.h>

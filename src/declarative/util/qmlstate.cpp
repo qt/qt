@@ -92,6 +92,24 @@ void ActionEvent::reverse()
 {
 }
 
+QList<Action> ActionEvent::extraActions()
+{
+    return QList<Action>();
+}
+
+bool ActionEvent::changesBindings()
+{
+    return false;
+}
+
+void ActionEvent::clearForwardBindings()
+{
+}
+
+void ActionEvent::clearReverseBindings()
+{
+}
+
 /*!
     \internal
 */
@@ -399,10 +417,12 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     // into this state need to be translated into apply actions
     for (int ii = 0; ii < d->revertList.count(); ++ii) {
         bool found = false;
-        for (int jj = 0; !found && jj < applyList.count(); ++jj) {
-            const Action &action = applyList.at(jj);
-            if (action.property == d->revertList.at(ii).property)
-                found = true;
+        if (!d->revertList.at(ii).event) {    //### corresponding test for events?
+            for (int jj = 0; !found && jj < applyList.count(); ++jj) {
+                const Action &action = applyList.at(jj);
+                if (action.property == d->revertList.at(ii).property)
+                    found = true;
+            }
         }
         if (!found) {
             QVariant cur = d->revertList.at(ii).property.read();

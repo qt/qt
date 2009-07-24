@@ -73,6 +73,7 @@ public:
     QmlBinding *toBinding;
     ActionEvent *event;
 
+    //strictly for matching
     QObject *specifiedObject;
     QString specifiedProperty;
 
@@ -84,9 +85,17 @@ class ActionEvent
 public:
     virtual ~ActionEvent();
     virtual QString typeName() const;
+
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();
+
+    //virtual bool hasExtraActions();
+    virtual QList<Action> extraActions();
+
+    virtual bool changesBindings();
+    virtual void clearForwardBindings();
+    virtual void clearReverseBindings();
 };
 
 class QmlStateGroup;
