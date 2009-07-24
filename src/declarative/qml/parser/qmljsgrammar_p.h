@@ -154,15 +154,15 @@ public:
     T_XOR = 78,
     T_XOR_EQ = 79,
 
-    ACCEPT_STATE = 616,
-    RULE_COUNT = 337,
-    STATE_COUNT = 617,
+    ACCEPT_STATE = 620,
+    RULE_COUNT = 339,
+    STATE_COUNT = 621,
     TERMINAL_COUNT = 95,
     NON_TERMINAL_COUNT = 103,
 
-    GOTO_INDEX_OFFSET = 617,
-    GOTO_INFO_OFFSET = 2231,
-    GOTO_CHECK_OFFSET = 2231
+    GOTO_INDEX_OFFSET = 621,
+    GOTO_INFO_OFFSET = 2285,
+    GOTO_CHECK_OFFSET = 2285
   };
 
   static const char  *const spell [];
