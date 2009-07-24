@@ -228,6 +228,10 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
                 QNetworkAddressEntry entry = iface->addressEntries.at(eindex);
                 if(entry.ip() != ifAddr) {
                     continue;
+                } else if(entry.ip().protocol() != QAbstractSocket::IPv4Protocol) {
+                    // skip if not IPv4 address (e.g. IPv6)
+                    // as results not reliable on Symbian
+                    continue;
                 } else {
                     routeInfo.iNetMask.Output(address);
                     QHostAddress netmask(qstringFromDesc(address));
