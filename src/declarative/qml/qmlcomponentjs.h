@@ -55,17 +55,17 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlBindableComponentPrivate;
+class QmlComponentJSPrivate;
 class QmlEngine;
 class QmlContext;
-class Q_DECLARATIVE_EXPORT QmlBindableComponent : public QmlComponent
+class Q_DECLARATIVE_EXPORT QmlComponentJS : public QmlComponent
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlBindableComponent)
+    Q_DECLARE_PRIVATE(QmlComponentJS)
     friend class QmlEngine;
 public:
-    QmlBindableComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
-    QmlBindableComponent(QmlEngine *, QObject *parent=0);
+    QmlComponentJS(QmlEngine *, const QUrl &url, QObject *parent = 0);
+    QmlComponentJS(QmlEngine *, QObject *parent=0);
     Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged);
     Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged);
     Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged);
@@ -86,7 +86,7 @@ private slots:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlBindableComponent)
+QML_DECLARE_TYPE(QmlComponentJS)
 
 QT_END_HEADER
 #endif

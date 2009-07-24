@@ -139,8 +139,7 @@ void QmlBinding::update()
         } else {
 
             QVariant value = this->value();
-            if ((uint)d->property.propertyType() >= QVariant::UserType &&
-                value.type() == QVariant::String) {
+            if (value.type() == QVariant::String) {
                 QmlMetaType::StringConverter con = QmlMetaType::customStringConverter(d->property.propertyType());
                 if (con)
                     value = con(value.toString());

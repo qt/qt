@@ -154,15 +154,12 @@ protected:
                    const AST::SourceLocation &last) const
     { return _contents.mid(first.offset, last.offset + last.length - first.offset); }
 
-    QmlRewrite::RewriteNumericLiterals rewriteNumericLiterals;
-
     QString asString(AST::ExpressionNode *expr)
     {
         if (! expr)
             return QString();
 
-        return rewriteNumericLiterals(textAt(expr->firstSourceLocation(), expr->lastSourceLocation()),
-                                      expr->firstSourceLocation().offset, expr);
+        return textAt(expr->firstSourceLocation(), expr->lastSourceLocation());
     }
 
     QString asString(AST::Statement *stmt)
@@ -170,9 +167,7 @@ protected:
         if (! stmt)
             return QString();
 
-        QString s = rewriteNumericLiterals(textAt(stmt->firstSourceLocation(), stmt->lastSourceLocation()),
-                                           stmt->firstSourceLocation().offset, stmt);
-
+        QString s = textAt(stmt->firstSourceLocation(), stmt->lastSourceLocation());
         s += QLatin1Char('\n');
         return s;
     }
@@ -479,7 +474,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             const QString memberType = p->type->asString();
             const char *qtType = 0;
             for(int ii = 0; !qtType && ii < propTypeNameToTypesCount; ++ii) {
-                if(QLatin1String(propTypeNameToTypes[ii].name) == memberType) 
+                if(QLatin1String(propTypeNameToTypes[ii].name) == memberType)
                     qtType = propTypeNameToTypes[ii].qtName;
             }
 
@@ -530,7 +525,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.isDefaultProperty = node->isDefaultMember;
         property.type = type;
         property.name = name.toUtf8();
-        property.location = location(node->firstSourceLocation(), 
+        property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
 
         if (node->expression) { // default value
@@ -588,11 +583,7 @@ QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
     } else if (expr->kind == AST::Node::Kind_FalseLiteral) {
         return QmlParser::Variant(false);
     } else if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(expr)) {
-        if (lit->suffix == AST::NumericLiteral::noSuffix)
-            return QmlParser::Variant(lit->value, asString(expr));
-        else
-            return QmlParser::Variant(asString(expr), expr);
-
+        return QmlParser::Variant(lit->value, asString(expr));
     } else {
 
         if (AST::UnaryMinusExpression *unaryMinus = AST::cast<AST::UnaryMinusExpression *>(expr)) {
@@ -624,7 +615,7 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
         primitive = getVariant(stmt->expression);
     } else { // do binding
-        primitive = QmlParser::Variant(asString(node->statement), 
+        primitive = QmlParser::Variant(asString(node->statement),
                                        node->statement);
     }
 

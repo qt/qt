@@ -57,13 +57,14 @@ class QmlFontFamilyPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlFontFamily);
 
 public:
-    QmlFontFamilyPrivate() : reply(0) {}
+    QmlFontFamilyPrivate() : reply(0), loading(false) {}
 
     void addFontToDatabase(const QByteArray &);
 
     QUrl url;
     QString name;
     QNetworkReply *reply;
+    bool loading;
 };
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontFamily,QmlFontFamily)
@@ -94,6 +95,8 @@ void QmlFontFamily::setSource(const QUrl &url)
         return;
     d->url = qmlContext(this)->resolvedUrl(url);
 
+    d->loading = true;
+    emit loadingChanged();
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (d->url.scheme() == QLatin1String("file")) {
         QFile file(d->url.toLocalFile());
@@ -125,6 +128,12 @@ void QmlFontFamily::setName(const QString &name)
     emit nameChanged();
 }
 
+bool QmlFontFamily::isLoading() const
+{
+    Q_D(const QmlFontFamily);
+    return d->loading;
+}
+
 void QmlFontFamily::replyFinished()
 {
     Q_D(QmlFontFamily);
@@ -144,6 +153,8 @@ void QmlFontFamilyPrivate::addFontToDatabase(const QByteArray &ba)
     if (id != -1) {
         name = QFontDatabase::applicationFontFamilies(id).at(0);
         emit q->nameChanged();
+        loading = false;
+        emit q->loadingChanged();
     } else {
         qWarning() << "Cannot load font: " << name << url;
     }
