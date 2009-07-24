@@ -1427,7 +1427,7 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
                                         const BindingContext &ctxt)
 {
     Q_ASSERT(prop->value);
-    int id = QmlMetaType::attachedPropertiesFuncId("Qt/4.6/"+prop->name); // XXX Should not hard-code namespace
+    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
     Q_ASSERT(id != -1); // This is checked in compileProperty()
 
     prop->index = id;
