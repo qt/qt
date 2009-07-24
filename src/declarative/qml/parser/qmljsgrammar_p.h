@@ -59,13 +59,12 @@ class QmlJSGrammar
 public:
   enum {
     EOF_SYMBOL = 0,
-    REDUCE_HERE = 95,
-    SHIFT_THERE = 94,
+    REDUCE_HERE = 94,
+    SHIFT_THERE = 93,
     T_AND = 1,
     T_AND_AND = 2,
     T_AND_EQ = 3,
-    T_AS = 90,
-    T_AT = 87,
+    T_AS = 89,
     T_AUTOMATIC_SEMICOLON = 62,
     T_BREAK = 4,
     T_CASE = 5,
@@ -86,9 +85,9 @@ public:
     T_EQ_EQ = 18,
     T_EQ_EQ_EQ = 19,
     T_FALSE = 82,
-    T_FEED_JS_EXPRESSION = 93,
-    T_FEED_JS_STATEMENT = 92,
-    T_FEED_UI_PROGRAM = 91,
+    T_FEED_JS_EXPRESSION = 92,
+    T_FEED_JS_STATEMENT = 91,
+    T_FEED_UI_PROGRAM = 90,
     T_FINALLY = 20,
     T_FOR = 21,
     T_FUNCTION = 22,
@@ -100,7 +99,7 @@ public:
     T_GT_GT_GT_EQ = 28,
     T_IDENTIFIER = 29,
     T_IF = 30,
-    T_IMPORT = 89,
+    T_IMPORT = 88,
     T_IN = 31,
     T_INSTANCEOF = 32,
     T_LBRACE = 33,
@@ -127,7 +126,7 @@ public:
     T_PLUS_EQ = 52,
     T_PLUS_PLUS = 53,
     T_PROPERTY = 66,
-    T_PUBLIC = 88,
+    T_PUBLIC = 87,
     T_QUESTION = 54,
     T_RBRACE = 55,
     T_RBRACKET = 56,
@@ -155,15 +154,15 @@ public:
     T_XOR = 78,
     T_XOR_EQ = 79,
 
-    ACCEPT_STATE = 634,
-    RULE_COUNT = 348,
-    STATE_COUNT = 635,
-    TERMINAL_COUNT = 96,
-    NON_TERMINAL_COUNT = 108,
+    ACCEPT_STATE = 616,
+    RULE_COUNT = 337,
+    STATE_COUNT = 617,
+    TERMINAL_COUNT = 95,
+    NON_TERMINAL_COUNT = 103,
 
-    GOTO_INDEX_OFFSET = 635,
-    GOTO_INFO_OFFSET = 2345,
-    GOTO_CHECK_OFFSET = 2345
+    GOTO_INDEX_OFFSET = 617,
+    GOTO_INFO_OFFSET = 2231,
+    GOTO_CHECK_OFFSET = 2231
   };
 
   static const char  *const spell [];

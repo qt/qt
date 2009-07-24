@@ -1038,7 +1038,6 @@ int Lexer::matchPunctuator(ushort c1, ushort c2,
         case '[': shift(1); return QmlJSGrammar::T_LBRACKET;
         case ']': shift(1); return QmlJSGrammar::T_RBRACKET;
         case ';': shift(1); return QmlJSGrammar::T_SEMICOLON;
-        case '@': shift(1); return QmlJSGrammar::T_AT;
 
         default: return -1;
     }
