@@ -1648,11 +1648,13 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qi
 
 void QGLTexture::deleteBoundPixmap()
 {
+#if !defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
     if (boundPixmap) {
         glXReleaseTexImageEXT(QX11Info::display(), boundPixmap, GLX_FRONT_LEFT_EXT);
         glXDestroyPixmap(QX11Info::display(), boundPixmap);
         boundPixmap = 0;
     }
+#endif
 }
 
 
