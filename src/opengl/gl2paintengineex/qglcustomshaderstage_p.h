@@ -72,6 +72,7 @@ public:
 
     void setUniformsDirty();
     bool setOnPainter(QPainter*);
+    void removeFromPainter(QPainter*);
     const char* source();
 
 protected:

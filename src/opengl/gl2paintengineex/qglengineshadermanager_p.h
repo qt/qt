@@ -421,6 +421,7 @@ private:
     bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
     QGLCustomShaderStage*       customSrcStage;
+    QGLCustomShaderStage*       customSrcStagePrev;
 
     QGLShaderProgram*     blitShaderProg;
     QGLShaderProgram*     simpleShaderProg;

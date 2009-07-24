@@ -86,6 +86,8 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
       maskType(NoMask),
       useTextureCoords(false),
       compositionMode(QPainter::CompositionMode_SourceOver),
+      customSrcStage(0),
+      customSrcStagePrev(0),
       blitShaderProg(0),
       simpleShaderProg(0),
       currentShaderProg(0)
@@ -311,6 +313,11 @@ void QGLEngineShaderManager::setCompositionMode(QPainter::CompositionMode mode)
 
 void QGLEngineShaderManager::setCustomStage(QGLCustomShaderStage* stage)
 {
+    // If the custom shader has changed, then destroy the previous compilation.
+    if (customSrcStagePrev && stage && customSrcStagePrev != stage)
+        removeCustomStage(customSrcStagePrev);
+
+    customSrcStagePrev = customSrcStage;
     customSrcStage = stage;
     shaderProgNeedsChanging = true;
 }

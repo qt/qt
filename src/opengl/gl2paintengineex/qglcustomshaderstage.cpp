@@ -93,6 +93,23 @@ bool QGLCustomShaderStage::setOnPainter(QPainter* p)
     return true;
 }
 
+void QGLCustomShaderStage::removeFromPainter(QPainter* p)
+{
+    Q_D(QGLCustomShaderStage);
+    if (p->paintEngine()->type() != QPaintEngine::OpenGL2)
+        return;
+
+    // Might as well go through the paint engine to get to the context
+    const QGLContext* ctx = static_cast<QGL2PaintEngineEx*>(p->paintEngine())->context();
+    d->m_manager = QGLEngineShaderManager::managerForContext(ctx);
+    Q_ASSERT(d->m_manager);
+
+    // Just set the stage to null, don't call removeCustomStage().
+    // This should leave the program in a compiled/linked state
+    // if the next custom shader stage is this one again.
+    d->m_manager->setCustomStage(0);
+}
+
 const char* QGLCustomShaderStage::source()
 {
     Q_D(QGLCustomShaderStage);
