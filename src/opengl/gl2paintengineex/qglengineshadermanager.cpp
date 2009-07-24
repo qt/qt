@@ -343,6 +343,8 @@ void QGLEngineShaderManager::removeCustomStage(QGLCustomShaderStage* stage)
 
     delete compiledShader;
     compiledShaders[CustomImageSrcFragmentShader] = 0;
+    customSrcStage = 0;
+    customSrcStagePrev = 0;
     shaderProgNeedsChanging = true;
 }
 
