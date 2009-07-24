@@ -121,7 +121,9 @@ static void ensureInitialized()
     as well as meta-data (headers, etc.).
 
     \note After the request has finished, it is the responsibility of the user
-    to delete the QNetworkReply object at an appropriate time.
+    to delete the QNetworkReply object at an appropriate time. Do not directly
+    delete it inside the slot connected to finished(). You can use the
+    deleteLater() function.
 
     A more involved example, assuming the manager is already existent,
     can be:
@@ -198,6 +200,9 @@ static void ensureInitialized()
 
     See QNetworkReply::finished() for information on the status that
     the object will be in.
+
+    \note Do not delete the \a reply object in the slot connected to this
+    signal. Use deleteLater().
 
     \sa QNetworkReply::finished(), QNetworkReply::error()
 */
@@ -573,7 +578,7 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
     The returned QNetworkReply object will be open for reading and
     will contain the reply sent by the server to the POST request.
 
-    Note: sending a POST request on protocols other than HTTP and
+    \note sending a POST request on protocols other than HTTP and
     HTTPS is undefined and will probably fail.
 
     \sa get(), put()
