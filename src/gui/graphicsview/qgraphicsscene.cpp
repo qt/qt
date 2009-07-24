@@ -3457,7 +3457,7 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
         text = toolTipItem->toolTip();
         point = helpEvent->screenPos();
     }
-    QToolTip::showText(point, text);
+    QToolTip::showText(point, text, helpEvent->widget());
     helpEvent->setAccepted(!text.isEmpty());
 #endif
 }
@@ -3556,8 +3556,7 @@ void QGraphicsScenePrivate::leaveScene()
 {
     Q_Q(QGraphicsScene);
 #ifndef QT_NO_TOOLTIP
-    // Remove any tooltips
-    QToolTip::showText(QPoint(), QString());
+    QToolTip::hideText();
 #endif
     // Send HoverLeave events to all existing hover items, topmost first.
     QGraphicsView *senderWidget = qobject_cast<QGraphicsView *>(q->sender());
