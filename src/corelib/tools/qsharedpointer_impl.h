@@ -189,6 +189,59 @@ namespace QtSharedPointer {
         inline bool destroy() { executeDeleter(ptr, deleter); return true; }
     };
 
+    template <class T, typename Deleter>
+    struct CustomDeleter
+    {
+        Deleter deleter;
+        T *ptr;
+
+        inline CustomDeleter(T *p, Deleter d) : deleter(d), ptr(p) {}
+    };
+
+    struct ExternalRefCountWithDestroyFn: public ExternalRefCountData
+    {
+        typedef void (*DestroyerFn)(ExternalRefCountData *);
+        DestroyerFn destroyer;
+
+        inline ExternalRefCountWithDestroyFn(DestroyerFn d)
+            : destroyer(d)
+        { }
+
+        inline bool destroy() { destroyer(this); return true; }
+        inline void operator delete(void *ptr) { ::operator delete(ptr); }
+    };
+
+    template <class T, typename Deleter>
+    struct ExternalRefCountWithCustomDeleter: public ExternalRefCountWithDestroyFn
+    {
+        typedef ExternalRefCountWithCustomDeleter Self;
+        typedef ExternalRefCountWithDestroyFn Parent;
+        typedef CustomDeleter<T, Deleter> Next;
+        Next extra;
+
+        static inline void deleter(ExternalRefCountData *self)
+        {
+            Self *realself = static_cast<Self *>(self);
+            executeDeleter(realself->extra.ptr, realself->extra.deleter);
+        }
+
+        static inline Self *create(T *ptr, Deleter userDeleter)
+        {
+            DestroyerFn destroy = &deleter;
+            Self *d = static_cast<Self *>(::operator new(sizeof(Self)));
+
+            // initialize the two sub-objects
+            new (&d->extra) Next(ptr, userDeleter);
+            new (d) Parent(destroy); // can't throw
+
+            return d;
+        }
+    private:
+        // prevent construction and the emission of virtual symbols
+        ExternalRefCountWithCustomDeleter();
+        ~ExternalRefCountWithCustomDeleter();
+    };
+
     template <class T>
     class ExternalRefCount: public Basic<T>
     {
@@ -217,7 +270,7 @@ namespace QtSharedPointer {
             Basic<T>::internalConstruct(ptr);
             Q_ASSERT(!d);
             if (ptr)
-                d = new ExternalRefCountWithSpecializedDeleter<T, Deleter>(ptr, deleter);
+                d = ExternalRefCountWithCustomDeleter<T, Deleter>::create(ptr, deleter);
         }
 
         inline ExternalRefCount() : d(0) { }
