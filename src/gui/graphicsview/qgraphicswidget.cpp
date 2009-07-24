@@ -1716,14 +1716,16 @@ void QGraphicsWidget::setFocusPolicy(Qt::FocusPolicy policy)
 /*!
     If this widget, a child or descendant of this widget currently has input
     focus, this function will return a pointer to that widget. If
-    no descendant has input focus, 0 is returned.
+    no descendant widget has input focus, 0 is returned.
 
-    \sa QWidget::focusWidget()
+    \sa QGraphicsItem::focusItem(), QWidget::focusWidget()
 */
 QGraphicsWidget *QGraphicsWidget::focusWidget() const
 {
     Q_D(const QGraphicsWidget);
-    return d->focusChild;
+    if (d->subFocusItem && d->subFocusItem->d_ptr->isWidget)
+        return static_cast<QGraphicsWidget *>(d->subFocusItem);
+    return 0;
 }
 
 /*! \property QGraphicsWidget::horizontalShear

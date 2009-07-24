@@ -275,6 +275,9 @@ private slots:
     void itemHasNoContents();
     void hitTestUntransformableItem();
     void focusProxy();
+    void autoDetectFocusProxy();
+    void subFocus();
+    void reverseCreateAutoFocusProxy();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7462,6 +7465,110 @@ void tst_QGraphicsItem::focusProxy()
     delete item2;
     QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
     QCOMPARE(item3->focusProxy(), (QGraphicsItem *)0);
+}
+
+void tst_QGraphicsItem::autoDetectFocusProxy()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
+    item->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsItem *item2 = scene.addRect(0, 0, 10, 10);
+    item2->setParentItem(item);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsItem *item3 = scene.addRect(0, 0, 10, 10);
+    item3->setParentItem(item2);
+    item3->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    item->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
+
+    item2->setFocus();
+    QCOMPARE(item->focusProxy(), item2);
+    item3->setFocus();
+    QCOMPARE(item->focusProxy(), item3);
+    item3->clearFocus();
+    QCOMPARE(item->focusProxy(), item3);
+}
+
+void tst_QGraphicsItem::subFocus()
+{
+    // Construct a text item that's not part of a scene (yet)
+    // and has no parent. Setting focus on it will not make
+    // the item gain input focus; that requires a scene. But
+    // it does set subfocus, indicating that the item wishes
+    // to gain focus later.
+    QGraphicsTextItem *text = new QGraphicsTextItem("Hello");
+    text->setTextInteractionFlags(Qt::TextEditorInteraction);
+    QVERIFY(!text->hasFocus());
+    text->setFocus();
+    QVERIFY(!text->hasFocus());
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text);
+
+    // Add a sibling.
+    QGraphicsTextItem *text2 = new QGraphicsTextItem("Hi");
+    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text2->setPos(30, 30);
+
+    // Add both items to a scene and check that it's text that
+    // got input focus.
+    QGraphicsScene scene;
+    scene.addItem(text);
+    scene.addItem(text2);
+    QVERIFY(text->hasFocus());
+
+    text->setData(0, "text");
+    text2->setData(0, "text2");
+
+    // Remove text2 and set subfocus on it. Then readd. Reparent it onto the
+    // other item and see that although it becomes text's focus
+    // item, it does not immediately gain input focus.
+    scene.removeItem(text2);
+    text2->setFocus();
+    scene.addItem(text2);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
+    text2->setParentItem(text);
+    qDebug() << text->data(0).toString() << (void*)(QGraphicsItem *)text;
+    qDebug() << text2->data(0).toString() << (void*)(QGraphicsItem *)text2;
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    QVERIFY(text->hasFocus());
+    QVERIFY(!text2->hasFocus());
+
+    // Remove both items from the scene, restore subfocus and
+    // readd them. Now the subfocus should kick in and give
+    // text2 focus.
+    scene.removeItem(text);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)0);
+    text2->setFocus();
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
+    scene.addItem(text);
+
+    // Hiding and showing text should pass focus to text2.
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    QVERIFY(text2->hasFocus());
+}
+
+void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
+{
+    QGraphicsTextItem *text = new QGraphicsTextItem;
+    text->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+
+    QGraphicsTextItem *text2 = new QGraphicsTextItem;
+    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text2->setFocus();
+    QVERIFY(!text2->hasFocus());
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
+    text2->setParentItem(text);
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+
+    QGraphicsScene scene;
+    scene.addItem(text);
+    QVERIFY(text2->hasFocus());
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
