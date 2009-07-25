@@ -55,6 +55,11 @@
 # error DEFAULT_MAKESPEC not defined
 #endif
 
+#ifdef Q_OS_UNIX
+# include <fcntl.h>
+# include <unistd.h>
+#endif
+
 static QString makespec()
 {
     static const char default_makespec[] = DEFAULT_MAKESPEC;
@@ -104,6 +109,27 @@ static bool removeRecursive(const QString &pathname)
 
 QT_BEGIN_NAMESPACE
 namespace QTest {
+    class QExternalProcess: public QProcess
+    {
+    protected:
+#ifdef Q_OS_UNIX
+        void setupChildProcess()
+        {
+            // run in user code
+            QProcess::setupChildProcess();
+
+            if (processChannelMode() == ForwardedChannels) {
+                // reopen /dev/tty into stdin
+                int fd = ::open("/dev/tty", O_RDONLY);
+                if (fd == -1)
+                    return;
+                ::dup2(fd, 0);
+                ::close(fd);
+            }
+        }
+#endif
+    };
+
     class QExternalTestPrivate
     {
     public:
@@ -373,11 +399,7 @@ namespace QTest {
             "\n"
             "void q_external_test_user_code()\n"
             "{\n"
-            "    // HERE STARTS THE USER CODE\n";
-        sourceCode += body;
-        sourceCode +=
-            "\n"
-            "    // HERE ENDS THE USER CODE\n"
+            "#include \"user_code.cpp\"\n"
             "}\n"
             "\n"
             "#ifdef Q_OS_WIN\n"
@@ -442,6 +464,15 @@ namespace QTest {
         }
 
         sourceFile.write(sourceCode);
+        sourceFile.close();
+
+        sourceFile.setFileName(temporaryDir + QLatin1String("/user_code.cpp"));
+        if (!sourceFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+            std_err = sourceFile.errorString().toLocal8Bit();
+            return false;
+        }
+        sourceFile.write(body);
+
         return true;
     }
 
@@ -552,6 +583,24 @@ namespace QTest {
             "embedded:test_run.commands += -qws\n"
             "QMAKE_EXTRA_TARGETS += test_run\n");
 
+        // Use qmake to debug:
+        projectFile.write(
+            "\n"
+            "*-g++* {\n"
+            "    unix:test_debug.commands      =  gdb --args ./$(QMAKE_TARGET)\n"
+            "    else:test_debug.commands      = gdb --args $(QMAKE_TARGET)\n"
+            "    embedded:test_debug.commands += -qws\n"
+            "    QMAKE_EXTRA_TARGETS += test_debug\n"
+            "}\n");
+
+        // Also use qmake to run the app with valgrind:
+        projectFile.write(
+            "\n"
+            "unix:test_valgrind.commands      = valgrind ./$(QMAKE_TARGET)\n"
+            "else:test_valgrind.commands      = valgrind $(QMAKE_TARGET)\n"
+            "embedded:test_valgrind.commands += -qws\n"
+            "QMAKE_EXTRA_TARGETS    += test_valgrind\n");
+
         return true;
     }
 
@@ -593,7 +642,7 @@ namespace QTest {
     {
         Q_ASSERT(!temporaryDir.isEmpty());
 
-        QProcess make;
+        QExternalProcess make;
         make.setWorkingDirectory(temporaryDir);
 
         QStringList environment = QProcess::systemEnvironment();
@@ -601,10 +650,22 @@ namespace QTest {
         make.setEnvironment(environment);
 
         QStringList args;
-        if (target == Compile)
+        QProcess::ProcessChannelMode channelMode = QProcess::SeparateChannels;
+        if (target == Compile) {
             args << QLatin1String("test_compile");
-        else if (target == Run)
-            args << QLatin1String("test_run");
+        } else if (target == Run) {
+            QByteArray run = qgetenv("QTEST_EXTERNAL_RUN");
+            if (run == "valgrind")
+                args << QLatin1String("test_valgrind");
+            else if (run == "debug")
+                args << QLatin1String("test_debug");
+            else
+                args << QLatin1String("test_run");
+            if (!run.isEmpty())
+                channelMode = QProcess::ForwardedChannels;
+        }
+
+        make.setProcessChannelMode(channelMode);
 
 #if defined(Q_OS_WIN) && !defined(Q_CC_MINGW)
         make.start(QLatin1String("nmake.exe"), args);
@@ -630,7 +691,10 @@ namespace QTest {
             return false;
         }
 
-        bool ok = make.waitForFinished();
+        make.closeWriteChannel();
+        bool ok = make.waitForFinished(channelMode == QProcess::ForwardedChannels ? -1 : 60000);
+        if (!ok)
+            make.terminate();
         exitCode = make.exitCode();
         std_out += make.readAllStandardOutput();
         std_err += make.readAllStandardError();
