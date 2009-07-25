@@ -73,10 +73,10 @@ void QTestFileLogger::init()
                 QTestResult::currentTestObjectName());
 
     // Keep filenames simple
-    for (int i = 0; i < sizeof(filename) && filename[i]; ++i) {
+    for (uint i = 0; i < sizeof(filename) && filename[i]; ++i) {
         char& c = filename[i];
-        if (!(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-'
-            || c == '.')) {
+        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+              || (c >= '0' && c <= '9') || c == '-' || c == '.')) {
             c = '_';
         }
     }
