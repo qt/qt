@@ -1016,7 +1016,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \o layoutDirection() defines the layout direction used by the
        painter when drawing text.
 
-    \o matrixEnabled() tells whether world transformation is enabled.
+    \o worldMatrixEnabled() tells whether world transformation is enabled.
 
     \o viewTransformEnabled() tells whether view transformation is
         enabled.

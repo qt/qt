@@ -4697,7 +4697,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     background has been drawn, and before the foreground has been
     drawn.  All painting is done in \e scene coordinates. Before
     drawing each item, the painter must be transformed using
-    QGraphicsItem::sceneMatrix().
+    QGraphicsItem::sceneTransform().
 
     The \a options parameter is the list of style option objects for
     each item in \a items. The \a numItems parameter is the number of
