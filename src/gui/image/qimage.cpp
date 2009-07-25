@@ -612,9 +612,6 @@ bool QImageData::checkForAlphaPixels() const
     \table
     \header \o Function \o Description
     \row
-    \o setAlphaChannel()
-    \o Sets the alpha channel of the image.
-    \row
     \o setDotsPerMeterX()
     \o Defines the aspect ratio by setting the number of pixels that fit
     horizontally in a physical meter.
@@ -1691,8 +1688,12 @@ void QImage::setColorTable(const QVector<QRgb> colors)
 
     d->colortable = colors;
     d->has_alpha_clut = false;
-    for (int i = 0; i < d->colortable.size(); ++i)
-        d->has_alpha_clut |= (qAlpha(d->colortable.at(i)) != 255);
+    for (int i = 0; i < d->colortable.size(); ++i) {
+        if (qAlpha(d->colortable.at(i)) != 255) {
+            d->has_alpha_clut = true;
+            break;
+        }
+    }
 }
 
 /*!
@@ -3947,10 +3948,8 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     if (newSize == size())
         return copy();
 
-    QImage img;
-    QTransform wm;
-    wm.scale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
-    img = transformed(wm, mode);
+    QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
+    QImage img = transformed(wm, mode);
     return img;
 }
 
@@ -3977,9 +3976,8 @@ QImage QImage::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QImage();
 
-    QTransform wm;
     qreal factor = (qreal) w / width();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -4006,9 +4004,8 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
     if (h <= 0)
         return QImage();
 
-    QTransform wm;
     qreal factor = (qreal) h / height();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -4629,17 +4626,14 @@ bool QImage::loadFromData(const uchar *data, int len, const char *format)
     \fn QImage QImage::fromData(const uchar *data, int size, const char *format)
 
     Constructs a QImage from the first \a size bytes of the given
-    binary \a data. The loader attempts to read the image, either using the
-    optional image \a format specified or by determining the image format from
-    the data.
+    binary \a data. The loader attempts to read the image using the
+    specified \a format. If \a format is not specified (which is the default),
+    the loader probes the file for a header to guess the file format.
 
-    If \a format is not specified (which is the default), the loader probes the
-    file for a header to determine the file format. If \a format is specified,
-    it must be one of the values returned by QImageReader::supportedImageFormats().
+    If the loading of the image failed, this object is a null image.
 
-    If the loading of the image fails, the image returned will be a null image.
-
-    \sa load(), save(), {QImage#Reading and Writing Image Files}{Reading and Writing Image Files}
+    \sa load(), save(), {QImage#Reading and Writing Image
+    Files}{Reading and Writing Image Files}
 */
 QImage QImage::fromData(const uchar *data, int size, const char *format)
 {
@@ -4767,7 +4761,7 @@ QDataStream &operator>>(QDataStream &s, QImage &image)
     image = QImageReader(s.device(), 0).read();
     return s;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 #ifdef QT3_SUPPORT
@@ -4857,8 +4851,6 @@ bool QImage::operator==(const QImage & i) const
         return false;
 
     if (d->format != Format_RGB32) {
-        if (d->colortable != i.d->colortable)
-            return false;
         if (d->format >= Format_ARGB32) { // all bits defined
             const int n = d->width * d->depth / 8;
             if (n == d->bytes_per_line && n == i.d->bytes_per_line) {
@@ -4871,11 +4863,13 @@ bool QImage::operator==(const QImage & i) const
                 }
             }
         } else {
-            int w = width();
-            int h = height();
+            const int w = width();
+            const int h = height();
+            const QVector<QRgb> &colortable = d->colortable;
+            const QVector<QRgb> &icolortable = i.d->colortable;
             for (int y=0; y<h; ++y) {
                 for (int x=0; x<w; ++x) {
-                    if (pixelIndex(x, y) != i.pixelIndex(x, y))
+                    if (colortable[pixelIndex(x, y)] != icolortable[i.pixelIndex(x, y)])
                         return false;
                 }
             }
@@ -5272,7 +5266,7 @@ QPaintEngine *QImage::paintEngine() const
 
 
 /*!
-    \reimp
+    \internal
 
     Returns the size for the specified \a metric on the device.
 */
@@ -5590,7 +5584,7 @@ bool QImage::isDetached() const
     Note that the image will be converted to the Format_ARGB32_Premultiplied
     format if the function succeeds.
 
-    Use one of the composition mods in QPainter::CompositionMode instead.
+    Use one of the composition modes in QPainter::CompositionMode instead.
 
     \warning This function is expensive.
 
@@ -5668,6 +5662,8 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
 
 
 /*!
+    \obsolete
+
     Returns the alpha channel of the image as a new grayscale QImage in which
     each pixel's red, green, and blue values are given the alpha value of the
     original image. The color depth of the returned image is 8-bit.
@@ -5747,7 +5743,7 @@ QImage QImage::alphaChannel() const
     Returns true if the image has a format that respects the alpha
     channel, otherwise returns false.
 
-    \sa alphaChannel(), {QImage#Image Information}{Image Information}
+    \sa {QImage#Image Information}{Image Information}
 */
 bool QImage::hasAlphaChannel() const
 {
