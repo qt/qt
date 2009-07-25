@@ -323,6 +323,8 @@ namespace QTest {
         sourceCode.clear();
         sourceCode.reserve(8192);
 
+        sourceCode += programHeader;
+
         // Add Qt header includes
         if (qtModules & QExternalTest::QtCore)
             sourceCode += "#include <QtCore/QtCore>\n";
@@ -355,8 +357,6 @@ namespace QTest {
         sourceCode +=
             "#include <stdlib.h>\n"
             "#include <stddef.h>\n";
-
-        sourceCode += programHeader;
 
         sourceCode +=
             "\n"
