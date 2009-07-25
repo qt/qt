@@ -257,6 +257,11 @@ namespace QtSharedPointer {
             *ptr = &d->data;
             return d;
         }
+
+    private:
+        // prevent construction and the emission of virtual symbols
+        ExternalRefCountWithContiguousData();
+        ~ExternalRefCountWithContiguousData();
     };
 
     template <class T>
