@@ -930,7 +930,7 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     relocated.
 
     \warning This function is only available on Mac OS X.
-    \warning As of Qt 4.6, this function \em{always} returns zero.
+    \warning As of Qt 4.6, this function \e{always} returns zero.
 */
 
 Qt::HANDLE QPixmap::macQDHandle() const
@@ -945,7 +945,7 @@ Qt::HANDLE QPixmap::macQDHandle() const
     long as it can be relocated.
 
     \warning This function is only available on Mac OS X.
-    \warning As of Qt 4.6, this function \em{always} returns zero.
+    \warning As of Qt 4.6, this function \e{always} returns zero.
 */
 
 Qt::HANDLE QPixmap::macQDAlphaHandle() const
