@@ -1289,7 +1289,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 
     This signal is emitted whenever the selection changes.
 
-    \sa selectedItems() isItemSelected() currentItemChanged()
+    \sa selectedItems() QListWidgetItem::isSelected() currentItemChanged()
 */
 
 /*!

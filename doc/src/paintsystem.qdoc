@@ -292,9 +292,7 @@
     looking the same.
 
     Qt provides the QPicture::load() and QPicture::save() functions
-    for loading and saving pictures. But in addition the QPictureIO
-    class is provided to enable the programmer to install new picture
-    file formats in addition to those that Qt provides.
+    as well as streaming operators for loading and saving pictures.
 
     \section2 Printer
 

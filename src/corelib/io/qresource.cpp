@@ -575,7 +575,7 @@ QResource::addSearchPath(const QString &path)
   Returns the current search path list. This list is consulted when
   creating a relative resource.
 
-  \sa addSearchPath()
+  \sa QDir::addSearchPath() QDir::setSearchPaths()
 */
 
 QStringList
