@@ -39,86 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKCOOKIE_H
-#define QNETWORKCOOKIE_H
+#ifndef QNETWORKCOOKIEJAR_P_H
+#define QNETWORKCOOKIEJAR_P_H
 
-#include <QtCore/QSharedDataPointer>
-#include <QtCore/QList>
-#include <QtCore/QMetaType>
-#include <QtCore/QObject>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Network Access framework.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "private/qobject_p.h"
+#include "qnetworkcookie.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
-
-class QByteArray;
-class QDateTime;
-class QString;
-class QUrl;
-
-class QNetworkCookiePrivate;
-class Q_NETWORK_EXPORT QNetworkCookie
+class QNetworkCookieJarPrivate: public QObjectPrivate
 {
 public:
-    enum RawForm {
-        NameAndValueOnly,
-        Full
-    };
+    QList<QNetworkCookie> allCookies;
 
-    QNetworkCookie(const QByteArray &name = QByteArray(), const QByteArray &value = QByteArray());
-    QNetworkCookie(const QNetworkCookie &other);
-    ~QNetworkCookie();
-    QNetworkCookie &operator=(const QNetworkCookie &other);
-    bool operator==(const QNetworkCookie &other) const;
-    inline bool operator!=(const QNetworkCookie &other) const
-    { return !(*this == other); }
-
-    bool isSecure() const;
-    void setSecure(bool enable);
-    bool isHttpOnly() const;
-    void setHttpOnly(bool enable);
-
-    bool isSessionCookie() const;
-    QDateTime expirationDate() const;
-    void setExpirationDate(const QDateTime &date);
-
-    QString domain() const;
-    void setDomain(const QString &domain);
-
-    QString path() const;
-    void setPath(const QString &path);
-
-    QByteArray name() const;
-    void setName(const QByteArray &cookieName);
-
-    QByteArray value() const;
-    void setValue(const QByteArray &value);
-
-    QByteArray toRawForm(RawForm form = Full) const;
-
-    static QList<QNetworkCookie> parseCookies(const QByteArray &cookieString);
-
-private:
-    QSharedDataPointer<QNetworkCookiePrivate> d;
-    friend class QNetworkCookiePrivate;
+    Q_DECLARE_PUBLIC(QNetworkCookieJar)
 };
-Q_DECLARE_TYPEINFO(QNetworkCookie, Q_MOVABLE_TYPE);
-
-// ### Qt5 remove this include
-#include "qnetworkcookiejar.h"
-
-#ifndef QT_NO_DEBUG_STREAM
-class QDebug;
-Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QNetworkCookie &);
-#endif
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QNetworkCookie)
-Q_DECLARE_METATYPE(QList<QNetworkCookie>)
-
-QT_END_HEADER
 
 #endif
