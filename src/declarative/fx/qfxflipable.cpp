@@ -50,18 +50,15 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flipable,QFxFlipable)
 
 class QFxFlipablePrivate : public QFxItemPrivate
 {
+    Q_DECLARE_PUBLIC(QFxFlipable)
 public:
-    QFxFlipablePrivate() : current(QFxFlipable::Front), front(0), back(0), axis(0), rotation(0) {}
+    QFxFlipablePrivate() : current(QFxFlipable::Front), front(0), back(0) {}
 
-    void setBackTransform();
-    void _q_updateAxis();
+    void updateSceneTransformFromParent();
 
     QFxFlipable::Side current;
     QFxItem *front;
     QFxItem *back;
-    QGraphicsAxis *axis;
-    QGraphicsRotation3D axisRotation;
-    qreal rotation;
 };
 
 /*!
@@ -174,104 +171,6 @@ void QFxFlipable::setBack(QFxItem *back)
 }
 
 /*!
-    \qmlproperty Axis Flipable::axis
-
-    The axis to flip around. See the \l Axis documentation for more
-    information on specifying an axis.
-*/
-
-QGraphicsAxis *QFxFlipable::axis()
-{
-    Q_D(QFxFlipable);
-    return d->axis;
-}
-
-void QFxFlipable::setAxis(QGraphicsAxis *axis)
-{
-    Q_D(QFxFlipable);
-    //### disconnect if we are already connected?
-    if (d->axis)
-        disconnect(d->axis, SIGNAL(updated()), this, SLOT(_q_updateAxis()));
-    d->axis = axis;
-    connect(d->axis, SIGNAL(updated()), this, SLOT(_q_updateAxis()));
-    d->_q_updateAxis();
-}
-
-void QFxFlipablePrivate::_q_updateAxis()
-{
-    axisRotation.axis()->setStartX(axis->startX());
-    axisRotation.axis()->setStartY(axis->startY());
-    axisRotation.axis()->setEndX(axis->endX());
-    axisRotation.axis()->setEndY(axis->endY());
-    axisRotation.axis()->setEndZ(axis->endZ());
-}
-
-void QFxFlipablePrivate::setBackTransform()
-{
-    if (!back)
-        return;
-
-    QPointF p1(0, 0);
-    QPointF p2(1, 0);
-    QPointF p3(1, 1);
-
-    axisRotation.setAngle(180);
-    p1 = axisRotation.transform().map(p1);
-    p2 = axisRotation.transform().map(p2);
-    p3 = axisRotation.transform().map(p3);
-    axisRotation.setAngle(rotation);
-
-    QTransform mat;
-    mat.translate(back->width()/2,back->height()/2);
-    if (back->width() && p1.x() >= p2.x())
-        mat.rotate(180, Qt::YAxis);
-    if (back->height() && p2.y() >= p3.y())
-        mat.rotate(180, Qt::XAxis);
-    mat.translate(-back->width()/2,-back->height()/2);
-    back->setTransform(mat);
-}
-
-/*!
-    \qmlproperty real Flipable::rotation
-    The angle to rotate the flipable. For example, to show the back side of the flipable
-    you can set the rotation to 180.
-*/
-qreal QFxFlipable::rotation() const
-{
-    Q_D(const QFxFlipable);
-    return d->rotation;
-}
-
-void QFxFlipable::setRotation(qreal angle)
-{
-    Q_D(QFxFlipable);
-    d->rotation = angle;
-    d->axisRotation.setAngle(angle);
-    setTransform(d->axisRotation.transform());
-
-
-    int simpleAngle = int(angle) % 360;
-
-    Side newSide;
-    if (simpleAngle < 91 || simpleAngle > 270) {
-       newSide = Front;
-    } else {
-        newSide = Back;
-    }
-
-    if (newSide != d->current) {
-        d->current = newSide;
-        if (d->front)
-            d->front->setOpacity((d->current==Front)?1.:0.);
-        if (d->back) {
-            d->setBackTransform();
-            d->back->setOpacity((d->current==Back)?1.:0.);
-        }
-        emit sideChanged();
-    }
-}
-
-/*!
   \qmlproperty enumeration Flipable::side
 
   The side of the Flippable currently visible. Possible values are \c
@@ -280,50 +179,55 @@ void QFxFlipable::setRotation(qreal angle)
 QFxFlipable::Side QFxFlipable::side() const
 {
     Q_D(const QFxFlipable);
+    if (d->dirtySceneTransform)
+        const_cast<QFxFlipablePrivate *>(d)->updateSceneTransformFromParent();
+
     return d->current;
 }
 
-//in some cases the user may want to specify a more complex transformation.
-//in that case, we still allow the generic use of transform.
-//(the logic here should be kept in sync with setBackTransform and setRotation)
-void QFxFlipable::transformChanged(const QTransform &trans)
+// determination on the currently visible side of the flipable
+// has to be done on the complete scene transform to give
+// correct results.
+void QFxFlipablePrivate::updateSceneTransformFromParent()
 {
-    Q_D(QFxFlipable);
+    Q_Q(QFxFlipable);
+
+    QFxItemPrivate::updateSceneTransformFromParent();
     QPointF p1(0, 0);
     QPointF p2(1, 0);
     QPointF p3(1, 1);
 
-    p1 = trans.map(p1);
-    p2 = trans.map(p2);
-    p3 = trans.map(p3);
+    p1 = sceneTransform.map(p1);
+    p2 = sceneTransform.map(p2);
+    p3 = sceneTransform.map(p3);
 
     qreal cross = (p1.x() - p2.x()) * (p3.y() - p2.y()) -
                   (p1.y() - p2.y()) * (p3.x() - p2.x());
 
-    Side newSide;
+    QFxFlipable::Side newSide;
     if (cross > 0) {
-       newSide = Back;
+       newSide = QFxFlipable::Back;
     } else {
-        newSide = Front;
+        newSide = QFxFlipable::Front;
     }
 
-    if (newSide != d->current) {
-        d->current = newSide;
-        if (d->current==Back) {
+    if (newSide != current) {
+        current = newSide;
+        if (current == QFxFlipable::Back) {
             QTransform mat;
-            mat.translate(d->back->width()/2,d->back->height()/2);
-            if (d->back->width() && p1.x() >= p2.x())
+            mat.translate(back->width()/2,back->height()/2);
+            if (back->width() && p1.x() >= p2.x())
                 mat.rotate(180, Qt::YAxis);
-            if (d->back->height() && p2.y() >= p3.y())
+            if (back->height() && p2.y() >= p3.y())
                 mat.rotate(180, Qt::XAxis);
-            mat.translate(-d->back->width()/2,-d->back->height()/2);
-            d->back->setTransform(mat);
+            mat.translate(-back->width()/2,-back->height()/2);
+            back->setTransform(mat);
         }
-        if (d->front)
-            d->front->setOpacity((d->current==Front)?1.:0.);
-        if (d->back)
-            d->back->setOpacity((d->current==Back)?1.:0.);
-        emit sideChanged();
+        if (front)
+            front->setOpacity((current==QFxFlipable::Front)?1.:0.);
+        if (back)
+            back->setOpacity((current==QFxFlipable::Back)?1.:0.);
+        emit q->sideChanged();
     }
 }
 
