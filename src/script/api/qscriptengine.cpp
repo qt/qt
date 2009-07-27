@@ -321,7 +321,7 @@ struct GlobalClientData : public JSC::JSGlobalData::ClientData
 class GlobalObject : public JSC::JSGlobalObject
 {
 public:
-    GlobalObject(QScriptEnginePrivate*);
+    GlobalObject();
     virtual ~GlobalObject();
     virtual JSC::UString className() const { return "global"; }
     virtual void mark();
@@ -337,7 +337,44 @@ public:
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
 
 public:
-    QScriptEnginePrivate *engine;
+    JSC::JSObject *customGlobalObject;
+};
+
+class OriginalGlobalObjectProxy : public JSC::JSObject
+{
+public:
+    explicit OriginalGlobalObjectProxy(WTF::PassRefPtr<JSC::Structure> sid,
+                                       JSC::JSGlobalObject *object)
+        : JSC::JSObject(sid), originalGlobalObject(object)
+    {}
+    virtual ~OriginalGlobalObjectProxy()
+    {}
+    virtual JSC::UString className() const
+    { return originalGlobalObject->className(); }
+    virtual void mark()
+    {
+        Q_ASSERT(!marked());
+        if (!originalGlobalObject->marked())
+            originalGlobalObject->JSC::JSGlobalObject::mark();
+        JSC::JSObject::mark();
+    }
+    virtual bool getOwnPropertySlot(JSC::ExecState* exec,
+                                    const JSC::Identifier& propertyName,
+                                    JSC::PropertySlot& slot)
+    { return originalGlobalObject->JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot); }
+    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                     JSC::JSValue value, JSC::PutPropertySlot& slot)
+    { originalGlobalObject->JSC::JSGlobalObject::put(exec, propertyName, value, slot); }
+    virtual bool deleteProperty(JSC::ExecState* exec,
+                                const JSC::Identifier& propertyName)
+    { return originalGlobalObject->JSC::JSGlobalObject::deleteProperty(exec, propertyName); }
+    virtual bool getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                                       unsigned& attributes) const
+    { return originalGlobalObject->JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes); }
+    virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames)
+    { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames); }
+private:
+    JSC::JSGlobalObject *originalGlobalObject;
 };
 
 static int toDigit(char c)
@@ -585,8 +622,8 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
 #endif // QT_NO_QOBJECT
 }
 
-GlobalObject::GlobalObject(QScriptEnginePrivate *eng)
-    : JSC::JSGlobalObject(), engine(eng)
+GlobalObject::GlobalObject()
+    : JSC::JSGlobalObject(), customGlobalObject(0)
 {
 }
 
@@ -596,37 +633,52 @@ GlobalObject::~GlobalObject()
 
 void GlobalObject::mark()
 {
+    Q_ASSERT(!marked());
     JSC::JSGlobalObject::mark();
+    if (customGlobalObject && !customGlobalObject->marked())
+        customGlobalObject->mark();
 }
 
 bool GlobalObject::getOwnPropertySlot(JSC::ExecState* exec,
                                       const JSC::Identifier& propertyName,
                                       JSC::PropertySlot& slot)
 {
+    if (customGlobalObject)
+        return customGlobalObject->getOwnPropertySlot(exec, propertyName, slot);
     return JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot);
 }
 
 void GlobalObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                        JSC::JSValue value, JSC::PutPropertySlot& slot)
 {
-    JSC::JSGlobalObject::put(exec, propertyName, value, slot);
+    if (customGlobalObject)
+        customGlobalObject->put(exec, propertyName, value, slot);
+    else
+        JSC::JSGlobalObject::put(exec, propertyName, value, slot);
 }
 
 bool GlobalObject::deleteProperty(JSC::ExecState* exec,
                                   const JSC::Identifier& propertyName)
 {
+    if (customGlobalObject)
+        return customGlobalObject->deleteProperty(exec, propertyName);
     return JSC::JSGlobalObject::deleteProperty(exec, propertyName);
 }
 
 bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                          unsigned& attributes) const
 {
+    if (customGlobalObject)
+        return customGlobalObject->getPropertyAttributes(exec, propertyName, attributes);
     return JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
 void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames)
 {
-    JSC::JSGlobalObject::getPropertyNames(exec, propertyNames);
+    if (customGlobalObject)
+        customGlobalObject->getPropertyNames(exec, propertyNames);
+    else
+        JSC::JSGlobalObject::getPropertyNames(exec, propertyNames);
 }
 
 static JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -785,6 +837,7 @@ JSC::JSValue stringProtoFuncArg(JSC::ExecState *exec, JSC::JSObject*, JSC::JSVal
 namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(QScript::GlobalObject);
+ASSERT_CLASS_FITS_IN_CELL(QScript::OriginalGlobalObjectProxy);
 
 } // namespace JSC
 
@@ -796,7 +849,7 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 
     globalData = JSC::JSGlobalData::create().releaseRef();
     globalData->clientData = new QScript::GlobalClientData(this);
-    JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject(this);
+    JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
 
     JSC::ExecState* exec = globalObject->globalExec();
 
@@ -821,7 +874,7 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 
     currentFrame = exec;
 
-    customGlobalObject = 0;
+    originalGlobalObjectProxy = 0;
     agent = 0;
     processEventsInterval = -1;
 }
@@ -1029,20 +1082,79 @@ void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
     delete ctx;
 }
 
-JSC::JSGlobalObject *QScriptEnginePrivate::globalObject() const
+JSC::JSGlobalObject *QScriptEnginePrivate::originalGlobalObject() const
 {
     return globalData->head;
 }
 
+JSC::JSObject *QScriptEnginePrivate::customGlobalObject() const
+{
+    QScript::GlobalObject *glob = static_cast<QScript::GlobalObject*>(originalGlobalObject());
+    return glob->customGlobalObject;
+}
+
+JSC::JSObject *QScriptEnginePrivate::getOriginalGlobalObjectProxy()
+{
+    if (!originalGlobalObjectProxy) {
+        JSC::ExecState* exec = currentFrame;
+        originalGlobalObjectProxy = new (exec)QScript::OriginalGlobalObjectProxy(scriptObjectStructure, originalGlobalObject());
+    }
+    return originalGlobalObjectProxy;
+}
+
+JSC::JSObject *QScriptEnginePrivate::globalObject() const
+{
+    QScript::GlobalObject *glob = static_cast<QScript::GlobalObject*>(originalGlobalObject());
+    if (glob->customGlobalObject)
+        return glob->customGlobalObject;
+    return glob;
+}
+
+void QScriptEnginePrivate::setGlobalObject(JSC::JSObject *object)
+{
+    if (object == globalObject())
+        return;
+    QScript::GlobalObject *glob = static_cast<QScript::GlobalObject*>(originalGlobalObject());
+    if (object == originalGlobalObjectProxy)
+        glob->customGlobalObject = 0;
+    else {
+        Q_ASSERT(object != originalGlobalObject());
+        glob->customGlobalObject = object;
+    }
+}
+
 JSC::ExecState *QScriptEnginePrivate::globalExec() const
 {
-    return globalObject()->globalExec();
+    return originalGlobalObject()->globalExec();
+}
+
+/*!
+  \internal
+
+  If the given \a value is the original global object, returns the custom
+  global object or a proxy to the original global object; otherwise returns \a
+  value.
+*/
+JSC::JSValue QScriptEnginePrivate::toUsableValue(JSC::JSValue value)
+{
+    if (!value || !value.isObject() || !JSC::asObject(value)->isGlobalObject())
+        return value;
+    Q_ASSERT(JSC::asObject(value) == originalGlobalObject());
+    if (customGlobalObject())
+        return customGlobalObject();
+    if (!originalGlobalObjectProxy)
+        originalGlobalObjectProxy = new (currentFrame)QScript::OriginalGlobalObjectProxy(scriptObjectStructure, originalGlobalObject());
+    return originalGlobalObjectProxy;
 }
 
 void QScriptEnginePrivate::mark()
 {
-    if (customGlobalObject && !customGlobalObject->marked())
-        customGlobalObject->mark();
+    if (!originalGlobalObject()->marked())
+        originalGlobalObject()->mark();
+    if (!globalObject()->marked())
+        globalObject()->mark();
+    if (originalGlobalObjectProxy && !originalGlobalObjectProxy->marked())
+        originalGlobalObjectProxy->mark();
 
     if (qobjectPrototype && !qobjectPrototype->marked())
         qobjectPrototype->mark();
@@ -1086,9 +1198,6 @@ bool QScriptEnginePrivate::isCollecting() const
 
 void QScriptEnginePrivate::collectGarbage()
 {
-    // ### why isn't the global object always marked by the Collector?
-    if (!globalObject()->marked())
-        globalObject()->mark();
     JSC::JSLock lock(false);
     globalData->heap.collect();
 }
@@ -1385,11 +1494,10 @@ QScriptValue QScriptEngine::globalObject() const
 void QScriptEngine::setGlobalObject(const QScriptValue &object)
 {
     Q_D(QScriptEngine);
-    if (!object.isObject() || globalObject().strictlyEquals(object))
+    if (!object.isObject())
         return;
     JSC::JSObject *jscObject = JSC::asObject(d->scriptValueToJSCValue(object));
-    qWarning("QScriptEngine::setGlobalObject() is not implemented");
-//    d->customGlobalObject = jscObject;
+    d->setGlobalObject(jscObject);
 }
 
 /*!
@@ -2410,7 +2518,7 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
         }
     }
     if (result.isObject() && info && info->prototype
-        && JSC::JSValue::strictEqual(scriptValueToJSCValue(result.prototype()), globalObject()->objectPrototype())) {
+        && JSC::JSValue::strictEqual(scriptValueToJSCValue(result.prototype()), originalGlobalObject()->objectPrototype())) {
         result.setPrototype(scriptValueFromJSCValue(info->prototype));
     }
     return result;
@@ -2671,7 +2779,7 @@ void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue jscObject = d->scriptValueToJSCValue(object);
-    JSC::JSGlobalObject *glob = d->globalObject();
+    JSC::JSGlobalObject *glob = d->originalGlobalObject();
     if (!jscObject || !jscObject.isObject())
         jscObject = glob;
 //    unsigned attribs = JSC::DontEnum;

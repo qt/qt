@@ -13,6 +13,9 @@
 
 #ifndef QT_NO_SCRIPT
 
+#include "../api/qscriptengine.h"
+#include "../api/qscriptengine_p.h"
+
 #include "Error.h"
 #include "PrototypeFunction.h"
 #include "JSString.h"
@@ -28,6 +31,7 @@ namespace QScript
 {
 
 JSC::UString qtStringToJSCUString(const QString &str);
+QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState*);
 
 QVariantDelegate::QVariantDelegate(const QVariant &value)
     : m_value(value)
@@ -56,6 +60,8 @@ QScriptObjectDelegate::Type QVariantDelegate::type() const
 static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec, JSC::JSObject*,
                                                            JSC::JSValue thisValue, const JSC::ArgList&)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    thisValue = engine->toUsableValue(thisValue);
     if (!thisValue.isObject(&QScriptObject::info))
         return throwError(exec, JSC::TypeError, "This object is not a QVariant");
     QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
@@ -69,6 +75,8 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
 static JSC::JSValue JSC_HOST_CALL variantProtoFuncValueOf(JSC::ExecState *exec, JSC::JSObject*,
                                                           JSC::JSValue thisValue, const JSC::ArgList&)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    thisValue = engine->toUsableValue(thisValue);
     if (!thisValue.isObject(&QScriptObject::info))
         return throwError(exec, JSC::TypeError);
     QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();

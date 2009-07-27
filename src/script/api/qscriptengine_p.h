@@ -110,8 +110,13 @@ public:
     QScriptContext *contextForFrame(JSC::ExecState *frame);
     void releaseContextForFrame(JSC::ExecState *frame);
 
-    JSC::JSGlobalObject *globalObject() const;
+    JSC::JSGlobalObject *originalGlobalObject() const;
+    JSC::JSObject *getOriginalGlobalObjectProxy();
+    JSC::JSObject *customGlobalObject() const;
+    JSC::JSObject *globalObject() const;
+    void setGlobalObject(JSC::JSObject *object);
     JSC::ExecState *globalExec() const;
+    JSC::JSValue toUsableValue(JSC::JSValue value);
 
     void mark();
     bool isCollecting() const;
@@ -162,7 +167,7 @@ public:
 #endif
 
     JSC::JSGlobalData *globalData;
-    JSC::JSObject *customGlobalObject;
+    JSC::JSObject *originalGlobalObjectProxy;
     JSC::ExecState *currentFrame;
     QHash<JSC::ExecState*, QScriptContext*> contextForFrameHash;
 

@@ -276,19 +276,20 @@ QScriptValuePrivate::QScriptValueAutoRegister& QScriptValuePrivate::QScriptValue
     return *this;
 };
 
-
 void QScriptValuePrivate::initFromJSCValue(JSC::JSValue value)
 {
-    type = JSC;
-    jscValue = value;
     if (value.isCell()) {
-        JSC::JSCell *cell = value.asCell();
         Q_ASSERT(engine != 0);
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
+        value = eng_p->toUsableValue(value);
+        JSC::JSCell *cell = JSC::asCell(value);
+        Q_ASSERT(cell != eng_p->originalGlobalObject());
         if (!eng_p->keepAliveValues.contains(cell))
             eng_p->keepAliveValues[cell] = 0;
         eng_p->keepAliveValues[cell].ref();
     }
+    type = JSC;
+    jscValue = value;
 }
 
 void QScriptValuePrivate::initFromNumber(double value)

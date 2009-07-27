@@ -896,11 +896,9 @@ void tst_QScriptEngine::getSetGlobalObject()
     QScriptValue obj = eng.newObject();
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "this-object for global context", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QEXPECT_FAIL("", "this-object for global context", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(eng.evaluate("this").strictlyEquals(obj));
     QCOMPARE(eng.globalObject().toString(), QString::fromLatin1("[object Object]"));
 
@@ -909,14 +907,12 @@ void tst_QScriptEngine::getSetGlobalObject()
     obj = eng.newObject();
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QEXPECT_FAIL("", "", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
     eng.collectGarbage();
     QVERIFY(eng.globalObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QEXPECT_FAIL("", "", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));

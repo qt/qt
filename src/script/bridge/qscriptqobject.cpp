@@ -487,6 +487,7 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
 
     const QMetaObject *meta = qobj->metaObject();
     QObject *thisQObject = 0;
+    thisValue = engine->toUsableValue(thisValue);
     if (thisValue.isObject(&QScriptObject::info)) {
         delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
         if (delegate && (delegate->type() == QScriptObjectDelegate::QtObject))
@@ -1029,6 +1030,7 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
 
     // ### don't go via QScriptValue
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    thisValue = engine->toUsableValue(thisValue);
     QScriptValue object = engine->scriptValueFromJSCValue(thisValue);
     QObject *qobject = object.toQObject();
     while ((!qobject || (qobject->metaObject() != data->meta))
@@ -1168,7 +1170,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                     || (index >= meta->methodOffset())) {
                     QtFunction *fun = new (exec)QtFunction(
                         object, index, /*maybeOverloaded=*/false,
-                        &exec->globalData(), eng->globalObject()->functionStructure(),
+                        &exec->globalData(), eng->originalGlobalObject()->functionStructure(),
                         propertyName);
                     slot.setValue(fun);
                     data->cachedMembers.insert(name, fun);
@@ -1187,7 +1189,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                 if (GeneratePropertyFunctions) {
                     QtPropertyFunction *fun = new (exec)QtPropertyFunction(
                         meta, index, &exec->globalData(),
-                        eng->globalObject()->functionStructure(),
+                        eng->originalGlobalObject()->functionStructure(),
                         propertyName);
                     data->cachedMembers.insert(name, fun);
                     slot.setGetterSlot(fun);
@@ -1219,7 +1221,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
             && (methodName(method) == name)) {
             QtFunction *fun = new (exec)QtFunction(
                 object, index, /*maybeOverloaded=*/true,
-                &exec->globalData(), eng->globalObject()->functionStructure(),
+                &exec->globalData(), eng->originalGlobalObject()->functionStructure(),
                 propertyName);
             slot.setValue(fun);
             data->cachedMembers.insert(name, fun);
@@ -1292,7 +1294,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                     } else {
                         fun = new (exec)QtPropertyFunction(
                             meta, index, &exec->globalData(),
-                            eng->globalObject()->functionStructure(),
+                            eng->originalGlobalObject()->functionStructure(),
                             propertyName);
                         data->cachedMembers.insert(name, fun);
                     }
@@ -1520,6 +1522,8 @@ void QObjectDelegate::mark(QScriptObject *object)
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec, JSC::JSObject*,
                                                             JSC::JSValue thisValue, const JSC::ArgList &args)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    thisValue = engine->toUsableValue(thisValue);
     if (!thisValue.isObject(&QScriptObject::info))
         return throwError(exec, JSC::TypeError, "this object is not a QObject");
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(thisValue));
@@ -1532,13 +1536,14 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec
         name = QScript::qtStringFromJSCUString(args.at(0).toString(exec));
     QObject *child = qFindChild<QObject*>(obj, name);
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     return engine->newQObject(child, QScriptEngine::QtOwnership, opt);
 }
 
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *exec, JSC::JSObject*,
                                                                JSC::JSValue thisValue, const JSC::ArgList &args)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    thisValue = engine->toUsableValue(thisValue);
     // extract the QObject
     if (!thisValue.isObject(&QScriptObject::info))
         return throwError(exec, JSC::TypeError, "this object is not a QObject");
@@ -1547,7 +1552,6 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
     if (!delegate || (delegate->type() != QScriptObjectDelegate::QtObject))
         return throwError(exec, JSC::TypeError, "this object is not a QObject");
     const QObject *const obj = static_cast<QObjectDelegate*>(delegate)->value();
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
 
     // find the children
     QList<QObject *> children;
@@ -1562,7 +1566,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
             for (int i = 0; i < allChildrenCount; ++i) {
                 QObject *const child = allChildren.at(i);
                 const JSC::UString childName = qtStringToJSCUString(child->objectName());
-                JSC::RegExpConstructor* regExpConstructor = engine->globalObject()->regExpConstructor();
+                JSC::RegExpConstructor* regExpConstructor = engine->originalGlobalObject()->regExpConstructor();
                 int position;
                 int length;
                 regExpConstructor->performMatch(regexp->regExp(), childName, 0, position, length);
@@ -1591,6 +1595,8 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncToString(JSC::ExecState *exec, JSC::JSObject*,
                                                            JSC::JSValue thisValue, const JSC::ArgList&)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    thisValue = engine->toUsableValue(thisValue);
     if (!thisValue.isObject(&QScriptObject::info))
         return JSC::jsUndefined();
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(thisValue));
@@ -1771,10 +1777,11 @@ JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
     JSC::ExecState *exec, JSC::JSObject *callee,
     JSC::JSValue thisValue, const JSC::ArgList &args)
 {
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
+    thisValue = eng_p->toUsableValue(thisValue);
     if (!callee->isObject(&QMetaObjectWrapperObject::info))
         return throwError(exec, JSC::TypeError, "callee is not a QMetaObject");
     QMetaObjectWrapperObject *self =  static_cast<QMetaObjectWrapperObject*>(callee);
-    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
     JSC::JSValue result = self->execute(exec, args);
@@ -1832,6 +1839,8 @@ struct StaticQtMetaObject : public QObject
 static JSC::JSValue JSC_HOST_CALL qmetaobjectProtoFuncClassName(
     JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue thisValue, const JSC::ArgList&)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    thisValue = engine->toUsableValue(thisValue);
     if (!thisValue.isObject(&QMetaObjectWrapperObject::info))
         return throwError(exec, JSC::TypeError, "this object is not a QMetaObject");
     const QMetaObject *meta = static_cast<QMetaObjectWrapperObject*>(JSC::asObject(thisValue))->value();
