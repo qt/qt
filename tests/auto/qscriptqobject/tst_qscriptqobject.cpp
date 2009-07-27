@@ -2839,11 +2839,8 @@ void tst_QScriptExtQObject::objectDeleted()
         eng.evaluate("Object");
         QVERIFY(!eng.hasUncaughtException());
         v.setProperty("objectName", QScriptValue(&eng, "foo"));
-        QEXPECT_FAIL("", "Attempt to set property of deleted QObject should throw error", Continue);
         QVERIFY(eng.hasUncaughtException());
-        QEXPECT_FAIL("", "Attempt to set property of deleted QObject should throw error", Continue);
         QVERIFY(eng.uncaughtException().isError());
-        QEXPECT_FAIL("", "Attempt to set property of deleted QObject should throw error", Continue);
         QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: cannot access member `objectName' of deleted QObject"));
     }
 

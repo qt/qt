@@ -1248,11 +1248,12 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                           JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
     QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    QScriptEnginePrivate *const eng = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
                           .arg(QString::fromLatin1(name));
-        JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+        eng->uncaughtException = JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
         return;
     }
 
