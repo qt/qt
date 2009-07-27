@@ -73,6 +73,7 @@ private slots:
     void pushAndPopScope();
     void getSetActivationObject();
     void toString();
+    void argumentsObjectInNative();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -144,13 +145,11 @@ void tst_QScriptContext::arguments()
 {
     QScriptEngine eng;
 
-#if 0 // ### crashes
     {
         QScriptValue args = eng.currentContext()->argumentsObject();
         QVERIFY(args.isObject());
         QCOMPARE(args.property("length").toInt32(), 0);
     }
-#endif
     {
         QScriptValue fun = eng.newFunction(get_arguments);
         eng.globalObject().setProperty("get_arguments", fun);
@@ -739,6 +738,48 @@ void tst_QScriptContext::toString()
                                     "}; foo(1, 2, 3)", "script.qs");
     QVERIFY(ret.isString());
     QCOMPARE(ret.toString(), QString::fromLatin1("foo (first=1, second=2, third=3) at script.qs:2"));
+}
+
+static QScriptValue argumentsObjectInNative_test1(QScriptContext *ctx, QScriptEngine *)
+{
+#define VERIFY(statement) \
+    do {\
+        if (!QTest::qVerify((statement), #statement, "", __FILE__, __LINE__))\
+            return QString::fromLatin1("Failed "  #statement);\
+    } while (0)
+
+    QScriptValue obj = ctx->argumentsObject();
+    VERIFY(obj.isObject());
+    VERIFY(obj.property(0).toUInt32() == 123);
+    VERIFY(obj.property(1).toString() == QString::fromLatin1("456"));
+    return QString::fromLatin1("success");
+#undef VERIFY
+}
+
+void tst_QScriptContext::argumentsObjectInNative()
+{
+    {
+        QScriptEngine eng;
+        QScriptValue fun = eng.newFunction(argumentsObjectInNative_test1);
+        QScriptValueList args;
+        args << QScriptValue(&eng, 123.0);
+        args << QScriptValue(&eng, QString::fromLatin1("456"));
+        QScriptValue result = fun.call(eng.undefinedValue(), args);
+        QVERIFY(!eng.hasUncaughtException());
+        QCOMPARE(result.toString(), QString::fromLatin1("success"));
+    }
+
+
+
+    {
+        QScriptEngine eng;
+        QScriptValue fun = eng.newFunction(argumentsObjectInNative_test1);
+        eng.globalObject().setProperty("func", fun);
+        QScriptValue result = eng.evaluate("func(123.0 , 456);");
+        QVERIFY(!eng.hasUncaughtException());
+        QCOMPARE(result.toString(), QString::fromLatin1("success"));
+    }
+
 }
 
 QTEST_MAIN(tst_QScriptContext)

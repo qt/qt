@@ -335,9 +335,10 @@ QScriptValue QScriptContext::argumentsObject() const
 {
     Q_D(const QScriptContext);
     if (d->frame == d->engine->globalObject->globalExec()) {
-        qWarning("QScriptContext::argumentsObject() not implemented for global context");
-        return QScriptValue();
+        //global context doesn't have any argument, return an empty object
+        return static_cast<QScriptEngine *>(d->engine->q_ptr)->newObject();
     }
+    Q_ASSERT(d->frame->argumentCount() > 0); //we need at least 'this' otherwise we'll crash later
     if (!d->frame->optionalCalleeArguments()) {
         JSC::Arguments* arguments = new (&d->frame->globalData())JSC::Arguments(d->frame, JSC::Arguments::NoParameters);
         d->frame->setCalleeArguments(arguments);
