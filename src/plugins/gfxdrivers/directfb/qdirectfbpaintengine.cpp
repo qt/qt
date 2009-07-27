@@ -70,6 +70,14 @@ public:
         PorterDuff_SupportedPrimitives = 0x2
     };
 
+    enum ClipType {
+        ClipUnset,
+        NoClip,
+        RectClip,
+        RegionClip,
+        ComplexClip
+    };
+
     QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p);
     ~QDirectFBPaintEnginePrivate();
 
@@ -83,9 +91,6 @@ public:
     inline void lock();
     inline void unlock();
 
-    inline bool dfbCanHandleClip(const QRect &rect) const;
-    inline bool dfbCanHandleClip(const QRectF &rect) const;
-    inline bool dfbCanHandleClip() const;
     inline bool isSimpleBrush(const QBrush &brush) const;
 
     void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &pos);
@@ -110,14 +115,11 @@ private:
     uint transformationType; // this is QTransform::type() + Matrix_NegativeScale if qMin(transform.m11(), transform.m22()) < 0
 
     SurfaceCache *surfaceCache;
-
     IDirectFB *fb;
-
     quint8 opacity;
 
     bool dirtyClip;
-    bool dfbHandledClip;
-    bool ignoreSystemClip;
+    ClipType clipType;
     QDirectFBPaintDevice *dfbDevice;
     uint compositionModeStatus;
 
@@ -170,7 +172,7 @@ enum PaintOperation {
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                uint transformationType, bool simplePen,
-                               bool dfbHandledClip, uint compositionModeStatus,
+                               uint clipType, uint compositionModeStatus,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
                                const char *nameThree, const T3 &three);
@@ -183,7 +185,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->transformationType,                \
                            d_func()->simplePen,                         \
-                           d_func()->dfbCanHandleClip(),                \
+                           d_func()->clipType,                          \
                            d_func()->compositionModeStatus,             \
                            #one, one, #two, two, #three, three);        \
     if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
@@ -199,13 +201,12 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->transformationType,                \
                            d_func()->simplePen,                         \
-                           d_func()->dfbCanHandleClip(),                \
+                           d_func()->clipType,                          \
                            d_func()->compositionModeStatus,             \
                            #one, one, #two, two, #three, three);
 #else
 #define RASTERFALLBACK(op, one, two, three)
 #endif
-
 
 template <class T>
 static inline void drawLines(const T *lines, int n, const QTransform &transform, IDirectFBSurface *surface);
@@ -213,6 +214,36 @@ template <class T>
 static inline void fillRects(const T *rects, int n, const QTransform &transform, IDirectFBSurface *surface);
 template <class T>
 static inline void drawRects(const T *rects, int n, const QTransform &transform, IDirectFBSurface *surface);
+
+#define CLIPPED_PAINT(operation) {                                      \
+        DFBRegion clipRegion;                                           \
+        switch (d->clipType) {                                          \
+        case QDirectFBPaintEnginePrivate::NoClip:                       \
+        case QDirectFBPaintEnginePrivate::RectClip:                     \
+            operation;                                                  \
+            break;                                                      \
+        case QDirectFBPaintEnginePrivate::RegionClip: {                 \
+            Q_ASSERT(d->clip());                                        \
+            const QVector<QRect> cr = d->clip()->clipRegion.rects();    \
+            const int size = cr.size();                                 \
+            for (int i=0; i<size; ++i) {                                \
+                d->currentClip = cr.at(i);                              \
+                clipRegion.x1 = d->currentClip.x();                     \
+                clipRegion.y1 = d->currentClip.y();                     \
+                clipRegion.x2 = d->currentClip.right();                 \
+                clipRegion.y2 = d->currentClip.bottom();                \
+                d->surface->SetClip(d->surface, &clipRegion);           \
+                operation;                                              \
+            }                                                           \
+            d->dirtyClip = true;                                        \
+            break; }                                                    \
+        case QDirectFBPaintEnginePrivate::ComplexClip:                  \
+        case QDirectFBPaintEnginePrivate::ClipUnset:                    \
+            qFatal("CLIPPED_PAINT internal error %d", d->clipType);     \
+            break;                                                      \
+        }                                                               \
+    }
+
 
 QDirectFBPaintEngine::QDirectFBPaintEngine(QPaintDevice *device)
     : QRasterPaintEngine(*(new QDirectFBPaintEnginePrivate(this)), device)
@@ -245,7 +276,6 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
 
     d->prepare(d->dfbDevice);
     d->setCompositionMode(state()->composition_mode);
-
     return QRasterPaintEngine::begin(device);
 }
 
@@ -335,58 +365,60 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
     Q_D(QDirectFBPaintEngine);
-    d->updateClip();
+    const QPen &pen = state()->pen;
     const QBrush &brush = state()->brush;
+    if (brush == Qt::NoBrush && pen == Qt::NoPen)
+        return;
+
+    d->updateClip();
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
         || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
         || !d->simplePen
-        || !d->dfbCanHandleClip()
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
         || !d->isSimpleBrush(brush)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
     }
-
     d->unlock();
-
     if (brush != Qt::NoBrush) {
         d->setDFBColor(brush.color());
-        ::fillRects<QRect>(rects, rectCount, state()->matrix, d->surface);
+        CLIPPED_PAINT(::fillRects<QRect>(rects, rectCount, state()->matrix, d->surface));
     }
-    const QPen &pen = state()->pen;
     if (pen != Qt::NoPen) {
         d->setDFBColor(pen.color());
-        ::drawRects<QRect>(rects, rectCount, state()->matrix, d->surface);
+        CLIPPED_PAINT(::drawRects<QRect>(rects, rectCount, state()->matrix, d->surface));
     }
 }
 
 void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
 {
     Q_D(QDirectFBPaintEngine);
-    d->updateClip();
+    const QPen &pen = state()->pen;
     const QBrush &brush = state()->brush;
+    if (brush == Qt::NoBrush && pen == Qt::NoPen)
+        return;
+
+    d->updateClip();
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
         || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
         || !d->simplePen
-        || !d->dfbCanHandleClip()
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
         || !d->isSimpleBrush(brush)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
     }
-
     d->unlock();
-
     if (brush != Qt::NoBrush) {
         d->setDFBColor(brush.color());
-        ::fillRects<QRectF>(rects, rectCount, state()->matrix, d->surface);
+        CLIPPED_PAINT(::fillRects<QRectF>(rects, rectCount, state()->matrix, d->surface));
     }
-    const QPen &pen = state()->pen;
     if (pen != Qt::NoPen) {
         d->setDFBColor(pen.color());
-        ::drawRects<QRectF>(rects, rectCount, state()->matrix, d->surface);
+        CLIPPED_PAINT(::drawRects<QRectF>(rects, rectCount, state()->matrix, d->surface));
     }
 }
 
@@ -394,9 +426,10 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
+
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
         || !d->simplePen
-        || !d->dfbCanHandleClip()) {
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
@@ -407,7 +440,7 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
     if (pen != Qt::NoPen) {
         d->unlock();
         d->setDFBColor(pen.color());
-        ::drawLines<QLine>(lines, lineCount, state()->matrix, d->surface);
+        CLIPPED_PAINT(::drawLines<QLine>(lines, lineCount, state()->matrix, d->surface));
     }
 }
 
@@ -415,9 +448,10 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
+
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
         || !d->simplePen
-        || !d->dfbCanHandleClip()) {
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
@@ -428,7 +462,7 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
     if (pen != Qt::NoPen) {
         d->unlock();
         d->setDFBColor(pen.color());
-        ::drawLines<QLineF>(lines, lineCount, state()->matrix, d->surface);
+        CLIPPED_PAINT(::drawLines<QLineF>(lines, lineCount, state()->matrix, d->surface));
     }
 }
 
@@ -460,7 +494,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
 #if !defined QT_NO_DIRECTFB_PREALLOCATED || defined QT_DIRECTFB_IMAGECACHE
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
         || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-        || !d->dfbCanHandleClip(r)
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
 #ifndef QT_DIRECTFB_IMAGECACHE
         || QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN
 #elif defined QT_NO_DIRECTFB_PREALLOCATED
@@ -479,7 +513,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     bool release;
     IDirectFBSurface *imgSurface = d->getSurface(image, &release);
     d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
-    d->blit(r, imgSurface, sr);
+    CLIPPED_PAINT(d->blit(r, imgSurface, sr));
     if (release) {
 #if (Q_DIRECTFB_VERSION >= 0x010000)
         d->surface->ReleaseSource(d->surface);
@@ -498,15 +532,15 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
                                       const QRectF &sr)
 {
     Q_D(QDirectFBPaintEngine);
-    d->updateClip();
 
+    d->updateClip();
     if (pixmap.pixmapData()->classId() != QPixmapData::DirectFBClass) {
         RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
         d->lock();
         QRasterPaintEngine::drawPixmap(r, pixmap, sr);
     } else if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-               || !d->dfbCanHandleClip(r)) {
+               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
         RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
@@ -519,7 +553,8 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
         dfbData->unlockDirectFB();
         IDirectFBSurface *s = dfbData->directFBSurface();
-        d->blit(r, s, sr);
+
+        CLIPPED_PAINT(d->blit(r, s, sr));
     }
 }
 
@@ -540,7 +575,7 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, offset);
     } else if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-               || !d->dfbCanHandleClip(r)) {
+               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
         RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), offset);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
@@ -639,7 +674,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (brush.style() == Qt::NoBrush)
         return;
     d->updateClip();
-    if (d->dfbCanHandleClip(rect)) {
+    if (d->clipType != QDirectFBPaintEnginePrivate::ComplexClip) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
             if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
@@ -652,9 +687,9 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             d->unlock();
             d->setDFBColor(color);
             const QRect r = state()->matrix.mapRect(rect).toRect();
-            d->surface->FillRectangle(d->surface, r.x(), r.y(),
-                                      r.width(), r.height());
+            CLIPPED_PAINT(d->surface->FillRectangle(d->surface, r.x(), r.y(), r.width(), r.height()));
             return; }
+
         case Qt::TexturePattern: {
             if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
                 || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)) {
@@ -666,7 +701,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                 break;
 
             d->unlock();
-            d->drawTiledPixmap(rect, texture, rect.topLeft() - state()->brushOrigin);
+            CLIPPED_PAINT(d->drawTiledPixmap(rect, texture, rect.topLeft() - state()->brushOrigin));
             return; }
         default:
             break;
@@ -685,7 +720,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     d->updateClip();
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
         || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
-        || !d->dfbCanHandleClip()) {
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
         RASTERFALLBACK(FILL_RECT, rect, color, VOID_ARG());
         d->lock();
         QRasterPaintEngine::fillRect(rect, color);
@@ -732,34 +767,16 @@ void QDirectFBPaintEngine::initImageCache(int size)
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
     : surface(0), antialiased(false), simplePen(false),
       transformationType(0), opacity(255), dirtyClip(true),
-      dfbHandledClip(false), dfbDevice(0),
+      clipType(ClipUnset), dfbDevice(0),
       compositionModeStatus(0), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
-    ignoreSystemClip = QDirectFBScreen::instance()->directFBFlags() & QDirectFBScreen::IgnoreSystemClip;
     surfaceCache = new SurfaceCache;
 }
 
 QDirectFBPaintEnginePrivate::~QDirectFBPaintEnginePrivate()
 {
     delete surfaceCache;
-}
-
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRect &) const
-{
-    // TODO: Check to see if DirectFB can handle the clip for the given rect
-    return dfbHandledClip;
-}
-
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &) const
-{
-    // TODO: Check to see if DirectFB can handle the clip for the given rect
-    return dfbHandledClip;
-}
-
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip() const
-{
-    return dfbHandledClip;
 }
 
 bool QDirectFBPaintEnginePrivate::isSimpleBrush(const QBrush &brush) const
@@ -974,8 +991,8 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
     const DFBRegion clip = {
         newClip.x(),
         newClip.y(),
-        newClip.x() + newClip.width() - 1,
-        newClip.y() + newClip.height() - 1
+        newClip.right(),
+        newClip.bottom()
     };
     surface->SetClip(surface, &clip);
 
@@ -1044,8 +1061,8 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
         const DFBRegion clip = {
             currentClip.x(),
             currentClip.y(),
-            currentClip.x() + currentClip.width(),
-            currentClip.y() + currentClip.height()
+            currentClip.right(),
+            currentClip.bottom()
         };
         surface->SetClip(surface, &clip);
     }
@@ -1060,22 +1077,22 @@ void QDirectFBPaintEnginePrivate::updateClip()
     const QClipData *clipData = clip();
     if (!clipData || !clipData->enabled) {
         surface->SetClip(surface, NULL);
-        dfbHandledClip = true;
+        clipType = NoClip;
     } else if (clipData->hasRectClip) {
         const DFBRegion r = {
             clipData->clipRect.x(),
             clipData->clipRect.y(),
-            clipData->clipRect.x() + clipData->clipRect.width(),
-            clipData->clipRect.y() + clipData->clipRect.height()
+            clipData->clipRect.right(),
+            clipData->clipRect.bottom()
         };
         surface->SetClip(surface, &r);
         currentClip = clipData->clipRect.normalized();
         // ### is this guaranteed to always be normalized?
-        dfbHandledClip = true;
-    } else if (clipData->hasRegionClip && ignoreSystemClip && clipData->clipRegion == systemClip) {
-        dfbHandledClip = true;
+        clipType = RectClip;
+    } else if (clipData->hasRegionClip) {
+        clipType = RegionClip;
     } else {
-        dfbHandledClip = false;
+        clipType = ComplexClip;
     }
 
     dirtyClip = false;
@@ -1172,7 +1189,7 @@ template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                uint transformationType, bool simplePen,
-                               bool dfbHandledClip, uint compositionModeStatus,
+                               uint clipType, uint compositionModeStatus,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
                                const char *nameThree, const T3 &three)
@@ -1188,7 +1205,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
 
     dbg << QString("transformationType 0x%1").arg(transformationType, 3, 16, QLatin1Char('0'))
         << "simplePen" << simplePen
-        << "dfbHandledClip" << dfbHandledClip
+        << "clipType" << clipType
         << "compositionModeStatus" << compositionModeStatus;
 
     const T1 *t1 = ptr(one);
@@ -1206,7 +1223,6 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     }
     qWarning("%s", qPrintable(out));
 }
-#endif
 
-
+#endif // QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
 #endif // QT_NO_DIRECTFB
