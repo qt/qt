@@ -59,6 +59,7 @@
 #include <QtDeclarative/qfxlayouts.h>
 #include <QtDeclarative/qmlstate.h>
 #include <private/qmltransitionmanager_p.h>
+#include <QtDeclarative/qmlstateoperations.h>
 
 QT_BEGIN_NAMESPACE
 class QFxBaseLayoutPrivate : public QFxItemPrivate
@@ -92,7 +93,12 @@ public:
     QSet<QFxItem *> _newItems;
     QSet<QFxItem *> _animated;
     QFxItem *_layoutItem;
-    QmlTransitionManager transitionManager;
+    QmlStateOperation::ActionList addActions;
+    QmlStateOperation::ActionList moveActions;
+    QmlStateOperation::ActionList removeActions;
+    QmlTransitionManager addTransitionManager;
+    QmlTransitionManager moveTransitionManager;
+    QmlTransitionManager removeTransitionManager;
 //    QmlStateGroup *stateGroup;
     QFxItem *_movingItem;
 };

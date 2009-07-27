@@ -96,6 +96,7 @@ protected:
     void applyAdd(const QList<QPair<QString, QVariant> >& changes, QFxItem* target);
     void applyMove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target);
     void applyRemove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target);
+    void finishApplyTransitions();
 
 Q_SIGNALS:
     void layoutItemChanged();
@@ -113,7 +114,7 @@ protected:
 
 private:
     void applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target,
-            QmlTransition* transition);
+            QmlStateOperation::ActionList &actions);
     Q_DISABLE_COPY(QFxBaseLayout)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBaseLayout)
 };

@@ -319,13 +319,15 @@ void QFxBaseLayout::preLayout()
         if (!d->_items.contains(child)){
             QObject::connect(child, SIGNAL(visibleChanged()),
                              this, SLOT(preLayout()));
+            QObject::connect(child, SIGNAL(opacityChanged()),
+                             this, SLOT(preLayout()));
             QObject::connect(child, SIGNAL(heightChanged()),
                              this, SLOT(preLayout()));
             QObject::connect(child, SIGNAL(widthChanged()),
                              this, SLOT(preLayout()));
             d->_items += child;
         }
-        if (!child->isVisible()){
+        if (child->opacity() == 0.0){
             if (d->_stableItems.contains(child)){
                 d->_leavingItems += child;
                 d->_stableItems -= child;
@@ -339,7 +341,7 @@ void QFxBaseLayout::preLayout()
     foreach(QFxItem *child, d->_items){
         if (!allItems.contains(child)){
             if (!deletedItems.contains(child)) {
-                QObject::disconnect(child, SIGNAL(visibleChanged()),
+                QObject::disconnect(child, SIGNAL(opacityChanged()),
                                  this, SLOT(preLayout()));
                 QObject::disconnect(child, SIGNAL(heightChanged()),
                                  this, SLOT(preLayout()));
@@ -356,7 +358,7 @@ void QFxBaseLayout::preLayout()
     qreal width=0;
     qreal height=0;
     foreach(QFxItem *item, d->_items){
-        if (item->isVisible()){
+        if (item->opacity() == 0.0){
             if (!d->_animated.contains(item)){
                 setMovingItem(item);
                 QPointF p(item->x(), item->y());
@@ -385,21 +387,18 @@ void QFxBaseLayout::preLayout()
     setLayoutItem(0);
 }
 
-//###This should be considered to move more centrally, as it seems useful
-void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target, QmlTransition* trans)
+void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target, QmlStateOperation::ActionList &actions)
 {
     Q_D(QFxBaseLayout);
-    if (!trans||!target)//TODO: if !trans, just apply changes
+    if (!target)
         return;
     setLayoutItem(target);
-
-    QmlStateOperation::ActionList actions;
 
     for (int ii=0; ii<changes.size(); ++ii){
 
         QVariant val = changes[ii].second;
         if (d->_margin &&
-            (changes[ii].first == QLatin1String("x") || 
+            (changes[ii].first == QLatin1String("x") ||
              changes[ii].first == QLatin1String("y"))) {
                 val = QVariant(val.toInt() + d->_margin);
         }
@@ -408,10 +407,19 @@ void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& chan
 
     }
 
-    d->transitionManager.transition(actions, trans);
     d->_animated << target;
 }
 
+void QFxBaseLayout::finishApplyTransitions()
+{
+    Q_D(QFxBaseLayout);
+    d->addTransitionManager.transition(d->addActions, d->addTransition);
+    d->moveTransitionManager.transition(d->moveActions, d->moveTransition);
+    d->removeTransitionManager.transition(d->removeActions, d->removeTransition);
+    d->addActions.clear();
+    d->moveActions.clear();
+    d->removeActions.clear();
+}
 void QFxBaseLayout::setMovingItem(QFxItem *i)
 {
     Q_D(QFxBaseLayout);
@@ -424,7 +432,8 @@ void QFxBaseLayout::setMovingItem(QFxItem *i)
 */
 void QFxBaseLayout::applyAdd(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
 {
-    applyTransition(changes,target, add());
+    Q_D(QFxBaseLayout);
+    applyTransition(changes,target, d->addActions);
 }
 
 /*!
@@ -433,7 +442,8 @@ void QFxBaseLayout::applyAdd(const QList<QPair<QString, QVariant> >& changes, QF
 */
 void QFxBaseLayout::applyMove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
 {
-    applyTransition(changes,target, move());
+    Q_D(QFxBaseLayout);
+    applyTransition(changes,target, d->moveActions);
 }
 
 /*!
@@ -442,7 +452,8 @@ void QFxBaseLayout::applyMove(const QList<QPair<QString, QVariant> >& changes, Q
 */
 void QFxBaseLayout::applyRemove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
 {
-    applyTransition(changes,target, remove());
+    Q_D(QFxBaseLayout);
+    applyTransition(changes,target, d->removeActions);
 }
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VerticalLayout,QFxVerticalLayout)
@@ -623,7 +634,7 @@ void QFxVerticalLayout::doLayout()
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
-        if (!child || !child->isVisible())
+        if (!child || child->opacity() == 0.0)
             continue;
 
         bool needMove = (child->y() != voffset || child->x());
@@ -643,6 +654,7 @@ void QFxVerticalLayout::doLayout()
         voffset += child->height();
         voffset += spacing();
     }
+    finishApplyTransitions();
     setMovingItem(this);
     setHeight(voffset);
     setMovingItem(0);
@@ -790,7 +802,7 @@ void QFxHorizontalLayout::doLayout()
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
-        if (!child || !child->isVisible())
+        if (!child || child->opacity() == 0.0)
             continue;
 
         bool needMove = (child->x() != hoffset || child->y());
@@ -810,6 +822,7 @@ void QFxHorizontalLayout::doLayout()
         hoffset += child->width();
         hoffset += spacing();
     }
+    finishApplyTransitions();
     setWidth(hoffset);
 }
 
@@ -1028,7 +1041,7 @@ void QFxGridLayout::doLayout()
             if (childIndex == children.count())
                 continue;
             QFxItem *child = qobject_cast<QFxItem *>(children.at(childIndex++));
-            if (!child || !child->isVisible())
+            if (!child || child->opacity() == 0.0)
                 continue;
             if (child->width() > maxColWidth[j])
                 maxColWidth[j] = child->width();
@@ -1049,7 +1062,7 @@ void QFxGridLayout::doLayout()
     }
     foreach(QGraphicsItem* schild, children){
         QFxItem *child = qobject_cast<QFxItem *>(schild);
-        if (!child || !child->isVisible())
+        if (!child || child->opacity() == 0.0)
             continue;
         bool needMove = (child->x()!=xoffset)||(child->y()!=yoffset);
         QList<QPair<QString, QVariant> > changes;
@@ -1077,6 +1090,7 @@ void QFxGridLayout::doLayout()
                 return;
         }
     }
+    finishApplyTransitions();
 }
 
 QT_END_NAMESPACE
