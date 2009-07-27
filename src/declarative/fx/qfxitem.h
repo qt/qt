@@ -275,7 +275,6 @@ protected:
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mouseUngrabEvent();
 
-    virtual void transformChanged(const QTransform &);
     virtual void classBegin();
     virtual void classComplete();
     virtual void componentComplete();
@@ -329,7 +328,6 @@ QML_DECLARE_TYPE(QFxContents)
 QML_DECLARE_TYPE(QFxItem)
 QML_DECLARE_TYPE(QGraphicsTransform)
 QML_DECLARE_TYPE(QGraphicsScale)
-QML_DECLARE_TYPE(QGraphicsAxis)
 QML_DECLARE_TYPE(QGraphicsRotation)
 QML_DECLARE_TYPE(QGraphicsRotation3D)
 

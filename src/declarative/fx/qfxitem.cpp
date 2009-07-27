@@ -76,7 +76,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QFxItem)
 
 QML_DEFINE_NOCREATE_TYPE(QGraphicsTransform);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QGraphicsScale)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Axis,QGraphicsAxis)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation3D,QGraphicsRotation3D)
 
@@ -1776,14 +1775,6 @@ void QFxItem::componentComplete()
         d->_stateGroup->componentComplete();
     if (d->_anchors) 
         d->anchors()->d_func()->updateOnComplete();
-}
-
-/*!
-    \internal
-*/
-void QFxItem::transformChanged(const QTransform &)
-{
-    // ### FIXME
 }
 
 QmlStateGroup *QFxItemPrivate::states()
