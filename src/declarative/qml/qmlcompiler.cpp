@@ -2088,6 +2088,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     store.assignBinding.value = dataRef;
     store.assignBinding.context = ref.bindingContext.stack;
     store.assignBinding.owner = ref.bindingContext.owner;
+    store.line = prop->location.end.line;
 
     output->bytecode << store;
 }
