@@ -267,6 +267,8 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
     return ret;
 }
 
+bool qt_gettime_is_monotonic();
+timeval qt_gettime();
 Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
                                  const struct timeval *tv);
 

@@ -141,10 +141,6 @@ class QTimerInfoList : public QList<QTimerInfo*>
 public:
     QTimerInfoList();
 
-    const bool useMonotonicTimers;
-
-    void getTime(timeval &t);
-
     timeval currentTime;
     timeval updateCurrentTime();
 

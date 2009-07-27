@@ -67,25 +67,6 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
 
-// check for _POSIX_MONOTONIC_CLOCK support
-static bool supportsMonotonicClock()
-{
-    bool returnValue;
-
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
-    returnValue = false;
-#  if (_POSIX_MONOTONIC_CLOCK == 0)
-    // detect if the system support monotonic timers
-    long x = sysconf(_SC_MONOTONIC_CLOCK);
-    returnValue = x >= 200112L;
-#  endif
-#else
-    returnValue = true;
-#endif
-
-    return returnValue;
-}
-
 /*****************************************************************************
  UNIX signal handling
  *****************************************************************************/
@@ -281,12 +262,11 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
  */
 
 QTimerInfoList::QTimerInfoList()
-    : useMonotonicTimers(supportsMonotonicClock())
 {
-    getTime(currentTime);
+    currentTime = qt_gettime();
 
 #if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
-    if (!useMonotonicTimers) {
+    if (!qt_gettime_is_monotonic()) {
         // not using monotonic timers, initialize the timeChanged() machinery
         previousTime = currentTime;
 
@@ -309,8 +289,7 @@ QTimerInfoList::QTimerInfoList()
 
 timeval QTimerInfoList::updateCurrentTime()
 {
-    getTime(currentTime);
-    return currentTime;
+    return (currentTime = qt_gettime());
 }
 
 #if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
@@ -364,38 +343,9 @@ bool QTimerInfoList::timeChanged(timeval *delta)
     return elapsedTimeTicks < ((qAbs(*delta) - tickGranularity) * 10);
 }
 
-void QTimerInfoList::getTime(timeval &t)
-{
-#if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
-    if (useMonotonicTimers) {
-        timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        t.tv_sec = ts.tv_sec;
-        t.tv_usec = ts.tv_nsec / 1000;
-        return;
-    }
-#endif
-
-    gettimeofday(&t, 0);
-    // NTP-related fix
-    while (t.tv_usec >= 1000000l) {
-        t.tv_usec -= 1000000l;
-        ++t.tv_sec;
-    }
-    while (t.tv_usec < 0l) {
-        if (t.tv_sec > 0l) {
-            t.tv_usec += 1000000l;
-            --t.tv_sec;
-        } else {
-            t.tv_usec = 0l;
-            break;
-        }
-    }
-}
-
 void QTimerInfoList::repairTimersIfNeeded()
 {
-    if (useMonotonicTimers)
+    if (qt_gettime_is_monotonic())
         return;
     timeval delta;
     if (timeChanged(&delta))
@@ -403,25 +353,6 @@ void QTimerInfoList::repairTimersIfNeeded()
 }
 
 #else // !(_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(QT_BOOTSTRAPPED)
-
-void QTimerInfoList::getTime(timeval &t)
-{
-#if defined(Q_OS_MAC)
-    static mach_timebase_info_data_t info = {0,0};
-    if (info.denom == 0)
-        mach_timebase_info(&info);
-
-    uint64_t cpu_time = mach_absolute_time();
-    uint64_t nsecs = cpu_time * (info.numer / info.denom);
-    t.tv_sec = nsecs * 1e-9;
-    t.tv_usec = nsecs * 1e-3 - (t.tv_sec * 1e6);
-#else
-    timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    t.tv_sec = ts.tv_sec;
-    t.tv_usec = ts.tv_nsec / 1000;
-#endif
-}
 
 void QTimerInfoList::repairTimersIfNeeded()
 {
@@ -648,25 +579,7 @@ QEventDispatcherUNIX::~QEventDispatcherUNIX()
 int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                  timeval *timeout)
 {
-    Q_D(QEventDispatcherUNIX);
-    if (timeout && d->timerList.useMonotonicTimers) {
-        // handle the case where select returns with a timeout, too
-        // soon.
-        timeval tvStart = d->timerList.currentTime;
-        timeval tvCurrent = tvStart;
-        timeval originalTimeout = *timeout;
-
-        int nsel;
-        do {
-            timeval tvRest = originalTimeout + tvStart - tvCurrent;
-            nsel = ::select(nfds, readfds, writefds, exceptfds, &tvRest);
-            d->timerList.getTime(tvCurrent);
-        } while (nsel == 0 && (tvCurrent - tvStart) < originalTimeout);
-
-        return nsel;
-    }
-
-    return ::select(nfds, readfds, writefds, exceptfds, timeout);
+    return ::qt_safe_select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
 /*!

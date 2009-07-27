@@ -657,7 +657,7 @@ QStyleOptionFrameV2 &QStyleOptionFrameV2::operator=(const QStyleOptionFrame &oth
 /*!
     \enum QStyleOptionFrameV2::FrameFeature
 
-    This enum describles the different types of features a frame can have.
+    This enum describes the different types of features a frame can have.
 
     \value None Indicates a normal frame.
     \value Flat Indicates a flat frame.
@@ -899,7 +899,7 @@ QStyleOptionViewItemV2 &QStyleOptionViewItemV2::operator=(const QStyleOptionView
 /*!
     \enum QStyleOptionViewItemV2::ViewItemFeature
 
-    This enum describles the different types of features an item can have.
+    This enum describes the different types of features an item can have.
 
     \value None      Indicates a normal item.
     \value WrapText  Indicates an item with wrapped text.

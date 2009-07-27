@@ -571,9 +571,6 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
                         return true;
-                        // emit dataReadProgress signal (signal is currently not connected
-                        // to the rest of QNAM) since readProgress of the
-                        // QNonContiguousByteDevice is used
                     emit reply->dataReadProgress(reply->d_func()->totalProgress, 0);
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
@@ -700,9 +697,6 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                             // make sure that the reply is valid
                             if (channels[i].reply != reply)
                                 return;
-                            // emit dataReadProgress signal (signal is currently not connected
-                            // to the rest of QNAM) since readProgress of the
-                            // QNonContiguousByteDevice is used
                             emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
                             // make sure that the reply is valid
                             if (channels[i].reply != reply)
