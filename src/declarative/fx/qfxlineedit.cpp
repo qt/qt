@@ -50,6 +50,10 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LineEdit,QFxLineEdit);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 
+/*!
+    \qmlclass LineEdit
+    \brief The LineEdit item allows you to add an editable line of text to a scene.
+*/
 QFxLineEdit::QFxLineEdit(QFxItem* parent)
     : QFxPaintedItem(*(new QFxLineEditPrivate), parent)
 {
@@ -71,6 +75,12 @@ QFxLineEdit::~QFxLineEdit()
 {
 }
 
+/*!
+    \qmlproperty string LineEdit::text
+
+    The text in the LineEdit.
+*/
+
 QString QFxLineEdit::text() const
 {
     Q_D(const QFxLineEdit);
@@ -86,12 +96,22 @@ void QFxLineEdit::setText(const QString &s)
     //emit textChanged();
 }
 
+/*!
+    \qmlproperty font LineEdit::font
+
+    Set the LineEdit's font attributes.  \c font.size sets the font's point size.
+*/
 QmlFont *QFxLineEdit::font()
 {
     Q_D(QFxLineEdit);
     return d->font;
 }
 
+/*!
+    \qmlproperty color LineEdit::color
+
+    The text color.
+*/
 QColor QFxLineEdit::color() const
 {
     Q_D(const QFxLineEdit);
@@ -140,6 +160,10 @@ void QFxLineEdit::setMaxLength(int ml)
     d->control->setMaxLength(ml);
 }
 
+/*!
+    \qmlproperty LineEdit::cursorPosition
+    \brief The position of the cursor in the LineEdit.
+*/
 int QFxLineEdit::cursorPosition() const
 {
     Q_D(const QFxLineEdit);
@@ -264,6 +288,19 @@ void QFxLineEdit::setEchoMode(uint echo)
     d->control->setEchoMode(echo);
 }
 
+/*!
+    \qmlproperty LineEdit::cursorDelegate
+    \brief The delegate for the cursor in the LineEdit.
+
+    If you set a cursorDelegate for a LineEdit, this delegate will be used for
+    drawing the cursor instead of the standard cursor. An instance of the
+    delegate will be created and managed by the LineEdit when a cursor is
+    needed, and the x property of delegate instance will be set so as
+    to be one pixel before the top left of the current character.
+
+    Note that the root item of the delegate component must be a QFxItem or
+    QFxItem derived item.
+*/
 QmlComponent* QFxLineEdit::cursorDelegate() const
 {
     Q_D(const QFxLineEdit);

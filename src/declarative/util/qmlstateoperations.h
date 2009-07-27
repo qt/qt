@@ -44,6 +44,7 @@
 
 #include <QtDeclarative/qmlstate.h>
 #include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qfxanchors.h>
 
 QT_BEGIN_HEADER
 
@@ -101,10 +102,58 @@ public:
     virtual void execute();
 };
 
+class QmlSetAnchorsPrivate;
+class Q_DECLARATIVE_EXPORT QmlSetAnchors : public QmlStateOperation, public ActionEvent
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlSetAnchors)
+
+    Q_PROPERTY(QFxItem *target READ object WRITE setObject)
+    Q_PROPERTY(QString reset READ reset WRITE setReset)
+    Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft)
+    Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight)
+    Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop)
+    Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom)
+
+public:
+    QmlSetAnchors(QObject *parent=0);
+    ~QmlSetAnchors();
+
+    virtual ActionList actions();
+
+    QFxItem *object() const;
+    void setObject(QFxItem *);
+
+    QString reset() const;
+    void setReset(const QString &);
+
+    QFxAnchorLine left() const;
+    void setLeft(const QFxAnchorLine &edge);
+
+    QFxAnchorLine right() const;
+    void setRight(const QFxAnchorLine &edge);
+
+    QFxAnchorLine top() const;
+    void setTop(const QFxAnchorLine &edge);
+
+    QFxAnchorLine bottom() const;
+    void setBottom(const QFxAnchorLine &edge);
+
+    virtual void execute();
+    virtual bool isReversable();
+    virtual void reverse();
+    virtual QString typeName() const;
+    virtual QList<Action> extraActions();
+    virtual bool changesBindings();
+    virtual void clearForwardBindings();
+    virtual void clearReverseBindings();
+};
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlParentChange)
 QML_DECLARE_TYPE(QmlRunScript)
+QML_DECLARE_TYPE(QmlSetAnchors)
 
 QT_END_HEADER
 

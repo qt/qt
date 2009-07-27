@@ -214,8 +214,9 @@ public:
         Kind_UiQualifiedId,
         Kind_UiScriptBinding,
         Kind_UiSourceElement,
-        Kind_UiAttributeList,
-        Kind_UiAttribute
+        Kind_UiFormal,
+        Kind_UiFormalList,
+        Kind_UiSignature
     };
 
     inline Node()
@@ -269,6 +270,89 @@ public:
 
     virtual SourceLocation firstSourceLocation() const = 0;
     virtual SourceLocation lastSourceLocation() const = 0;
+};
+
+class UiFormal: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiFormal)
+
+    UiFormal(NameId *name, NameId *alias = 0)
+      : name(name), alias(alias)
+    { }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    NameId *name;
+    NameId *alias;
+    SourceLocation identifierToken;
+    SourceLocation asToken;
+    SourceLocation aliasToken;
+};
+
+class UiFormalList: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiFormalList)
+
+    UiFormalList(UiFormal *formal)
+            : formal(formal), next(this) {}
+
+    UiFormalList(UiFormalList *previous, UiFormal *formal)
+            : formal(formal)
+    {
+        next = previous->next;
+        previous->next = this;
+    }
+
+    UiFormalList *finish()
+    {
+        UiFormalList *head = next;
+        next = 0;
+        return head;
+    }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiFormal *formal;
+    UiFormalList *next;
+};
+
+class UiSignature: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiSignature)
+
+    UiSignature(UiFormalList *formals = 0)
+        : formals(formals)
+    { }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    SourceLocation lparenToken;
+    UiFormalList *formals;
+    SourceLocation rparenToken;
 };
 
 class NestedExpression: public ExpressionNode
@@ -402,30 +486,8 @@ class NumericLiteral: public ExpressionNode
 public:
     QMLJS_DECLARE_AST_NODE(NumericLiteral)
 
-    enum Suffix { // ### keep it in sync with the Suffix enum in qmljslexer_p.h
-        noSuffix,
-        emSuffix,
-        exSuffix,
-        pxSuffix,
-        cmSuffix,
-        mmSuffix,
-        inSuffix,
-        ptSuffix,
-        pcSuffix,
-        degSuffix,
-        radSuffix,
-        gradSuffix,
-        msSuffix,
-        sSuffix,
-        hzSuffix,
-        khzSuffix
-    };
-
-    static int suffixLength[];
-    static const char *const suffixSpell[];
-
-    NumericLiteral(double v, int suffix):
-        value(v), suffix(suffix) { kind = K; }
+    NumericLiteral(double v):
+        value(v) { kind = K; }
     virtual ~NumericLiteral() {}
 
     virtual void accept0(Visitor *visitor);
@@ -438,7 +500,6 @@ public:
 
 // attributes:
     double value;
-    int suffix;
     SourceLocation literalToken;
 };
 
@@ -2183,56 +2244,6 @@ public:
     UiObjectMemberList *members;
 };
 
-class UiAttributeList: public Node
-{
-public:
-    QMLJS_DECLARE_AST_NODE(UiAttributeList)
-
-    UiAttributeList(UiAttribute *attribute)
-        : attribute(attribute), next(this)
-    { kind = K; }
-
-    UiAttributeList(UiAttributeList *previous, UiAttribute *attribute)
-        : attribute(attribute)
-    {
-        next = previous->next;
-        previous->next = this;
-        kind = K;
-    }
-
-    UiAttributeList *finish()
-    {
-        UiAttributeList *head = next;
-        next = 0;
-        return head;
-    }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    UiAttribute *attribute;
-    UiAttributeList *next;
-};
-
-class UiAttribute: public Node
-{
-public:
-    QMLJS_DECLARE_AST_NODE(UiAttribute)
-
-    UiAttribute(NameId *name, ExpressionNode *value = 0)
-        : name(name), value(value)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    NameId *name;
-    ExpressionNode *value;
-    SourceLocation atToken;
-    SourceLocation nameToken;
-    SourceLocation equalToken;
-};
-
 class UiQualifiedId: public Node
 {
 public:
@@ -2331,9 +2342,6 @@ class UiObjectMember: public Node
 public:
     virtual SourceLocation firstSourceLocation() const = 0;
     virtual SourceLocation lastSourceLocation() const = 0;
-
-// attributes
-    UiAttributeList *attributes;
 };
 
 class UiObjectMemberList: public Node
@@ -2341,21 +2349,16 @@ class UiObjectMemberList: public Node
 public:
     QMLJS_DECLARE_AST_NODE(UiObjectMemberList)
 
-    UiObjectMemberList(UiAttributeList *attributes, UiObjectMember *member)
+    UiObjectMemberList(UiObjectMember *member)
         : next(this), member(member)
-    {
-        kind = K;
-        member->attributes = attributes;
-    }
+    { kind = K; }
 
-    UiObjectMemberList(UiObjectMemberList *previous, UiAttributeList *attributes,
-                       UiObjectMember *member)
+    UiObjectMemberList(UiObjectMemberList *previous, UiObjectMember *member)
         : member(member)
     {
         kind = K;
         next = previous->next;
         previous->next = this;
-        member->attributes = attributes;
     }
 
     virtual void accept0(Visitor *visitor);

@@ -115,8 +115,10 @@ namespace QmlParser
         int type;
         // The url of this object if it is an external type.  Used by the DOM
         QUrl url;
-        // The name of this type
+        // The fully-qualified name of this type
         QByteArray typeName;
+        // The class name
+        QByteArray className;
         // The id assigned to the object (if any).  Set by the QmlCompiler
         QString id;
         // The id index assigned to the object (if any).  Set by the QmlCompiler

@@ -39,54 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDABLECOMPONENT_H
-#define QMLBINDABLECOMPONENT_H
+#ifndef QMLCOMPONENTJS_P_P_H
+#define QMLCOMPONENTJS_P_P_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
-#include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmlerror.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qmlcomponent.h"
+#include "qmlcomponentjs_p.h"
+#include "qmlcomponent_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QmlBindableComponentPrivate;
-class QmlEngine;
 class QmlContext;
-class Q_DECLARATIVE_EXPORT QmlBindableComponent : public QmlComponent
+class QmlComponentJSPrivate : public QmlComponentPrivate
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlBindableComponent)
-    friend class QmlEngine;
+    Q_DECLARE_PUBLIC(QmlComponentJS)
 public:
-    QmlBindableComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
-    QmlBindableComponent(QmlEngine *, QObject *parent=0);
-    Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged);
-    Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged);
-    Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged);
-    Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged);
+    QmlComponentJSPrivate() : QmlComponentPrivate(),
+        prevStatus(QmlComponentJS::Null), ctxt(0)
+    { }
 
-    Q_INVOKABLE QScriptValue createObject();
-    Q_INVOKABLE QString errorsString() const;
-
-    void setContext(QmlContext* c);
-Q_SIGNALS:
-    void isNullChanged();
-    void isErrorChanged();
-    void isReadyChanged();
-    void isLoadingChanged();
-private slots:
-    void statusChange(QmlComponent::Status newStatus);
+    QmlComponent::Status prevStatus;
+    QmlContext* ctxt;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlBindableComponent)
-
-QT_END_HEADER
-#endif
+#endif // QMLCOMPONENTJS_P_P_H

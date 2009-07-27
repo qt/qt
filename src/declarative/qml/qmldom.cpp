@@ -93,10 +93,10 @@ QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
     file.open(QIODevice::ReadOnly);
     QByteArray xmlData = file.readAll();
 
-    QDomDocument document;
-    document.load(xmlData);
+    QmlDomDocument document;
+    document.load(qmlengine, xmlData);
 
-    QDomObject rootObject = document.rootObject();
+    QmlDomObject rootObject = document.rootObject();
     qDebug() << rootObject.objectType();
     foreach(QmlDomProperty property, rootObject.properties())
         qDebug() << property.propertyName();
@@ -161,7 +161,6 @@ QList<QmlDomImport> QmlDomDocument::imports() const
 */
 bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl &url)
 {
-    Q_UNUSED(engine);
     d->errors.clear();
     d->imports.clear();
 
@@ -748,11 +747,11 @@ bool QmlDomObject::isValid() const
 }
 
 /*!
-    Returns the type name of this object.
+    Returns the fully-qualified type name of this object.
 
-    For example, the type of this object would be "QGraphicsWidget".
+    For example, the type of this object would be "Qt/4.6/Rect".
     \qml
-QGraphicsWidget { }
+Rect { }
     \endqml
 */
 QByteArray QmlDomObject::objectType() const
@@ -760,6 +759,23 @@ QByteArray QmlDomObject::objectType() const
     if (d->object) return d->object->typeName;
     else return QByteArray();
 }
+
+/*!
+    Returns the fully-qualified type name of this object.
+
+    For example, the type of this object would be "Qt/4.6/Rect".
+    \qml
+Rect { }
+    \endqml
+*/
+QByteArray QmlDomObject::objectClassName() const
+{
+    if (d->object)
+        return d->object->className;
+    else
+        return QByteArray();
+}
+
 
 /*!
     Returns the QML id assigned to this object, or an empty QByteArray if no id
@@ -951,7 +967,7 @@ QByteArray QmlDomObject::customTypeData() const
 bool QmlDomObject::isComponent() const
 {
     return d->isVirtualComponent || 
-           (d->object && d->object->typeName == "Component");
+           (d->object && d->object->typeName == "Qt/4.6/Component");
 }
 
 /*!

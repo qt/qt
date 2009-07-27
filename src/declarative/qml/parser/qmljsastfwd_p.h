@@ -176,8 +176,9 @@ class UiObjectMember;
 class UiObjectMemberList;
 class UiArrayMemberList;
 class UiQualifiedId;
-class UiAttributeList;
-class UiAttribute;
+class UiFormalList;
+class UiFormal;
+class UiSignature;
 
 } } // namespace AST
 

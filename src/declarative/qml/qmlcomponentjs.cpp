@@ -39,50 +39,52 @@
 **
 ****************************************************************************/
 
-#include "qmlbindablecomponent.h"
-#include "qmlbindablecomponent_p.h"
+#include "qmlcomponentjs_p.h"
+#include "qmlcomponentjs_p_p.h"
+#include "qmlengine_p.h"
 #include "qmlcomponent.h"
 
 QT_BEGIN_NAMESPACE
-QmlBindableComponent::QmlBindableComponent(QmlEngine *engine, QObject *parent)
-    : QmlComponent(*(new QmlBindableComponentPrivate), parent)
+
+QmlComponentJS::QmlComponentJS(QmlEngine *engine, QObject *parent)
+    : QmlComponent(*(new QmlComponentJSPrivate), parent)
 {
-    Q_D(QmlBindableComponent);
+    Q_D(QmlComponentJS);
     d->engine = engine;
     connect(this, SIGNAL(statusChanged(QmlComponent::Status)),
             this, SLOT(statusChange(QmlComponent::Status)));
 }
 
-QmlBindableComponent::QmlBindableComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
-    : QmlComponent(*(new QmlBindableComponentPrivate), parent)
+QmlComponentJS::QmlComponentJS(QmlEngine *engine, const QUrl &url, QObject *parent)
+    : QmlComponent(*(new QmlComponentJSPrivate), parent)
 {
-    Q_D(QmlBindableComponent);
+    Q_D(QmlComponentJS);
     d->engine = engine;
     loadUrl(url);
     connect(this, SIGNAL(statusChanged(QmlComponent::Status)),
             this, SLOT(statusChange(QmlComponent::Status)));
 }
 
-void QmlBindableComponent::setContext(QmlContext* c)
+void QmlComponentJS::setContext(QmlContext* c)
 {
-    Q_D(QmlBindableComponent);
+    Q_D(QmlComponentJS);
     d->ctxt =c;
 }
 /*!
     Create a script object instance from this component. Returns a null
     script object if creation failed. It will create the instance in the
-    same context that it was created it. QmlBindableComponent is only
+    same context that it was created it. QmlComponentJS is only
     meant to be created from with script - C++ developers should just use
     QmlComponent directly.
 
     Similar to QmlComponent::create(), but creates an object suitable
     for usage within scripts.
 */
-QScriptValue QmlBindableComponent::createObject()
+QScriptValue QmlComponentJS::createObject()
 {
-    Q_D(QmlBindableComponent);
+    Q_D(QmlComponentJS);
     QObject* ret = create(d->ctxt);
-    return QmlEngine::qmlScriptObject(ret, d->engine);
+    return QmlEnginePrivate::qmlScriptObject(ret, d->engine);
 }
 
 /*!
@@ -95,9 +97,9 @@ QScriptValue QmlBindableComponent::createObject()
 
     \sa errors()
 */
-QString QmlBindableComponent::errorsString() const
+QString QmlComponentJS::errorsString() const
 {
-    Q_D(const QmlBindableComponent);
+    Q_D(const QmlComponentJS);
     QString ret;
     if(!isError())
         return ret;
@@ -110,9 +112,9 @@ QString QmlBindableComponent::errorsString() const
 }
 
 
-void QmlBindableComponent::statusChange(QmlComponent::Status newStatus)
+void QmlComponentJS::statusChange(QmlComponent::Status newStatus)
 {
-    Q_D(QmlBindableComponent);
+    Q_D(QmlComponentJS);
     if(newStatus == d->prevStatus)
         return;
     if(newStatus == QmlComponent::Null || d->prevStatus == QmlComponent::Null)

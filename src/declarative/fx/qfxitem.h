@@ -45,7 +45,6 @@
 #include <QtCore/QObject>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/QList>
-#include <QtDeclarative/qfxanchors.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcomponent.h>
@@ -58,6 +57,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QFxItem;
 class Q_DECLARATIVE_EXPORT QFxContents : public QObject
 {
     Q_OBJECT
@@ -85,12 +85,36 @@ private:
     qreal m_height;
     qreal m_width;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
+
+class QFxAnchorLine
+{
+public:
+    QFxAnchorLine() : item(0), anchorLine(Invalid)
+    {
+    }
+
+    enum AnchorLine {
+        Invalid = 0x0,
+        Left = 0x01,
+        Right = 0x02,
+        Top = 0x04,
+        Bottom = 0x08,
+        HCenter = 0x10,
+        VCenter = 0x20,
+        Baseline = 0x40,
+        Horizontal_Mask = Left | Right | HCenter,
+        Vertical_Mask = Top | Bottom | VCenter | Baseline
+    };
+
+    QFxItem *item;
+    AnchorLine anchorLine;
+};
 
 class QmlState;
 class QmlTransition;
 class QFxTransform;
 class QFxKeyEvent;
+class QFxAnchors;
 class QFxItemPrivate;
 class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserStatus
 {

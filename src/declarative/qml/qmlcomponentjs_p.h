@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDABLECOMPONENT_P_H
-#define QMLBINDABLECOMPONENT_P_H
+#ifndef QMLCOMPONENTJS_P_H
+#define QMLCOMPONENTJS_P_H
 
 //
 //  W A R N I N G
@@ -53,25 +53,46 @@
 // We mean it.
 //
 
-#include "qmlcomponent.h"
-#include "qmlbindablecomponent.h"
-#include "qmlcomponent_p.h"
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcomponent.h>
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_NAMESPACE
 
+class QmlComponentJSPrivate;
+class QmlEngine;
 class QmlContext;
-class QmlBindableComponentPrivate : public QmlComponentPrivate
+class Q_DECLARATIVE_EXPORT QmlComponentJS : public QmlComponent
 {
-    Q_DECLARE_PUBLIC(QmlBindableComponent)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlComponentJS)
+    friend class QmlEngine;
 public:
-    QmlBindableComponentPrivate() : QmlComponentPrivate(),
-        prevStatus(QmlBindableComponent::Null), ctxt(0)
-    { }
+    QmlComponentJS(QmlEngine *, const QUrl &url, QObject *parent = 0);
+    QmlComponentJS(QmlEngine *, QObject *parent=0);
+    Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged);
+    Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged);
+    Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged);
+    Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged);
 
-    QmlComponent::Status prevStatus;
-    QmlContext* ctxt;
+    Q_INVOKABLE QScriptValue createObject();
+    Q_INVOKABLE QString errorsString() const;
+
+    void setContext(QmlContext* c);
+Q_SIGNALS:
+    void isNullChanged();
+    void isErrorChanged();
+    void isReadyChanged();
+    void isLoadingChanged();
+private slots:
+    void statusChange(QmlComponent::Status newStatus);
 };
 
 QT_END_NAMESPACE
 
-#endif
+QML_DECLARE_TYPE(QmlComponentJS)
+
+#endif // QMLCOMPONENTJS_P_H

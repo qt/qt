@@ -89,7 +89,7 @@ class QmlBasicScriptPrivate
 {
 public:
     enum Flags { OwnData = 0x00000001 };
-    
+
     int size;
     int stateSize;
     int instructionCount;
@@ -102,14 +102,14 @@ public:
         return (const char *)(instructions() + instructionCount);
     }
 
-    const char *data() const 
+    const char *data() const
     {
         return (const char *)(instructions() + instructionCount) + exprLen + 1;
     }
 
     static unsigned int alignRound(int s)
     {
-        if (s % 4) 
+        if (s % 4)
             s += 4 - (s % 4);
         return s;
     }
@@ -177,10 +177,10 @@ static QVariant fetch_value(QObject *o, int idx, int type)
                 return QVariant(val);
             }
             break;
-        default:  
+        default:
             {
                 if (QmlMetaType::isObject(type)) {
-                    // NOTE: This assumes a cast to QObject does not alter the 
+                    // NOTE: This assumes a cast to QObject does not alter the
                     // object pointer
                     QObject *val = 0;
                     void *args[] = { &val, 0 };
@@ -241,14 +241,14 @@ struct QmlBasicScriptCompiler
     evaluated using the QmlBasicScript engine.
 
     To see if the QmlBasicScript engine can handle a binding, call compile()
-    and check the return value, or isValid() afterwards.  
+    and check the return value, or isValid() afterwards.
 
     To evaluate the binding, the QmlBasicScript instance needs some memory in
     which to cache state.  This may be allocated by calling newScriptState()
     and destroyed by calling deleteScriptState().  The state data is then passed
     to the run() method when evaluating the binding.
 
-    To further accelerate binding, QmlBasicScript can return a precompiled 
+    To further accelerate binding, QmlBasicScript can return a precompiled
     version of itself that can be saved for future use.  Call compileData() to
     get an opaque pointer to the compiled state, and compileDataSize() for the
     size of this data in bytes.  This data can be saved and passed to future
@@ -271,10 +271,10 @@ QmlBasicScript::QmlBasicScript()
     previously created QmlBasicScript instance.  Any other data will almost
     certainly cause the QmlBasicScript engine to crash.
 
-    \a data must continue to be valid throughout the QmlBasicScript instance 
+    \a data must continue to be valid throughout the QmlBasicScript instance
     life.  It does not assume ownership of the memory.
 
-    If \a owner is set, it is referenced on creation and dereferenced on 
+    If \a owner is set, it is referenced on creation and dereferenced on
     destruction of this instance.
 */
 
@@ -407,8 +407,8 @@ bool QmlBasicScript::compile(const Expression &expression)
     if (bsc.compile(expression.expression.asAST())) {
         int len = ::strlen(src);
         flags = QmlBasicScriptPrivate::OwnData;
-        int size = sizeof(QmlBasicScriptPrivate) + 
-                   bsc.bytecode.count() * sizeof(ScriptInstruction) + 
+        int size = sizeof(QmlBasicScriptPrivate) +
+                   bsc.bytecode.count() * sizeof(ScriptInstruction) +
                    QmlBasicScriptPrivate::alignRound(bsc.data.count() + len + 1);
         d = (QmlBasicScriptPrivate *) malloc(size);
         d->size = size;
@@ -416,10 +416,10 @@ bool QmlBasicScript::compile(const Expression &expression)
         d->instructionCount = bsc.bytecode.count();
         d->exprLen = len;
         ::memcpy((char *)d->expr(), src, len + 1);
-        for (int ii = 0; ii < d->instructionCount; ++ii) 
+        for (int ii = 0; ii < d->instructionCount; ++ii)
             d->instructions()[ii] = bsc.bytecode.at(ii);
         ::memcpy((char *)d->data(), bsc.data.constData(), bsc.data.count());
-    } 
+    }
 
     return d != 0;
 }
@@ -431,15 +431,14 @@ bool QmlBasicScriptCompiler::compile(QmlJS::AST::Node *node)
 
 bool QmlBasicScriptCompiler::tryConstant(QmlJS::AST::Node *node)
 {
-    if (node->kind == AST::Node::Kind_TrueLiteral || 
+    if (node->kind == AST::Node::Kind_TrueLiteral ||
         node->kind == AST::Node::Kind_FalseLiteral)
         return true;
 
     if (node->kind == AST::Node::Kind_NumericLiteral) {
         AST::NumericLiteral *lit = static_cast<AST::NumericLiteral *>(node);
 
-        return lit->suffix == AST::NumericLiteral::noSuffix &&
-               double(int(lit->value)) == lit->value;
+        return double(int(lit->value)) == lit->value;
     }
 
     return false;
@@ -469,13 +468,13 @@ bool QmlBasicScriptCompiler::tryName(QmlJS::AST::Node *node)
            node->kind == AST::Node::Kind_FieldMemberExpression;
 }
 
-bool QmlBasicScriptCompiler::buildName(QStringList &name, 
+bool QmlBasicScriptCompiler::buildName(QStringList &name,
                                        QmlJS::AST::Node *node)
 {
     if (node->kind == AST::Node::Kind_IdentifierExpression) {
         name << static_cast<AST::IdentifierExpression*>(node)->name->asString();
     } else if (node->kind == AST::Node::Kind_FieldMemberExpression) {
-        AST::FieldMemberExpression *expr = 
+        AST::FieldMemberExpression *expr =
             static_cast<AST::FieldMemberExpression *>(node);
 
         if (!buildName(name, expr->base))
@@ -499,7 +498,7 @@ QmlBasicScriptCompiler::fetch(int type, const QMetaObject *mo, int idx)
     if (prop.isConstant())
         instr.constant.notify = 0;
     else
-        instr.constant.notify = prop.notifySignalIndex(); 
+        instr.constant.notify = prop.notifySignalIndex();
     instr.constant.type = prop.userType();
     bytecode << instr;
     return QmlMetaType::metaObjectForType(prop.userType());
@@ -518,7 +517,7 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node)
         const QString &name = nameParts.at(ii);
 
         // We don't handle signal properties
-        if (name.length() > 2 && name.startsWith(QLatin1String("on")) && 
+        if (name.length() > 2 && name.startsWith(QLatin1String("on")) &&
             name.at(2).isUpper())
             return false;
 
@@ -543,10 +542,10 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node)
                     d1Idx = component->metaObject()->indexOfProperty(cname);
 
                 if (d0Idx != -1) {
-                    metaType = fetch(ScriptInstruction::FetchContextConstant, 
+                    metaType = fetch(ScriptInstruction::FetchContextConstant,
                                      context->metaObject(), d0Idx);
                 } else if(d1Idx != -1) {
-                    metaType = fetch(ScriptInstruction::FetchRootConstant, 
+                    metaType = fetch(ScriptInstruction::FetchRootConstant,
                                      component->metaObject(), d1Idx);
                 } else {
                     return false;
@@ -602,7 +601,7 @@ bool QmlBasicScriptCompiler::compileExpression(QmlJS::AST::Node *node)
 bool QmlBasicScriptCompiler::tryBinaryExpression(AST::Node *node)
 {
     if (node->kind == AST::Node::Kind_BinaryExpression) {
-        AST::BinaryExpression *expr = 
+        AST::BinaryExpression *expr =
             static_cast<AST::BinaryExpression *>(node);
 
         if (expr->op == QSOperator::Equal)
@@ -614,7 +613,7 @@ bool QmlBasicScriptCompiler::tryBinaryExpression(AST::Node *node)
 bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
 {
     if (node->kind == AST::Node::Kind_BinaryExpression) {
-        AST::BinaryExpression *expr = 
+        AST::BinaryExpression *expr =
             static_cast<AST::BinaryExpression *>(node);
 
         if (!compileExpression(expr->left)) return false;
@@ -631,7 +630,7 @@ bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
 
         bytecode.append(instr);
         return true;
-    } 
+    }
     return false;
 }
 
@@ -639,7 +638,7 @@ bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
     \enum QmlBasicScript::CacheState
     \value NoChange The query has not change.  Any previous monitoring is still
     valid.
-    \value Incremental The query has been incrementally changed.  Any previous 
+    \value Incremental The query has been incrementally changed.  Any previous
     monitoring is still valid, but needs to have the fresh properties added to
     it.
     \value Reset The entire query has been reset from the beginning.  Any previous
@@ -647,60 +646,60 @@ bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
 */
 
 /*!
-    Run the script in \a context and return the result.  \a voidCache should 
-    contain state memory previously acquired from newScript. 
+    Run the script in \a context and return the result.  \a voidCache should
+    contain state memory previously acquired from newScript.
  */
 QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *cached)
 {
     Q_UNUSED(voidCache);
     if (!isValid())
         return QVariant();
-    
+
     QmlContextPrivate *contextPrivate = context->d_func();
-    QmlEnginePrivate *enginePrivate = context->engine()->d_func();
+    QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(context->engine());
 
     QStack<QVariant> stack;
-    
+
     CacheState state = NoChange;
 
     for (int idx = 0; idx < d->instructionCount; ++idx) {
         const ScriptInstruction &instr = d->instructions()[idx];
 
         switch(instr.type) {
-            case ScriptInstruction::LoadIdObject: 
+            case ScriptInstruction::LoadIdObject:
             {
                 stack.push(contextPrivate->propertyValues.at(instr.fetch.idx));
                 enginePrivate->capturedProperties <<
-                    QmlEnginePrivate::CapturedProperty(context, -1, contextPrivate->notifyIndex + instr.fetch.idx); 
+                    QmlEnginePrivate::CapturedProperty(context, -1, contextPrivate->notifyIndex + instr.fetch.idx);
                 state = Reset;
             }
                 break;
 
-            case ScriptInstruction::FetchContextConstant: 
+            case ScriptInstruction::FetchContextConstant:
             {
                 QObject *obj = contextPrivate->defaultObjects.at(0);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
                 if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
-                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
+                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify);
                 state = Reset;
             }
                 break;
 
-            case ScriptInstruction::FetchRootConstant: 
+            case ScriptInstruction::FetchRootConstant:
             {
                 QObject *obj = contextPrivate->defaultObjects.at(1);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
                 if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
-                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
+                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify);
                 state = Reset;
             }
                 break;
 
-            case ScriptInstruction::FetchConstant: 
+            case ScriptInstruction::FetchConstant:
             {
                 QVariant o = stack.pop();
                 QObject *obj = qvariant_cast<QObject *>(o);
@@ -708,7 +707,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
                 if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
-                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
+                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify);
                 state = Reset;
             }
                 break;
