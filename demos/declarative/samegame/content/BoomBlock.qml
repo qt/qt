@@ -11,9 +11,17 @@ Item { id:block
     x: Follow { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
     y: Follow { source: targetY; spring: 2; damping: 0.2 }
 
+    //TODO: Replace with an image with a fuzzy effect like KSame
+    Rect { id: shine; radius:16; anchors.fill:parent; color: "yellow";
+        opacity: 0
+        opacity: SequentialAnimation{running: selected&&!dying; finishPlaying: true; repeat: true
+            NumberAnimation{ from: 0; to: 1; }NumberAnimation{ from:1; to:0; }}
+    }
     MouseRegion {
         id: gameMR; anchors.fill: parent
         onClicked: handleClick(Math.floor(parent.x/width), Math.floor(parent.y/height));
+        onEntered: handleHover(Math.floor(parent.x/width), Math.floor(parent.y/height));
+        onExited: handleHover(-1,-1);
     }
 
     Image { id: img
