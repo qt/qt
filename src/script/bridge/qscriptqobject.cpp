@@ -1168,7 +1168,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                     || (index >= meta->methodOffset())) {
                     QtFunction *fun = new (exec)QtFunction(
                         object, index, /*maybeOverloaded=*/false,
-                        &exec->globalData(), exec->lexicalGlobalObject()->functionStructure(),
+                        &exec->globalData(), eng->globalObject()->functionStructure(),
                         propertyName);
                     slot.setValue(fun);
                     data->cachedMembers.insert(name, fun);
@@ -1187,7 +1187,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                 if (GeneratePropertyFunctions) {
                     QtPropertyFunction *fun = new (exec)QtPropertyFunction(
                         meta, index, &exec->globalData(),
-                        exec->lexicalGlobalObject()->functionStructure(),
+                        eng->globalObject()->functionStructure(),
                         propertyName);
                     data->cachedMembers.insert(name, fun);
                     slot.setGetterSlot(fun);
@@ -1219,7 +1219,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
             && (methodName(method) == name)) {
             QtFunction *fun = new (exec)QtFunction(
                 object, index, /*maybeOverloaded=*/true,
-                &exec->globalData(), exec->lexicalGlobalObject()->functionStructure(),
+                &exec->globalData(), eng->globalObject()->functionStructure(),
                 propertyName);
             slot.setValue(fun);
             data->cachedMembers.insert(name, fun);
@@ -1292,7 +1292,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                     } else {
                         fun = new (exec)QtPropertyFunction(
                             meta, index, &exec->globalData(),
-                            exec->lexicalGlobalObject()->functionStructure(),
+                            eng->globalObject()->functionStructure(),
                             propertyName);
                         data->cachedMembers.insert(name, fun);
                     }
@@ -1547,6 +1547,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
     if (!delegate || (delegate->type() != QScriptObjectDelegate::QtObject))
         return throwError(exec, JSC::TypeError, "this object is not a QObject");
     const QObject *const obj = static_cast<QObjectDelegate*>(delegate)->value();
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
 
     // find the children
     QList<QObject *> children;
@@ -1561,7 +1562,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
             for (int i = 0; i < allChildrenCount; ++i) {
                 QObject *const child = allChildren.at(i);
                 const JSC::UString childName = qtStringToJSCUString(child->objectName());
-                JSC::RegExpConstructor* regExpConstructor = exec->lexicalGlobalObject()->regExpConstructor();
+                JSC::RegExpConstructor* regExpConstructor = engine->globalObject()->regExpConstructor();
                 int position;
                 int length;
                 regExpConstructor->performMatch(regexp->regExp(), childName, 0, position, length);
@@ -1580,7 +1581,6 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
     JSC::JSArray *const result = JSC::constructEmptyArray(exec, length);
 
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     for (int i = 0; i < length; ++i) {
         QObject *const child = children.at(i);
         result->put(exec, i, engine->newQObject(child, QScriptEngine::QtOwnership, opt));
@@ -1978,7 +1978,7 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     if (receiver && receiver.isObject())
         thisObject = receiver;
     else
-        thisObject = exec->lexicalGlobalObject();
+        thisObject = engine->globalObject();
 
     JSC::CallData callData;
     JSC::CallType callType = slot.getCallData(callData);
