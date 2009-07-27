@@ -1107,6 +1107,10 @@ bool Heap::collect()
 
     markStackObjectsConservatively();
     markProtectedObjects();
+#if QT_BUILD_SCRIPT_LIB
+    if (m_globalData->clientData)
+        m_globalData->clientData->mark();
+#endif
     if (m_markListSet && m_markListSet->size())
         MarkedArgumentBuffer::markLists(*m_markListSet);
     if (m_globalData->exception && !m_globalData->exception.marked())

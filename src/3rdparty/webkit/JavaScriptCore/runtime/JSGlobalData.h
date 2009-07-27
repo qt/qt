@@ -65,6 +65,9 @@ namespace JSC {
     public:
         struct ClientData {
             virtual ~ClientData() = 0;
+#ifdef QT_BUILD_SCRIPT_LIB
+            virtual void mark() {}
+#endif
         };
 
         static bool sharedInstanceExists();
