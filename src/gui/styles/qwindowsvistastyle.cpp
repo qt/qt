@@ -364,7 +364,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             w->setProperty("_q_stylestate", (int)option->state);
             w->setProperty("_q_stylerect", w->rect());
 
-            bool doTransition = ((state & State_Sunken)     != (oldState & State_Sunken) ||
+            bool doTransition = oldState && 
+                                ((state & State_Sunken)     != (oldState & State_Sunken) ||
                                  (state & State_On)         != (oldState & State_On)     ||
                                  (state & State_MouseOver)  != (oldState & State_MouseOver));
 
