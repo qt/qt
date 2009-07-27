@@ -401,7 +401,7 @@ void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
 
 void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
 {
-    if (exec && !exec->hadException() && val)
+    if (exec && val)
         exec->setException(val);
 }
 
@@ -1244,16 +1244,15 @@ QString QScriptValue::toString() const
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
         JSC::UString str = d->jscValue.toString(exec);
-        if (exec && exec->hadException()) {
+        if (exec && exec->hadException() && !str.size()) {
             JSC::JSValue savedException2;
             QScriptValuePrivate::saveException(exec, &savedException2);
-            if (!str.size())
-                str = savedException2.toString(exec);
-            if (!eng_p->uncaughtException)
-                eng_p->uncaughtException = savedException2;
+            str = savedException2.toString(exec);
+            QScriptValuePrivate::restoreException(exec, savedException2);
         }
-        QScriptValuePrivate::restoreException(exec, savedException);
-        return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
+        if (savedException)
+            QScriptValuePrivate::restoreException(exec, savedException);
+        return QScript::qtStringFromJSCUString(str);
     }
     case QScriptValuePrivate::Number:
         return QScript::qtStringFromJSCUString(JSC::UString::from(d->numberValue));
@@ -2009,8 +2008,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, jscArgs);
     if (exec->hadException()) {
-        if (!eng_p->uncaughtException)
-            eng_p->uncaughtException = exec->exception();
         result = exec->exception();
     } else {
         QScriptValuePrivate::restoreException(exec, savedException);
@@ -2090,8 +2087,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, applyArgs);
     if (exec->hadException()) {
-        if (!eng_p->uncaughtException)
-            eng_p->uncaughtException = exec->exception();
         result = exec->exception();
     } else {
         QScriptValuePrivate::restoreException(exec, savedException);
@@ -2142,8 +2137,6 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, jscArgs);
     if (exec->hadException()) {
-        if (!eng_p->uncaughtException)
-            eng_p->uncaughtException = exec->exception();
         result = JSC::asObject(exec->exception());
     } else {
         QScriptValuePrivate::restoreException(exec, savedException);
@@ -2201,8 +2194,6 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, applyArgs);
     if (exec->hadException()) {
-        if (!eng_p->uncaughtException)
-            eng_p->uncaughtException = exec->exception();
         if (exec->exception().isObject())
             result = JSC::asObject(exec->exception());
     } else {

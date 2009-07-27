@@ -163,7 +163,6 @@ public:
     JSC::JSObject *customGlobalObject;
     JSC::ExecState *currentFrame;
     QHash<JSC::ExecState*, QScriptContext*> contextForFrameHash;
-    JSC::JSValue uncaughtException;
 
     WTF::RefPtr<JSC::Structure> scriptObjectStructure;
 

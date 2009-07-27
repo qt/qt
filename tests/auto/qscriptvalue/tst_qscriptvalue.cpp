@@ -1924,16 +1924,12 @@ void tst_QScriptValue::getSetProperty()
             QVERIFY(!eng.hasUncaughtException());
             QScriptValue ret = object5.property("foo");
             QVERIFY(ret.isError());
-            QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
             QVERIFY(eng.hasUncaughtException());
-            QEXPECT_FAIL("", "uncaughtException() and return value should be the same", Continue);
             QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
             eng.evaluate("Object"); // clear exception state...
             QVERIFY(!eng.hasUncaughtException());
             object5.setProperty("foo", str);
-            QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
             QVERIFY(eng.hasUncaughtException());
-            QEXPECT_FAIL("", "Should produce an error message", Continue);
             QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: set foo"));
         }
 

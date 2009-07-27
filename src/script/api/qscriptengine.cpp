@@ -1045,9 +1045,6 @@ void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
 
 void QScriptEnginePrivate::mark()
 {
-    if (uncaughtException && !uncaughtException.marked())
-        uncaughtException.mark();
-
     if (customGlobalObject && !customGlobalObject->marked())
         customGlobalObject->mark();
 
@@ -2068,7 +2065,6 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     exec->clearException();
     if (!exec->globalData().dynamicGlobalObject)
         exec->globalData().dynamicGlobalObject = d->globalObject;
-    d->uncaughtException = JSC::JSValue();
     JSC::ScopeChain scopeChain = JSC::ScopeChain(exec->scopeChain());
     JSC::Completion comp = JSC::evaluate(exec, scopeChain,
                                          JSC::makeSource(jscProgram, jscFileName, lineNumber));
@@ -2078,7 +2074,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     }
 
     if (comp.complType() == JSC::Throw) {
-        d->uncaughtException = comp.value();
+        exec->setException(comp.value());
         return d->scriptValueFromJSCValue(comp.value());
     }
 
@@ -2158,7 +2154,8 @@ void QScriptEngine::popContext()
 bool QScriptEngine::hasUncaughtException() const
 {
     Q_D(const QScriptEngine);
-    return !!d->uncaughtException;
+    JSC::ExecState* exec = d->globalObject->globalExec();
+    return exec->hadException();
 }
 
 /*!
@@ -2175,7 +2172,8 @@ bool QScriptEngine::hasUncaughtException() const
 QScriptValue QScriptEngine::uncaughtException() const
 {
     Q_D(const QScriptEngine);
-    return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(d->uncaughtException);
+    JSC::ExecState* exec = d->globalObject->globalExec();
+    return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(exec->exception());
 }
 
 /*!
@@ -2190,7 +2188,7 @@ int QScriptEngine::uncaughtExceptionLineNumber() const
 {
     if (!hasUncaughtException())
         return -1;
-    return uncaughtException().property(QLatin1String("line")).toInt32();
+    return uncaughtException().property(QLatin1String("lineNumber")).toInt32();
 }
 
 /*!
@@ -2222,7 +2220,6 @@ void QScriptEngine::clearExceptions()
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
     exec->clearException();
-    d->uncaughtException = JSC::JSValue();
 }
 
 /*!
