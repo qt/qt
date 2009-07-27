@@ -38,8 +38,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlbinding.h \
     qml/qmlbinding_p.h \
     qml/qmlmetaproperty.h \
-    qml/qmlcomponentjs.h \
     qml/qmlcomponentjs_p.h \
+    qml/qmlcomponentjs_p_p.h \
     qml/qmlcomponent.h \
     qml/qmlcomponent_p.h \
     qml/qmlcustomparser_p.h \
