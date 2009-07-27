@@ -1069,6 +1069,17 @@ void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::H
 #endif
 }
 
+void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show)
+{
+#if QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    OSWindowRef theWindow = static_cast<OSWindowRef>(window);
+    NSToolbar *macToolbar = [theWindow toolbar];
+    if (macToolbar)
+        [macToolbar setShowsBaselineSeparator: show];
+#endif
+}
+
 QStringList qt_mac_NSArrayToQStringList(void *nsarray)
 {
     QStringList result;
