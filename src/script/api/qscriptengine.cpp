@@ -2064,10 +2064,13 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::UString jscProgram = QScript::qtStringToJSCUString(program);
     JSC::UString jscFileName = QScript::qtStringToJSCUString(fileName);
 
-    JSC::ExecState* exec = d->globalObject->globalExec(); // ### use d->currentFrame
+    JSC::ExecState* exec = d->currentFrame;
     exec->clearException();
+    if (!exec->globalData().dynamicGlobalObject)
+        exec->globalData().dynamicGlobalObject = d->globalObject;
     d->uncaughtException = JSC::JSValue();
-    JSC::Completion comp = JSC::evaluate(exec, exec->lexicalGlobalObject()->globalScopeChain(),
+    JSC::ScopeChain scopeChain = JSC::ScopeChain(exec->scopeChain());
+    JSC::Completion comp = JSC::evaluate(exec, scopeChain,
                                          JSC::makeSource(jscProgram, jscFileName, lineNumber));
     if ((comp.complType() == JSC::Normal) || (comp.complType() == JSC::ReturnValue)) {
         Q_ASSERT(!exec->hadException());

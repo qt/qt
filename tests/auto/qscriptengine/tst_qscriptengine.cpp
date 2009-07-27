@@ -163,7 +163,6 @@ void tst_QScriptEngine::currentContext()
     QVERIFY(globalCtx->thisObject().strictlyEquals(eng.globalObject()));
     QEXPECT_FAIL("", "", Continue);
     QVERIFY(globalCtx->activationObject().strictlyEquals(eng.globalObject()));
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(globalCtx->argumentsObject().isObject());
 }
 
@@ -1262,10 +1261,13 @@ void tst_QScriptEngine::evaluate()
 static QScriptValue eval_nested(QScriptContext *ctx, QScriptEngine *eng)
 {
     QScriptValue result = eng->newObject();
+    eng->evaluate("var bar = 'local';");
     result.setProperty("thisObjectIdBefore", ctx->thisObject().property("id"));
     QScriptValue evaluatedThisObject = eng->evaluate("this");
     result.setProperty("thisObjectIdAfter", ctx->thisObject().property("id"));
     result.setProperty("evaluatedThisObjectId", evaluatedThisObject.property("id"));
+    result.setProperty("local_bar", eng->evaluate("bar"));
+
     return result;
 }
 
@@ -1274,6 +1276,7 @@ void tst_QScriptEngine::nestedEvaluate()
     QScriptEngine eng;
     eng.globalObject().setProperty("fun", eng.newFunction(eval_nested));
     QScriptValue result = eng.evaluate("o = { id:'foo'}; o.fun = fun; o.fun()");
+    QCOMPARE(result.property("local_bar").toString(), QString("local"));
     QCOMPARE(result.property("thisObjectIdBefore").toString(), QString("foo"));
     QCOMPARE(result.property("thisObjectIdAfter").toString(), QString("foo"));
     QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
