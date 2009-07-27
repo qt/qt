@@ -235,7 +235,6 @@ namespace QtSharedPointer {
     struct ExternalRefCountWithContiguousData: public ExternalRefCountWithDestroyFn
     {
         typedef ExternalRefCountWithDestroyFn Parent;
-        typedef ExternalRefCountWithContiguousData Self;
         T data;
 
         static void deleter(ExternalRefCountData *self)
@@ -248,7 +247,8 @@ namespace QtSharedPointer {
         static inline ExternalRefCountData *create(T **ptr)
         {
             DestroyerFn destroy = &deleter;
-            Self *d = static_cast<Self *>(::operator new(sizeof(Self)));
+            ExternalRefCountWithContiguousData *d =
+                static_cast<ExternalRefCountWithContiguousData *>(::operator new(sizeof(ExternalRefCountWithContiguousData)));
 
             // initialize the d-pointer sub-object
             // leave d->data uninitialized
