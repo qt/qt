@@ -1927,8 +1927,9 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 #ifndef Q_OS_WINCE
     if (handle == INVALID_HANDLE_VALUE && fh)
         handle = (HANDLE)_get_osfhandle(QT_FILENO(fh));
-#else
-    #ifdef Q_USE_DEPRECATED_MAP_API
+#endif
+
+#ifdef Q_USE_DEPRECATED_MAP_API
     if (fileMapHandle == INVALID_HANDLE_VALUE) {
         nativeClose();
         fileMapHandle = CreateFileForMapping((const wchar_t*)nativeFilePath.constData(),
@@ -1940,10 +1941,12 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
                 NULL);
     }
     handle = fileMapHandle;
-    #endif
-    if (handle == INVALID_HANDLE_VALUE && fh)
-        return 0;
 #endif
+
+    if (handle == INVALID_HANDLE_VALUE) {
+        q->setError(QFile::UnspecifiedError, QLatin1String("No handle on file"));
+        return 0;
+    }
 
     // first create the file mapping handle
     DWORD protection = (openMode & QIODevice::WriteOnly) ? PAGE_READWRITE : PAGE_READONLY;
