@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
     \class QMatrix
     \brief The QMatrix class specifies 2D transformations of a
     coordinate system.
+    \obsolete
 
     \ingroup multimedia
 
