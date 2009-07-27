@@ -308,6 +308,15 @@ public:
 namespace QScript
 {
 
+struct GlobalClientData : public JSC::JSGlobalData::ClientData
+{
+    GlobalClientData(QScriptEnginePrivate *e)
+        : engine(e) {}
+    virtual ~GlobalClientData() {}
+
+    QScriptEnginePrivate *engine;
+};
+
 class GlobalObject : public JSC::JSGlobalObject
 {
 public:
@@ -412,7 +421,7 @@ QString qtStringFromJSCUString(const JSC::UString &str)
 
 QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec)
 {
-    return static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
 }
 
 bool isFunction(JSC::JSValue value)
@@ -800,6 +809,7 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
     JSC::initializeThreading(); // ### hmmm
 
     globalData = JSC::JSGlobalData::create().releaseRef();
+    globalData->clientData = new QScript::GlobalClientData(this);
     globalObject = new (globalData)QScript::GlobalObject(this);
 
     JSC::ExecState* exec = globalObject->globalExec();
