@@ -1442,7 +1442,7 @@ bool QScriptValue::isUndefined() const
   Note that function values, variant values, and QObject values are
   objects, so this function returns true for such values.
 
-  \sa toObject(), QScriptEngine::newObject()
+  \sa QScriptEngine::toObject(), QScriptEngine::newObject()
 */
 bool QScriptValue::isObject() const
 {
