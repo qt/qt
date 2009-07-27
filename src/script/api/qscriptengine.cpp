@@ -643,6 +643,12 @@ bool GlobalObject::getOwnPropertySlot(JSC::ExecState* exec,
                                       const JSC::Identifier& propertyName,
                                       JSC::PropertySlot& slot)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    if (propertyName == exec->propertyNames().arguments && engine->currentFrame->argumentCount() > 0) {
+        JSC::JSValue args = engine->scriptValueToJSCValue(engine->contextForFrame(engine->currentFrame)->argumentsObject());
+        slot.setValue(args);
+        return true;
+    }
     if (customGlobalObject)
         return customGlobalObject->getOwnPropertySlot(exec, propertyName, slot);
     return JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot);
@@ -2173,9 +2179,8 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 
     JSC::ExecState* exec = d->currentFrame;
     exec->clearException();
-    if (!exec->globalData().dynamicGlobalObject)
-        exec->globalData().dynamicGlobalObject = d->originalGlobalObject();
     JSC::ScopeChain scopeChain = JSC::ScopeChain(exec->scopeChain());
+    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
     JSC::Completion comp = JSC::evaluate(exec, scopeChain,
                                          JSC::makeSource(jscProgram, jscFileName, lineNumber));
     if ((comp.complType() == JSC::Normal) || (comp.complType() == JSC::ReturnValue)) {

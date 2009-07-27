@@ -2723,6 +2723,14 @@ void tst_QScriptEngine::errorConstructors()
     }
 }
 
+static QScriptValue argumentsProperty_fun(QScriptContext *, QScriptEngine *eng)
+{
+    eng->evaluate("var a = arguments[0];");
+    eng->evaluate("arguments[0] = 200;");
+    return eng->evaluate("a + arguments[0]");
+}
+
+
 void tst_QScriptEngine::argumentsProperty()
 {
     {
@@ -2750,6 +2758,15 @@ void tst_QScriptEngine::argumentsProperty()
         QCOMPARE(ret.toInt32(), 456);
         QEXPECT_FAIL("", "", Continue);
         QVERIFY(eng.evaluate("arguments").isUndefined());
+    }
+
+    {
+        QScriptEngine eng;
+        QScriptValue fun = eng.newFunction(argumentsProperty_fun);
+        eng.globalObject().setProperty("fun", eng.newFunction(argumentsProperty_fun));
+        QScriptValue result = eng.evaluate("fun(18)");
+        QVERIFY(result.isNumber());
+        QCOMPARE(result.toInt32(), 218);
     }
 }
 
