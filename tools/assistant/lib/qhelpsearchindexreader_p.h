@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QHELPSEARCHINDEXREADERCLUCENE_H
-#define QHELPSEARCHINDEXREADERCLUCENE_H
+#ifndef QHELPSEARCHINDEXREADER_H
+#define QHELPSEARCHINDEXREADER_H
 
 //
 //  W A R N I N G
@@ -53,41 +53,56 @@
 // We mean it.
 //
 
-#include "qhelpsearchindexreader_p.h"
+#include "qhelpsearchengine.h"
 
-#include "fulltextsearch/qanalyzer_p.h"
-#include "fulltextsearch/qquery_p.h"
+#include <QtCore/QList>
+#include <QtCore/QMutex>
+#include <QtCore/QObject>
+#include <QtCore/QString>
+#include <QtCore/QThread>
+#include <QtCore/QWaitCondition>
 
 QT_BEGIN_NAMESPACE
 
+class QHelpEngineCore;
+
 namespace qt {
     namespace fulltextsearch {
-        namespace clucene {
 
-class QHelpSearchIndexReaderClucene : public QHelpSearchIndexReader
+class QHelpSearchIndexReader : public QThread
 {
     Q_OBJECT
 
 public:
-    QHelpSearchIndexReaderClucene();
-    ~QHelpSearchIndexReaderClucene();
+    QHelpSearchIndexReader();
+    ~QHelpSearchIndexReader();
+
+    void cancelSearching();
+    void search(const QString &collectionFile,
+        const QString &indexFilesFolder,
+        const QList<QHelpSearchQuery> &queryList);
+    int hitsCount() const;
+    QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const;
+
+signals:
+    void searchingStarted();
+    void searchingFinished(int hits);
+
+protected:
+    mutable QMutex mutex;
+    QList<QHelpSearchEngine::SearchHit> hitList;
+    bool m_cancel;
+    QString m_collectionFile;
+    QList<QHelpSearchQuery> m_query;
+    QString m_indexFilesFolder;
 
 private:
-    void run();
-    bool defaultQuery(const QString &term, QCLuceneBooleanQuery &booleanQuery,
-        QCLuceneStandardAnalyzer &analyzer);
-    bool buildQuery(QCLuceneBooleanQuery &booleanQuery, const QList<QHelpSearchQuery> &queryList,
-        QCLuceneStandardAnalyzer &analyzer);
-    bool buildTryHarderQuery(QCLuceneBooleanQuery &booleanQuery,
-        const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer);
-    void boostSearchHits(const QHelpEngineCore &engine, QList<QHelpSearchEngine::SearchHit> &hitList,
-        const QList<QHelpSearchQuery> &queryList);
+    virtual void run()=0;
 };
 
-        }   // namespace clucene
     }   // namespace fulltextsearch
-}   // namespace qt
+}  // namespace qt
 
 QT_END_NAMESPACE
 
-#endif  // QHELPSEARCHINDEXREADERCLUCENE_H
+#endif  // QHELPSEARCHINDEXREADER_H

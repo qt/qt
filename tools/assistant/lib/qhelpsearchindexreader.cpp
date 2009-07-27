@@ -39,55 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef QHELPSEARCHINDEXREADERCLUCENE_H
-#define QHELPSEARCHINDEXREADERCLUCENE_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API. It exists for the convenience
-// of the help generator tools. This header file may change from version
-// to version without notice, or even be removed.
-//
-// We mean it.
-//
-
 #include "qhelpsearchindexreader_p.h"
-
-#include "fulltextsearch/qanalyzer_p.h"
-#include "fulltextsearch/qquery_p.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace qt {
     namespace fulltextsearch {
-        namespace clucene {
 
-class QHelpSearchIndexReaderClucene : public QHelpSearchIndexReader
+QHelpSearchIndexReader::QHelpSearchIndexReader()
+    : QThread()
+    , m_cancel(false)
 {
-    Q_OBJECT
+    // nothing todo
+}
 
-public:
-    QHelpSearchIndexReaderClucene();
-    ~QHelpSearchIndexReaderClucene();
+QHelpSearchIndexReader::~QHelpSearchIndexReader()
+{
+    mutex.lock();
+    this->m_cancel = true;
+    mutex.unlock();
 
-private:
-    void run();
-    bool defaultQuery(const QString &term, QCLuceneBooleanQuery &booleanQuery,
-        QCLuceneStandardAnalyzer &analyzer);
-    bool buildQuery(QCLuceneBooleanQuery &booleanQuery, const QList<QHelpSearchQuery> &queryList,
-        QCLuceneStandardAnalyzer &analyzer);
-    bool buildTryHarderQuery(QCLuceneBooleanQuery &booleanQuery,
-        const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer);
-    void boostSearchHits(const QHelpEngineCore &engine, QList<QHelpSearchEngine::SearchHit> &hitList,
-        const QList<QHelpSearchQuery> &queryList);
-};
+    wait();
+}
 
-        }   // namespace clucene
+void QHelpSearchIndexReader::cancelSearching()
+{
+    mutex.lock();
+    this->m_cancel = true;
+    mutex.unlock();
+}
+
+void QHelpSearchIndexReader::search(const QString &collectionFile, const QString &indexFilesFolder,
+    const QList<QHelpSearchQuery> &queryList)
+{
+    wait();
+
+    this->hitList.clear();
+    this->m_cancel = false;
+    this->m_query = queryList;
+    this->m_collectionFile = collectionFile;
+    this->m_indexFilesFolder = indexFilesFolder;
+
+    start(QThread::NormalPriority);
+}
+
+int QHelpSearchIndexReader::hitsCount() const
+{
+    QMutexLocker lock(&mutex);
+    return hitList.count();
+}
+
+QList<QHelpSearchEngine::SearchHit> QHelpSearchIndexReader::hits(int start,
+                                                                 int end) const
+{
+    QList<QHelpSearchEngine::SearchHit> hits;
+    QMutexLocker lock(&mutex);
+    for (int i = start; i < end && i < hitList.count(); ++i)
+        hits.append(hitList.at(i));
+    return hits;
+}
+
+
     }   // namespace fulltextsearch
 }   // namespace qt
 
 QT_END_NAMESPACE
-
-#endif  // QHELPSEARCHINDEXREADERCLUCENE_H
