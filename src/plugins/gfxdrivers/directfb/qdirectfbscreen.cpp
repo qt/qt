@@ -916,9 +916,6 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     QDirectFBPaintEngine::initImageCache(imageCacheSize);
 #endif
 
-    if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
-        d_ptr->directFBFlags |= IgnoreSystemClip;
-
 #ifndef QT_NO_DIRECTFB_WM
     if (displayArgs.contains(QLatin1String("fullscreen")))
 #endif
