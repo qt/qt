@@ -80,8 +80,6 @@ public:
 
     QObject *scopeObject() const;
 
-    quint32 id() const;
-
 public Q_SLOTS:
     QVariant value();
 

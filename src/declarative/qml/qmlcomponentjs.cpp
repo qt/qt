@@ -41,6 +41,7 @@
 
 #include "qmlcomponentjs_p.h"
 #include "qmlcomponentjs_p_p.h"
+#include "qmlengine_p.h"
 #include "qmlcomponent.h"
 
 QT_BEGIN_NAMESPACE
@@ -83,7 +84,7 @@ QScriptValue QmlComponentJS::createObject()
 {
     Q_D(QmlComponentJS);
     QObject* ret = create(d->ctxt);
-    return QmlEngine::qmlScriptObject(ret, d->engine);
+    return QmlEnginePrivate::qmlScriptObject(ret, d->engine);
 }
 
 /*!

@@ -808,9 +808,11 @@ void QFxListViewPrivate::fixupX()
     if (orient == Qt::Vertical)
         return;
     if (currItemMode == QFxListView::SnapAuto) {
-        moveReason = Mouse;
-        _tl.clear();
-        _tl.move(_moveX, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        if (currentItem) {
+            moveReason = Mouse;
+            _tl.clear();
+            _tl.move(_moveX, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        }
     } else if (currItemMode == QFxListView::Snap) {
         moveReason = Mouse;
         int idx = snapIndex();

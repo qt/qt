@@ -143,7 +143,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
     QStack<ListInstance> qliststack;
 
     vmeErrors.clear();
-    QmlEnginePrivate *ep = ctxt->engine()->d_func();
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         QmlInstruction &instr = comp->bytecode[ii];

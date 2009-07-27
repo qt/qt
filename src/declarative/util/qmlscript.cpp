@@ -185,9 +185,9 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &s
     Q_Q(QmlScript);
     QmlEngine *engine = qmlEngine(q);
     QmlContext *context = qmlContext(q);
-    QScriptEngine *scriptEngine = engine->scriptEngine();
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    QScriptContext *currentContext = engine->scriptEngine()->currentContext();
+    QScriptContext *currentContext = scriptEngine->currentContext();
     QScriptValueList oldScopeChain = currentContext->scopeChain();
     QScriptValue oldact = currentContext->activationObject();
 
