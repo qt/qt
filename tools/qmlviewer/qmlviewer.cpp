@@ -541,6 +541,7 @@ void QmlViewer::setRecording(bool on)
         return;
 
     if (on) {
+        canvas->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
         recordTimer.start(record_period,this);
         QString fmt = record_file.right(4).toLower();
         if (fmt != ".png" && fmt != ".gif") {
@@ -567,6 +568,7 @@ void QmlViewer::setRecording(bool on)
             frame_stream = 0;
         }
     } else {
+        canvas->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
         recordTimer.stop();
         if (frame_stream) {
             qDebug() << "Saving video...";
