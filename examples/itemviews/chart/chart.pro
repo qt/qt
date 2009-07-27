@@ -4,7 +4,7 @@ RESOURCES   = chart.qrc
 SOURCES     = main.cpp \
               mainwindow.cpp \
               pieview.cpp
-unix:!mac:LIBS+= -lm
+unix:!mac:!vxworks:LIBS+= -lm
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/itemviews/chart

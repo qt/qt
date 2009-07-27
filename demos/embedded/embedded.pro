@@ -2,8 +2,9 @@ TEMPLATE  = subdirs
 SUBDIRS   = styledemo
 
 contains(QT_CONFIG, svg) {
-    SUBDIRS += embeddedsvgviewer \
-               fluidlauncher
+    SUBDIRS += embeddedsvgviewer
+    # no QProcess
+    !vxworks:!qnx:SUBDIRS += fluidlauncher
 }
 
 # install
