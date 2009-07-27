@@ -2167,7 +2167,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::ExecState* exec = d->currentFrame;
     exec->clearException();
     if (!exec->globalData().dynamicGlobalObject)
-        exec->globalData().dynamicGlobalObject = d->globalObject;
+        exec->globalData().dynamicGlobalObject = d->originalGlobalObject();
     JSC::ScopeChain scopeChain = JSC::ScopeChain(exec->scopeChain());
     JSC::Completion comp = JSC::evaluate(exec, scopeChain,
                                          JSC::makeSource(jscProgram, jscFileName, lineNumber));
@@ -2257,7 +2257,7 @@ void QScriptEngine::popContext()
 bool QScriptEngine::hasUncaughtException() const
 {
     Q_D(const QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->globalExec();
     return exec->hadException();
 }
 
@@ -2275,7 +2275,7 @@ bool QScriptEngine::hasUncaughtException() const
 QScriptValue QScriptEngine::uncaughtException() const
 {
     Q_D(const QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->globalExec();
     return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(exec->exception());
 }
 
