@@ -59,10 +59,6 @@
 #  include <sys/times.h>
 #endif
 
-#ifdef Q_OS_MAC
-#include <mach/mach_time.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;

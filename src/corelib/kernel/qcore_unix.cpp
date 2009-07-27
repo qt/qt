@@ -47,6 +47,10 @@
 
 #include "qeventdispatcher_unix_p.h" // for the timeval operators
 
+#ifdef Q_OS_MAC
+#include <mach/mach_time.h>
+#endif
+
 #if !defined(QT_NO_CLOCK_MONOTONIC)
 # if defined(QT_BOOTSTRAPPED)
 #  define QT_NO_CLOCK_MONOTONIC
