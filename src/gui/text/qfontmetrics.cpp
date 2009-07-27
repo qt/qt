@@ -560,7 +560,7 @@ int QFontMetrics::width(const QString &text, int len) const
     processing strings cannot be taken into account. When implementing
     an interactive text control, use QTextLayout instead.
 
-    \sa boundingRect(), charWidth()
+    \sa boundingRect()
 */
 int QFontMetrics::width(QChar ch) const
 {
