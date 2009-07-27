@@ -8428,11 +8428,7 @@ qreal QPaintEngineState::opacity() const
     If \a combine is true, the specified \a transform is combined with
     the current matrix; otherwise it replaces the current matrix.
 
-    This function has been added for compatibility with setMatrix(),
-    but as with setMatrix() the preferred method of setting a
-    transformation on the painter is through setWorldTransform().
-
-    \sa transform()
+    \sa transform() setWorldTransform()
 */
 
 void QPainter::setTransform(const QTransform &transform, bool combine )
@@ -8442,6 +8438,8 @@ void QPainter::setTransform(const QTransform &transform, bool combine )
 
 /*!
     Returns the world transformation matrix.
+
+    \sa worldTransform()
 */
 
 const QTransform & QPainter::transform() const
