@@ -58,7 +58,6 @@ SOURCES += \
         kernel/qsystemsemaphore.cpp \
         kernel/qmetaobjectbuilder.cpp \
         kernel/qpointer.cpp \
-        kernel/qguard.cpp
 
 win32 {
 	SOURCES += \
