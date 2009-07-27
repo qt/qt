@@ -130,7 +130,15 @@ public:
     void children_clear();
     QML_DECLARE_LIST_PROXY(QFxItemPrivate, QFxItem *, children)
 
-    QList<QFxTransform *> _transform;
+    // transform property
+    void transform_removeAt(int);
+    int transform_count() const;
+    void transform_append(QGraphicsTransform *);
+    void transform_insert(int, QGraphicsTransform *);
+    QGraphicsTransform *transform_at(int) const;
+    void transform_clear();
+    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QGraphicsTransform *, transform)
+
     QFxAnchors *anchors() {
         if (!_anchors) {
             Q_Q(QFxItem);

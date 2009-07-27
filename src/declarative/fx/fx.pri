@@ -36,7 +36,6 @@ HEADERS += \
            fx/qfxtextedit_p.h \
            fx/qfxtext.h \
            fx/qfxtext_p.h \
-           fx/qfxtransform.h \
            fx/qfxpixmap.cpp \
            fx/qfxvisualitemmodel.h \
            fx/qfxlistview.h \
@@ -65,7 +64,6 @@ SOURCES += \
            fx/qfxlineedit.cpp \
            fx/qfxtext.cpp \
            fx/qfxtextedit.cpp \
-           fx/qfxtransform.cpp \
            fx/qfxpixmap.cpp \
            fx/qfxvisualitemmodel.cpp \
            fx/qfxlistview.cpp \

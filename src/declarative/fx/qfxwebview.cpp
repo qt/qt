@@ -55,7 +55,6 @@
 #include "qml.h"
 #include "qmlengine.h"
 #include "qmlstate.h"
-#include "qfxtransform.h"
 #include "qfxscalegrid.h"
 #include "qlistmodelinterface.h"
 

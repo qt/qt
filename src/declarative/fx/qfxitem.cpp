@@ -48,6 +48,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
 #include <private/qfxperf_p.h>
+#include <QtGui/qgraphicstransform.h>
 
 #include <QtDeclarative/qmlengine.h>
 #include <private/qmlengine_p.h>
@@ -55,7 +56,6 @@
 #include "qlistmodelinterface.h"
 #include "qfxanchors_p.h"
 
-#include "qfxtransform.h"
 #include "qfxscalegrid.h"
 #include "qfxview.h"
 #include "qmlstategroup.h"
@@ -73,6 +73,12 @@ QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QFxContents)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QFxItem)
+
+QML_DEFINE_NOCREATE_TYPE(QGraphicsTransform);
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QGraphicsScale)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Axis,QGraphicsAxis)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation3D,QGraphicsRotation3D)
 
 /*!
     \group group_animation
@@ -631,6 +637,50 @@ QFxItem *QFxItemPrivate::children_at(int) const
 void QFxItemPrivate::children_clear()
 {
     // ###
+}
+
+
+void QFxItemPrivate::transform_removeAt(int i)
+{
+    if (!transformData)
+        return;
+    transformData->graphicsTransforms.removeAt(i);
+    dirtySceneTransform = 1;
+}
+
+int QFxItemPrivate::transform_count() const
+{
+    return transformData ? transformData->graphicsTransforms.size() : 0;
+}
+
+void QFxItemPrivate::transform_append(QGraphicsTransform *item)
+{
+    if (!transformData)
+        transformData = new QGraphicsItemPrivate::TransformData;
+    if (!transformData->graphicsTransforms.contains(item))
+        transformData->graphicsTransforms.append(item);
+    transformData->onlyTransform = false;
+    dirtySceneTransform = 1;
+}
+
+void QFxItemPrivate::transform_insert(int, QGraphicsTransform *)
+{
+    // ###
+}
+
+QGraphicsTransform *QFxItemPrivate::transform_at(int idx) const
+{
+    if (!transformData)
+        return 0;
+    return transformData->graphicsTransforms.at(idx);
+}
+
+void QFxItemPrivate::transform_clear()
+{
+    if (!transformData)
+        return;
+    transformData->graphicsTransforms.clear();
+    dirtySceneTransform = 1;
 }
 
 /*!
@@ -1652,16 +1702,13 @@ void QFxItem::setState(const QString &state)
 
 /*!
   \property QFxItem::transform
-  This property holds the list of transformations to apply.
-
-  For more information see \l Transform.
+  This property holds a list of transformations set on the item.
 */
-QList<QFxTransform *> *QFxItem::transform()
+QmlList<QGraphicsTransform *>* QFxItem::transform()
 {
     Q_D(QFxItem);
-    return &(d->_transform);
+    return &(d->transform);
 }
-
 
 /*!
   Creates a new child of the given component \a type.  The
@@ -1733,25 +1780,6 @@ void QFxItem::componentComplete()
         d->_stateGroup->componentComplete();
     if (d->_anchors) 
         d->anchors()->d_func()->updateOnComplete();
-    if (!d->_transform.isEmpty())
-        updateTransform();
-}
-
-/*!
-    \internal
-*/
-void QFxItem::updateTransform()
-{
-    Q_D(QFxItem);
-    QTransform trans;
-    for (int ii = d->_transform.count() - 1; ii >= 0; --ii) {
-        QFxTransform *a = d->_transform.at(ii);
-        if (!a->isIdentity()) 
-            trans = a->transform() * trans;
-    }
-
-    setTransform(trans);
-    transformChanged(trans);
 }
 
 /*!
@@ -1759,6 +1787,7 @@ void QFxItem::updateTransform()
 */
 void QFxItem::transformChanged(const QTransform &)
 {
+    // ### FIXME
 }
 
 QmlStateGroup *QFxItemPrivate::states()

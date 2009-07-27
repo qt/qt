@@ -41,7 +41,7 @@
 
 #include "qfxflipable.h"
 #include "private/qfxitem_p.h"
-#include "qfxtransform.h"
+#include "QtGui/qgraphicstransform.h"
 #include <QtDeclarative/qmlinfo.h>
 
 QT_BEGIN_NAMESPACE
@@ -59,8 +59,8 @@ public:
     QFxFlipable::Side current;
     QFxItem *front;
     QFxItem *back;
-    QFxAxis *axis;
-    QFxRotation3D axisRotation;
+    QGraphicsAxis *axis;
+    QGraphicsRotation3D axisRotation;
     qreal rotation;
 };
 
@@ -180,13 +180,13 @@ void QFxFlipable::setBack(QFxItem *back)
     information on specifying an axis.
 */
 
-QFxAxis *QFxFlipable::axis()
+QGraphicsAxis *QFxFlipable::axis()
 {
     Q_D(QFxFlipable);
     return d->axis;
 }
 
-void QFxFlipable::setAxis(QFxAxis *axis)
+void QFxFlipable::setAxis(QGraphicsAxis *axis)
 {
     Q_D(QFxFlipable);
     //### disconnect if we are already connected?

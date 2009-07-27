@@ -49,6 +49,7 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtGui/qgraphicsitem.h>
+#include <QtGui/qgraphicstransform.h>
 #include <QtGui/qfont.h>
 
 QT_BEGIN_HEADER
@@ -56,6 +57,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
+class QGraphicsTransform;
 
 class QFxItem;
 class Q_DECLARATIVE_EXPORT QFxContents : public QObject
@@ -112,7 +115,6 @@ public:
 
 class QmlState;
 class QmlTransition;
-class QFxTransform;
 class QFxKeyEvent;
 class QFxAnchors;
 class QFxItemPrivate;
@@ -145,7 +147,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
-    Q_PROPERTY(QList<QFxTransform *>* transform READ transform) // ## QGI/QGO
+    Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL) // ## QGI/QGO
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin) // ### move to QGI
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -204,12 +206,10 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
-    QList<QFxTransform *> *transform();
+    QmlList<QGraphicsTransform *> *transform();
 
     bool isClassComplete() const;
     bool isComponentComplete() const;
-
-    void updateTransform(); // ### private!
 
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
@@ -327,6 +327,11 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxContents)
 QML_DECLARE_TYPE(QFxItem)
+QML_DECLARE_TYPE(QGraphicsTransform)
+QML_DECLARE_TYPE(QGraphicsScale)
+QML_DECLARE_TYPE(QGraphicsAxis)
+QML_DECLARE_TYPE(QGraphicsRotation)
+QML_DECLARE_TYPE(QGraphicsRotation3D)
 
 QT_END_HEADER
 
