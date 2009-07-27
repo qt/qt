@@ -1929,8 +1929,8 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
         handle = (HANDLE)_get_osfhandle(QT_FILENO(fh));
 #else
     #ifdef Q_USE_DEPRECATED_MAP_API
-    nativeClose();
     if (fileMapHandle == INVALID_HANDLE_VALUE) {
+        nativeClose();
         fileMapHandle = CreateFileForMapping((const wchar_t*)nativeFilePath.constData(),
                 GENERIC_READ | (openMode & QIODevice::WriteOnly ? GENERIC_WRITE : 0),
                 0,
