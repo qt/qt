@@ -1044,12 +1044,8 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     if (d->_anchors)
         d->_anchors->d_func()->updateMe();
 
-    if (newGeometry.size() != oldGeometry.size()) {
-        if (rotation() && transformOrigin() != QFxItem::TopLeft)
-            setRotation(rotation());
-        if (scale() && transformOrigin() != QFxItem::TopLeft)
-            setScale(scale());
-    }
+    if (transformOrigin() != QFxItem::TopLeft)
+        setTransformOriginPoint(d->computeTransformOrigin());
 
     if (newGeometry.x() != oldGeometry.x()) 
         emit xChanged();
