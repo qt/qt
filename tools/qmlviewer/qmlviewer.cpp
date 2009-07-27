@@ -550,6 +550,7 @@ void QmlViewer::setRecording(bool on)
             QProcess *proc = new QProcess(this);
             connect(proc, SIGNAL(finished(int)), this, SLOT(ffmpegFinished(int)));
             frame_stream = proc;
+            frame = QImage(canvas->width(),canvas->height(),QImage::Format_RGB32);
 
             QStringList args;
             args << "-sameq"; // ie. high
@@ -658,11 +659,11 @@ void QmlViewer::ffmpegFinished(int code)
 void QmlViewer::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == recordTimer.timerId()) {
+        canvas->QWidget::render(&frame);
         if (frame_stream) {
-            QImage frame = QPixmap::grabWidget(canvas).toImage();
             frame_stream->write((char*)frame.bits(),frame.numBytes());
         } else {
-            frames.append(new QImage(QPixmap::grabWidget(canvas).toImage()));
+            frames.append(new QImage(frame));
         }
         if (record_autotime && autoTimer.elapsed() >= record_autotime)
             setRecording(false);

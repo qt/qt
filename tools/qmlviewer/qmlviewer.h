@@ -79,6 +79,7 @@ private:
     QmlPalette *palette;
     QmlPalette *disabledPalette;
     QBasicTimer recordTimer;
+    QImage frame;
     QList<QImage*> frames;
     QProcess* frame_stream;
     QBasicTimer autoStartTimer;
