@@ -452,7 +452,7 @@ JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/,
         return JSC::throwError(exec, JSC::TypeError, QScript::qtStringToJSCUString(message));
     }
 
-    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
 
     JSC::JSValue receiver;
     JSC::JSValue slot;
@@ -535,7 +535,7 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
         }
     }
 
-    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
 
     JSC::JSValue receiver;
     JSC::JSValue slot;
@@ -696,7 +696,7 @@ JSC::JSValue functionPrint(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, c
 
 JSC::JSValue functionGC(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
 {
-    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     engine->collectGarbage();
     return JSC::jsUndefined();
 }
