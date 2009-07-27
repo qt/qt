@@ -587,46 +587,7 @@ GlobalObject::~GlobalObject()
 void GlobalObject::mark()
 {
     JSC::JSGlobalObject::mark();
-
-    if (engine->uncaughtException && !engine->uncaughtException.marked())
-        engine->uncaughtException.mark();
-
-    if (engine->customGlobalObject && !engine->customGlobalObject->marked())
-        engine->customGlobalObject->mark();
-
-    if (engine->qobjectPrototype && !engine->qobjectPrototype->marked())
-        engine->qobjectPrototype->mark();
-    if (engine->qmetaobjectPrototype && !engine->qmetaobjectPrototype->marked())
-        engine->qmetaobjectPrototype->mark();
-    if (engine->variantPrototype && !engine->variantPrototype->marked())
-        engine->variantPrototype->mark();
-
-    {
-        QHash<JSC::JSCell*,QBasicAtomicInt>::const_iterator it;
-        for (it = engine->keepAliveValues.constBegin(); it != engine->keepAliveValues.constEnd(); ++it) {
-            JSC::JSCell *cell = it.key();
-            if (!cell->marked())
-                cell->mark();
-        }
-    }
-
-#ifndef QT_NO_QOBJECT
-    {
-        QHash<QObject*, QScript::QObjectData*>::const_iterator it;
-        for (it = engine->m_qobjectData.constBegin(); it != engine->m_qobjectData.constEnd(); ++it) {
-            QScript::QObjectData *qdata = it.value();
-            qdata->mark();
-        }
-    }
-#endif
-
-    {
-        QHash<int, QScriptTypeInfo*>::const_iterator it;
-        for (it = engine->m_typeInfos.constBegin(); it != engine->m_typeInfos.constEnd(); ++it) {
-            if ((*it)->prototype && !(*it)->prototype.marked())
-                (*it)->prototype.mark();
-        }
-    }
+    engine->mark();
 }
 
 bool GlobalObject::getOwnPropertySlot(JSC::ExecState* exec,
@@ -1070,6 +1031,49 @@ void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
     contextForFrameHash.erase(it);
     // ### put back in pool
     delete ctx;
+}
+
+void QScriptEnginePrivate::mark()
+{
+    if (uncaughtException && !uncaughtException.marked())
+        uncaughtException.mark();
+
+    if (customGlobalObject && !customGlobalObject->marked())
+        customGlobalObject->mark();
+
+    if (qobjectPrototype && !qobjectPrototype->marked())
+        qobjectPrototype->mark();
+    if (qmetaobjectPrototype && !qmetaobjectPrototype->marked())
+        qmetaobjectPrototype->mark();
+    if (variantPrototype && !variantPrototype->marked())
+        variantPrototype->mark();
+
+    {
+        QHash<JSC::JSCell*,QBasicAtomicInt>::const_iterator it;
+        for (it = keepAliveValues.constBegin(); it != keepAliveValues.constEnd(); ++it) {
+            JSC::JSCell *cell = it.key();
+            if (!cell->marked())
+                cell->mark();
+        }
+    }
+
+#ifndef QT_NO_QOBJECT
+    {
+        QHash<QObject*, QScript::QObjectData*>::const_iterator it;
+        for (it = m_qobjectData.constBegin(); it != m_qobjectData.constEnd(); ++it) {
+            QScript::QObjectData *qdata = it.value();
+            qdata->mark();
+        }
+    }
+#endif
+
+    {
+        QHash<int, QScriptTypeInfo*>::const_iterator it;
+        for (it = m_typeInfos.constBegin(); it != m_typeInfos.constEnd(); ++it) {
+            if ((*it)->prototype && !(*it)->prototype.marked())
+                (*it)->prototype.mark();
+        }
+    }
 }
 
 bool QScriptEnginePrivate::isCollecting() const

@@ -110,6 +110,7 @@ public:
     QScriptContext *contextForFrame(JSC::ExecState *frame);
     void releaseContextForFrame(JSC::ExecState *frame);
 
+    void mark();
     bool isCollecting() const;
     void collectGarbage();
 
