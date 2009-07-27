@@ -1302,7 +1302,6 @@ void tst_QScriptEngine::uncaughtException()
         {
             QScriptValue ret = eng.evaluate("a = 10;\nb = 20;\n0 = 0;\n", /*fileName=*/QString(), /*lineNumber=*/x);
             QVERIFY(eng.hasUncaughtException());
-            QEXPECT_FAIL("", "Exception line number is wrong", Continue);
             QCOMPARE(eng.uncaughtExceptionLineNumber(), x+2);
             QVERIFY(eng.uncaughtException().strictlyEquals(ret));
             (void)ret.toString();
@@ -1310,7 +1309,6 @@ void tst_QScriptEngine::uncaughtException()
             QVERIFY(eng.uncaughtException().strictlyEquals(ret));
             QVERIFY(fun.call().isNull());
             QVERIFY(eng.hasUncaughtException());
-            QEXPECT_FAIL("", "Exception line number is wrong", Continue);
             QCOMPARE(eng.uncaughtExceptionLineNumber(), x+2);
             QVERIFY(eng.uncaughtException().strictlyEquals(ret));
             eng.clearExceptions();
@@ -1324,7 +1322,6 @@ void tst_QScriptEngine::uncaughtException()
             QScriptValue ret2 = throwFun.call();
             QVERIFY(ret2.isError());
             QVERIFY(eng.hasUncaughtException());
-            QEXPECT_FAIL("", "", Continue);
             QVERIFY(eng.uncaughtException().strictlyEquals(ret2));
             QEXPECT_FAIL("", "Exception line number is wrong", Continue);
             QCOMPARE(eng.uncaughtExceptionLineNumber(), -1);
@@ -1348,7 +1345,6 @@ void tst_QScriptEngine::uncaughtException()
             eng.globalObject().setProperty("throwFun", throwFun);
             eng.evaluate("1;\nthrowFun();");
             QVERIFY(eng.hasUncaughtException());
-            QEXPECT_FAIL("", "", Continue);
             QCOMPARE(eng.uncaughtExceptionLineNumber(), 2);
             eng.clearExceptions();
             QVERIFY(!eng.hasUncaughtException());
@@ -1765,7 +1761,6 @@ void tst_QScriptEngine::importExtension()
     {
         QScriptEngine eng;
         QScriptValue ret = eng.importExtension("this.extension.does.not.exist");
-        QEXPECT_FAIL("", "", Continue);
         QCOMPARE(eng.hasUncaughtException(), true);
         QCOMPARE(ret.isError(), true);
         QCOMPARE(ret.toString(), QString::fromLatin1("Error: Unable to import this.extension.does.not.exist: no such extension"));
@@ -2048,7 +2043,6 @@ void tst_QScriptEngine::collectGarbage()
         QScriptValue v = eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
     }
     eng.collectGarbage();
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(ptr == 0);
 }
 

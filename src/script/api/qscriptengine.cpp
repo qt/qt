@@ -2055,6 +2055,7 @@ QScriptSyntaxCheckResult QScriptEnginePrivate::checkSyntax(const QString &progra
 QScriptValue QScriptEngine::evaluate(const QString &program, const QString &fileName, int lineNumber)
 {
     Q_D(QScriptEngine);
+    lineNumber = qMax(lineNumber, 1);
 
     JSC::JSLock lock(false); // ### hmmm
 
