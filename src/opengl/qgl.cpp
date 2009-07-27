@@ -86,6 +86,7 @@
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qwindowsurface_gl_p.h>
+#include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
 #include "qfile.h"
 #include "qlibrary.h"
@@ -1407,15 +1408,17 @@ QGLTextureCache::QGLTextureCache()
 {
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
-    qt_pixmap_cleanup_hook_64 = cleanupHook;
-    qt_image_cleanup_hook_64 = cleanupHook;
+
+    QImagePixmapCleanupHooks::instance()->addPixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
 }
 
 QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
-    qt_pixmap_cleanup_hook_64 = 0;
-    qt_image_cleanup_hook_64 = 0;
+
+    QImagePixmapCleanupHooks::instance()->removePixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
 }
 
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
@@ -1471,11 +1474,23 @@ QGLTextureCache* QGLTextureCache::instance()
   a hook that removes textures from the cache when a pixmap/image
   is deref'ed
 */
-void QGLTextureCache::cleanupHook(qint64 cacheKey)
+void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
 {
     // ### remove when the GL texture cache becomes thread-safe
     if (qApp->thread() != QThread::currentThread())
         return;
+    QGLTexture *texture = instance()->getTexture(cacheKey);
+    if (texture && texture->clean)
+        instance()->remove(cacheKey);
+}
+
+
+void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
+{
+    // ### remove when the GL texture cache becomes thread-safe
+    if (qApp->thread() != QThread::currentThread())
+        return;
+    const qint64 cacheKey = pixmap->cacheKey();
     QGLTexture *texture = instance()->getTexture(cacheKey);
     if (texture && texture->clean)
         instance()->remove(cacheKey);

@@ -53,6 +53,7 @@
 #include <qmath.h>
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmap_raster_p.h>
+#include <private/qimagepixmapcleanuphooks_p.h>
 
 class SurfaceCache;
 class QDirectFBPaintEnginePrivate : public QRasterPaintEnginePrivate
@@ -699,9 +700,7 @@ void QDirectFBPaintEngine::initImageCache(int size)
 {
     Q_ASSERT(size >= 0);
     imageCache.setMaxCost(size);
-    typedef void (*_qt_image_cleanup_hook_64)(qint64);
-    extern Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64;
-    qt_image_cleanup_hook_64 = ::cachedImageCleanupHook;
+    QImagePixmapCleanupHooks::instance()->addImageHook(cachedImageCleanupHook);
 }
 
 #endif // QT_DIRECTFB_IMAGECACHE

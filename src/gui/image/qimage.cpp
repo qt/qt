@@ -49,6 +49,7 @@
 #include "qimagewriter.h"
 #include "qstringlist.h"
 #include "qvariant.h"
+#include "qimagepixmapcleanuphooks_p.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -105,14 +106,6 @@ static inline bool checkPixelSize(const QImage::Format format)
         return QImage(); \
     }
 
-
-// ### Qt 5: remove
-typedef void (*_qt_image_cleanup_hook)(int);
-Q_GUI_EXPORT _qt_image_cleanup_hook qt_image_cleanup_hook = 0;
-
-// ### Qt 5: rename
-typedef void (*_qt_image_cleanup_hook_64)(qint64);
-Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64 = 0;
 
 static QImage rotated90(const QImage &src);
 static QImage rotated180(const QImage &src);
@@ -257,8 +250,8 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
 
 QImageData::~QImageData()
 {
-    if (is_cached && qt_image_cleanup_hook_64)
-        qt_image_cleanup_hook_64((((qint64) ser_no) << 32) | ((qint64) detach_no));
+    if (is_cached)
+        QImagePixmapCleanupHooks::executeImageHooks((((qint64) ser_no) << 32) | ((qint64) detach_no));
     delete paintEngine;
     if (data && own_data)
         free(data);
@@ -1342,8 +1335,8 @@ QImage::operator QVariant() const
 void QImage::detach()
 {
     if (d) {
-        if (d->is_cached && qt_image_cleanup_hook_64 && d->ref == 1)
-            qt_image_cleanup_hook_64(cacheKey());
+        if (d->is_cached && d->ref == 1)
+            QImagePixmapCleanupHooks::executeImageHooks(cacheKey());
 
         if (d->ref != 1 || d->ro_data)
             *this = copy();
