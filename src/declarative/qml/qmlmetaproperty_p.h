@@ -54,7 +54,7 @@
 //
 
 #include "qmlmetaproperty.h"
-#include "private/qguard_p.h"
+#include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
