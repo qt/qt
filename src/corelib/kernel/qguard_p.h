@@ -54,6 +54,7 @@
 //
 
 #include "QtCore/qglobal.h"
+#include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -92,8 +93,6 @@ protected:
     virtual void objectDestroyed(T *) {}
 };
 
-void Q_CORE_EXPORT q_guard_addGuard(QGuard<QObject> *);
-void Q_CORE_EXPORT q_guard_removeGuard(QGuard<QObject> *);
 
 template<class T>
 QGuard<T>::QGuard()
