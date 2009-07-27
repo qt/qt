@@ -271,6 +271,9 @@ public:
       AST::UiObjectMemberList *UiObjectMemberList;
       AST::UiArrayMemberList *UiArrayMemberList;
       AST::UiQualifiedId *UiQualifiedId;
+      AST::UiSignature *UiSignature;
+      AST::UiFormalList *UiFormalList;
+      AST::UiFormal *UiFormal;
     };
 
 public:
@@ -880,13 +883,62 @@ case $rule_number: {
 ./
 
 UiFormal: JsIdentifier ;
+/.
+case $rule_number: {
+    AST::UiFormal *node = makeAstNode<AST::UiFormal>(driver->nodePool(), sym(1).sval);
+    node->identifierToken = loc(1);
+    sym(1).UiFormal = node;
+} break;
+./
+
 UiFormal: JsIdentifier T_AS JsIdentifier ;
+/.
+case $rule_number: {
+    AST::UiFormal *node = makeAstNode<AST::UiFormal>(driver->nodePool(),
+        sym(1).sval, sym(3).sval);
+    node->identifierToken = loc(1);
+    node->asToken = loc(2);
+    node->aliasToken = loc(3);
+    sym(1).UiFormal = node;
+} break;
+./
 
 UiFormalList: UiFormal ;
+/.
+case $rule_number: {
+    sym(1).UiFormalList = makeAstNode<AST::UiFormalList>(driver->nodePool(),
+        sym(1).UiFormal);
+} break;
+./
+
 UiFormalList: UiFormalList T_COMMA UiFormal ;
+/.
+case $rule_number: {
+    sym(1).UiFormalList = makeAstNode<AST::UiFormalList>(driver->nodePool(),
+        sym(1).UiFormalList, sym(3).UiFormal);
+} break;
+./
 
 UiSignature: T_LPAREN              T_RPAREN ;
+/.
+case $rule_number: {
+    AST::UiSignature *node = makeAstNode<AST::UiSignature>(driver->nodePool());
+    node->lparenToken = loc(1);
+    node->rparenToken = loc(3);
+    sym(1).UiSignature = node;
+} break;
+./
+
 UiSignature: T_LPAREN UiFormalList T_RPAREN ;
+/.
+case $rule_number: {
+    AST::UiSignature *node = makeAstNode<AST::UiSignature>(driver->nodePool(),
+        sym(2).UiFormalList->finish());
+    node->lparenToken = loc(1);
+    node->rparenToken = loc(3);
+    sym(1).UiSignature = node;
+} break;
+./
 
 UiObjectMember: T_SIGNAL T_IDENTIFIER T_LPAREN UiParameterListOpt T_RPAREN T_AUTOMATIC_SEMICOLON ;
 UiObjectMember: T_SIGNAL T_IDENTIFIER T_LPAREN UiParameterListOpt T_RPAREN T_SEMICOLON ;
