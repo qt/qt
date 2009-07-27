@@ -15,10 +15,15 @@ Flipable {
     property string photoUrl
     property int rating: 2
     property var prevScale: 1.0
+    property int rotation: 0
 
     signal closed
 
-    axis: Axis { startX: Container.width / 2; endX: Container.width / 2; endY: 1 }
+    transform: Rotation3D {
+        originX: Container.width / 2;
+        axis.y: 1;
+        angle: Container.rotation;
+    }
 
     front: Item {
         id: ContainerFront; anchors.fill: Container

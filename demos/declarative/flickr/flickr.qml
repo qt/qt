@@ -34,7 +34,7 @@ Item {
             scale: Wrapper.PathView.scale; z: Wrapper.PathView.z
 
             transform: [
-                Rotation3D { id: Rotation; axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: Wrapper.PathView.angle }
+                Rotation3D { id: Rotation; originX: 30; axis.x: 30; axis.y: 60; angle: Wrapper.PathView.angle }
             ]
 
             Connection {
