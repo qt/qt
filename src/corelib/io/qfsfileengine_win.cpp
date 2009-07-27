@@ -458,6 +458,9 @@ bool QFSFileEnginePrivate::nativeClose()
         q->setError(QFile::UnspecifiedError, qt_error_string());
         ok = false;
     }
+#ifdef Q_USE_DEPRECATED_MAP_API
+    fileMapHandle = INVALID_HANDLE_VALUE;
+#endif
     fileHandle = INVALID_HANDLE_VALUE;
     cachedFd = -1;              // gets closed by CloseHandle above
 
