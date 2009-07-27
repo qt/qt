@@ -54,6 +54,7 @@
 //
 
 #include "qmlmetaproperty.h"
+#include "private/qguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +81,7 @@ public:
     int valueTypeId;
     uint type;
     int attachedFunc;
-    QObject *object;
+    QGuard<QObject> object;
     int propType;
 
     mutable QmlMetaProperty::PropertyCategory category;
