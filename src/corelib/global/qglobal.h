@@ -662,6 +662,9 @@ namespace QT_NAMESPACE {}
 // using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
 //#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
 #    endif
+#    if __SUNPRO_CC < 0x5a0
+#      define Q_NO_TEMPLATE_FRIENDS
+#    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
 #    endif
