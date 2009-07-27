@@ -697,85 +697,152 @@ static void parseQPen(QPen &pen, QSvgNode *node,
     QString miterlimit = attributes.value(QLatin1String("stroke-miterlimit")).toString();
     QString opacity    = attributes.value(QLatin1String("stroke-opacity")).toString();
     QString width      = attributes.value(QLatin1String("stroke-width")).toString();
+    QString vectorEffect = attributes.value(QLatin1String("vector-effect")).toString();
     QString myId       = someId(attributes);
 
-    if (!value.isEmpty() || !width.isEmpty()) {
-        if (value != QLatin1String("none")) {
-            if (!value.isEmpty()) {
-                if (node && value.startsWith(QLatin1String("url"))) {
-                    value = value.remove(0, 3);
-                    QSvgStyleProperty *style = styleFromUrl(node, value);
-                    if (style) {
-                        if (style->type() == QSvgStyleProperty::GRADIENT) {
-                            QBrush b(*((QSvgGradientStyle*)style)->qgradient());
-                            pen.setBrush(b);
-                        } else if (style->type() == QSvgStyleProperty::SOLID_COLOR) {
-                            pen.setColor(
-                                ((QSvgSolidColorStyle*)style)->qcolor());
-                        }
-                    } else {
-                        qWarning()<<"QSvgHandler::parsePen could not resolve property" << idFromUrl(value);
-                    }
-                } else {
-                    QColor color;
-                    if (constructColor(value, opacity, color, handler))
-                        pen.setColor(color);
-                }
-                //since we could inherit stroke="none"
-                //we need to reset the style of our stroke to something
-                pen.setStyle(Qt::SolidLine);
-            }
-            if (!width.isEmpty()) {
-                QSvgHandler::LengthType lt;
-                qreal widthF = parseLength(width, lt, handler);
-                //### fixme
-                if (!widthF) {
-                    pen.setStyle(Qt::NoPen);
-                    return;
-                }
-                pen.setWidthF(widthF);
-            }
-            qreal penw = pen.widthF();
+    QSvgStrokeStyle *inherited =
+        static_cast<QSvgStrokeStyle*>(node->parent()->styleProperty(
+                                          QSvgStyleProperty::STROKE));
 
-            if (!linejoin.isEmpty()) {
-                if (linejoin == QLatin1String("miter"))
-                    pen.setJoinStyle(Qt::SvgMiterJoin);
-                else if (linejoin == QLatin1String("round"))
-                    pen.setJoinStyle(Qt::RoundJoin);
-                else if (linejoin == QLatin1String("bevel"))
-                    pen.setJoinStyle(Qt::BevelJoin);
-            }
-            if (!miterlimit.isEmpty())
-                pen.setMiterLimit(toDouble(miterlimit));
-
-            if (!linecap.isEmpty()) {
-                if (linecap == QLatin1String("butt"))
-                    pen.setCapStyle(Qt::FlatCap);
-                else if (linecap == QLatin1String("round"))
-                    pen.setCapStyle(Qt::RoundCap);
-                else if (linecap == QLatin1String("square"))
-                    pen.setCapStyle(Qt::SquareCap);
-            }
-
-            if (!dashArray.isEmpty()) {
-                const QChar *s = dashArray.constData();
-                QVector<qreal> dashes = parseNumbersList(s);
-                qreal *d = dashes.data();
-                if (penw != 0)
-                    for (int i = 0; i < dashes.size(); ++i) {
-                        *d /= penw;
-                        ++d;
-                }
-                pen.setDashPattern(dashes);
-            }
-            if (!dashOffset.isEmpty()) {
-                pen.setDashOffset(toDouble(dashOffset));
-            }
-
-        } else {
-            pen.setStyle(Qt::NoPen);
-        }
+    bool stroke = false;
+    if (inherited) {
+        pen = inherited->qpen();
+        stroke = inherited->strokePresent();
+    } else {
+        pen = handler->defaultPen();
     }
+
+    // stroke-opacity attribute handling
+    qreal strokeAlpha;
+    if (!opacity.isEmpty() && opacity != QLatin1String("inherit")) {
+        strokeAlpha = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+    } else {
+        strokeAlpha = pen.color().alphaF();
+    }
+
+    //stroke attribute handling
+    if (!value.isEmpty() && value != QLatin1String("inherit")) {
+        if (value.startsWith(QLatin1String("url"))) {
+            value = value.remove(0, 3);
+            QSvgStyleProperty *style = styleFromUrl(node, value);
+            if (style) {
+                if (style->type() == QSvgStyleProperty::GRADIENT) {
+                    QBrush b(*((QSvgGradientStyle*)style)->qgradient());
+                    pen.setBrush(b);
+                } else if (style->type() == QSvgStyleProperty::SOLID_COLOR) {
+                    pen.setColor(((QSvgSolidColorStyle*)style)->qcolor());
+                }
+                stroke = true;
+            } else {
+                qWarning() << "QSvgHandler::parsePen could not resolve property" << idFromUrl(value);
+            }
+        } else if (value == QLatin1String("none")) {
+            QColor color;
+            color.setAlphaF(strokeAlpha);
+            pen.setColor(color);
+            stroke = false;
+        } else {
+            QColor color;
+            if (resolveColor(value, color, handler)) {
+                color.setAlphaF(strokeAlpha);
+                pen.setColor(color);
+            }
+            stroke = true;
+        }
+    } else {
+        QColor color = pen.color();
+        color.setAlphaF(strokeAlpha);
+        pen.setColor(color);
+    }
+
+    //stroke-width handling
+    if (!width.isEmpty() && width != QLatin1String("inherit")) {
+        qreal widthF;
+        QSvgHandler::LengthType lt;
+        widthF = parseLength(width, lt, handler);
+        pen.setWidthF(widthF);
+    }
+
+    //stroke-linejoin attribute handling
+    if (!linejoin.isEmpty()) {
+        if (linejoin == QLatin1String("miter"))
+            pen.setJoinStyle(Qt::SvgMiterJoin);
+        else if (linejoin == QLatin1String("round"))
+            pen.setJoinStyle(Qt::RoundJoin);
+        else if (linejoin == QLatin1String("bevel"))
+            pen.setJoinStyle(Qt::BevelJoin);
+    }
+
+    //stroke-linecap attribute handling
+    if (!linecap.isEmpty()) {
+        if (linecap == QLatin1String("butt"))
+            pen.setCapStyle(Qt::FlatCap);
+        else if (linecap == QLatin1String("round"))
+            pen.setCapStyle(Qt::RoundCap);
+        else if (linecap == QLatin1String("square"))
+            pen.setCapStyle(Qt::SquareCap);
+    }
+
+    //strok-dasharray attribute handling
+    qreal penw = pen.widthF();
+    if (!dashArray.isEmpty() && dashArray != QLatin1String("inherit")) {
+        const QChar *s = dashArray.constData();
+        QVector<qreal> dashes = parseNumbersList(s);
+        qreal *d = dashes.data();
+        if (penw != 0)
+            for (int i = 0; i < dashes.size(); ++i) {
+                *d /= penw;
+                ++d;
+            }
+        // if the dash count is odd the dashes should be duplicated
+        if (dashes.size() % 2 != 0)
+            dashes << QVector<qreal>(dashes);
+        pen.setDashPattern(dashes);
+    } else if (inherited) {
+        QVector<qreal> dashes(inherited->qpen().dashPattern());
+        qreal *d = dashes.data();
+        if (!penw)
+            penw = 1.0;
+        qreal inheritpenw = inherited->qpen().widthF();
+        if (!inheritpenw)
+            inheritpenw = 1.0;
+        for ( int i = 0; i < dashes.size(); ++i) {
+            *d *= (inheritpenw/ penw);
+            ++d;
+        }
+        pen.setDashPattern(dashes);
+    }
+
+    //stroke-dashoffset attribute handling
+    if (!dashOffset.isEmpty() && dashOffset != QLatin1String("inherit")) {
+        qreal doffset = toDouble(dashOffset);
+        if (penw != 0)
+            doffset /= penw;
+        pen.setDashOffset(doffset);
+    } else if (inherited) {
+        qreal doffset = pen.dashOffset();
+        if (!penw)
+            penw = 1.0;
+        qreal inheritpenw = inherited->qpen().widthF();
+        if (!inheritpenw)
+            inheritpenw = 1.0;
+        doffset *= (inheritpenw / penw);
+        pen.setDashOffset(doffset);
+    }
+
+    //vector-effect attribute handling
+    if (!vectorEffect.isEmpty()) {
+        if (vectorEffect == QLatin1String("non-scaling-stroke"))
+            pen.setCosmetic(true);
+        else if (vectorEffect == QLatin1String("none"))
+            pen.setCosmetic(false);
+    }
+
+    if (!miterlimit.isEmpty() && miterlimit != QLatin1String("inherit"))
+        pen.setMiterLimit(toDouble(miterlimit));
+
+    if (!stroke)
+        pen.setStyle(Qt::NoPen);
 }
 
 static QMatrix parseTransformationMatrix(const QString &value)
@@ -917,18 +984,15 @@ static void parsePen(QSvgNode *node,
     QString miterlimit = attributes.value(QLatin1String("stroke-miterlimit")).toString();
     QString opacity    = attributes.value(QLatin1String("stroke-opacity")).toString();
     QString width      = attributes.value(QLatin1String("stroke-width")).toString();
+    QString vectorEffect = attributes.value(QLatin1String("vector-effect")).toString();
     QString myId       = someId(attributes);
 
     //qDebug()<<"Node "<<node->type()<<", attrs are "<<value<<width;
 
-    /* All the below checks needed because g (or any container element) can have only one of these attributes.
-     * If it doesn't has any one of these, then processing below not needed */
-
     if (!value.isEmpty() || !width.isEmpty() || !dashArray.isEmpty() || !linecap.isEmpty() ||
-        !linejoin.isEmpty() || !miterlimit.isEmpty() || !opacity.isEmpty() || !dashOffset.isEmpty() ) {
-        //if (value != QLatin1String("none")) {
-        /* If stroke = "none" then also, we need to parse below, because elements like 'g' may
-           have other defined stroke attributes, which will be inherited by its children */
+        !linejoin.isEmpty() || !miterlimit.isEmpty() || !opacity.isEmpty() ||
+        !dashOffset.isEmpty() || !vectorEffect.isEmpty()) {
+
         QSvgStrokeStyle *inherited =
             static_cast<QSvgStrokeStyle*>(node->parent()->styleProperty(
                                               QSvgStyleProperty::STROKE));
@@ -961,8 +1025,7 @@ static void parsePen(QSvgNode *node,
                         pen.setColor(
                             ((QSvgSolidColorStyle*)style)->qcolor());
                     }
-                pen.setStyle(Qt::SolidLine);
-                stroke = true;
+                    stroke = true;
                 } else {
                     qWarning() << "QSvgHandler::parsePen could not resolve property" << idFromUrl(value);
                 }
@@ -990,9 +1053,6 @@ static void parsePen(QSvgNode *node,
             qreal widthF;
             QSvgHandler::LengthType lt;
             widthF = parseLength(width, lt, handler);
-            pen.setWidthF(widthF);
-        } else if (inherited){
-            qreal widthF = inherited->qpen().widthF();
             pen.setWidthF(widthF);
         }
 
@@ -1062,6 +1122,14 @@ static void parsePen(QSvgNode *node,
                 inheritpenw = 1.0;
             doffset *= (inheritpenw/ penw);
             pen.setDashOffset(doffset);
+        }
+
+        //vector-effect attribute handling
+        if (!vectorEffect.isEmpty()) {
+            if (vectorEffect == QLatin1String("non-scaling-stroke"))
+                pen.setCosmetic(true);
+            else if (vectorEffect == QLatin1String("none"))
+                pen.setCosmetic(false);
         }
 
         if (!miterlimit.isEmpty() && miterlimit != QLatin1String("inherit"))
