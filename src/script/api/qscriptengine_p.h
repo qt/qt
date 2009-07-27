@@ -110,6 +110,9 @@ public:
     QScriptContext *contextForFrame(JSC::ExecState *frame);
     void releaseContextForFrame(JSC::ExecState *frame);
 
+    JSC::JSGlobalObject *globalObject() const;
+    JSC::ExecState *globalExec() const;
+
     void mark();
     bool isCollecting() const;
     void collectGarbage();
@@ -159,7 +162,6 @@ public:
 #endif
 
     JSC::JSGlobalData *globalData;
-    JSC::JSGlobalObject *globalObject;
     JSC::JSObject *customGlobalObject;
     JSC::ExecState *currentFrame;
     QHash<JSC::ExecState*, QScriptContext*> contextForFrameHash;

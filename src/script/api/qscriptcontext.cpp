@@ -205,8 +205,8 @@ QScriptContext::QScriptContext()
 QScriptValue QScriptContext::throwValue(const QScriptValue &value)
 {
     Q_D(QScriptContext);
-    JSC::ExecState *exec = d->engine->globalObject->globalExec();
     JSC::JSValue jscValue = d->engine->scriptValueToJSCValue(value);
+    JSC::ExecState *exec = d->frame;
     exec->setException(jscValue);
     return value;
 }
@@ -248,7 +248,7 @@ QScriptValue QScriptContext::throwError(Error error, const QString &text)
         jscError = JSC::URIError;
         break;
     }
-    JSC::ExecState *exec = d->engine->globalObject->globalExec();
+    JSC::ExecState *exec = d->frame;
     JSC::JSObject *result = JSC::throwError(exec, jscError, QScript::qtStringToJSCUString(text));
     return d->engine->scriptValueFromJSCValue(result);
 }
@@ -264,7 +264,7 @@ QScriptValue QScriptContext::throwError(Error error, const QString &text)
 QScriptValue QScriptContext::throwError(const QString &text)
 {
     Q_D(QScriptContext);
-    JSC::ExecState *exec = d->engine->globalObject->globalExec();
+    JSC::ExecState *exec = d->frame;
     JSC::JSObject *result = JSC::throwError(exec, JSC::GeneralError, QScript::qtStringToJSCUString(text));
     return d->engine->scriptValueFromJSCValue(result);
 }
@@ -334,7 +334,7 @@ QScriptValue QScriptContext::callee() const
 QScriptValue QScriptContext::argumentsObject() const
 {
     Q_D(const QScriptContext);
-    if (d->frame == d->engine->globalObject->globalExec()) {
+    if (d->frame == d->engine->globalExec()) {
         //global context doesn't have any argument, return an empty object
         return static_cast<QScriptEngine *>(d->engine->q_ptr)->newObject();
     }
@@ -481,7 +481,7 @@ void QScriptContext::setThisObject(const QScriptValue &thisObject)
                  "a different engine");
         return;
     }
-    if (d->frame == d->engine->globalObject->globalExec()) {
+    if (d->frame == d->engine->globalExec()) {
         qWarning("QScriptContext::setThisObject(): setting this-object of global context is not supported");
         return;
     }
@@ -501,7 +501,7 @@ void QScriptContext::setThisObject(const QScriptValue &thisObject)
 QScriptContext::ExecutionState QScriptContext::state() const
 {
     Q_D(const QScriptContext);
-    if (d->engine->globalObject->globalExec()->hadException())
+    if (d->frame->hadException())
         return QScriptContext::ExceptionState;
     return QScriptContext::NormalState;
 }

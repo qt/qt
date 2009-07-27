@@ -114,7 +114,7 @@ public:
         if (propertyNames != 0)
             return;
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(object.engine());
-        JSC::ExecState *exec = eng_p->globalObject->globalExec();
+        JSC::ExecState *exec = eng_p->globalExec();
         propertyNames = new JSC::PropertyNameArray(exec);
         JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getPropertyNames(exec, *propertyNames);
     }

@@ -1982,7 +1982,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
 
     JSC::JSValue jscThisObject = eng_p->scriptValueToJSCValue(thisObject);
     if (!jscThisObject || !jscThisObject.isObject())
-        jscThisObject = eng_p->globalObject;
+        jscThisObject = eng_p->globalObject();
 
     QVector<JSC::JSValue> argsVector;
     argsVector.resize(args.size());
@@ -2057,7 +2057,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
 
     JSC::JSValue jscThisObject = eng_p->scriptValueToJSCValue(thisObject);
     if (!jscThisObject || !jscThisObject.isObject())
-        jscThisObject = eng_p->globalObject;
+        jscThisObject = eng_p->globalObject();
 
     JSC::JSValue array = eng_p->scriptValueToJSCValue(arguments);
     // copied from runtime/FunctionPrototype.cpp, functionProtoFuncApply()

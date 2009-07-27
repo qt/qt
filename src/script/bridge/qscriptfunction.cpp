@@ -32,7 +32,7 @@ namespace QScript
 
 FunctionWrapper::FunctionWrapper(QScriptEngine *engine, int length, const JSC::Identifier &name,
                                    QScriptEngine::FunctionSignature function)
-    : JSC::PrototypeFunction(QScriptEnginePrivate::get(engine)->globalObject->globalExec(),
+    : JSC::PrototypeFunction(QScriptEnginePrivate::get(engine)->globalExec(),
                              length, name, proxyCall), data(new Data())
 {
     data->engine = engine;
@@ -85,7 +85,7 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
 
 FunctionWithArgWrapper::FunctionWithArgWrapper(QScriptEngine *engine, int length, const JSC::Identifier &name,
                                                  QScriptEngine::FunctionWithArgSignature function, void *arg)
-    : JSC::PrototypeFunction(QScriptEnginePrivate::get(engine)->globalObject->globalExec(),
+    : JSC::PrototypeFunction(QScriptEnginePrivate::get(engine)->globalExec(),
                              length, name, proxyCall), data(new Data())
 {
     data->engine = engine;
