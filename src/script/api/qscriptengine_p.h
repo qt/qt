@@ -196,33 +196,6 @@ public:
 #endif
 };
 
-namespace QScript
-{
-
-class GlobalObject : public JSC::JSGlobalObject
-{
-public:
-    GlobalObject(QScriptEnginePrivate*);
-    virtual ~GlobalObject();
-    virtual JSC::UString className() const { return "global"; }
-    virtual void mark();
-    virtual bool getOwnPropertySlot(JSC::ExecState*,
-                                    const JSC::Identifier& propertyName,
-                                    JSC::PropertySlot&);
-    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                     JSC::JSValue, JSC::PutPropertySlot&);
-    virtual bool deleteProperty(JSC::ExecState*,
-                                const JSC::Identifier& propertyName);
-    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
-                                       unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-
-public:
-    QScriptEnginePrivate *engine;
-};
-
-} // namespace QScript
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_SCRIPT

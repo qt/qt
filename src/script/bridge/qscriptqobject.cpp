@@ -215,6 +215,7 @@ static inline QScriptable *scriptableFromQObject(QObject *qobj)
 
 JSC::UString qtStringToJSCUString(const QString &str);
 QString qtStringFromJSCUString(const JSC::UString &str);
+QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec);
 
 QtFunction::QtFunction(JSC::JSValue object, int initialIndex, bool maybeOverloaded,
                        JSC::JSGlobalData *data, WTF::PassRefPtr<JSC::Structure> sid,
@@ -482,7 +483,7 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
     Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
     QObject *qobj = static_cast<QScript::QObjectDelegate*>(delegate)->value();
     Q_ASSERT_X(qobj != 0, "QtFunction::call", "handle the case when QObject has been deleted");
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
 
     const QMetaObject *meta = qobj->metaObject();
     QObject *thisQObject = 0;
@@ -975,7 +976,7 @@ JSC::JSValue JSC_HOST_CALL QtFunction::call(JSC::ExecState *exec, JSC::JSObject 
     if (!callee->isObject(&QtFunction::info))
         return throwError(exec, JSC::TypeError, "callee is not a QtFunction object");
     QtFunction *qfun =  static_cast<QtFunction*>(callee);
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
     JSC::JSValue result = qfun->execute(exec, thisValue, args);
@@ -1012,7 +1013,7 @@ JSC::JSValue JSC_HOST_CALL QtPropertyFunction::call(
     if (!callee->isObject(&QtPropertyFunction::info))
         return throwError(exec, JSC::TypeError, "callee is not a QtPropertyFunction object");
     QtPropertyFunction *qfun =  static_cast<QtPropertyFunction*>(callee);
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
     JSC::JSValue result = qfun->execute(exec, thisValue, args);
@@ -1027,7 +1028,7 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
     JSC::JSValue result = JSC::jsUndefined();
 
     // ### don't go via QScriptValue
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue object = engine->scriptValueFromJSCValue(thisValue);
     QObject *qobject = object.toQObject();
     while ((!qobject || (qobject->metaObject() != data->meta))
@@ -1156,7 +1157,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
     }
 
     const QScriptEngine::QObjectWrapOptions &opt = data->options;
-    QScriptEnginePrivate *eng = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng = scriptEngineFromExec(exec);
     int index = -1;
     if (name.contains('(')) {
         QByteArray normalized = QMetaObject::normalizedSignature(name);
@@ -1257,7 +1258,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
 
     const QScriptEngine::QObjectWrapOptions &opt = data->options;
     const QMetaObject *meta = qobject->metaObject();
-    QScriptEnginePrivate *eng = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng = scriptEngineFromExec(exec);
     int index = -1;
     if (name.contains('(')) {
         QByteArray normalized = QMetaObject::normalizedSignature(name);
@@ -1531,7 +1532,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec
         name = QScript::qtStringFromJSCUString(args.at(0).toString(exec));
     QObject *child = qFindChild<QObject*>(obj, name);
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     return engine->newQObject(child, QScriptEngine::QtOwnership, opt);
 }
 
@@ -1579,7 +1580,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
     JSC::JSArray *const result = JSC::constructEmptyArray(exec, length);
 
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     for (int i = 0; i < length; ++i) {
         QObject *const child = children.at(i);
         result->put(exec, i, engine->newQObject(child, QScriptEngine::QtOwnership, opt));
@@ -1773,7 +1774,7 @@ JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
     if (!callee->isObject(&QMetaObjectWrapperObject::info))
         return throwError(exec, JSC::TypeError, "callee is not a QMetaObject");
     QMetaObjectWrapperObject *self =  static_cast<QMetaObjectWrapperObject*>(callee);
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
     JSC::JSValue result = self->execute(exec, args);
@@ -1784,7 +1785,7 @@ JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
 JSC::JSObject* QMetaObjectWrapperObject::construct(JSC::ExecState *exec, JSC::JSObject *callee, const JSC::ArgList &args)
 {
     QMetaObjectWrapperObject *self = static_cast<QMetaObjectWrapperObject*>(callee);
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
     JSC::JSValue result = self->execute(exec, args);

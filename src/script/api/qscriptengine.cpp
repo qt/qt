@@ -307,6 +307,29 @@ public:
 
 namespace QScript
 {
+
+class GlobalObject : public JSC::JSGlobalObject
+{
+public:
+    GlobalObject(QScriptEnginePrivate*);
+    virtual ~GlobalObject();
+    virtual JSC::UString className() const { return "global"; }
+    virtual void mark();
+    virtual bool getOwnPropertySlot(JSC::ExecState*,
+                                    const JSC::Identifier& propertyName,
+                                    JSC::PropertySlot&);
+    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                     JSC::JSValue, JSC::PutPropertySlot&);
+    virtual bool deleteProperty(JSC::ExecState*,
+                                const JSC::Identifier& propertyName);
+    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
+                                       unsigned&) const;
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+
+public:
+    QScriptEnginePrivate *engine;
+};
+
 static int toDigit(char c)
 {
     if ((c >= '0') && (c <= '9'))
@@ -387,6 +410,10 @@ QString qtStringFromJSCUString(const JSC::UString &str)
     return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
 }
 
+QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec)
+{
+    return static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+}
 
 bool isFunction(JSC::JSValue value)
 {

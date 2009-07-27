@@ -32,6 +32,7 @@ namespace QScript
 
 QString qtStringFromJSCUString(const JSC::UString &str);
 JSC::UString qtStringToJSCUString(const QString &str);
+QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec);
 
 ClassObjectDelegate::ClassObjectDelegate(QScriptClass *scriptClass)
     : m_scriptClass(scriptClass)
@@ -62,7 +63,7 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
                                              const JSC::Identifier &propertyName,
                                              JSC::PropertySlot &slot)
 {
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QString name = qtStringFromJSCUString(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
@@ -81,7 +82,7 @@ void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
                               const JSC::Identifier &propertyName,
                               JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QString name = qtStringFromJSCUString(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
@@ -99,7 +100,7 @@ bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *
                                          const JSC::Identifier &propertyName)
 {
     // ### avoid duplication of put()
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QString name = qtStringFromJSCUString(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
@@ -119,7 +120,7 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
                                                 const JSC::Identifier &propertyName,
                                                 unsigned &attribs) const
 {
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QString name = qtStringFromJSCUString(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
@@ -148,7 +149,7 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
 void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState *exec,
                                            JSC::PropertyNameArray &propertyNames)
 {
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QScriptClassPropertyIterator *it = m_scriptClass->newIterator(scriptObject);
     if (it != 0) {
@@ -180,7 +181,7 @@ JSC::JSValue JSC_HOST_CALL ClassObjectDelegate::call(JSC::ExecState *exec, JSC::
     if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject))
         return JSC::throwError(exec, JSC::TypeError, "callee is not a ClassObject object");
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
     eng_p->currentFrame = exec;
@@ -206,7 +207,7 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptObject *obj = static_cast<QScriptObject*>(callee);
     QScriptObjectDelegate *delegate = obj->delegate();
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
     eng_p->currentFrame = exec;
@@ -225,7 +226,7 @@ bool ClassObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecState *exe
     if (!scriptClass()->supportsExtension(QScriptClass::HasInstance))
         return QScriptObjectDelegate::hasInstance(object, exec, value, proto);
     QScriptValueList args;
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     args << eng_p->scriptValueFromJSCValue(object) << eng_p->scriptValueFromJSCValue(value);
     QVariant result = scriptClass()->extension(QScriptClass::HasInstance, qVariantFromValue(args));
     return result.toBool();
