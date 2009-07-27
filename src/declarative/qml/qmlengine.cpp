@@ -71,7 +71,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
 #include <qmlcomponent.h>
-#include <qmlcomponentjs.h>
+#include "private/qmlcomponentjs_p.h"
 #include "private/qmlmetaproperty_p.h"
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>

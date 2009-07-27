@@ -419,6 +419,46 @@ case 47: {
   sym(1).Node = node;
 } break;
 
+case 48: {
+    AST::UiFormal *node = makeAstNode<AST::UiFormal>(driver->nodePool(), sym(1).sval);
+    node->identifierToken = loc(1);
+    sym(1).UiFormal = node;
+} break;
+
+case 49: {
+    AST::UiFormal *node = makeAstNode<AST::UiFormal>(driver->nodePool(),
+        sym(1).sval, sym(3).sval);
+    node->identifierToken = loc(1);
+    node->asToken = loc(2);
+    node->aliasToken = loc(3);
+    sym(1).UiFormal = node;
+} break;
+
+case 50: {
+    sym(1).UiFormalList = makeAstNode<AST::UiFormalList>(driver->nodePool(),
+        sym(1).UiFormal);
+} break;
+
+case 51: {
+    sym(1).UiFormalList = makeAstNode<AST::UiFormalList>(driver->nodePool(),
+        sym(1).UiFormalList, sym(3).UiFormal);
+} break;
+
+case 52: {
+    AST::UiSignature *node = makeAstNode<AST::UiSignature>(driver->nodePool());
+    node->lparenToken = loc(1);
+    node->rparenToken = loc(3);
+    sym(1).UiSignature = node;
+} break;
+
+case 53: {
+    AST::UiSignature *node = makeAstNode<AST::UiSignature>(driver->nodePool(),
+        sym(2).UiFormalList->finish());
+    node->lparenToken = loc(1);
+    node->rparenToken = loc(3);
+    sym(1).UiSignature = node;
+} break;
+
 case 55: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
     node->type = AST::UiPublicMember::Signal;
