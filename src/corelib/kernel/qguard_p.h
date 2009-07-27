@@ -93,6 +93,8 @@ protected:
     virtual void objectDestroyed(T *) {}
 };
 
+void q_guard_addGuard(QGuard<QObject> *);
+void q_guard_removeGuard(QGuard<QObject> *);
 
 template<class T>
 QGuard<T>::QGuard()
