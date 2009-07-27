@@ -42,9 +42,13 @@
 #define QSYM_IAP_UTIL_H
 
 // Symbian
+#include <utf.h>
 #include <es_sock.h>
+#include <in_sock.h>
 #include <es_enum.h>
+#include <in_iface.h>
 #include <commdbconnpref.h>
+#include <e32cmn.h>
 
 // OpenC
 #include <sys/socket.h>
@@ -53,6 +57,7 @@
 //Qt
 #include <QSettings>
 #include <QStringList>
+//#include <QTextCodec>
 
 _LIT(KIapNameSetting, "IAP\\Name");             // text - mandatory
 _LIT(KIapDialogPref, "IAP\\DialogPref");        // TUnit32 - optional
@@ -67,6 +72,8 @@ const QLatin1String qtNetworkModuleTag("QtNetwork");
 const QLatin1String iapGroupTag("IAP");
 const QLatin1String iapNamesArrayTag("Names");
 const QLatin1String iapNameItemTag("Name");
+
+static QTextCodec *utf16LETextCodec = 0;
 
 void clearIapNamesSettings(QSettings &settings) {
     settings.beginGroup(qtNetworkModuleTag);
@@ -101,6 +108,189 @@ void readIapNamesSettings(QSettings &settings, QStringList& iapNames) {
             settings.endArray();
         settings.endGroup();
     settings.endGroup();
+}
+
+static QString qt_TNameToQString(TName data) {
+    if(utf16LETextCodec == 0)
+        utf16LETextCodec = QTextCodec::codecForName("UTF-16LE");
+
+    QByteArray tmpByteArray = QByteArray::fromRawData((char*)(data.PtrZ()), data.Length() * 2);
+    return utf16LETextCodec->toUnicode(tmpByteArray);
+}
+
+static QString qt_InterfaceInfoL()
+{
+    QString output;
+
+    TBuf8<512> buffer;
+    TBuf<128> t;
+    TAutoClose<RSocketServ> ss;
+    User::LeaveIfError(ss.iObj.Connect());
+    ss.PushL();
+
+    TAutoClose<RSocket> sock;
+    User::LeaveIfError(sock.iObj.Open(ss.iObj, _L("udp")));
+    sock.PushL();
+
+    User::LeaveIfError(sock.iObj.SetOpt(KSoInetEnumInterfaces, KSolInetIfCtrl));
+
+    TProtocolDesc in;
+    User::LeaveIfError(sock.iObj.Info(in));
+    printf("EPOC32 IP Configuration TCPIP Version %d.%d.%d\n", in.iVersion.iMajor, in.iVersion.iMinor, in.iVersion.iBuild);
+
+    TPckgBuf<TSoInetInterfaceInfo> info, next;
+
+    TInt res=sock.iObj.GetOpt(KSoInetNextInterface, KSolInetIfCtrl, info);
+    if(res!=KErrNone)
+        User::Leave(res);
+    TInt count = 0;
+    while(res==KErrNone) {
+        res=sock.iObj.GetOpt(KSoInetNextInterface, KSolInetIfCtrl, next);
+
+        if(info().iName != _L("") && info().iName != _L("loop6") && info().iName != _L("loop4")) {
+            printf("Interface %d\n", count++);
+
+            printf("Name \"%s\"\n", qt_TNameToQString(info().iName).toLatin1().data());
+            printf("NIF tag \"%s\"\n", qt_TNameToQString(info().iTag).toLatin1().data());
+
+            printf("State ");
+            switch (info().iState)
+            {
+                case EIfPending:
+                    printf("pending\n");
+                    break;
+                case EIfUp:
+                    printf("up\n");
+                    break;
+                case EIfBusy:
+                    printf("busy\n");
+                    break;
+                default:
+                    printf("down\n");
+                    break;
+            }
+
+            printf("Mtu %d\n", info().iMtu);
+            printf("Speed Metric %d\n", info().iSpeedMetric);
+
+            printf("Features:");
+            info().iFeatures & KIfIsLoopback         ? printf(" loopback") : printf("");
+            info().iFeatures & KIfIsDialup           ? printf(" dialup") : printf("");
+            info().iFeatures & KIfIsPointToPoint     ? printf(" pointtopoint") : printf("");
+            info().iFeatures & KIfCanBroadcast       ? printf(" canbroadcast") : printf("");
+            info().iFeatures & KIfCanMulticast       ? printf(" canmulticast") : printf("");
+            info().iFeatures & KIfCanSetMTU          ? printf(" cansetmtu") : printf("");
+            info().iFeatures & KIfHasHardwareAddr    ? printf(" hardwareaddr") : printf("");
+            info().iFeatures & KIfCanSetHardwareAddr ? printf(" cansethardwareaddr") : printf("");
+            printf("\n");
+
+            TName address;
+            info().iAddress.Output(address);
+            printf("Addr: %s\n", qt_TNameToQString(address).toLatin1().data());
+
+            if(info().iAddress.IsLinkLocal()) {
+                printf("  -link local\n");
+            } else if(info().iAddress.IsSiteLocal()) {
+                printf("  -site local\n");
+            } else {
+                printf("  -global\n");
+            }
+
+            info().iNetMask.Output(address);
+            printf("Netmask %s\n", qt_TNameToQString(address).toLatin1().data());
+
+            info().iBrdAddr.Output(address);
+            printf("Broadcast address %s\n", qt_TNameToQString(address).toLatin1().data());
+
+            info().iDefGate.Output(address);
+            printf("Gatew: %s\n", qt_TNameToQString(address).toLatin1().data());
+
+            info().iNameSer1.Output(address);
+            printf("DNS 1: %s\n", qt_TNameToQString(address).toLatin1().data());
+
+            info().iNameSer2.Output(address);
+            printf("DNS 2: %s\n", qt_TNameToQString(address).toLatin1().data());
+
+            if (info().iHwAddr.Family() != KAFUnspec) {
+                printf("Hardware address ");
+                TUint j;
+                for(j = sizeof(SSockAddr) ; j < sizeof(SSockAddr) + 6 ; ++j) {
+                    if(j < (TUint)info().iHwAddr.Length()) {
+                        printf("%02X", info().iHwAddr[j]);
+                    } else {
+                        printf("??");
+                    }
+                    if(j < sizeof(SSockAddr) + 5)
+                        printf("-");
+                    else
+                        printf("\n");
+                    }
+                }
+            }
+        if(res == KErrNone) {
+            info = next;
+            printf("\n");
+        } else {
+            printf("\n");
+        }
+    }
+
+    sock.Pop();
+    ss.Pop();
+
+    return output;
+}
+
+static QString qt_RouteInfoL() {
+    QString output;
+    TAutoClose<RSocketServ> ss;
+    User::LeaveIfError(ss.iObj.Connect());
+    ss.PushL();
+
+    TAutoClose<RSocket> sock;
+    User::LeaveIfError(sock.iObj.Open(ss.iObj, _L("udp")));
+    sock.PushL();
+
+    TSoInetRouteInfo routeInfo;
+    TPckg<TSoInetRouteInfo> routeInfoPkg(routeInfo);
+
+    TName destAddr;
+    TName netMask;
+    TName gateway;
+    TName ifAddr;
+
+    // Begins enumeration of routes by setting this option
+    User::LeaveIfError(sock.iObj.SetOpt(KSoInetEnumRoutes, KSolInetRtCtrl));
+
+    // The TSoInetRouteInfo contains information for a new route each time GetOpt returns KErrNone
+    for(TInt i = 0; sock.iObj.GetOpt(KSoInetNextRoute, KSolInetRtCtrl, routeInfoPkg) == KErrNone ; i++)
+    {
+      // Extract the destination and netmask
+      routeInfo.iDstAddr.Output(destAddr);
+      routeInfo.iNetMask.Output(netMask);
+      routeInfo.iGateway.Output(gateway);
+      routeInfo.iIfAddr.Output(ifAddr);
+/*
+      if(destAddr.Length() <= 2)
+          continue;
+
+      if(netMask.Find(_L("255.255.255.255")) != KErrNotFound
+              || netMask.Find(_L("0.0.0.0")) != KErrNotFound
+              || netMask.Find(_L("ffff:ffff:ffff:ffff")) != KErrNotFound)
+          continue;
+*/
+      printf("Route Info #[%i]\n", i);
+      printf("DstAddr %s\n", qt_TNameToQString(destAddr).toLatin1().data());
+      printf("NetMask %s\n", qt_TNameToQString(netMask).toLatin1().data());
+      printf("Gateway %s\n", qt_TNameToQString(gateway).toLatin1().data());
+      printf("IfAddr %s\n", qt_TNameToQString(ifAddr).toLatin1().data());
+      printf("\n");
+    }
+
+    sock.Pop();
+    ss.Pop();
+
+    return output;
 }
 
 QString qt_TDesC2QStringL(const TDesC& aDescriptor) 
@@ -230,13 +420,13 @@ static QString qt_CheckForActiveConnection() {
                        tempConn.GetDesSetting(TPtrC(KIapServiceType), iapServiceType);
                        //tempConn.Stop();
                        iapName.ZeroTerminate();
-		       iapServiceType.ZeroTerminate();
+		               iapServiceType.ZeroTerminate();
 
 //                        if(iapServiceType.Find(_L8("LANService")) != KErrNotFound) {
 //                            activeLanConnectionFound = ETrue;
 //                            break;
 //                        }
-			strIapName = QString((char*)iapName.Ptr());
+			            strIapName = QString((char*)iapName.Ptr());
                         int error = 0;
                         if(!qt_SetDefaultIapName(strIapName, error)) {
                             //printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
@@ -311,8 +501,10 @@ static void qt_SetDefaultIapL()
 
 static int qt_SetDefaultIap()
 {
-    TRAPD(err, qt_SetDefaultIapL());
-    return err;
+    TRAPD(err1, qt_SetDefaultIapL());
+//    TRAPD(err2, qt_InterfaceInfoL());
+//    TRAPD(err3, qt_RouteInfoL());
+    return err1;
 }
 
 #endif // QSYM_IAP_UTIL_H

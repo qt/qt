@@ -70,7 +70,11 @@ PeerManager::PeerManager(Client *client)
     }
 
     if (username.isEmpty())
+#ifndef Q_OS_SYMBIAN
         username = "unknown";
+#else
+        username = "QtS60";
+#endif
 
     updateAddresses();
     serverPort = 0;
@@ -160,8 +164,11 @@ void PeerManager::updateAddresses()
     foreach (QNetworkInterface interface, QNetworkInterface::allInterfaces()) {
         foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
             QHostAddress broadcastAddress = entry.broadcast();
-            if (broadcastAddress != QHostAddress::Null &&
-                entry.ip() != QHostAddress::LocalHost) {
+            if (broadcastAddress != QHostAddress::Null && entry.ip() != QHostAddress::LocalHost) {
+                //printf("entry.ip: %s\n", entry.ip().toString().toLatin1().data());
+                //printf("entry.netmask: %s\n", entry.netmask().toString().toLatin1().data());
+                //printf("entry.prefixLength: %i\n", entry.prefixLength());
+                //printf("entry.broadcast %s \n", broadcastAddress.toString().toLatin1().data());
                 broadcastAddresses << broadcastAddress;
                 ipAddresses << entry.ip();
             }
