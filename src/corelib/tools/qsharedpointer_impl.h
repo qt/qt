@@ -140,16 +140,10 @@ namespace QtSharedPointer {
 
         inline void internalConstruct(T *ptr)
         {
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (ptr) internalSafetyCheckAdd(ptr);
-#endif
             value = ptr;
         }
         inline void internalDestroy()
         {
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (value) internalSafetyCheckRemove(value);
-#endif
         }
 
 #if defined(Q_NO_TEMPLATE_FRIENDS)
