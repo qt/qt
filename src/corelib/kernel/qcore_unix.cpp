@@ -86,8 +86,8 @@ timeval qt_gettime()
 
     uint64_t cpu_time = mach_absolute_time();
     uint64_t nsecs = cpu_time * (info.numer / info.denom);
-    tv.tv_sec = nsecs * 1e-9;
-    tv.tv_usec = nsecs * 1e-3 - (t.tv_sec * 1e6);
+    tv.tv_sec = nsecs / 1000000000ull;
+    tv.tv_usec = (nsecs / 1000) - (t.tv_sec * 1000000);
     return tv;
 #elif (_POSIX_MONOTONIC_CLOCK-0 > 0)
     timespec ts;
