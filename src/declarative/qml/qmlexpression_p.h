@@ -83,7 +83,7 @@ public:
     QObject *me;
     bool trackChange;
 
-    QUrl fileName;
+    QString fileName;
     int line;
 
     QVariant evalSSE(QmlBasicScript::CacheState &cacheState);

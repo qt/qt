@@ -253,7 +253,7 @@ QVariant QmlExpressionPrivate::evalQtScript()
         QmlRewrite::RewriteBinding rewriteBinding;
 
         const QString code = rewriteBinding(expression);
-        expressionFunction = scriptEngine->evaluate(code, fileName.toString(), line);
+        expressionFunction = scriptEngine->evaluate(code, fileName, line);
         expressionFunctionValid = true;
     }
 
@@ -417,7 +417,7 @@ void QmlExpression::setTrackChange(bool trackChange)
 void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 {
     Q_D(QmlExpression);
-    d->fileName = fileName;
+    d->fileName = fileName.toString();
     d->line = line;
 }
 
