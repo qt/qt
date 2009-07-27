@@ -37,7 +37,7 @@ Item {
 
                     transform: [
                         Rotation3D {
-                            id: Rotation; originX: 30; axis.x: 30; axis.y: 60
+                            id: Rotation; origin.x: 30; axis.x: 30; axis.y: 60
                             angle: Wrapper.angle
                         }
                     ]

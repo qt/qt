@@ -17,8 +17,8 @@ Item {
                 height: 40
                 property int angle: 0;
                 transform: Rotation3D {
-                    originX: 20
-                    originY: 20
+                    origin.x: 20
+                    origin.y: 20
                     axis.x: 1
                     angle: flipable.angle;
                 }

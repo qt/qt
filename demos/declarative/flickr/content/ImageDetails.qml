@@ -20,7 +20,7 @@ Flipable {
     signal closed
 
     transform: Rotation3D {
-        originX: Container.width / 2;
+        origin.x: Container.width / 2;
         axis.y: 1;
         angle: Container.rotation;
     }
