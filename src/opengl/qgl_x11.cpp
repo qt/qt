@@ -1536,11 +1536,14 @@ void QGLExtensions::init()
     }
 }
 
-
+#if !defined(glXBindTexImageEXT)
 typedef void (*qt_glXBindTexImageEXT)(Display*, GLXDrawable, int, const int*);
-typedef void (*qt_glXReleaseTexImageEXT)(Display*, GLXDrawable, int);
 static qt_glXBindTexImageEXT glXBindTexImageEXT = 0;
+#endif
+#if !defined(glXReleaseTexImageEXT)
+typedef void (*qt_glXReleaseTexImageEXT)(Display*, GLXDrawable, int);
 static qt_glXReleaseTexImageEXT glXReleaseTexImageEXT = 0;
+#endif
 static bool qt_resolved_texture_from_pixmap = false;
 
 QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qint64 key, bool canInvert)
