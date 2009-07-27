@@ -49,7 +49,8 @@
 #include <QtScript/qscriptengine.h>
 #include <private/qfxperf_p.h>
 
-#include "qmlengine.h"
+#include <QtDeclarative/qmlengine.h>
+#include <private/qmlengine_p.h>
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
 #include "qfxanchors_p.h"
@@ -819,7 +820,7 @@ void QFxItem::qmlLoaded()
             QFxItem* ret = qobject_cast<QFxItem*>(o);
             if (ret) {
                 ret->setItemParent(this);
-                QScriptValue v = qmlEngine(this)->scriptEngine()->newQObject(ret);
+                QScriptValue v = QmlEnginePrivate::getScriptEngine(qmlEngine(this))->newQObject(ret);
                 emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
             }
 

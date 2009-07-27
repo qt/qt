@@ -86,8 +86,6 @@ public:
     QUrl fileName;
     int line;
 
-    quint32 id;
-
     QVariant evalSSE(QmlBasicScript::CacheState &cacheState);
     QVariant evalQtScript();
 

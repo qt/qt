@@ -51,7 +51,7 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 QT_BEGIN_NAMESPACE
 
 QmlExpressionPrivate::QmlExpressionPrivate()
-: ctxt(0), expressionFunctionValid(false), sseData(0), me(0), trackChange(true), line(-1), id(0), guardList(0), guardListLength(0)
+: ctxt(0), expressionFunctionValid(false), sseData(0), me(0), trackChange(true), line(-1), guardList(0), guardListLength(0)
 {
 }
 
@@ -63,8 +63,6 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr,
     expression = expr;
 
     this->ctxt = ctxt;
-    if (ctxt && ctxt->engine()) 
-        id = ctxt->engine()->d_func()->getUniqueId();
     if (ctxt)
         ctxt->d_func()->childExpressions.insert(q);
     this->me = me;
@@ -78,8 +76,6 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
     sse.load((const char *)expr, rc);
 
     this->ctxt = ctxt;
-    if (ctxt && ctxt->engine()) 
-        id = ctxt->engine()->d_func()->getUniqueId();
     if (ctxt)
         ctxt->d_func()->childExpressions.insert(q);
     this->me = me;
@@ -244,7 +240,7 @@ QVariant QmlExpressionPrivate::evalQtScript()
     if (me)
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
 
-    QScriptEngine *scriptEngine = engine->scriptEngine();
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QScriptValueList oldScopeChain =
         scriptEngine->currentContext()->scopeChain();
 
@@ -346,7 +342,7 @@ QVariant QmlExpression::value()
 
     QmlBasicScript::CacheState cacheState = QmlBasicScript::Reset;
 
-    QmlEnginePrivate *ep = engine()->d_func();
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine());
 
     QmlExpression *lastCurrentExpression = ep->currentExpression;
     QPODVector<QmlEnginePrivate::CapturedProperty> lastCapturedProperties;
@@ -435,15 +431,6 @@ QObject *QmlExpression::scopeObject() const
 {
     Q_D(const QmlExpression);
     return d->me;
-}
-
-/*!
-    \internal
-*/
-quint32 QmlExpression::id() const
-{
-    Q_D(const QmlExpression);
-    return d->id;
 }
 
 /*! \internal */
