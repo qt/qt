@@ -2229,7 +2229,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                 rect = cb->rect;
                 break;
             case SC_ComboBoxArrow:
-                rect.setRect(cb->editable ? xpos : 0, y , wi - xpos, he);
+                rect.setRect(xpos, y , wi - xpos, he);
                 break;
             case SC_ComboBoxEditField:
                 rect.setRect(x + margin, y + margin, wi - 2 * margin - 16, he - 2 * margin);
