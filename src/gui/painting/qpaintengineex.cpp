@@ -91,6 +91,40 @@ QRectF QVectorPath::controlPointRect() const
     return QRectF(QPointF(m_cp_rect.x1, m_cp_rect.y1), QPointF(m_cp_rect.x2, m_cp_rect.y2));
 }
 
+QPainterPath QVectorPath::convertToPainterPath() const
+{
+    QPainterPath path;
+
+    if (m_count == 0)
+        return path;
+
+    const QPointF *points = (const QPointF *) m_points;
+
+    if (m_elements) {
+        for (int i=0; i<m_count; ++i) {
+            switch (m_elements[i]) {
+            case QPainterPath::MoveToElement:
+                path.moveTo(points[i]);
+                break;
+            case QPainterPath::LineToElement:
+                path.lineTo(points[i]);
+                break;
+            case QPainterPath::CurveToElement:
+                path.cubicTo(points[i], points[i+1], points[i+2]);
+                break;
+            default:
+                break;
+            }
+        }
+    } else {
+        path.moveTo(points[0]);
+        for (int i=1; i<m_count; ++i)
+            path.lineTo(points[i]);
+    }
+
+    return path;
+}
+
 const QVectorPath &qtVectorPathForPath(const QPainterPath &path)
 {
     Q_ASSERT(path.d_func());
