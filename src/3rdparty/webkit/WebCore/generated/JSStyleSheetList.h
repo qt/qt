@@ -21,6 +21,7 @@
 #ifndef JSStyleSheetList_h
 #define JSStyleSheetList_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class StyleSheetList;
 
-class JSStyleSheetList : public DOMObject {
-    typedef DOMObject Base;
+class JSStyleSheetList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSStyleSheetList(PassRefPtr<JSC::Structure>, PassRefPtr<StyleSheetList>);
+    JSStyleSheetList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<StyleSheetList>);
     virtual ~JSStyleSheetList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,7 +47,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     StyleSheetList* impl() const { return m_impl.get(); }
 
 private:
@@ -57,7 +58,7 @@ private:
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, StyleSheetList*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, StyleSheetList*);
 StyleSheetList* toStyleSheetList(JSC::JSValue);
 
 class JSStyleSheetListPrototype : public JSC::JSObject {

@@ -30,8 +30,7 @@
 #include "qdir.h"
 #include "qfile.h"
 
-class QWebViewPrivate
-{
+class QWebViewPrivate {
 public:
     QWebViewPrivate(QWebView *view)
         : view(view)
@@ -147,7 +146,7 @@ public:
     if you do not require QWidget attributes. Nevertheless, QtWebKit depends
     on QtGui, so you should use a QApplication instead of QCoreApplication.
 
-    \sa {Previewer Example}, {Browser}
+    \sa {Previewer Example}, {Browser}, {Form Extractor}, {Google Chat}, {Fancy Browser}
 */
 
 /*!
@@ -206,16 +205,15 @@ QWebPage *QWebView::page() const
 
     \sa page()
 */
-void QWebView::setPage(QWebPage *page)
+void QWebView::setPage(QWebPage* page)
 {
     if (d->page == page)
         return;
     if (d->page) {
-        if (d->page->parent() == this) {
+        if (d->page->parent() == this)
             delete d->page;
-        } else {
+        else
             d->page->disconnect(this);
-        }
     }
     d->page = page;
     if (d->page) {
@@ -270,19 +268,24 @@ void QWebView::setPage(QWebPage *page)
     'ftp'. The result is then passed through QUrl's tolerant parser, and
     in the case or success, a valid QUrl is returned, or else a QUrl().
 
-    Examples
-    - webkit.org becomes http://webkit.org
-    - ftp.webkit.org becomes ftp://ftp.webkit.org
-    - localhost becomes http://localhost
-    - /home/user/test.html becomes file:///home/user/test.html (if exists)
+    \section1 Examples:
 
-    Tips when dealing with URLs and strings
-    - When creating a QString from a QByteArray or a char*, always use
+    \list
+    \o webkit.org becomes http://webkit.org
+    \o ftp.webkit.org becomes ftp://ftp.webkit.org
+    \o localhost becomes http://localhost
+    \o /home/user/test.html becomes file:///home/user/test.html (if exists)
+    \endlist
+
+    \section2 Tips when dealing with URLs and strings:
+
+    \list
+    \o When creating a QString from a QByteArray or a char*, always use
       QString::fromUtf8().
-    - Do not use QUrl(string), nor QUrl::toString() anywhere where the URL might
-      be used, such as in the location bar, as those functions loose data.
-      Instead use QUrl::fromEncoded() and QUrl::toEncoded(), respectively.
-
+    \o Do not use QUrl(string), nor QUrl::toString() anywhere where the URL might
+       be used, such as in the location bar, as those functions loose data.
+       Instead use QUrl::fromEncoded() and QUrl::toEncoded(), respectively.
+    \endlist
  */
 QUrl QWebView::guessUrlFromString(const QString &string)
 {
@@ -612,6 +615,8 @@ qreal QWebView::textSizeMultiplier() const
     These hints are used to initialize QPainter before painting the web page.
 
     QPainter::TextAntialiasing is enabled by default.
+
+    \sa QPainter::renderHints()
 */
 QPainter::RenderHints QWebView::renderHints() const
 {
@@ -703,9 +708,8 @@ bool QWebView::event(QEvent *e)
             }
 #endif
 #endif
-        } else if (e->type() == QEvent::Leave) {
+        } else if (e->type() == QEvent::Leave)
             d->page->event(e);
-        }
     }
 
     return QWidget::event(e);
@@ -808,7 +812,7 @@ void QWebView::paintEvent(QPaintEvent *ev)
 
 #ifdef    QWEBKIT_TIME_RENDERING
     int elapsed = time.elapsed();
-    qDebug()<<"paint event on "<<ev->region()<<", took to render =  "<<elapsed;
+    qDebug() << "paint event on " << ev->region() << ", took to render =  " << elapsed;
 #endif
 }
 
@@ -1004,9 +1008,8 @@ void QWebView::inputMethodEvent(QInputMethodEvent *e)
 */
 void QWebView::changeEvent(QEvent *e)
 {
-    if (d->page && e->type() == QEvent::PaletteChange) {
+    if (d->page && e->type() == QEvent::PaletteChange)
         d->page->setPalette(palette());
-    }
     QWidget::changeEvent(e);
 }
 

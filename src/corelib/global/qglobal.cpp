@@ -1668,7 +1668,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_WINDOWS7;
         } else {
             qWarning("Qt: Untested Windows version %d.%d detected!",
-                     osver.dwMajorVersion, osver.dwMinorVersion);
+                     int(osver.dwMajorVersion), int(osver.dwMinorVersion));
             winver = QSysInfo::WV_NT_based;
         }
     }

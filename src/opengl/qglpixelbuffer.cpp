@@ -591,7 +591,7 @@ QGLFormat QGLPixelBuffer::format() const
 }
 
 /*! \fn int QGLPixelBuffer::devType() const
-    \reimp
+    \internal
 */
 
 QT_END_NAMESPACE

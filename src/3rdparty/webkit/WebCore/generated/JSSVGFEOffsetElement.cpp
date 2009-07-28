@@ -95,8 +95,8 @@ bool JSSVGFEOffsetElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
 
 const ClassInfo JSSVGFEOffsetElement::s_info = { "SVGFEOffsetElement", &JSSVGElement::s_info, &JSSVGFEOffsetElementTable, 0 };
 
-JSSVGFEOffsetElement::JSSVGFEOffsetElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFEOffsetElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFEOffsetElement::JSSVGFEOffsetElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEOffsetElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -112,81 +112,91 @@ bool JSSVGFEOffsetElement::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsSVGFEOffsetElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementDx(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->dxAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementDy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->dyAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEOffsetElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEOffsetElement* castedThis = static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(static_cast<JSSVGFEOffsetElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue JSC_HOST_CALL jsSVGFEOffsetElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -199,7 +209,7 @@ JSValue JSC_HOST_CALL jsSVGFEOffsetElementPrototypeFunctionGetPresentationAttrib
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

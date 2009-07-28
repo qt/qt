@@ -93,7 +93,8 @@ namespace QPatternist
         Q_DISABLE_COPY(QtXmlPatterns)
     };
 
-    static inline QString formatKeyword(const QString &keyword)
+    // don't make this function static, otherwise xlC 7 cannot find it
+    inline QString formatKeyword(const QString &keyword)
     {
         return QLatin1String("<span class='XQuery-keyword'>")   +
                escape(keyword)                                  +
@@ -164,6 +165,16 @@ namespace QPatternist
         Q_ASSERT(type);
         return QLatin1String("<span class='XQuery-type'>")  +
                escape(type->displayName(np))                +
+               QLatin1String("</span>");
+    }
+
+    /**
+     * @short Formats name of any type.
+     */
+    static inline QString formatType(const NamePool::Ptr &np, const QXmlName &name)
+    {
+        return QLatin1String("<span class='XQuery-type'>")  +
+               escape(np->displayName(name))                +
                QLatin1String("</span>");
     }
 

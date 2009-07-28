@@ -108,6 +108,8 @@ QTOBJS= \
         qmalloc.obj \
 	qmap.obj \
 	qregexp.obj \
+	qtextcodec.obj \
+	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \
 	qtextstream.obj \
@@ -156,6 +158,8 @@ clean::
 	-del qmalloc.obj
 	-del qmap.obj
 	-del qregexp.obj
+	-del qtextcodec.obj
+	-del qutfcodec.obj
 	-del qstring.obj
 	-del qstringlist.obj
 	-del qtextstream.obj
@@ -261,6 +265,9 @@ qbytearraymatcher.obj: $(SOURCE_PATH)\src\corelib\tools\qbytearraymatcher.cpp
 qchar.obj: $(SOURCE_PATH)\src\corelib\tools\qchar.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qchar.cpp
 
+qutfcodec.obj: $(SOURCE_PATH)\src\corelib\codecs\qutfcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\codecs\qutfcodec.cpp
+
 qstring.obj: $(SOURCE_PATH)\src\corelib\tools\qstring.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qstring.cpp
 
@@ -303,8 +310,8 @@ qfsfileengine_iterator.obj: $(SOURCE_PATH)\src\corelib\io\qfsfileengine_iterator
 qabstractfileengine.obj: $(SOURCE_PATH)\src\corelib\io\qabstractfileengine.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qabstractfileengine.cpp
 
-qtextcodec.obj: $(SOURCE_PATH)\src\codecs\qtextcodec.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\codecs\qtextcodec.cpp
+qtextcodec.obj: $(SOURCE_PATH)\src\corelib\codecs\qtextcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\codecs\qtextcodec.cpp
 
 qregexp.obj: $(SOURCE_PATH)\src\corelib\tools\qregexp.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qregexp.cpp

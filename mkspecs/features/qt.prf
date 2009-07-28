@@ -159,6 +159,7 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
       } else {
          DEFINES *= $$upper(QT_$${QTLIB}_LIB)
 	 isEqual(QTLIB, opengl):CONFIG += opengl
+	 isEqual(QTLIB, openvg):CONFIG += openvg
 	 isEqual(QTLIB, qt3support):DEFINES *= QT3_SUPPORT
          isEqual(QTLIB, testlib):CONFIG += console
          isEqual(QTLIB, dbus):CONFIG += dbusadaptors dbusinterfaces

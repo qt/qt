@@ -114,6 +114,7 @@ class tst_QNetworkReply: public QObject
     MyCookieJar *cookieJar;
 #ifndef QT_NO_OPENSSL
     QSslConfiguration storedSslConfiguration;
+    QList<QSslError> storedExpectedSslErrors;
 #endif
 
 public:
@@ -126,9 +127,11 @@ public Q_SLOTS:
     void gotError();
     void authenticationRequired(QNetworkReply*,QAuthenticator*);
     void proxyAuthenticationRequired(const QNetworkProxy &,QAuthenticator*);
+
 #ifndef QT_NO_OPENSSL
     void sslErrors(QNetworkReply*,const QList<QSslError> &);
     void storeSslConfiguration();
+    void ignoreSslErrorListSlot(QNetworkReply *reply, const QList<QSslError> &);
 #endif
 
 protected Q_SLOTS:
@@ -247,6 +250,13 @@ private Q_SLOTS:
     void httpConnectionCount();
     void httpDownloadPerformance_data();
     void httpDownloadPerformance();
+
+#ifndef QT_NO_OPENSSL
+    void ignoreSslErrorsList_data();
+    void ignoreSslErrorsList();
+    void ignoreSslErrorsListWithSlot_data();
+    void ignoreSslErrorsListWithSlot();
+#endif
 };
 
 QT_BEGIN_NAMESPACE
@@ -1003,6 +1013,7 @@ void tst_QNetworkReply::stateChecking()
     QCOMPARE(reply->request(), req);
     QCOMPARE(int(reply->operation()), int(QNetworkAccessManager::GetOperation));
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->isFinished(), false);
     QCOMPARE(reply->url(), url);
 
     reply->abort();
@@ -1323,6 +1334,9 @@ void tst_QNetworkReply::getErrors()
     QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
 
     QTEST(reply->readAll().isEmpty(), "dataIsEmpty");
+
+    QVERIFY(reply->isFinished());
+    QVERIFY(!reply->isRunning());
 
     QFETCH(int, httpStatusCode);
     if (httpStatusCode != 0) {
@@ -3237,6 +3251,8 @@ void tst_QNetworkReply::downloadProgress()
     connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
             &QTestEventLoop::instance(), SLOT(exitLoop()));
     QVERIFY(spy.isValid());
+    QVERIFY(!reply->isFinished());
+    QVERIFY(reply->isRunning());
 
     QCoreApplication::instance()->processEvents();
     if (!server.hasPendingConnections())
@@ -3257,6 +3273,8 @@ void tst_QNetworkReply::downloadProgress()
         QTestEventLoop::instance().enterLoop(2);
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(spy.count() > 0);
+        QVERIFY(!reply->isFinished());
+        QVERIFY(reply->isRunning());
 
         QList<QVariant> args = spy.last();
         QCOMPARE(args.at(0).toInt(), i*data.size());
@@ -3270,6 +3288,8 @@ void tst_QNetworkReply::downloadProgress()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(spy.count() > 0);
+    QVERIFY(!reply->isRunning());
+    QVERIFY(reply->isFinished());
 
     QList<QVariant> args = spy.last();
     QCOMPARE(args.at(0).toInt(), loopCount * data.size());
@@ -3530,7 +3550,7 @@ void tst_QNetworkReply::httpProxyCommands_data()
         << QUrl("http://0.0.0.0:4443/http-request")
         << QByteArray("HTTP/1.0 200 OK\r\nProxy-Connection: close\r\nContent-Length: 1\r\n\r\n1")
         << "GET http://0.0.0.0:4443/http-request HTTP/1.";
-#ifndef QT_NO_SSL
+#ifndef QT_NO_OPENSSL
     QTest::newRow("https")
         << QUrl("https://0.0.0.0:4443/https-request")
         << QByteArray("HTTP/1.0 200 Connection Established\r\n\r\n")
@@ -3753,6 +3773,7 @@ public slots:
     }
 
     void bytesWrittenSlot(qint64 amount) {
+        Q_UNUSED(amount);
         if (dataSent == dataSize && client) {
             // close eventually
 
@@ -3820,6 +3841,82 @@ void tst_QNetworkReply::httpDownloadPerformance()
 
     delete reply;
 }
+
+#ifndef QT_NO_OPENSSL
+void tst_QNetworkReply::ignoreSslErrorsList_data()
+{
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<QList<QSslError> >("expectedSslErrors");
+    QTest::addColumn<QNetworkReply::NetworkError>("expectedNetworkError");
+
+    QList<QSslError> expectedSslErrors;
+    // apparently, because of some weird behaviour of SRCDIR, the file name below needs to start with a slash
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "/../qsslsocket/certs/qt-test-server-cacert.pem"));
+    QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
+    QSslError wrongError(QSslError::SelfSignedCertificate);
+
+    QTest::newRow("SSL-failure-empty-list") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
+    expectedSslErrors.append(wrongError);
+    QTest::newRow("SSL-failure-wrong-error") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
+    expectedSslErrors.append(rightError);
+    QTest::newRow("allErrorsInExpectedList1") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::NoError;
+    expectedSslErrors.removeAll(wrongError);
+    QTest::newRow("allErrorsInExpectedList2") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::NoError;
+    expectedSslErrors.removeAll(rightError);
+    QTest::newRow("SSL-failure-empty-list-again") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
+}
+
+void tst_QNetworkReply::ignoreSslErrorsList()
+{
+    QFETCH(QString, url);
+    QNetworkRequest request(url);
+    QNetworkReply *reply = manager.get(request);
+
+    QFETCH(QList<QSslError>, expectedSslErrors);
+    reply->ignoreSslErrors(expectedSslErrors);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QFETCH(QNetworkReply::NetworkError, expectedNetworkError);
+    QCOMPARE(reply->error(), expectedNetworkError);
+}
+
+void tst_QNetworkReply::ignoreSslErrorsListWithSlot_data()
+{
+    ignoreSslErrorsList_data();
+}
+
+// this is not a test, just a slot called in the test below
+void tst_QNetworkReply::ignoreSslErrorListSlot(QNetworkReply *reply, const QList<QSslError> &)
+{
+    reply->ignoreSslErrors(storedExpectedSslErrors);
+}
+
+// do the same as in ignoreSslErrorsList, but ignore the errors in the slot
+void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
+{
+    QFETCH(QString, url);
+    QNetworkRequest request(url);
+    QNetworkReply *reply = manager.get(request);
+
+    QFETCH(QList<QSslError>, expectedSslErrors);
+    // store the errors to ignore them later in the slot connected below
+    storedExpectedSslErrors = expectedSslErrors;
+    connect(&manager, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)),
+            this, SLOT(ignoreSslErrorListSlot(QNetworkReply *, const QList<QSslError> &)));
+
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QFETCH(QNetworkReply::NetworkError, expectedNetworkError);
+    QCOMPARE(reply->error(), expectedNetworkError);
+}
+
+#endif // QT_NO_OPENSSL
 
 QTEST_MAIN(tst_QNetworkReply)
 #include "tst_qnetworkreply.moc"

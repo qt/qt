@@ -61,12 +61,12 @@
 
     \section1 TCP/IP
 
-    The cross-platform \l{QtNetwork} module
-    provides classes that make network programming portable and
-    easy. It offers high-level classes (e.g., QHttp, QFtp) that
-    communicate using specific application-level protocols, and
-    lower-level classes (e.g., QTcpSocket, QTcpServer, QSslSocket) for
-    implementing protocols.
+    The cross-platform \l{QtNetwork} module provides classes that make
+    network programming portable and easy. It offers high-level
+    classes (e.g., QNetworkAccessManager, QFtp) that communicate using
+    specific application-level protocols, and lower-level classes
+    (e.g., QTcpSocket, QTcpServer, QSslSocket) for implementing
+    protocols.
 
     \section1 Shared Memory
 

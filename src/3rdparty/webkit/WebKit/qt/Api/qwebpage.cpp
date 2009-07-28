@@ -59,6 +59,7 @@
 #include "Scrollbar.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformWheelEvent.h"
+#include "PluginDatabase.h"
 #include "ProgressTracker.h"
 #include "RefPtr.h"
 #include "HashMap.h"
@@ -99,6 +100,18 @@
 
 using namespace WebCore;
 
+void QWEBKIT_EXPORT qt_drt_overwritePluginDirectories()
+{
+    PluginDatabase* db = PluginDatabase::installedPlugins(/* populate */ false);
+
+    Vector<String> paths;
+    String qtPath(getenv("QTWEBKIT_PLUGIN_PATH"));
+    qtPath.split(UChar(':'), /* allowEmptyEntries */ false, paths);
+
+    db->setPluginDirectories(paths);
+    db->refresh();
+}
+
 bool QWebPagePrivate::drtRun = false;
 void QWEBKIT_EXPORT qt_drt_run(bool b)
 {
@@ -116,29 +129,29 @@ QString QWEBKIT_EXPORT qt_webpage_groupName(QWebPage* page)
 }
 
 // Lookup table mapping QWebPage::WebActions to the associated Editor commands
-static const char* editorCommandWebActions[] = 
+static const char* editorCommandWebActions[] =
 {
     0, // OpenLink,
 
     0, // OpenLinkInNewWindow,
     0, // OpenFrameInNewWindow,
-    
+
     0, // DownloadLinkToDisk,
     0, // CopyLinkToClipboard,
-    
+
     0, // OpenImageInNewWindow,
     0, // DownloadImageToDisk,
     0, // CopyImageToClipboard,
-    
+
     0, // Back,
     0, // Forward,
     0, // Stop,
     0, // Reload,
-    
+
     "Cut", // Cut,
     "Copy", // Copy,
     "Paste", // Paste,
-    
+
     "Undo", // Undo,
     "Redo", // Redo,
     "MoveForward", // MoveToNextChar,
@@ -167,21 +180,22 @@ static const char* editorCommandWebActions[] =
     "MoveToEndOfDocumentAndModifySelection", // SelectEndOfDocument,
     "DeleteWordBackward", // DeleteStartOfWord,
     "DeleteWordForward", // DeleteEndOfWord,
-    
+
     0, // SetTextDirectionDefault,
     0, // SetTextDirectionLeftToRight,
     0, // SetTextDirectionRightToLeft,
-    
+
     "ToggleBold", // ToggleBold,
     "ToggleItalic", // ToggleItalic,
     "ToggleUnderline", // ToggleUnderline,
-    
+
     0, // InspectElement,
 
     "InsertNewline", // InsertParagraphSeparator
     "InsertLineBreak", // InsertLineSeparator
 
     "SelectAll", // SelectAll
+    0, // ReloadAndBypassCache,
 
     "PasteAndMatchStyle", // PasteAndMatchStyle
     "RemoveFormat", // RemoveFormat
@@ -206,7 +220,6 @@ const char* QWebPagePrivate::editorCommandForWebActions(QWebPage::WebAction acti
 {
     if ((action > QWebPage::NoWebAction) && (action < int(sizeof(editorCommandWebActions) / sizeof(const char*))))
         return editorCommandWebActions[action];
-    
     return 0;
 }
 
@@ -252,7 +265,7 @@ static inline Qt::DropAction dragOpToDropAction(unsigned actions)
 QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     : q(qq)
     , view(0)
-    , viewportSize(QSize(0,0))
+    , viewportSize(QSize(0, 0))
 {
     WebCore::InitializeLoggingChannelsIfNecessary();
     JSC::initializeThreading();
@@ -405,9 +418,8 @@ QMenu *QWebPagePrivate::createContextMenu(const WebCore::ContextMenu *webcoreMen
                 if (anyEnabledAction) {
                     subMenu->setTitle(item.title());
                     menu->addAction(subMenu->menuAction());
-                } else {
+                } else
                     delete subMenu;
-                }
                 break;
             }
         }
@@ -456,6 +468,7 @@ void QWebPagePrivate::updateAction(QWebPage::WebAction action)
             enabled = loader->isLoading();
             break;
         case QWebPage::Reload:
+        case QWebPage::ReloadAndBypassCache:
             enabled = !loader->isLoading();
             break;
 #ifndef QT_NO_UNDOSTACK
@@ -501,6 +514,7 @@ void QWebPagePrivate::updateNavigationActions()
     updateAction(QWebPage::Forward);
     updateAction(QWebPage::Stop);
     updateAction(QWebPage::Reload);
+    updateAction(QWebPage::ReloadAndBypassCache);
 }
 
 void QWebPagePrivate::updateEditorActions()
@@ -647,12 +661,12 @@ void QWebPagePrivate::mouseReleaseEvent(QMouseEvent *ev)
         Pasteboard::generalPasteboard()->setSelectionMode(true);
         WebCore::Frame* focusFrame = page->focusController()->focusedOrMainFrame();
         if (ev->button() == Qt::LeftButton) {
-            if(focusFrame && (focusFrame->editor()->canCopy() || focusFrame->editor()->canDHTMLCopy())) {
+            if (focusFrame && (focusFrame->editor()->canCopy() || focusFrame->editor()->canDHTMLCopy())) {
                 focusFrame->editor()->copy();
                 ev->setAccepted(true);
             }
         } else if (ev->button() == Qt::MidButton) {
-            if(focusFrame && (focusFrame->editor()->canPaste() || focusFrame->editor()->canDHTMLPaste())) {
+            if (focusFrame && (focusFrame->editor()->canPaste() || focusFrame->editor()->canDHTMLPaste())) {
                 focusFrame->editor()->paste();
                 ev->setAccepted(true);
             }
@@ -822,11 +836,10 @@ void QWebPagePrivate::focusInEvent(QFocusEvent *ev)
     FocusController *focusController = page->focusController();
     Frame *frame = focusController->focusedFrame();
     focusController->setActive(true);
-    if (frame) {
+    if (frame)
         focusController->setFocused(true);
-    } else {
+    else
         focusController->setFocusedFrame(QWebFramePrivate::core(mainFrame));
-    }
 }
 
 void QWebPagePrivate::focusOutEvent(QFocusEvent *ev)
@@ -932,7 +945,7 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         QString preedit = ev->preeditString();
         // ### FIXME: use the provided QTextCharFormat (use color at least)
         Vector<CompositionUnderline> underlines;
-        underlines.append(CompositionUnderline(0, preedit.length(), Color(0,0,0), false));
+        underlines.append(CompositionUnderline(0, preedit.length(), Color(0, 0, 0), false));
         editor->setComposition(preedit, underlines, preedit.length(), 0);
     }
     ev->accept();
@@ -968,9 +981,8 @@ void QWebPagePrivate::shortcutOverrideEvent(QKeyEvent* event)
                 }
         }
 #ifndef QT_NO_SHORTCUT
-        else if (editorActionForKeyEvent(event) != QWebPage::NoWebAction) {
+        else if (editorActionForKeyEvent(event) != QWebPage::NoWebAction)
             event->accept();
-        }
 #endif
     }
 }
@@ -1036,12 +1048,11 @@ bool QWebPagePrivate::handleScrolling(QKeyEvent *ev, Frame *frame)
 */
 QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
 {
-    switch(property) {
+    switch (property) {
     case Qt::ImMicroFocus: {
         Frame *frame = d->page->focusController()->focusedFrame();
-        if (frame) {
+        if (frame)
             return QVariant(frame->selection()->absoluteCaretBounds());
-        }
         return QVariant();
     }
     case Qt::ImFont: {
@@ -1054,9 +1065,8 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
         Frame *frame = d->page->focusController()->focusedFrame();
         if (frame) {
             VisibleSelection selection = frame->selection()->selection();
-            if (selection.isCaret()) {
+            if (selection.isCaret())
                 return QVariant(selection.start().deprecatedEditingOffset());
-            }
         }
         return QVariant();
     }
@@ -1064,9 +1074,8 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
         Frame *frame = d->page->focusController()->focusedFrame();
         if (frame) {
             Document *document = frame->document();
-            if (document->focusedNode()) {
+            if (document->focusedNode())
                 return QVariant(document->focusedNode()->nodeValue());
-            }
         }
         return QVariant();
     }
@@ -1142,6 +1151,7 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     \value Forward Navigate forward in the history of navigated links.
     \value Stop Stop loading the current page.
     \value Reload Reload the current page.
+    \value ReloadAndBypassCache Reload the current page, but do not use any local cache. (Added in Qt 4.6)
     \value Cut Cut the content currently selected into the clipboard.
     \value Copy Copy the content currently selected into the clipboard.
     \value Paste Paste content from the clipboard.
@@ -1315,6 +1325,8 @@ QWebFrame *QWebPage::currentFrame() const
 
 
 /*!
+    \since 4.6
+
     Returns the frame at the given point \a pos.
 
     \sa mainFrame(), currentFrame()
@@ -1413,9 +1425,8 @@ bool QWebPage::javaScriptPrompt(QWebFrame *frame, const QString& msg, const QStr
     bool ok = false;
 #ifndef QT_NO_INPUTDIALOG
     QString x = QInputDialog::getText(d->view, tr("JavaScript Prompt - %1").arg(mainFrame()->url().host()), msg, QLineEdit::Normal, defaultValue, &ok);
-    if (ok && result) {
+    if (ok && result)
         *result = x;
-    }
 #endif
     return ok;
 }
@@ -1566,7 +1577,10 @@ void QWebPage::triggerAction(WebAction action, bool checked)
             mainFrame()->d->frame->loader()->stopForUserCancel();
             break;
         case Reload:
-            mainFrame()->d->frame->loader()->reload();
+            mainFrame()->d->frame->loader()->reload(/*endtoendreload*/false);
+            break;
+        case ReloadAndBypassCache:
+            mainFrame()->d->frame->loader()->reload(/*endtoendreload*/true);
             break;
         case SetTextDirectionDefault:
             editor->setBaseWritingDirection(NaturalWritingDirection);
@@ -1628,9 +1642,8 @@ QSize QWebPage::fixedContentsSize() const
     QWebFrame* frame = d->mainFrame;
     if (frame) {
         WebCore::FrameView* view = frame->d->frame->view();
-        if (view && view->useFixedLayout()) {
+        if (view && view->useFixedLayout())
             return d->mainFrame->d->frame->view()->fixedLayoutSize();
-        }
     }
 
     return d->fixedLayoutSize;
@@ -2138,9 +2151,8 @@ void QWebPage::setContentEditable(bool editable)
                 frame->applyEditingStyleToBodyElement();
                 // FIXME: mac port calls this if there is no selectedDOMRange
                 //frame->setSelectionFromNone();
-            } else {
+            } else
                 frame->removeEditingStyleFromBodyElement();
-            }
         }
 
         d->updateEditorActions();
@@ -2208,9 +2220,8 @@ bool QWebPage::swallowContextMenuEvent(QContextMenuEvent *event)
 
     if (QWebFrame* webFrame = frameAt(event->pos())) {
         Frame* frame = QWebFramePrivate::core(webFrame);
-        if (Scrollbar* scrollbar = frame->view()->scrollbarAtPoint(PlatformMouseEvent(event, 1).pos())) {
+        if (Scrollbar* scrollbar = frame->view()->scrollbarAtPoint(PlatformMouseEvent(event, 1).pos()))
             return scrollbar->contextMenu(PlatformMouseEvent(event, 1));
-        }
     }
 
     WebCore::Frame* focusedFrame = d->page->focusController()->focusedOrMainFrame();
@@ -2265,9 +2276,8 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     originallyEnabledWebActions &= ~visitedWebActions; // Mask out visited actions (they're part of the menu)
     for (int i = 0; i < QWebPage::WebActionCount; ++i) {
         if (originallyEnabledWebActions.at(i)) {
-            if (QAction *a = this->action(QWebPage::WebAction(i))) {
+            if (QAction *a = this->action(QWebPage::WebAction(i)))
                 a->setEnabled(true);
-            }
         }
     }
 
@@ -2390,9 +2400,8 @@ bool QWebPage::findText(const QString &subString, FindFlags options)
         if (subString.isEmpty()) {
             d->page->unmarkAllTextMatches();
             return true;
-        } else {
+        } else
             return d->page->markAllMatchesForText(subString, caseSensitivity, true, 0);
-        }
     } else {
         ::FindDirection direction = ::FindDirectionForward;
         if (options & FindBackward)
@@ -2633,7 +2642,7 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 
 #if defined Q_OS_WIN32
     QString ver;
-    switch(QSysInfo::WindowsVersion) {
+    switch (QSysInfo::WindowsVersion) {
         case QSysInfo::WV_32s:
             ver = "Windows 3.1";
             break;
@@ -2707,7 +2716,8 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 }
 
 
-void QWebPagePrivate::_q_onLoadProgressChanged(int) {
+void QWebPagePrivate::_q_onLoadProgressChanged(int)
+{
     m_totalBytes = page->progress()->totalPageAndResourceBytesToLoad();
     m_bytesReceived = page->progress()->totalBytesReceived();
 }
@@ -2719,7 +2729,8 @@ void QWebPagePrivate::_q_onLoadProgressChanged(int) {
 
     \sa bytesReceived()
 */
-quint64 QWebPage::totalBytes() const {
+quint64 QWebPage::totalBytes() const
+{
     return d->m_totalBytes;
 }
 
@@ -2729,7 +2740,8 @@ quint64 QWebPage::totalBytes() const {
 
     \sa totalBytes()
 */
-quint64 QWebPage::bytesReceived() const {
+quint64 QWebPage::bytesReceived() const
+{
     return d->m_bytesReceived;
 }
 

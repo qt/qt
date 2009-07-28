@@ -122,6 +122,14 @@ namespace QPatternist
          */
         inline int captureCount() const;
 
+        /**
+         * @short Parses pattern 
+         */
+        static QRegExp parsePattern(const QString &pattern,
+                                    const ReportContext::Ptr &context,
+                                    const SourceLocationReflection *const location);
+
+
     protected:
         /**
          * @short This constructor is protected, because this class is supposed to be sub-classed.
@@ -146,13 +154,17 @@ namespace QPatternist
         };
         typedef QFlags<PreCompiledPart> PreCompiledParts;
 
+        /**
+         * @short Calls the public parsePattern() function and passes in @c
+         * this as the location.
+         */
+        inline QRegExp parsePattern(const QString &pattern,
+                                    const ReportContext::Ptr &context) const;
+
         Q_DISABLE_COPY(PatternPlatform)
 
         Flags parseFlags(const QString &flags,
                          const DynamicContext::Ptr &context) const;
-
-        QRegExp parsePattern(const QString &pattern,
-                             const DynamicContext::Ptr &context) const;
 
         static void applyFlags(const Flags flags, QRegExp &pattern);
 

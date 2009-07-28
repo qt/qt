@@ -73,8 +73,8 @@ JSObject* JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::self(ExecState* exec, 
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticSmoothAbs::s_info = { "SVGPathSegCurvetoQuadraticSmoothAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoQuadraticSmoothAbsTable, 0 };
 
-JSSVGPathSegCurvetoQuadraticSmoothAbs::JSSVGPathSegCurvetoQuadraticSmoothAbs(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegCurvetoQuadraticSmoothAbs> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegCurvetoQuadraticSmoothAbs::JSSVGPathSegCurvetoQuadraticSmoothAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoQuadraticSmoothAbs> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -90,15 +90,17 @@ bool JSSVGPathSegCurvetoQuadraticSmoothAbs::getOwnPropertySlot(ExecState* exec, 
 
 JSValue jsSVGPathSegCurvetoQuadraticSmoothAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegCurvetoQuadraticSmoothAbs* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegCurvetoQuadraticSmoothAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegCurvetoQuadraticSmoothAbs* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 

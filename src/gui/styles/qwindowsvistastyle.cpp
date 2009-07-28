@@ -364,7 +364,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             w->setProperty("_q_stylestate", (int)option->state);
             w->setProperty("_q_stylerect", w->rect());
 
-            bool doTransition = ((state & State_Sunken)     != (oldState & State_Sunken) ||
+            bool doTransition = oldState && 
+                                ((state & State_Sunken)     != (oldState & State_Sunken) ||
                                  (state & State_On)         != (oldState & State_On)     ||
                                  (state & State_MouseOver)  != (oldState & State_MouseOver));
 
@@ -735,7 +736,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             if (const QListView *listview = qobject_cast<const QListView *>(widget)) {
                 if (listview->viewMode() == QListView::IconMode)
                     newStyle = true;
-            } else if (const QTreeView* treeview = qobject_cast<const QTreeView *>(widget)) {
+            } else if (qobject_cast<const QTreeView *>(widget)) {
                 newStyle = true;
             }
             if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))) {
@@ -1093,7 +1094,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
             XPThemeData theme(widget, painter, QLatin1String("PROGRESS"), vertical ? PP_FILLVERT : PP_FILL);
             theme.rect = option->rect;
-            bool reverse = bar->direction == Qt::LeftToRight && inverted || bar->direction == Qt::RightToLeft && !inverted;
+            bool reverse = bar->direction == (Qt::LeftToRight && inverted) || (bar->direction == Qt::RightToLeft && !inverted);
             QTime current = QTime::currentTime();
 
             if (isIndeterminate) {
@@ -1271,7 +1272,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 int yoff = y-2 + h / 2;
                 QPoint p1 = QPoint(x + checkcol, yoff);
                 QPoint p2 = QPoint(x + w + 6 , yoff);
-                int stateId = stateId = MBI_HOT;
+                stateId = MBI_HOT;
                 QRect subRect(p1.x(), p1.y(), p2.x() - p1.x(), 6);
                 subRect  = QStyle::visualRect(option->direction, option->rect, subRect );
                 XPThemeData theme2(widget, painter, QLatin1String("MENU"), MENU_POPUPSEPARATOR, stateId, subRect);
@@ -1283,7 +1284,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                                           menuitem->rect.y(), checkcol - 6, menuitem->rect.height()));
 
             if (act) {
-                int stateId = stateId = MBI_HOT;
+                stateId = MBI_HOT;
                 XPThemeData theme2(widget, painter, QLatin1String("MENU"), MENU_POPUPITEM, stateId, option->rect);
                 d->drawBackground(theme2);
             }
@@ -1403,7 +1404,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         break;
     case CE_MenuBarEmptyArea:
         {
-            int stateId = MBI_NORMAL;
+            stateId = MBI_NORMAL;
             if (!(state & State_Enabled))
                 stateId = MBI_DISABLED;
             XPThemeData theme(widget, painter, QLatin1String("MENU"), MENU_BARBACKGROUND, stateId, option->rect);
@@ -1500,7 +1501,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (const QListView *listview = qobject_cast<const QListView *>(widget)) {
                 if (listview->viewMode() == QListView::IconMode)
                     newStyle = true;
-            } else if (const QTreeView* treeview = qobject_cast<const QTreeView *>(widget)) {
+            } else if (qobject_cast<const QTreeView *>(widget)) {
                 newStyle = true;
             }
             if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))) {
@@ -2014,7 +2015,7 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption 
             MARGINS borderSize;
             HTHEME theme = pOpenThemeData(widget ? QWindowsVistaStylePrivate::winId(widget) : 0, L"Button");
             if (theme) {
-                int stateId;
+                int stateId = PBS_NORMAL;
                 if (!(option->state & State_Enabled))
                     stateId = PBS_DISABLED;
                 else if (option->state & State_Sunken)
@@ -2023,8 +2024,6 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption 
                     stateId = PBS_HOT;
                 else if (btn->features & QStyleOptionButton::DefaultButton)
                     stateId = PBS_DEFAULTED;
-                else
-                    stateId = PBS_NORMAL;
 
                 int border = proxy()->pixelMetric(PM_DefaultFrameWidth, btn, widget);
                 rect = option->rect.adjusted(border, border, -border, -border);
@@ -2097,7 +2096,7 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption 
         rect = QCommonStyle::subElementRect(SE_ProgressBarGroove, option, widget);
         break;
     case SE_ItemViewItemDecoration:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))
+        if (qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))
             rect.adjust(-2, 0, 2, 0);
         break;
     case SE_ItemViewItemFocusRect:
@@ -2231,7 +2230,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                 rect = cb->rect;
                 break;
             case SC_ComboBoxArrow:
-                rect.setRect(cb->editable ? xpos : 0, y , wi - xpos, he);
+                rect.setRect(xpos, y , wi - xpos, he);
                 break;
             case SC_ComboBoxEditField:
                 rect.setRect(x + margin, y + margin, wi - 2 * margin - 16, he - 2 * margin);
@@ -2302,6 +2301,8 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                     rect.translate(0, 3);
                     rect = visualRect(option->direction, option->rect, rect);
                 }
+                break;
+            default:
                 break;
             }
         }

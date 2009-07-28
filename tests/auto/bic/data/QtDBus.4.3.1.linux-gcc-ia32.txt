@@ -1,34 +1,8 @@
-Class QUintForSize<4>
-   size=1 align=1
-   base size=0 base align=1
-QUintForSize<4> (0xb7fd9880) 0 empty
 
-Class QUintForSize<8>
-   size=1 align=1
-   base size=0 base align=1
-QUintForSize<8> (0xb7fd98c0) 0 empty
 
-Class QUintForType<void*>
-   size=1 align=1
-   base size=1 base align=1
-QUintForType<void*> (0xb7fd9980) 0 empty
-  QUintForSize<4> (0xb7fd99c0) 0 empty
 
-Class QIntForSize<4>
-   size=1 align=1
-   base size=0 base align=1
-QIntForSize<4> (0xb7fd9a40) 0 empty
 
-Class QIntForSize<8>
-   size=1 align=1
-   base size=0 base align=1
-QIntForSize<8> (0xb7fd9a80) 0 empty
 
-Class QIntForType<void*>
-   size=1 align=1
-   base size=1 base align=1
-QIntForType<void*> (0xb7fd9b40) 0 empty
-  QIntForSize<4> (0xb7fd9b80) 0 empty
 
 Class QSysInfo
    size=1 align=1
@@ -50,80 +24,20 @@ Class qIsNull(float)::U
    base size=4 base align=4
 qIsNull(float)::U (0xb7fd9e40) 0
 
-Class QTypeInfo<bool>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<bool> (0xb7fd9f00) 0 empty
 
-Class QTypeInfo<char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<char> (0xb7fd9f40) 0 empty
 
-Class QTypeInfo<signed char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<signed char> (0xb7fd9f80) 0 empty
 
-Class QTypeInfo<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<unsigned char> (0xb7fd9fc0) 0 empty
 
-Class QTypeInfo<short int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<short int> (0xb785a000) 0 empty
 
-Class QTypeInfo<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<short unsigned int> (0xb785a040) 0 empty
 
-Class QTypeInfo<int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<int> (0xb785a080) 0 empty
 
-Class QTypeInfo<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<unsigned int> (0xb785a0c0) 0 empty
 
-Class QTypeInfo<long int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long int> (0xb785a100) 0 empty
 
-Class QTypeInfo<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long unsigned int> (0xb785a140) 0 empty
 
-Class QTypeInfo<long long int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long long int> (0xb785a180) 0 empty
 
-Class QTypeInfo<long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long long unsigned int> (0xb785a1c0) 0 empty
 
-Class QTypeInfo<float>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<float> (0xb785a200) 0 empty
 
-Class QTypeInfo<double>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<double> (0xb785a240) 0 empty
 
-Class QTypeInfo<long double>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long double> (0xb785a280) 0 empty
 
 Class QFlag
    size=4 align=4
@@ -141,70 +55,18 @@ Class QAtomic
 QAtomic (0xb785a480) 0
   QBasicAtomic (0xb785a4c0) 0
 
-Class QFlags<Qt::MouseButton>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::MouseButton> (0xb785a5c0) 0
 
-Class QFlags<Qt::Orientation>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::Orientation> (0xb785a600) 0
 
-Class QFlags<Qt::KeyboardModifier>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::KeyboardModifier> (0xb785a640) 0
 
-Class QFlags<Qt::WindowType>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::WindowType> (0xb785a680) 0
 
-Class QFlags<Qt::AlignmentFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::AlignmentFlag> (0xb785a6c0) 0
 
-Class QFlags<Qt::ImageConversionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ImageConversionFlag> (0xb785a700) 0
 
-Class QFlags<Qt::DockWidgetArea>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::DockWidgetArea> (0xb785a740) 0
 
-Class QFlags<Qt::ToolBarArea>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ToolBarArea> (0xb785a780) 0
 
-Class QFlags<Qt::WindowState>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::WindowState> (0xb785a7c0) 0
 
-Class QFlags<Qt::DropAction>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::DropAction> (0xb785a800) 0
 
-Class QFlags<Qt::ItemFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ItemFlag> (0xb785a840) 0
 
-Class QFlags<Qt::MatchFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::MatchFlag> (0xb785a880) 0
 
-Class QFlags<Qt::TextInteractionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::TextInteractionFlag> (0xb785a8c0) 0
 
 Class QInternal
    size=1 align=1
@@ -222,10 +84,6 @@ Class QGenericReturnArgument
 QGenericReturnArgument (0xb785a9c0) 0
   QGenericArgument (0xb785aa00) 0
 
-Class QMetaObject::<anonymous struct>
-   size=16 align=4
-   base size=16 base align=4
-QMetaObject::<anonymous struct> (0xb785abc0) 0
 
 Class QMetaObject
    size=16 align=4
@@ -242,10 +100,6 @@ Class QChar
    base size=2 base align=2
 QChar (0xb785ac80) 0
 
-Class QTypeInfo<QChar>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QChar> (0xb785ad00) 0 empty
 
 Class __locale_struct
    size=116 align=4
@@ -267,10 +121,6 @@ Class QByteRef
    base size=8 base align=4
 QByteRef (0xb785ae40) 0
 
-Class QTypeInfo<QByteArray>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QByteArray> (0xb785ae80) 0 empty
 
 Class QString::Null
    size=1 align=1
@@ -287,10 +137,6 @@ Class QString
    base size=4 base align=4
 QString (0xb785aec0) 0
 
-Class QFlags<QString::SectionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QString::SectionFlag> (0xb76a20c0) 0
 
 Class QLatin1String
    size=4 align=4
@@ -308,10 +154,6 @@ Class QConstString
 QConstString (0xb76a21c0) 0
   QString (0xb76a2200) 0
 
-Class QTypeInfo<QString>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QString> (0xb76a2240) 0 empty
 
 Class QStringRef
    size=12 align=4
@@ -379,15 +221,7 @@ Class QListData
    base size=4 base align=4
 QListData (0xb76a2580) 0
 
-Class QList<QObject*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QObject*>::<anonymous union> (0xb76a2900) 0
 
-Class QList<QObject*>
-   size=4 align=4
-   base size=4 base align=4
-QList<QObject*> (0xb76a2880) 0
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -479,10 +313,6 @@ QIODevice (0xb76a2b40) 0
   QObject (0xb76a2b80) 0
       primary-for QIODevice (0xb76a2b40)
 
-Class QFlags<QIODevice::OpenModeFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QIODevice::OpenModeFlag> (0xb76a2c40) 0
 
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
@@ -502,275 +332,59 @@ Class QMetaType
    base size=0 base align=1
 QMetaType (0xb76a2d00) 0 empty
 
-Class QMetaTypeId2<QString>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QString> (0xb76a2dc0) 0 empty
 
-Class QMetaTypeId2<int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<int> (0xb76a2e00) 0 empty
 
-Class QMetaTypeId2<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<unsigned int> (0xb76a2e40) 0 empty
 
-Class QMetaTypeId2<bool>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<bool> (0xb76a2e80) 0 empty
 
-Class QMetaTypeId2<double>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<double> (0xb76a2ec0) 0 empty
 
-Class QMetaTypeId2<QByteArray>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QByteArray> (0xb76a2f00) 0 empty
 
-Class QMetaTypeId2<QChar>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QChar> (0xb76a2f40) 0 empty
 
-Class QMetaTypeId2<long int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long int> (0xb76a2f80) 0 empty
 
-Class QMetaTypeId2<short int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<short int> (0xb76a2fc0) 0 empty
 
-Class QMetaTypeId2<char>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<char> (0xb76a2000) 0 empty
 
-Class QMetaTypeId2<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long unsigned int> (0xb76a2040) 0 empty
 
-Class QMetaTypeId2<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<short unsigned int> (0xb76a2380) 0 empty
 
-Class QMetaTypeId2<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<unsigned char> (0xb76a2440) 0 empty
 
-Class QMetaTypeId2<float>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<float> (0xb76a2500) 0 empty
 
-Class QMetaTypeId2<QObject*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QObject*> (0xb76a2740) 0 empty
 
-Class QMetaTypeId2<QWidget*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QWidget*> (0xb76a2980) 0 empty
 
-Class QMetaTypeId2<void*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<void*> (0xb76a2a00) 0 empty
 
-Class QMetaTypeId2<long long int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long long int> (0xb76a2bc0) 0 empty
 
-Class QMetaTypeId2<long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long long unsigned int> (0xb76a2cc0) 0 empty
 
-Class QMetaTypeId2<QStringList>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QStringList> (0xb73e0000) 0 empty
 
-Class QMetaTypeId2<QBitArray>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QBitArray> (0xb73e0040) 0 empty
 
-Class QMetaTypeId2<QDate>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QDate> (0xb73e0080) 0 empty
 
-Class QMetaTypeId2<QTime>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTime> (0xb73e00c0) 0 empty
 
-Class QMetaTypeId2<QDateTime>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QDateTime> (0xb73e0100) 0 empty
 
-Class QMetaTypeId2<QUrl>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QUrl> (0xb73e0140) 0 empty
 
-Class QMetaTypeId2<QLocale>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QLocale> (0xb73e0180) 0 empty
 
-Class QMetaTypeId2<QRect>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRect> (0xb73e01c0) 0 empty
 
-Class QMetaTypeId2<QRectF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRectF> (0xb73e0200) 0 empty
 
-Class QMetaTypeId2<QSize>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QSize> (0xb73e0240) 0 empty
 
-Class QMetaTypeId2<QSizeF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QSizeF> (0xb73e0280) 0 empty
 
-Class QMetaTypeId2<QLine>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QLine> (0xb73e02c0) 0 empty
 
-Class QMetaTypeId2<QLineF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QLineF> (0xb73e0300) 0 empty
 
-Class QMetaTypeId2<QPoint>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPoint> (0xb73e0340) 0 empty
 
-Class QMetaTypeId2<QPointF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPointF> (0xb73e0380) 0 empty
 
-Class QMetaTypeId2<QRegExp>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRegExp> (0xb73e03c0) 0 empty
 
-Class QMetaTypeId2<QColorGroup>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QColorGroup> (0xb73e0400) 0 empty
 
-Class QMetaTypeId2<QFont>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QFont> (0xb73e0440) 0 empty
 
-Class QMetaTypeId2<QPixmap>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPixmap> (0xb73e0480) 0 empty
 
-Class QMetaTypeId2<QBrush>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QBrush> (0xb73e04c0) 0 empty
 
-Class QMetaTypeId2<QColor>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QColor> (0xb73e0500) 0 empty
 
-Class QMetaTypeId2<QPalette>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPalette> (0xb73e0540) 0 empty
 
-Class QMetaTypeId2<QIcon>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QIcon> (0xb73e0580) 0 empty
 
-Class QMetaTypeId2<QImage>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QImage> (0xb73e05c0) 0 empty
 
-Class QMetaTypeId2<QPolygon>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPolygon> (0xb73e0600) 0 empty
 
-Class QMetaTypeId2<QRegion>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRegion> (0xb73e0640) 0 empty
 
-Class QMetaTypeId2<QBitmap>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QBitmap> (0xb73e0680) 0 empty
 
-Class QMetaTypeId2<QCursor>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QCursor> (0xb73e06c0) 0 empty
 
-Class QMetaTypeId2<QSizePolicy>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QSizePolicy> (0xb73e0700) 0 empty
 
-Class QMetaTypeId2<QKeySequence>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QKeySequence> (0xb73e0740) 0 empty
 
-Class QMetaTypeId2<QPen>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPen> (0xb73e0780) 0 empty
 
-Class QMetaTypeId2<QTextLength>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTextLength> (0xb73e07c0) 0 empty
 
-Class QMetaTypeId2<QTextFormat>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTextFormat> (0xb73e0800) 0 empty
 
-Class QMetaTypeId2<QMatrix>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QMatrix> (0xb73e0840) 0 empty
 
-Class QMetaTypeId2<QTransform>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTransform> (0xb73e0880) 0 empty
 
 Class QMapData::Node
    size=8 align=4
@@ -807,45 +421,17 @@ Class QVariant
    base size=12 base align=4
 QVariant (0xb73e0d40) 0
 
-Class QMetaTypeId2<QList<QVariant> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QList<QVariant> > (0xb73e0fc0) 0 empty
 
-Class QMetaTypeId2<QMap<QString, QVariant> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QMap<QString, QVariant> > (0xb73e0bc0) 0 empty
 
-Class QList<QVariant>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant>::<anonymous union> (0xb73e0f40) 0
 
-Class QList<QVariant>
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant> (0xb73e0ec0) 0
 
-Class QMap<QString, QVariant>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QMap<QString, QVariant>::<anonymous union> (0xb72f3080) 0
 
-Class QMap<QString, QVariant>
-   size=4 align=4
-   base size=4 base align=4
-QMap<QString, QVariant> (0xb72f3000) 0
 
 Class QVariantComparisonHelper
    size=4 align=4
    base size=4 base align=4
 QVariantComparisonHelper (0xb72f3100) 0
 
-Class QTypeInfo<QVariant>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QVariant> (0xb72f3180) 0 empty
 
 Class QDBusError
    size=16 align=4
@@ -882,25 +468,13 @@ Class QRegExp
    base size=4 base align=4
 QRegExp (0xb72f32c0) 0
 
-Class QTypeInfo<QRegExp>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QRegExp> (0xb72f3300) 0 empty
 
 Class QStringMatcher
    size=1036 align=4
    base size=1036 base align=4
 QStringMatcher (0xb72f3340) 0
 
-Class QList<QString>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::<anonymous union> (0xb72f3400) 0
 
-Class QList<QString>
-   size=4 align=4
-   base size=4 base align=4
-QList<QString> (0xb72f3380) 0
 
 Class QStringList
    size=4 align=4
@@ -908,15 +482,7 @@ Class QStringList
 QStringList (0xb72f3440) 0
   QList<QString> (0xb72f3480) 0
 
-Class QList<QString>::iterator
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::iterator (0xb72f3500) 0
 
-Class QList<QString>::const_iterator
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::const_iterator (0xb72f3540) 0
 
 Class QDBusObjectPath
    size=4 align=4
@@ -924,15 +490,7 @@ Class QDBusObjectPath
 QDBusObjectPath (0xb72f3600) 0
   QString (0xb72f3640) 0
 
-Class QMetaTypeId<QDBusObjectPath>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QDBusObjectPath> (0xb72f3680) 0 empty
 
-Class QMetaTypeId<QList<QDBusObjectPath> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QList<QDBusObjectPath> > (0xb72f3740) 0 empty
 
 Class QDBusSignature
    size=4 align=4
@@ -940,15 +498,7 @@ Class QDBusSignature
 QDBusSignature (0xb72f3800) 0
   QString (0xb72f3840) 0
 
-Class QMetaTypeId<QDBusSignature>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QDBusSignature> (0xb72f3880) 0 empty
 
-Class QMetaTypeId<QList<QDBusSignature> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QList<QDBusSignature> > (0xb72f3940) 0 empty
 
 Class QDBusVariant
    size=12 align=4
@@ -956,40 +506,16 @@ Class QDBusVariant
 QDBusVariant (0xb72f3a00) 0
   QVariant (0xb72f3a40) 0
 
-Class QMetaTypeId<QDBusVariant>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QDBusVariant> (0xb72f3a80) 0 empty
 
 Class QDBusArgument
    size=4 align=4
    base size=4 base align=4
 QDBusArgument (0xb72f3b40) 0
 
-Class QMetaTypeId<QDBusArgument>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QDBusArgument> (0xb72f3b80) 0 empty
 
-Class QList<QVariant>::const_iterator
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant>::const_iterator (0xb72f3d80) 0
 
-Class QList<QVariant>::iterator
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant>::iterator (0xb72f3e00) 0
 
-Class QMap<QString, QVariant>::const_iterator
-   size=4 align=4
-   base size=4 base align=4
-QMap<QString, QVariant>::const_iterator (0xb72f3f40) 0
 
-Class QMap<QString, QVariant>::iterator
-   size=4 align=4
-   base size=4 base align=4
-QMap<QString, QVariant>::iterator (0xb72f3fc0) 0
 
 Class QDBusMetaType
    size=1 align=1
@@ -1001,10 +527,6 @@ Class QDBusConnection
    base size=4 base align=4
 QDBusConnection (0xb72f3e40) 0
 
-Class QFlags<QDBusConnection::RegisterOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDBusConnection::RegisterOption> (0xb7213000) 0
 
 Class QDBusMessage
    size=4 align=4
@@ -1036,15 +558,7 @@ QDBusAbstractInterface (0xb7213080) 0
   QObject (0xb72130c0) 0
       primary-for QDBusAbstractInterface (0xb7213080)
 
-Class QDBusReply<QVariant>
-   size=28 align=4
-   base size=28 base align=4
-QDBusReply<QVariant> (0xb7213180) 0
 
-Class QDBusReply<void>
-   size=16 align=4
-   base size=16 base align=4
-QDBusReply<void> (0xb7213240) 0
 
 Vtable for QDBusConnectionInterface
 QDBusConnectionInterface::_ZTV24QDBusConnectionInterface: 14u entries
@@ -1073,10 +587,6 @@ QDBusConnectionInterface (0xb72132c0) 0
     QObject (0xb7213340) 0
         primary-for QDBusAbstractInterface (0xb7213300)
 
-Class QMetaTypeId2<QDBusConnectionInterface::RegisterServiceReply>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QDBusConnectionInterface::RegisterServiceReply> (0xb7213400) 0 empty
 
 Class QDBusContext
    size=4 align=4
@@ -1135,58 +645,14 @@ QDBusServer (0xb7213580) 0
   QObject (0xb72135c0) 0
       primary-for QDBusServer (0xb7213580)
 
-Class QList<QString>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::Node (0xb7213680) 0
 
-Class QMetaTypeId2<QDBusVariant>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QDBusVariant> (0xb72139c0) 0 empty
 
-Class QList<QVariant>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant>::Node (0xb7213a40) 0
 
-Class QList<QDBusObjectPath>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QDBusObjectPath>::<anonymous union> (0xb7213c40) 0
 
-Class QList<QDBusObjectPath>
-   size=4 align=4
-   base size=4 base align=4
-QList<QDBusObjectPath> (0xb7213bc0) 0
 
-Class QList<QDBusSignature>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QDBusSignature>::<anonymous union> (0xb7213dc0) 0
 
-Class QList<QDBusSignature>
-   size=4 align=4
-   base size=4 base align=4
-QList<QDBusSignature> (0xb7213d40) 0
 
-Class QTypeInfo<QDBusObjectPath>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QDBusObjectPath> (0xb7213e80) 0 empty
 
-Class QList<QDBusObjectPath>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QDBusObjectPath>::Node (0xb7213f00) 0
 
-Class QTypeInfo<QDBusSignature>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QDBusSignature> (0xb7213f80) 0 empty
 
-Class QList<QDBusSignature>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QDBusSignature>::Node (0xb7213100) 0
 

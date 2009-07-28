@@ -33,7 +33,7 @@ class SVGAElement;
 class JSSVGAElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGAElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAElement>);
+    JSSVGAElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

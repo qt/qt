@@ -3410,7 +3410,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
            register, if it has not already been initialised.
          */
         
-         if (!callFrame->optionalCalleeArguments()) {
+         if (!callFrame->r(RegisterFile::ArgumentsRegister).jsValue()) {
              Arguments* arguments = new (globalData) Arguments(callFrame);
              callFrame->setCalleeArguments(arguments);
              callFrame->r(RegisterFile::ArgumentsRegister) = arguments;

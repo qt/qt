@@ -30,7 +30,7 @@ class HTMLFrameSetElement;
 class JSHTMLFrameSetElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLFrameSetElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLFrameSetElement>);
+    JSHTMLFrameSetElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLFrameSetElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -42,7 +42,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 private:
     static bool canGetItemsForName(JSC::ExecState*, HTMLFrameSetElement*, const JSC::Identifier&);
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

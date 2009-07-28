@@ -49,7 +49,7 @@
 #include "qregexp.h"
 #include "qdebug.h"
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-#include <windows.h>
+#include <qt_windows.h>
 #endif
 #ifndef Q_WS_WIN
 #include <locale.h>

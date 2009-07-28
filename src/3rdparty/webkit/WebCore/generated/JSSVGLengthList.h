@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGLengthList;
 
-class JSSVGLengthList : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGLengthList : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGLengthList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGLengthList>, SVGElement* context);
+    JSSVGLengthList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGLengthList>, SVGElement* context);
     virtual ~JSSVGLengthList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,14 +49,12 @@ public:
     }
 
     SVGLengthList* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGLengthList > m_impl;
+    RefPtr<SVGLengthList> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGLengthList*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGLengthList*, SVGElement* context);
 SVGLengthList* toSVGLengthList(JSC::JSValue);
 
 class JSSVGLengthListPrototype : public JSC::JSObject {

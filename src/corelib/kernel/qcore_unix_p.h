@@ -69,9 +69,26 @@
 
 struct sockaddr;
 
-#if defined(Q_OS_LINUX) && defined(O_CLOEXEC) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
+#if defined(Q_OS_LINUX) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
 // Linux supports thread-safe FD_CLOEXEC
 # define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 1
+
+// add defines for the consts for Linux
+# ifndef O_CLOEXEC
+#  define O_CLOEXEC  02000000
+# endif
+# ifndef FD_DUPFD_CLOEXEC
+#  define F_DUPFD_CLOEXEC 1030
+# endif
+# ifndef SOCK_CLOEXEC
+#  define SOCK_CLOEXEC O_CLOEXEC
+# endif
+# ifndef SOCK_NONBLOCK
+#  define SOCK_NONBLOCK O_NONBLOCK
+# endif
+# ifndef MSG_CMSG_CLOEXEC
+#  define MSG_CMSG_CLOEXEC 0x40000000
+# endif
 
 QT_BEGIN_NAMESPACE
 namespace QtLibcSupplement {
@@ -250,6 +267,8 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
     return ret;
 }
 
+bool qt_gettime_is_monotonic();
+timeval qt_gettime();
 Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
                                  const struct timeval *tv);
 

@@ -21,6 +21,7 @@
 #ifndef JSCoordinates_h
 #define JSCoordinates_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Coordinates;
 
-class JSCoordinates : public DOMObject {
-    typedef DOMObject Base;
+class JSCoordinates : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCoordinates(PassRefPtr<JSC::Structure>, PassRefPtr<Coordinates>);
+    JSCoordinates(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Coordinates>);
     virtual ~JSCoordinates();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -56,7 +57,7 @@ private:
     RefPtr<Coordinates> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Coordinates*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Coordinates*);
 Coordinates* toCoordinates(JSC::JSValue);
 
 class JSCoordinatesPrototype : public JSC::JSObject {

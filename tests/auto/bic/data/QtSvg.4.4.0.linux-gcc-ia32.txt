@@ -1,34 +1,8 @@
-Class QUintForSize<4>
-   size=1 align=1
-   base size=0 base align=1
-QUintForSize<4> (0xb7858c30) 0 empty
 
-Class QUintForSize<8>
-   size=1 align=1
-   base size=0 base align=1
-QUintForSize<8> (0xb7858c6c) 0 empty
 
-Class QUintForType<void*>
-   size=1 align=1
-   base size=1 base align=1
-QUintForType<void*> (0xb7c47c40) 0 empty
-  QUintForSize<4> (0xb7858ce4) 0 empty
 
-Class QIntForSize<4>
-   size=1 align=1
-   base size=0 base align=1
-QIntForSize<4> (0xb7858e10) 0 empty
 
-Class QIntForSize<8>
-   size=1 align=1
-   base size=0 base align=1
-QIntForSize<8> (0xb7858e4c) 0 empty
 
-Class QIntForType<void*>
-   size=1 align=1
-   base size=1 base align=1
-QIntForType<void*> (0xb7c47e00) 0 empty
-  QIntForSize<4> (0xb7858ec4) 0 empty
 
 Class QSysInfo
    size=1 align=1
@@ -50,80 +24,20 @@ Class qIsNull(float)::U
    base size=4 base align=4
 qIsNull(float)::U (0xb6a242d0) 0
 
-Class QTypeInfo<bool>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<bool> (0xb6a244b0) 0 empty
 
-Class QTypeInfo<char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<char> (0xb6a245a0) 0 empty
 
-Class QTypeInfo<signed char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<signed char> (0xb6a24690) 0 empty
 
-Class QTypeInfo<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<unsigned char> (0xb6a24780) 0 empty
 
-Class QTypeInfo<short int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<short int> (0xb6a24870) 0 empty
 
-Class QTypeInfo<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<short unsigned int> (0xb6a24960) 0 empty
 
-Class QTypeInfo<int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<int> (0xb6a24a50) 0 empty
 
-Class QTypeInfo<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<unsigned int> (0xb6a24b40) 0 empty
 
-Class QTypeInfo<long int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long int> (0xb6a24c30) 0 empty
 
-Class QTypeInfo<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long unsigned int> (0xb6a24d20) 0 empty
 
-Class QTypeInfo<long long int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long long int> (0xb6a24e10) 0 empty
 
-Class QTypeInfo<long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long long unsigned int> (0xb6a24f00) 0 empty
 
-Class QTypeInfo<float>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<float> (0xb6a3f000) 0 empty
 
-Class QTypeInfo<double>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<double> (0xb6a3f0f0) 0 empty
 
-Class QTypeInfo<long double>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long double> (0xb6a3f1e0) 0 empty
 
 Class QFlag
    size=4 align=4
@@ -140,10 +54,6 @@ Class QChar
    base size=2 base align=2
 QChar (0xb6a5b1e0) 0
 
-Class QTypeInfo<QChar>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QChar> (0xb6a77e88) 0 empty
 
 Class QBasicAtomicInt
    size=4 align=4
@@ -176,75 +86,19 @@ Class QByteRef
    base size=8 base align=4
 QByteRef (0xb692ba50) 0
 
-Class QTypeInfo<QByteArray>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QByteArray> (0xb696fb40) 0 empty
 
-Class QFlags<Qt::MouseButton>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::MouseButton> (0xb696fdd4) 0
 
-Class QFlags<Qt::Orientation>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::Orientation> (0xb69bc708) 0
 
-Class QFlags<Qt::KeyboardModifier>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::KeyboardModifier> (0xb69c803c) 0
 
-Class QFlags<Qt::WindowType>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::WindowType> (0xb69c8960) 0
 
-Class QFlags<Qt::AlignmentFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::AlignmentFlag> (0xb69da294) 0
 
-Class QFlags<Qt::ImageConversionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ImageConversionFlag> (0xb69dabb8) 0
 
-Class QFlags<Qt::DockWidgetArea>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::DockWidgetArea> (0xb69ed4ec) 0
 
-Class QFlags<Qt::ToolBarArea>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ToolBarArea> (0xb69ede10) 0
 
-Class QFlags<Qt::WindowState>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::WindowState> (0xb6a01744) 0
 
-Class QFlags<Qt::DropAction>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::DropAction> (0xb6a0f078) 0
 
-Class QFlags<Qt::ItemFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ItemFlag> (0xb6a0f99c) 0
 
-Class QFlags<Qt::MatchFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::MatchFlag> (0xb68262d0) 0
 
-Class QFlags<Qt::TextInteractionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::TextInteractionFlag> (0xb6826bf4) 0
 
 Class QInternal
    size=1 align=1
@@ -266,10 +120,6 @@ Class QString
    base size=4 base align=4
 QString (0xb683c690) 0
 
-Class QFlags<QString::SectionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QString::SectionFlag> (0xb688a924) 0
 
 Class QLatin1String
    size=4 align=4
@@ -287,10 +137,6 @@ Class QConstString
 QConstString (0xb67abc00) 0
   QString (0xb67e7ce4) 0
 
-Class QTypeInfo<QString>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QString> (0xb6803000) 0 empty
 
 Class QStringRef
    size=12 align=4
@@ -358,10 +204,6 @@ Class QListData
    base size=4 base align=4
 QListData (0xb6670690) 0
 
-Class QFlags<QTextCodec::ConversionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextCodec::ConversionFlag> (0xb6515960) 0
 
 Class QTextCodec::ConverterState
    size=28 align=4
@@ -386,15 +228,7 @@ Class QTextCodec
 QTextCodec (0xb66e3ca8) 0 nearly-empty
     vptr=((& QTextCodec::_ZTV10QTextCodec) + 8u)
 
-Class QList<QByteArray>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QByteArray>::<anonymous union> (0xb65240b4) 0
 
-Class QList<QByteArray>
-   size=4 align=4
-   base size=4 base align=4
-QList<QByteArray> (0xb6524f78) 0
 
 Class QTextEncoder
    size=32 align=4
@@ -417,25 +251,13 @@ Class QGenericReturnArgument
 QGenericReturnArgument (0xb6558100) 0
   QGenericArgument (0xb65591e0) 0
 
-Class QMetaObject::<anonymous struct>
-   size=16 align=4
-   base size=16 base align=4
-QMetaObject::<anonymous struct> (0xb65596cc) 0
 
 Class QMetaObject
    size=16 align=4
    base size=16 base align=4
 QMetaObject (0xb65594ec) 0
 
-Class QList<QObject*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QObject*>::<anonymous union> (0xb6569834) 0
 
-Class QList<QObject*>
-   size=4 align=4
-   base size=4 base align=4
-QList<QObject*> (0xb65697bc) 0
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -527,10 +349,6 @@ QIODevice (0xb65a6f80) 0
   QObject (0xb65ae834) 0
       primary-for QIODevice (0xb65a6f80)
 
-Class QFlags<QIODevice::OpenModeFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QIODevice::OpenModeFlag> (0xb65ceb40) 0
 
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
@@ -550,25 +368,13 @@ Class QRegExp
    base size=4 base align=4
 QRegExp (0xb660da50) 0
 
-Class QTypeInfo<QRegExp>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QRegExp> (0xb6442258) 0 empty
 
 Class QStringMatcher
    size=1036 align=4
    base size=1036 base align=4
 QStringMatcher (0xb6442348) 0
 
-Class QList<QString>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::<anonymous union> (0xb64428ac) 0
 
-Class QList<QString>
-   size=4 align=4
-   base size=4 base align=4
-QList<QString> (0xb6442834) 0
 
 Class QStringList
    size=4 align=4
@@ -576,15 +382,7 @@ Class QStringList
 QStringList (0xb644c080) 0
   QList<QString> (0xb64428e8) 0
 
-Class QList<QString>::iterator
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::iterator (0xb6471654) 0
 
-Class QList<QString>::const_iterator
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::const_iterator (0xb6471870) 0
 
 Vtable for QFactoryInterface
 QFactoryInterface::_ZTV17QFactoryInterface: 5u entries
@@ -664,10 +462,6 @@ Class QMutex
    base size=4 base align=4
 QMutex (0xb64a4b04) 0
 
-Class QMutexLocker::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QMutexLocker::<anonymous union> (0xb64b3690) 0
 
 Class QMutexLocker
    size=4 align=4
@@ -747,35 +541,11 @@ Class QHashDummyValue
    base size=0 base align=1
 QHashDummyValue (0xb637bfb4) 0 empty
 
-Class QTypeInfo<QHashDummyValue>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QHashDummyValue> (0xb637f078) 0 empty
 
-Class <anonymous struct>
-   size=8 align=4
-   base size=8 base align=4
-<anonymous struct> (0xb621d000) 0
 
-Class <anonymous struct>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-<anonymous struct>::<anonymous union> (0xb621d0f0) 0
 
-Class <anonymous struct>
-   size=8 align=4
-   base size=8 base align=4
-<anonymous struct> (0xb621d078) 0
 
-Class <anonymous struct>
-   size=12 align=4
-   base size=12 base align=4
-<anonymous struct> (0xb621d168) 0
 
-Class <anonymous struct>
-   size=16 align=4
-   base size=16 base align=4
-<anonymous struct> (0xb621d1e0) 0
 
 Class _IO_marker
    size=12 align=4
@@ -787,10 +557,6 @@ Class _IO_FILE
    base size=148 base align=4
 _IO_FILE (0xb621d258) 0
 
-Class <anonymous struct>
-   size=16 align=4
-   base size=16 base align=4
-<anonymous struct> (0xb621d2d0) 0
 
 Vtable for QTextStream
 QTextStream::_ZTV11QTextStream: 4u entries
@@ -805,10 +571,6 @@ Class QTextStream
 QTextStream (0xb621d30c) 0
     vptr=((& QTextStream::_ZTV11QTextStream) + 8u)
 
-Class QFlags<QTextStream::NumberFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextStream::NumberFlag> (0xb6254a8c) 0
 
 Class QTextStreamManipulator
    size=24 align=4
@@ -845,40 +607,16 @@ QTextOStream (0xb627e1c0) 0
   QTextStream (0xb62821e0) 0
       primary-for QTextOStream (0xb627e1c0)
 
-Class wait::<anonymous struct>
-   size=4 align=4
-   base size=4 base align=4
-wait::<anonymous struct> (0xb6282ca8) 0
 
-Class wait::<anonymous struct>
-   size=4 align=4
-   base size=4 base align=4
-wait::<anonymous struct> (0xb6282d20) 0
 
 Class wait
    size=4 align=4
    base size=4 base align=4
 wait (0xb6282c30) 0
 
-Class <anonymous struct>
-   size=8 align=4
-   base size=8 base align=4
-<anonymous struct> (0xb6282d98) 0
 
-Class <anonymous struct>
-   size=8 align=4
-   base size=8 base align=4
-<anonymous struct> (0xb6282e10) 0
 
-Class <anonymous struct>
-   size=16 align=4
-   base size=16 base align=4
-<anonymous struct> (0xb6282e88) 0
 
-Class <anonymous struct>
-   size=128 align=4
-   base size=128 base align=4
-<anonymous struct> (0xb6282f00) 0
 
 Class timespec
    size=8 align=4
@@ -890,80 +628,24 @@ Class timeval
    base size=8 base align=4
 timeval (0xb6282f78) 0
 
-Class <anonymous struct>
-   size=128 align=4
-   base size=128 base align=4
-<anonymous struct> (0xb62825a0) 0
 
-Class <anonymous union>
-   size=36 align=4
-   base size=36 base align=4
-<anonymous union> (0xb629c03c) 0
 
 Class __pthread_internal_slist
    size=4 align=4
    base size=4 base align=4
 __pthread_internal_slist (0xb629c078) 0
 
-Class <anonymous union>::__pthread_mutex_s::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-<anonymous union>::__pthread_mutex_s::<anonymous union> (0xb629c1a4) 0
 
-Class <anonymous union>::__pthread_mutex_s
-   size=24 align=4
-   base size=24 base align=4
-<anonymous union>::__pthread_mutex_s (0xb629c12c) 0
 
-Class <anonymous union>
-   size=24 align=4
-   base size=24 base align=4
-<anonymous union> (0xb629c0f0) 0
 
-Class <anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-<anonymous union> (0xb629c21c) 0
 
-Class <anonymous union>::<anonymous struct>
-   size=44 align=4
-   base size=44 base align=4
-<anonymous union>::<anonymous struct> (0xb629c30c) 0
 
-Class <anonymous union>
-   size=48 align=4
-   base size=48 base align=4
-<anonymous union> (0xb629c294) 0
 
-Class <anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-<anonymous union> (0xb629c384) 0
 
-Class <anonymous union>::<anonymous struct>
-   size=32 align=4
-   base size=32 base align=4
-<anonymous union>::<anonymous struct> (0xb629c474) 0
 
-Class <anonymous union>
-   size=32 align=4
-   base size=32 base align=4
-<anonymous union> (0xb629c3fc) 0
 
-Class <anonymous union>
-   size=8 align=4
-   base size=8 base align=4
-<anonymous union> (0xb629c528) 0
 
-Class <anonymous union>
-   size=20 align=4
-   base size=20 base align=4
-<anonymous union> (0xb629c5a0) 0
 
-Class <anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-<anonymous union> (0xb629c618) 0
 
 Class random_data
    size=28 align=4
@@ -995,20 +677,8 @@ Class QtConcurrent::ResultItem
    base size=8 base align=4
 QtConcurrent::ResultItem (0xb61b03c0) 0
 
-Class QMap<int, QtConcurrent::ResultItem>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QMap<int, QtConcurrent::ResultItem>::<anonymous union> (0xb61c8000) 0
 
-Class QMap<int, QtConcurrent::ResultItem>
-   size=4 align=4
-   base size=4 base align=4
-QMap<int, QtConcurrent::ResultItem> (0xb61b0fb4) 0
 
-Class QMap<int, QtConcurrent::ResultItem>::const_iterator
-   size=4 align=4
-   base size=4 base align=4
-QMap<int, QtConcurrent::ResultItem>::const_iterator (0xb61c8348) 0
 
 Class QtConcurrent::ResultIteratorBase
    size=8 align=4
@@ -1028,10 +698,6 @@ Class QtConcurrent::ResultStoreBase
 QtConcurrent::ResultStoreBase (0xb61c8474) 0
     vptr=((& QtConcurrent::ResultStoreBase::_ZTVN12QtConcurrent15ResultStoreBaseE) + 8u)
 
-Class QMap<int, QtConcurrent::ResultItem>::iterator
-   size=4 align=4
-   base size=4 base align=4
-QMap<int, QtConcurrent::ResultItem>::iterator (0xb61c8b7c) 0
 
 Vtable for QFutureInterfaceBase
 QFutureInterfaceBase::_ZTV20QFutureInterfaceBase: 4u entries
@@ -1046,25 +712,8 @@ Class QFutureInterfaceBase
 QFutureInterfaceBase (0xb61c8bf4) 0
     vptr=((& QFutureInterfaceBase::_ZTV20QFutureInterfaceBase) + 8u)
 
-Vtable for QFutureInterface<void>
-QFutureInterface<void>::_ZTV16QFutureInterfaceIvE: 4u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTI16QFutureInterfaceIvE)
-8     QFutureInterface<void>::~QFutureInterface
-12    QFutureInterface<void>::~QFutureInterface
 
-Class QFutureInterface<void>
-   size=8 align=4
-   base size=8 base align=4
-QFutureInterface<void> (0xb6009880) 0
-    vptr=((& QFutureInterface<void>::_ZTV16QFutureInterfaceIvE) + 8u)
-  QFutureInterfaceBase (0xb62046cc) 0
-      primary-for QFutureInterface<void> (0xb6009880)
 
-Class QFuture<void>
-   size=8 align=4
-   base size=8 base align=4
-QFuture<void> (0xb6032e4c) 0
 
 Vtable for QFutureWatcherBase
 QFutureWatcherBase::_ZTV18QFutureWatcherBase: 16u entries
@@ -1093,34 +742,7 @@ QFutureWatcherBase (0xb60607c0) 0
   QObject (0xb60644ec) 0
       primary-for QFutureWatcherBase (0xb60607c0)
 
-Vtable for QFutureWatcher<void>
-QFutureWatcher<void>::_ZTV14QFutureWatcherIvE: 16u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTI14QFutureWatcherIvE)
-8     QFutureWatcherBase::metaObject
-12    QFutureWatcherBase::qt_metacast
-16    QFutureWatcherBase::qt_metacall
-20    QFutureWatcher<void>::~QFutureWatcher
-24    QFutureWatcher<void>::~QFutureWatcher
-28    QFutureWatcherBase::event
-32    QObject::eventFilter
-36    QObject::timerEvent
-40    QObject::childEvent
-44    QObject::customEvent
-48    QFutureWatcherBase::connectNotify
-52    QFutureWatcherBase::disconnectNotify
-56    QFutureWatcher<void>::futureInterface
-60    QFutureWatcher<void>::futureInterface
 
-Class QFutureWatcher<void>
-   size=16 align=4
-   base size=16 base align=4
-QFutureWatcher<void> (0xb6060ec0) 0
-    vptr=((& QFutureWatcher<void>::_ZTV14QFutureWatcherIvE) + 8u)
-  QFutureWatcherBase (0xb6060f00) 0
-      primary-for QFutureWatcher<void> (0xb6060ec0)
-    QObject (0xb607d000) 0
-        primary-for QFutureWatcherBase (0xb6060f00)
 
 Vtable for QRunnable
 QRunnable::_ZTV9QRunnable: 5u entries
@@ -1219,60 +841,14 @@ QtConcurrent::ThreadEngineBase (0xb60b73c0) 0
   QRunnable (0xb60c3000) 0
       primary-for QtConcurrent::ThreadEngineBase (0xb60b73c0)
 
-Class QtConcurrent::ThreadEngineStarterBase<void>
-   size=4 align=4
-   base size=4 base align=4
-QtConcurrent::ThreadEngineStarterBase<void> (0xb60c37f8) 0
 
-Class QtConcurrent::ThreadEngineStarter<void>
-   size=4 align=4
-   base size=4 base align=4
-QtConcurrent::ThreadEngineStarter<void> (0xb60b7d40) 0
-  QtConcurrent::ThreadEngineStarterBase<void> (0xb60c3870) 0
 
-Vtable for QtConcurrent::ThreadEngine<void>
-QtConcurrent::ThreadEngine<void>::_ZTVN12QtConcurrent12ThreadEngineIvEE: 26u entries
-0     4u
-4     (int (*)(...))0
-8     (int (*)(...))(& _ZTIN12QtConcurrent12ThreadEngineIvEE)
-12    QtConcurrent::ThreadEngine<T>::result [with T = void]
-16    QtConcurrent::ThreadEngine<T>::asynchronousFinish [with T = void]
-20    QtConcurrent::ThreadEngine<void>::~ThreadEngine
-24    QtConcurrent::ThreadEngine<void>::~ThreadEngine
-28    -4u
-32    0u
-36    0u
-40    0u
-44    0u
-48    0u
-52    -4u
-56    0u
-60    (int (*)(...))-0x000000004
-64    (int (*)(...))(& _ZTIN12QtConcurrent12ThreadEngineIvEE)
-68    QtConcurrent::ThreadEngineBase::run
-72    QtConcurrent::ThreadEngine<void>::_ZTv0_n16_N12QtConcurrent12ThreadEngineIvED1Ev
-76    QtConcurrent::ThreadEngine<void>::_ZTv0_n16_N12QtConcurrent12ThreadEngineIvED0Ev
-80    QtConcurrent::ThreadEngineBase::start
-84    QtConcurrent::ThreadEngineBase::finish
-88    QtConcurrent::ThreadEngineBase::threadFunction
-92    QtConcurrent::ThreadEngineBase::shouldStartThread
-96    QtConcurrent::ThreadEngineBase::shouldThrottleThread
-100   QtConcurrent::ThreadEngine<void>::_ZTv0_n40_N12QtConcurrent12ThreadEngineIvE18asynchronousFinishEv
 
 VTT for QtConcurrent::ThreadEngine<void>
 QtConcurrent::ThreadEngine<void>::_ZTTN12QtConcurrent12ThreadEngineIvEE: 2u entries
 0     ((& QtConcurrent::ThreadEngine<void>::_ZTVN12QtConcurrent12ThreadEngineIvEE) + 12u)
 4     ((& QtConcurrent::ThreadEngine<void>::_ZTVN12QtConcurrent12ThreadEngineIvEE) + 68u)
 
-Class QtConcurrent::ThreadEngine<void>
-   size=36 align=4
-   base size=4 base align=4
-QtConcurrent::ThreadEngine<void> (0xb60b7f00) 0 nearly-empty
-    vptridx=0u vptr=((& QtConcurrent::ThreadEngine<void>::_ZTVN12QtConcurrent12ThreadEngineIvEE) + 12u)
-  QtConcurrent::ThreadEngineBase (0xb60b7f40) 4 virtual
-      vptridx=4u vbaseoffset=-0x00000000c vptr=((& QtConcurrent::ThreadEngine<void>::_ZTVN12QtConcurrent12ThreadEngineIvEE) + 68u)
-    QRunnable (0xb60c3d20) 4
-        primary-for QtConcurrent::ThreadEngineBase (0xb60b7f40)
 
 Class std::input_iterator_tag
    size=1 align=1
@@ -1315,225 +891,49 @@ Class std::__false_type
    base size=0 base align=1
 std::__false_type (0xb60dc6cc) 0 empty
 
-Class std::__truth_type<true>
-   size=1 align=1
-   base size=0 base align=1
-std::__truth_type<true> (0xb60dc744) 0 empty
 
-Class std::__is_void<void>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_void<void> (0xb60dc960) 0 empty
 
-Class std::__is_integer<bool>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<bool> (0xb60dca50) 0 empty
 
-Class std::__is_integer<char>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<char> (0xb60dcac8) 0 empty
 
-Class std::__is_integer<signed char>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<signed char> (0xb60dcb40) 0 empty
 
-Class std::__is_integer<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<unsigned char> (0xb60dcbb8) 0 empty
 
-Class std::__is_integer<wchar_t>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<wchar_t> (0xb60dcc30) 0 empty
 
-Class std::__is_integer<short int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<short int> (0xb60dcca8) 0 empty
 
-Class std::__is_integer<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<short unsigned int> (0xb60dcd20) 0 empty
 
-Class std::__is_integer<int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<int> (0xb60dcd98) 0 empty
 
-Class std::__is_integer<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<unsigned int> (0xb60dce10) 0 empty
 
-Class std::__is_integer<long int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<long int> (0xb60dce88) 0 empty
 
-Class std::__is_integer<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<long unsigned int> (0xb60dcf00) 0 empty
 
-Class std::__is_integer<long long int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<long long int> (0xb60dcf78) 0 empty
 
-Class std::__is_integer<long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_integer<long long unsigned int> (0xb60fb000) 0 empty
 
-Class std::__is_floating<float>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_floating<float> (0xb60fb0f0) 0 empty
 
-Class std::__is_floating<double>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_floating<double> (0xb60fb168) 0 empty
 
-Class std::__is_floating<long double>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_floating<long double> (0xb60fb1e0) 0 empty
 
-Class std::__is_char<char>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_char<char> (0xb60fb564) 0 empty
 
-Class std::__is_char<wchar_t>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_char<wchar_t> (0xb60fb5dc) 0 empty
 
-Class std::__is_byte<char>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_byte<char> (0xb60fb6cc) 0 empty
 
-Class std::__is_byte<signed char>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_byte<signed char> (0xb60fb744) 0 empty
 
-Class std::__is_byte<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-std::__is_byte<unsigned char> (0xb60fb7bc) 0 empty
 
-Class __gnu_cxx::__add_unsigned<char>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__add_unsigned<char> (0xb60fb9d8) 0 empty
 
-Class __gnu_cxx::__add_unsigned<signed char>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__add_unsigned<signed char> (0xb60fba14) 0 empty
 
-Class __gnu_cxx::__add_unsigned<short int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__add_unsigned<short int> (0xb60fba50) 0 empty
 
-Class __gnu_cxx::__add_unsigned<int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__add_unsigned<int> (0xb60fba8c) 0 empty
 
-Class __gnu_cxx::__add_unsigned<long int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__add_unsigned<long int> (0xb60fbac8) 0 empty
 
-Class __gnu_cxx::__add_unsigned<long long int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__add_unsigned<long long int> (0xb60fbb04) 0 empty
 
-Class __gnu_cxx::__remove_unsigned<char>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__remove_unsigned<char> (0xb60fbb7c) 0 empty
 
-Class __gnu_cxx::__remove_unsigned<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__remove_unsigned<unsigned char> (0xb60fbbb8) 0 empty
 
-Class __gnu_cxx::__remove_unsigned<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__remove_unsigned<short unsigned int> (0xb60fbbf4) 0 empty
 
-Class __gnu_cxx::__remove_unsigned<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__remove_unsigned<unsigned int> (0xb60fbc30) 0 empty
 
-Class __gnu_cxx::__remove_unsigned<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__remove_unsigned<long unsigned int> (0xb60fbc6c) 0 empty
 
-Class __gnu_cxx::__remove_unsigned<long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__remove_unsigned<long long unsigned int> (0xb60fbca8) 0 empty
 
-Class std::iterator<std::output_iterator_tag, void, void, void, void>
-   size=1 align=1
-   base size=0 base align=1
-std::iterator<std::output_iterator_tag, void, void, void, void> (0xb5f1c690) 0 empty
 
-Class std::__iter_swap<true>
-   size=1 align=1
-   base size=0 base align=1
-std::__iter_swap<true> (0xb5f40c6c) 0 empty
 
-Class std::__copy_move<false, false, std::random_access_iterator_tag>
-   size=1 align=1
-   base size=0 base align=1
-std::__copy_move<false, false, std::random_access_iterator_tag> (0xb5f930b4) 0 empty
 
-Class std::__copy_move_backward<false, false, std::random_access_iterator_tag>
-   size=1 align=1
-   base size=0 base align=1
-std::__copy_move_backward<false, false, std::random_access_iterator_tag> (0xb5f932d0) 0 empty
 
-Class std::__equal<true>
-   size=1 align=1
-   base size=0 base align=1
-std::__equal<true> (0xb5f936cc) 0 empty
 
-Class std::__lc_rai<std::random_access_iterator_tag, std::random_access_iterator_tag>
-   size=1 align=1
-   base size=0 base align=1
-std::__lc_rai<std::random_access_iterator_tag, std::random_access_iterator_tag> (0xb5f93834) 0 empty
 
-Class std::__lexicographical_compare<true>
-   size=1 align=1
-   base size=0 base align=1
-std::__lexicographical_compare<true> (0xb5f9399c) 0 empty
 
-Class std::char_traits<char>
-   size=1 align=1
-   base size=0 base align=1
-std::char_traits<char> (0xb5fd6078) 0 empty
 
-Class std::char_traits<wchar_t>
-   size=1 align=1
-   base size=0 base align=1
-std::char_traits<wchar_t> (0xb5fdaac8) 0 empty
 
 Class lconv
    size=56 align=4
@@ -1550,10 +950,6 @@ Class __sched_param
    base size=4 base align=4
 __sched_param (0xb5fe9690) 0
 
-Class <anonymous struct>
-   size=128 align=4
-   base size=128 base align=4
-<anonymous struct> (0xb5fe9708) 0
 
 Class tm
    size=44 align=4
@@ -1570,15 +966,7 @@ Class _pthread_cleanup_buffer
    base size=16 base align=4
 _pthread_cleanup_buffer (0xb5fe99d8) 0
 
-Class <anonymous struct>::<anonymous struct>
-   size=28 align=4
-   base size=28 base align=4
-<anonymous struct>::<anonymous struct> (0xb5fe9b40) 0
 
-Class <anonymous struct>
-   size=44 align=4
-   base size=44 base align=4
-<anonymous struct> (0xb5fe9ac8) 0
 
 Class __pthread_cleanup_frame
    size=16 align=4
@@ -1590,32 +978,10 @@ Class __pthread_cleanup_class
    base size=16 base align=4
 __pthread_cleanup_class (0xb5fe9bb8) 0
 
-Class std::allocator<void>
-   size=1 align=1
-   base size=0 base align=1
-std::allocator<void> (0xb5e7a0f0) 0 empty
 
-Class __gnu_cxx::new_allocator<char>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::new_allocator<char> (0xb5e7a3c0) 0 empty
 
-Class std::allocator<char>
-   size=1 align=1
-   base size=1 base align=1
-std::allocator<char> (0xb5e788c0) 0 empty
-  __gnu_cxx::new_allocator<char> (0xb5e7a3fc) 0 empty
 
-Class __gnu_cxx::new_allocator<wchar_t>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::new_allocator<wchar_t> (0xb5e7a438) 0 empty
 
-Class std::allocator<wchar_t>
-   size=1 align=1
-   base size=1 base align=1
-std::allocator<wchar_t> (0xb5e78980) 0 empty
-  __gnu_cxx::new_allocator<wchar_t> (0xb5e7a474) 0 empty
 
 Vtable for __cxxabiv1::__forced_unwind
 __cxxabiv1::__forced_unwind::_ZTVN10__cxxabiv115__forced_unwindE: 5u entries
@@ -1631,82 +997,19 @@ Class __cxxabiv1::__forced_unwind
 __cxxabiv1::__forced_unwind (0xb5e7a690) 0 nearly-empty
     vptr=((& __cxxabiv1::__forced_unwind::_ZTVN10__cxxabiv115__forced_unwindE) + 8u)
 
-Class __gnu_cxx::__conditional_type<true, __gnu_cxx::__numeric_traits_integer<int>, __gnu_cxx::__numeric_traits_floating<int> >
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__conditional_type<true, __gnu_cxx::__numeric_traits_integer<int>, __gnu_cxx::__numeric_traits_floating<int> > (0xb5ed9f78) 0 empty
 
-Class __gnu_cxx::__numeric_traits_integer<int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__numeric_traits_integer<int> (0xb5ed9fb4) 0 empty
 
-Class __gnu_cxx::__numeric_traits<int>
-   size=1 align=1
-   base size=1 base align=1
-__gnu_cxx::__numeric_traits<int> (0xb5d1fc40) 0 empty
-  __gnu_cxx::__numeric_traits_integer<int> (0xb5ed9f3c) 0 empty
 
-Class std::allocator<char>::rebind<char>
-   size=1 align=1
-   base size=0 base align=1
-std::allocator<char>::rebind<char> (0xb5d6dc6c) 0 empty
 
-Class std::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider
-   size=4 align=4
-   base size=4 base align=4
-std::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider (0xb5db8200) 0
-  std::allocator<char> (0xb5db8240) 0 empty
-    __gnu_cxx::new_allocator<char> (0xb5d6dce4) 0 empty
 
-Class std::basic_string<char, std::char_traits<char>, std::allocator<char> >
-   size=4 align=4
-   base size=4 base align=4
-std::basic_string<char, std::char_traits<char>, std::allocator<char> > (0xb5d6dbf4) 0
 
-Class std::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Rep_base
-   size=12 align=4
-   base size=12 base align=4
-std::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Rep_base (0xb5d6dd20) 0
 
-Class std::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Rep
-   size=12 align=4
-   base size=12 base align=4
-std::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Rep (0xb5db83c0) 0
-  std::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Rep_base (0xb5d6dd5c) 0
 
-Class std::allocator<wchar_t>::rebind<wchar_t>
-   size=1 align=1
-   base size=0 base align=1
-std::allocator<wchar_t>::rebind<wchar_t> (0xb5d6de10) 0 empty
 
-Class std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >::_Alloc_hider
-   size=4 align=4
-   base size=4 base align=4
-std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >::_Alloc_hider (0xb5db85c0) 0
-  std::allocator<wchar_t> (0xb5db8600) 0 empty
-    __gnu_cxx::new_allocator<wchar_t> (0xb5d6de88) 0 empty
 
-Class std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >
-   size=4 align=4
-   base size=4 base align=4
-std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > (0xb5d6dd98) 0
 
-Class std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >::_Rep_base
-   size=12 align=4
-   base size=12 base align=4
-std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >::_Rep_base (0xb5d6dec4) 0
 
-Class std::allocator<wchar_t>::rebind<char>
-   size=1 align=1
-   base size=0 base align=1
-std::allocator<wchar_t>::rebind<char> (0xb5d6df78) 0 empty
 
-Class std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >::_Rep
-   size=12 align=4
-   base size=12 base align=4
-std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >::_Rep (0xb5db8780) 0
-  std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >::_Rep_base (0xb5d6df00) 0
 
 Class std::locale
    size=4 align=4
@@ -1736,97 +1039,16 @@ Class std::locale::_Impl
    base size=20 base align=4
 std::locale::_Impl (0xb5c5f12c) 0
 
-Vtable for std::collate<char>
-std::collate<char>::_ZTVSt7collateIcE: 7u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt7collateIcE)
-8     std::collate<_CharT>::~collate [with _CharT = char]
-12    std::collate<_CharT>::~collate [with _CharT = char]
-16    std::collate<_CharT>::do_compare [with _CharT = char]
-20    std::collate<_CharT>::do_transform [with _CharT = char]
-24    std::collate<_CharT>::do_hash [with _CharT = char]
 
-Class std::collate<char>
-   size=12 align=4
-   base size=12 base align=4
-std::collate<char> (0xb5c67740) 0
-    vptr=((& std::collate<char>::_ZTVSt7collateIcE) + 8u)
-  std::locale::facet (0xb5c66ac8) 0
-      primary-for std::collate<char> (0xb5c67740)
 
-Vtable for std::collate<wchar_t>
-std::collate<wchar_t>::_ZTVSt7collateIwE: 7u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt7collateIwE)
-8     std::collate<_CharT>::~collate [with _CharT = wchar_t]
-12    std::collate<_CharT>::~collate [with _CharT = wchar_t]
-16    std::collate<_CharT>::do_compare [with _CharT = wchar_t]
-20    std::collate<_CharT>::do_transform [with _CharT = wchar_t]
-24    std::collate<_CharT>::do_hash [with _CharT = wchar_t]
 
-Class std::collate<wchar_t>
-   size=12 align=4
-   base size=12 base align=4
-std::collate<wchar_t> (0xb5c67840) 0
-    vptr=((& std::collate<wchar_t>::_ZTVSt7collateIwE) + 8u)
-  std::locale::facet (0xb5c66bb8) 0
-      primary-for std::collate<wchar_t> (0xb5c67840)
 
-Class __gnu_cxx::__conditional_type<true, __gnu_cxx::__numeric_traits_integer<long unsigned int>, __gnu_cxx::__numeric_traits_floating<long unsigned int> >
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__conditional_type<true, __gnu_cxx::__numeric_traits_integer<long unsigned int>, __gnu_cxx::__numeric_traits_floating<long unsigned int> > (0xb5c66b7c) 0 empty
 
-Class __gnu_cxx::__numeric_traits_integer<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__numeric_traits_integer<long unsigned int> (0xb5c66c6c) 0 empty
 
-Class __gnu_cxx::__numeric_traits<long unsigned int>
-   size=1 align=1
-   base size=1 base align=1
-__gnu_cxx::__numeric_traits<long unsigned int> (0xb5c8a7c0) 0 empty
-  __gnu_cxx::__numeric_traits_integer<long unsigned int> (0xb5c92000) 0 empty
 
-Vtable for std::collate_byname<char>
-std::collate_byname<char>::_ZTVSt14collate_bynameIcE: 7u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt14collate_bynameIcE)
-8     std::collate_byname<_CharT>::~collate_byname [with _CharT = char]
-12    std::collate_byname<_CharT>::~collate_byname [with _CharT = char]
-16    std::collate<_CharT>::do_compare [with _CharT = char]
-20    std::collate<_CharT>::do_transform [with _CharT = char]
-24    std::collate<_CharT>::do_hash [with _CharT = char]
 
-Class std::collate_byname<char>
-   size=12 align=4
-   base size=12 base align=4
-std::collate_byname<char> (0xb5c8a900) 0
-    vptr=((& std::collate_byname<char>::_ZTVSt14collate_bynameIcE) + 8u)
-  std::collate<char> (0xb5c8a940) 0
-      primary-for std::collate_byname<char> (0xb5c8a900)
-    std::locale::facet (0xb5c92078) 0
-        primary-for std::collate<char> (0xb5c8a940)
 
-Vtable for std::collate_byname<wchar_t>
-std::collate_byname<wchar_t>::_ZTVSt14collate_bynameIwE: 7u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt14collate_bynameIwE)
-8     std::collate_byname<_CharT>::~collate_byname [with _CharT = wchar_t]
-12    std::collate_byname<_CharT>::~collate_byname [with _CharT = wchar_t]
-16    std::collate<_CharT>::do_compare [with _CharT = wchar_t]
-20    std::collate<_CharT>::do_transform [with _CharT = wchar_t]
-24    std::collate<_CharT>::do_hash [with _CharT = wchar_t]
 
-Class std::collate_byname<wchar_t>
-   size=12 align=4
-   base size=12 base align=4
-std::collate_byname<wchar_t> (0xb5c8a9c0) 0
-    vptr=((& std::collate_byname<wchar_t>::_ZTVSt14collate_bynameIwE) + 8u)
-  std::collate<wchar_t> (0xb5c8aa00) 0
-      primary-for std::collate_byname<wchar_t> (0xb5c8a9c0)
-    std::locale::facet (0xb5c92168) 0
-        primary-for std::collate<wchar_t> (0xb5c8aa00)
 
 Vtable for std::ios_base::failure
 std::ios_base::failure::_ZTVNSt8ios_base7failureE: 5u entries
@@ -1872,583 +1094,85 @@ Class std::ios_base
 std::ios_base (0xb5c9221c) 0
     vptr=((& std::ios_base::_ZTVSt8ios_base) + 8u)
 
-Vtable for std::basic_streambuf<char, std::char_traits<char> >
-std::basic_streambuf<char, std::char_traits<char> >::_ZTVSt15basic_streambufIcSt11char_traitsIcEE: 16u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt15basic_streambufIcSt11char_traitsIcEE)
-8     std::basic_streambuf<_CharT, _Traits>::~basic_streambuf [with _CharT = char, _Traits = std::char_traits<char>]
-12    std::basic_streambuf<_CharT, _Traits>::~basic_streambuf [with _CharT = char, _Traits = std::char_traits<char>]
-16    std::basic_streambuf<_CharT, _Traits>::imbue [with _CharT = char, _Traits = std::char_traits<char>]
-20    std::basic_streambuf<_CharT, _Traits>::setbuf [with _CharT = char, _Traits = std::char_traits<char>]
-24    std::basic_streambuf<_CharT, _Traits>::seekoff [with _CharT = char, _Traits = std::char_traits<char>]
-28    std::basic_streambuf<_CharT, _Traits>::seekpos [with _CharT = char, _Traits = std::char_traits<char>]
-32    std::basic_streambuf<_CharT, _Traits>::sync [with _CharT = char, _Traits = std::char_traits<char>]
-36    std::basic_streambuf<_CharT, _Traits>::showmanyc [with _CharT = char, _Traits = std::char_traits<char>]
-40    std::basic_streambuf<_CharT, _Traits>::xsgetn [with _CharT = char, _Traits = std::char_traits<char>]
-44    std::basic_streambuf<_CharT, _Traits>::underflow [with _CharT = char, _Traits = std::char_traits<char>]
-48    std::basic_streambuf<_CharT, _Traits>::uflow [with _CharT = char, _Traits = std::char_traits<char>]
-52    std::basic_streambuf<_CharT, _Traits>::pbackfail [with _CharT = char, _Traits = std::char_traits<char>]
-56    std::basic_streambuf<_CharT, _Traits>::xsputn [with _CharT = char, _Traits = std::char_traits<char>]
-60    std::basic_streambuf<_CharT, _Traits>::overflow [with _CharT = char, _Traits = std::char_traits<char>]
 
-Class std::basic_streambuf<char, std::char_traits<char> >
-   size=32 align=4
-   base size=32 base align=4
-std::basic_streambuf<char, std::char_traits<char> > (0xb5ce9654) 0
-    vptr=((& std::basic_streambuf<char, std::char_traits<char> >::_ZTVSt15basic_streambufIcSt11char_traitsIcEE) + 8u)
 
-Vtable for std::basic_streambuf<wchar_t, std::char_traits<wchar_t> >
-std::basic_streambuf<wchar_t, std::char_traits<wchar_t> >::_ZTVSt15basic_streambufIwSt11char_traitsIwEE: 16u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt15basic_streambufIwSt11char_traitsIwEE)
-8     std::basic_streambuf<_CharT, _Traits>::~basic_streambuf [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-12    std::basic_streambuf<_CharT, _Traits>::~basic_streambuf [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-16    std::basic_streambuf<_CharT, _Traits>::imbue [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-20    std::basic_streambuf<_CharT, _Traits>::setbuf [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-24    std::basic_streambuf<_CharT, _Traits>::seekoff [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-28    std::basic_streambuf<_CharT, _Traits>::seekpos [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-32    std::basic_streambuf<_CharT, _Traits>::sync [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-36    std::basic_streambuf<_CharT, _Traits>::showmanyc [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-40    std::basic_streambuf<_CharT, _Traits>::xsgetn [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-44    std::basic_streambuf<_CharT, _Traits>::underflow [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-48    std::basic_streambuf<_CharT, _Traits>::uflow [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-52    std::basic_streambuf<_CharT, _Traits>::pbackfail [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-56    std::basic_streambuf<_CharT, _Traits>::xsputn [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-60    std::basic_streambuf<_CharT, _Traits>::overflow [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
 
-Class std::basic_streambuf<wchar_t, std::char_traits<wchar_t> >
-   size=32 align=4
-   base size=32 base align=4
-std::basic_streambuf<wchar_t, std::char_traits<wchar_t> > (0xb5ce98e8) 0
-    vptr=((& std::basic_streambuf<wchar_t, std::char_traits<wchar_t> >::_ZTVSt15basic_streambufIwSt11char_traitsIwEE) + 8u)
 
 Class std::ctype_base
    size=1 align=1
    base size=0 base align=1
 std::ctype_base (0xb5ce9b7c) 0 empty
 
-Vtable for std::ctype<char>
-std::ctype<char>::_ZTVSt5ctypeIcE: 12u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt5ctypeIcE)
-8     std::ctype<char>::~ctype
-12    std::ctype<char>::~ctype
-16    std::ctype<char>::do_toupper
-20    std::ctype<char>::do_toupper
-24    std::ctype<char>::do_tolower
-28    std::ctype<char>::do_tolower
-32    std::ctype<char>::do_widen
-36    std::ctype<char>::do_widen
-40    std::ctype<char>::do_narrow
-44    std::ctype<char>::do_narrow
 
-Class std::ctype<char>
-   size=544 align=4
-   base size=542 base align=4
-std::ctype<char> (0xb5b574b0) 0
-    vptr=((& std::ctype<char>::_ZTVSt5ctypeIcE) + 8u)
-  std::locale::facet (0xb5b31ac8) 0
-      primary-for std::ctype<char> (0xb5b574b0)
-  std::ctype_base (0xb5b31b04) 0 empty
 
-Vtable for std::__ctype_abstract_base<wchar_t>
-std::__ctype_abstract_base<wchar_t>::_ZTVSt21__ctype_abstract_baseIwE: 16u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt21__ctype_abstract_baseIwE)
-8     std::__ctype_abstract_base<_CharT>::~__ctype_abstract_base [with _CharT = wchar_t]
-12    std::__ctype_abstract_base<_CharT>::~__ctype_abstract_base [with _CharT = wchar_t]
-16    __cxa_pure_virtual
-20    __cxa_pure_virtual
-24    __cxa_pure_virtual
-28    __cxa_pure_virtual
-32    __cxa_pure_virtual
-36    __cxa_pure_virtual
-40    __cxa_pure_virtual
-44    __cxa_pure_virtual
-48    __cxa_pure_virtual
-52    __cxa_pure_virtual
-56    __cxa_pure_virtual
-60    __cxa_pure_virtual
 
-Class std::__ctype_abstract_base<wchar_t>
-   size=8 align=4
-   base size=8 base align=4
-std::__ctype_abstract_base<wchar_t> (0xb5b60d70) 0
-    vptr=((& std::__ctype_abstract_base<wchar_t>::_ZTVSt21__ctype_abstract_baseIwE) + 8u)
-  std::locale::facet (0xb5b71690) 0
-      primary-for std::__ctype_abstract_base<wchar_t> (0xb5b60d70)
-  std::ctype_base (0xb5b716cc) 0 empty
 
-Vtable for std::ctype<wchar_t>
-std::ctype<wchar_t>::_ZTVSt5ctypeIwE: 16u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt5ctypeIwE)
-8     std::ctype<wchar_t>::~ctype
-12    std::ctype<wchar_t>::~ctype
-16    std::ctype<wchar_t>::do_is
-20    std::ctype<wchar_t>::do_is
-24    std::ctype<wchar_t>::do_scan_is
-28    std::ctype<wchar_t>::do_scan_not
-32    std::ctype<wchar_t>::do_toupper
-36    std::ctype<wchar_t>::do_toupper
-40    std::ctype<wchar_t>::do_tolower
-44    std::ctype<wchar_t>::do_tolower
-48    std::ctype<wchar_t>::do_widen
-52    std::ctype<wchar_t>::do_widen
-56    std::ctype<wchar_t>::do_narrow
-60    std::ctype<wchar_t>::do_narrow
 
-Class std::ctype<wchar_t>
-   size=1264 align=4
-   base size=1264 base align=4
-std::ctype<wchar_t> (0xb5b61900) 0
-    vptr=((& std::ctype<wchar_t>::_ZTVSt5ctypeIwE) + 8u)
-  std::__ctype_abstract_base<wchar_t> (0xb5b7abe0) 0
-      primary-for std::ctype<wchar_t> (0xb5b61900)
-    std::locale::facet (0xb5b717bc) 0
-        primary-for std::__ctype_abstract_base<wchar_t> (0xb5b7abe0)
-    std::ctype_base (0xb5b717f8) 0 empty
 
-Vtable for std::ctype_byname<char>
-std::ctype_byname<char>::_ZTVSt12ctype_bynameIcE: 12u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt12ctype_bynameIcE)
-8     std::ctype_byname<char>::~ctype_byname
-12    std::ctype_byname<char>::~ctype_byname
-16    std::ctype<char>::do_toupper
-20    std::ctype<char>::do_toupper
-24    std::ctype<char>::do_tolower
-28    std::ctype<char>::do_tolower
-32    std::ctype<char>::do_widen
-36    std::ctype<char>::do_widen
-40    std::ctype<char>::do_narrow
-44    std::ctype<char>::do_narrow
 
-Class std::ctype_byname<char>
-   size=544 align=4
-   base size=542 base align=4
-std::ctype_byname<char> (0xb5b61ac0) 0
-    vptr=((& std::ctype_byname<char>::_ZTVSt12ctype_bynameIcE) + 8u)
-  std::ctype<char> (0xb5b83370) 0
-      primary-for std::ctype_byname<char> (0xb5b61ac0)
-    std::locale::facet (0xb5b81b04) 0
-        primary-for std::ctype<char> (0xb5b83370)
-    std::ctype_base (0xb5b81b40) 0 empty
 
-Vtable for std::ctype_byname<wchar_t>
-std::ctype_byname<wchar_t>::_ZTVSt12ctype_bynameIwE: 16u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt12ctype_bynameIwE)
-8     std::ctype_byname<wchar_t>::~ctype_byname
-12    std::ctype_byname<wchar_t>::~ctype_byname
-16    std::ctype<wchar_t>::do_is
-20    std::ctype<wchar_t>::do_is
-24    std::ctype<wchar_t>::do_scan_is
-28    std::ctype<wchar_t>::do_scan_not
-32    std::ctype<wchar_t>::do_toupper
-36    std::ctype<wchar_t>::do_toupper
-40    std::ctype<wchar_t>::do_tolower
-44    std::ctype<wchar_t>::do_tolower
-48    std::ctype<wchar_t>::do_widen
-52    std::ctype<wchar_t>::do_widen
-56    std::ctype<wchar_t>::do_narrow
-60    std::ctype<wchar_t>::do_narrow
 
-Class std::ctype_byname<wchar_t>
-   size=1264 align=4
-   base size=1264 base align=4
-std::ctype_byname<wchar_t> (0xb5b61b40) 0
-    vptr=((& std::ctype_byname<wchar_t>::_ZTVSt12ctype_bynameIwE) + 8u)
-  std::ctype<wchar_t> (0xb5b61b80) 0
-      primary-for std::ctype_byname<wchar_t> (0xb5b61b40)
-    std::__ctype_abstract_base<wchar_t> (0xb5b83a00) 0
-        primary-for std::ctype<wchar_t> (0xb5b61b80)
-      std::locale::facet (0xb5b81ca8) 0
-          primary-for std::__ctype_abstract_base<wchar_t> (0xb5b83a00)
-      std::ctype_base (0xb5b81ce4) 0 empty
 
 Class std::__num_base
    size=1 align=1
    base size=0 base align=1
 std::__num_base (0xb5b8b654) 0 empty
 
-Vtable for std::numpunct<char>
-std::numpunct<char>::_ZTVSt8numpunctIcE: 9u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt8numpunctIcE)
-8     std::numpunct<_CharT>::~numpunct [with _CharT = char]
-12    std::numpunct<_CharT>::~numpunct [with _CharT = char]
-16    std::numpunct<_CharT>::do_decimal_point [with _CharT = char]
-20    std::numpunct<_CharT>::do_thousands_sep [with _CharT = char]
-24    std::numpunct<_CharT>::do_grouping [with _CharT = char]
-28    std::numpunct<_CharT>::do_truename [with _CharT = char]
-32    std::numpunct<_CharT>::do_falsename [with _CharT = char]
 
-Class std::numpunct<char>
-   size=12 align=4
-   base size=12 base align=4
-std::numpunct<char> (0xb5b95580) 0
-    vptr=((& std::numpunct<char>::_ZTVSt8numpunctIcE) + 8u)
-  std::locale::facet (0xb5b8bec4) 0
-      primary-for std::numpunct<char> (0xb5b95580)
 
-Vtable for std::numpunct<wchar_t>
-std::numpunct<wchar_t>::_ZTVSt8numpunctIwE: 9u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt8numpunctIwE)
-8     std::numpunct<_CharT>::~numpunct [with _CharT = wchar_t]
-12    std::numpunct<_CharT>::~numpunct [with _CharT = wchar_t]
-16    std::numpunct<_CharT>::do_decimal_point [with _CharT = wchar_t]
-20    std::numpunct<_CharT>::do_thousands_sep [with _CharT = wchar_t]
-24    std::numpunct<_CharT>::do_grouping [with _CharT = wchar_t]
-28    std::numpunct<_CharT>::do_truename [with _CharT = wchar_t]
-32    std::numpunct<_CharT>::do_falsename [with _CharT = wchar_t]
 
-Class std::numpunct<wchar_t>
-   size=12 align=4
-   base size=12 base align=4
-std::numpunct<wchar_t> (0xb5b95640) 0
-    vptr=((& std::numpunct<wchar_t>::_ZTVSt8numpunctIwE) + 8u)
-  std::locale::facet (0xb5b8bfb4) 0
-      primary-for std::numpunct<wchar_t> (0xb5b95640)
 
-Class __gnu_cxx::__conditional_type<true, long unsigned int, long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__conditional_type<true, long unsigned int, long long unsigned int> (0xb5be8618) 0 empty
 
-Vtable for std::numpunct_byname<char>
-std::numpunct_byname<char>::_ZTVSt15numpunct_bynameIcE: 9u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt15numpunct_bynameIcE)
-8     std::numpunct_byname<_CharT>::~numpunct_byname [with _CharT = char]
-12    std::numpunct_byname<_CharT>::~numpunct_byname [with _CharT = char]
-16    std::numpunct<_CharT>::do_decimal_point [with _CharT = char]
-20    std::numpunct<_CharT>::do_thousands_sep [with _CharT = char]
-24    std::numpunct<_CharT>::do_grouping [with _CharT = char]
-28    std::numpunct<_CharT>::do_truename [with _CharT = char]
-32    std::numpunct<_CharT>::do_falsename [with _CharT = char]
 
-Class std::numpunct_byname<char>
-   size=12 align=4
-   base size=12 base align=4
-std::numpunct_byname<char> (0xb5a1ab80) 0
-    vptr=((& std::numpunct_byname<char>::_ZTVSt15numpunct_bynameIcE) + 8u)
-  std::numpunct<char> (0xb5a1abc0) 0
-      primary-for std::numpunct_byname<char> (0xb5a1ab80)
-    std::locale::facet (0xb5be8c6c) 0
-        primary-for std::numpunct<char> (0xb5a1abc0)
 
-Vtable for std::num_get<char, std::istreambuf_iterator<char, std::char_traits<char> > >
-std::num_get<char, std::istreambuf_iterator<char, std::char_traits<char> > >::_ZTVSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE: 15u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE)
-8     std::num_get<_CharT, _InIter>::~num_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-12    std::num_get<_CharT, _InIter>::~num_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-16    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-20    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-24    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-28    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-32    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-36    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-40    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-44    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-48    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-52    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
-56    std::num_get<_CharT, _InIter>::do_get [with _CharT = char, _InIter = std::istreambuf_iterator<char, std::char_traits<char> >]
 
-Class std::num_get<char, std::istreambuf_iterator<char, std::char_traits<char> > >
-   size=8 align=4
-   base size=8 base align=4
-std::num_get<char, std::istreambuf_iterator<char, std::char_traits<char> > > (0xb5a1ac00) 0
-    vptr=((& std::num_get<char, std::istreambuf_iterator<char, std::char_traits<char> > >::_ZTVSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE) + 8u)
-  std::locale::facet (0xb5be8d5c) 0
-      primary-for std::num_get<char, std::istreambuf_iterator<char, std::char_traits<char> > > (0xb5a1ac00)
 
-Vtable for std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >
-std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_ZTVSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE: 12u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE)
-8     std::num_put<_CharT, _OutIter>::~num_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-12    std::num_put<_CharT, _OutIter>::~num_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-16    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-20    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-24    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-28    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-32    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-36    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-40    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
-44    std::num_put<_CharT, _OutIter>::do_put [with _CharT = char, _OutIter = std::ostreambuf_iterator<char, std::char_traits<char> >]
 
-Class std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >
-   size=8 align=4
-   base size=8 base align=4
-std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > > (0xb5a1ac80) 0
-    vptr=((& std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_ZTVSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE) + 8u)
-  std::locale::facet (0xb5be8e4c) 0
-      primary-for std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > > (0xb5a1ac80)
 
-Vtable for std::numpunct_byname<wchar_t>
-std::numpunct_byname<wchar_t>::_ZTVSt15numpunct_bynameIwE: 9u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt15numpunct_bynameIwE)
-8     std::numpunct_byname<_CharT>::~numpunct_byname [with _CharT = wchar_t]
-12    std::numpunct_byname<_CharT>::~numpunct_byname [with _CharT = wchar_t]
-16    std::numpunct<_CharT>::do_decimal_point [with _CharT = wchar_t]
-20    std::numpunct<_CharT>::do_thousands_sep [with _CharT = wchar_t]
-24    std::numpunct<_CharT>::do_grouping [with _CharT = wchar_t]
-28    std::numpunct<_CharT>::do_truename [with _CharT = wchar_t]
-32    std::numpunct<_CharT>::do_falsename [with _CharT = wchar_t]
 
-Class std::numpunct_byname<wchar_t>
-   size=12 align=4
-   base size=12 base align=4
-std::numpunct_byname<wchar_t> (0xb5a1ad00) 0
-    vptr=((& std::numpunct_byname<wchar_t>::_ZTVSt15numpunct_bynameIwE) + 8u)
-  std::numpunct<wchar_t> (0xb5a1ad40) 0
-      primary-for std::numpunct_byname<wchar_t> (0xb5a1ad00)
-    std::locale::facet (0xb5be8f3c) 0
-        primary-for std::numpunct<wchar_t> (0xb5a1ad40)
 
-Vtable for std::num_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
-std::num_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >::_ZTVSt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE: 15u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE)
-8     std::num_get<_CharT, _InIter>::~num_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-12    std::num_get<_CharT, _InIter>::~num_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-16    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-20    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-24    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-28    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-32    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-36    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-40    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-44    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-48    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-52    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-56    std::num_get<_CharT, _InIter>::do_get [with _CharT = wchar_t, _InIter = std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
 
-Class std::num_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
-   size=8 align=4
-   base size=8 base align=4
-std::num_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > > (0xb5a1adc0) 0
-    vptr=((& std::num_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >::_ZTVSt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE) + 8u)
-  std::locale::facet (0xb5be85dc) 0
-      primary-for std::num_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > > (0xb5a1adc0)
 
-Vtable for std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
-std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >::_ZTVSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE: 12u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE)
-8     std::num_put<_CharT, _OutIter>::~num_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-12    std::num_put<_CharT, _OutIter>::~num_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-16    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-20    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-24    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-28    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-32    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-36    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-40    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
-44    std::num_put<_CharT, _OutIter>::do_put [with _CharT = wchar_t, _OutIter = std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >]
 
-Class std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
-   size=8 align=4
-   base size=8 base align=4
-std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > > (0xb5a1ae40) 0
-    vptr=((& std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >::_ZTVSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE) + 8u)
-  std::locale::facet (0xb5be8f00) 0
-      primary-for std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > > (0xb5a1ae40)
 
-Vtable for std::basic_ios<char, std::char_traits<char> >
-std::basic_ios<char, std::char_traits<char> >::_ZTVSt9basic_iosIcSt11char_traitsIcEE: 4u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt9basic_iosIcSt11char_traitsIcEE)
-8     std::basic_ios<_CharT, _Traits>::~basic_ios [with _CharT = char, _Traits = std::char_traits<char>]
-12    std::basic_ios<_CharT, _Traits>::~basic_ios [with _CharT = char, _Traits = std::char_traits<char>]
 
-Class std::basic_ios<char, std::char_traits<char> >
-   size=136 align=4
-   base size=136 base align=4
-std::basic_ios<char, std::char_traits<char> > (0xb5a65e80) 0
-    vptr=((& std::basic_ios<char, std::char_traits<char> >::_ZTVSt9basic_iosIcSt11char_traitsIcEE) + 8u)
-  std::ios_base (0xb5a607bc) 0
-      primary-for std::basic_ios<char, std::char_traits<char> > (0xb5a65e80)
 
-Vtable for std::basic_ios<wchar_t, std::char_traits<wchar_t> >
-std::basic_ios<wchar_t, std::char_traits<wchar_t> >::_ZTVSt9basic_iosIwSt11char_traitsIwEE: 4u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTISt9basic_iosIwSt11char_traitsIwEE)
-8     std::basic_ios<_CharT, _Traits>::~basic_ios [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-12    std::basic_ios<_CharT, _Traits>::~basic_ios [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
 
-Class std::basic_ios<wchar_t, std::char_traits<wchar_t> >
-   size=140 align=4
-   base size=140 base align=4
-std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb5a65ec0) 0
-    vptr=((& std::basic_ios<wchar_t, std::char_traits<wchar_t> >::_ZTVSt9basic_iosIwSt11char_traitsIwEE) + 8u)
-  std::ios_base (0xb5a608ac) 0
-      primary-for std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb5a65ec0)
 
-Vtable for std::basic_ostream<char, std::char_traits<char> >
-std::basic_ostream<char, std::char_traits<char> >::_ZTVSo: 10u entries
-0     4u
-4     (int (*)(...))0
-8     (int (*)(...))(& _ZTISo)
-12    std::basic_ostream<_CharT, _Traits>::~basic_ostream [with _CharT = char, _Traits = std::char_traits<char>]
-16    std::basic_ostream<_CharT, _Traits>::~basic_ostream [with _CharT = char, _Traits = std::char_traits<char>]
-20    -4u
-24    (int (*)(...))-0x000000004
-28    (int (*)(...))(& _ZTISo)
-32    std::basic_ostream<char, std::char_traits<char> >::_ZTv0_n12_NSoD1Ev
-36    std::basic_ostream<char, std::char_traits<char> >::_ZTv0_n12_NSoD0Ev
 
 VTT for std::basic_ostream<char, std::char_traits<char> >
 std::basic_ostream<char, std::char_traits<char> >::_ZTTSo: 2u entries
 0     ((& std::basic_ostream<char, std::char_traits<char> >::_ZTVSo) + 12u)
 4     ((& std::basic_ostream<char, std::char_traits<char> >::_ZTVSo) + 32u)
 
-Class std::basic_ostream<char, std::char_traits<char> >
-   size=140 align=4
-   base size=4 base align=4
-std::basic_ostream<char, std::char_traits<char> > (0xb5ab6b40) 0 nearly-empty
-    vptridx=0u vptr=((& std::basic_ostream<char, std::char_traits<char> >::_ZTVSo) + 12u)
-  std::basic_ios<char, std::char_traits<char> > (0xb5ab6b80) 4 virtual
-      vptridx=4u vbaseoffset=-0x00000000c vptr=((& std::basic_ostream<char, std::char_traits<char> >::_ZTVSo) + 32u)
-    std::ios_base (0xb5aa14ec) 4
-        primary-for std::basic_ios<char, std::char_traits<char> > (0xb5ab6b80)
 
-Class std::basic_ostream<char, std::char_traits<char> >::sentry
-   size=8 align=4
-   base size=8 base align=4
-std::basic_ostream<char, std::char_traits<char> >::sentry (0xb5aa16cc) 0
 
-Vtable for std::basic_ostream<wchar_t, std::char_traits<wchar_t> >
-std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_ostreamIwSt11char_traitsIwEE: 10u entries
-0     4u
-4     (int (*)(...))0
-8     (int (*)(...))(& _ZTISt13basic_ostreamIwSt11char_traitsIwEE)
-12    std::basic_ostream<_CharT, _Traits>::~basic_ostream [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-16    std::basic_ostream<_CharT, _Traits>::~basic_ostream [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-20    -4u
-24    (int (*)(...))-0x000000004
-28    (int (*)(...))(& _ZTISt13basic_ostreamIwSt11char_traitsIwEE)
-32    std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTv0_n12_NSt13basic_ostreamIwSt11char_traitsIwEED1Ev
-36    std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTv0_n12_NSt13basic_ostreamIwSt11char_traitsIwEED0Ev
 
 VTT for std::basic_ostream<wchar_t, std::char_traits<wchar_t> >
 std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTTSt13basic_ostreamIwSt11char_traitsIwEE: 2u entries
 0     ((& std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_ostreamIwSt11char_traitsIwEE) + 12u)
 4     ((& std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_ostreamIwSt11char_traitsIwEE) + 32u)
 
-Class std::basic_ostream<wchar_t, std::char_traits<wchar_t> >
-   size=144 align=4
-   base size=4 base align=4
-std::basic_ostream<wchar_t, std::char_traits<wchar_t> > (0xb5ab6cc0) 0 nearly-empty
-    vptridx=0u vptr=((& std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_ostreamIwSt11char_traitsIwEE) + 12u)
-  std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb5ab6d00) 4 virtual
-      vptridx=4u vbaseoffset=-0x00000000c vptr=((& std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_ostreamIwSt11char_traitsIwEE) + 32u)
-    std::ios_base (0xb5aa1708) 4
-        primary-for std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb5ab6d00)
 
-Class std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::sentry
-   size=8 align=4
-   base size=8 base align=4
-std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::sentry (0xb5aa18ac) 0
 
-Vtable for std::basic_istream<char, std::char_traits<char> >
-std::basic_istream<char, std::char_traits<char> >::_ZTVSi: 10u entries
-0     8u
-4     (int (*)(...))0
-8     (int (*)(...))(& _ZTISi)
-12    std::basic_istream<_CharT, _Traits>::~basic_istream [with _CharT = char, _Traits = std::char_traits<char>]
-16    std::basic_istream<_CharT, _Traits>::~basic_istream [with _CharT = char, _Traits = std::char_traits<char>]
-20    -8u
-24    (int (*)(...))-0x000000008
-28    (int (*)(...))(& _ZTISi)
-32    std::basic_istream<char, std::char_traits<char> >::_ZTv0_n12_NSiD1Ev
-36    std::basic_istream<char, std::char_traits<char> >::_ZTv0_n12_NSiD0Ev
 
 VTT for std::basic_istream<char, std::char_traits<char> >
 std::basic_istream<char, std::char_traits<char> >::_ZTTSi: 2u entries
 0     ((& std::basic_istream<char, std::char_traits<char> >::_ZTVSi) + 12u)
 4     ((& std::basic_istream<char, std::char_traits<char> >::_ZTVSi) + 32u)
 
-Class std::basic_istream<char, std::char_traits<char> >
-   size=144 align=4
-   base size=8 base align=4
-std::basic_istream<char, std::char_traits<char> > (0xb5af5580) 0
-    vptridx=0u vptr=((& std::basic_istream<char, std::char_traits<char> >::_ZTVSi) + 12u)
-  std::basic_ios<char, std::char_traits<char> > (0xb5af55c0) 8 virtual
-      vptridx=4u vbaseoffset=-0x00000000c vptr=((& std::basic_istream<char, std::char_traits<char> >::_ZTVSi) + 32u)
-    std::ios_base (0xb5aa1e10) 8
-        primary-for std::basic_ios<char, std::char_traits<char> > (0xb5af55c0)
 
-Vtable for std::basic_istream<wchar_t, std::char_traits<wchar_t> >
-std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_istreamIwSt11char_traitsIwEE: 10u entries
-0     8u
-4     (int (*)(...))0
-8     (int (*)(...))(& _ZTISt13basic_istreamIwSt11char_traitsIwEE)
-12    std::basic_istream<_CharT, _Traits>::~basic_istream [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-16    std::basic_istream<_CharT, _Traits>::~basic_istream [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-20    -8u
-24    (int (*)(...))-0x000000008
-28    (int (*)(...))(& _ZTISt13basic_istreamIwSt11char_traitsIwEE)
-32    std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTv0_n12_NSt13basic_istreamIwSt11char_traitsIwEED1Ev
-36    std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTv0_n12_NSt13basic_istreamIwSt11char_traitsIwEED0Ev
 
 VTT for std::basic_istream<wchar_t, std::char_traits<wchar_t> >
 std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTTSt13basic_istreamIwSt11char_traitsIwEE: 2u entries
 0     ((& std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_istreamIwSt11char_traitsIwEE) + 12u)
 4     ((& std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_istreamIwSt11char_traitsIwEE) + 32u)
 
-Class std::basic_istream<wchar_t, std::char_traits<wchar_t> >
-   size=148 align=4
-   base size=8 base align=4
-std::basic_istream<wchar_t, std::char_traits<wchar_t> > (0xb5af5680) 0
-    vptridx=0u vptr=((& std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_istreamIwSt11char_traitsIwEE) + 12u)
-  std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb5af56c0) 8 virtual
-      vptridx=4u vbaseoffset=-0x00000000c vptr=((& std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_istreamIwSt11char_traitsIwEE) + 32u)
-    std::ios_base (0xb59060f0) 8
-        primary-for std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb5af56c0)
 
-Class __gnu_cxx::__conditional_type<true, __gnu_cxx::__numeric_traits_integer<short int>, __gnu_cxx::__numeric_traits_floating<short int> >
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__conditional_type<true, __gnu_cxx::__numeric_traits_integer<short int>, __gnu_cxx::__numeric_traits_floating<short int> > (0xb59067f8) 0 empty
 
-Class __gnu_cxx::__numeric_traits_integer<short int>
-   size=1 align=1
-   base size=0 base align=1
-__gnu_cxx::__numeric_traits_integer<short int> (0xb5906834) 0 empty
 
-Class __gnu_cxx::__numeric_traits<short int>
-   size=1 align=1
-   base size=1 base align=1
-__gnu_cxx::__numeric_traits<short int> (0xb5923580) 0 empty
-  __gnu_cxx::__numeric_traits_integer<short int> (0xb5906870) 0 empty
 
-Class std::basic_istream<char, std::char_traits<char> >::sentry
-   size=1 align=1
-   base size=1 base align=1
-std::basic_istream<char, std::char_traits<char> >::sentry (0xb5906e4c) 0
 
-Vtable for std::basic_iostream<char, std::char_traits<char> >
-std::basic_iostream<char, std::char_traits<char> >::_ZTVSd: 15u entries
-0     12u
-4     (int (*)(...))0
-8     (int (*)(...))(& _ZTISd)
-12    std::basic_iostream<_CharT, _Traits>::~basic_iostream [with _CharT = char, _Traits = std::char_traits<char>]
-16    std::basic_iostream<_CharT, _Traits>::~basic_iostream [with _CharT = char, _Traits = std::char_traits<char>]
-20    4u
-24    (int (*)(...))-0x000000008
-28    (int (*)(...))(& _ZTISd)
-32    std::basic_iostream<char, std::char_traits<char> >::_ZThn8_NSdD1Ev
-36    std::basic_iostream<char, std::char_traits<char> >::_ZThn8_NSdD0Ev
-40    -12u
-44    (int (*)(...))-0x00000000c
-48    (int (*)(...))(& _ZTISd)
-52    std::basic_iostream<char, std::char_traits<char> >::_ZTv0_n12_NSdD1Ev
-56    std::basic_iostream<char, std::char_traits<char> >::_ZTv0_n12_NSdD0Ev
 
 Construction vtable for std::basic_istream<char, std::char_traits<char> > (0xb595c480 instance) in std::basic_iostream<char, std::char_traits<char> >
 std::basic_iostream<char, std::char_traits<char> >::_ZTCSd0_Si: 10u entries
@@ -2486,44 +1210,8 @@ std::basic_iostream<char, std::char_traits<char> >::_ZTTSd: 7u entries
 20    ((& std::basic_iostream<char, std::char_traits<char> >::_ZTVSd) + 52u)
 24    ((& std::basic_iostream<char, std::char_traits<char> >::_ZTVSd) + 32u)
 
-Class std::basic_iostream<char, std::char_traits<char> >
-   size=148 align=4
-   base size=12 base align=4
-std::basic_iostream<char, std::char_traits<char> > (0xb596c050) 0
-    vptridx=0u vptr=((& std::basic_iostream<char, std::char_traits<char> >::_ZTVSd) + 12u)
-  std::basic_istream<char, std::char_traits<char> > (0xb595c480) 0
-      primary-for std::basic_iostream<char, std::char_traits<char> > (0xb596c050)
-      subvttidx=4u
-    std::basic_ios<char, std::char_traits<char> > (0xb595c4c0) 12 virtual
-        vptridx=20u vbaseoffset=-0x00000000c vptr=((& std::basic_iostream<char, std::char_traits<char> >::_ZTVSd) + 52u)
-      std::ios_base (0xb5906e88) 12
-          primary-for std::basic_ios<char, std::char_traits<char> > (0xb595c4c0)
-  std::basic_ostream<char, std::char_traits<char> > (0xb595c500) 8 nearly-empty
-      subvttidx=12u vptridx=24u vptr=((& std::basic_iostream<char, std::char_traits<char> >::_ZTVSd) + 32u)
-    std::basic_ios<char, std::char_traits<char> > (0xb595c4c0) alternative-path
 
-Class std::basic_istream<wchar_t, std::char_traits<wchar_t> >::sentry
-   size=1 align=1
-   base size=1 base align=1
-std::basic_istream<wchar_t, std::char_traits<wchar_t> >::sentry (0xb5971000) 0
 
-Vtable for std::basic_iostream<wchar_t, std::char_traits<wchar_t> >
-std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE: 15u entries
-0     12u
-4     (int (*)(...))0
-8     (int (*)(...))(& _ZTISt14basic_iostreamIwSt11char_traitsIwEE)
-12    std::basic_iostream<_CharT, _Traits>::~basic_iostream [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-16    std::basic_iostream<_CharT, _Traits>::~basic_iostream [with _CharT = wchar_t, _Traits = std::char_traits<wchar_t>]
-20    4u
-24    (int (*)(...))-0x000000008
-28    (int (*)(...))(& _ZTISt14basic_iostreamIwSt11char_traitsIwEE)
-32    std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZThn8_NSt14basic_iostreamIwSt11char_traitsIwEED1Ev
-36    std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZThn8_NSt14basic_iostreamIwSt11char_traitsIwEED0Ev
-40    -12u
-44    (int (*)(...))-0x00000000c
-48    (int (*)(...))(& _ZTISt14basic_iostreamIwSt11char_traitsIwEE)
-52    std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTv0_n12_NSt14basic_iostreamIwSt11char_traitsIwEED1Ev
-56    std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTv0_n12_NSt14basic_iostreamIwSt11char_traitsIwEED0Ev
 
 Construction vtable for std::basic_istream<wchar_t, std::char_traits<wchar_t> > (0xb595c800 instance) in std::basic_iostream<wchar_t, std::char_traits<wchar_t> >
 std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTCSt14basic_iostreamIwSt11char_traitsIwEE0_St13basic_istreamIwS1_E: 10u entries
@@ -2561,110 +1249,21 @@ std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTTSt14basic_iostream
 20    ((& std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE) + 52u)
 24    ((& std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE) + 32u)
 
-Class std::basic_iostream<wchar_t, std::char_traits<wchar_t> >
-   size=152 align=4
-   base size=12 base align=4
-std::basic_iostream<wchar_t, std::char_traits<wchar_t> > (0xb597b0f0) 0
-    vptridx=0u vptr=((& std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE) + 12u)
-  std::basic_istream<wchar_t, std::char_traits<wchar_t> > (0xb595c800) 0
-      primary-for std::basic_iostream<wchar_t, std::char_traits<wchar_t> > (0xb597b0f0)
-      subvttidx=4u
-    std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb595c840) 12 virtual
-        vptridx=20u vbaseoffset=-0x00000000c vptr=((& std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE) + 52u)
-      std::ios_base (0xb597103c) 12
-          primary-for std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb595c840)
-  std::basic_ostream<wchar_t, std::char_traits<wchar_t> > (0xb595c880) 8 nearly-empty
-      subvttidx=12u vptridx=24u vptr=((& std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE) + 32u)
-    std::basic_ios<wchar_t, std::char_traits<wchar_t> > (0xb595c840) alternative-path
 
-Class QVector<double>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<double>::<anonymous union> (0xb5971924) 0
 
-Class QVector<double>
-   size=4 align=4
-   base size=4 base align=4
-QVector<double> (0xb59718ac) 0
 
-Class QtConcurrent::Median<double>
-   size=24 align=4
-   base size=22 base align=4
-QtConcurrent::Median<double> (0xb5971834) 0
 
 Class QtConcurrent::BlockSizeManager
    size=72 align=4
    base size=72 base align=4
 QtConcurrent::BlockSizeManager (0xb5971780) 0
 
-Class QtConcurrent::ResultReporter<void>
-   size=1 align=1
-   base size=0 base align=1
-QtConcurrent::ResultReporter<void> (0xb5971ce4) 0 empty
 
-Class QFlags<QtConcurrent::ReduceOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QtConcurrent::ReduceOption> (0xb59a94b0) 0
 
-Class QtConcurrent::SelectSpecialization<void>
-   size=1 align=1
-   base size=0 base align=1
-QtConcurrent::SelectSpecialization<void> (0xb5895924) 0 empty
 
-Vtable for QtConcurrent::RunFunctionTaskBase<void>
-QtConcurrent::RunFunctionTaskBase<void>::_ZTVN12QtConcurrent19RunFunctionTaskBaseIvEE: 11u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTIN12QtConcurrent19RunFunctionTaskBaseIvEE)
-8     QtConcurrent::RunFunctionTaskBase<void>::~RunFunctionTaskBase
-12    QtConcurrent::RunFunctionTaskBase<void>::~RunFunctionTaskBase
-16    QtConcurrent::RunFunctionTaskBase<T>::run [with T = void]
-20    __cxa_pure_virtual
-24    (int (*)(...))-0x000000008
-28    (int (*)(...))(& _ZTIN12QtConcurrent19RunFunctionTaskBaseIvEE)
-32    QtConcurrent::RunFunctionTaskBase<void>::_ZThn8_N12QtConcurrent19RunFunctionTaskBaseIvE3runEv
-36    QtConcurrent::RunFunctionTaskBase<void>::_ZThn8_N12QtConcurrent19RunFunctionTaskBaseIvED1Ev
-40    QtConcurrent::RunFunctionTaskBase<void>::_ZThn8_N12QtConcurrent19RunFunctionTaskBaseIvED0Ev
 
-Class QtConcurrent::RunFunctionTaskBase<void>
-   size=16 align=4
-   base size=16 base align=4
-QtConcurrent::RunFunctionTaskBase<void> (0xb58a5870) 0
-    vptr=((& QtConcurrent::RunFunctionTaskBase<void>::_ZTVN12QtConcurrent19RunFunctionTaskBaseIvEE) + 8u)
-  QFutureInterface<void> (0xb5898b00) 0
-      primary-for QtConcurrent::RunFunctionTaskBase<void> (0xb58a5870)
-    QFutureInterfaceBase (0xb5895b04) 0
-        primary-for QFutureInterface<void> (0xb5898b00)
-  QRunnable (0xb5895b40) 8
-      vptr=((& QtConcurrent::RunFunctionTaskBase<void>::_ZTVN12QtConcurrent19RunFunctionTaskBaseIvEE) + 32u)
 
-Vtable for QtConcurrent::RunFunctionTask<void>
-QtConcurrent::RunFunctionTask<void>::_ZTVN12QtConcurrent15RunFunctionTaskIvEE: 11u entries
-0     (int (*)(...))0
-4     (int (*)(...))(& _ZTIN12QtConcurrent15RunFunctionTaskIvEE)
-8     QtConcurrent::RunFunctionTask<void>::~RunFunctionTask
-12    QtConcurrent::RunFunctionTask<void>::~RunFunctionTask
-16    QtConcurrent::RunFunctionTask<void>::run
-20    __cxa_pure_virtual
-24    (int (*)(...))-0x000000008
-28    (int (*)(...))(& _ZTIN12QtConcurrent15RunFunctionTaskIvEE)
-32    QtConcurrent::RunFunctionTask<void>::_ZThn8_N12QtConcurrent15RunFunctionTaskIvE3runEv
-36    QtConcurrent::RunFunctionTask<void>::_ZThn8_N12QtConcurrent15RunFunctionTaskIvED1Ev
-40    QtConcurrent::RunFunctionTask<void>::_ZThn8_N12QtConcurrent15RunFunctionTaskIvED0Ev
 
-Class QtConcurrent::RunFunctionTask<void>
-   size=16 align=4
-   base size=16 base align=4
-QtConcurrent::RunFunctionTask<void> (0xb5898b80) 0
-    vptr=((& QtConcurrent::RunFunctionTask<void>::_ZTVN12QtConcurrent15RunFunctionTaskIvEE) + 8u)
-  QtConcurrent::RunFunctionTaskBase<void> (0xb58a5c80) 0
-      primary-for QtConcurrent::RunFunctionTask<void> (0xb5898b80)
-    QFutureInterface<void> (0xb5898bc0) 0
-        primary-for QtConcurrent::RunFunctionTaskBase<void> (0xb58a5c80)
-      QFutureInterfaceBase (0xb5895ce4) 0
-          primary-for QFutureInterface<void> (0xb5898bc0)
-    QRunnable (0xb5895d20) 8
-        vptr=((& QtConcurrent::RunFunctionTask<void>::_ZTVN12QtConcurrent15RunFunctionTaskIvEE) + 32u)
 
 Class QLibraryInfo
    size=1 align=1
@@ -2715,50 +1314,22 @@ QFile (0xb57f9f00) 0
     QObject (0xb561b078) 0
         primary-for QIODevice (0xb57f9f40)
 
-Class QFlags<QFile::Permission>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QFile::Permission> (0xb56339d8) 0
 
 Class QFileInfo
    size=4 align=4
    base size=4 base align=4
 QFileInfo (0xb56455a0) 0
 
-Class QFlags<QFileInfo::Permission>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QFileInfo::Permission> (0xb5653c30) 0
 
-Class QTypeInfo<QFileInfo>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QFileInfo> (0xb5653f3c) 0 empty
 
-Class QList<QFileInfo>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QFileInfo>::<anonymous union> (0xb5668ca8) 0
 
-Class QList<QFileInfo>
-   size=4 align=4
-   base size=4 base align=4
-QList<QFileInfo> (0xb5668c30) 0
 
 Class QDir
    size=4 align=4
    base size=4 base align=4
 QDir (0xb5668d98) 0
 
-Class QFlags<QDir::SortFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDir::SortFlag> (0xb569330c) 0
 
-Class QFlags<QDir::Filter>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDir::Filter> (0xb56933fc) 0
 
 Class QAbstractFileEngine::ExtensionOption
    size=1 align=1
@@ -2833,10 +1404,6 @@ Class QAbstractFileEngine
 QAbstractFileEngine (0xb56c16cc) 0
     vptr=((& QAbstractFileEngine::_ZTV19QAbstractFileEngine) + 8u)
 
-Class QFlags<QAbstractFileEngine::FileFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QAbstractFileEngine::FileFlag> (0xb56d47bc) 0
 
 Vtable for QAbstractFileEngineHandler
 QAbstractFileEngineHandler::_ZTV26QAbstractFileEngineHandler: 5u entries
@@ -2926,10 +1493,6 @@ Class QDirIterator
 QDirIterator (0xb56f599c) 0
     vptr=((& QDirIterator::_ZTV12QDirIterator) + 8u)
 
-Class QFlags<QDirIterator::IteratorFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDirIterator::IteratorFlag> (0xb5504168) 0
 
 Vtable for QFileSystemWatcher
 QFileSystemWatcher::_ZTV18QFileSystemWatcher: 14u entries
@@ -3067,25 +1630,13 @@ Class QLocale::Data
    base size=4 base align=2
 QLocale::Data (0xb556512c) 0
 
-Class QLocale::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QLocale::<anonymous union> (0xb55651a4) 0
 
 Class QLocale
    size=4 align=4
    base size=4 base align=4
 QLocale (0xb5539f3c) 0
 
-Class QTypeInfo<QLocale>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QLocale> (0xb556599c) 0 empty
 
-Class QFlags<QLocale::NumberOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QLocale::NumberOption> (0xb5565b04) 0
 
 Class QResource
    size=4 align=4
@@ -3097,275 +1648,59 @@ Class QMetaType
    base size=0 base align=1
 QMetaType (0xb558e3fc) 0 empty
 
-Class QMetaTypeId2<QString>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QString> (0xb558e834) 0 empty
 
-Class QMetaTypeId2<int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<int> (0xb558ea14) 0 empty
 
-Class QMetaTypeId2<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<unsigned int> (0xb558ebf4) 0 empty
 
-Class QMetaTypeId2<bool>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<bool> (0xb558edd4) 0 empty
 
-Class QMetaTypeId2<double>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<double> (0xb558efb4) 0 empty
 
-Class QMetaTypeId2<QByteArray>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QByteArray> (0xb55a71a4) 0 empty
 
-Class QMetaTypeId2<QChar>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QChar> (0xb55a7384) 0 empty
 
-Class QMetaTypeId2<long int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long int> (0xb55a7564) 0 empty
 
-Class QMetaTypeId2<short int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<short int> (0xb55a7744) 0 empty
 
-Class QMetaTypeId2<char>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<char> (0xb55a7924) 0 empty
 
-Class QMetaTypeId2<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long unsigned int> (0xb55a7b04) 0 empty
 
-Class QMetaTypeId2<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<short unsigned int> (0xb55a7ce4) 0 empty
 
-Class QMetaTypeId2<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<unsigned char> (0xb55a7ec4) 0 empty
 
-Class QMetaTypeId2<float>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<float> (0xb55ae0b4) 0 empty
 
-Class QMetaTypeId2<QObject*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QObject*> (0xb55ae294) 0 empty
 
-Class QMetaTypeId2<QWidget*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QWidget*> (0xb55ae474) 0 empty
 
-Class QMetaTypeId2<void*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<void*> (0xb55ae654) 0 empty
 
-Class QMetaTypeId2<long long int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long long int> (0xb55ae834) 0 empty
 
-Class QMetaTypeId2<long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<long long unsigned int> (0xb55aea14) 0 empty
 
-Class QMetaTypeId2<QStringList>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QStringList> (0xb55aebf4) 0 empty
 
-Class QMetaTypeId2<QBitArray>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QBitArray> (0xb55aedd4) 0 empty
 
-Class QMetaTypeId2<QDate>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QDate> (0xb55aefb4) 0 empty
 
-Class QMetaTypeId2<QTime>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTime> (0xb55b71a4) 0 empty
 
-Class QMetaTypeId2<QDateTime>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QDateTime> (0xb55b7384) 0 empty
 
-Class QMetaTypeId2<QUrl>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QUrl> (0xb55b7564) 0 empty
 
-Class QMetaTypeId2<QLocale>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QLocale> (0xb55b7744) 0 empty
 
-Class QMetaTypeId2<QRect>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRect> (0xb55b7924) 0 empty
 
-Class QMetaTypeId2<QRectF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRectF> (0xb55b7b04) 0 empty
 
-Class QMetaTypeId2<QSize>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QSize> (0xb55b7ce4) 0 empty
 
-Class QMetaTypeId2<QSizeF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QSizeF> (0xb55b7ec4) 0 empty
 
-Class QMetaTypeId2<QLine>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QLine> (0xb55bf0b4) 0 empty
 
-Class QMetaTypeId2<QLineF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QLineF> (0xb55bf294) 0 empty
 
-Class QMetaTypeId2<QPoint>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPoint> (0xb55bf474) 0 empty
 
-Class QMetaTypeId2<QPointF>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPointF> (0xb55bf654) 0 empty
 
-Class QMetaTypeId2<QRegExp>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRegExp> (0xb55bf834) 0 empty
 
-Class QMetaTypeId2<QColorGroup>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QColorGroup> (0xb55bfa14) 0 empty
 
-Class QMetaTypeId2<QFont>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QFont> (0xb55bfbf4) 0 empty
 
-Class QMetaTypeId2<QPixmap>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPixmap> (0xb55bfdd4) 0 empty
 
-Class QMetaTypeId2<QBrush>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QBrush> (0xb55bffb4) 0 empty
 
-Class QMetaTypeId2<QColor>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QColor> (0xb55c61a4) 0 empty
 
-Class QMetaTypeId2<QPalette>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPalette> (0xb55c6384) 0 empty
 
-Class QMetaTypeId2<QIcon>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QIcon> (0xb55c6564) 0 empty
 
-Class QMetaTypeId2<QImage>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QImage> (0xb55c6744) 0 empty
 
-Class QMetaTypeId2<QPolygon>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPolygon> (0xb55c6924) 0 empty
 
-Class QMetaTypeId2<QRegion>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QRegion> (0xb55c6b04) 0 empty
 
-Class QMetaTypeId2<QBitmap>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QBitmap> (0xb55c6ce4) 0 empty
 
-Class QMetaTypeId2<QCursor>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QCursor> (0xb55c6ec4) 0 empty
 
-Class QMetaTypeId2<QSizePolicy>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QSizePolicy> (0xb55cd0b4) 0 empty
 
-Class QMetaTypeId2<QKeySequence>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QKeySequence> (0xb55cd294) 0 empty
 
-Class QMetaTypeId2<QPen>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QPen> (0xb55cd474) 0 empty
 
-Class QMetaTypeId2<QTextLength>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTextLength> (0xb55cd654) 0 empty
 
-Class QMetaTypeId2<QTextFormat>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTextFormat> (0xb55cd834) 0 empty
 
-Class QMetaTypeId2<QMatrix>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QMatrix> (0xb55cda14) 0 empty
 
-Class QMetaTypeId2<QTransform>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QTransform> (0xb55cdbf4) 0 empty
 
 Class QVariant::PrivateShared
    size=8 align=4
@@ -3392,45 +1727,17 @@ Class QVariant
    base size=12 base align=4
 QVariant (0xb55cddd4) 0
 
-Class QList<QVariant>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant>::<anonymous union> (0xb5400870) 0
 
-Class QList<QVariant>
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant> (0xb54007f8) 0
 
-Class QMap<QString, QVariant>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QMap<QString, QVariant>::<anonymous union> (0xb5400960) 0
 
-Class QMap<QString, QVariant>
-   size=4 align=4
-   base size=4 base align=4
-QMap<QString, QVariant> (0xb54008e8) 0
 
 Class QVariantComparisonHelper
    size=4 align=4
    base size=4 base align=4
 QVariantComparisonHelper (0xb5436ce4) 0
 
-Class QTypeInfo<QVariant>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QVariant> (0xb544230c) 0 empty
 
-Class QMetaTypeId2<QList<QVariant> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QList<QVariant> > (0xb54424ec) 0 empty
 
-Class QMetaTypeId2<QMap<QString, QVariant> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QMap<QString, QVariant> > (0xb54426cc) 0 empty
 
 Vtable for QSettings
 QSettings::_ZTV9QSettings: 14u entries
@@ -3508,15 +1815,7 @@ Class QUrl
    base size=4 base align=4
 QUrl (0xb5493744) 0
 
-Class QFlags<QUrl::FormattingOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QUrl::FormattingOption> (0xb54a1690) 0
 
-Class QTypeInfo<QUrl>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QUrl> (0xb54cb0f0) 0 empty
 
 Vtable for QEventLoop
 QEventLoop::_ZTV10QEventLoop: 14u entries
@@ -3543,10 +1842,6 @@ QEventLoop (0xb548abc0) 0
   QObject (0xb54cbf78) 0
       primary-for QEventLoop (0xb548abc0)
 
-Class QFlags<QEventLoop::ProcessEventsFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QEventLoop::ProcessEventsFlag> (0xb54da5a0) 0
 
 Vtable for QAbstractEventDispatcher
 QAbstractEventDispatcher::_ZTV24QAbstractEventDispatcher: 27u entries
@@ -3591,20 +1886,12 @@ Class QModelIndex
    base size=16 base align=4
 QModelIndex (0xb54fb834) 0
 
-Class QTypeInfo<QModelIndex>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QModelIndex> (0xb530dbf4) 0 empty
 
 Class QPersistentModelIndex
    size=4 align=4
    base size=4 base align=4
 QPersistentModelIndex (0xb530dce4) 0
 
-Class QTypeInfo<QPersistentModelIndex>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPersistentModelIndex> (0xb5316438) 0 empty
 
 Vtable for QAbstractItemModel
 QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
@@ -3774,10 +2061,6 @@ Class QBasicTimer
    base size=4 base align=4
 QBasicTimer (0xb53635a0) 0
 
-Class QTypeInfo<QBasicTimer>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QBasicTimer> (0xb5363d20) 0 empty
 
 Vtable for QEvent
 QEvent::_ZTV6QEvent: 4u entries
@@ -3889,20 +2172,12 @@ Class QMetaMethod
    base size=8 base align=4
 QMetaMethod (0xb53a7960) 0
 
-Class QTypeInfo<QMetaMethod>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QMetaMethod> (0xb53a7e10) 0 empty
 
 Class QMetaEnum
    size=8 align=4
    base size=8 base align=4
 QMetaEnum (0xb53a7f00) 0
 
-Class QTypeInfo<QMetaEnum>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QMetaEnum> (0xb53e0348) 0 empty
 
 Class QMetaProperty
    size=20 align=4
@@ -3914,10 +2189,6 @@ Class QMetaClassInfo
    base size=8 base align=4
 QMetaClassInfo (0xb53e0744) 0
 
-Class QTypeInfo<QMetaClassInfo>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QMetaClassInfo> (0xb53e0a8c) 0 empty
 
 Vtable for QMimeData
 QMimeData::_ZTV9QMimeData: 17u entries
@@ -4129,10 +2400,6 @@ QLibrary (0xb52288c0) 0
   QObject (0xb524b3c0) 0
       primary-for QLibrary (0xb52288c0)
 
-Class QFlags<QLibrary::LoadHint>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QLibrary::LoadHint> (0xb525b30c) 0
 
 Vtable for QPluginLoader
 QPluginLoader::_ZTV13QPluginLoader: 14u entries
@@ -4169,20 +2436,12 @@ Class QReadWriteLock
    base size=4 base align=4
 QReadWriteLock (0xb52848e8) 0
 
-Class QReadLocker::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QReadLocker::<anonymous union> (0xb5284f78) 0
 
 Class QReadLocker
    size=4 align=4
    base size=4 base align=4
 QReadLocker (0xb5284c6c) 0
 
-Class QWriteLocker::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QWriteLocker::<anonymous union> (0xb529a474) 0
 
 Class QWriteLocker
    size=4 align=4
@@ -4209,10 +2468,6 @@ Class QBitRef
    base size=8 base align=4
 QBitRef (0xb52d3a50) 0
 
-Class QTypeInfo<QBitArray>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QBitArray> (0xb52e2744) 0 empty
 
 Class QByteArrayMatcher
    size=1032 align=4
@@ -4229,70 +2484,42 @@ Class QDate
    base size=4 base align=4
 QDate (0xb50de744) 0
 
-Class QTypeInfo<QDate>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QDate> (0xb50ff0f0) 0 empty
 
 Class QTime
    size=4 align=4
    base size=4 base align=4
 QTime (0xb50ff1e0) 0
 
-Class QTypeInfo<QTime>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTime> (0xb510c744) 0 empty
 
 Class QDateTime
    size=4 align=4
    base size=4 base align=4
 QDateTime (0xb510c834) 0
 
-Class QTypeInfo<QDateTime>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QDateTime> (0xb5114f3c) 0 empty
 
 Class QPoint
    size=8 align=4
    base size=8 base align=4
 QPoint (0xb51270b4) 0
 
-Class QTypeInfo<QPoint>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPoint> (0xb5127690) 0 empty
 
 Class QPointF
    size=16 align=4
    base size=16 base align=4
 QPointF (0xb514312c) 0
 
-Class QTypeInfo<QPointF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPointF> (0xb5143a14) 0 empty
 
 Class QLine
    size=16 align=4
    base size=16 base align=4
 QLine (0xb51670f0) 0
 
-Class QTypeInfo<QLine>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QLine> (0xb51674b0) 0 empty
 
 Class QLineF
    size=32 align=4
    base size=32 base align=4
 QLineF (0xb5184618) 0
 
-Class QTypeInfo<QLineF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QLineF> (0xb519703c) 0 empty
 
 Class QLinkedListData
    size=20 align=4
@@ -4304,40 +2531,24 @@ Class QSize
    base size=8 base align=4
 QSize (0xb4ff0f78) 0
 
-Class QTypeInfo<QSize>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QSize> (0xb5025960) 0 empty
 
 Class QSizeF
    size=16 align=4
    base size=16 base align=4
 QSizeF (0xb5040bf4) 0
 
-Class QTypeInfo<QSizeF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QSizeF> (0xb504dd20) 0 empty
 
 Class QRect
    size=16 align=4
    base size=16 base align=4
 QRect (0xb506ba50) 0
 
-Class QTypeInfo<QRect>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QRect> (0xb5085924) 0 empty
 
 Class QRectF
    size=32 align=4
    base size=32 base align=4
 QRectF (0xb50cb528) 0
 
-Class QTypeInfo<QRectF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QRectF> (0xb4ee4a50) 0 empty
 
 Class QSharedData
    size=4 align=4
@@ -4385,20 +2596,8 @@ Class QXmlStreamAttribute
    base size=53 base align=4
 QXmlStreamAttribute (0xb4f8b1e0) 0
 
-Class QTypeInfo<QXmlStreamAttribute>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QXmlStreamAttribute> (0xb4f96780) 0 empty
 
-Class QVector<QXmlStreamAttribute>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QXmlStreamAttribute>::<anonymous union> (0xb4f968e8) 0
 
-Class QVector<QXmlStreamAttribute>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QXmlStreamAttribute> (0xb4f96870) 0
 
 Class QXmlStreamAttributes
    size=4 align=4
@@ -4411,30 +2610,18 @@ Class QXmlStreamNamespaceDeclaration
    base size=28 base align=4
 QXmlStreamNamespaceDeclaration (0xb4f96960) 0
 
-Class QTypeInfo<QXmlStreamNamespaceDeclaration>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QXmlStreamNamespaceDeclaration> (0xb4fb9384) 0 empty
 
 Class QXmlStreamNotationDeclaration
    size=40 align=4
    base size=40 base align=4
 QXmlStreamNotationDeclaration (0xb4fb94b0) 0
 
-Class QTypeInfo<QXmlStreamNotationDeclaration>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QXmlStreamNotationDeclaration> (0xb4fc9078) 0 empty
 
 Class QXmlStreamEntityDeclaration
    size=64 align=4
    base size=64 base align=4
 QXmlStreamEntityDeclaration (0xb4fc91a4) 0
 
-Class QTypeInfo<QXmlStreamEntityDeclaration>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QXmlStreamEntityDeclaration> (0xb4de012c) 0 empty
 
 Vtable for QXmlStreamEntityResolver
 QXmlStreamEntityResolver::_ZTV24QXmlStreamEntityResolver: 6u entries
@@ -4461,25 +2648,9 @@ Class QXmlStreamWriter
    base size=4 base align=4
 QXmlStreamWriter (0xb4dfa9d8) 0
 
-Class QColor::<anonymous union>::<anonymous struct>
-   size=10 align=2
-   base size=10 base align=2
-QColor::<anonymous union>::<anonymous struct> (0xb4e25924) 0
 
-Class QColor::<anonymous union>::<anonymous struct>
-   size=10 align=2
-   base size=10 base align=2
-QColor::<anonymous union>::<anonymous struct> (0xb4e2599c) 0
 
-Class QColor::<anonymous union>::<anonymous struct>
-   size=10 align=2
-   base size=10 base align=2
-QColor::<anonymous union>::<anonymous struct> (0xb4e25a14) 0
 
-Class QColor::<anonymous union>
-   size=10 align=2
-   base size=10 base align=2
-QColor::<anonymous union> (0xb4e258ac) 0
 
 Class QColor
    size=16 align=4
@@ -4501,10 +2672,6 @@ Class QKeySequence
    base size=4 base align=4
 QKeySequence (0xb4e54780) 0
 
-Class QTypeInfo<QKeySequence>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QKeySequence> (0xb4e63a50) 0 empty
 
 Vtable for QMimeSource
 QMimeSource::_ZTV11QMimeSource: 7u entries
@@ -4802,15 +2969,7 @@ Class QInputMethodEvent::Attribute
    base size=24 base align=4
 QInputMethodEvent::Attribute (0xb4ceda50) 0
 
-Class QList<QInputMethodEvent::Attribute>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QInputMethodEvent::Attribute>::<anonymous union> (0xb4cf930c) 0
 
-Class QList<QInputMethodEvent::Attribute>
-   size=4 align=4
-   base size=4 base align=4
-QList<QInputMethodEvent::Attribute> (0xb4cf9294) 0
 
 Vtable for QInputMethodEvent
 QInputMethodEvent::_ZTV17QInputMethodEvent: 4u entries
@@ -5099,20 +3258,8 @@ Class QAccessible
    base size=0 base align=1
 QAccessible (0xb4d512d0) 0 empty
 
-Class QFlags<QAccessible::StateFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QAccessible::StateFlag> (0xb4d51bf4) 0
 
-Class QFlags<QAccessible::RelationFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QAccessible::RelationFlag> (0xb4d65834) 0
 
-Class QMetaTypeId<QSet<QAccessible::Method> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QSet<QAccessible::Method> > (0xb4d7c3fc) 0 empty
 
 Vtable for QAccessibleInterface
 QAccessibleInterface::_ZTV20QAccessibleInterface: 19u entries
@@ -5143,20 +3290,8 @@ QAccessibleInterface (0xb4d409c0) 0 nearly-empty
     vptr=((& QAccessibleInterface::_ZTV20QAccessibleInterface) + 8u)
   QAccessible (0xb4d7c7f8) 0 empty
 
-Class QHash<QAccessible::Method, QHashDummyValue>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QHash<QAccessible::Method, QHashDummyValue>::<anonymous union> (0xb4d8c30c) 0
 
-Class QHash<QAccessible::Method, QHashDummyValue>
-   size=4 align=4
-   base size=4 base align=4
-QHash<QAccessible::Method, QHashDummyValue> (0xb4d8c294) 0
 
-Class QSet<QAccessible::Method>
-   size=4 align=4
-   base size=4 base align=4
-QSet<QAccessible::Method> (0xb4d8c21c) 0
 
 Vtable for QAccessibleInterfaceEx
 QAccessibleInterfaceEx::_ZTV22QAccessibleInterfaceEx: 22u entries
@@ -5669,15 +3804,7 @@ Class QPaintDevice
 QPaintDevice (0xb4c14a50) 0
     vptr=((& QPaintDevice::_ZTV12QPaintDevice) + 8u)
 
-Class QVector<QPoint>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPoint>::<anonymous union> (0xb4c26f3c) 0
 
-Class QVector<QPoint>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPoint> (0xb4c26ec4) 0
 
 Class QPolygon
    size=4 align=4
@@ -5685,15 +3812,7 @@ Class QPolygon
 QPolygon (0xb4bebd80) 0
   QVector<QPoint> (0xb4c26f78) 0
 
-Class QVector<QPointF>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPointF>::<anonymous union> (0xb4c5603c) 0
 
-Class QVector<QPointF>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPointF> (0xb4c41fb4) 0
 
 Class QPolygonF
    size=4 align=4
@@ -5706,10 +3825,6 @@ Class QMatrix
    base size=48 base align=4
 QMatrix (0xb4c56f78) 0
 
-Class QTypeInfo<QMatrix>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QMatrix> (0xb4c815dc) 0 empty
 
 Class QPainterPath::Element
    size=20 align=4
@@ -5721,25 +3836,13 @@ Class QPainterPath
    base size=4 base align=4
 QPainterPath (0xb4c81d98) 0
 
-Class QVector<QPainterPath::Element>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPainterPath::Element>::<anonymous union> (0xb4ca5e4c) 0
 
-Class QVector<QPainterPath::Element>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPainterPath::Element> (0xb4ca5dd4) 0
 
 Class QPainterPathPrivate
    size=8 align=4
    base size=8 base align=4
 QPainterPathPrivate (0xb4ca5a50) 0
 
-Class QTypeInfo<QPainterPath::Element>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPainterPath::Element> (0xb4ca5e88) 0 empty
 
 Class QPainterPathStroker
    size=4 align=4
@@ -5751,10 +3854,6 @@ Class QTransform
    base size=80 base align=4
 QTransform (0xb4ade708) 0
 
-Class QTypeInfo<QTransform>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTransform> (0xb4aee7f8) 0 empty
 
 Class QImageTextKeyLang
    size=8 align=4
@@ -5779,10 +3878,6 @@ QImage (0xb4b0c900) 0
   QPaintDevice (0xb4b53000) 0
       primary-for QImage (0xb4b0c900)
 
-Class QTypeInfo<QImage>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QImage> (0xb4b894ec) 0 empty
 
 Vtable for QPixmap
 QPixmap::_ZTV7QPixmap: 7u entries
@@ -5807,45 +3902,17 @@ Class QBrush
    base size=4 base align=4
 QBrush (0xb4bb2f00) 0
 
-Class QTypeInfo<QBrush>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QBrush> (0xb4bbea14) 0 empty
 
 Class QBrushData
    size=124 align=4
    base size=121 base align=4
 QBrushData (0xb4bbeca8) 0
 
-Class QVector<QPair<double, QColor> >::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPair<double, QColor> >::<anonymous union> (0xb4bd2924) 0
 
-Class QVector<QPair<double, QColor> >
-   size=4 align=4
-   base size=4 base align=4
-QVector<QPair<double, QColor> > (0xb4bd28ac) 0
 
-Class QGradient::<anonymous union>::<anonymous struct>
-   size=32 align=4
-   base size=32 base align=4
-QGradient::<anonymous union>::<anonymous struct> (0xb4bd2a14) 0
 
-Class QGradient::<anonymous union>::<anonymous struct>
-   size=40 align=4
-   base size=40 base align=4
-QGradient::<anonymous union>::<anonymous struct> (0xb4bd2a8c) 0
 
-Class QGradient::<anonymous union>::<anonymous struct>
-   size=24 align=4
-   base size=24 base align=4
-QGradient::<anonymous union>::<anonymous struct> (0xb4bd2b04) 0
 
-Class QGradient::<anonymous union>
-   size=40 align=4
-   base size=40 base align=4
-QGradient::<anonymous union> (0xb4bd299c) 0
 
 Class QGradient
    size=56 align=4
@@ -5906,10 +3973,6 @@ Class QSizePolicy
    base size=4 base align=4
 QSizePolicy (0xb4a747bc) 0
 
-Class QFlags<QSizePolicy::ControlType>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QSizePolicy::ControlType> (0xb4ac3834) 0
 
 Class QCursor
    size=4 align=4
@@ -5997,10 +4060,6 @@ QWidget (0xb48e1b90) 0
   QPaintDevice (0xb48e30b4) 8
       vptr=((& QWidget::_ZTV7QWidget) + 232u)
 
-Class QFlags<QWidget::RenderFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QWidget::RenderFlag> (0xb490ee10) 0
 
 Vtable for QDialog
 QDialog::_ZTV7QDialog: 66u entries
@@ -6251,10 +4310,6 @@ QAbstractPrintDialog (0xb49bb400) 0
       QPaintDevice (0xb49ca168) 8
           vptr=((& QAbstractPrintDialog::_ZTV20QAbstractPrintDialog) + 248u)
 
-Class QFlags<QAbstractPrintDialog::PrintDialogOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QAbstractPrintDialog::PrintDialogOption> (0xb47d730c) 0
 
 Vtable for QColorDialog
 QColorDialog::_ZTV12QColorDialog: 66u entries
@@ -6505,20 +4560,12 @@ QFileDialog (0xb49bbe80) 0
       QPaintDevice (0xb4803bb8) 8
           vptr=((& QFileDialog::_ZTV11QFileDialog) + 244u)
 
-Class QFlags<QFileDialog::Option>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QFileDialog::Option> (0xb4815ca8) 0
 
 Class QIcon
    size=4 align=4
    base size=4 base align=4
 QIcon (0xb4844078) 0
 
-Class QTypeInfo<QIcon>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QIcon> (0xb485a438) 0 empty
 
 Vtable for QFileSystemModel
 QFileSystemModel::_ZTV16QFileSystemModel: 42u entries
@@ -6980,10 +5027,6 @@ QMessageBox (0xb46d2280) 0
       QPaintDevice (0xb46d630c) 8
           vptr=((& QMessageBox::_ZTV11QMessageBox) + 244u)
 
-Class QFlags<QMessageBox::StandardButton>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QMessageBox::StandardButton> (0xb46f6168) 0
 
 Vtable for QPageSetupDialog
 QPageSetupDialog::_ZTV16QPageSetupDialog: 67u entries
@@ -7488,10 +5531,6 @@ QWizard (0xb4743680) 0
       QPaintDevice (0xb475b960) 8
           vptr=((& QWizard::_ZTV7QWizard) + 260u)
 
-Class QFlags<QWizard::WizardOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QWizard::WizardOption> (0xb476dca8) 0
 
 Vtable for QWizardPage
 QWizardPage::_ZTV11QWizardPage: 68u entries
@@ -7624,10 +5663,6 @@ Class QGraphicsItem
 QGraphicsItem (0xb479f564) 0
     vptr=((& QGraphicsItem::_ZTV13QGraphicsItem) + 8u)
 
-Class QFlags<QGraphicsItem::GraphicsItemFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QGraphicsItem::GraphicsItemFlag> (0xb47c5d5c) 0
 
 Vtable for QAbstractGraphicsShapeItem
 QAbstractGraphicsShapeItem::_ZTV26QAbstractGraphicsShapeItem: 39u entries
@@ -8184,15 +6219,7 @@ QGraphicsItemGroup (0xb464a040) 0
   QGraphicsItem (0xb46443c0) 0
       primary-for QGraphicsItemGroup (0xb464a040)
 
-Class QMetaTypeId<QGraphicsItem*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QGraphicsItem*> (0xb4644c30) 0 empty
 
-Class QMetaTypeId<QGraphicsScene*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QGraphicsScene*> (0xb4644dd4) 0 empty
 
 Vtable for QGraphicsLayoutItem
 QGraphicsLayoutItem::_ZTV19QGraphicsLayoutItem: 8u entries
@@ -8544,10 +6571,6 @@ Class QPen
    base size=4 base align=4
 QPen (0xb44c3f3c) 0
 
-Class QTypeInfo<QPen>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPen> (0xb44d1780) 0 empty
 
 Vtable for QGraphicsScene
 QGraphicsScene::_ZTV14QGraphicsScene: 34u entries
@@ -8594,20 +6617,8 @@ QGraphicsScene (0xb46b56c0) 0
   QObject (0xb44d1a14) 0
       primary-for QGraphicsScene (0xb46b56c0)
 
-Class QFlags<QGraphicsScene::SceneLayer>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QGraphicsScene::SceneLayer> (0xb44f6744) 0
 
-Class QList<QGraphicsItem*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QGraphicsItem*>::<anonymous union> (0xb4508168) 0
 
-Class QList<QGraphicsItem*>
-   size=4 align=4
-   base size=4 base align=4
-QList<QGraphicsItem*> (0xb45080f0) 0
 
 Vtable for QGraphicsSceneEvent
 QGraphicsSceneEvent::_ZTV19QGraphicsSceneEvent: 4u entries
@@ -8770,65 +6781,21 @@ Class QTextOption
    base size=24 base align=4
 QTextOption (0xb454be10) 0
 
-Class QFlags<QTextOption::Flag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextOption::Flag> (0xb456c4ec) 0
 
-Class QMetaTypeId<QTextOption::Tab>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QTextOption::Tab> (0xb457dac8) 0 empty
 
 Class QPainter
    size=4 align=4
    base size=4 base align=4
 QPainter (0xb457ddd4) 0
 
-Class QFlags<QPainter::RenderHint>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QPainter::RenderHint> (0xb45918ac) 0
 
-Class QVector<QLineF>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QLineF>::<anonymous union> (0xb43f330c) 0
 
-Class QVector<QLineF>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QLineF> (0xb43f3294) 0
 
-Class QVector<QLine>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QLine>::<anonymous union> (0xb43f3474) 0
 
-Class QVector<QLine>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QLine> (0xb43f33fc) 0
 
-Class QVector<QRectF>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QRectF>::<anonymous union> (0xb43f3bb8) 0
 
-Class QVector<QRectF>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QRectF> (0xb43f3b40) 0
 
-Class QVector<QRect>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QRect>::<anonymous union> (0xb43f3d20) 0
 
-Class QVector<QRect>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QRect> (0xb43f3ca8) 0
 
 Vtable for QAbstractScrollArea
 QAbstractScrollArea::_ZTV19QAbstractScrollArea: 65u entries
@@ -9083,15 +7050,7 @@ QGraphicsView (0xb4494480) 0
         QPaintDevice (0xb44a5618) 8
             vptr=((& QGraphicsView::_ZTV13QGraphicsView) + 252u)
 
-Class QFlags<QGraphicsView::CacheModeFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QGraphicsView::CacheModeFlag> (0xb44b1ec4) 0
 
-Class QFlags<QGraphicsView::OptimizationFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QGraphicsView::OptimizationFlag> (0xb42d1ac8) 0
 
 Vtable for QBitmap
 QBitmap::_ZTV7QBitmap: 7u entries
@@ -9346,10 +7305,6 @@ QImageIOPlugin (0xb4344af0) 0
     QFactoryInterface (0xb433af00) 8 nearly-empty
         primary-for QImageIOHandlerFactoryInterface (0xb4313f00)
 
-Class QFlags<QImageIOPlugin::Capability>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QImageIOPlugin::Capability> (0xb434d960) 0
 
 Class QImageReader
    size=4 align=4
@@ -9525,15 +7480,7 @@ QActionGroup (0xb41d0580) 0
   QObject (0xb41d7a8c) 0
       primary-for QActionGroup (0xb41d0580)
 
-Class QList<QAction*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QAction*>::<anonymous union> (0xb41e58ac) 0
 
-Class QList<QAction*>
-   size=4 align=4
-   base size=4 base align=4
-QList<QAction*> (0xb41e5834) 0
 
 Vtable for QInputContext
 QInputContext::_ZTV13QInputContext: 26u entries
@@ -9839,10 +7786,6 @@ QAbstractSpinBox (0xb4219d00) 0
     QPaintDevice (0xb425203c) 8
         vptr=((& QAbstractSpinBox::_ZTV16QAbstractSpinBox) + 252u)
 
-Class QFlags<QAbstractSpinBox::StepEnabledFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QAbstractSpinBox::StepEnabledFlag> (0xb42671e0) 0
 
 Vtable for QAbstractSlider
 QAbstractSlider::_ZTV15QAbstractSlider: 64u entries
@@ -10050,15 +7993,7 @@ QStyle (0xb426da00) 0
   QObject (0xb42ac708) 0
       primary-for QStyle (0xb426da00)
 
-Class QFlags<QStyle::StateFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyle::StateFlag> (0xb40dc078) 0
 
-Class QFlags<QStyle::SubControl>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyle::SubControl> (0xb40dcca8) 0
 
 Vtable for QTabBar
 QTabBar::_ZTV7QTabBar: 67u entries
@@ -10317,10 +8252,6 @@ Class QStyleOptionFrame
 QStyleOptionFrame (0xb4166040) 0
   QStyleOption (0xb415eb04) 0
 
-Class QFlags<QStyleOptionFrameV2::FrameFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyleOptionFrameV2::FrameFeature> (0xb416d258) 0
 
 Class QStyleOptionFrameV2
    size=56 align=4
@@ -10347,10 +8278,6 @@ Class QStyleOptionHeader
 QStyleOptionHeader (0xb4166ac0) 0
   QStyleOption (0xb419721c) 0
 
-Class QFlags<QStyleOptionButton::ButtonFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyleOptionButton::ButtonFeature> (0xb4197c6c) 0
 
 Class QStyleOptionButton
    size=64 align=4
@@ -10358,10 +8285,6 @@ Class QStyleOptionButton
 QStyleOptionButton (0xb4166d80) 0
   QStyleOption (0xb4197960) 0
 
-Class QFlags<QStyleOptionTab::CornerWidget>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyleOptionTab::CornerWidget> (0xb3fc7168) 0
 
 Class QStyleOptionTab
    size=72 align=4
@@ -10376,10 +8299,6 @@ QStyleOptionTabV2 (0xb41b23c0) 0
   QStyleOptionTab (0xb41b2400) 0
     QStyleOption (0xb3fe01a4) 0
 
-Class QFlags<QStyleOptionToolBar::ToolBarFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyleOptionToolBar::ToolBarFeature> (0xb3fe0e4c) 0
 
 Class QStyleOptionToolBar
    size=68 align=4
@@ -10406,10 +8325,6 @@ Class QStyleOptionMenuItem
 QStyleOptionMenuItem (0xb41b2d00) 0
   QStyleOption (0xb4012834) 0
 
-Class QFlags<QStyleOptionQ3ListViewItem::Q3ListViewItemFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyleOptionQ3ListViewItem::Q3ListViewItemFeature> (0xb4024168) 0
 
 Class QStyleOptionQ3ListViewItem
    size=64 align=4
@@ -10442,10 +8357,6 @@ Class QStyleOptionViewItem
 QStyleOptionViewItem (0xb402c9c0) 0
   QStyleOption (0xb40543c0) 0
 
-Class QFlags<QStyleOptionViewItemV2::ViewItemFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyleOptionViewItemV2::ViewItemFeature> (0xb4054c30) 0
 
 Class QStyleOptionViewItemV2
    size=84 align=4
@@ -10510,15 +8421,7 @@ QStyleOptionSpinBox (0xb40aa600) 0
   QStyleOptionComplex (0xb40aa640) 0
     QStyleOption (0xb40b3474) 0
 
-Class QList<QStyleOptionQ3ListViewItem>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QStyleOptionQ3ListViewItem>::<anonymous union> (0xb40b3c6c) 0
 
-Class QList<QStyleOptionQ3ListViewItem>
-   size=4 align=4
-   base size=4 base align=4
-QList<QStyleOptionQ3ListViewItem> (0xb40b3bf4) 0
 
 Class QStyleOptionQ3ListView
    size=84 align=4
@@ -10527,10 +8430,6 @@ QStyleOptionQ3ListView (0xb40aa880) 0
   QStyleOptionComplex (0xb40aa8c0) 0
     QStyleOption (0xb40b3b04) 0
 
-Class QFlags<QStyleOptionToolButton::ToolButtonFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QStyleOptionToolButton::ToolButtonFeature> (0xb3eda474) 0
 
 Class QStyleOptionToolButton
    size=96 align=4
@@ -10627,10 +8526,6 @@ Class QItemSelectionRange
    base size=8 base align=4
 QItemSelectionRange (0xb3f319d8) 0
 
-Class QTypeInfo<QItemSelectionRange>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QItemSelectionRange> (0xb3f62b7c) 0 empty
 
 Vtable for QItemSelectionModel
 QItemSelectionModel::_ZTV19QItemSelectionModel: 18u entries
@@ -10661,20 +8556,8 @@ QItemSelectionModel (0xb3f3abc0) 0
   QObject (0xb3f7c000) 0
       primary-for QItemSelectionModel (0xb3f3abc0)
 
-Class QFlags<QItemSelectionModel::SelectionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QItemSelectionModel::SelectionFlag> (0xb3f8b294) 0
 
-Class QList<QItemSelectionRange>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QItemSelectionRange>::<anonymous union> (0xb3f8bf3c) 0
 
-Class QList<QItemSelectionRange>
-   size=4 align=4
-   base size=4 base align=4
-QList<QItemSelectionRange> (0xb3f8bec4) 0
 
 Class QItemSelection
    size=4 align=4
@@ -10804,10 +8687,6 @@ QAbstractItemView (0xb3fb9180) 0
         QPaintDevice (0xb3fba2d0) 8
             vptr=((& QAbstractItemView::_ZTV17QAbstractItemView) + 392u)
 
-Class QFlags<QAbstractItemView::EditTrigger>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QAbstractItemView::EditTrigger> (0xb3de00b4) 0
 
 Vtable for QAbstractProxyModel
 QAbstractProxyModel::_ZTV19QAbstractProxyModel: 47u entries
@@ -11270,15 +9149,7 @@ Class QItemEditorCreatorBase
 QItemEditorCreatorBase (0xb3e6ac6c) 0 nearly-empty
     vptr=((& QItemEditorCreatorBase::_ZTV22QItemEditorCreatorBase) + 8u)
 
-Class QHash<QVariant::Type, QItemEditorCreatorBase*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QHash<QVariant::Type, QItemEditorCreatorBase*>::<anonymous union> (0xb3e7d708) 0
 
-Class QHash<QVariant::Type, QItemEditorCreatorBase*>
-   size=4 align=4
-   base size=4 base align=4
-QHash<QVariant::Type, QItemEditorCreatorBase*> (0xb3e7d690) 0
 
 Vtable for QItemEditorFactory
 QItemEditorFactory::_ZTV18QItemEditorFactory: 6u entries
@@ -11419,15 +9290,7 @@ QListView (0xb3e83140) 0
           QPaintDevice (0xb3e7da14) 8
               vptr=((& QListView::_ZTV9QListView) + 392u)
 
-Class QVector<void*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<void*>::<anonymous union> (0xb3ebb12c) 0
 
-Class QVector<void*>
-   size=4 align=4
-   base size=4 base align=4
-QVector<void*> (0xb3ebb0b4) 0
 
 Vtable for QListWidgetItem
 QListWidgetItem::_ZTV15QListWidgetItem: 11u entries
@@ -11720,15 +9583,7 @@ Class QStandardItem
 QStandardItem (0xb3d370f0) 0
     vptr=((& QStandardItem::_ZTV13QStandardItem) + 8u)
 
-Class QList<QStandardItem*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QStandardItem*>::<anonymous union> (0xb3d93b04) 0
 
-Class QList<QStandardItem*>
-   size=4 align=4
-   base size=4 base align=4
-QList<QStandardItem*> (0xb3d93a8c) 0
 
 Vtable for QStandardItemModel
 QStandardItemModel::_ZTV18QStandardItemModel: 42u entries
@@ -12007,15 +9862,7 @@ Class QTableWidgetSelectionRange
    base size=16 base align=4
 QTableWidgetSelectionRange (0xb3beff00) 0
 
-Class QVector<QWidgetItemData>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QWidgetItemData>::<anonymous union> (0xb3c0bc30) 0
 
-Class QVector<QWidgetItemData>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QWidgetItemData> (0xb3c0bbb8) 0
 
 Vtable for QTableWidgetItem
 QTableWidgetItem::_ZTV16QTableWidgetItem: 10u entries
@@ -12292,35 +10139,15 @@ QTreeView (0xb3c64380) 0
           QPaintDevice (0xb3c68bf4) 8
               vptr=((& QTreeView::_ZTV9QTreeView) + 400u)
 
-Class QFlags<QTreeWidgetItemIterator::IteratorFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTreeWidgetItemIterator::IteratorFlag> (0xb3c913c0) 0
 
 Class QTreeWidgetItemIterator
    size=12 align=4
    base size=12 base align=4
 QTreeWidgetItemIterator (0xb3c819d8) 0
 
-Class QVector<QVector<QWidgetItemData> >::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QVector<QWidgetItemData> >::<anonymous union> (0xb3cb9e10) 0
 
-Class QVector<QVector<QWidgetItemData> >
-   size=4 align=4
-   base size=4 base align=4
-QVector<QVector<QWidgetItemData> > (0xb3cb9d98) 0
 
-Class QList<QTreeWidgetItem*>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QList<QTreeWidgetItem*>::<anonymous union> (0xb3ad621c) 0
 
-Class QList<QTreeWidgetItem*>
-   size=4 align=4
-   base size=4 base align=4
-QList<QTreeWidgetItem*> (0xb3ad61a4) 0
 
 Vtable for QTreeWidgetItem
 QTreeWidgetItem::_ZTV15QTreeWidgetItem: 10u entries
@@ -13296,15 +11123,7 @@ Class QTextItem
    base size=0 base align=1
 QTextItem (0xb3a7d438) 0 empty
 
-Class QTypeInfo<QTextItem>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTextItem> (0xb3a7d690) 0 empty
 
-Class QFlags<QPaintEngine::PaintEngineFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QPaintEngine::PaintEngineFeature> (0xb3a7df00) 0
 
 Vtable for QPaintEngine
 QPaintEngine::_ZTV12QPaintEngine: 24u entries
@@ -13339,20 +11158,12 @@ Class QPaintEngine
 QPaintEngine (0xb3a7d780) 0
     vptr=((& QPaintEngine::_ZTV12QPaintEngine) + 8u)
 
-Class QFlags<QPaintEngine::DirtyFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QPaintEngine::DirtyFlag> (0xb3aa50f0) 0
 
 Class QPaintEngineState
    size=4 align=4
    base size=4 base align=4
 QPaintEngineState (0xb3a96dd4) 0
 
-Class QFlags<QTextItem::RenderFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextItem::RenderFlag> (0xb3aa5e10) 0
 
 Vtable for QPrinter
 QPrinter::_ZTV8QPrinter: 7u entries
@@ -13450,10 +11261,6 @@ QCommonStyle (0xb3aa2f00) 0
     QObject (0xb3934474) 0
         primary-for QStyle (0xb3aa2f40)
 
-Class QPointer<QFocusFrame>
-   size=4 align=4
-   base size=4 base align=4
-QPointer<QFocusFrame> (0xb394a744) 0
 
 Vtable for QMotifStyle
 QMotifStyle::_ZTV11QMotifStyle: 35u entries
@@ -13985,30 +11792,14 @@ Class QTextLength
    base size=12 base align=4
 QTextLength (0xb37eb168) 0
 
-Class QSharedDataPointer<QTextFormatPrivate>
-   size=4 align=4
-   base size=4 base align=4
-QSharedDataPointer<QTextFormatPrivate> (0xb37f3bf4) 0
 
 Class QTextFormat
    size=8 align=4
    base size=8 base align=4
 QTextFormat (0xb37f3474) 0
 
-Class QVector<QTextLength>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QTextLength>::<anonymous union> (0xb382a0b4) 0
 
-Class QVector<QTextLength>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QTextLength> (0xb382a03c) 0
 
-Class QFlags<QTextFormat::PageBreakFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextFormat::PageBreakFlag> (0xb382add4) 0
 
 Class QTextCharFormat
    size=8 align=4
@@ -14070,15 +11861,7 @@ Class QTextLayout
    base size=4 base align=4
 QTextLayout (0xb36e3c30) 0
 
-Class QVector<QTextLayout::FormatRange>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QTextLayout::FormatRange>::<anonymous union> (0xb36ef960) 0
 
-Class QVector<QTextLayout::FormatRange>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QTextLayout::FormatRange> (0xb36ef8e8) 0
 
 Class QTextLine
    size=8 align=4
@@ -14128,15 +11911,7 @@ QTextDocument (0xb36d2d40) 0
   QObject (0xb370d924) 0
       primary-for QTextDocument (0xb36d2d40)
 
-Class QFlags<QTextDocument::FindFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextDocument::FindFlag> (0xb3726294) 0
 
-Class QSharedDataPointer<QTextCursorPrivate>
-   size=4 align=4
-   base size=4 base align=4
-QSharedDataPointer<QTextCursorPrivate> (0xb3735fb4) 0
 
 Class QTextCursor
    size=4 align=4
@@ -14148,15 +11923,7 @@ Class QAbstractTextDocumentLayout::Selection
    base size=12 base align=4
 QAbstractTextDocumentLayout::Selection (0xb375b21c) 0
 
-Class QVector<QAbstractTextDocumentLayout::Selection>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QAbstractTextDocumentLayout::Selection>::<anonymous union> (0xb375b618) 0
 
-Class QVector<QAbstractTextDocumentLayout::Selection>
-   size=4 align=4
-   base size=4 base align=4
-QVector<QAbstractTextDocumentLayout::Selection> (0xb375b5a0) 0
 
 Class QAbstractTextDocumentLayout::PaintContext
    size=48 align=4
@@ -14318,10 +12085,6 @@ QTextFrame (0xb3734f40) 0
     QObject (0xb37a6708) 0
         primary-for QTextObject (0xb3734f80)
 
-Class QTypeInfo<QTextFrame::iterator>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTextFrame::iterator> (0xb35c80f0) 0 empty
 
 Vtable for QTextBlockUserData
 QTextBlockUserData::_ZTV18QTextBlockUserData: 4u entries
@@ -14346,25 +12109,13 @@ Class QTextBlock
    base size=8 base align=4
 QTextBlock (0xb35c85dc) 0
 
-Class QTypeInfo<QTextBlock>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTextBlock> (0xb35e80f0) 0 empty
 
-Class QTypeInfo<QTextBlock::iterator>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTextBlock::iterator> (0xb35e81e0) 0 empty
 
 Class QTextFragment
    size=12 align=4
    base size=12 base align=4
 QTextFragment (0xb35e8384) 0
 
-Class QTypeInfo<QTextFragment>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTextFragment> (0xb35f5744) 0 empty
 
 Vtable for QSyntaxHighlighter
 QSyntaxHighlighter::_ZTV18QSyntaxHighlighter: 15u entries
@@ -15494,10 +13245,6 @@ QDateEdit (0xb3542580) 0
         QPaintDevice (0xb35651a4) 8
             vptr=((& QDateEdit::_ZTV9QDateEdit) + 260u)
 
-Class QFlags<QDateTimeEdit::Section>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDateTimeEdit::Section> (0xb3565a50) 0
 
 Vtable for QDial
 QDial::_ZTV5QDial: 64u entries
@@ -15658,10 +13405,6 @@ QDialogButtonBox (0xb3542c00) 0
     QPaintDevice (0xb359e3c0) 8
         vptr=((& QDialogButtonBox::_ZTV16QDialogButtonBox) + 232u)
 
-Class QFlags<QDialogButtonBox::StandardButton>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDialogButtonBox::StandardButton> (0xb35ab7f8) 0
 
 Vtable for QDockWidget
 QDockWidget::_ZTV11QDockWidget: 63u entries
@@ -15741,10 +13484,6 @@ QDockWidget (0xb3542f80) 0
     QPaintDevice (0xb33c63fc) 8
         vptr=((& QDockWidget::_ZTV11QDockWidget) + 232u)
 
-Class QFlags<QDockWidget::DockWidgetFeature>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDockWidget::DockWidgetFeature> (0xb33dea8c) 0
 
 Vtable for QFocusFrame
 QFocusFrame::_ZTV11QFocusFrame: 63u entries
@@ -15906,10 +13645,6 @@ QFontComboBox (0xb33d3640) 0
       QPaintDevice (0xb34163fc) 8
           vptr=((& QFontComboBox::_ZTV13QFontComboBox) + 240u)
 
-Class QFlags<QFontComboBox::FontFilter>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QFontComboBox::FontFilter> (0xb34243c0) 0
 
 Vtable for QGroupBox
 QGroupBox::_ZTV9QGroupBox: 63u entries
@@ -16228,10 +13963,6 @@ QMainWindow (0xb346d380) 0
     QPaintDevice (0xb347f2d0) 8
         vptr=((& QMainWindow::_ZTV11QMainWindow) + 236u)
 
-Class QFlags<QMainWindow::DockOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QMainWindow::DockOption> (0xb3496438) 0
 
 Vtable for QMdiArea
 QMdiArea::_ZTV8QMdiArea: 65u entries
@@ -16317,10 +14048,6 @@ QMdiArea (0xb346d700) 0
         QPaintDevice (0xb32b803c) 8
             vptr=((& QMdiArea::_ZTV8QMdiArea) + 240u)
 
-Class QFlags<QMdiArea::AreaOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QMdiArea::AreaOption> (0xb32ca474) 0
 
 Vtable for QMdiSubWindow
 QMdiSubWindow::_ZTV13QMdiSubWindow: 63u entries
@@ -16400,10 +14127,6 @@ QMdiSubWindow (0xb346db00) 0
     QPaintDevice (0xb32eb078) 8
         vptr=((& QMdiSubWindow::_ZTV13QMdiSubWindow) + 232u)
 
-Class QFlags<QMdiSubWindow::SubWindowOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QMdiSubWindow::SubWindowOption> (0xb32fb168) 0
 
 Vtable for QMenu
 QMenu::_ZTV5QMenu: 63u entries
@@ -16681,10 +14404,6 @@ QTextEdit (0xb31ba7c0) 0
         QPaintDevice (0xb31bddd4) 8
             vptr=((& QTextEdit::_ZTV9QTextEdit) + 256u)
 
-Class QFlags<QTextEdit::AutoFormattingFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextEdit::AutoFormattingFlag> (0xb3201d20) 0
 
 Vtable for QPlainTextEdit
 QPlainTextEdit::_ZTV14QPlainTextEdit: 69u entries
@@ -18386,203 +16105,43 @@ QSvgWidget (0xb2fcb100) 0
     QPaintDevice (0xb2fc5780) 8
         vptr=((& QSvgWidget::_ZTV10QSvgWidget) + 232u)
 
-Class QList<QByteArray>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QByteArray>::Node (0xb3028870) 0
 
-Class QList<QString>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QString>::Node (0xb3040e10) 0
 
-Class QVectorTypedData<QPoint>
-   size=24 align=4
-   base size=24 base align=4
-QVectorTypedData<QPoint> (0xb2f0d12c) 0
 
-Class QVectorTypedData<QPointF>
-   size=32 align=4
-   base size=32 base align=4
-QVectorTypedData<QPointF> (0xb2f0dc30) 0
 
-Class QVectorTypedData<QPainterPath::Element>
-   size=36 align=4
-   base size=36 base align=4
-QVectorTypedData<QPainterPath::Element> (0xb2f2b708) 0
 
-Class QVectorTypedData<QLineF>
-   size=48 align=4
-   base size=48 base align=4
-QVectorTypedData<QLineF> (0xb2f9bf3c) 0
 
-Class QVectorTypedData<QLine>
-   size=32 align=4
-   base size=32 base align=4
-QVectorTypedData<QLine> (0xb2fb30f0) 0
 
-Class QVectorTypedData<QRectF>
-   size=48 align=4
-   base size=48 base align=4
-QVectorTypedData<QRectF> (0xb2fb32d0) 0
 
-Class QVectorTypedData<QRect>
-   size=32 align=4
-   base size=32 base align=4
-QVectorTypedData<QRect> (0xb2fb34b0) 0
 
-Class QList<QTreeWidgetItem*>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QTreeWidgetItem*>::Node (0xb2e74c6c) 0
 
-Class QVectorTypedData<QVector<QWidgetItemData> >
-   size=20 align=4
-   base size=20 base align=4
-QVectorTypedData<QVector<QWidgetItemData> > (0xb2e74e4c) 0
 
-Class QVectorTypedData<QTextLength>
-   size=28 align=4
-   base size=28 base align=4
-QVectorTypedData<QTextLength> (0xb2c76000) 0
 
-Class QVectorTypedData<QTextLayout::FormatRange>
-   size=32 align=4
-   base size=32 base align=4
-QVectorTypedData<QTextLayout::FormatRange> (0xb2c76474) 0
 
-Class QVectorTypedData<QAbstractTextDocumentLayout::Selection>
-   size=28 align=4
-   base size=28 base align=4
-QVectorTypedData<QAbstractTextDocumentLayout::Selection> (0xb2c76e4c) 0
 
-Class QList<QAction*>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QAction*>::Node (0xb2cbbb7c) 0
 
-Class QTypeInfo<QtConcurrent::ResultItem>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QtConcurrent::ResultItem> (0xb2d1303c) 0 empty
 
-Class QMap<int, QtConcurrent::ResultItem>::Node
-   size=20 align=4
-   base size=20 base align=4
-QMap<int, QtConcurrent::ResultItem>::Node (0xb2d130b4) 0
 
-Class QMetaTypeId2<QSet<QAccessible::Method> >
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId2<QSet<QAccessible::Method> > (0xb2d2afb4) 0 empty
 
-Class QHashNode<QAccessible::Method, QHashDummyValue>
-   size=16 align=4
-   base size=13 base align=4
-QHashNode<QAccessible::Method, QHashDummyValue> (0xb2d3a2d0) 0
 
-Class QHashNode<QVariant::Type, QItemEditorCreatorBase*>
-   size=16 align=4
-   base size=16 base align=4
-QHashNode<QVariant::Type, QItemEditorCreatorBase*> (0xb2d6fec4) 0
 
-Class QTypeInfo<QStandardItem*>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QStandardItem*> (0xb2b84474) 0 empty
 
-Class QTypeInfo<QTreeWidgetItem*>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTreeWidgetItem*> (0xb2b847bc) 0 empty
 
-Class QTypeInfo<QTextLength>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTextLength> (0xb2b95078) 0 empty
 
-Class QTypeInfo<QTextLayout::FormatRange>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTextLayout::FormatRange> (0xb2b954b0) 0 empty
 
-Class QTypeInfo<QAbstractTextDocumentLayout::Selection>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QAbstractTextDocumentLayout::Selection> (0xb2b95a50) 0 empty
 
-Class QTypeInfo<QAction*>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QAction*> (0xb2ba8b04) 0 empty
 
-Class QMap<int, QtConcurrent::ResultItem>::PayloadNode
-   size=16 align=4
-   base size=16 base align=4
-QMap<int, QtConcurrent::ResultItem>::PayloadNode (0xb2bb4168) 0
 
-Class QList<QFileInfo>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QFileInfo>::Node (0xb2bb4294) 0
 
-Class QList<QVariant>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QVariant>::Node (0xb2bb44ec) 0
 
-Class QVector<T>::realloc(int, int) [with T = QPoint]::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<T>::realloc(int, int) [with T = QPoint]::<anonymous union> (0xb2bb4ca8) 0
 
-Class QVector<T>::realloc(int, int) [with T = QPointF]::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<T>::realloc(int, int) [with T = QPointF]::<anonymous union> (0xb2be63fc) 0
 
-Class QTypeInfo<QGraphicsItem*>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QGraphicsItem*> (0xb2be6b7c) 0 empty
 
-Class QList<QGraphicsItem*>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QGraphicsItem*>::Node (0xb2be6bf4) 0
 
-Class QTypeInfo<QStyleOptionQ3ListViewItem>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QStyleOptionQ3ListViewItem> (0xb2c24078) 0 empty
 
-Class QList<QStyleOptionQ3ListViewItem>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QStyleOptionQ3ListViewItem>::Node (0xb2c240f0) 0
 
-Class QList<QItemSelectionRange>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QItemSelectionRange>::Node (0xb2c24564) 0
 
-Class QList<QStandardItem*>::Node
-   size=4 align=4
-   base size=4 base align=4
-QList<QStandardItem*>::Node (0xb2c2499c) 0
 
-Class QVector<T>::realloc(int, int) [with T = QTextLength]::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<T>::realloc(int, int) [with T = QTextLength]::<anonymous union> (0xb2c24d20) 0
 
-Class QHashDummyNode<QAccessible::Method, QHashDummyValue>
-   size=12 align=4
-   base size=12 base align=4
-QHashDummyNode<QAccessible::Method, QHashDummyValue> (0xb2c562d0) 0
 
-Class QVector<T>::realloc(int, int) [with T = QPainterPath::Element]::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-QVector<T>::realloc(int, int) [with T = QPainterPath::Element]::<anonymous union> (0xb2c56960) 0
 

@@ -23,6 +23,7 @@
 
 #if ENABLE(DATABASE)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class Database;
 
-class JSDatabase : public DOMObject {
-    typedef DOMObject Base;
+class JSDatabase : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDatabase(PassRefPtr<JSC::Structure>, PassRefPtr<Database>);
+    JSDatabase(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Database>);
     virtual ~JSDatabase();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -56,7 +57,7 @@ private:
     RefPtr<Database> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Database*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Database*);
 Database* toDatabase(JSC::JSValue);
 
 class JSDatabasePrototype : public JSC::JSObject {

@@ -76,7 +76,7 @@ bool Boolean::evaluateEBV(const Item &first,
     {
         Q_ASSERT(context);
         context->error(QtXmlPatterns::tr("Effective Boolean Value cannot be calculated for a sequence "
-                          "containing two or more atomic values."),
+                                         "containing two or more atomic values."),
                           ReportContext::FORG0006,
                           QSourceLocation());
         return false;

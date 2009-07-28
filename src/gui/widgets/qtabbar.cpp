@@ -87,13 +87,17 @@ void QTabBarPrivate::updateMacBorderMetrics()
         // TODO: get metrics to preserve the bottom value
         // TODO: test tab bar position
 
-        // push the black line at the bottom of the menu bar down to the client are so we can paint over it
+        OSWindowRef window = qt_mac_window_for(q);
+
+        // push base line separator down to the client are so we can paint over it (Carbon)
         metrics.top = (documentMode && q->isVisible()) ? 1 : 0;
         metrics.bottom = 0;
         metrics.left = 0;
         metrics.right = 0;
-
-        qt_mac_updateContentBorderMetricts(qt_mac_window_for(q), metrics);
+        qt_mac_updateContentBorderMetricts(window, metrics);
+        
+        // hide the base line separator if the tabs have docuemnt mode enabled (Cocoa)
+        qt_mac_showBaseLineSeparator(window, !documentMode);
     }
 #endif
 }

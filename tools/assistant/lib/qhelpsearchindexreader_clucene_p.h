@@ -53,19 +53,10 @@
 // We mean it.
 //
 
-#include "qhelpsearchengine.h"
+#include "qhelpsearchindexreader_p.h"
 
 #include "fulltextsearch/qanalyzer_p.h"
 #include "fulltextsearch/qquery_p.h"
-
-#include <QtCore/QList>
-#include <QtCore/QMutex>
-#include <QtCore/QObject>
-#include <QtCore/QString>
-#include <QtCore/QThread>
-#include <QtCore/QWaitCondition>
-
-class QHelpEngineCore;
 
 QT_BEGIN_NAMESPACE
 
@@ -73,24 +64,13 @@ namespace qt {
     namespace fulltextsearch {
         namespace clucene {
 
-class QHelpSearchIndexReader : public QThread
+class QHelpSearchIndexReaderClucene : public QHelpSearchIndexReader
 {
     Q_OBJECT
 
 public:
-    QHelpSearchIndexReader();
-    ~QHelpSearchIndexReader();
-
-    void cancelSearching();
-    void search(const QString &collectionFile,
-        const QString &indexFilesFolder,
-        const QList<QHelpSearchQuery> &queryList);
-    int hitsCount() const;
-    QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const;
-
-signals:
-    void searchingStarted();
-    void searchingFinished(int hits);
+    QHelpSearchIndexReaderClucene();
+    ~QHelpSearchIndexReaderClucene();
 
 private:
     void run();
@@ -102,14 +82,6 @@ private:
         const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer);
     void boostSearchHits(const QHelpEngineCore &engine, QList<QHelpSearchEngine::SearchHit> &hitList,
         const QList<QHelpSearchQuery> &queryList);
-
-private:
-    mutable QMutex mutex;
-    QList<QHelpSearchEngine::SearchHit> hitList;
-    bool m_cancel;
-    QString m_collectionFile;
-    QList<QHelpSearchQuery> m_query;
-    QString m_indexFilesFolder;
 };
 
         }   // namespace clucene

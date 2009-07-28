@@ -71,7 +71,7 @@ private:
     DFBEvent event;
     uint bytesRead;
 
-private slots:
+private Q_SLOTS:
     void readMouseData();
 };
 
@@ -101,7 +101,7 @@ QDirectFBMouseHandlerPrivate::QDirectFBMouseHandlerPrivate(QDirectFBMouseHandler
 #endif
 
     DFBInputDeviceCapabilities caps;
-    caps = DFBInputDeviceCapabilities(DICAPS_BUTTONS | DICAPS_AXES);
+    caps = DICAPS_BUTTONS | DICAPS_AXES;
     result = fb->CreateInputEventBuffer(fb, caps, DFB_TRUE, &eventBuffer);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBMouseHandler: "
@@ -203,7 +203,6 @@ void QDirectFBMouseHandlerPrivate::readMouseData()
         int wheel = 0;
 
         if (input.type == DIET_AXISMOTION) {
-#ifdef QT_NO_DIRECTFB_LAYER
             if (input.flags & DIEF_AXISABS) {
                 switch (input.axis) {
                 case DIAI_X: x = input.axisabs; break;
@@ -223,19 +222,6 @@ void QDirectFBMouseHandlerPrivate::readMouseData()
                              "unknown axis (releative) %d", input.axis);
                 }
             }
-#else
-            if (input.axis == DIAI_X || input.axis == DIAI_Y) {
-                DFBResult result = layer->GetCursorPosition(layer, &x, &y);
-                if (result != DFB_OK) {
-                    DirectFBError("QDirectFBMouseHandler::readMouseData",
-                                  result);
-                }
-            } else if (input.axis == DIAI_Z) {
-                Q_ASSERT(input.flags & DIEF_AXISREL);
-                wheel = input.axisrel;
-                wheel *= -120;
-            }
-#endif
         }
 
         Qt::MouseButtons buttons = Qt::NoButton;

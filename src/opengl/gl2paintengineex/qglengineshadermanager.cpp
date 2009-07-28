@@ -49,6 +49,28 @@
 
 QT_BEGIN_NAMESPACE
 
+static void QGLEngineShaderManager_free(void *ptr)
+{
+    delete reinterpret_cast<QGLEngineShaderManager *>(ptr);
+}
+
+Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_shader_managers, (QGLEngineShaderManager_free))
+
+QGLEngineShaderManager *QGLEngineShaderManager::managerForContext(const QGLContext *context)
+{
+    QGLEngineShaderManager *p = reinterpret_cast<QGLEngineShaderManager *>(qt_shader_managers()->value(context));
+    if (!p) {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != context)
+            const_cast<QGLContext *>(context)->makeCurrent();
+        p = new QGLEngineShaderManager(const_cast<QGLContext *>(context));
+        qt_shader_managers()->insert(context, p);
+        if (oldContext && oldContext != context)
+            oldContext->makeCurrent();
+    }
+    return p;
+}
+
 const char* QGLEngineShaderManager::qglEngineShaderSourceCode[] = {
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,

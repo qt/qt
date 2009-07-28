@@ -58,9 +58,9 @@ class CsvCompleter : public QCompleter
     Q_OBJECT
 public:
     CsvCompleter(QObject *parent = 0) : QCompleter(parent), csv(true) { }
-    
-    QString pathFromIndex(const QModelIndex& sourceIndex) const; 
-    
+
+    QString pathFromIndex(const QModelIndex& sourceIndex) const;
+
     void setCsvCompletion(bool set) { csv = set; }
 
 protected:
@@ -102,6 +102,8 @@ public:
     ~tst_QCompleter();
 
 private slots:
+    void getSetCheck();
+
     void multipleWidgets();
     void focusIn();
 
@@ -146,6 +148,8 @@ private slots:
     void task253125_lineEditCompletion_data();
     void task253125_lineEditCompletion();
 
+    void task247560_keyboardNavigation();
+
 private:
     void filter();
     void testRowCount();
@@ -176,7 +180,7 @@ tst_QCompleter::~tst_QCompleter()
 }
 
 void tst_QCompleter::setSourceModel(ModelType type)
-{   
+{
     QString text;
     QTreeWidgetItem *parent, *child;
     treeWidget->clear();
@@ -266,6 +270,72 @@ void tst_QCompleter::filter()
     QCOMPARE(completer->currentCompletion(), completionText);
 }
 
+// Testing get/set functions
+void tst_QCompleter::getSetCheck()
+{
+    QStandardItemModel model(3,3);
+    QCompleter completer(&model);
+
+    // QString QCompleter::completionPrefix()
+    // void QCompleter::setCompletionPrefix(QString)
+    completer.setCompletionPrefix(QString("te"));
+    QCOMPARE(completer.completionPrefix(), QString("te"));
+    completer.setCompletionPrefix(QString());
+    QCOMPARE(completer.completionPrefix(), QString());
+
+    // ModelSorting QCompleter::modelSorting()
+    // void QCompleter::setModelSorting(ModelSorting)
+    completer.setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    QCOMPARE(completer.modelSorting(), QCompleter::CaseSensitivelySortedModel);
+    completer.setModelSorting(QCompleter::CaseInsensitivelySortedModel);
+    QCOMPARE(completer.modelSorting(), QCompleter::CaseInsensitivelySortedModel);
+    completer.setModelSorting(QCompleter::UnsortedModel);
+    QCOMPARE(completer.modelSorting(), QCompleter::UnsortedModel);
+
+    // CompletionMode QCompleter::completionMode()
+    // void QCompleter::setCompletionMode(CompletionMode)
+    QCOMPARE(completer.completionMode(), QCompleter::PopupCompletion); // default value
+    completer.setCompletionMode(QCompleter::UnfilteredPopupCompletion);
+    QCOMPARE(completer.completionMode(), QCompleter::UnfilteredPopupCompletion);
+    completer.setCompletionMode(QCompleter::InlineCompletion);
+    QCOMPARE(completer.completionMode(), QCompleter::InlineCompletion);
+
+    // int QCompleter::completionColumn()
+    // void QCompleter::setCompletionColumn(int)
+    completer.setCompletionColumn(2);
+    QCOMPARE(completer.completionColumn(), 2);
+    completer.setCompletionColumn(1);
+    QCOMPARE(completer.completionColumn(), 1);
+
+    // int QCompleter::completionRole()
+    // void QCompleter::setCompletionRole(int)
+    QCOMPARE(completer.completionRole(), static_cast<int>(Qt::EditRole)); // default value
+    completer.setCompletionRole(Qt::DisplayRole);
+    QCOMPARE(completer.completionRole(), static_cast<int>(Qt::DisplayRole));
+
+    // int QCompleter::maxVisibleItems()
+    // void QCompleter::setMaxVisibleItems(int)
+    QCOMPARE(completer.maxVisibleItems(), 7); // default value
+    completer.setMaxVisibleItems(10);
+    QCOMPARE(completer.maxVisibleItems(), 10);
+    QTest::ignoreMessage(QtWarningMsg, "QCompleter::setMaxVisibleItems: "
+                         "Invalid max visible items (-2147483648) must be >= 0");
+    completer.setMaxVisibleItems(INT_MIN);
+    QCOMPARE(completer.maxVisibleItems(), 10); // Cannot be set to something negative => old value
+
+    // Qt::CaseSensitivity QCompleter::caseSensitivity()
+    // void QCompleter::setCaseSensitivity(Qt::CaseSensitivity)
+    QCOMPARE(completer.caseSensitivity(), Qt::CaseSensitive); // default value
+    completer.setCaseSensitivity(Qt::CaseInsensitive);
+    QCOMPARE(completer.caseSensitivity(), Qt::CaseInsensitive);
+
+    // bool QCompleter::wrapAround()
+    // void QCompleter::setWrapAround(bool)
+    QCOMPARE(completer.wrapAround(), true); // default value
+    completer.setWrapAround(false);
+    QCOMPARE(completer.wrapAround(), false);
+}
+
 void tst_QCompleter::csMatchingOnCsSortedModel_data()
 {
     delete completer;
@@ -282,7 +352,7 @@ void tst_QCompleter::csMatchingOnCsSortedModel_data()
     for (int i = 0; i < 2; i++) {
          if (i == 1)
              QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
- 
+
          // Plain text filter
          QTest::newRow("()") << "" << "" << "P0" << "P0";
          QTest::newRow("()F") << "" << "F" << "P0" << "P0";
@@ -299,7 +369,7 @@ void tst_QCompleter::csMatchingOnCsSortedModel_data()
          QTest::newRow("(p)NNNN") << "p" << "NNNN" << "p4" << "p4";
          QTest::newRow("(p1)") << "p1" << "" << "p1" << "p1";
          QTest::newRow("(p11)") << "p11" << "" << "" << "";
- 
+
          // Tree filter
          QTest::newRow("(P0,)") << "P0," << "" << "c0P0" << "P0,c0P0";
          QTest::newRow("(P0,c)") << "P0,c" << "" << "c0P0" << "P0,c0P0";
@@ -333,7 +403,7 @@ void tst_QCompleter::ciMatchingOnCiSortedModel_data()
     QTest::addColumn<QString>("completion");
     QTest::addColumn<QString>("completionText");
 
-    for (int i = 0; i < 2; i++) {        
+    for (int i = 0; i < 2; i++) {
         if (i == 1)
             QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
 
@@ -352,7 +422,7 @@ void tst_QCompleter::ciMatchingOnCiSortedModel_data()
         QTest::newRow("(p1)") << "p1" << "" << "P1" << "P1";
         QTest::newRow("(p1)N") << "p1" << "N" << "p1" << "p1";
         QTest::newRow("(p11)") << "p11" << "" << "" << "";
-    
+
         //// Tree filter
         QTest::newRow("(p0,)") << "p0," << "" << "c0P0" << "P0,c0P0";
         QTest::newRow("(p0,c)") << "p0,c" << "" << "c0P0" << "P0,c0P0";
@@ -404,7 +474,7 @@ void tst_QCompleter::ciMatchingOnCsSortedModel_data()
         QTest::newRow("(p1)") << "p1" << "" << "P1" << "P1";
         QTest::newRow("(p1)N") << "p1" << "N" << "p1" << "p1";
         QTest::newRow("(p11)") << "p11" << "" << "" << "";
-    
+
         // Tree filter
         QTest::newRow("(p0,)") << "p0," << "" << "c0P0" << "P0,c0P0";
         QTest::newRow("(p0,c)") << "p0,c" << "" << "c0P0" << "P0,c0P0";
@@ -456,7 +526,7 @@ void tst_QCompleter::csMatchingOnCiSortedModel_data()
         QTest::newRow("(p)NNN") << "p" << "NNN" << "p3" << "p3";
         QTest::newRow("(p1)") << "p1" << "" << "p1" << "p1";
         QTest::newRow("(p11)") << "p11" << "" << "" << "";
-    
+
         //// Tree filter
         QTest::newRow("(p0,)") << "p0," << "" << "c0p0" << "p0,c0p0";
         QTest::newRow("(p0,c)") << "p0,c" << "" << "c0p0" << "p0,c0p0";
@@ -469,7 +539,7 @@ void tst_QCompleter::csMatchingOnCiSortedModel_data()
         QTest::newRow("(p3,,c)") << "p3,,c" << "" << "" << "";
         QTest::newRow("(p3,c0P3,)") << "p3,c0P3," << "" << "" << "";
         QTest::newRow("(p,)") << "p," << "" << "" << "";
-    
+
         QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
     }
 }
@@ -507,13 +577,13 @@ void tst_QCompleter::directoryModel_data()
         QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
 #elif defined (Q_OS_MAC)
         QTest::newRow("()") << "" << "" << "/" << "/";
-        QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";        
+        QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
         QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX)
         QTest::newRow("(/h)") << "/h" << "" << "home" << "/home";
-#endif        
+#endif
         QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
         QTest::newRow("(/etc/passw)") << "/etc/passw" << "" << "passwd" << "/etc/passwd";
 #endif
@@ -659,7 +729,7 @@ void tst_QCompleter::currentRow()
     completer->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     setSourceModel(CASE_INSENSITIVELY_SORTED_MODEL);
- 
+
     // blank text
     completer->setCompletionPrefix("");
     QCOMPARE(completer->currentRow(), 0);
@@ -691,7 +761,7 @@ void tst_QCompleter::sortedEngineMapFromSource()
 
     QModelIndex si1, si2, pi;
     QAbstractItemModel *sourceModel = completer->model();
-    const QAbstractProxyModel *completionModel = 
+    const QAbstractProxyModel *completionModel =
         qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
 
     // Fitering ON
@@ -762,7 +832,7 @@ void tst_QCompleter::unsortedEngineMapFromSource()
 
     QModelIndex si, si2, si3, pi;
     QAbstractItemModel *sourceModel = completer->model();
-    const QAbstractProxyModel *completionModel = 
+    const QAbstractProxyModel *completionModel =
         qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
 
     si = sourceModel->index(6, completionColumn); // "P3"
@@ -844,7 +914,7 @@ void tst_QCompleter::historySearch()
     completer->setCaseSensitivity(Qt::CaseSensitive);
     setSourceModel(HISTORY_MODEL);
 
-    const QAbstractProxyModel *completionModel = 
+    const QAbstractProxyModel *completionModel =
       qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
 
     // "p3,c3p3" and "p2,c4p2" are added in the tree root
@@ -952,7 +1022,7 @@ void tst_QCompleter::multipleWidgets()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&window);
 #endif
-    QTest::qWait(5000);
+    QTest::qWait(50);
     QTRY_VERIFY(qApp->focusWidget() == comboBox);
     comboBox->lineEdit()->setText("it");
     QCOMPARE(comboBox->currentText(), QString("it")); // should not complete with setText
@@ -965,7 +1035,8 @@ void tst_QCompleter::multipleWidgets()
     lineEdit->setCompleter(&completer);
     lineEdit->show();
     lineEdit->setFocus();
-    QTest::qWait(5000);
+    QTest::qWait(50);
+    QTRY_VERIFY(qApp->focusWidget() == lineEdit);
     lineEdit->setText("it");
     QCOMPARE(lineEdit->text(), QString("it")); // should not completer with setText
     QCOMPARE(comboBox->currentText(), QString("")); // combo box text must not change!
@@ -1027,7 +1098,7 @@ void tst_QCompleter::dynamicSortOrder()
     QCOMPARE(completer.completionCount(), 12);
     completer.setCompletionPrefix("13");
     QCOMPARE(completer.completionCount(), 2);
-    
+
     root->sortChildren(0, Qt::DescendingOrder);
     completer.setCompletionPrefix("13");
     QCOMPARE(completer.completionCount(), 2);
@@ -1228,6 +1299,44 @@ void tst_QCompleter::task253125_lineEditCompletion()
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
 
     QCOMPARE(edit.text(), QString("iota"));
+}
+
+void tst_QCompleter::task247560_keyboardNavigation()
+{
+    QStandardItemModel model;
+
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            model.setItem(i, j, new QStandardItem(QString("row %1 column %2").arg(i).arg(j)));
+        }
+    }
+
+
+    QCompleter completer(&model);
+    completer.setCompletionColumn(1);
+
+    QLineEdit edit;
+    edit.setCompleter(&completer);
+    edit.show();
+    edit.setFocus();
+
+    QTest::qWait(100);
+
+    QTest::keyClick(&edit, 'r');
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("row 1 column 1"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'r');
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Up);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Up);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("row 3 column 1"));
 }
 
 QTEST_MAIN(tst_QCompleter)

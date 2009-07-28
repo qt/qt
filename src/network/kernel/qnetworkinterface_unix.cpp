@@ -43,6 +43,7 @@
 #include "qnetworkinterface.h"
 #include "qnetworkinterface_p.h"
 #include "qalgorithms.h"
+#include "private/qnet_unix_p.h"
 
 #ifndef QT_NO_NETWORKINTERFACE
 
@@ -123,7 +124,7 @@ static QSet<QByteArray> interfaceNames(int socket)
         interfaceList.ifc_len = storageBuffer.size();
 
         // get the interface list
-        if (::ioctl(socket, SIOCGIFCONF, &interfaceList) >= 0) {
+        if (qt_safe_ioctl(socket, SIOCGIFCONF, &interfaceList) >= 0) {
             if (int(interfaceList.ifc_len + sizeof(ifreq) + 64) < storageBuffer.size()) {
                 // if the buffer was big enough, break
                 storageBuffer.resize(interfaceList.ifc_len);
@@ -198,7 +199,7 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
 #ifdef SIOCGIFNAME
         // Get the canonical name
         QByteArray oldName = req.ifr_name;
-        if (::ioctl(socket, SIOCGIFNAME, &req) >= 0) {
+        if (qt_safe_ioctl(socket, SIOCGIFNAME, &req) >= 0) {
             iface->name = QString::fromLatin1(req.ifr_name);
 
             // reset the name:
@@ -211,13 +212,13 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
         }
 
         // Get interface flags
-        if (::ioctl(socket, SIOCGIFFLAGS, &req) >= 0) {
+        if (qt_safe_ioctl(socket, SIOCGIFFLAGS, &req) >= 0) {
             iface->flags = convertFlags(req.ifr_flags);
         }
 
 #ifdef SIOCGIFHWADDR
         // Get the HW address
-        if (::ioctl(socket, SIOCGIFHWADDR, &req) >= 0) {
+        if (qt_safe_ioctl(socket, SIOCGIFHWADDR, &req) >= 0) {
             uchar *addr = (uchar *)&req.ifr_addr;
             iface->hardwareAddress = iface->makeHwAddress(6, addr);
         }
@@ -232,7 +233,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     QList<QNetworkInterfacePrivate *> interfaces;
 
     int socket;
-    if ((socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
+    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
         return interfaces;      // error
 
     QSet<QByteArray> names = interfaceNames(socket);
@@ -247,7 +248,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         // Get the interface broadcast address
         QNetworkAddressEntry entry;
         if (iface->flags & QNetworkInterface::CanBroadcast) {
-            if (::ioctl(socket, SIOCGIFBRDADDR, &req) >= 0) {
+            if (qt_safe_ioctl(socket, SIOCGIFBRDADDR, &req) >= 0) {
                 sockaddr *sa = &req.ifr_addr;
                 if (sa->sa_family == AF_INET)
                     entry.setBroadcast(addressFromSockaddr(sa));
@@ -255,13 +256,13 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         }
 
         // Get the interface netmask
-        if (::ioctl(socket, SIOCGIFNETMASK, &req) >= 0) {
+        if (qt_safe_ioctl(socket, SIOCGIFNETMASK, &req) >= 0) {
             sockaddr *sa = &req.ifr_addr;
 	    entry.setNetmask(addressFromSockaddr(sa));
         }
 
         // Get the address of the interface
-        if (::ioctl(socket, SIOCGIFADDR, &req) >= 0) {
+        if (qt_safe_ioctl(socket, SIOCGIFADDR, &req) >= 0) {
             sockaddr *sa = &req.ifr_addr;
             entry.setIp(addressFromSockaddr(sa));
         }
@@ -392,7 +393,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     QList<QNetworkInterfacePrivate *> interfaces;
 
     int socket;
-    if ((socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
+    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
         return interfaces;      // error
 
     ifaddrs *interfaceListing;

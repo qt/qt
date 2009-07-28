@@ -69,7 +69,7 @@ extern const int GeneralDragHysteresis;
 
 enum HitTestScrollbars { ShouldHitTestScrollbars, DontHitTestScrollbars };
 
-class EventHandler : Noncopyable {
+class EventHandler : public Noncopyable {
 public:
     EventHandler(Frame*);
     ~EventHandler();
@@ -207,7 +207,7 @@ private:
     
     Cursor selectCursor(const MouseEventWithHitTestResults&, Scrollbar*);
 #if ENABLE(PAN_SCROLLING)
-    void setPanScrollCursor();
+    void updatePanScrollState();
 #endif
 
     void hoverTimerFired(Timer<EventHandler>*);
@@ -271,6 +271,8 @@ private:
 
     void updateSelectionForMouseDrag(Node* targetNode, const IntPoint& localPoint);
 
+    void updateLastScrollbarUnderMouse(Scrollbar*, bool);
+
     bool capturesDragging() const { return m_capturesDragging; }
 
 #if PLATFORM(MAC) && defined(__OBJC__)
@@ -294,6 +296,9 @@ private:
 
     IntPoint m_panScrollStartPos;
     bool m_panScrollInProgress;
+
+    bool m_panScrollButtonPressed;
+    bool m_springLoadedPanScrollInProgress;
 
     Timer<EventHandler> m_hoverTimer;
     

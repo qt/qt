@@ -82,8 +82,8 @@ bool JSSVGDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
 
 const ClassInfo JSSVGDocument::s_info = { "SVGDocument", &JSDocument::s_info, &JSSVGDocumentTable, 0 };
 
-JSSVGDocument::JSSVGDocument(PassRefPtr<Structure> structure, PassRefPtr<SVGDocument> impl)
-    : JSDocument(structure, impl)
+JSSVGDocument::JSSVGDocument(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGDocument> impl)
+    : JSDocument(structure, globalObject, impl)
 {
 }
 
@@ -99,9 +99,10 @@ bool JSSVGDocument::getOwnPropertySlot(ExecState* exec, const Identifier& proper
 
 JSValue jsSVGDocumentRootElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGDocument* castedThis = static_cast<JSSVGDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGDocument* imp = static_cast<SVGDocument*>(static_cast<JSSVGDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->rootElement()));
+    SVGDocument* imp = static_cast<SVGDocument*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rootElement()));
 }
 
 JSValue JSC_HOST_CALL jsSVGDocumentPrototypeFunctionCreateEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -115,7 +116,7 @@ JSValue JSC_HOST_CALL jsSVGDocumentPrototypeFunctionCreateEvent(ExecState* exec,
     const UString& eventType = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createEvent(eventType, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createEvent(eventType, ec)));
     setDOMException(exec, ec);
     return result;
 }

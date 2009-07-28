@@ -47,6 +47,7 @@
 #include "MappedAttribute.h"
 #include "MouseEvent.h"
 #include "Page.h"
+#include "RegularExpression.h"
 #include "RenderButton.h"
 #include "RenderFileUploadControl.h"
 #include "RenderImage.h"
@@ -112,6 +113,79 @@ bool HTMLInputElement::autoComplete() const
     
     // The default is true
     return true;
+}
+
+bool HTMLInputElement::valueMissing() const
+{
+    if (!isRequiredFormControl() || readOnly() || disabled())
+        return false;
+
+    switch (inputType()) {
+        case TEXT:
+        case SEARCH:
+        case URL:
+        case TELEPHONE:
+        case EMAIL:
+        case PASSWORD:
+        case NUMBER:
+        case FILE:
+            return value().isEmpty();
+        case CHECKBOX:
+            return !checked();
+        case RADIO:
+            return !document()->checkedRadioButtons().checkedButtonForGroup(name());
+        case HIDDEN:
+        case RANGE:
+        case SUBMIT:
+        case IMAGE:
+        case RESET:
+        case BUTTON:
+        case ISINDEX:
+            break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+bool HTMLInputElement::patternMismatch() const
+{
+    switch (inputType()) {
+        case ISINDEX:
+        case CHECKBOX:
+        case RADIO:
+        case SUBMIT:
+        case RESET:
+        case FILE:
+        case HIDDEN:
+        case IMAGE:
+        case BUTTON:
+        case RANGE:
+        case NUMBER:
+            return false;
+        case TEXT:
+        case SEARCH:
+        case URL:
+        case TELEPHONE:
+        case EMAIL:
+        case PASSWORD:
+            const AtomicString& pattern = getAttribute(patternAttr);
+            String value = this->value();
+
+            // Empty values can't be mismatched
+            if (pattern.isEmpty() || value.isEmpty())
+                return false;
+
+            RegularExpression patternRegExp(pattern, TextCaseSensitive);
+            int matchLength = 0;
+            int valueLength = value.length();
+            int matchOffset = patternRegExp.match(value, 0, &matchLength);
+
+            return matchOffset != 0 || matchLength != valueLength;
+    }
+
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 static inline CheckedRadioButtons& checkedRadioButtons(const HTMLInputElement *element)
@@ -478,31 +552,34 @@ int HTMLInputElement::selectionEnd() const
     return toRenderTextControl(renderer())->selectionEnd();
 }
 
+static bool isTextFieldWithRenderer(HTMLInputElement* element)
+{
+    if (!element->isTextField())
+        return false;
+
+    element->document()->updateLayoutIgnorePendingStylesheets();
+    if (!element->renderer())
+        return false;
+
+    return true;
+}
+
 void HTMLInputElement::setSelectionStart(int start)
 {
-    if (!isTextField())
-        return;
-    if (!renderer())
-        return;
-    toRenderTextControl(renderer())->setSelectionStart(start);
+    if (isTextFieldWithRenderer(this))
+        toRenderTextControl(renderer())->setSelectionStart(start);
 }
 
 void HTMLInputElement::setSelectionEnd(int end)
 {
-    if (!isTextField())
-        return;
-    if (!renderer())
-        return;
-    toRenderTextControl(renderer())->setSelectionEnd(end);
+    if (isTextFieldWithRenderer(this))
+        toRenderTextControl(renderer())->setSelectionEnd(end);
 }
 
 void HTMLInputElement::select()
 {
-    if (!isTextField())
-        return;
-    if (!renderer())
-        return;
-    toRenderTextControl(renderer())->select();
+    if (isTextFieldWithRenderer(this))
+        toRenderTextControl(renderer())->select();
 }
 
 void HTMLInputElement::setSelectionRange(int start, int end)
@@ -838,13 +915,25 @@ bool HTMLInputElement::appendFormData(FormDataList& encoding, bool multipart)
             break;
 
         case FILE: {
-            // Can't submit file on GET.
-            if (!multipart)
-                return false;
+            unsigned numFiles = m_fileList->length();
+            if (!multipart) {
+                // Send only the basenames.
+                // 4.10.16.4 and 4.10.16.6 sections in HTML5.
+
+                // Unlike the multipart case, we have no special
+                // handling for the empty fileList because Netscape
+                // doesn't support for non-multipart submission of
+                // file inputs, and Firefox doesn't add "name=" query
+                // parameter.
+
+                for (unsigned i = 0; i < numFiles; ++i) {
+                    encoding.appendData(name(), m_fileList->item(i)->fileName());
+                }
+                return true;
+            }
 
             // If no filename at all is entered, return successful but empty.
             // Null would be more logical, but Netscape posts an empty file. Argh.
-            unsigned numFiles = m_fileList->length();
             if (!numFiles) {
                 encoding.appendFile(name(), File::create(""));
                 return true;
@@ -1565,6 +1654,37 @@ void HTMLInputElement::unregisterForActivationCallbackIfNeeded()
 {
     if (!needsActivationCallback())
         document()->unregisterForDocumentActivationCallbacks(this);
+}
+
+bool HTMLInputElement::isRequiredFormControl() const
+{
+    if (!required())
+        return false;
+
+    switch (inputType()) {
+        case TEXT:
+        case SEARCH:
+        case URL:
+        case TELEPHONE:
+        case EMAIL:
+        case PASSWORD:
+        case NUMBER:
+        case CHECKBOX:
+        case RADIO:
+        case FILE:
+            return true;
+        case HIDDEN:
+        case RANGE:
+        case SUBMIT:
+        case IMAGE:
+        case RESET:
+        case BUTTON:
+        case ISINDEX:
+            return false;
+    }
+
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 void HTMLInputElement::cacheSelection(int start, int end)

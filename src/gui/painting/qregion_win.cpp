@@ -59,7 +59,7 @@ HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int right, 
 {
     const int tries = 10;
     for (int i = 0; i < tries; ++i) {
-        HRGN region;
+        HRGN region = 0;
         switch (type) {
         case QRegion::Rectangle:
             region = CreateRectRgn(left, top, right, bottom);

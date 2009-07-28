@@ -819,6 +819,12 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 #endif // Q_WS_X11
 
 extern void qInitDrawhelperAsm();
+extern int qRegisterGuiVariant();
+extern int qUnregisterGuiVariant();
+#ifndef QT_NO_STATEMACHINE
+extern int qRegisterGuiStateMachine();
+extern int qUnregisterGuiStateMachine();
+#endif
 
 /*!
   \fn void QApplicationPrivate::initialize()
@@ -832,11 +838,9 @@ void QApplicationPrivate::initialize()
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
     // trigger registering of QVariant's GUI types
-    extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
 #ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
-    extern int qRegisterGuiStateMachine();
     qRegisterGuiStateMachine();
 #endif
 
@@ -1060,11 +1064,9 @@ QApplication::~QApplication()
 
 #ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
-    extern int qUnregisterGuiStateMachine();
     qUnregisterGuiStateMachine();
 #endif
     // trigger unregistering of QVariant's GUI types
-    extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();
 }
 

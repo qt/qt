@@ -85,32 +85,37 @@ void createCurveIcons()
 
         qreal curveScale = iconSize.height()/2;
 
-        painter.drawLine(yAxis - 2, xAxis - curveScale, yAxis + 2, xAxis - curveScale); // hor 
+        painter.drawLine(yAxis - 2, xAxis - curveScale, yAxis + 2, xAxis - curveScale); // hor
         painter.drawLine(yAxis + curveScale, xAxis + 2, yAxis + curveScale, xAxis - 2); // ver
         painter.drawText(yAxis + curveScale - 8, xAxis - curveScale - 4, QLatin1String("(1,1)"));
-        
+
         painter.drawText(yAxis + 42, xAxis + 10, QLatin1String("progress"));
-        painter.drawText(15, xAxis - curveScale - 10, QLatin1String("ease"));
-        
-        painter.setPen(QPen(Qt::red, 1, Qt::DotLine));        
+        painter.drawText(15, xAxis - curveScale - 10, QLatin1String("value"));
+
+        painter.setPen(QPen(Qt::red, 1, Qt::DotLine));
         painter.drawLine(yAxis, xAxis - curveScale, yAxis + curveScale, xAxis - curveScale); // hor
         painter.drawLine(yAxis + curveScale, xAxis, yAxis + curveScale, xAxis - curveScale); // ver
-        
-        QPoint currentPos(yAxis, xAxis);
-        
+
+        QPoint start(yAxis, xAxis - curveScale * curve.valueForProgress(0));
+
         painter.setPen(Qt::black);
         QFont font = oldFont;
         font.setPixelSize(oldFont.pixelSize() + 15);
         painter.setFont(font);
         painter.drawText(0, iconSize.height() - 20, iconSize.width(), 20, Qt::AlignHCenter, name);
-       
-        for (qreal t = 0; t < 1.0; t+=1.0/curveScale) {
+
+        QPainterPath curvePath;
+        curvePath.moveTo(start);
+        for (qreal t = 0; t <= 1.0; t+=1.0/curveScale) {
             QPoint to;
             to.setX(yAxis + curveScale * t);
             to.setY(xAxis - curveScale * curve.valueForProgress(t));
-            painter.drawLine(currentPos, to);
-            currentPos = to;
+            curvePath.lineTo(to);
         }
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.strokePath(curvePath, QColor(32, 32, 32));
+        painter.setRenderHint(QPainter::Antialiasing, false);
+
         QString fileName(QString::fromAscii("qeasingcurve-%1.png").arg(name.toLower()));
         printf("%s\n", qPrintable(fileName));
         pix.save(QString::fromAscii("%1/%2").arg(output).arg(fileName), "PNG");

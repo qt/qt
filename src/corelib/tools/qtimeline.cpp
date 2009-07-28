@@ -555,6 +555,8 @@ void QTimeLine::setCurveShape(CurveShape shape)
 /*!
     \property QTimeLine::easingCurve
 
+    \since 4.6
+
     Specifies the easing curve that the timeline will use.
     If both easing curve and curveShape are set, the last set property will
     override the previous one. (If valueForTime() is reimplemented it will 

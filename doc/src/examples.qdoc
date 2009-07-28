@@ -324,7 +324,6 @@
     \o \l{statemachine/pingpong}{Ping Pong States}\raisedaster
     \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
     \o \l{statemachine/twowaybutton}{Two-way Button}\raisedaster
-    \o \l{statemachine/tankgame}{Tank Game}\raisedaster
     \endlist
 
     \section1 Threads
@@ -417,6 +416,7 @@
     \o \l{xmlpatterns/qobjectxmlmodel}{QObject XML Model Example}
     \o \l{xmlpatterns/xquery/globalVariables}{C++ Source Code Analyzer Example}
     \o \l{xmlpatterns/trafficinfo}{Traffic Info}\raisedaster
+    \o \l{xmlpatterns/schema}{XML Schema Validation}\raisedaster
     \endlist
 
     \section1 Inter-Process Communication

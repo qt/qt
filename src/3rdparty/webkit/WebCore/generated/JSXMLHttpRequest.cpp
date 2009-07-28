@@ -122,8 +122,8 @@ static const HashTable* getJSXMLHttpRequestTable(ExecState* exec)
 }
 const ClassInfo JSXMLHttpRequest::s_info = { "XMLHttpRequest", 0, 0, getJSXMLHttpRequestTable };
 
-JSXMLHttpRequest::JSXMLHttpRequest(PassRefPtr<Structure> structure, PassRefPtr<XMLHttpRequest> impl)
-    : DOMObject(structure)
+JSXMLHttpRequest::JSXMLHttpRequest(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequest> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -145,8 +145,9 @@ bool JSXMLHttpRequest::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsXMLHttpRequestOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onabort()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -156,8 +157,9 @@ JSValue jsXMLHttpRequestOnabort(ExecState* exec, const Identifier&, const Proper
 
 JSValue jsXMLHttpRequestOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -167,8 +169,9 @@ JSValue jsXMLHttpRequestOnerror(ExecState* exec, const Identifier&, const Proper
 
 JSValue jsXMLHttpRequestOnload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onload()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -178,8 +181,9 @@ JSValue jsXMLHttpRequestOnload(ExecState* exec, const Identifier&, const Propert
 
 JSValue jsXMLHttpRequestOnloadstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onloadstart()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -189,8 +193,9 @@ JSValue jsXMLHttpRequestOnloadstart(ExecState* exec, const Identifier&, const Pr
 
 JSValue jsXMLHttpRequestOnprogress(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onprogress()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -200,8 +205,9 @@ JSValue jsXMLHttpRequestOnprogress(ExecState* exec, const Identifier&, const Pro
 
 JSValue jsXMLHttpRequestOnreadystatechange(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onreadystatechange()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -211,41 +217,47 @@ JSValue jsXMLHttpRequestOnreadystatechange(ExecState* exec, const Identifier&, c
 
 JSValue jsXMLHttpRequestReadyState(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     return jsNumber(exec, imp->readyState());
 }
 
 JSValue jsXMLHttpRequestWithCredentials(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     return jsBoolean(imp->withCredentials());
 }
 
 JSValue jsXMLHttpRequestUpload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->upload()));
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->upload()));
 }
 
 JSValue jsXMLHttpRequestResponseText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->responseText(exec);
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
+    return castedThis->responseText(exec);
 }
 
 JSValue jsXMLHttpRequestResponseXML(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->responseXML()));
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->responseXML()));
 }
 
 JSValue jsXMLHttpRequestStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->status(ec));
     setDOMException(exec, ec);
     return result;
@@ -253,8 +265,9 @@ JSValue jsXMLHttpRequestStatus(ExecState* exec, const Identifier&, const Propert
 
 JSValue jsXMLHttpRequestStatusText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     JSC::JSValue result = jsString(exec, imp->statusText(ec));
     setDOMException(exec, ec);
     return result;
@@ -466,9 +479,9 @@ JSValue jsXMLHttpRequestDONE(ExecState* exec, const Identifier&, const PropertyS
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, XMLHttpRequest* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XMLHttpRequest* object)
 {
-    return getDOMObjectWrapper<JSXMLHttpRequest>(exec, object);
+    return getDOMObjectWrapper<JSXMLHttpRequest>(exec, globalObject, object);
 }
 XMLHttpRequest* toXMLHttpRequest(JSC::JSValue value)
 {

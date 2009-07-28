@@ -413,8 +413,8 @@ QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
         result = envVarLocale();
         QChar lang[3];
         QChar cntry[2];
-        if ( result == "C" || !result.isEmpty()
-                && splitLocaleName(QString::fromLocal8Bit(result), lang, cntry) ) {
+        if ( result == "C" || (!result.isEmpty()
+                && splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) ) {
             long id = 0;
             bool ok = false;
             id = qstrtoll(result.data(), 0, 0, &ok);
@@ -5299,7 +5299,11 @@ struct p5s_deleter
 {
     ~p5s_deleter()
     {
-        Bfree(p5s);
+        while (p5s) {
+            Bigint *next = p5s->next;
+            Bfree(p5s);
+            p5s = next;
+        }
     }
 };
 

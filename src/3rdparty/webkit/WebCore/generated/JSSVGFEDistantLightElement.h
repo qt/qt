@@ -33,7 +33,7 @@ class SVGFEDistantLightElement;
 class JSSVGFEDistantLightElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFEDistantLightElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEDistantLightElement>);
+    JSSVGFEDistantLightElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFEDistantLightElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

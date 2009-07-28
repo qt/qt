@@ -202,7 +202,7 @@ class HtmlGenerator : public PageGenerator
     virtual QString getLink(const Atom *atom, 
                             const Node *relative, 
                             CodeMarker *marker, 
-                            const Node *node = 0);
+                            const Node** node);
     virtual void generateDcf(const QString &fileBase, 
                              const QString &startPage,
                              const QString &title, DcfSection &dcfRoot);
@@ -230,6 +230,7 @@ class HtmlGenerator : public PageGenerator
     DcfSection dcfQmakeRoot;
     HelpProjectWriter *helpProjectWriter;
     bool inLink;
+    bool inObsoleteLink;
     bool inContents;
     bool inSectionHeading;
     bool inTableHeader;
@@ -256,6 +257,7 @@ class HtmlGenerator : public PageGenerator
     QMap<QString, const Node *> nonCompatClasses;
     QMap<QString, const Node *> mainClasses;
     QMap<QString, const Node *> compatClasses;
+    QMap<QString, const Node *> obsoleteClasses;
     QMap<QString, const Node *> namespaceIndex;
     QMap<QString, const Node *> serviceClasses;
 #ifdef QDOC_QML    

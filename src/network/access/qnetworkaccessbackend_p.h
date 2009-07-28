@@ -118,6 +118,7 @@ public:
     virtual void downstreamReadyWrite();
     virtual void copyFinished(QIODevice *);
     virtual void ignoreSslErrors();
+    virtual void ignoreSslErrors(const QList<QSslError> &errors);
 
     virtual void fetchSslConfiguration(QSslConfiguration &configuration) const;
     virtual void setSslConfiguration(const QSslConfiguration &configuration);
@@ -166,7 +167,7 @@ protected:
     // these functions control the downstream mechanism
     // that is, data that has come via the connection and is going out the backend
     qint64 nextDownstreamBlockSize() const;
-    void writeDownstreamData(const QByteArray &data);
+    void writeDownstreamData(QByteDataBuffer &list);
 
 public slots:
     // for task 251801, needs to be a slot to be called asynchronously

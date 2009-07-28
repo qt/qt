@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "JSSVGPODTypeWrapper.h"
 #include "SVGElement.h"
@@ -32,10 +33,10 @@
 
 namespace WebCore {
 
-class JSSVGTransform : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGTransform : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGTransform(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> >, SVGElement* context);
+    JSSVGTransform(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> >, SVGElement* context);
     virtual ~JSSVGTransform();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,16 +48,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
-    JSSVGPODTypeWrapper<SVGTransform>* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
+    JSSVGPODTypeWrapper<SVGTransform> * impl() const { return m_impl.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
     RefPtr<JSSVGPODTypeWrapper<SVGTransform> > m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<SVGTransform>*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<SVGTransform>*, SVGElement* context);
 SVGTransform toSVGTransform(JSC::JSValue);
 
 class JSSVGTransformPrototype : public JSC::JSObject {

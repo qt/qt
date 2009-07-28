@@ -175,7 +175,7 @@
     Qt's resources support the concept of a search path list. If you then
     refer to a resource with \c : instead of \c :/ as the prefix, the
     resource will be looked up using the search path list. The search
-    path list is empty at startup; call QDir::addResourceSearchPath() to
+    path list is empty at startup; call QDir::addSearchPath() to
     add paths to it.
 
     If you have resources in a static library, you might need to

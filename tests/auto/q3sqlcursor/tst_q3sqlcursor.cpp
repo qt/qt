@@ -574,10 +574,7 @@ void tst_Q3SqlCursor::precision()
 
     QVERIFY_SQL(cur, select());
     QVERIFY( cur.next() );
-    if(!tst_Databases::isSqlServer(db))
-        QCOMPARE( cur.value( 0 ).asString(), precStr );
-    else
-        QCOMPARE( cur.value( 0 ).asString(), precStr.left(precStr.size()-1) ); // Sql server fails at counting.
+    QCOMPARE( cur.value( 0 ).asString(), precStr );
     QVERIFY( cur.next() );
     QCOMPARE( cur.value( 0 ).asDouble(), precDbl );
 }

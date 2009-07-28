@@ -33,7 +33,7 @@ class SVGDefinitionSrcElement;
 class JSSVGDefinitionSrcElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGDefinitionSrcElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGDefinitionSrcElement>);
+    JSSVGDefinitionSrcElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGDefinitionSrcElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

@@ -31,6 +31,7 @@
 #include "SVGPaintServer.h"
 
 #include "GraphicsContext.h"
+#include "NodeRenderStyle.h"
 #include "RenderObject.h"
 #include "RenderStyle.h"
 #include "SVGPaintServerSolid.h"
@@ -158,7 +159,7 @@ void applyStrokeStyleToContext(GraphicsContext* context, RenderStyle* style, con
     if (style->svgStyle()->joinStyle() == MiterJoin)
         context->setMiterLimit(style->svgStyle()->strokeMiterLimit());
 
-    const DashArray& dashes = dashArrayFromRenderingStyle(object->style());
+    const DashArray& dashes = dashArrayFromRenderingStyle(object->style(), object->document()->documentElement()->renderStyle());
     float dashOffset = SVGRenderStyle::cssPrimitiveToLength(object, style->svgStyle()->strokeDashOffset(), 0.0f);
     context->setLineDash(dashes, dashOffset);
 }
@@ -192,8 +193,8 @@ void SVGPaintServer::teardown(GraphicsContext*& context, const RenderObject*, SV
     // added back to the context after filling. This is because internally it
     // calls CGContextFillPath() which closes the path.
     context->beginPath();
-    context->platformContext()->setGradient(0);
-    context->platformContext()->setPattern(0);
+    context->platformContext()->setFillShader(0);
+    context->platformContext()->setStrokeShader(0);
 }
 #else
 void SVGPaintServer::teardown(GraphicsContext*&, const RenderObject*, SVGPaintTargetType, bool) const
@@ -201,7 +202,7 @@ void SVGPaintServer::teardown(GraphicsContext*&, const RenderObject*, SVGPaintTa
 }
 #endif
 
-DashArray dashArrayFromRenderingStyle(const RenderStyle* style)
+DashArray dashArrayFromRenderingStyle(const RenderStyle* style, RenderStyle* rootStyle)
 {
     DashArray array;
     
@@ -214,7 +215,7 @@ DashArray dashArrayFromRenderingStyle(const RenderStyle* style)
             if (!dash)
                 continue;
 
-            array.append((float) dash->computeLengthFloat(const_cast<RenderStyle*>(style)));
+            array.append((float) dash->computeLengthFloat(const_cast<RenderStyle*>(style), rootStyle));
         }
     }
 

@@ -21,6 +21,7 @@
 #ifndef JSCSSRule_h
 #define JSCSSRule_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class CSSRule;
 
-class JSCSSRule : public DOMObject {
-    typedef DOMObject Base;
+class JSCSSRule : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCSSRule(PassRefPtr<JSC::Structure>, PassRefPtr<CSSRule>);
+    JSCSSRule(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSRule>);
     virtual ~JSCSSRule();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -45,14 +46,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     CSSRule* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<CSSRule> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, CSSRule*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CSSRule*);
 CSSRule* toCSSRule(JSC::JSValue);
 
 class JSCSSRulePrototype : public JSC::JSObject {

@@ -81,9 +81,13 @@ Expression::Ptr ExpressionFactory::createExpression(const QString &expr,
                                                     const QUrl &queryURI,
                                                     const QXmlName &initialTemplateName)
 {
-    if(lang == QXmlQuery::XQuery10)
+    if(lang == QXmlQuery::XSLT20)
     {
-        return createExpression(Tokenizer::Ptr(new XQueryTokenizer(expr, queryURI)),
+        QByteArray query(expr.toUtf8());
+        QBuffer buffer(&query);
+        buffer.open(QIODevice::ReadOnly);
+
+        return createExpression(&buffer,
                                 context,
                                 lang,
                                 requiredType,
@@ -92,12 +96,7 @@ Expression::Ptr ExpressionFactory::createExpression(const QString &expr,
     }
     else
     {
-        Q_ASSERT(lang == QXmlQuery::XSLT20);
-        QByteArray query(expr.toUtf8());
-        QBuffer buffer(&query);
-        buffer.open(QIODevice::ReadOnly);
-
-        return createExpression(&buffer,
+        return createExpression(Tokenizer::Ptr(new XQueryTokenizer(expr, queryURI)),
                                 context,
                                 lang,
                                 requiredType,
@@ -118,16 +117,10 @@ Expression::Ptr ExpressionFactory::createExpression(QIODevice *const device,
 
     Tokenizer::Ptr tokenizer;
 
-    if(lang == QXmlQuery::XQuery10)
-    {
-
-        tokenizer = Tokenizer::Ptr(new XQueryTokenizer(QString::fromUtf8(device->readAll()), queryURI));
-    }
-    else
-    {
-        Q_ASSERT(lang == QXmlQuery::XSLT20);
+    if(lang == QXmlQuery::XSLT20)
         tokenizer = Tokenizer::Ptr(new XSLTTokenizer(device, queryURI, context, context->namePool()));
-    }
+    else
+        tokenizer = Tokenizer::Ptr(new XQueryTokenizer(QString::fromUtf8(device->readAll()), queryURI));
 
     return createExpression(tokenizer, context, lang, requiredType, queryURI, initialTemplateName);
 }

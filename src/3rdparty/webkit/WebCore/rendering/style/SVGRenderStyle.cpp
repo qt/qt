@@ -32,6 +32,7 @@
 
 #include "CSSPrimitiveValue.h"
 #include "CSSValueList.h"
+#include "NodeRenderStyle.h"
 #include "RenderObject.h"
 #include "RenderStyle.h"
 #include "SVGStyledElement.h"
@@ -136,7 +137,7 @@ float SVGRenderStyle::cssPrimitiveToLength(const RenderObject* item, CSSValue* v
         }
     }
 
-    return primitive->computeLengthFloat(const_cast<RenderStyle*>(item->style()));
+    return primitive->computeLengthFloat(const_cast<RenderStyle*>(item->style()), item->document()->documentElement()->renderStyle());
 }
 
 }

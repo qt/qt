@@ -31,9 +31,9 @@
 
 namespace WebCore {
 
-class JSWebKitPointConstructor : public DOMObject {
+class JSWebKitPointConstructor : public DOMConstructorObject {
 public:
-    JSWebKitPointConstructor(JSC::ExecState*);
+    JSWebKitPointConstructor(JSC::ExecState*, JSDOMGlobalObject*);
     static const JSC::ClassInfo s_info;
 
 private:

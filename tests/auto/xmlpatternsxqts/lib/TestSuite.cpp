@@ -91,6 +91,7 @@
 #include "TestSuiteResult.h"
 #include "XMLWriter.h"
 #include "XSLTTestSuiteHandler.h"
+#include "XSDTestSuiteHandler.h"
 #include "qdebug_p.h"
 
 #include "TestSuite.h"
@@ -132,7 +133,7 @@ TestSuiteResult *TestSuite::runSuite()
 TestSuite *TestSuite::openCatalog(const QUrl &catalogURI,
                                   QString &errorMsg,
                                   const bool useExclusionList,
-                                  const bool isXSLTCatalog)
+                                  SuiteType suiteType)
 {
     pDebug() << "Opening catalog:" << catalogURI.toString();
     QFile ts(catalogURI.toLocalFile());
@@ -167,14 +168,14 @@ TestSuite *TestSuite::openCatalog(const QUrl &catalogURI,
         return 0;
     }
 
-    return openCatalog(&ts, errorMsg, catalogURI, useExclusionList, isXSLTCatalog);
+    return openCatalog(&ts, errorMsg, catalogURI, useExclusionList, suiteType);
 }
 
 TestSuite *TestSuite::openCatalog(QIODevice *input,
                                   QString &errorMsg,
                                   const QUrl &fileName,
                                   const bool useExclusionList,
-                                  const bool isXSLTCatalog)
+                                  SuiteType suiteType)
 {
     Q_ASSERT(input);
 
@@ -183,10 +184,12 @@ TestSuite *TestSuite::openCatalog(QIODevice *input,
 
     HandlerPtr loader;
 
-    if(isXSLTCatalog)
-        loader = HandlerPtr(new XSLTTestSuiteHandler(fileName));
-    else
-        loader = HandlerPtr(new TestSuiteHandler(fileName, useExclusionList));
+    switch (suiteType) {
+        case XQuerySuite: loader = HandlerPtr(new TestSuiteHandler(fileName, useExclusionList)); break;
+        case XsltSuite: loader = HandlerPtr(new XSLTTestSuiteHandler(fileName)); break;
+        case XsdSuite: loader = HandlerPtr(new XSDTestSuiteHandler(fileName)); break;
+        default: Q_ASSERT(false); break;
+    }
 
     reader.setContentHandler(loader.data());
 
@@ -198,8 +201,13 @@ TestSuite *TestSuite::openCatalog(QIODevice *input,
         return 0;
     }
 
-    TestSuite *const suite = isXSLTCatalog ? static_cast<XSLTTestSuiteHandler *>(loader.data())->testSuite()
-                                           : static_cast<TestSuiteHandler *>(loader.data())->testSuite();
+    TestSuite *suite = 0;
+    switch (suiteType) {
+        case XQuerySuite: suite = static_cast<TestSuiteHandler *>(loader.data())->testSuite(); break;
+        case XsltSuite: suite = static_cast<XSLTTestSuiteHandler *>(loader.data())->testSuite(); break;
+        case XsdSuite: suite = static_cast<XSDTestSuiteHandler *>(loader.data())->testSuite(); break;
+        default: Q_ASSERT(false); break;
+    }
 
     if(suite)
         return suite;

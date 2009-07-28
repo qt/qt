@@ -620,8 +620,8 @@ void QAbstractAnimation::start(DeletionPolicy policy)
     Q_D(QAbstractAnimation);
     if (d->state == Running)
         return;
-    d->setState(Running);
     d->deleteWhenStopped = policy;
+    d->setState(Running);
 }
 
 /*!
@@ -643,9 +643,8 @@ void QAbstractAnimation::stop()
 
 /*!
     Pauses the animation. When the animation is paused, state() returns Paused.
-    The currenttime will remain unchanged until resume() or start() is called.
-    If you want to continue from the current time, call resume().
-
+    The value of currentTime will remain unchanged until resume() or start() 
+    is called. If you want to continue from the current time, call resume().
 
     \sa start(), state(), resume()
  */

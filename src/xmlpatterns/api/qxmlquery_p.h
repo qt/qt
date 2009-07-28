@@ -142,13 +142,10 @@ public:
 
         if(!m_functionFactory)
         {
-            if(queryLanguage == QXmlQuery::XQuery10)
-                m_functionFactory = QPatternist::FunctionFactoryCollection::xpath20Factory(namePool.d);
-            else
-            {
-                Q_ASSERT(queryLanguage == QXmlQuery::XSLT20);
+            if(queryLanguage == QXmlQuery::XSLT20)
                 m_functionFactory = QPatternist::FunctionFactoryCollection::xslt20Factory(namePool.d);
-            }
+            else
+                m_functionFactory = QPatternist::FunctionFactoryCollection::xpath20Factory(namePool.d);
         }
 
         const QPatternist::GenericStaticContext::Ptr genericStaticContext(new QPatternist::GenericStaticContext(namePool.d,
@@ -164,6 +161,14 @@ public:
 
         if(!contextItem.isNull())
             m_staticContext = QPatternist::StaticContext::Ptr(new QPatternist::StaticFocusContext(QPatternist::AtomicValue::qtToXDMType(contextItem), m_staticContext));
+        else if(   queryLanguage == QXmlQuery::XmlSchema11IdentityConstraintField
+                || queryLanguage == QXmlQuery::XmlSchema11IdentityConstraintSelector
+                || queryLanguage == QXmlQuery::XPath20)
+            m_staticContext = QPatternist::StaticContext::Ptr(new QPatternist::StaticFocusContext(QPatternist::BuiltinTypes::node, m_staticContext));
+
+        for (int i = 0; i < m_additionalNamespaceBindings.count(); ++i) {
+            m_staticContext->namespaceBindings()->addBinding(m_additionalNamespaceBindings.at(i));
+        }
 
         return m_staticContext;
     }
@@ -205,19 +210,6 @@ public:
             m_resourceLoader = (new QPatternist::AccelTreeResourceLoader(namePool.d, m_networkAccessDelegator));
 
         return m_resourceLoader;
-    }
-
-
-    static inline QUrl normalizeQueryURI(const QUrl &uri)
-    {
-        Q_ASSERT_X(uri.isEmpty() || uri.isValid(), Q_FUNC_INFO,
-                   "The URI passed to QXmlQuery::setQuery() must be valid or empty.");
-        if(uri.isEmpty())
-            return QUrl::fromLocalFile(QCoreApplication::applicationFilePath());
-        else if(uri.isRelative())
-            return QUrl::fromLocalFile(QCoreApplication::applicationFilePath()).resolved(uri);
-        else
-            return uri;
     }
 
     void setRequiredType(const QPatternist::SequenceType::Ptr &seqType)
@@ -278,6 +270,11 @@ public:
         return m_expr;
     }
 
+    inline void addAdditionalNamespaceBinding(const QXmlName &binding)
+    {
+        m_additionalNamespaceBindings.append(binding);
+    }
+
     QXmlNamePool                                namePool;
     QPointer<QAbstractMessageHandler>           messageHandler;
     /**
@@ -321,6 +318,8 @@ public:
     QPatternist::SequenceType::Ptr              m_requiredType;
     QPatternist::FunctionFactory::Ptr           m_functionFactory;
     QPatternist::NetworkAccessDelegator::Ptr    m_networkAccessDelegator;
+
+    QList<QXmlName>                             m_additionalNamespaceBindings;
 };
 
 QT_END_NAMESPACE

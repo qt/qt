@@ -68,8 +68,10 @@ public:
 
     void rewind(float timeDelta);
     void returnToRealtime();
-    
-    virtual bool supportsFullscreen() const { return false; }
+
+    // Eventually overloaded in HTMLVideoElement
+    virtual bool supportsFullscreen() const { return false; };
+    virtual bool supportsSave() const;
 
     void scheduleLoad();
     

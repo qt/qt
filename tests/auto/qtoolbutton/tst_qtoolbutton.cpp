@@ -64,6 +64,7 @@ public:
 private slots:
     void getSetCheck();
     void triggered();
+    void collapseTextOnPriority();
     void task230994_iconSize();
     void task176137_autoRepeatOfAction();
 
@@ -159,6 +160,32 @@ void tst_QToolButton::triggered()
     QCOMPARE(qvariant_cast<QAction *>(spy.at(1).at(0)), one);
     delete menu;
 }
+
+void tst_QToolButton::collapseTextOnPriority()
+{
+    class MyToolButton : public QToolButton
+    {
+        friend class tst_QToolButton;
+    public:
+        void initStyleOption(QStyleOptionToolButton *option)
+        {
+            QToolButton::initStyleOption(option);
+        }
+    };
+
+    MyToolButton button;
+    button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    QAction action(button.style()->standardIcon(QStyle::SP_ArrowBack), "test", 0);
+    button.setDefaultAction(&action);
+
+    QStyleOptionToolButton option;
+    button.initStyleOption(&option);
+    QVERIFY(option.toolButtonStyle == Qt::ToolButtonTextBesideIcon);
+    action.setPriority(QAction::LowPriority);
+    button.initStyleOption(&option);
+    QVERIFY(option.toolButtonStyle == Qt::ToolButtonIconOnly);
+}
+
 
 void tst_QToolButton::task230994_iconSize()
 {

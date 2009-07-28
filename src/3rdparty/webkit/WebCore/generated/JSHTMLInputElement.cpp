@@ -24,6 +24,7 @@
 #include "FileList.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
+#include "HTMLNames.h"
 #include "JSFileList.h"
 #include "JSHTMLFormElement.h"
 #include "JSValidityState.h"
@@ -42,7 +43,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLInputElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLInputElementTableValues[28] =
+static const HashTableValue JSHTMLInputElementTableValues[30] =
 {
     { "defaultValue", DontDelete, (intptr_t)jsHTMLInputElementDefaultValue, (intptr_t)setJSHTMLInputElementDefaultValue },
     { "defaultChecked", DontDelete, (intptr_t)jsHTMLInputElementDefaultChecked, (intptr_t)setJSHTMLInputElementDefaultChecked },
@@ -58,8 +59,10 @@ static const HashTableValue JSHTMLInputElementTableValues[28] =
     { "maxLength", DontDelete, (intptr_t)jsHTMLInputElementMaxLength, (intptr_t)setJSHTMLInputElementMaxLength },
     { "multiple", DontDelete, (intptr_t)jsHTMLInputElementMultiple, (intptr_t)setJSHTMLInputElementMultiple },
     { "name", DontDelete, (intptr_t)jsHTMLInputElementName, (intptr_t)setJSHTMLInputElementName },
+    { "pattern", DontDelete, (intptr_t)jsHTMLInputElementPattern, (intptr_t)setJSHTMLInputElementPattern },
     { "placeholder", DontDelete, (intptr_t)jsHTMLInputElementPlaceholder, (intptr_t)setJSHTMLInputElementPlaceholder },
     { "readOnly", DontDelete, (intptr_t)jsHTMLInputElementReadOnly, (intptr_t)setJSHTMLInputElementReadOnly },
+    { "required", DontDelete, (intptr_t)jsHTMLInputElementRequired, (intptr_t)setJSHTMLInputElementRequired },
     { "size", DontDelete, (intptr_t)jsHTMLInputElementSize, (intptr_t)setJSHTMLInputElementSize },
     { "src", DontDelete, (intptr_t)jsHTMLInputElementSrc, (intptr_t)setJSHTMLInputElementSrc },
     { "type", DontDelete, (intptr_t)jsHTMLInputElementType, (intptr_t)setJSHTMLInputElementType },
@@ -76,9 +79,9 @@ static const HashTableValue JSHTMLInputElementTableValues[28] =
 
 static JSC_CONST_HASHTABLE HashTable JSHTMLInputElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 255, JSHTMLInputElementTableValues, 0 };
+    { 2047, JSHTMLInputElementTableValues, 0 };
 #else
-    { 70, 63, JSHTMLInputElementTableValues, 0 };
+    { 71, 63, JSHTMLInputElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -95,12 +98,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLInputElementConstructorTable =
     { 1, 0, JSHTMLInputElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLInputElementConstructor : public DOMObject {
+class JSHTMLInputElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLInputElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLInputElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLInputElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLInputElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLInputElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLInputElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -150,8 +153,8 @@ bool JSHTMLInputElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
 
 const ClassInfo JSHTMLInputElement::s_info = { "HTMLInputElement", &JSHTMLElement::s_info, &JSHTMLInputElementTable, 0 };
 
-JSHTMLInputElement::JSHTMLInputElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLInputElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLInputElement::JSHTMLInputElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLInputElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -167,183 +170,226 @@ bool JSHTMLInputElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLInputElementDefaultValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->defaultValue());
 }
 
 JSValue jsHTMLInputElementDefaultChecked(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->defaultChecked());
 }
 
 JSValue jsHTMLInputElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->form()));
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLInputElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->validity()));
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLInputElementAccept(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->accept());
 }
 
 JSValue jsHTMLInputElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->accessKey());
 }
 
 JSValue jsHTMLInputElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLInputElementAlt(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->alt());
 }
 
 JSValue jsHTMLInputElementChecked(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->checked());
 }
 
 JSValue jsHTMLInputElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->disabled());
 }
 
 JSValue jsHTMLInputElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->autofocus());
 }
 
 JSValue jsHTMLInputElementMaxLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsNumber(exec, imp->maxLength());
 }
 
 JSValue jsHTMLInputElementMultiple(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->multiple());
 }
 
 JSValue jsHTMLInputElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->name());
+}
+
+JSValue jsHTMLInputElementPattern(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::patternAttr));
 }
 
 JSValue jsHTMLInputElementPlaceholder(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->placeholder());
 }
 
 JSValue jsHTMLInputElementReadOnly(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->readOnly());
+}
+
+JSValue jsHTMLInputElementRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
+    return jsBoolean(imp->required());
 }
 
 JSValue jsHTMLInputElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsNumber(exec, imp->size());
 }
 
 JSValue jsHTMLInputElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->src());
 }
 
 JSValue jsHTMLInputElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->type(exec);
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    return castedThis->type(exec);
 }
 
 JSValue jsHTMLInputElementUseMap(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->useMap());
 }
 
 JSValue jsHTMLInputElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsString(exec, imp->value());
 }
 
 JSValue jsHTMLInputElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->willValidate());
 }
 
 JSValue jsHTMLInputElementIndeterminate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsBoolean(imp->indeterminate());
 }
 
 JSValue jsHTMLInputElementSelectionStart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->selectionStart(exec);
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    return castedThis->selectionStart(exec);
 }
 
 JSValue jsHTMLInputElementSelectionEnd(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->selectionEnd(exec);
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    return castedThis->selectionEnd(exec);
 }
 
 JSValue jsHTMLInputElementFiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->files()));
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->files()));
 }
 
 JSValue jsHTMLInputElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLInputElement* domObject = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    return JSHTMLInputElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLInputElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -422,6 +468,12 @@ void setJSHTMLInputElementName(ExecState* exec, JSObject* thisObject, JSValue va
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
+void setJSHTMLInputElementPattern(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
+    imp->setAttribute(HTMLNames::patternAttr, value.toString(exec));
+}
+
 void setJSHTMLInputElementPlaceholder(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
@@ -432,6 +484,12 @@ void setJSHTMLInputElementReadOnly(ExecState* exec, JSObject* thisObject, JSValu
 {
     HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
     imp->setReadOnly(value.toBoolean(exec));
+}
+
+void setJSHTMLInputElementRequired(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
+    imp->setRequired(value.toBoolean(exec));
 }
 
 void setJSHTMLInputElementSize(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -480,9 +538,9 @@ void setJSHTMLInputElementSelectionEnd(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSHTMLInputElement*>(thisObject)->setSelectionEnd(exec, value);
 }
 
-JSValue JSHTMLInputElement::getConstructor(ExecState* exec)
+JSValue JSHTMLInputElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLInputElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLInputElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLInputElementPrototypeFunctionSelect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
