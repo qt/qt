@@ -60,7 +60,7 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qvariant.h"
-#include "qguard_p.h"
+#include "private/qguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
