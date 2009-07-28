@@ -50,15 +50,15 @@ QT_BEGIN_NAMESPACE
 
 struct ContentItem {
     ContentItem(const QString &t, const QString &r, int d)
-	: title(t), reference(r), depth(d) {}
+       : title(t), reference(r), depth(d) {}
     QString title;
     QString reference;
-    int depth;    
+    int depth;
 };
 
 struct KeywordItem {
     KeywordItem(const QString &k, const QString &r)
-	: keyword(k), reference(r) {}
+       : keyword(k), reference(r) {}
     QString keyword;
     QString reference;
 };
