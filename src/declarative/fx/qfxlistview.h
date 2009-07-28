@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QFxVisualItemModel;
+class QFxListViewAttached;
 class QFxListViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 {
@@ -116,7 +117,7 @@ public:
     void setSectionExpression(const QString &);
     QString currentSection() const;
 
-    static QObject *qmlAttachedProperties(QObject *);
+    static QFxListViewAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void countChanged();

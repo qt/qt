@@ -1421,7 +1421,7 @@ void QFxGridView::refill()
 }
 
 
-QObject *QFxGridView::qmlAttachedProperties(QObject *obj)
+QFxGridViewAttached *QFxGridView::qmlAttachedProperties(QObject *obj)
 {
     return QFxGridViewAttached::properties(obj);
 }
