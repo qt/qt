@@ -202,6 +202,16 @@ QString QmlParentChange::typeName() const
     return QLatin1String("ParentChange");
 }
 
+bool QmlParentChange::override(ActionEvent*other)
+{
+    Q_D(QmlParentChange);
+    if (other->typeName() != QLatin1String("ParentChange"))
+        return false;
+    if (QmlParentChange *otherPC = static_cast<QmlParentChange*>(other))
+        return (d->target == otherPC->object());
+    return false;
+}
+
 class QmlRunScriptPrivate : public QObjectPrivate
 {
 public:
