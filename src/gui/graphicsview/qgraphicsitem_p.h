@@ -514,9 +514,9 @@ struct QGraphicsItemPaintInfo
 {
     inline QGraphicsItemPaintInfo(const QTransform *const xform1, QTransform *xform2,
                                   QRegion *r, QWidget *w, QStyleOptionGraphicsItem *opt,
-                                  qreal o, bool b1, bool b2)
+                                  QPainter *p, qreal o, bool b1, bool b2)
         : viewTransform(xform1), transformPtr(xform2), exposedRegion(r), widget(w),
-          option(opt), opacity(o), wasDirtySceneTransform(b1), drawItem(b2)
+          option(opt), painter(p), opacity(o), wasDirtySceneTransform(b1), drawItem(b2)
     {}
 
     const QTransform *viewTransform;
@@ -524,6 +524,7 @@ struct QGraphicsItemPaintInfo
     QRegion *exposedRegion;
     QWidget *widget;
     QStyleOptionGraphicsItem *option;
+    QPainter *painter;
     qreal opacity;
     quint32 wasDirtySceneTransform : 1;
     quint32 drawItem : 1;

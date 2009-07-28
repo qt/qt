@@ -4310,7 +4310,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         }
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, exposedRegion, widget, &styleOptionTmp,
-                                    opacity, wasDirtyParentSceneTransform, drawItem);
+                                    painter, opacity, wasDirtyParentSceneTransform, drawItem);
         QGraphicsEffectSource *source = item->d_ptr->graphicsEffect->d_func()->source;
         QGraphicsItemEffectSourcePrivate *sourced = static_cast<QGraphicsItemEffectSourcePrivate *>
                                                     (source->d_func());

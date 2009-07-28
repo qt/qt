@@ -9939,9 +9939,19 @@ QRectF QGraphicsItemEffectSourcePrivate::boundingRect(bool deviceCoordinates) co
 
 void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
 {
-    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
-    scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
-                 info->widget, info->opacity, 0, info->wasDirtySceneTransform, info->drawItem);
+    if (painter == info->painter) {
+        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+        scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
+                     info->widget, info->opacity, 0, info->wasDirtySceneTransform,
+                     info->drawItem);
+    } else {
+        QTransform effectTransform = painter->worldTransform();
+        effectTransform *= info->transformPtr->inverted();
+        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+        scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
+                     info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
+                     info->drawItem);
+    }
 }
 
 QPixmap QGraphicsItemEffectSourcePrivate::pixmap(bool deviceCoordinates, QPoint *offset) const
