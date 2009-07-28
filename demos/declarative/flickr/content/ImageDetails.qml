@@ -15,14 +15,13 @@ Flipable {
     property string photoUrl
     property int rating: 2
     property var prevScale: 1.0
-    property int rotation: 0
 
     signal closed
 
     transform: Rotation3D {
+        id: Rotation
         origin.x: Container.width / 2;
         axis.y: 1;
-        angle: Container.rotation;
     }
 
     front: Item {
@@ -137,7 +136,7 @@ Flipable {
     states: [
         State {
             name: "Back"
-            SetProperties { target: Container; rotation: 180 }
+            SetProperties { target: Rotation; angle: 180 }
         }
     ]
 
@@ -149,7 +148,7 @@ Flipable {
                     property: "smooth"
                     value: false
                 }
-                NumberAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
+                NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 500 }
                 SetPropertyAction {
                     target: BigImage
                     property: "smooth"
