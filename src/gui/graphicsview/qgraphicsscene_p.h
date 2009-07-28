@@ -201,9 +201,9 @@ public:
 
     void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform *const,
                               QRegion *exposedRegion, QWidget *widget, qreal parentOpacity = qreal(1.0),
-                              QPoint *effectOffset = 0);
-    void draw(QGraphicsItem *, QPainter *, const QTransform *const, const QTransform *const,
-              QRegion *, QWidget *, qreal, QPoint *, bool, bool);
+                              const QTransform *const effectTransform = 0);
+    void draw(QGraphicsItem *, QPainter *, const QTransform *const, QTransform *,
+              QRegion *, QWidget *, qreal, const QTransform *const, bool, bool);
 
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
                    bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,

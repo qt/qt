@@ -62,8 +62,8 @@ QRectF BlurEffect::boundingRect() const
     return QGraphicsBlurEffect::boundingRect();
 }
 
-void BlurEffect::draw(QPainter *painter)
+void BlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     adjustForItem();
-    QGraphicsBlurEffect::draw(painter);
+    QGraphicsBlurEffect::draw(painter, source);
 }

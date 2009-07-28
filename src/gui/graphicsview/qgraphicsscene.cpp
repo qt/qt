@@ -4232,7 +4232,7 @@ void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,
                                                  const QTransform *const viewTransform,
                                                  QRegion *exposedRegion, QWidget *widget,
-                                                 qreal parentOpacity, QPoint *effectOffset)
+                                                 qreal parentOpacity, const QTransform *const effectTransform)
 {
     Q_ASSERT(item);
 
@@ -4285,10 +4285,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         ENSURE_TRANSFORM_PTR
         QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toRect()
                                                         : transformPtr->mapRect(brect).toRect();
-        if (widget) {
-            item->d_ptr->paintedViewBoundingRects.insert(widget, effectOffset ?
-                    viewBoundingRect.translated(*effectOffset) : viewBoundingRect);
-        }
+        if (widget)
+            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         viewBoundingRect.adjust(-1, -1, 1, 1);
         drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect) : !viewBoundingRect.isEmpty();
         if (!drawItem) {
@@ -4306,6 +4304,10 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         ENSURE_TRANSFORM_PTR;
 
     if (item->d_ptr->graphicsEffect) {
+        if (item->type() == 7) {
+            item->d_ptr->graphicsEffect->setSourcePixmap(static_cast<QGraphicsPixmapItem*>(item)
+                                                         ->pixmap());
+        }
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, exposedRegion, widget, &styleOptionTmp,
                                     opacity, wasDirtyParentSceneTransform, drawItem);
@@ -4319,13 +4321,13 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         painter->setWorldTransform(restoreTransform);
     } else {
         draw(item, painter, viewTransform, transformPtr, exposedRegion, widget, opacity,
-             effectOffset, wasDirtyParentSceneTransform, drawItem);
+             effectTransform, wasDirtyParentSceneTransform, drawItem);
     }
 }
 
 void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const QTransform *const viewTransform,
-                                 const QTransform *const transformPtr, QRegion *exposedRegion, QWidget *widget, qreal opacity,
-                                 QPoint *effectOffset, bool wasDirtyParentSceneTransform, bool drawItem)
+                                 QTransform *transformPtr, QRegion *exposedRegion, QWidget *widget, qreal opacity,
+                                 const QTransform *effectTransform, bool wasDirtyParentSceneTransform, bool drawItem)
 {
     const bool itemIsFullyTransparent = (opacity < 0.0001);
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
@@ -4338,6 +4340,8 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
         if (itemClipsChildrenToShape) {
             painter->save();
             Q_ASSERT(transformPtr);
+            if (effectTransform)
+                *transformPtr *= *effectTransform;
             painter->setWorldTransform(*transformPtr);
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         }
@@ -4351,7 +4355,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                 break;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectOffset);
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectTransform);
         }
     }
 
@@ -4368,8 +4372,11 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
         if (savePainter)
             painter->save();
 
-        if (!itemHasChildren || !itemClipsChildrenToShape)
+        if (!itemHasChildren || !itemClipsChildrenToShape) {
+            if (effectTransform)
+                *transformPtr *= *effectTransform;
             painter->setWorldTransform(*transformPtr);
+        }
 
         if (itemClipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
@@ -4392,7 +4399,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                 child->d_ptr->dirtySceneTransform = 1;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectOffset);
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectTransform);
         }
     }
 
@@ -4475,8 +4482,12 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         item->d_ptr->ignoreOpacity = 1;
 
     QGraphicsItem *p = item->d_ptr->parent;
-    while (p && !p->d_ptr->dirtyChildren) {
+    while (p) {
         p->d_ptr->dirtyChildren = 1;
+        if (p->d_ptr->graphicsEffect) {
+            p->d_ptr->dirty = 1;
+            p->d_ptr->fullUpdatePending = 1;
+        }
         p = p->d_ptr->parent;
     }
 }
@@ -4585,7 +4596,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     // Process item.
     if (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
-        const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
+        const QRectF itemBoundingRect = adjustedItemEffectiveBoundingRect(item);
 
         if (useCompatUpdate && !itemIsUntransformable && qFuzzyIsNull(item->boundingRegionGranularity())) {
             // This block of code is kept for compatibility. Since 4.5, by default

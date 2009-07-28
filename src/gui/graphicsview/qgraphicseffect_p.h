@@ -73,6 +73,7 @@ public:
     virtual const QStyleOption *styleOption() const = 0;
     virtual void draw(QPainter *p) = 0;
     virtual bool drawIntoPixmap(QPixmap *, const QPoint &offset = QPoint()) = 0;
+    virtual QPixmap pixmap(bool deviceCoordinates, QPoint *offset = 0) const = 0;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
@@ -82,7 +83,7 @@ class QGraphicsEffectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:
-    QGraphicsEffectPrivate() : source(0) {}
+    QGraphicsEffectPrivate() : source(0), hasSourcePixmap(0) {}
     QGraphicsEffectSource *source;
     inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)
     {
@@ -93,6 +94,9 @@ public:
         source = newSource;
     }
     QRectF boundingRect;
+    QPixmap sourcePixmap;
+    quint32 hasSourcePixmap : 1;
+    quint32 padding : 31; // feel free to use
 };
 
 class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate

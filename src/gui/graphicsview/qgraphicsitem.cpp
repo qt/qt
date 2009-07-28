@@ -9944,6 +9944,33 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
                  info->widget, info->opacity, 0, info->wasDirtySceneTransform, info->drawItem);
 }
 
+QPixmap QGraphicsItemEffectSourcePrivate::pixmap(bool deviceCoordinates, QPoint *offset) const
+{
+    const QRectF sourceRect = boundingRect(deviceCoordinates);
+    const QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+    if (offset)
+        *offset = sourceRect.toAlignedRect().topLeft();
+
+    const QTransform translateTransform = QTransform::fromTranslate(-effectRect.x(),
+                                                                    -effectRect.y());
+    QTransform effectTransform = deviceCoordinates ? translateTransform
+                                                   : info->transformPtr->inverted();
+    if (!deviceCoordinates)
+        effectTransform *= translateTransform;
+    *info->transformPtr *= effectTransform;
+
+    QPixmap pixmap(effectRect.size());
+    pixmap.fill(Qt::transparent);
+    QPainter pixmapPainter(&pixmap);
+    pixmapPainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
+
+    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+    scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
+                 info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
+                 info->drawItem);
+    return pixmap;
+}
+
 bool QGraphicsItemEffectSourcePrivate::drawIntoPixmap(QPixmap *pixmap, const QPoint &offset)
 {
     QPoint effectOffset(offset);
@@ -9969,7 +9996,7 @@ bool QGraphicsItemEffectSourcePrivate::drawIntoPixmap(QPixmap *pixmap, const QPo
     pixmapPainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
     scened->draw(item, &pixmapPainter, &viewTransform, info->transformPtr, &exposedRegion,
-                 info->widget, info->opacity, &effectOffset, info->wasDirtySceneTransform,
+                 info->widget, info->opacity, 0, info->wasDirtySceneTransform,
                  info->drawItem);
     return true;
 }

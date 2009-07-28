@@ -124,6 +124,8 @@ void QGraphicsEffectSource::draw(QPainter *painter)
 bool QGraphicsEffectSource::drawIntoPixmap(QPixmap *pixmap, const QPoint &offset)
 { return d_func()->drawIntoPixmap(pixmap, offset); }
 
+QPixmap QGraphicsEffectSource::pixmap(bool deviceCoordinates, QPoint *offset) const
+{ return d_func()->pixmap(deviceCoordinates, offset); }
 
 QGraphicsEffect::QGraphicsEffect()
     : QObject(*new QGraphicsEffectPrivate, 0)
@@ -149,6 +151,25 @@ QRectF QGraphicsEffect::boundingRect() const
     if (d->source)
         return boundingRectFor(d->source->boundingRect());
     return QRectF();
+}
+
+void QGraphicsEffect::setSourcePixmap(const QPixmap &pixmap)
+{
+    Q_D(QGraphicsEffect);
+    d->sourcePixmap = pixmap;
+    d->hasSourcePixmap = !pixmap.isNull();
+}
+
+QPixmap QGraphicsEffect::sourcePixmap() const
+{
+    Q_D(const QGraphicsEffect);
+    return d->sourcePixmap;
+}
+
+bool QGraphicsEffect::hasSourcePixmap() const
+{
+    Q_D(const QGraphicsEffect);
+    return d->hasSourcePixmap;
 }
 
 QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
@@ -398,17 +419,13 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBlurEffect);
-    const QRectF sourceRect = source->boundingRect(/*deviceCoordinates=*/true);
-    const QRect effectRect = d->filter->boundingRectFor(sourceRect).toRect().adjusted(-1, -1, 1, 1);
-
-    QPixmap pixmap(effectRect.size());
-    if (!source->drawIntoPixmap(&pixmap, effectRect.topLeft()))
-        return;
+    QPoint offset;
+    const QPixmap pixmap = source->pixmap(true, &offset);
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, sourceRect.topLeft(), pixmap, pixmap.rect());
+    d->filter->draw(painter, offset, pixmap, pixmap.rect());
     painter->setWorldTransform(restoreTransform);
 }
 

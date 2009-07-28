@@ -54,7 +54,7 @@ public:
 
     QRectF boundingRect() const;
 
-    void draw(QPainter *painter);
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     void adjustForItem();

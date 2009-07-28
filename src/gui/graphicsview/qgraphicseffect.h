@@ -65,6 +65,7 @@ QT_MODULE(Gui)
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 class QGraphicsEffectSourcePrivate;
+class QStyleOption;
 class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
 {
     Q_OBJECT
@@ -75,6 +76,7 @@ public:
     const QStyleOption *styleOption() const;
     void draw(QPainter *painter);
     bool drawIntoPixmap(QPixmap *pixmap, const QPoint &offset = QPoint());
+    QPixmap pixmap(bool deviceCoordinates, QPoint *offset = 0) const;
 
 protected:
     QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
@@ -97,9 +99,13 @@ public:
     virtual ~QGraphicsEffect();
     QRectF boundingRect() const;
 
+    void setSourcePixmap(const QPixmap &pixmap);
+    QPixmap sourcePixmap() const;
+    bool hasSourcePixmap() const;
+    virtual QRectF boundingRectFor(const QRectF &rect) const;
+
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);
-    virtual QRectF boundingRectFor(const QRectF &rect) const;
     virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
 
 private:
