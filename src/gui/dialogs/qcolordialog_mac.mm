@@ -76,6 +76,8 @@ QT_USE_NAMESPACE
     CGFloat mMinWidth;  // currently unused
     CGFloat mExtraHeight;   // currently unused
     BOOL mHackedPanel;
+    NSInteger mResultCode;
+    BOOL mDialogIsExecuting;
 }
 - (id)initWithColorPanel:(NSColorPanel *)panel
        stolenContentView:(NSView *)stolenContentView
@@ -90,7 +92,8 @@ QT_USE_NAMESPACE
 - (NSColorPanel *)colorPanel;
 - (QColor)qtColor;
 - (void)finishOffWithCode:(NSInteger)result;
-- (void)cleanUpAfterMyself;
+- (void)showColorPanel;
+- (void)exec;
 @end
 
 @implementation QCocoaColorPanelDelegate
@@ -110,6 +113,8 @@ QT_USE_NAMESPACE
     mMinWidth = 0.0;
     mExtraHeight = 0.0;
     mHackedPanel = (okButton != 0);
+    mResultCode = NSCancelButton;
+    mDialogIsExecuting = false;
 
     if (mHackedPanel) {
         [self relayout];
@@ -121,19 +126,31 @@ QT_USE_NAMESPACE
         [cancelButton setTarget:self];
     }
 
-    if (mPriv)
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                              selector:@selector(colorChanged:)
-                                              name:NSColorPanelColorDidChangeNotification
-                                              object:mColorPanel];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+        selector:@selector(colorChanged:)
+        name:NSColorPanelColorDidChangeNotification
+        object:mColorPanel];
+
     mQtColor = new QColor();
     return self;
 }
 
 - (void)dealloc
 {
-    if (mPriv)
-        [[NSNotificationCenter defaultCenter] removeObserver:self];
+    QMacCocoaAutoReleasePool pool;
+    if (mHackedPanel) {
+        NSView *ourContentView = [mColorPanel contentView];
+
+        // return stolen stuff to its rightful owner
+        [mStolenContentView removeFromSuperview];
+        [mColorPanel setContentView:mStolenContentView];
+
+        [mOkButton release];
+        [mCancelButton release];
+        [ourContentView release];
+    }
+    [mColorPanel setDelegate:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     delete mQtColor;
     [super dealloc];
 }
@@ -160,8 +177,7 @@ QT_USE_NAMESPACE
 - (void)colorChanged:(NSNotification *)notification;
 {
     Q_UNUSED(notification);
-    if (mPriv)
-        [self updateQtColor];
+    [self updateQtColor];
 }
 
 - (void)relayout
@@ -252,8 +268,7 @@ QT_USE_NAMESPACE
         mQtColor->setRgbF(red, green, blue, alpha);
     }
 
-    if (mPriv)
-        mPriv->setCurrentQColor(*mQtColor);
+    mPriv->setCurrentQColor(*mQtColor);
 }
 
 - (NSColorPanel *)colorPanel
@@ -268,36 +283,39 @@ QT_USE_NAMESPACE
 
 - (void)finishOffWithCode:(NSInteger)code
 {
-    if (mPriv) {
-        // Finish the QColorDialog as well. But since a call to accept or reject will
-        // close down the QEventLoop found in QDialog, we need to make sure that the
-        // current thread has exited the native dialogs modal session/run loop first.
-        // We ensure this by posting the call:
+    // Finish the QColorDialog as well. But since a call to accept or reject will
+    // close down the QEventLoop found in QDialog, we need to make sure that the
+    // current thread has exited the native dialogs modal session/run loop first.
+    // We ensure this by posting the call:
+    mResultCode = code;
+    if (mDialogIsExecuting) {
         [NSApp stopModalWithCode:code];
-        if (code == NSOKButton)
-            QMetaObject::invokeMethod(mPriv->colorDialog(), "accept", Qt::QueuedConnection);
-        else
-            QMetaObject::invokeMethod(mPriv->colorDialog(), "reject", Qt::QueuedConnection);
     } else {
-        [NSApp stopModalWithCode:code];
+        if (mResultCode == NSCancelButton)
+            mPriv->colorDialog()->reject();
+        else
+            mPriv->colorDialog()->accept();
     }
 }
 
-- (void)cleanUpAfterMyself
+- (void)showColorPanel
 {
-    if (mHackedPanel) {
-        NSView *ourContentView = [mColorPanel contentView];
-
-        // return stolen stuff to its rightful owner
-        [mStolenContentView removeFromSuperview];
-        [mColorPanel setContentView:mStolenContentView];
-
-        [mOkButton release];
-        [mCancelButton release];
-        [ourContentView release];
-    }
-    [mColorPanel setDelegate:nil];
+    mDialogIsExecuting = false;
+    [mColorPanel makeKeyAndOrderFront:mColorPanel];
 }
+
+- (void)exec
+{
+    QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
+    QMacCocoaAutoReleasePool pool;
+    mDialogIsExecuting = true;
+    [NSApp runModalForWindow:mColorPanel];
+    if (mResultCode == NSCancelButton)
+        mPriv->colorDialog()->reject();
+    else
+        mPriv->colorDialog()->accept();
+}
+
 @end
 
 QT_BEGIN_NAMESPACE
@@ -306,91 +324,90 @@ extern void macStartInterceptNSPanelCtor();
 extern void macStopInterceptNSPanelCtor();
 extern NSButton *macCreateButton(const char *text, NSView *superview);
 
-void *QColorDialogPrivate::openCocoaColorPanel(const QColor &initial,
-        QWidget *parent, const QString &title, QColorDialog::ColorDialogOptions options,
-        QColorDialogPrivate *priv)
+void QColorDialogPrivate::openCocoaColorPanel(const QColor &initial,
+        QWidget *parent, const QString &title, QColorDialog::ColorDialogOptions options)
 {
     Q_UNUSED(parent);   // we would use the parent if only NSColorPanel could be a sheet
     QMacCocoaAutoReleasePool pool;
 
-    /*
-        The standard Cocoa color panel has no OK or Cancel button and
-        is created as a utility window, whereas we want something like
-        the Carbon color panel. We need to take the following steps:
+    if (!delegate) {
+        /*
+           The standard Cocoa color panel has no OK or Cancel button and
+           is created as a utility window, whereas we want something like
+           the Carbon color panel. We need to take the following steps:
 
-         1. Intercept the color panel constructor to turn off the
-            NSUtilityWindowMask flag. This is done by temporarily
-            replacing initWithContentRect:styleMask:backing:defer:
-            in NSPanel by our own method.
+           1. Intercept the color panel constructor to turn off the
+           NSUtilityWindowMask flag. This is done by temporarily
+           replacing initWithContentRect:styleMask:backing:defer:
+           in NSPanel by our own method.
 
-         2. Modify the color panel so that its content view is part
-            of a new content view that contains it as well as two
-            buttons (OK and Cancel).
+           2. Modify the color panel so that its content view is part
+           of a new content view that contains it as well as two
+           buttons (OK and Cancel).
 
-         3. Lay out the original content view and the buttons when
-            the color panel is shown and whenever it is resized.
+           3. Lay out the original content view and the buttons when
+           the color panel is shown and whenever it is resized.
 
-         4. Clean up after ourselves.
-    */
+           4. Clean up after ourselves.
+         */
 
-    bool hackColorPanel = !(options & QColorDialog::NoButtons);
+        bool hackColorPanel = !(options & QColorDialog::NoButtons);
 
-    if (hackColorPanel)
-        macStartInterceptNSPanelCtor();
-    NSColorPanel *colorPanel = [NSColorPanel sharedColorPanel];
-    if (hackColorPanel)
-        macStopInterceptNSPanelCtor();
+        if (hackColorPanel)
+            macStartInterceptNSPanelCtor();
+        NSColorPanel *colorPanel = [NSColorPanel sharedColorPanel];
+        if (hackColorPanel)
+            macStopInterceptNSPanelCtor();
 
-    [colorPanel setHidesOnDeactivate:false];
+        [colorPanel setHidesOnDeactivate:false];
 
-    // set up the Cocoa color panel
-    [colorPanel setShowsAlpha:options & QColorDialog::ShowAlphaChannel];
-    [colorPanel setTitle:(NSString*)(CFStringRef)QCFString(title)];
+        // set up the Cocoa color panel
+        [colorPanel setShowsAlpha:options & QColorDialog::ShowAlphaChannel];
+        [colorPanel setTitle:(NSString*)(CFStringRef)QCFString(title)];
 
-    NSView *stolenContentView = 0;
-    NSButton *okButton = 0;
-    NSButton *cancelButton = 0;
+        NSView *stolenContentView = 0;
+        NSButton *okButton = 0;
+        NSButton *cancelButton = 0;
 
-    if (hackColorPanel) {
-        // steal the color panel's contents view
-        stolenContentView = [colorPanel contentView];
-        [stolenContentView retain];
-        [colorPanel setContentView:0];
+        if (hackColorPanel) {
+            // steal the color panel's contents view
+            stolenContentView = [colorPanel contentView];
+            [stolenContentView retain];
+            [colorPanel setContentView:0];
 
-        // create a new content view and add the stolen one as a subview
-        NSRect frameRect = { { 0.0, 0.0 }, { 0.0, 0.0 } };
-        NSView *ourContentView = [[NSView alloc] initWithFrame:frameRect];
-        [ourContentView addSubview:stolenContentView];
+            // create a new content view and add the stolen one as a subview
+            NSRect frameRect = { { 0.0, 0.0 }, { 0.0, 0.0 } };
+            NSView *ourContentView = [[NSView alloc] initWithFrame:frameRect];
+            [ourContentView addSubview:stolenContentView];
 
-        // create OK and Cancel buttons and add these as subviews
-        okButton = macCreateButton("&OK", ourContentView);
-        cancelButton = macCreateButton("Cancel", ourContentView);
+            // create OK and Cancel buttons and add these as subviews
+            okButton = macCreateButton("&OK", ourContentView);
+            cancelButton = macCreateButton("Cancel", ourContentView);
 
-        [colorPanel setContentView:ourContentView];
-        [colorPanel setDefaultButtonCell:[okButton cell]];
+            [colorPanel setContentView:ourContentView];
+            [colorPanel setDefaultButtonCell:[okButton cell]];
+        }
+
+        delegate = [[QCocoaColorPanelDelegate alloc] initWithColorPanel:colorPanel
+            stolenContentView:stolenContentView
+            okButton:okButton
+            cancelButton:cancelButton
+            priv:this];
+        [colorPanel setDelegate:static_cast<QCocoaColorPanelDelegate *>(delegate)];
     }
 
-    // create a delegate and set it
-    QCocoaColorPanelDelegate *delegate =
-            [[QCocoaColorPanelDelegate alloc] initWithColorPanel:colorPanel
-                                               stolenContentView:stolenContentView
-                                                        okButton:okButton
-                                                    cancelButton:cancelButton
-                                                            priv:priv];
-    [colorPanel setDelegate:delegate];
-    setColor(delegate, initial);
-    [colorPanel makeKeyAndOrderFront:colorPanel];
-
-    return delegate;
+    setCocoaPanelColor(initial);
+    [static_cast<QCocoaColorPanelDelegate *>(delegate) showColorPanel];
 }
 
-void QColorDialogPrivate::closeCocoaColorPanel(void *delegate)
+void QColorDialogPrivate::closeCocoaColorPanel()
 {
-    QMacCocoaAutoReleasePool pool;
-    QCocoaColorPanelDelegate *theDelegate = static_cast<QCocoaColorPanelDelegate *>(delegate);
-    [[theDelegate colorPanel] close];
-    [theDelegate cleanUpAfterMyself];
-    [theDelegate autorelease];
+    [[static_cast<QCocoaColorPanelDelegate *>(delegate) colorPanel] close];
+}
+
+void QColorDialogPrivate::releaseCocoaColorPanelDelegate()
+{
+    [static_cast<QCocoaColorPanelDelegate *>(delegate) release];
 }
 
 void QColorDialogPrivate::mac_nativeDialogModalHelp()
@@ -410,13 +427,10 @@ void QColorDialogPrivate::mac_nativeDialogModalHelp()
 
 void QColorDialogPrivate::_q_macRunNativeAppModalPanel()
 {
-    QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
-    QMacCocoaAutoReleasePool pool;
-    QCocoaColorPanelDelegate *delegateCasted = static_cast<QCocoaColorPanelDelegate *>(delegate);
-    [NSApp runModalForWindow:[delegateCasted colorPanel]];
+    [static_cast<QCocoaColorPanelDelegate *>(delegate) exec];
 }
 
-void QColorDialogPrivate::setColor(void *delegate, const QColor &color)
+void QColorDialogPrivate::setCocoaPanelColor(const QColor &color)
 {
     QMacCocoaAutoReleasePool pool;
     QCocoaColorPanelDelegate *theDelegate = static_cast<QCocoaColorPanelDelegate *>(delegate);
