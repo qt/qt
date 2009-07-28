@@ -654,12 +654,7 @@ int QFxItemPrivate::transform_count() const
 
 void QFxItemPrivate::transform_append(QGraphicsTransform *item)
 {
-    if (!transformData)
-        transformData = new QGraphicsItemPrivate::TransformData;
-    if (!transformData->graphicsTransforms.contains(item))
-        transformData->graphicsTransforms.append(item);
-    transformData->onlyTransform = false;
-    dirtySceneTransform = 1;
+    appendGraphicsTransform(item);
 }
 
 void QFxItemPrivate::transform_insert(int, QGraphicsTransform *)
@@ -678,8 +673,8 @@ void QFxItemPrivate::transform_clear()
 {
     if (!transformData)
         return;
-    transformData->graphicsTransforms.clear();
-    dirtySceneTransform = 1;
+    Q_Q(QFxItem);
+    q->setTransformations(QList<QGraphicsTransform *>());
 }
 
 /*!
