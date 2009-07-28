@@ -68,7 +68,12 @@
 #include <ctype.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN // ### TODO: Are these headers right?
+#include <sys/socket.h>
+#include <netinet/in.h>
+#else
 #include <netinet/tcp.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

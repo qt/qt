@@ -171,11 +171,11 @@ public:
 
     static const QGraphicsItemPrivate *get(const QGraphicsItem *item)
     {
-        return item->d_ptr;
+        return item->d_ptr.data();
     }
     static QGraphicsItemPrivate *get(QGraphicsItem *item)
     {
-        return item->d_ptr;
+        return item->d_ptr.data();
     }
 
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
@@ -514,8 +514,8 @@ struct QGraphicsItemPrivate::TransformData {
 inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
 {
     // Return true if sibling item1 is on top of item2.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
+    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
     bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
     bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
     if (f1 != f2)

@@ -413,8 +413,8 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndexPrivate::estimateItems(const QR
 bool QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
 {
     // Siblings? Just check their z-values.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
+    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
     if (d1->parent == d2->parent)
         return qt_closestLeaf(item1, item2);
 

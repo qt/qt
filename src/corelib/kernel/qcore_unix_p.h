@@ -238,6 +238,8 @@ static inline int qt_safe_close(int fd)
 #undef QT_CLOSE
 #define QT_CLOSE qt_safe_close
 
+// Open C does not (yet?) implement these on Symbian OS
+#ifndef Q_OS_SYMBIAN
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])
 {
@@ -259,6 +261,7 @@ static inline int qt_safe_execvp(const char *file, char *const argv[])
     EINTR_LOOP(ret, ::execvp(file, argv));
     return ret;
 }
+#endif
 
 static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 {

@@ -2051,9 +2051,8 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
 #else
 #if !defined(QT_NO_STYLE_S60)
         // Defined in qs60style.cpp
-        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn,
-                        const QPoint &offset, const QBrush &brush);
-        if (!qt_s60_fill_background(painter, rgn, offset, brush))
+        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
+        if (!qt_s60_fill_background(painter, rgn, brush))
 #endif // !defined(QT_NO_STYLE_S60)
         {
             const QRect rect(rgn.boundingRect());
@@ -2078,7 +2077,7 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
     //If we are painting the viewport of a scrollarea, we must apply an offset to the brush in case we are drawing a texture
     QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
     if (scrollArea && scrollArea->viewport() == q) {
-        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
+        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
         oldBrushOrigin = painter->brushOrigin();
         resetBrushOrigin = true;
