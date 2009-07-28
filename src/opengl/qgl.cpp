@@ -1488,12 +1488,18 @@ void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
 void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
 {
     // ### remove when the GL texture cache becomes thread-safe
-    if (qApp->thread() != QThread::currentThread())
-        return;
-    const qint64 cacheKey = pixmap->cacheKey();
-    QGLTexture *texture = instance()->getTexture(cacheKey);
-    if (texture && texture->clean)
-        instance()->remove(cacheKey);
+    if (qApp->thread() == QThread::currentThread()) {
+        const qint64 cacheKey = pixmap->cacheKey();
+        QGLTexture *texture = instance()->getTexture(cacheKey);
+        if (texture && texture->clean)
+            instance()->remove(cacheKey);
+    }
+#if defined(Q_WS_X11)
+    QPixmapData *pd = pixmap->data_ptr();
+    // Only need to delete the gl surface if the pixmap is about to be deleted
+    if (pd->ref == 0)
+        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+#endif
 }
 
 void QGLTextureCache::deleteIfEmpty()
@@ -2036,11 +2042,11 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #if defined(Q_WS_X11)
     // Try to use texture_from_pixmap
     if (pd->classId() == QPixmapData::X11Class) {
-        QPixmap *thatPixmap = const_cast<QPixmap*>(&pixmap);
-        texture = bindTextureFromNativePixmap(thatPixmap, key, canInvert);
+        texture = bindTextureFromNativePixmap(pd, key, canInvert);
         if (texture) {
             texture->clean = clean;
-            boundPixmaps.insert(thatPixmap->data_ptr(), QPixmap(pixmap));
+            texture->boundPixmap = pd;
+            boundPixmaps.insert(pd, QPixmap(pixmap));
         }
     }
 #endif

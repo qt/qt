@@ -241,7 +241,9 @@ public:
     quint32 gpm;
     int screen;
     QHash<QPixmapData*, QPixmap> boundPixmaps;
-    QGLTexture *bindTextureFromNativePixmap(QPixmap *pm, const qint64 key, bool internal);
+    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key, bool canInvert);
+    static void destroyGlSurfaceForPixmap(QPixmapData*);
+    static void unbindPixmapFromTexture(QPixmapData*);
 #endif
 #if defined(Q_WS_MAC)
     bool update;
@@ -423,7 +425,8 @@ public:
             // is a current context - the context the pixmap was bound to a texture in.
             // Otherwise the release doesn't do anything and you get BadDrawable errors
             // when you come to delete the context.
-            deleteBoundPixmap();
+            if (boundPixmap)
+                QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
 #endif
             glDeleteTextures(1, &id);
             if (switch_context && current)
@@ -437,9 +440,9 @@ public:
     bool clean;
     bool yInverted; // NOTE: Y-Inverted textures are for internal use only!
 #if defined(Q_WS_X11)
-    Qt::HANDLE boundPixmap;
-    void deleteBoundPixmap(); // in qgl_x11.cpp/qgl_x11egl.cpp
+    QPixmapData* boundPixmap;
 #endif
+
 };
 
 class QGLTextureCache {

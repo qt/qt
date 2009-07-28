@@ -486,13 +486,19 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
     }
 }
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qint64 key, bool canInvert)
+
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData*, const qint64 key, bool canInvert)
 {
     // TODO
     return 0;
 }
 
-void QGLTexture::deleteBoundPixmap()
+void QGLContextPrivate::destroyGlSurfaceForPixmap(QPixmapData*)
+{
+    //TODO
+}
+
+void QGLContextPrivate::unbindPixmapFromTexture(QPixmapData*)
 {
     //TODO
 }
