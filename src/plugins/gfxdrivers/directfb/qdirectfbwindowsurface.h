@@ -93,6 +93,7 @@ private:
     IDirectFBWindow *dfbWindow;
 #endif
     QDirectFBPaintEngine *engine;
+    int engineHeight;
 
     enum Mode {
         Primary,
