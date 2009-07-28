@@ -286,10 +286,8 @@ void tst_QScriptContext::thisObject()
     {
         QScriptValue obj = eng.newObject();
         eng.currentContext()->setThisObject(obj);
-        QEXPECT_FAIL("", "Setting this-object of global context doesn't work", Continue);
         QVERIFY(eng.currentContext()->thisObject().equals(obj));
         eng.currentContext()->setThisObject(QScriptValue());
-        QEXPECT_FAIL("", "Setting this-object of global context doesn't work", Continue);
         QVERIFY(eng.currentContext()->thisObject().equals(obj));
 
         QScriptEngine eng2;
