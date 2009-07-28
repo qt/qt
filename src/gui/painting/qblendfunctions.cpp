@@ -192,8 +192,8 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = int((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix);
-    const int dsty = int((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy);
+    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
+    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
 
     quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
     quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
@@ -667,8 +667,8 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = int((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix);
-    const int dsty = int((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy);
+    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
+    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
 
     quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
     quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
