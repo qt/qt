@@ -269,10 +269,11 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t) {
 }
 
 bool SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile) {
-    QString pkgFilename = QString("%1_%2_%3.%4")
+    QString build = ( config == "udeb" ) ? "debug" : "release";
+    QString pkgFilename = QString("%1_%2-%3.%4")
                           .arg(fileInfo(project->projectFile()).completeBaseName())
+                          .arg(build)
                           .arg(compiler)
-                          .arg(config)
                           .arg("pkg");
     QFile pkgFile(pkgFilename);
     if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text))
