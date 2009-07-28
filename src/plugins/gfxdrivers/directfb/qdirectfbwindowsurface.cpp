@@ -55,7 +55,6 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engine(0)
     , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
@@ -77,7 +76,6 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engine(0)
     , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
@@ -293,13 +291,6 @@ bool QDirectFBWindowSurface::move(const QPoint &moveBy)
 {
     setGeometry(geometry().translated(moveBy));
     return true;
-}
-
-QPaintEngine *QDirectFBWindowSurface::paintEngine() const
-{
-    Q_ASSERT(engine);
-    Q_ASSERT(height() <= engineHeight);
-    return engine;
 }
 
 // hw: XXX: copied from QWidgetPrivate::isOpaque()

@@ -57,7 +57,7 @@
 class QDirectFBScreenPrivate : public QObject, public QWSGraphicsSystem
 {
 public:
-    QDirectFBScreenPrivate(QDirectFBScreen*);
+    QDirectFBScreenPrivate(QDirectFBScreen *qptr);
     ~QDirectFBScreenPrivate();
 
     void setFlipFlags(const QStringList &args);
@@ -82,10 +82,11 @@ public:
     QDirectFBScreen::DirectFBFlags directFBFlags;
     QImage::Format alphaPixmapFormat;
     QColor backgroundColor;
+    QDirectFBScreen *q;
 };
 
-QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *screen)
-    : QWSGraphicsSystem(screen), dfb(0), dfbSurface(0), flipFlags(DSFLIP_NONE)
+QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
+    : QWSGraphicsSystem(qptr), dfb(0), dfbSurface(0), flipFlags(DSFLIP_NONE)
 #ifndef QT_NO_DIRECTFB_LAYER
     , dfbLayer(0)
 #endif
@@ -98,6 +99,7 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *screen)
 #endif
     , directFBFlags(QDirectFBScreen::NoFlags)
     , alphaPixmapFormat(QImage::Format_Invalid)
+    , q(qptr)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
     QWSSignalHandler::instance()->addObject(this);
@@ -742,7 +744,7 @@ QPixmapData *QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType typ
     if (type == QPixmapData::BitmapType)
         return QWSGraphicsSystem::createPixmapData(type);
 
-    return new QDirectFBPixmapData(type);
+    return new QDirectFBPixmapData(q, type);
 }
 
 #ifdef QT_NO_DEBUG

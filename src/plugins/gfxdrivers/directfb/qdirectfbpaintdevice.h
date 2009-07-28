@@ -51,7 +51,8 @@ QT_BEGIN_HEADER
 QT_MODULE(Gui)
 
 // Inherited by both window surface and pixmap
-    class QDirectFBPaintDevice : public QCustomRasterPaintDevice
+class QDirectFBPaintEngine;
+class QDirectFBPaintDevice : public QCustomRasterPaintDevice
 {
 public:
     ~QDirectFBPaintDevice();
@@ -68,13 +69,10 @@ public:
     QSize size() const;
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
     DFBSurfaceLockFlags lockFlags() const { return lock; }
-protected:
-    // Shouldn't create QDirectFBPaintDevice by itself but only sub-class it:
-    QDirectFBPaintDevice(QDirectFBScreen *scr = QDirectFBScreen::instance())
-        : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
-        lock(DFBSurfaceLockFlags(0)), mem(0)
-    {}
+    QPaintEngine *paintEngine() const;
 
+protected:
+    QDirectFBPaintDevice(QDirectFBScreen *scr);
     inline int dotsPerMeterX() const
     {
         return (screen->deviceWidth() * 1000) / screen->physicalWidth();
@@ -90,9 +88,10 @@ protected:
     int bpl;
     DFBSurfaceLockFlags lock;
     uchar *mem;
+    QDirectFBPaintEngine *engine;
 private:
-    Q_DISABLE_COPY(QDirectFBPaintDevice)
-        };
+    Q_DISABLE_COPY(QDirectFBPaintDevice);
+};
 
 QT_END_HEADER
 
