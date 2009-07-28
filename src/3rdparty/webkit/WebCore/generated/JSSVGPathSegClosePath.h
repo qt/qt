@@ -33,7 +33,7 @@ class SVGPathSegClosePath;
 class JSSVGPathSegClosePath : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegClosePath(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegClosePath>, SVGElement* context);
+    JSSVGPathSegClosePath(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegClosePath>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

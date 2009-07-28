@@ -162,7 +162,7 @@ bool PluginView::start()
     NPError npErr;
     {
         PluginView::setCurrentPluginView(this);
-        JSC::JSLock::DropAllLocks dropAllLocks(false);
+        JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
         setCallingPlugin(true);
         npErr = m_plugin->pluginFuncs()->newp((NPMIMEType)m_mimeType.data(), m_instance, m_mode, m_paramCount, m_paramNames, m_paramValues, NULL);
         setCallingPlugin(false);
@@ -209,7 +209,7 @@ static bool getString(ScriptController* proxy, JSValue result, String& string)
 {
     if (!proxy || !result || result.isUndefined())
         return false;
-    JSLock lock(false);
+    JSLock lock(JSC::SilenceAssertionsOnly);
 
     ExecState* exec = proxy->globalObject()->globalExec();
     UString ustring = result.toString(exec);
@@ -248,7 +248,7 @@ void PluginView::performRequest(PluginRequest* request)
             // FIXME: <rdar://problem/4807469> This should be sent when the document has finished loading
             if (request->sendNotification()) {
                 PluginView::setCurrentPluginView(this);
-                JSC::JSLock::DropAllLocks dropAllLocks(false);
+                JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
                 setCallingPlugin(true);
                 m_plugin->pluginFuncs()->urlnotify(m_instance, requestURL.string().utf8().data(), NPRES_DONE, request->notifyData());
                 setCallingPlugin(false);
@@ -418,6 +418,8 @@ void PluginView::status(const char* message)
 
 NPError PluginView::setValue(NPPVariable variable, void* value)
 {
+    LOG(Plugins, "PluginView::setValue(%s): ", prettyNameForNPPVariable(variable, value).data());
+
     switch (variable) {
     case NPPVpluginWindowBool:
         m_isWindowed = value;
@@ -426,11 +428,49 @@ NPError PluginView::setValue(NPPVariable variable, void* value)
         m_isTransparent = value;
         return NPERR_NO_ERROR;
 #if defined(XP_MACOSX)
-    case NPPVpluginDrawingModel:
-        return NPERR_NO_ERROR;
-    case NPPVpluginEventModel:
-        return NPERR_NO_ERROR;
+    case NPPVpluginDrawingModel: {
+        // Can only set drawing model inside NPP_New()
+        if (this != currentPluginView())
+           return NPERR_GENERIC_ERROR;
+
+        NPDrawingModel newDrawingModel = NPDrawingModel(uintptr_t(value));
+        switch (newDrawingModel) {
+        case NPDrawingModelCoreGraphics:
+            m_drawingModel = newDrawingModel;
+            return NPERR_NO_ERROR;
+#ifndef NP_NO_QUICKDRAW
+        case NPDrawingModelQuickDraw:
 #endif
+        case NPDrawingModelCoreAnimation:
+        default:
+            LOG(Plugins, "Plugin asked for unsupported drawing model: %s",
+                    prettyNameForDrawingModel(newDrawingModel));
+            return NPERR_GENERIC_ERROR;
+        }
+    }
+
+    case NPPVpluginEventModel: {
+        // Can only set event model inside NPP_New()
+        if (this != currentPluginView())
+           return NPERR_GENERIC_ERROR;
+
+        NPEventModel newEventModel = NPEventModel(uintptr_t(value));
+        switch (newEventModel) {
+#ifndef NP_NO_CARBON
+        case NPEventModelCarbon:
+#endif
+        case NPEventModelCocoa:
+            m_eventModel = newEventModel;
+            return NPERR_NO_ERROR;
+
+        default:
+            LOG(Plugins, "Plugin asked for unsupported event model: %s",
+                    prettyNameForEventModel(newEventModel));
+            return NPERR_GENERIC_ERROR;
+        }
+    }
+#endif // defined(XP_MACOSX)
+
     default:
         notImplemented();
         return NPERR_GENERIC_ERROR;
@@ -493,7 +533,7 @@ PassRefPtr<JSC::Bindings::Instance> PluginView::bindingInstance()
     NPError npErr;
     {
         PluginView::setCurrentPluginView(this);
-        JSC::JSLock::DropAllLocks dropAllLocks(false);
+        JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
         setCallingPlugin(true);
         npErr = m_plugin->pluginFuncs()->getvalue(m_instance, NPPVpluginScriptableNPObject, &object);
         setCallingPlugin(false);
@@ -584,6 +624,10 @@ PluginView::PluginView(Frame* parentFrame, const IntSize& size, PluginPackage* p
 #if (PLATFORM(QT) && PLATFORM(WIN_OS)) || defined(XP_MACOSX)
     , m_window(0)
 #endif
+#if defined(XP_MACOSX)
+    , m_drawingModel(NPDrawingModel(-1))
+    , m_eventModel(NPEventModel(-1))
+#endif
     , m_loadManually(loadManually)
     , m_manualStream(0)
     , m_isJavaScriptPaused(false)
@@ -601,8 +645,9 @@ PluginView::PluginView(Frame* parentFrame, const IntSize& size, PluginPackage* p
 
     setParameters(paramNames, paramValues);
 
-#ifdef XP_UNIX
-    m_npWindow.ws_info = 0;
+    memset(&m_npWindow, 0, sizeof(m_npWindow));
+#if defined(XP_MACOSX)
+    memset(&m_npCgContext, 0, sizeof(m_npCgContext));
 #endif
 
     m_mode = m_loadManually ? NP_FULL : NP_EMBED;

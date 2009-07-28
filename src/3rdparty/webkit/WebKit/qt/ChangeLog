@@ -1,3 +1,484 @@
+2009-07-28  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Make it possible to pass relative file names to QtLauncher.
+
+        * QtLauncher/main.cpp:
+        (MainWindow::MainWindow):
+
+2009-07-27  Alexey Proskuryakov  <ap@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27735
+        Give a helpful name to JSLock constructor argument
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::addToJavaScriptWindowObject):
+
+2009-07-27  Volker Hilsheimer <volker.hilsheimer@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        QWebView's "enabled" parameter should default to true, as with QGraphicsView and
+        QPainter.
+
+        * Api/qwebview.cpp: Add reference to QPainter::renderHints().
+        * Api/qwebview.h: Add default for enabled argument.
+
+2009-07-26  Kavindra Palaraja  <kavindra.palaraja@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        More documentation cleanups in the QWebElement class overview.
+
+        * Api/qwebelement.cpp:
+
+2009-07-26  Kavindra Palaraja  <kavindra.palaraja@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Clean up documentation of QWebElement's findFirst and findAll functions,
+        as well as their QWebFrame counterparts.
+
+        * Api/qwebelement.cpp:
+        * Api/qwebframe.cpp:
+
+2009-07-26  Kavindra Palaraja  <kavindra.palaraja@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Various documentation cleanups
+
+        * Fixed qdoc warnings
+        * Hide QWebNetworkInterface from the class overview
+        * Mention QWebElement in the module overview
+        * More cleanups
+
+        * Api/qwebframe.cpp:
+        * Api/qwebnetworkinterface.cpp:
+        * Api/qwebview.cpp:
+        * docs/qtwebkit.qdoc:
+
+2009-07-26  Kavindra Palaraja  <kavindra.palaraja@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Added missing class diagram referenced from the docs, taken from the Qt
+        documentation.
+
+        * docs/qtwebkit.qdocconf: Register the image directory with
+        qdoc.
+        * docs/qwebview-diagram.png: Added.
+
+2009-07-24  Antonio Gomes   <antonio.gomes@openbossa.org>
+
+        Reviewed by Adam Treat.
+
+        As per discussion on IRC, changed originalUrl by requestedUrl.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::requestedUrl):
+        * Api/qwebframe.h:
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-07-24  Andre Pedralho  <andre.pedralho@openbossa.org>
+
+        Reviewed by Adam Treat.
+
+        Removed void QWebFrame::renderContents(...) and added the Q_PROPERTY
+        clipRenderToViewport to control whether QWebFrame::render would call
+        FrameView::paintContents rather than FrameView::paint and do not clip
+        the frame content to viewport.
+
+
+        * Api/qwebframe.cpp:
+        (QWebFramePrivate::renderPrivate):
+        (QWebFrame::clipRenderToViewport):
+        (QWebFrame::setClipRenderToViewport):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        (QWebFramePrivate::QWebFramePrivate):
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-07-24  Antonio Gomes   <antonio.gomes@openbossa.org>
+
+        Reviewed by Simon Hausmann.
+
+        [QT] Implement originalUrl getter method to the API
+        https://bugs.webkit.org/show_bug.cgi?id=25867
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::originalUrl):
+        * Api/qwebframe.h:
+        * tests/qwebframe/qwebframe.qrc:
+        * tests/qwebframe/test1.html: Added.
+        * tests/qwebframe/test2.html: Added.
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-07-24  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Build fix for Qt.
+
+        Fix build issue introduced in 46344
+        ([Bug 22700] ApplicationCache should have size limit)
+
+        Remove method only added to the Qt ChromeClient.
+
+        * WebCoreSupport/ChromeClientQt.h:
+
+2009-07-24  Andrei Popescu  <andreip@google.com>
+
+        Reviewed by Anders Carlsson.
+
+        ApplicationCache should have size limit
+        https://bugs.webkit.org/show_bug.cgi?id=22700
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::reachedMaxAppCacheSize):
+        Adds empty implementation of the reachedMaxAppCacheSize callback.
+        * WebCoreSupport/ChromeClientQt.h:
+
+2009-07-23  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add simple proxy support for QtLauncher
+        https://bugs.webkit.org/show_bug.cgi?id=27495
+
+        Picks up proxy settings from the http_proxy environment
+        variable.
+
+        * QtLauncher/QtLauncher.pro: Add QtNetwork dependency for all 
+        platforms.
+        * QtLauncher/main.cpp:
+        (MainWindow::MainWindow):
+
+2009-07-23  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        Added a testcase to verify that cached methods in the QOBject bindings
+        remain alife even after garbage collection.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::protectBindingsRuntimeObjectsFromCollector):
+
+2009-07-23  Zoltan Herczeg  <zherczeg@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        Fixing two issues related to QtLauncher
+          - MainWindow objects are not always freed after close
+          - JavaScript window.close() sometimes crashes
+        https://bugs.webkit.org/show_bug.cgi?id=27601
+
+        * QtLauncher/main.cpp:
+        (MainWindow::MainWindow):
+        (main):
+
+2009-07-21  Volker Hilsheimer <volker.hilsheimer@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Various improvements to the API documentation.
+
+        * Updated link to W3c Database spec
+        * Formatting fixes, cleanups
+        * Add missing \since 4.6 tags to QWebPage::frameAt
+        * Extend QWebDatabase and QWebSecurityOrigin docs.
+
+        * Api/qwebdatabase.cpp: 
+        * Api/qwebpage.cpp:
+        * Api/qwebsecurityorigin.cpp:
+        * Api/qwebview.cpp:
+
+2009-07-21  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Rubber-stamped by Simon Hausmann.
+
+        Remove preliminary-tag from QWebElement
+
+        * Api/qwebelement.cpp:
+
+2009-07-20  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Fix Qt code to follow the WebKit Coding Style.
+
+        * Api/qcookiejar.cpp:
+        (QCookieJar::setCookieJar):
+        (QCookieJar::cookieJar):
+        * Api/qcookiejar.h:
+        * Api/qwebdatabase.cpp:
+        (QWebDatabase::QWebDatabase):
+        (QWebDatabase::removeDatabase):
+        * Api/qwebdatabase.h:
+        * Api/qwebdatabase_p.h:
+        * Api/qwebelement.h:
+        * Api/qwebframe.cpp:
+        (QWebFrame::title):
+        (QWebFrame::print):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        * Api/qwebhistory.cpp:
+        (QWebHistory::clear):
+        * Api/qwebhistory.h:
+        * Api/qwebhistory_p.h:
+        * Api/qwebhistoryinterface.cpp:
+        (gCleanupInterface):
+        (QWebHistoryInterface::setDefaultInterface):
+        (QWebHistoryInterface::defaultInterface):
+        (QWebHistoryInterface::QWebHistoryInterface):
+        * Api/qwebhistoryinterface.h:
+        * Api/qwebnetworkinterface.cpp:
+        (QWebNetworkManager::started):
+        (QWebNetworkManager::finished):
+        (QWebNetworkInterfacePrivate::parseDataUrl):
+        (QWebNetworkInterface::addJob):
+        (WebCoreHttp::onResponseHeaderReceived):
+        (WebCoreHttp::onReadyRead):
+        * Api/qwebnetworkinterface.h:
+        * Api/qwebnetworkinterface_p.h:
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::editorCommandForWebActions):
+        (QWebPagePrivate::createContextMenu):
+        (QWebPagePrivate::focusInEvent):
+        (QWebPage::fixedContentsSize):
+        (QWebPage::setContentEditable):
+        (QWebPage::swallowContextMenuEvent):
+        (QWebPage::findText):
+        * Api/qwebpage.h:
+        * Api/qwebpage_p.h:
+        * Api/qwebpluginfactory.h:
+        * Api/qwebsecurityorigin.h:
+        * Api/qwebsecurityorigin_p.h:
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::QWebSettingsPrivate):
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::globalSettings):
+        (QWebSettings::QWebSettings):
+        (QWebSettings::fontSize):
+        (QWebSettings::setUserStyleSheetUrl):
+        (QWebSettings::setDefaultTextEncoding):
+        (QWebSettings::setIconDatabasePath):
+        (QWebSettings::iconDatabasePath):
+        (QWebSettings::iconForUrl):
+        (QWebSettings::setWebGraphic):
+        (QWebSettings::setFontFamily):
+        (QWebSettings::fontFamily):
+        (QWebSettings::testAttribute):
+        (qt_websettings_setLocalStorageDatabasePath):
+        * Api/qwebsettings.h:
+        * Api/qwebview.cpp:
+        (QWebView::setPage):
+        (QWebView::event):
+        * Api/qwebview.h:
+
+2009-07-20  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add test for loading webpages...
+
+        Performance test for loading webpages. Wait for the loadFinished
+        signal to be fired. This should include a non empty layout.
+
+        * tests/benchmarks/loading/tst_loading.cpp: Added.
+        (waitForSignal):
+        (tst_Loading::init):
+        (tst_Loading::cleanup):
+        (tst_Loading::load_data):
+        (tst_Loading::load):
+        * tests/benchmarks/loading/tst_loading.pro: Added.
+        * tests/tests.pro:
+
+2009-07-20  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add a test case for drawing a simple viewrect to a QPixmap
+
+        * tests/benchmarks/painting/tst_painting.cpp: Added.
+        (waitForSignal):
+        (tst_Painting::init):
+        (tst_Painting::cleanup):
+        (tst_Painting::paint_data):
+        (tst_Painting::paint):
+        * tests/benchmarks/painting/tst_painting.pro: Added.
+        * tests/tests.pro:
+
+2009-07-20  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] Add an option for QtLauncher to build without QtUiTools dependency
+        https://bugs.webkit.org/show_bug.cgi?id=27438
+
+        Based on Norbert Leser's work.
+
+        * QtLauncher/main.cpp:
+        (WebPage::createPlugin):
+
+2009-07-17  Kenneth Rohde Christiansen  <kenneth.christiansen@openbossa.org>
+
+        Reviewed by Adam Treat.
+
+        Coding style fixes.
+
+        * Api/qcookiejar.cpp:
+        (QCookieJarPrivate::QCookieJarPrivate):
+        (qHash):
+        (QCookieJar::cookieJar):
+        * Api/qwebelement.cpp:
+        (QWebElement::functions):
+        (QWebElement::scriptableProperties):
+        * Api/qwebframe.cpp:
+        (QWebFrame::metaData):
+        (QWebFrame::scrollBarValue):
+        (QWebFrame::scroll):
+        (QWebFrame::scrollPosition):
+        (QWebFrame::print):
+        * Api/qwebnetworkinterface.cpp:
+        (decodePercentEncoding):
+        (QWebNetworkRequestPrivate::init):
+        (QWebNetworkRequestPrivate::setURL):
+        (QWebNetworkRequest::QWebNetworkRequest):
+        (QWebNetworkRequest::operator=):
+        (QWebNetworkRequest::setUrl):
+        (QWebNetworkRequest::setHttpHeader):
+        (QWebNetworkRequest::httpHeaderField):
+        (QWebNetworkRequest::setHttpHeaderField):
+        (QWebNetworkRequest::setPostData):
+        (QWebNetworkJob::setResponse):
+        (QWebNetworkJob::frame):
+        (QWebNetworkManager::add):
+        (QWebNetworkManager::cancel):
+        (QWebNetworkManager::started):
+        (QWebNetworkManager::data):
+        (QWebNetworkManager::finished):
+        (QWebNetworkManager::addHttpJob):
+        (QWebNetworkManager::cancelHttpJob):
+        (QWebNetworkManager::httpConnectionClosed):
+        (QWebNetworkInterfacePrivate::sendFileData):
+        (QWebNetworkInterfacePrivate::parseDataUrl):
+        (QWebNetworkManager::doWork):
+        (QWebNetworkInterface::setDefaultInterface):
+        (QWebNetworkInterface::defaultInterface):
+        (QWebNetworkInterface::QWebNetworkInterface):
+        (QWebNetworkInterface::addJob):
+        (QWebNetworkInterface::cancelJob):
+        (WebCoreHttp::WebCoreHttp):
+        (WebCoreHttp::request):
+        (WebCoreHttp::scheduleNextRequest):
+        (WebCoreHttp::getConnection):
+        (WebCoreHttp::onResponseHeaderReceived):
+        (WebCoreHttp::onReadyRead):
+        (WebCoreHttp::onRequestFinished):
+        (WebCoreHttp::onAuthenticationRequired):
+        (WebCoreHttp::onProxyAuthenticationRequired):
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        (QWebPagePrivate::mouseReleaseEvent):
+        (QWebPagePrivate::inputMethodEvent):
+        (QWebPagePrivate::shortcutOverrideEvent):
+        (QWebPage::inputMethodQuery):
+        (QWebPage::javaScriptPrompt):
+        (QWebPage::updatePositionDependentActions):
+        (QWebPage::userAgentForUrl):
+        (QWebPagePrivate::_q_onLoadProgressChanged):
+        (QWebPage::totalBytes):
+        (QWebPage::bytesReceived):
+        * Api/qwebsettings.cpp:
+        (QWebSettings::iconForUrl):
+        (QWebSettings::setObjectCacheCapacities):
+        * Api/qwebview.cpp:
+        (QWebView::paintEvent):
+        (QWebView::changeEvent):
+
+2009-07-17  Kenneth Rohde Christiansen  <kenneth.christiansen@openbossa.org>
+
+        Reviewed by Simon Hausmann.
+
+        Overwrite the plugin directories for the DRT.
+        Part of https://bugs.webkit.org/show_bug.cgi?id=27215
+
+        * Api/qwebpage.cpp:
+        (qt_drt_overwritePluginDirectories): Only set the plugin directories
+        to the ones in the QTWEBKIT_PLUGIN_PATH environment variable.
+
+2009-07-16  Xiaomei Ji  <xji@chromium.org>
+
+        Reviewed by Dan Bernstein.
+
+        This is the 2nd part of fixing "RTL: tooltip does not get its directionlity from its element's."
+        https://bugs.webkit.org/show_bug.cgi?id=24187 
+
+        Add one extra parameter to the callee of HitTestResult::title() due to the signature change.
+
+        * Api/qwebframe.cpp:
+        (QWebHitTestResultPrivate::QWebHitTestResultPrivate): Add direction as a parameter to the callee of HitTestResult::title().
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::mouseDidMoveOverElement): Add direction as a parameter to the callee of HitTestResult::title().
+
+2009-07-16  Benjamin C Meyer  <benjamin.meyer@torchmobile.com>
+
+        Reviewed by Adam Treat.
+
+        Add new action to qwebpage to reload without cache.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::updateAction):
+        (QWebPagePrivate::updateNavigationActions):
+        (QWebPage::triggerAction):
+        * Api/qwebpage.h:
+
+2009-07-16  Xiaomei Ji  <xji@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Fix tooltip does not get its directionality from its element's directionality.
+        https://bugs.webkit.org/show_bug.cgi?id=24187
+
+        Per mitz's suggestion in comment #6, while getting the plain-text 
+        title, we also get the directionality of the title. How to handle 
+        the directionality is up to clients. Clients could ignore it, 
+        or use attribute or unicode control characters to display the title
+        as what they want.
+
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::setToolTip): Add directionality as 2nd parameter to setToopTip() (without handling it yet).
+        * WebCoreSupport/ChromeClientQt.h: Add directionality as 2nd parameter to setToolTip().
+
+2009-07-15  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27285
+
+        When the user clicks a link with a target attribute, the newly created window should be visible.
+        Make new windows created in Qtlauncher visible.
+
+        * QtLauncher/main.cpp:
+        (WebPage::createWindow):
+
+2009-07-14  Adam Treat  <adam.treat@torchmobile.com>
+
+        Reviewed by Zack Rusin.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26983
+
+        The default constructed values for QSize and WebCore::IntSize are different.  The former
+        produces an invalid size whereas the latter produces a size of zero.  This was causing
+        a layout to be triggered when constructing a view and an assert to be hit.  This patch fixes
+        the crash by taking care not to cause an unnecessary layout triggered by ScrollView::setFixedLayoutSize.
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::transitionToCommittedForNewPage):
+
 2009-07-13  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Ariya Hidayat.

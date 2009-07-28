@@ -21,6 +21,7 @@
 #ifndef JSMimeType_h
 #define JSMimeType_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class MimeType;
 
-class JSMimeType : public DOMObject {
-    typedef DOMObject Base;
+class JSMimeType : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMimeType(PassRefPtr<JSC::Structure>, PassRefPtr<MimeType>);
+    JSMimeType(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MimeType>);
     virtual ~JSMimeType();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     MimeType* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<MimeType> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, MimeType*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, MimeType*);
 MimeType* toMimeType(JSC::JSValue);
 
 class JSMimeTypePrototype : public JSC::JSObject {

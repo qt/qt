@@ -63,7 +63,7 @@ void JSDOMWindowBase::updateDocument()
 {
     ASSERT(d()->impl->document());
     ExecState* exec = globalExec();
-    symbolTablePutWithAttributes(Identifier(exec, "document"), toJS(exec, d()->impl->document()), DontDelete | ReadOnly);
+    symbolTablePutWithAttributes(Identifier(exec, "document"), toJS(exec, this, d()->impl->document()), DontDelete | ReadOnly);
 }
 
 ScriptExecutionContext* JSDOMWindowBase::scriptExecutionContext() const
@@ -170,6 +170,13 @@ JSGlobalData* JSDOMWindowBase::commonJSGlobalData()
     }
 
     return globalData;
+}
+
+// JSDOMGlobalObject* is ignored, accesing a window in any context will
+// use that DOMWindow's prototype chain.
+JSValue toJS(ExecState* exec, JSDOMGlobalObject*, DOMWindow* domWindow)
+{
+    return toJS(exec, domWindow);
 }
 
 JSValue toJS(ExecState*, DOMWindow* domWindow)

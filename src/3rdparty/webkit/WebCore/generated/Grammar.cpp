@@ -113,7 +113,11 @@
 #include "CommonIdentifiers.h"
 #include "NodeInfo.h"
 #include "Parser.h"
+#include <wtf/FastMalloc.h>
 #include <wtf/MathExtras.h>
+
+#define YYMALLOC fastMalloc
+#define YYFREE fastFree
 
 #define YYMAXDEPTH 10000
 #define YYENABLE_NLS 0
@@ -164,12 +168,6 @@ static ExpressionNode* combineCommaNodes(void*, ExpressionNode* list, Expression
 #pragma warning(disable: 4065)
 #pragma warning(disable: 4244)
 #pragma warning(disable: 4702)
-
-// At least some of the time, the declarations of malloc and free that bison
-// generates are causing warnings. A way to avoid this is to explicitly define
-// the macros so that bison doesn't try to declare malloc and free.
-#define YYMALLOC malloc
-#define YYFREE free
 
 #endif
 
@@ -232,7 +230,7 @@ static inline void appendToVarDeclarationList(void* globalPtr, ParserArenaData<D
 
 
 /* Line 189 of yacc.c  */
-#line 236 "WebCore/tmp/../generated/Grammar.tab.c"
+#line 234 "WebCore/tmp/../generated/Grammar.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -332,7 +330,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 157 "../../JavaScriptCore/parser/Grammar.y"
+#line 155 "../../JavaScriptCore/parser/Grammar.y"
 
     int                 intValue;
     double              doubleValue;
@@ -367,7 +365,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 371 "WebCore/tmp/../generated/Grammar.tab.c"
+#line 369 "WebCore/tmp/../generated/Grammar.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -392,7 +390,7 @@ typedef struct YYLTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 396 "WebCore/tmp/../generated/Grammar.tab.c"
+#line 394 "WebCore/tmp/../generated/Grammar.tab.c"
 
 #ifdef short
 # undef short
@@ -946,66 +944,66 @@ static const yytype_int16 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   290,   290,   291,   292,   293,   294,   295,   304,   316,
-     317,   318,   319,   320,   332,   336,   343,   344,   345,   347,
-     351,   352,   353,   354,   355,   359,   360,   361,   365,   369,
-     377,   378,   382,   383,   387,   388,   389,   393,   397,   404,
-     405,   409,   413,   420,   421,   428,   429,   436,   437,   438,
-     442,   448,   449,   450,   454,   461,   462,   466,   470,   477,
-     478,   482,   483,   487,   488,   489,   493,   494,   495,   499,
-     500,   501,   502,   503,   504,   505,   506,   507,   508,   509,
-     512,   513,   517,   518,   522,   523,   524,   525,   529,   530,
-     532,   534,   539,   540,   541,   545,   546,   548,   553,   554,
-     555,   556,   560,   561,   562,   563,   567,   568,   569,   570,
-     571,   572,   575,   581,   582,   583,   584,   585,   586,   593,
-     594,   595,   596,   597,   598,   602,   609,   610,   611,   612,
-     613,   617,   618,   620,   622,   624,   629,   630,   632,   633,
-     635,   640,   641,   645,   646,   651,   652,   656,   657,   661,
-     662,   667,   668,   673,   674,   678,   679,   684,   685,   690,
-     691,   695,   696,   701,   702,   707,   708,   712,   713,   718,
-     719,   723,   724,   729,   730,   735,   736,   741,   742,   749,
-     750,   757,   758,   765,   766,   767,   768,   769,   770,   771,
-     772,   773,   774,   775,   776,   780,   781,   785,   786,   790,
-     791,   795,   796,   797,   798,   799,   800,   801,   802,   803,
-     804,   805,   806,   807,   808,   809,   810,   811,   815,   817,
-     822,   824,   830,   837,   846,   854,   867,   874,   883,   891,
-     904,   906,   912,   920,   932,   933,   937,   941,   945,   949,
-     951,   956,   959,   969,   971,   973,   975,   981,   988,   997,
-    1003,  1014,  1015,  1019,  1020,  1024,  1028,  1032,  1036,  1043,
-    1046,  1049,  1052,  1058,  1061,  1064,  1067,  1073,  1079,  1085,
-    1086,  1095,  1096,  1100,  1106,  1116,  1117,  1121,  1122,  1126,
-    1132,  1136,  1143,  1149,  1155,  1165,  1167,  1172,  1173,  1184,
-    1185,  1192,  1193,  1203,  1206,  1212,  1213,  1217,  1218,  1223,
-    1230,  1241,  1242,  1243,  1244,  1245,  1246,  1247,  1251,  1252,
-    1253,  1254,  1255,  1259,  1260,  1264,  1265,  1266,  1268,  1272,
-    1273,  1274,  1275,  1276,  1280,  1281,  1282,  1286,  1287,  1290,
-    1292,  1296,  1297,  1301,  1302,  1303,  1304,  1305,  1309,  1310,
-    1311,  1312,  1316,  1317,  1321,  1322,  1326,  1327,  1328,  1329,
-    1333,  1334,  1335,  1336,  1340,  1341,  1345,  1346,  1350,  1351,
-    1355,  1356,  1360,  1361,  1362,  1366,  1367,  1368,  1372,  1373,
-    1374,  1375,  1376,  1377,  1378,  1379,  1380,  1381,  1382,  1385,
-    1386,  1390,  1391,  1395,  1396,  1397,  1398,  1402,  1403,  1404,
-    1405,  1409,  1410,  1411,  1415,  1416,  1417,  1421,  1422,  1423,
-    1424,  1428,  1429,  1430,  1431,  1435,  1436,  1437,  1438,  1439,
-    1440,  1441,  1445,  1446,  1447,  1448,  1449,  1450,  1454,  1455,
-    1456,  1457,  1458,  1459,  1460,  1464,  1465,  1466,  1467,  1468,
-    1472,  1473,  1474,  1475,  1476,  1480,  1481,  1482,  1483,  1484,
-    1488,  1489,  1493,  1494,  1498,  1499,  1503,  1504,  1508,  1509,
-    1513,  1514,  1518,  1519,  1523,  1524,  1528,  1529,  1533,  1534,
-    1538,  1539,  1543,  1544,  1548,  1549,  1553,  1554,  1558,  1559,
-    1563,  1564,  1568,  1569,  1573,  1574,  1578,  1579,  1583,  1584,
-    1588,  1589,  1593,  1594,  1595,  1596,  1597,  1598,  1599,  1600,
-    1601,  1602,  1603,  1604,  1608,  1609,  1613,  1614,  1618,  1619,
-    1623,  1624,  1625,  1626,  1627,  1628,  1629,  1630,  1631,  1632,
-    1633,  1634,  1635,  1636,  1637,  1638,  1639,  1643,  1644,  1648,
-    1649,  1653,  1654,  1655,  1656,  1660,  1661,  1662,  1663,  1667,
-    1668,  1672,  1673,  1677,  1678,  1682,  1686,  1690,  1694,  1695,
-    1699,  1700,  1704,  1705,  1706,  1707,  1708,  1709,  1710,  1711,
-    1714,  1716,  1719,  1721,  1725,  1726,  1727,  1728,  1732,  1733,
-    1734,  1735,  1739,  1740,  1741,  1742,  1746,  1750,  1754,  1755,
-    1758,  1760,  1764,  1765,  1769,  1770,  1774,  1775,  1779,  1783,
-    1784,  1788,  1789,  1790,  1794,  1795,  1799,  1800,  1804,  1805,
-    1806,  1807,  1811,  1812,  1815,  1817,  1821,  1822
+       0,   288,   288,   289,   290,   291,   292,   293,   302,   314,
+     315,   316,   317,   318,   330,   334,   341,   342,   343,   345,
+     349,   350,   351,   352,   353,   357,   358,   359,   363,   367,
+     375,   376,   380,   381,   385,   386,   387,   391,   395,   402,
+     403,   407,   411,   418,   419,   426,   427,   434,   435,   436,
+     440,   446,   447,   448,   452,   459,   460,   464,   468,   475,
+     476,   480,   481,   485,   486,   487,   491,   492,   493,   497,
+     498,   499,   500,   501,   502,   503,   504,   505,   506,   507,
+     510,   511,   515,   516,   520,   521,   522,   523,   527,   528,
+     530,   532,   537,   538,   539,   543,   544,   546,   551,   552,
+     553,   554,   558,   559,   560,   561,   565,   566,   567,   568,
+     569,   570,   573,   579,   580,   581,   582,   583,   584,   591,
+     592,   593,   594,   595,   596,   600,   607,   608,   609,   610,
+     611,   615,   616,   618,   620,   622,   627,   628,   630,   631,
+     633,   638,   639,   643,   644,   649,   650,   654,   655,   659,
+     660,   665,   666,   671,   672,   676,   677,   682,   683,   688,
+     689,   693,   694,   699,   700,   705,   706,   710,   711,   716,
+     717,   721,   722,   727,   728,   733,   734,   739,   740,   747,
+     748,   755,   756,   763,   764,   765,   766,   767,   768,   769,
+     770,   771,   772,   773,   774,   778,   779,   783,   784,   788,
+     789,   793,   794,   795,   796,   797,   798,   799,   800,   801,
+     802,   803,   804,   805,   806,   807,   808,   809,   813,   815,
+     820,   822,   828,   835,   844,   852,   865,   872,   881,   889,
+     902,   904,   910,   918,   930,   931,   935,   939,   943,   947,
+     949,   954,   957,   967,   969,   971,   973,   979,   986,   995,
+    1001,  1012,  1013,  1017,  1018,  1022,  1026,  1030,  1034,  1041,
+    1044,  1047,  1050,  1056,  1059,  1062,  1065,  1071,  1077,  1083,
+    1084,  1093,  1094,  1098,  1104,  1114,  1115,  1119,  1120,  1124,
+    1130,  1134,  1141,  1147,  1153,  1163,  1165,  1170,  1171,  1182,
+    1183,  1190,  1191,  1201,  1204,  1210,  1211,  1215,  1216,  1221,
+    1228,  1239,  1240,  1241,  1242,  1243,  1244,  1245,  1249,  1250,
+    1251,  1252,  1253,  1257,  1258,  1262,  1263,  1264,  1266,  1270,
+    1271,  1272,  1273,  1274,  1278,  1279,  1280,  1284,  1285,  1288,
+    1290,  1294,  1295,  1299,  1300,  1301,  1302,  1303,  1307,  1308,
+    1309,  1310,  1314,  1315,  1319,  1320,  1324,  1325,  1326,  1327,
+    1331,  1332,  1333,  1334,  1338,  1339,  1343,  1344,  1348,  1349,
+    1353,  1354,  1358,  1359,  1360,  1364,  1365,  1366,  1370,  1371,
+    1372,  1373,  1374,  1375,  1376,  1377,  1378,  1379,  1380,  1383,
+    1384,  1388,  1389,  1393,  1394,  1395,  1396,  1400,  1401,  1402,
+    1403,  1407,  1408,  1409,  1413,  1414,  1415,  1419,  1420,  1421,
+    1422,  1426,  1427,  1428,  1429,  1433,  1434,  1435,  1436,  1437,
+    1438,  1439,  1443,  1444,  1445,  1446,  1447,  1448,  1452,  1453,
+    1454,  1455,  1456,  1457,  1458,  1462,  1463,  1464,  1465,  1466,
+    1470,  1471,  1472,  1473,  1474,  1478,  1479,  1480,  1481,  1482,
+    1486,  1487,  1491,  1492,  1496,  1497,  1501,  1502,  1506,  1507,
+    1511,  1512,  1516,  1517,  1521,  1522,  1526,  1527,  1531,  1532,
+    1536,  1537,  1541,  1542,  1546,  1547,  1551,  1552,  1556,  1557,
+    1561,  1562,  1566,  1567,  1571,  1572,  1576,  1577,  1581,  1582,
+    1586,  1587,  1591,  1592,  1593,  1594,  1595,  1596,  1597,  1598,
+    1599,  1600,  1601,  1602,  1606,  1607,  1611,  1612,  1616,  1617,
+    1621,  1622,  1623,  1624,  1625,  1626,  1627,  1628,  1629,  1630,
+    1631,  1632,  1633,  1634,  1635,  1636,  1637,  1641,  1642,  1646,
+    1647,  1651,  1652,  1653,  1654,  1658,  1659,  1660,  1661,  1665,
+    1666,  1670,  1671,  1675,  1676,  1680,  1684,  1688,  1692,  1693,
+    1697,  1698,  1702,  1703,  1704,  1705,  1706,  1707,  1708,  1709,
+    1712,  1714,  1717,  1719,  1723,  1724,  1725,  1726,  1730,  1731,
+    1732,  1733,  1737,  1738,  1739,  1740,  1744,  1748,  1752,  1753,
+    1756,  1758,  1762,  1763,  1767,  1768,  1772,  1773,  1777,  1781,
+    1782,  1786,  1787,  1788,  1792,  1793,  1797,  1798,  1802,  1803,
+    1804,  1805,  1809,  1810,  1813,  1815,  1819,  1820
 };
 #endif
 
@@ -2970,42 +2968,42 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 290 "../../JavaScriptCore/parser/Grammar.y"
+#line 288 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NullNode(GLOBAL_DATA), 0, 1); ;}
     break;
 
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 291 "../../JavaScriptCore/parser/Grammar.y"
+#line 289 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BooleanNode(GLOBAL_DATA, true), 0, 1); ;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 292 "../../JavaScriptCore/parser/Grammar.y"
+#line 290 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BooleanNode(GLOBAL_DATA, false), 0, 1); ;}
     break;
 
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 293 "../../JavaScriptCore/parser/Grammar.y"
+#line 291 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeNumberNode(GLOBAL_DATA, (yyvsp[(1) - (1)].doubleValue)), 0, 1); ;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 294 "../../JavaScriptCore/parser/Grammar.y"
+#line 292 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StringNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident)), 0, 1); ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 295 "../../JavaScriptCore/parser/Grammar.y"
+#line 293 "../../JavaScriptCore/parser/Grammar.y"
     {
                                             Lexer& l = *LEXER;
                                             if (!l.scanRegExp())
@@ -3020,7 +3018,7 @@ yyreduce:
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 304 "../../JavaScriptCore/parser/Grammar.y"
+#line 302 "../../JavaScriptCore/parser/Grammar.y"
     {
                                             Lexer& l = *LEXER;
                                             if (!l.scanRegExp())
@@ -3035,35 +3033,35 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 316 "../../JavaScriptCore/parser/Grammar.y"
+#line 314 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(new (GLOBAL_DATA) PropertyNode(GLOBAL_DATA, *(yyvsp[(1) - (3)].ident), (yyvsp[(3) - (3)].expressionNode).m_node, PropertyNode::Constant), (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 317 "../../JavaScriptCore/parser/Grammar.y"
+#line 315 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(new (GLOBAL_DATA) PropertyNode(GLOBAL_DATA, *(yyvsp[(1) - (3)].ident), (yyvsp[(3) - (3)].expressionNode).m_node, PropertyNode::Constant), (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 318 "../../JavaScriptCore/parser/Grammar.y"
+#line 316 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(new (GLOBAL_DATA) PropertyNode(GLOBAL_DATA, Identifier(GLOBAL_DATA, UString::from((yyvsp[(1) - (3)].doubleValue))), (yyvsp[(3) - (3)].expressionNode).m_node, PropertyNode::Constant), (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 319 "../../JavaScriptCore/parser/Grammar.y"
+#line 317 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(makeGetterOrSetterPropertyNode(globalPtr, *(yyvsp[(1) - (7)].ident), *(yyvsp[(2) - (7)].ident), 0, (yyvsp[(6) - (7)].functionBodyNode), LEXER->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line)), ClosureFeature, 0); DBG((yyvsp[(6) - (7)].functionBodyNode), (yylsp[(5) - (7)]), (yylsp[(7) - (7)])); if (!(yyval.propertyNode).m_node) YYABORT; ;}
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 321 "../../JavaScriptCore/parser/Grammar.y"
+#line 319 "../../JavaScriptCore/parser/Grammar.y"
     {
                                                                  (yyval.propertyNode) = createNodeInfo<PropertyNode*>(makeGetterOrSetterPropertyNode(globalPtr, *(yyvsp[(1) - (8)].ident), *(yyvsp[(2) - (8)].ident), (yyvsp[(4) - (8)].parameterList).m_node.head, (yyvsp[(7) - (8)].functionBodyNode), LEXER->sourceCode((yyvsp[(6) - (8)].intValue), (yyvsp[(8) - (8)].intValue), (yylsp[(6) - (8)]).first_line)), (yyvsp[(4) - (8)].parameterList).m_features | ClosureFeature, 0); 
                                                                  if ((yyvsp[(4) - (8)].parameterList).m_features & ArgumentsFeature)
@@ -3077,7 +3075,7 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 332 "../../JavaScriptCore/parser/Grammar.y"
+#line 330 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.propertyList).m_node.head = new (GLOBAL_DATA) PropertyListNode(GLOBAL_DATA, (yyvsp[(1) - (1)].propertyNode).m_node); 
                                           (yyval.propertyList).m_node.tail = (yyval.propertyList).m_node.head;
                                           (yyval.propertyList).m_features = (yyvsp[(1) - (1)].propertyNode).m_features;
@@ -3087,7 +3085,7 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 336 "../../JavaScriptCore/parser/Grammar.y"
+#line 334 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.propertyList).m_node.head = (yyvsp[(1) - (3)].propertyList).m_node.head;
                                           (yyval.propertyList).m_node.tail = new (GLOBAL_DATA) PropertyListNode(GLOBAL_DATA, (yyvsp[(3) - (3)].propertyNode).m_node, (yyvsp[(1) - (3)].propertyList).m_node.tail);
                                           (yyval.propertyList).m_features = (yyvsp[(1) - (3)].propertyList).m_features | (yyvsp[(3) - (3)].propertyNode).m_features;
@@ -3097,70 +3095,70 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 344 "../../JavaScriptCore/parser/Grammar.y"
+#line 342 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ObjectLiteralNode(GLOBAL_DATA), 0, 0); ;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 345 "../../JavaScriptCore/parser/Grammar.y"
+#line 343 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ObjectLiteralNode(GLOBAL_DATA, (yyvsp[(2) - (3)].propertyList).m_node.head), (yyvsp[(2) - (3)].propertyList).m_features, (yyvsp[(2) - (3)].propertyList).m_numConstants); ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 347 "../../JavaScriptCore/parser/Grammar.y"
+#line 345 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ObjectLiteralNode(GLOBAL_DATA, (yyvsp[(2) - (4)].propertyList).m_node.head), (yyvsp[(2) - (4)].propertyList).m_features, (yyvsp[(2) - (4)].propertyList).m_numConstants); ;}
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 351 "../../JavaScriptCore/parser/Grammar.y"
+#line 349 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ThisNode(GLOBAL_DATA), ThisFeature, 0); ;}
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 354 "../../JavaScriptCore/parser/Grammar.y"
+#line 352 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ResolveNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident), (yylsp[(1) - (1)]).first_column), (*(yyvsp[(1) - (1)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0, 0); ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 355 "../../JavaScriptCore/parser/Grammar.y"
+#line 353 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = (yyvsp[(2) - (3)].expressionNode); ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 359 "../../JavaScriptCore/parser/Grammar.y"
+#line 357 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ArrayNode(GLOBAL_DATA, (yyvsp[(2) - (3)].intValue)), 0, (yyvsp[(2) - (3)].intValue) ? 1 : 0); ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 360 "../../JavaScriptCore/parser/Grammar.y"
+#line 358 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ArrayNode(GLOBAL_DATA, (yyvsp[(2) - (3)].elementList).m_node.head), (yyvsp[(2) - (3)].elementList).m_features, (yyvsp[(2) - (3)].elementList).m_numConstants); ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 361 "../../JavaScriptCore/parser/Grammar.y"
+#line 359 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ArrayNode(GLOBAL_DATA, (yyvsp[(4) - (5)].intValue), (yyvsp[(2) - (5)].elementList).m_node.head), (yyvsp[(2) - (5)].elementList).m_features, (yyvsp[(4) - (5)].intValue) ? (yyvsp[(2) - (5)].elementList).m_numConstants + 1 : (yyvsp[(2) - (5)].elementList).m_numConstants); ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 365 "../../JavaScriptCore/parser/Grammar.y"
+#line 363 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.elementList).m_node.head = new (GLOBAL_DATA) ElementNode(GLOBAL_DATA, (yyvsp[(1) - (2)].intValue), (yyvsp[(2) - (2)].expressionNode).m_node);
                                           (yyval.elementList).m_node.tail = (yyval.elementList).m_node.head;
                                           (yyval.elementList).m_features = (yyvsp[(2) - (2)].expressionNode).m_features;
@@ -3170,7 +3168,7 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 370 "../../JavaScriptCore/parser/Grammar.y"
+#line 368 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.elementList).m_node.head = (yyvsp[(1) - (4)].elementList).m_node.head;
                                           (yyval.elementList).m_node.tail = new (GLOBAL_DATA) ElementNode(GLOBAL_DATA, (yyvsp[(1) - (4)].elementList).m_node.tail, (yyvsp[(3) - (4)].intValue), (yyvsp[(4) - (4)].expressionNode).m_node);
                                           (yyval.elementList).m_features = (yyvsp[(1) - (4)].elementList).m_features | (yyvsp[(4) - (4)].expressionNode).m_features;
@@ -3180,35 +3178,35 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 377 "../../JavaScriptCore/parser/Grammar.y"
+#line 375 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.intValue) = 0; ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 382 "../../JavaScriptCore/parser/Grammar.y"
+#line 380 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.intValue) = 1; ;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 383 "../../JavaScriptCore/parser/Grammar.y"
+#line 381 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.intValue) = (yyvsp[(1) - (2)].intValue) + 1; ;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 388 "../../JavaScriptCore/parser/Grammar.y"
+#line 386 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>((yyvsp[(1) - (1)].funcExprNode).m_node, (yyvsp[(1) - (1)].funcExprNode).m_features, (yyvsp[(1) - (1)].funcExprNode).m_numConstants); ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 389 "../../JavaScriptCore/parser/Grammar.y"
+#line 387 "../../JavaScriptCore/parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3218,7 +3216,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 393 "../../JavaScriptCore/parser/Grammar.y"
+#line 391 "../../JavaScriptCore/parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants);
@@ -3228,7 +3226,7 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 397 "../../JavaScriptCore/parser/Grammar.y"
+#line 395 "../../JavaScriptCore/parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].argumentsNode).m_node);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].argumentsNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].argumentsNode).m_numConstants);
@@ -3238,7 +3236,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 405 "../../JavaScriptCore/parser/Grammar.y"
+#line 403 "../../JavaScriptCore/parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3248,7 +3246,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 409 "../../JavaScriptCore/parser/Grammar.y"
+#line 407 "../../JavaScriptCore/parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants);
@@ -3258,7 +3256,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 413 "../../JavaScriptCore/parser/Grammar.y"
+#line 411 "../../JavaScriptCore/parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].argumentsNode).m_node);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].argumentsNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].argumentsNode).m_numConstants);
@@ -3268,7 +3266,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 421 "../../JavaScriptCore/parser/Grammar.y"
+#line 419 "../../JavaScriptCore/parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).last_column, (yylsp[(2) - (2)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); 
@@ -3278,7 +3276,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 429 "../../JavaScriptCore/parser/Grammar.y"
+#line 427 "../../JavaScriptCore/parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).last_column, (yylsp[(2) - (2)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants);
@@ -3288,21 +3286,21 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 436 "../../JavaScriptCore/parser/Grammar.y"
+#line 434 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(globalPtr, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 437 "../../JavaScriptCore/parser/Grammar.y"
+#line 435 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(globalPtr, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 438 "../../JavaScriptCore/parser/Grammar.y"
+#line 436 "../../JavaScriptCore/parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3312,7 +3310,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 442 "../../JavaScriptCore/parser/Grammar.y"
+#line 440 "../../JavaScriptCore/parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants); ;}
@@ -3321,21 +3319,21 @@ yyreduce:
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 448 "../../JavaScriptCore/parser/Grammar.y"
+#line 446 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(globalPtr, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 449 "../../JavaScriptCore/parser/Grammar.y"
+#line 447 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(globalPtr, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 450 "../../JavaScriptCore/parser/Grammar.y"
+#line 448 "../../JavaScriptCore/parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3345,7 +3343,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 454 "../../JavaScriptCore/parser/Grammar.y"
+#line 452 "../../JavaScriptCore/parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants); 
@@ -3355,21 +3353,21 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 461 "../../JavaScriptCore/parser/Grammar.y"
+#line 459 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.argumentsNode) = createNodeInfo<ArgumentsNode*>(new (GLOBAL_DATA) ArgumentsNode(GLOBAL_DATA), 0, 0); ;}
     break;
 
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 462 "../../JavaScriptCore/parser/Grammar.y"
+#line 460 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.argumentsNode) = createNodeInfo<ArgumentsNode*>(new (GLOBAL_DATA) ArgumentsNode(GLOBAL_DATA, (yyvsp[(2) - (3)].argumentList).m_node.head), (yyvsp[(2) - (3)].argumentList).m_features, (yyvsp[(2) - (3)].argumentList).m_numConstants); ;}
     break;
 
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 466 "../../JavaScriptCore/parser/Grammar.y"
+#line 464 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.argumentList).m_node.head = new (GLOBAL_DATA) ArgumentListNode(GLOBAL_DATA, (yyvsp[(1) - (1)].expressionNode).m_node);
                                           (yyval.argumentList).m_node.tail = (yyval.argumentList).m_node.head;
                                           (yyval.argumentList).m_features = (yyvsp[(1) - (1)].expressionNode).m_features;
@@ -3379,7 +3377,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 470 "../../JavaScriptCore/parser/Grammar.y"
+#line 468 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.argumentList).m_node.head = (yyvsp[(1) - (3)].argumentList).m_node.head;
                                           (yyval.argumentList).m_node.tail = new (GLOBAL_DATA) ArgumentListNode(GLOBAL_DATA, (yyvsp[(1) - (3)].argumentList).m_node.tail, (yyvsp[(3) - (3)].expressionNode).m_node);
                                           (yyval.argumentList).m_features = (yyvsp[(1) - (3)].argumentList).m_features | (yyvsp[(3) - (3)].expressionNode).m_features;
@@ -3389,252 +3387,252 @@ yyreduce:
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 488 "../../JavaScriptCore/parser/Grammar.y"
+#line 486 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 489 "../../JavaScriptCore/parser/Grammar.y"
+#line 487 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 494 "../../JavaScriptCore/parser/Grammar.y"
+#line 492 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 495 "../../JavaScriptCore/parser/Grammar.y"
+#line 493 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 499 "../../JavaScriptCore/parser/Grammar.y"
+#line 497 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeDeleteNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 500 "../../JavaScriptCore/parser/Grammar.y"
+#line 498 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) VoidNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants + 1); ;}
     break;
 
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 501 "../../JavaScriptCore/parser/Grammar.y"
+#line 499 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeTypeOfNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 502 "../../JavaScriptCore/parser/Grammar.y"
+#line 500 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 503 "../../JavaScriptCore/parser/Grammar.y"
+#line 501 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 504 "../../JavaScriptCore/parser/Grammar.y"
+#line 502 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 505 "../../JavaScriptCore/parser/Grammar.y"
+#line 503 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 76:
 
 /* Line 1455 of yacc.c  */
-#line 506 "../../JavaScriptCore/parser/Grammar.y"
+#line 504 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) UnaryPlusNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 507 "../../JavaScriptCore/parser/Grammar.y"
+#line 505 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeNegateNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 508 "../../JavaScriptCore/parser/Grammar.y"
+#line 506 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeBitwiseNotNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 509 "../../JavaScriptCore/parser/Grammar.y"
+#line 507 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalNotNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 523 "../../JavaScriptCore/parser/Grammar.y"
+#line 521 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeMultNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 524 "../../JavaScriptCore/parser/Grammar.y"
+#line 522 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeDivNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 525 "../../JavaScriptCore/parser/Grammar.y"
+#line 523 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ModNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 89:
 
 /* Line 1455 of yacc.c  */
-#line 531 "../../JavaScriptCore/parser/Grammar.y"
+#line 529 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeMultNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 90:
 
 /* Line 1455 of yacc.c  */
-#line 533 "../../JavaScriptCore/parser/Grammar.y"
+#line 531 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeDivNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 535 "../../JavaScriptCore/parser/Grammar.y"
+#line 533 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ModNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 540 "../../JavaScriptCore/parser/Grammar.y"
+#line 538 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAddNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 541 "../../JavaScriptCore/parser/Grammar.y"
+#line 539 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeSubNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 547 "../../JavaScriptCore/parser/Grammar.y"
+#line 545 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAddNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 549 "../../JavaScriptCore/parser/Grammar.y"
+#line 547 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeSubNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 554 "../../JavaScriptCore/parser/Grammar.y"
+#line 552 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeLeftShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 555 "../../JavaScriptCore/parser/Grammar.y"
+#line 553 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 101:
 
 /* Line 1455 of yacc.c  */
-#line 556 "../../JavaScriptCore/parser/Grammar.y"
+#line 554 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) UnsignedRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 561 "../../JavaScriptCore/parser/Grammar.y"
+#line 559 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeLeftShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 104:
 
 /* Line 1455 of yacc.c  */
-#line 562 "../../JavaScriptCore/parser/Grammar.y"
+#line 560 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 105:
 
 /* Line 1455 of yacc.c  */
-#line 563 "../../JavaScriptCore/parser/Grammar.y"
+#line 561 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) UnsignedRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 568 "../../JavaScriptCore/parser/Grammar.y"
+#line 566 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 569 "../../JavaScriptCore/parser/Grammar.y"
+#line 567 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 109:
 
 /* Line 1455 of yacc.c  */
-#line 570 "../../JavaScriptCore/parser/Grammar.y"
+#line 568 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 110:
 
 /* Line 1455 of yacc.c  */
-#line 571 "../../JavaScriptCore/parser/Grammar.y"
+#line 569 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 111:
 
 /* Line 1455 of yacc.c  */
-#line 572 "../../JavaScriptCore/parser/Grammar.y"
+#line 570 "../../JavaScriptCore/parser/Grammar.y"
     { InstanceOfNode* node = new (GLOBAL_DATA) InstanceOfNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3643,7 +3641,7 @@ yyreduce:
   case 112:
 
 /* Line 1455 of yacc.c  */
-#line 575 "../../JavaScriptCore/parser/Grammar.y"
+#line 573 "../../JavaScriptCore/parser/Grammar.y"
     { InNode* node = new (GLOBAL_DATA) InNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3652,35 +3650,35 @@ yyreduce:
   case 114:
 
 /* Line 1455 of yacc.c  */
-#line 582 "../../JavaScriptCore/parser/Grammar.y"
+#line 580 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 115:
 
 /* Line 1455 of yacc.c  */
-#line 583 "../../JavaScriptCore/parser/Grammar.y"
+#line 581 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 116:
 
 /* Line 1455 of yacc.c  */
-#line 584 "../../JavaScriptCore/parser/Grammar.y"
+#line 582 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 117:
 
 /* Line 1455 of yacc.c  */
-#line 585 "../../JavaScriptCore/parser/Grammar.y"
+#line 583 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 118:
 
 /* Line 1455 of yacc.c  */
-#line 587 "../../JavaScriptCore/parser/Grammar.y"
+#line 585 "../../JavaScriptCore/parser/Grammar.y"
     { InstanceOfNode* node = new (GLOBAL_DATA) InstanceOfNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3689,35 +3687,35 @@ yyreduce:
   case 120:
 
 /* Line 1455 of yacc.c  */
-#line 594 "../../JavaScriptCore/parser/Grammar.y"
+#line 592 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 121:
 
 /* Line 1455 of yacc.c  */
-#line 595 "../../JavaScriptCore/parser/Grammar.y"
+#line 593 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 122:
 
 /* Line 1455 of yacc.c  */
-#line 596 "../../JavaScriptCore/parser/Grammar.y"
+#line 594 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 123:
 
 /* Line 1455 of yacc.c  */
-#line 597 "../../JavaScriptCore/parser/Grammar.y"
+#line 595 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 124:
 
 /* Line 1455 of yacc.c  */
-#line 599 "../../JavaScriptCore/parser/Grammar.y"
+#line 597 "../../JavaScriptCore/parser/Grammar.y"
     { InstanceOfNode* node = new (GLOBAL_DATA) InstanceOfNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3726,7 +3724,7 @@ yyreduce:
   case 125:
 
 /* Line 1455 of yacc.c  */
-#line 603 "../../JavaScriptCore/parser/Grammar.y"
+#line 601 "../../JavaScriptCore/parser/Grammar.y"
     { InNode* node = new (GLOBAL_DATA) InNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3735,217 +3733,217 @@ yyreduce:
   case 127:
 
 /* Line 1455 of yacc.c  */
-#line 610 "../../JavaScriptCore/parser/Grammar.y"
+#line 608 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) EqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 128:
 
 /* Line 1455 of yacc.c  */
-#line 611 "../../JavaScriptCore/parser/Grammar.y"
+#line 609 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 129:
 
 /* Line 1455 of yacc.c  */
-#line 612 "../../JavaScriptCore/parser/Grammar.y"
+#line 610 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 130:
 
 /* Line 1455 of yacc.c  */
-#line 613 "../../JavaScriptCore/parser/Grammar.y"
+#line 611 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotStrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 132:
 
 /* Line 1455 of yacc.c  */
-#line 619 "../../JavaScriptCore/parser/Grammar.y"
+#line 617 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) EqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 133:
 
 /* Line 1455 of yacc.c  */
-#line 621 "../../JavaScriptCore/parser/Grammar.y"
+#line 619 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 134:
 
 /* Line 1455 of yacc.c  */
-#line 623 "../../JavaScriptCore/parser/Grammar.y"
+#line 621 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 135:
 
 /* Line 1455 of yacc.c  */
-#line 625 "../../JavaScriptCore/parser/Grammar.y"
+#line 623 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotStrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 137:
 
 /* Line 1455 of yacc.c  */
-#line 631 "../../JavaScriptCore/parser/Grammar.y"
+#line 629 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) EqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 138:
 
 /* Line 1455 of yacc.c  */
-#line 632 "../../JavaScriptCore/parser/Grammar.y"
+#line 630 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 139:
 
 /* Line 1455 of yacc.c  */
-#line 634 "../../JavaScriptCore/parser/Grammar.y"
+#line 632 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 140:
 
 /* Line 1455 of yacc.c  */
-#line 636 "../../JavaScriptCore/parser/Grammar.y"
+#line 634 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotStrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 142:
 
 /* Line 1455 of yacc.c  */
-#line 641 "../../JavaScriptCore/parser/Grammar.y"
+#line 639 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitAndNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 144:
 
 /* Line 1455 of yacc.c  */
-#line 647 "../../JavaScriptCore/parser/Grammar.y"
+#line 645 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitAndNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 146:
 
 /* Line 1455 of yacc.c  */
-#line 652 "../../JavaScriptCore/parser/Grammar.y"
+#line 650 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitAndNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 148:
 
 /* Line 1455 of yacc.c  */
-#line 657 "../../JavaScriptCore/parser/Grammar.y"
+#line 655 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitXOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 150:
 
 /* Line 1455 of yacc.c  */
-#line 663 "../../JavaScriptCore/parser/Grammar.y"
+#line 661 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitXOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 152:
 
 /* Line 1455 of yacc.c  */
-#line 669 "../../JavaScriptCore/parser/Grammar.y"
+#line 667 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitXOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 154:
 
 /* Line 1455 of yacc.c  */
-#line 674 "../../JavaScriptCore/parser/Grammar.y"
+#line 672 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 156:
 
 /* Line 1455 of yacc.c  */
-#line 680 "../../JavaScriptCore/parser/Grammar.y"
+#line 678 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 158:
 
 /* Line 1455 of yacc.c  */
-#line 686 "../../JavaScriptCore/parser/Grammar.y"
+#line 684 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 160:
 
 /* Line 1455 of yacc.c  */
-#line 691 "../../JavaScriptCore/parser/Grammar.y"
+#line 689 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalAnd), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 162:
 
 /* Line 1455 of yacc.c  */
-#line 697 "../../JavaScriptCore/parser/Grammar.y"
+#line 695 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalAnd), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 164:
 
 /* Line 1455 of yacc.c  */
-#line 703 "../../JavaScriptCore/parser/Grammar.y"
+#line 701 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalAnd), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 166:
 
 /* Line 1455 of yacc.c  */
-#line 708 "../../JavaScriptCore/parser/Grammar.y"
+#line 706 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalOr), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 168:
 
 /* Line 1455 of yacc.c  */
-#line 714 "../../JavaScriptCore/parser/Grammar.y"
+#line 712 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalOr), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 170:
 
 /* Line 1455 of yacc.c  */
-#line 719 "../../JavaScriptCore/parser/Grammar.y"
+#line 717 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalOr), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 172:
 
 /* Line 1455 of yacc.c  */
-#line 725 "../../JavaScriptCore/parser/Grammar.y"
+#line 723 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ConditionalNode(GLOBAL_DATA, (yyvsp[(1) - (5)].expressionNode).m_node, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].expressionNode).m_node), (yyvsp[(1) - (5)].expressionNode).m_features | (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].expressionNode).m_features, (yyvsp[(1) - (5)].expressionNode).m_numConstants + (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].expressionNode).m_numConstants); ;}
     break;
 
   case 174:
 
 /* Line 1455 of yacc.c  */
-#line 731 "../../JavaScriptCore/parser/Grammar.y"
+#line 729 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ConditionalNode(GLOBAL_DATA, (yyvsp[(1) - (5)].expressionNode).m_node, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].expressionNode).m_node), (yyvsp[(1) - (5)].expressionNode).m_features | (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].expressionNode).m_features, (yyvsp[(1) - (5)].expressionNode).m_numConstants + (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].expressionNode).m_numConstants); ;}
     break;
 
   case 176:
 
 /* Line 1455 of yacc.c  */
-#line 737 "../../JavaScriptCore/parser/Grammar.y"
+#line 735 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ConditionalNode(GLOBAL_DATA, (yyvsp[(1) - (5)].expressionNode).m_node, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].expressionNode).m_node), (yyvsp[(1) - (5)].expressionNode).m_features | (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].expressionNode).m_features, (yyvsp[(1) - (5)].expressionNode).m_numConstants + (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].expressionNode).m_numConstants); ;}
     break;
 
   case 178:
 
 /* Line 1455 of yacc.c  */
-#line 743 "../../JavaScriptCore/parser/Grammar.y"
+#line 741 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAssignNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(2) - (3)].op), (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(1) - (3)].expressionNode).m_features & AssignFeature, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature, 
                                                                                                      (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).first_column + 1, (yylsp[(3) - (3)]).last_column), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); 
                                         ;}
@@ -3954,7 +3952,7 @@ yyreduce:
   case 180:
 
 /* Line 1455 of yacc.c  */
-#line 751 "../../JavaScriptCore/parser/Grammar.y"
+#line 749 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAssignNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(2) - (3)].op), (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(1) - (3)].expressionNode).m_features & AssignFeature, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature, 
                                                                                                      (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).first_column + 1, (yylsp[(3) - (3)]).last_column), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants);
                                         ;}
@@ -3963,7 +3961,7 @@ yyreduce:
   case 182:
 
 /* Line 1455 of yacc.c  */
-#line 759 "../../JavaScriptCore/parser/Grammar.y"
+#line 757 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAssignNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(2) - (3)].op), (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(1) - (3)].expressionNode).m_features & AssignFeature, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature,
                                                                                                      (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).first_column + 1, (yylsp[(3) - (3)]).last_column), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); 
                                         ;}
@@ -3972,112 +3970,112 @@ yyreduce:
   case 183:
 
 /* Line 1455 of yacc.c  */
-#line 765 "../../JavaScriptCore/parser/Grammar.y"
+#line 763 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpEqual; ;}
     break;
 
   case 184:
 
 /* Line 1455 of yacc.c  */
-#line 766 "../../JavaScriptCore/parser/Grammar.y"
+#line 764 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpPlusEq; ;}
     break;
 
   case 185:
 
 /* Line 1455 of yacc.c  */
-#line 767 "../../JavaScriptCore/parser/Grammar.y"
+#line 765 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpMinusEq; ;}
     break;
 
   case 186:
 
 /* Line 1455 of yacc.c  */
-#line 768 "../../JavaScriptCore/parser/Grammar.y"
+#line 766 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpMultEq; ;}
     break;
 
   case 187:
 
 /* Line 1455 of yacc.c  */
-#line 769 "../../JavaScriptCore/parser/Grammar.y"
+#line 767 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpDivEq; ;}
     break;
 
   case 188:
 
 /* Line 1455 of yacc.c  */
-#line 770 "../../JavaScriptCore/parser/Grammar.y"
+#line 768 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpLShift; ;}
     break;
 
   case 189:
 
 /* Line 1455 of yacc.c  */
-#line 771 "../../JavaScriptCore/parser/Grammar.y"
+#line 769 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpRShift; ;}
     break;
 
   case 190:
 
 /* Line 1455 of yacc.c  */
-#line 772 "../../JavaScriptCore/parser/Grammar.y"
+#line 770 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpURShift; ;}
     break;
 
   case 191:
 
 /* Line 1455 of yacc.c  */
-#line 773 "../../JavaScriptCore/parser/Grammar.y"
+#line 771 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpAndEq; ;}
     break;
 
   case 192:
 
 /* Line 1455 of yacc.c  */
-#line 774 "../../JavaScriptCore/parser/Grammar.y"
+#line 772 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpXOrEq; ;}
     break;
 
   case 193:
 
 /* Line 1455 of yacc.c  */
-#line 775 "../../JavaScriptCore/parser/Grammar.y"
+#line 773 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpOrEq; ;}
     break;
 
   case 194:
 
 /* Line 1455 of yacc.c  */
-#line 776 "../../JavaScriptCore/parser/Grammar.y"
+#line 774 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.op) = OpModEq; ;}
     break;
 
   case 196:
 
 /* Line 1455 of yacc.c  */
-#line 781 "../../JavaScriptCore/parser/Grammar.y"
+#line 779 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 198:
 
 /* Line 1455 of yacc.c  */
-#line 786 "../../JavaScriptCore/parser/Grammar.y"
+#line 784 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 200:
 
 /* Line 1455 of yacc.c  */
-#line 791 "../../JavaScriptCore/parser/Grammar.y"
+#line 789 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 218:
 
 /* Line 1455 of yacc.c  */
-#line 815 "../../JavaScriptCore/parser/Grammar.y"
+#line 813 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BlockNode(GLOBAL_DATA, 0), 0, 0, 0, 0);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
     break;
@@ -4085,7 +4083,7 @@ yyreduce:
   case 219:
 
 /* Line 1455 of yacc.c  */
-#line 817 "../../JavaScriptCore/parser/Grammar.y"
+#line 815 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BlockNode(GLOBAL_DATA, (yyvsp[(2) - (3)].sourceElements).m_node), (yyvsp[(2) - (3)].sourceElements).m_varDeclarations, (yyvsp[(2) - (3)].sourceElements).m_funcDeclarations, (yyvsp[(2) - (3)].sourceElements).m_features, (yyvsp[(2) - (3)].sourceElements).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
     break;
@@ -4093,7 +4091,7 @@ yyreduce:
   case 220:
 
 /* Line 1455 of yacc.c  */
-#line 822 "../../JavaScriptCore/parser/Grammar.y"
+#line 820 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(makeVarStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].varDeclList).m_node), (yyvsp[(2) - (3)].varDeclList).m_varDeclarations, (yyvsp[(2) - (3)].varDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].varDeclList).m_features, (yyvsp[(2) - (3)].varDeclList).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
     break;
@@ -4101,7 +4099,7 @@ yyreduce:
   case 221:
 
 /* Line 1455 of yacc.c  */
-#line 824 "../../JavaScriptCore/parser/Grammar.y"
+#line 822 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(makeVarStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].varDeclList).m_node), (yyvsp[(2) - (3)].varDeclList).m_varDeclarations, (yyvsp[(2) - (3)].varDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].varDeclList).m_features, (yyvsp[(2) - (3)].varDeclList).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)]));
                                           AUTO_SEMICOLON; ;}
@@ -4110,7 +4108,7 @@ yyreduce:
   case 222:
 
 /* Line 1455 of yacc.c  */
-#line 830 "../../JavaScriptCore/parser/Grammar.y"
+#line 828 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.varDeclList).m_node = 0;
                                           (yyval.varDeclList).m_varDeclarations = new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::VarStack>;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(1) - (1)].ident), 0);
@@ -4123,7 +4121,7 @@ yyreduce:
   case 223:
 
 /* Line 1455 of yacc.c  */
-#line 837 "../../JavaScriptCore/parser/Grammar.y"
+#line 835 "../../JavaScriptCore/parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(1) - (2)].ident), (yyvsp[(2) - (2)].expressionNode).m_node, (yyvsp[(2) - (2)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column);
                                           (yyval.varDeclList).m_node = node;
@@ -4138,7 +4136,7 @@ yyreduce:
   case 224:
 
 /* Line 1455 of yacc.c  */
-#line 847 "../../JavaScriptCore/parser/Grammar.y"
+#line 845 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.varDeclList).m_node = (yyvsp[(1) - (3)].varDeclList).m_node;
                                           (yyval.varDeclList).m_varDeclarations = (yyvsp[(1) - (3)].varDeclList).m_varDeclarations;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(3) - (3)].ident), 0);
@@ -4151,7 +4149,7 @@ yyreduce:
   case 225:
 
 /* Line 1455 of yacc.c  */
-#line 855 "../../JavaScriptCore/parser/Grammar.y"
+#line 853 "../../JavaScriptCore/parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(3) - (4)].ident), (yyvsp[(4) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(3) - (4)]).first_column, (yylsp[(4) - (4)]).first_column + 1, (yylsp[(4) - (4)]).last_column);
                                           (yyval.varDeclList).m_node = combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
@@ -4166,7 +4164,7 @@ yyreduce:
   case 226:
 
 /* Line 1455 of yacc.c  */
-#line 867 "../../JavaScriptCore/parser/Grammar.y"
+#line 865 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.varDeclList).m_node = 0;
                                           (yyval.varDeclList).m_varDeclarations = new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::VarStack>;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(1) - (1)].ident), 0);
@@ -4179,7 +4177,7 @@ yyreduce:
   case 227:
 
 /* Line 1455 of yacc.c  */
-#line 874 "../../JavaScriptCore/parser/Grammar.y"
+#line 872 "../../JavaScriptCore/parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(1) - (2)].ident), (yyvsp[(2) - (2)].expressionNode).m_node, (yyvsp[(2) - (2)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column);
                                           (yyval.varDeclList).m_node = node;
@@ -4194,7 +4192,7 @@ yyreduce:
   case 228:
 
 /* Line 1455 of yacc.c  */
-#line 884 "../../JavaScriptCore/parser/Grammar.y"
+#line 882 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.varDeclList).m_node = (yyvsp[(1) - (3)].varDeclList).m_node;
                                           (yyval.varDeclList).m_varDeclarations = (yyvsp[(1) - (3)].varDeclList).m_varDeclarations;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(3) - (3)].ident), 0);
@@ -4207,7 +4205,7 @@ yyreduce:
   case 229:
 
 /* Line 1455 of yacc.c  */
-#line 892 "../../JavaScriptCore/parser/Grammar.y"
+#line 890 "../../JavaScriptCore/parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(3) - (4)].ident), (yyvsp[(4) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(3) - (4)]).first_column, (yylsp[(4) - (4)]).first_column + 1, (yylsp[(4) - (4)]).last_column);
                                           (yyval.varDeclList).m_node = combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
@@ -4222,7 +4220,7 @@ yyreduce:
   case 230:
 
 /* Line 1455 of yacc.c  */
-#line 904 "../../JavaScriptCore/parser/Grammar.y"
+#line 902 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ConstStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].constDeclList).m_node.head), (yyvsp[(2) - (3)].constDeclList).m_varDeclarations, (yyvsp[(2) - (3)].constDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].constDeclList).m_features, (yyvsp[(2) - (3)].constDeclList).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
     break;
@@ -4230,7 +4228,7 @@ yyreduce:
   case 231:
 
 /* Line 1455 of yacc.c  */
-#line 907 "../../JavaScriptCore/parser/Grammar.y"
+#line 905 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ConstStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].constDeclList).m_node.head), (yyvsp[(2) - (3)].constDeclList).m_varDeclarations, (yyvsp[(2) - (3)].constDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].constDeclList).m_features, (yyvsp[(2) - (3)].constDeclList).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; ;}
     break;
@@ -4238,7 +4236,7 @@ yyreduce:
   case 232:
 
 /* Line 1455 of yacc.c  */
-#line 912 "../../JavaScriptCore/parser/Grammar.y"
+#line 910 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.constDeclList).m_node.head = (yyvsp[(1) - (1)].constDeclNode).m_node;
                                           (yyval.constDeclList).m_node.tail = (yyval.constDeclList).m_node.head;
                                           (yyval.constDeclList).m_varDeclarations = new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::VarStack>;
@@ -4252,7 +4250,7 @@ yyreduce:
   case 233:
 
 /* Line 1455 of yacc.c  */
-#line 921 "../../JavaScriptCore/parser/Grammar.y"
+#line 919 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.constDeclList).m_node.head = (yyvsp[(1) - (3)].constDeclList).m_node.head;
                                           (yyvsp[(1) - (3)].constDeclList).m_node.tail->m_next = (yyvsp[(3) - (3)].constDeclNode).m_node;
                                           (yyval.constDeclList).m_node.tail = (yyvsp[(3) - (3)].constDeclNode).m_node;
@@ -4266,42 +4264,42 @@ yyreduce:
   case 234:
 
 /* Line 1455 of yacc.c  */
-#line 932 "../../JavaScriptCore/parser/Grammar.y"
+#line 930 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.constDeclNode) = createNodeInfo<ConstDeclNode*>(new (GLOBAL_DATA) ConstDeclNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident), 0), (*(yyvsp[(1) - (1)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0, 0); ;}
     break;
 
   case 235:
 
 /* Line 1455 of yacc.c  */
-#line 933 "../../JavaScriptCore/parser/Grammar.y"
+#line 931 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.constDeclNode) = createNodeInfo<ConstDeclNode*>(new (GLOBAL_DATA) ConstDeclNode(GLOBAL_DATA, *(yyvsp[(1) - (2)].ident), (yyvsp[(2) - (2)].expressionNode).m_node), ((*(yyvsp[(1) - (2)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0) | (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 236:
 
 /* Line 1455 of yacc.c  */
-#line 937 "../../JavaScriptCore/parser/Grammar.y"
+#line 935 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = (yyvsp[(2) - (2)].expressionNode); ;}
     break;
 
   case 237:
 
 /* Line 1455 of yacc.c  */
-#line 941 "../../JavaScriptCore/parser/Grammar.y"
+#line 939 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = (yyvsp[(2) - (2)].expressionNode); ;}
     break;
 
   case 238:
 
 /* Line 1455 of yacc.c  */
-#line 945 "../../JavaScriptCore/parser/Grammar.y"
+#line 943 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) EmptyStatementNode(GLOBAL_DATA), 0, 0, 0, 0); ;}
     break;
 
   case 239:
 
 /* Line 1455 of yacc.c  */
-#line 949 "../../JavaScriptCore/parser/Grammar.y"
+#line 947 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ExprStatementNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node), 0, 0, (yyvsp[(1) - (2)].expressionNode).m_features, (yyvsp[(1) - (2)].expressionNode).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
     break;
@@ -4309,7 +4307,7 @@ yyreduce:
   case 240:
 
 /* Line 1455 of yacc.c  */
-#line 951 "../../JavaScriptCore/parser/Grammar.y"
+#line 949 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ExprStatementNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node), 0, 0, (yyvsp[(1) - (2)].expressionNode).m_features, (yyvsp[(1) - (2)].expressionNode).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
     break;
@@ -4317,7 +4315,7 @@ yyreduce:
   case 241:
 
 /* Line 1455 of yacc.c  */
-#line 957 "../../JavaScriptCore/parser/Grammar.y"
+#line 955 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) IfNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].statementNode).m_node), (yyvsp[(5) - (5)].statementNode).m_varDeclarations, (yyvsp[(5) - (5)].statementNode).m_funcDeclarations, (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].statementNode).m_features, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].statementNode).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
     break;
@@ -4325,7 +4323,7 @@ yyreduce:
   case 242:
 
 /* Line 1455 of yacc.c  */
-#line 960 "../../JavaScriptCore/parser/Grammar.y"
+#line 958 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) IfElseNode(GLOBAL_DATA, (yyvsp[(3) - (7)].expressionNode).m_node, (yyvsp[(5) - (7)].statementNode).m_node, (yyvsp[(7) - (7)].statementNode).m_node), 
                                                                                          mergeDeclarationLists((yyvsp[(5) - (7)].statementNode).m_varDeclarations, (yyvsp[(7) - (7)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(5) - (7)].statementNode).m_funcDeclarations, (yyvsp[(7) - (7)].statementNode).m_funcDeclarations),
@@ -4337,7 +4335,7 @@ yyreduce:
   case 243:
 
 /* Line 1455 of yacc.c  */
-#line 969 "../../JavaScriptCore/parser/Grammar.y"
+#line 967 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DoWhileNode(GLOBAL_DATA, (yyvsp[(2) - (7)].statementNode).m_node, (yyvsp[(5) - (7)].expressionNode).m_node), (yyvsp[(2) - (7)].statementNode).m_varDeclarations, (yyvsp[(2) - (7)].statementNode).m_funcDeclarations, (yyvsp[(2) - (7)].statementNode).m_features | (yyvsp[(5) - (7)].expressionNode).m_features, (yyvsp[(2) - (7)].statementNode).m_numConstants + (yyvsp[(5) - (7)].expressionNode).m_numConstants);
                                              DBG((yyval.statementNode).m_node, (yylsp[(1) - (7)]), (yylsp[(3) - (7)])); ;}
     break;
@@ -4345,7 +4343,7 @@ yyreduce:
   case 244:
 
 /* Line 1455 of yacc.c  */
-#line 971 "../../JavaScriptCore/parser/Grammar.y"
+#line 969 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DoWhileNode(GLOBAL_DATA, (yyvsp[(2) - (7)].statementNode).m_node, (yyvsp[(5) - (7)].expressionNode).m_node), (yyvsp[(2) - (7)].statementNode).m_varDeclarations, (yyvsp[(2) - (7)].statementNode).m_funcDeclarations, (yyvsp[(2) - (7)].statementNode).m_features | (yyvsp[(5) - (7)].expressionNode).m_features, (yyvsp[(2) - (7)].statementNode).m_numConstants + (yyvsp[(5) - (7)].expressionNode).m_numConstants);
                                              DBG((yyval.statementNode).m_node, (yylsp[(1) - (7)]), (yylsp[(3) - (7)])); ;}
     break;
@@ -4353,7 +4351,7 @@ yyreduce:
   case 245:
 
 /* Line 1455 of yacc.c  */
-#line 973 "../../JavaScriptCore/parser/Grammar.y"
+#line 971 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) WhileNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].statementNode).m_node), (yyvsp[(5) - (5)].statementNode).m_varDeclarations, (yyvsp[(5) - (5)].statementNode).m_funcDeclarations, (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].statementNode).m_features, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].statementNode).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
     break;
@@ -4361,7 +4359,7 @@ yyreduce:
   case 246:
 
 /* Line 1455 of yacc.c  */
-#line 976 "../../JavaScriptCore/parser/Grammar.y"
+#line 974 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ForNode(GLOBAL_DATA, (yyvsp[(3) - (9)].expressionNode).m_node, (yyvsp[(5) - (9)].expressionNode).m_node, (yyvsp[(7) - (9)].expressionNode).m_node, (yyvsp[(9) - (9)].statementNode).m_node, false), (yyvsp[(9) - (9)].statementNode).m_varDeclarations, (yyvsp[(9) - (9)].statementNode).m_funcDeclarations, 
                                                                                          (yyvsp[(3) - (9)].expressionNode).m_features | (yyvsp[(5) - (9)].expressionNode).m_features | (yyvsp[(7) - (9)].expressionNode).m_features | (yyvsp[(9) - (9)].statementNode).m_features,
                                                                                          (yyvsp[(3) - (9)].expressionNode).m_numConstants + (yyvsp[(5) - (9)].expressionNode).m_numConstants + (yyvsp[(7) - (9)].expressionNode).m_numConstants + (yyvsp[(9) - (9)].statementNode).m_numConstants);
@@ -4372,7 +4370,7 @@ yyreduce:
   case 247:
 
 /* Line 1455 of yacc.c  */
-#line 982 "../../JavaScriptCore/parser/Grammar.y"
+#line 980 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ForNode(GLOBAL_DATA, (yyvsp[(4) - (10)].varDeclList).m_node, (yyvsp[(6) - (10)].expressionNode).m_node, (yyvsp[(8) - (10)].expressionNode).m_node, (yyvsp[(10) - (10)].statementNode).m_node, true),
                                                                                          mergeDeclarationLists((yyvsp[(4) - (10)].varDeclList).m_varDeclarations, (yyvsp[(10) - (10)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(4) - (10)].varDeclList).m_funcDeclarations, (yyvsp[(10) - (10)].statementNode).m_funcDeclarations),
@@ -4384,7 +4382,7 @@ yyreduce:
   case 248:
 
 /* Line 1455 of yacc.c  */
-#line 989 "../../JavaScriptCore/parser/Grammar.y"
+#line 987 "../../JavaScriptCore/parser/Grammar.y"
     {
                                             ForInNode* node = new (GLOBAL_DATA) ForInNode(GLOBAL_DATA, (yyvsp[(3) - (7)].expressionNode).m_node, (yyvsp[(5) - (7)].expressionNode).m_node, (yyvsp[(7) - (7)].statementNode).m_node);
                                             SET_EXCEPTION_LOCATION(node, (yylsp[(3) - (7)]).first_column, (yylsp[(3) - (7)]).last_column, (yylsp[(5) - (7)]).last_column);
@@ -4398,7 +4396,7 @@ yyreduce:
   case 249:
 
 /* Line 1455 of yacc.c  */
-#line 998 "../../JavaScriptCore/parser/Grammar.y"
+#line 996 "../../JavaScriptCore/parser/Grammar.y"
     { ForInNode *forIn = new (GLOBAL_DATA) ForInNode(GLOBAL_DATA, *(yyvsp[(4) - (8)].ident), 0, (yyvsp[(6) - (8)].expressionNode).m_node, (yyvsp[(8) - (8)].statementNode).m_node, (yylsp[(5) - (8)]).first_column, (yylsp[(5) - (8)]).first_column - (yylsp[(4) - (8)]).first_column, (yylsp[(6) - (8)]).last_column - (yylsp[(5) - (8)]).first_column);
                                           SET_EXCEPTION_LOCATION(forIn, (yylsp[(4) - (8)]).first_column, (yylsp[(5) - (8)]).first_column + 1, (yylsp[(6) - (8)]).last_column);
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyvsp[(8) - (8)].statementNode).m_varDeclarations, *(yyvsp[(4) - (8)].ident), DeclarationStacks::HasInitializer);
@@ -4409,7 +4407,7 @@ yyreduce:
   case 250:
 
 /* Line 1455 of yacc.c  */
-#line 1004 "../../JavaScriptCore/parser/Grammar.y"
+#line 1002 "../../JavaScriptCore/parser/Grammar.y"
     { ForInNode *forIn = new (GLOBAL_DATA) ForInNode(GLOBAL_DATA, *(yyvsp[(4) - (9)].ident), (yyvsp[(5) - (9)].expressionNode).m_node, (yyvsp[(7) - (9)].expressionNode).m_node, (yyvsp[(9) - (9)].statementNode).m_node, (yylsp[(5) - (9)]).first_column, (yylsp[(5) - (9)]).first_column - (yylsp[(4) - (9)]).first_column, (yylsp[(5) - (9)]).last_column - (yylsp[(5) - (9)]).first_column);
                                           SET_EXCEPTION_LOCATION(forIn, (yylsp[(4) - (9)]).first_column, (yylsp[(6) - (9)]).first_column + 1, (yylsp[(7) - (9)]).last_column);
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyvsp[(9) - (9)].statementNode).m_varDeclarations, *(yyvsp[(4) - (9)].ident), DeclarationStacks::HasInitializer);
@@ -4422,21 +4420,21 @@ yyreduce:
   case 251:
 
 /* Line 1455 of yacc.c  */
-#line 1014 "../../JavaScriptCore/parser/Grammar.y"
+#line 1012 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(0, 0, 0); ;}
     break;
 
   case 253:
 
 /* Line 1455 of yacc.c  */
-#line 1019 "../../JavaScriptCore/parser/Grammar.y"
+#line 1017 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(0, 0, 0); ;}
     break;
 
   case 255:
 
 /* Line 1455 of yacc.c  */
-#line 1024 "../../JavaScriptCore/parser/Grammar.y"
+#line 1022 "../../JavaScriptCore/parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4446,7 +4444,7 @@ yyreduce:
   case 256:
 
 /* Line 1455 of yacc.c  */
-#line 1028 "../../JavaScriptCore/parser/Grammar.y"
+#line 1026 "../../JavaScriptCore/parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4456,7 +4454,7 @@ yyreduce:
   case 257:
 
 /* Line 1455 of yacc.c  */
-#line 1032 "../../JavaScriptCore/parser/Grammar.y"
+#line 1030 "../../JavaScriptCore/parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4466,7 +4464,7 @@ yyreduce:
   case 258:
 
 /* Line 1455 of yacc.c  */
-#line 1036 "../../JavaScriptCore/parser/Grammar.y"
+#line 1034 "../../JavaScriptCore/parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4476,7 +4474,7 @@ yyreduce:
   case 259:
 
 /* Line 1455 of yacc.c  */
-#line 1043 "../../JavaScriptCore/parser/Grammar.y"
+#line 1041 "../../JavaScriptCore/parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
@@ -4485,7 +4483,7 @@ yyreduce:
   case 260:
 
 /* Line 1455 of yacc.c  */
-#line 1046 "../../JavaScriptCore/parser/Grammar.y"
+#line 1044 "../../JavaScriptCore/parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BreakNode(GLOBAL_DATA), 0, 0, 0, 0); DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
@@ -4494,7 +4492,7 @@ yyreduce:
   case 261:
 
 /* Line 1455 of yacc.c  */
-#line 1049 "../../JavaScriptCore/parser/Grammar.y"
+#line 1047 "../../JavaScriptCore/parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
@@ -4503,7 +4501,7 @@ yyreduce:
   case 262:
 
 /* Line 1455 of yacc.c  */
-#line 1052 "../../JavaScriptCore/parser/Grammar.y"
+#line 1050 "../../JavaScriptCore/parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BreakNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident)), 0, 0, 0, 0); DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; ;}
@@ -4512,7 +4510,7 @@ yyreduce:
   case 263:
 
 /* Line 1455 of yacc.c  */
-#line 1058 "../../JavaScriptCore/parser/Grammar.y"
+#line 1056 "../../JavaScriptCore/parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, 0); 
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
@@ -4521,7 +4519,7 @@ yyreduce:
   case 264:
 
 /* Line 1455 of yacc.c  */
-#line 1061 "../../JavaScriptCore/parser/Grammar.y"
+#line 1059 "../../JavaScriptCore/parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, 0); 
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
@@ -4530,7 +4528,7 @@ yyreduce:
   case 265:
 
 /* Line 1455 of yacc.c  */
-#line 1064 "../../JavaScriptCore/parser/Grammar.y"
+#line 1062 "../../JavaScriptCore/parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node); 
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
@@ -4539,7 +4537,7 @@ yyreduce:
   case 266:
 
 /* Line 1455 of yacc.c  */
-#line 1067 "../../JavaScriptCore/parser/Grammar.y"
+#line 1065 "../../JavaScriptCore/parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node); 
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; ;}
@@ -4548,7 +4546,7 @@ yyreduce:
   case 267:
 
 /* Line 1455 of yacc.c  */
-#line 1073 "../../JavaScriptCore/parser/Grammar.y"
+#line 1071 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) WithNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].statementNode).m_node, (yylsp[(3) - (5)]).last_column, (yylsp[(3) - (5)]).last_column - (yylsp[(3) - (5)]).first_column),
                                                                                          (yyvsp[(5) - (5)].statementNode).m_varDeclarations, (yyvsp[(5) - (5)].statementNode).m_funcDeclarations, (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].statementNode).m_features | WithFeature, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].statementNode).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
@@ -4557,7 +4555,7 @@ yyreduce:
   case 268:
 
 /* Line 1455 of yacc.c  */
-#line 1079 "../../JavaScriptCore/parser/Grammar.y"
+#line 1077 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) SwitchNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].caseBlockNode).m_node), (yyvsp[(5) - (5)].caseBlockNode).m_varDeclarations, (yyvsp[(5) - (5)].caseBlockNode).m_funcDeclarations,
                                                                                          (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].caseBlockNode).m_features, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].caseBlockNode).m_numConstants);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
@@ -4566,14 +4564,14 @@ yyreduce:
   case 269:
 
 /* Line 1455 of yacc.c  */
-#line 1085 "../../JavaScriptCore/parser/Grammar.y"
+#line 1083 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.caseBlockNode) = createNodeDeclarationInfo<CaseBlockNode*>(new (GLOBAL_DATA) CaseBlockNode(GLOBAL_DATA, (yyvsp[(2) - (3)].clauseList).m_node.head, 0, 0), (yyvsp[(2) - (3)].clauseList).m_varDeclarations, (yyvsp[(2) - (3)].clauseList).m_funcDeclarations, (yyvsp[(2) - (3)].clauseList).m_features, (yyvsp[(2) - (3)].clauseList).m_numConstants); ;}
     break;
 
   case 270:
 
 /* Line 1455 of yacc.c  */
-#line 1087 "../../JavaScriptCore/parser/Grammar.y"
+#line 1085 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.caseBlockNode) = createNodeDeclarationInfo<CaseBlockNode*>(new (GLOBAL_DATA) CaseBlockNode(GLOBAL_DATA, (yyvsp[(2) - (5)].clauseList).m_node.head, (yyvsp[(3) - (5)].caseClauseNode).m_node, (yyvsp[(4) - (5)].clauseList).m_node.head),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (5)].clauseList).m_varDeclarations, (yyvsp[(3) - (5)].caseClauseNode).m_varDeclarations), (yyvsp[(4) - (5)].clauseList).m_varDeclarations),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (5)].clauseList).m_funcDeclarations, (yyvsp[(3) - (5)].caseClauseNode).m_funcDeclarations), (yyvsp[(4) - (5)].clauseList).m_funcDeclarations),
@@ -4584,14 +4582,14 @@ yyreduce:
   case 271:
 
 /* Line 1455 of yacc.c  */
-#line 1095 "../../JavaScriptCore/parser/Grammar.y"
+#line 1093 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.clauseList).m_node.head = 0; (yyval.clauseList).m_node.tail = 0; (yyval.clauseList).m_varDeclarations = 0; (yyval.clauseList).m_funcDeclarations = 0; (yyval.clauseList).m_features = 0; (yyval.clauseList).m_numConstants = 0; ;}
     break;
 
   case 273:
 
 /* Line 1455 of yacc.c  */
-#line 1100 "../../JavaScriptCore/parser/Grammar.y"
+#line 1098 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.clauseList).m_node.head = new (GLOBAL_DATA) ClauseListNode(GLOBAL_DATA, (yyvsp[(1) - (1)].caseClauseNode).m_node);
                                           (yyval.clauseList).m_node.tail = (yyval.clauseList).m_node.head;
                                           (yyval.clauseList).m_varDeclarations = (yyvsp[(1) - (1)].caseClauseNode).m_varDeclarations;
@@ -4603,7 +4601,7 @@ yyreduce:
   case 274:
 
 /* Line 1455 of yacc.c  */
-#line 1106 "../../JavaScriptCore/parser/Grammar.y"
+#line 1104 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.clauseList).m_node.head = (yyvsp[(1) - (2)].clauseList).m_node.head;
                                           (yyval.clauseList).m_node.tail = new (GLOBAL_DATA) ClauseListNode(GLOBAL_DATA, (yyvsp[(1) - (2)].clauseList).m_node.tail, (yyvsp[(2) - (2)].caseClauseNode).m_node);
                                           (yyval.clauseList).m_varDeclarations = mergeDeclarationLists((yyvsp[(1) - (2)].clauseList).m_varDeclarations, (yyvsp[(2) - (2)].caseClauseNode).m_varDeclarations);
@@ -4616,35 +4614,35 @@ yyreduce:
   case 275:
 
 /* Line 1455 of yacc.c  */
-#line 1116 "../../JavaScriptCore/parser/Grammar.y"
+#line 1114 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node), 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 276:
 
 /* Line 1455 of yacc.c  */
-#line 1117 "../../JavaScriptCore/parser/Grammar.y"
+#line 1115 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, (yyvsp[(2) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].sourceElements).m_node), (yyvsp[(4) - (4)].sourceElements).m_varDeclarations, (yyvsp[(4) - (4)].sourceElements).m_funcDeclarations, (yyvsp[(2) - (4)].expressionNode).m_features | (yyvsp[(4) - (4)].sourceElements).m_features, (yyvsp[(2) - (4)].expressionNode).m_numConstants + (yyvsp[(4) - (4)].sourceElements).m_numConstants); ;}
     break;
 
   case 277:
 
 /* Line 1455 of yacc.c  */
-#line 1121 "../../JavaScriptCore/parser/Grammar.y"
+#line 1119 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, 0), 0, 0, 0, 0); ;}
     break;
 
   case 278:
 
 /* Line 1455 of yacc.c  */
-#line 1122 "../../JavaScriptCore/parser/Grammar.y"
+#line 1120 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, 0, (yyvsp[(3) - (3)].sourceElements).m_node), (yyvsp[(3) - (3)].sourceElements).m_varDeclarations, (yyvsp[(3) - (3)].sourceElements).m_funcDeclarations, (yyvsp[(3) - (3)].sourceElements).m_features, (yyvsp[(3) - (3)].sourceElements).m_numConstants); ;}
     break;
 
   case 279:
 
 /* Line 1455 of yacc.c  */
-#line 1126 "../../JavaScriptCore/parser/Grammar.y"
+#line 1124 "../../JavaScriptCore/parser/Grammar.y"
     { LabelNode* node = new (GLOBAL_DATA) LabelNode(GLOBAL_DATA, *(yyvsp[(1) - (3)].ident), (yyvsp[(3) - (3)].statementNode).m_node);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, (yyvsp[(3) - (3)].statementNode).m_varDeclarations, (yyvsp[(3) - (3)].statementNode).m_funcDeclarations, (yyvsp[(3) - (3)].statementNode).m_features, (yyvsp[(3) - (3)].statementNode).m_numConstants); ;}
@@ -4653,7 +4651,7 @@ yyreduce:
   case 280:
 
 /* Line 1455 of yacc.c  */
-#line 1132 "../../JavaScriptCore/parser/Grammar.y"
+#line 1130 "../../JavaScriptCore/parser/Grammar.y"
     { ThrowNode* node = new (GLOBAL_DATA) ThrowNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)]));
@@ -4663,7 +4661,7 @@ yyreduce:
   case 281:
 
 /* Line 1455 of yacc.c  */
-#line 1136 "../../JavaScriptCore/parser/Grammar.y"
+#line 1134 "../../JavaScriptCore/parser/Grammar.y"
     { ThrowNode* node = new (GLOBAL_DATA) ThrowNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); DBG((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; 
@@ -4673,7 +4671,7 @@ yyreduce:
   case 282:
 
 /* Line 1455 of yacc.c  */
-#line 1143 "../../JavaScriptCore/parser/Grammar.y"
+#line 1141 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) TryNode(GLOBAL_DATA, (yyvsp[(2) - (4)].statementNode).m_node, GLOBAL_DATA->propertyNames->nullIdentifier, false, 0, (yyvsp[(4) - (4)].statementNode).m_node),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (4)].statementNode).m_varDeclarations, (yyvsp[(4) - (4)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (4)].statementNode).m_funcDeclarations, (yyvsp[(4) - (4)].statementNode).m_funcDeclarations),
@@ -4685,7 +4683,7 @@ yyreduce:
   case 283:
 
 /* Line 1455 of yacc.c  */
-#line 1149 "../../JavaScriptCore/parser/Grammar.y"
+#line 1147 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) TryNode(GLOBAL_DATA, (yyvsp[(2) - (7)].statementNode).m_node, *(yyvsp[(5) - (7)].ident), ((yyvsp[(7) - (7)].statementNode).m_features & EvalFeature) != 0, (yyvsp[(7) - (7)].statementNode).m_node, 0),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (7)].statementNode).m_varDeclarations, (yyvsp[(7) - (7)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (7)].statementNode).m_funcDeclarations, (yyvsp[(7) - (7)].statementNode).m_funcDeclarations),
@@ -4697,7 +4695,7 @@ yyreduce:
   case 284:
 
 /* Line 1455 of yacc.c  */
-#line 1156 "../../JavaScriptCore/parser/Grammar.y"
+#line 1154 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) TryNode(GLOBAL_DATA, (yyvsp[(2) - (9)].statementNode).m_node, *(yyvsp[(5) - (9)].ident), ((yyvsp[(7) - (9)].statementNode).m_features & EvalFeature) != 0, (yyvsp[(7) - (9)].statementNode).m_node, (yyvsp[(9) - (9)].statementNode).m_node),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (9)].statementNode).m_varDeclarations, (yyvsp[(7) - (9)].statementNode).m_varDeclarations), (yyvsp[(9) - (9)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (9)].statementNode).m_funcDeclarations, (yyvsp[(7) - (9)].statementNode).m_funcDeclarations), (yyvsp[(9) - (9)].statementNode).m_funcDeclarations),
@@ -4709,7 +4707,7 @@ yyreduce:
   case 285:
 
 /* Line 1455 of yacc.c  */
-#line 1165 "../../JavaScriptCore/parser/Grammar.y"
+#line 1163 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DebuggerStatementNode(GLOBAL_DATA), 0, 0, 0, 0);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
     break;
@@ -4717,7 +4715,7 @@ yyreduce:
   case 286:
 
 /* Line 1455 of yacc.c  */
-#line 1167 "../../JavaScriptCore/parser/Grammar.y"
+#line 1165 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DebuggerStatementNode(GLOBAL_DATA), 0, 0, 0, 0);
                                           DBG((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
     break;
@@ -4725,14 +4723,14 @@ yyreduce:
   case 287:
 
 /* Line 1455 of yacc.c  */
-#line 1172 "../../JavaScriptCore/parser/Grammar.y"
+#line 1170 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new FuncDeclNode(GLOBAL_DATA, *(yyvsp[(2) - (7)].ident), (yyvsp[(6) - (7)].functionBodyNode), LEXER->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line)), 0, new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::FunctionStack>, ((*(yyvsp[(2) - (7)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0) | ClosureFeature, 0); DBG((yyvsp[(6) - (7)].functionBodyNode), (yylsp[(5) - (7)]), (yylsp[(7) - (7)])); (yyval.statementNode).m_funcDeclarations->data.append(static_cast<FuncDeclNode*>((yyval.statementNode).m_node)); ;}
     break;
 
   case 288:
 
 /* Line 1455 of yacc.c  */
-#line 1174 "../../JavaScriptCore/parser/Grammar.y"
+#line 1172 "../../JavaScriptCore/parser/Grammar.y"
     { 
           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new FuncDeclNode(GLOBAL_DATA, *(yyvsp[(2) - (8)].ident), (yyvsp[(7) - (8)].functionBodyNode), LEXER->sourceCode((yyvsp[(6) - (8)].intValue), (yyvsp[(8) - (8)].intValue), (yylsp[(6) - (8)]).first_line), (yyvsp[(4) - (8)].parameterList).m_node.head), 0, new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::FunctionStack>, ((*(yyvsp[(2) - (8)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0) | (yyvsp[(4) - (8)].parameterList).m_features | ClosureFeature, 0); 
           if ((yyvsp[(4) - (8)].parameterList).m_features & ArgumentsFeature)
@@ -4745,14 +4743,14 @@ yyreduce:
   case 289:
 
 /* Line 1455 of yacc.c  */
-#line 1184 "../../JavaScriptCore/parser/Grammar.y"
+#line 1182 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.funcExprNode) = createNodeInfo(new FuncExprNode(GLOBAL_DATA, GLOBAL_DATA->propertyNames->nullIdentifier, (yyvsp[(5) - (6)].functionBodyNode), LEXER->sourceCode((yyvsp[(4) - (6)].intValue), (yyvsp[(6) - (6)].intValue), (yylsp[(4) - (6)]).first_line)), ClosureFeature, 0); DBG((yyvsp[(5) - (6)].functionBodyNode), (yylsp[(4) - (6)]), (yylsp[(6) - (6)])); ;}
     break;
 
   case 290:
 
 /* Line 1455 of yacc.c  */
-#line 1186 "../../JavaScriptCore/parser/Grammar.y"
+#line 1184 "../../JavaScriptCore/parser/Grammar.y"
     { 
           (yyval.funcExprNode) = createNodeInfo(new FuncExprNode(GLOBAL_DATA, GLOBAL_DATA->propertyNames->nullIdentifier, (yyvsp[(6) - (7)].functionBodyNode), LEXER->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line), (yyvsp[(3) - (7)].parameterList).m_node.head), (yyvsp[(3) - (7)].parameterList).m_features | ClosureFeature, 0); 
           if ((yyvsp[(3) - (7)].parameterList).m_features & ArgumentsFeature) 
@@ -4764,14 +4762,14 @@ yyreduce:
   case 291:
 
 /* Line 1455 of yacc.c  */
-#line 1192 "../../JavaScriptCore/parser/Grammar.y"
+#line 1190 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.funcExprNode) = createNodeInfo(new FuncExprNode(GLOBAL_DATA, *(yyvsp[(2) - (7)].ident), (yyvsp[(6) - (7)].functionBodyNode), LEXER->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line)), ClosureFeature, 0); DBG((yyvsp[(6) - (7)].functionBodyNode), (yylsp[(5) - (7)]), (yylsp[(7) - (7)])); ;}
     break;
 
   case 292:
 
 /* Line 1455 of yacc.c  */
-#line 1194 "../../JavaScriptCore/parser/Grammar.y"
+#line 1192 "../../JavaScriptCore/parser/Grammar.y"
     { 
           (yyval.funcExprNode) = createNodeInfo(new FuncExprNode(GLOBAL_DATA, *(yyvsp[(2) - (8)].ident), (yyvsp[(7) - (8)].functionBodyNode), LEXER->sourceCode((yyvsp[(6) - (8)].intValue), (yyvsp[(8) - (8)].intValue), (yylsp[(6) - (8)]).first_line), (yyvsp[(4) - (8)].parameterList).m_node.head), (yyvsp[(4) - (8)].parameterList).m_features | ClosureFeature, 0); 
           if ((yyvsp[(4) - (8)].parameterList).m_features & ArgumentsFeature)
@@ -4783,7 +4781,7 @@ yyreduce:
   case 293:
 
 /* Line 1455 of yacc.c  */
-#line 1203 "../../JavaScriptCore/parser/Grammar.y"
+#line 1201 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.parameterList).m_node.head = new (GLOBAL_DATA) ParameterNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident));
                                           (yyval.parameterList).m_features = (*(yyvsp[(1) - (1)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0;
                                           (yyval.parameterList).m_node.tail = (yyval.parameterList).m_node.head; ;}
@@ -4792,7 +4790,7 @@ yyreduce:
   case 294:
 
 /* Line 1455 of yacc.c  */
-#line 1206 "../../JavaScriptCore/parser/Grammar.y"
+#line 1204 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.parameterList).m_node.head = (yyvsp[(1) - (3)].parameterList).m_node.head;
                                           (yyval.parameterList).m_features = (yyvsp[(1) - (3)].parameterList).m_features | ((*(yyvsp[(3) - (3)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0);
                                           (yyval.parameterList).m_node.tail = new (GLOBAL_DATA) ParameterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].parameterList).m_node.tail, *(yyvsp[(3) - (3)].ident));  ;}
@@ -4801,28 +4799,28 @@ yyreduce:
   case 295:
 
 /* Line 1455 of yacc.c  */
-#line 1212 "../../JavaScriptCore/parser/Grammar.y"
+#line 1210 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.functionBodyNode) = FunctionBodyNode::create(GLOBAL_DATA); ;}
     break;
 
   case 296:
 
 /* Line 1455 of yacc.c  */
-#line 1213 "../../JavaScriptCore/parser/Grammar.y"
+#line 1211 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.functionBodyNode) = FunctionBodyNode::create(GLOBAL_DATA); ;}
     break;
 
   case 297:
 
 /* Line 1455 of yacc.c  */
-#line 1217 "../../JavaScriptCore/parser/Grammar.y"
+#line 1215 "../../JavaScriptCore/parser/Grammar.y"
     { GLOBAL_DATA->parser->didFinishParsing(new (GLOBAL_DATA) SourceElements(GLOBAL_DATA), 0, 0, NoFeatures, (yylsp[(0) - (0)]).last_line, 0); ;}
     break;
 
   case 298:
 
 /* Line 1455 of yacc.c  */
-#line 1218 "../../JavaScriptCore/parser/Grammar.y"
+#line 1216 "../../JavaScriptCore/parser/Grammar.y"
     { GLOBAL_DATA->parser->didFinishParsing((yyvsp[(1) - (1)].sourceElements).m_node, (yyvsp[(1) - (1)].sourceElements).m_varDeclarations, (yyvsp[(1) - (1)].sourceElements).m_funcDeclarations, (yyvsp[(1) - (1)].sourceElements).m_features, 
                                                                                 (yylsp[(1) - (1)]).last_line, (yyvsp[(1) - (1)].sourceElements).m_numConstants); ;}
     break;
@@ -4830,7 +4828,7 @@ yyreduce:
   case 299:
 
 /* Line 1455 of yacc.c  */
-#line 1223 "../../JavaScriptCore/parser/Grammar.y"
+#line 1221 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.sourceElements).m_node = new (GLOBAL_DATA) SourceElements(GLOBAL_DATA);
                                           (yyval.sourceElements).m_node->append((yyvsp[(1) - (1)].statementNode).m_node);
                                           (yyval.sourceElements).m_varDeclarations = (yyvsp[(1) - (1)].statementNode).m_varDeclarations;
@@ -4843,7 +4841,7 @@ yyreduce:
   case 300:
 
 /* Line 1455 of yacc.c  */
-#line 1230 "../../JavaScriptCore/parser/Grammar.y"
+#line 1228 "../../JavaScriptCore/parser/Grammar.y"
     { (yyval.sourceElements).m_node->append((yyvsp[(2) - (2)].statementNode).m_node);
                                           (yyval.sourceElements).m_varDeclarations = mergeDeclarationLists((yyvsp[(1) - (2)].sourceElements).m_varDeclarations, (yyvsp[(2) - (2)].statementNode).m_varDeclarations);
                                           (yyval.sourceElements).m_funcDeclarations = mergeDeclarationLists((yyvsp[(1) - (2)].sourceElements).m_funcDeclarations, (yyvsp[(2) - (2)].statementNode).m_funcDeclarations);
@@ -4855,259 +4853,259 @@ yyreduce:
   case 304:
 
 /* Line 1455 of yacc.c  */
-#line 1244 "../../JavaScriptCore/parser/Grammar.y"
+#line 1242 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 305:
 
 /* Line 1455 of yacc.c  */
-#line 1245 "../../JavaScriptCore/parser/Grammar.y"
+#line 1243 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 306:
 
 /* Line 1455 of yacc.c  */
-#line 1246 "../../JavaScriptCore/parser/Grammar.y"
+#line 1244 "../../JavaScriptCore/parser/Grammar.y"
     { Lexer& l = *LEXER; if (!l.scanRegExp()) YYABORT; ;}
     break;
 
   case 307:
 
 /* Line 1455 of yacc.c  */
-#line 1247 "../../JavaScriptCore/parser/Grammar.y"
+#line 1245 "../../JavaScriptCore/parser/Grammar.y"
     { Lexer& l = *LEXER; if (!l.scanRegExp()) YYABORT; ;}
     break;
 
   case 308:
 
 /* Line 1455 of yacc.c  */
-#line 1251 "../../JavaScriptCore/parser/Grammar.y"
+#line 1249 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 309:
 
 /* Line 1455 of yacc.c  */
-#line 1252 "../../JavaScriptCore/parser/Grammar.y"
+#line 1250 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 310:
 
 /* Line 1455 of yacc.c  */
-#line 1253 "../../JavaScriptCore/parser/Grammar.y"
+#line 1251 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 311:
 
 /* Line 1455 of yacc.c  */
-#line 1254 "../../JavaScriptCore/parser/Grammar.y"
+#line 1252 "../../JavaScriptCore/parser/Grammar.y"
     { if (*(yyvsp[(1) - (7)].ident) != "get" && *(yyvsp[(1) - (7)].ident) != "set") YYABORT; ;}
     break;
 
   case 312:
 
 /* Line 1455 of yacc.c  */
-#line 1255 "../../JavaScriptCore/parser/Grammar.y"
+#line 1253 "../../JavaScriptCore/parser/Grammar.y"
     { if (*(yyvsp[(1) - (8)].ident) != "get" && *(yyvsp[(1) - (8)].ident) != "set") YYABORT; ;}
     break;
 
   case 316:
 
 /* Line 1455 of yacc.c  */
-#line 1265 "../../JavaScriptCore/parser/Grammar.y"
+#line 1263 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 317:
 
 /* Line 1455 of yacc.c  */
-#line 1266 "../../JavaScriptCore/parser/Grammar.y"
+#line 1264 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 318:
 
 /* Line 1455 of yacc.c  */
-#line 1268 "../../JavaScriptCore/parser/Grammar.y"
+#line 1266 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 322:
 
 /* Line 1455 of yacc.c  */
-#line 1275 "../../JavaScriptCore/parser/Grammar.y"
+#line 1273 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 517:
 
 /* Line 1455 of yacc.c  */
-#line 1643 "../../JavaScriptCore/parser/Grammar.y"
+#line 1641 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 518:
 
 /* Line 1455 of yacc.c  */
-#line 1644 "../../JavaScriptCore/parser/Grammar.y"
+#line 1642 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 520:
 
 /* Line 1455 of yacc.c  */
-#line 1649 "../../JavaScriptCore/parser/Grammar.y"
+#line 1647 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 521:
 
 /* Line 1455 of yacc.c  */
-#line 1653 "../../JavaScriptCore/parser/Grammar.y"
+#line 1651 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 522:
 
 /* Line 1455 of yacc.c  */
-#line 1654 "../../JavaScriptCore/parser/Grammar.y"
+#line 1652 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 525:
 
 /* Line 1455 of yacc.c  */
-#line 1660 "../../JavaScriptCore/parser/Grammar.y"
+#line 1658 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 526:
 
 /* Line 1455 of yacc.c  */
-#line 1661 "../../JavaScriptCore/parser/Grammar.y"
+#line 1659 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 530:
 
 /* Line 1455 of yacc.c  */
-#line 1668 "../../JavaScriptCore/parser/Grammar.y"
+#line 1666 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 533:
 
 /* Line 1455 of yacc.c  */
-#line 1677 "../../JavaScriptCore/parser/Grammar.y"
+#line 1675 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 534:
 
 /* Line 1455 of yacc.c  */
-#line 1678 "../../JavaScriptCore/parser/Grammar.y"
+#line 1676 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 539:
 
 /* Line 1455 of yacc.c  */
-#line 1695 "../../JavaScriptCore/parser/Grammar.y"
+#line 1693 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 555:
 
 /* Line 1455 of yacc.c  */
-#line 1726 "../../JavaScriptCore/parser/Grammar.y"
+#line 1724 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 557:
 
 /* Line 1455 of yacc.c  */
-#line 1728 "../../JavaScriptCore/parser/Grammar.y"
+#line 1726 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 559:
 
 /* Line 1455 of yacc.c  */
-#line 1733 "../../JavaScriptCore/parser/Grammar.y"
+#line 1731 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 561:
 
 /* Line 1455 of yacc.c  */
-#line 1735 "../../JavaScriptCore/parser/Grammar.y"
+#line 1733 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 563:
 
 /* Line 1455 of yacc.c  */
-#line 1740 "../../JavaScriptCore/parser/Grammar.y"
+#line 1738 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 565:
 
 /* Line 1455 of yacc.c  */
-#line 1742 "../../JavaScriptCore/parser/Grammar.y"
+#line 1740 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 568:
 
 /* Line 1455 of yacc.c  */
-#line 1754 "../../JavaScriptCore/parser/Grammar.y"
+#line 1752 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 569:
 
 /* Line 1455 of yacc.c  */
-#line 1755 "../../JavaScriptCore/parser/Grammar.y"
+#line 1753 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 578:
 
 /* Line 1455 of yacc.c  */
-#line 1779 "../../JavaScriptCore/parser/Grammar.y"
+#line 1777 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
   case 580:
 
 /* Line 1455 of yacc.c  */
-#line 1784 "../../JavaScriptCore/parser/Grammar.y"
+#line 1782 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 585:
 
 /* Line 1455 of yacc.c  */
-#line 1795 "../../JavaScriptCore/parser/Grammar.y"
+#line 1793 "../../JavaScriptCore/parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 592:
 
 /* Line 1455 of yacc.c  */
-#line 1811 "../../JavaScriptCore/parser/Grammar.y"
+#line 1809 "../../JavaScriptCore/parser/Grammar.y"
     { ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 5111 "WebCore/tmp/../generated/Grammar.tab.c"
+#line 5109 "WebCore/tmp/../generated/Grammar.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -5326,7 +5324,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1827 "../../JavaScriptCore/parser/Grammar.y"
+#line 1825 "../../JavaScriptCore/parser/Grammar.y"
 
 
 static ExpressionNode* makeAssignNode(void* globalPtr, ExpressionNode* loc, Operator op, ExpressionNode* expr, bool locHasAssignments, bool exprHasAssignments, int start, int divot, int end)

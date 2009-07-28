@@ -515,15 +515,17 @@ sub AddIncludesForType
 {
     my $type = $codeGenerator->StripModule(shift);
 
-    return if $codeGenerator->IsNonPointerType($type) or IsNativeObjCType($type);
+    return if $codeGenerator->IsNonPointerType($type);
 
-    if ($codeGenerator->IsStringType($type)) {
-        $implIncludes{"KURL.h"} = 1;
+    if (IsNativeObjCType($type)) {
+        if ($type eq "Color") {
+            $implIncludes{"ColorMac.h"} = 1;
+        }
         return;
     }
 
-    if ($type eq "RGBColor") {
-        $implIncludes{"DOMRGBColorInternal.h"} = 1;
+    if ($codeGenerator->IsStringType($type)) {
+        $implIncludes{"KURL.h"} = 1;
         return;
     }
 
@@ -924,8 +926,6 @@ sub GenerateHeader
 
         if ($codeGenerator->IsSVGAnimatedType($interfaceName)) {
             push(@internalHeaderContent, "#import <WebCore/SVGAnimatedTemplate.h>\n\n");
-        } elsif ($interfaceName eq "RGBColor") {
-            push(@internalHeaderContent, "#import <WebCore/Color.h>\n\n");
         } else {
             push(@internalHeaderContent, "namespace WebCore {\n");
             $startedNamespace = 1;
@@ -1197,6 +1197,9 @@ sub GenerateImplementation
                 $getterContentTail .= ")";
             } elsif (IsProtocolType($idlType) and $idlType ne "EventTarget") {
                 $getterContentHead = "kit($getterContentHead";
+                $getterContentTail .= ")";
+            } elsif ($idlType eq "Color") {
+                $getterContentHead = "WebCore::nsColor($getterContentHead";
                 $getterContentTail .= ")";
             } elsif (ConversionNeeded($attribute->signature->type)) {
                 $getterContentHead = "kit(WTF::getPtr($getterContentHead";

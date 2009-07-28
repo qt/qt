@@ -39,6 +39,19 @@ CONFIG(release, debug|release) {
 BASE_DIR = $$PWD
 INCLUDEPATH += $$PWD/WebKit/qt/Api
 
+# Enable GNU compiler extensions to the ARM compiler for all Qt ports using RVCT
+*-armcc {
+    QMAKE_CFLAGS += --gnu
+    QMAKE_CXXFLAGS += --gnu --no_parse_templates
+} 
+
+symbian {
+    QMAKE_CXXFLAGS.ARMCC += --gnu --no_parse_templates
+    DEFINES *= QT_NO_UITOOLS
+}
+
+contains(DEFINES, QT_NO_UITOOLS): CONFIG -= uitools
+
 #
 # For builds inside Qt we interpret the output rule and the input of each extra compiler manually
 # and add the resulting sources to the SOURCES variable, because the build inside Qt contains already

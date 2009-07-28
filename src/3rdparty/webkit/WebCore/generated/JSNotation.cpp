@@ -62,12 +62,12 @@ static JSC_CONST_HASHTABLE HashTable JSNotationConstructorTable =
     { 1, 0, JSNotationConstructorTableValues, 0 };
 #endif
 
-class JSNotationConstructor : public DOMObject {
+class JSNotationConstructor : public DOMConstructorObject {
 public:
-    JSNotationConstructor(ExecState* exec)
-        : DOMObject(JSNotationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSNotationConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSNotationConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSNotationPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSNotationPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,8 +109,8 @@ JSObject* JSNotationPrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 
 const ClassInfo JSNotation::s_info = { "Notation", &JSNode::s_info, &JSNotationTable, 0 };
 
-JSNotation::JSNotation(PassRefPtr<Structure> structure, PassRefPtr<Notation> impl)
-    : JSNode(structure, impl)
+JSNotation::JSNotation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Notation> impl)
+    : JSNode(structure, globalObject, impl)
 {
 }
 
@@ -126,25 +126,28 @@ bool JSNotation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
 
 JSValue jsNotationPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNotation* castedThis = static_cast<JSNotation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Notation* imp = static_cast<Notation*>(static_cast<JSNotation*>(asObject(slot.slotBase()))->impl());
+    Notation* imp = static_cast<Notation*>(castedThis->impl());
     return jsStringOrNull(exec, imp->publicId());
 }
 
 JSValue jsNotationSystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNotation* castedThis = static_cast<JSNotation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Notation* imp = static_cast<Notation*>(static_cast<JSNotation*>(asObject(slot.slotBase()))->impl());
+    Notation* imp = static_cast<Notation*>(castedThis->impl());
     return jsStringOrNull(exec, imp->systemId());
 }
 
 JSValue jsNotationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSNotation*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSNotation* domObject = static_cast<JSNotation*>(asObject(slot.slotBase()));
+    return JSNotation::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSNotation::getConstructor(ExecState* exec)
+JSValue JSNotation::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSNotationConstructor>(exec);
+    return getDOMConstructor<JSNotationConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

@@ -21,6 +21,7 @@
 #ifndef JSMediaList_h
 #define JSMediaList_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class MediaList;
 
-class JSMediaList : public DOMObject {
-    typedef DOMObject Base;
+class JSMediaList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMediaList(PassRefPtr<JSC::Structure>, PassRefPtr<MediaList>);
+    JSMediaList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MediaList>);
     virtual ~JSMediaList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,7 +48,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     MediaList* impl() const { return m_impl.get(); }
 
 private:
@@ -55,7 +56,7 @@ private:
     static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, MediaList*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, MediaList*);
 MediaList* toMediaList(JSC::JSValue);
 
 class JSMediaListPrototype : public JSC::JSObject {

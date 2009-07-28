@@ -21,6 +21,7 @@
 #ifndef JSCanvasRenderingContext2D_h
 #define JSCanvasRenderingContext2D_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class CanvasRenderingContext2D;
 
-class JSCanvasRenderingContext2D : public DOMObject {
-    typedef DOMObject Base;
+class JSCanvasRenderingContext2D : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCanvasRenderingContext2D(PassRefPtr<JSC::Structure>, PassRefPtr<CanvasRenderingContext2D>);
+    JSCanvasRenderingContext2D(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasRenderingContext2D>);
     virtual ~JSCanvasRenderingContext2D();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -45,7 +46,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom attributes
     JSC::JSValue strokeStyle(JSC::ExecState*) const;
@@ -70,7 +71,7 @@ private:
     RefPtr<CanvasRenderingContext2D> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, CanvasRenderingContext2D*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CanvasRenderingContext2D*);
 CanvasRenderingContext2D* toCanvasRenderingContext2D(JSC::JSValue);
 
 class JSCanvasRenderingContext2DPrototype : public JSC::JSObject {

@@ -63,12 +63,12 @@ static JSC_CONST_HASHTABLE HashTable JSXMLSerializerConstructorTable =
     { 1, 0, JSXMLSerializerConstructorTableValues, 0 };
 #endif
 
-class JSXMLSerializerConstructor : public DOMObject {
+class JSXMLSerializerConstructor : public DOMConstructorObject {
 public:
-    JSXMLSerializerConstructor(ExecState* exec)
-        : DOMObject(JSXMLSerializerConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSXMLSerializerConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSXMLSerializerConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSXMLSerializerPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSXMLSerializerPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -78,13 +78,13 @@ public:
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
-    static JSObject* construct(ExecState* exec, JSObject*, const ArgList&)
+    static JSObject* constructXMLSerializer(ExecState* exec, JSObject* constructor, const ArgList&)
     {
-        return asObject(toJS(exec, XMLSerializer::create()));
+        return asObject(toJS(exec, static_cast<JSXMLSerializerConstructor*>(constructor)->globalObject(), XMLSerializer::create()));
     }
     virtual ConstructType getConstructData(ConstructData& constructData)
     {
-        constructData.native.function = construct;
+        constructData.native.function = constructXMLSerializer;
         return ConstructTypeHost;
     }
 };
@@ -125,8 +125,8 @@ bool JSXMLSerializerPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSXMLSerializer::s_info = { "XMLSerializer", 0, &JSXMLSerializerTable, 0 };
 
-JSXMLSerializer::JSXMLSerializer(PassRefPtr<Structure> structure, PassRefPtr<XMLSerializer> impl)
-    : DOMObject(structure)
+JSXMLSerializer::JSXMLSerializer(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLSerializer> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -148,11 +148,12 @@ bool JSXMLSerializer::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsXMLSerializerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSXMLSerializer*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSXMLSerializer* domObject = static_cast<JSXMLSerializer*>(asObject(slot.slotBase()));
+    return JSXMLSerializer::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSXMLSerializer::getConstructor(ExecState* exec)
+JSValue JSXMLSerializer::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSXMLSerializerConstructor>(exec);
+    return getDOMConstructor<JSXMLSerializerConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsXMLSerializerPrototypeFunctionSerializeToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -171,9 +172,9 @@ JSValue JSC_HOST_CALL jsXMLSerializerPrototypeFunctionSerializeToString(ExecStat
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, XMLSerializer* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XMLSerializer* object)
 {
-    return getDOMObjectWrapper<JSXMLSerializer>(exec, object);
+    return getDOMObjectWrapper<JSXMLSerializer>(exec, globalObject, object);
 }
 XMLSerializer* toXMLSerializer(JSC::JSValue value)
 {

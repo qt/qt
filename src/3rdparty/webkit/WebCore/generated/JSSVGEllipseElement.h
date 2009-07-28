@@ -33,7 +33,7 @@ class SVGEllipseElement;
 class JSSVGEllipseElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGEllipseElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGEllipseElement>);
+    JSSVGEllipseElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGEllipseElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

@@ -105,6 +105,7 @@ namespace JSC {
         CodeLocationNearCall callReturnLocation;
         CodeLocationDataLabelPtr hotPathBegin;
         CodeLocationNearCall hotPathOther;
+        CodeBlock* ownerCodeBlock;
         CodeBlock* callee;
         unsigned position;
         
@@ -115,12 +116,14 @@ namespace JSC {
     struct MethodCallLinkInfo {
         MethodCallLinkInfo()
             : cachedStructure(0)
+            , cachedPrototypeStructure(0)
         {
         }
 
         CodeLocationCall callReturnLocation;
         CodeLocationDataLabelPtr structureLabel;
         Structure* cachedStructure;
+        Structure* cachedPrototypeStructure;
     };
 
     struct FunctionRegisterInfo {
@@ -221,7 +224,7 @@ namespace JSC {
     }
 #endif
 
-    class CodeBlock : public WTF::FastAllocBase {
+    class CodeBlock : public FastAllocBase {
         friend class JIT;
     public:
         CodeBlock(ScopeNode* ownerNode);
@@ -317,6 +320,7 @@ namespace JSC {
 #endif
 
 #if ENABLE(JIT)
+        JITCode& getJITCode() { return ownerNode()->generatedJITCode(); }
         void setJITCode(JITCode);
         ExecutablePool* executablePool() { return ownerNode()->getExecutablePool(); }
 #endif
@@ -493,7 +497,7 @@ namespace JSC {
 
         SymbolTable m_symbolTable;
 
-        struct ExceptionInfo {
+        struct ExceptionInfo : FastAllocBase {
             Vector<ExpressionRangeInfo> m_expressionInfo;
             Vector<LineInfo> m_lineInfo;
             Vector<GetByIdExceptionInfo> m_getByIdExceptionInfo;
@@ -504,7 +508,7 @@ namespace JSC {
         };
         OwnPtr<ExceptionInfo> m_exceptionInfo;
 
-        struct RareData {
+        struct RareData : FastAllocBase {
             Vector<HandlerInfo> m_exceptionHandlers;
 
             // Rare Constants

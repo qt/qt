@@ -67,12 +67,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLSourceElementConstructorTable =
     { 1, 0, JSHTMLSourceElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLSourceElementConstructor : public DOMObject {
+class JSHTMLSourceElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLSourceElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLSourceElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLSourceElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLSourceElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLSourceElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLSourceElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,8 +114,8 @@ JSObject* JSHTMLSourceElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLSourceElement::s_info = { "HTMLSourceElement", &JSHTMLElement::s_info, &JSHTMLSourceElementTable, 0 };
 
-JSHTMLSourceElement::JSHTMLSourceElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLSourceElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLSourceElement::JSHTMLSourceElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLSourceElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -131,28 +131,32 @@ bool JSHTMLSourceElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsHTMLSourceElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
     return jsString(exec, imp->src());
 }
 
 JSValue jsHTMLSourceElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLSourceElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
     return jsString(exec, imp->media());
 }
 
 JSValue jsHTMLSourceElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLSourceElement* domObject = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
+    return JSHTMLSourceElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLSourceElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -177,9 +181,9 @@ void setJSHTMLSourceElementMedia(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setMedia(value.toString(exec));
 }
 
-JSValue JSHTMLSourceElement::getConstructor(ExecState* exec)
+JSValue JSHTMLSourceElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLSourceElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLSourceElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

@@ -85,12 +85,12 @@ static JSC_CONST_HASHTABLE HashTable JSMouseEventConstructorTable =
     { 1, 0, JSMouseEventConstructorTableValues, 0 };
 #endif
 
-class JSMouseEventConstructor : public DOMObject {
+class JSMouseEventConstructor : public DOMConstructorObject {
 public:
-    JSMouseEventConstructor(ExecState* exec)
-        : DOMObject(JSMouseEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSMouseEventConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSMouseEventConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSMouseEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSMouseEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -138,8 +138,8 @@ bool JSMouseEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
 
 const ClassInfo JSMouseEvent::s_info = { "MouseEvent", &JSUIEvent::s_info, &JSMouseEventTable, 0 };
 
-JSMouseEvent::JSMouseEvent(PassRefPtr<Structure> structure, PassRefPtr<MouseEvent> impl)
-    : JSUIEvent(structure, impl)
+JSMouseEvent::JSMouseEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MouseEvent> impl)
+    : JSUIEvent(structure, globalObject, impl)
 {
 }
 
@@ -155,130 +155,148 @@ bool JSMouseEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsMouseEventScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->screenX());
 }
 
 JSValue jsMouseEventScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->screenY());
 }
 
 JSValue jsMouseEventClientX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->clientX());
 }
 
 JSValue jsMouseEventClientY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->clientY());
 }
 
 JSValue jsMouseEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsBoolean(imp->ctrlKey());
 }
 
 JSValue jsMouseEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsBoolean(imp->shiftKey());
 }
 
 JSValue jsMouseEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsBoolean(imp->altKey());
 }
 
 JSValue jsMouseEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsBoolean(imp->metaKey());
 }
 
 JSValue jsMouseEventButton(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->button());
 }
 
 JSValue jsMouseEventRelatedTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->relatedTarget()));
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->relatedTarget()));
 }
 
 JSValue jsMouseEventOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->offsetX());
 }
 
 JSValue jsMouseEventOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->offsetY());
 }
 
 JSValue jsMouseEventX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsMouseEventY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 
 JSValue jsMouseEventFromElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->fromElement()));
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->fromElement()));
 }
 
 JSValue jsMouseEventToElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->toElement()));
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->toElement()));
 }
 
 JSValue jsMouseEventDataTransfer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->dataTransfer()));
+    MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->dataTransfer()));
 }
 
 JSValue jsMouseEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSMouseEvent* domObject = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
+    return JSMouseEvent::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSMouseEvent::getConstructor(ExecState* exec)
+JSValue JSMouseEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSMouseEventConstructor>(exec);
+    return getDOMConstructor<JSMouseEventConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsMouseEventPrototypeFunctionInitMouseEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

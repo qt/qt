@@ -22,6 +22,7 @@
 #include "JSHTMLBaseElement.h"
 
 #include "HTMLBaseElement.h"
+#include "HTMLNames.h"
 #include "KURL.h"
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
@@ -63,12 +64,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLBaseElementConstructorTable =
     { 1, 0, JSHTMLBaseElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLBaseElementConstructor : public DOMObject {
+class JSHTMLBaseElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLBaseElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLBaseElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLBaseElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLBaseElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBaseElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBaseElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -110,8 +111,8 @@ JSObject* JSHTMLBaseElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLBaseElement::s_info = { "HTMLBaseElement", &JSHTMLElement::s_info, &JSHTMLBaseElementTable, 0 };
 
-JSHTMLBaseElement::JSHTMLBaseElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLBaseElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLBaseElement::JSHTMLBaseElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBaseElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -127,21 +128,24 @@ bool JSHTMLBaseElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsHTMLBaseElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBaseElement* castedThis = static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->href());
+    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::hrefAttr));
 }
 
 JSValue jsHTMLBaseElementTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBaseElement* castedThis = static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->target());
+    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::targetAttr));
 }
 
 JSValue jsHTMLBaseElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLBaseElement* domObject = static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()));
+    return JSHTMLBaseElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLBaseElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -151,18 +155,18 @@ void JSHTMLBaseElement::put(ExecState* exec, const Identifier& propertyName, JSV
 void setJSHTMLBaseElementHref(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(static_cast<JSHTMLBaseElement*>(thisObject)->impl());
-    imp->setHref(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::hrefAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBaseElementTarget(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(static_cast<JSHTMLBaseElement*>(thisObject)->impl());
-    imp->setTarget(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::targetAttr, valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLBaseElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBaseElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLBaseElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLBaseElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 
