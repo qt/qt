@@ -1152,6 +1152,20 @@ JSC::JSValue QScriptEnginePrivate::toUsableValue(JSC::JSValue value)
         originalGlobalObjectProxy = new (currentFrame)QScript::OriginalGlobalObjectProxy(scriptObjectStructure, originalGlobalObject());
     return originalGlobalObjectProxy;
 }
+/*!
+    \internal
+    Return the 'this' value for a given context
+    The result may be null for the global context
+*/
+JSC::JSValue QScriptEnginePrivate::thisForContext(JSC::ExecState *frame)
+{
+    if (frame->codeBlock() != 0) {
+        return frame->thisValue();
+    } else {
+        JSC::Register* thisRegister = frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - frame->argumentCount();
+        return thisRegister->jsValue();
+    }
+}
 
 void QScriptEnginePrivate::mark()
 {
@@ -2182,7 +2196,8 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::ScopeChain scopeChain = JSC::ScopeChain(exec->scopeChain());
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
     JSC::Completion comp = JSC::evaluate(exec, scopeChain,
-                                         JSC::makeSource(jscProgram, jscFileName, lineNumber));
+                                         JSC::makeSource(jscProgram, jscFileName, lineNumber),
+                                         d->thisForContext(exec));
     if ((comp.complType() == JSC::Normal) || (comp.complType() == JSC::ReturnValue)) {
         Q_ASSERT(!exec->hadException());
         return d->scriptValueFromJSCValue(comp.value());

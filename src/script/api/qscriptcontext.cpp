@@ -452,13 +452,7 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
 QScriptValue QScriptContext::thisObject() const
 {
     Q_D(const QScriptContext);
-    JSC::JSValue result;
-    if (d->frame->codeBlock() != 0) {
-        result = d->frame->thisValue();
-    } else {
-        JSC::Register* thisRegister = d->frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->frame->argumentCount();
-        result = thisRegister->jsValue();
-    }
+    JSC::JSValue result = d->engine->thisForContext(d->frame);
     if (!result || result.isNull())
         result = d->frame->globalThisValue();
     return d->engine->scriptValueFromJSCValue(result);

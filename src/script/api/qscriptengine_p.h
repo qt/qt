@@ -117,6 +117,7 @@ public:
     void setGlobalObject(JSC::JSObject *object);
     JSC::ExecState *globalExec() const;
     JSC::JSValue toUsableValue(JSC::JSValue value);
+    static JSC::JSValue thisForContext(JSC::ExecState *frame);
 
     void mark();
     bool isCollecting() const;
