@@ -2459,29 +2459,22 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
 
     {
         QScriptValue ret = eng.evaluate("if (0)");
-        QEXPECT_FAIL("", "Semicolon incorrectly inserted", Continue);
         QVERIFY(ret.isError());
     }
     {
         QScriptValue ret = eng.evaluate("while (0)");
-        QEXPECT_FAIL("", "Semicolon incorrectly inserted", Continue);
         QVERIFY(ret.isError());
     }
-#if 0 // ### hangs because of the semicolon insertion
     {
         QScriptValue ret = eng.evaluate("for (;;)");
-        QEXPECT_FAIL("", "Semicolon incorrectly inserted", Continue);
         QVERIFY(ret.isError());
     }
-#endif
     {
         QScriptValue ret = eng.evaluate("for (p in this)");
-        QEXPECT_FAIL("", "Semicolon incorrectly inserted", Continue);
         QVERIFY(ret.isError());
     }
     {
         QScriptValue ret = eng.evaluate("with (this)");
-        QEXPECT_FAIL("", "Semicolon incorrectly inserted", Continue);
         QVERIFY(ret.isError());
     }
     {
