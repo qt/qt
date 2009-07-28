@@ -2089,14 +2089,11 @@ void tst_QScriptValue::getSetProperty()
     QVERIFY(object.property(foo).strictlyEquals(num));
     QVERIFY(object.property("foo").strictlyEquals(num));
 
-    // can't set arguments and length property of function objects
+    // can't set length property of native function objects
     {
         QScriptValue fun = eng.newFunction(getterSetter, /*length=*/2);
         for (int x = 0; x < 2; ++x) {
-            QEXPECT_FAIL("", "function.arguments should be null", Continue);
-            QVERIFY(fun.property("arguments").isNull());
             QVERIFY(fun.property("length").strictlyEquals(QScriptValue(&eng, 2)));
-            fun.setProperty("arguments", QScriptValue());
             fun.setProperty("length", QScriptValue());
         }
     }
