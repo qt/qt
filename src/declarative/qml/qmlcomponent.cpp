@@ -330,7 +330,7 @@ void QmlComponent::setData(const QByteArray &data, const QUrl &url)
     d->url = url;
 
     QmlCompositeTypeData *typeData = 
-        d->engine->d_func()->typeManager.getImmediate(data, url);
+        QmlEnginePrivate::get(d->engine)->typeManager.getImmediate(data, url);
     
     if (typeData->status == QmlCompositeTypeData::Waiting) {
 
@@ -361,7 +361,7 @@ void QmlComponent::loadUrl(const QUrl &url)
         d->url = url;
 
     QmlCompositeTypeData *data = 
-        d->engine->d_func()->typeManager.get(d->url);
+        QmlEnginePrivate::get(d->engine)->typeManager.get(d->url);
 
     if (data->status == QmlCompositeTypeData::Waiting) {
 
@@ -481,8 +481,8 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         return 0;
     }
 
-    if (!d->engine->d_func()->rootComponent)
-        d->engine->d_func()->rootComponent = this;
+    if (!QmlEnginePrivate::get(d->engine)->rootComponent)
+        QmlEnginePrivate::get(d->engine)->rootComponent = this;
 
     QmlContextPrivate *contextPriv = 
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
@@ -500,7 +500,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
     if (vme.isError()) 
         d->errors = vme.errors();
 
-    QmlEnginePrivate *ep = d->engine->d_func();
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(d->engine);
     if (ep->rootComponent == this) {
         ep->rootComponent = 0;
 

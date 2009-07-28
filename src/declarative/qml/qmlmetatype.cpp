@@ -56,7 +56,7 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qlocale.h>
-//#include <ctypes.h>
+#include <ctype.h>
 #include <QtCore/qcryptographichash.h>
 #include <private/qmlcustomparser_p.h>
 

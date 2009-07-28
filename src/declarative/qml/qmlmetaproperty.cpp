@@ -313,7 +313,7 @@ QmlMetaPropertyPrivate::propertyCategory() const
 */
 const char *QmlMetaProperty::propertyTypeName() const
 {
-    if (!d->name.isEmpty()) {
+    if (!d->name.isEmpty() && d->object) {
         return d->object->metaObject()->property(d->coreIdx).typeName();
     } else {
         return 0;
@@ -415,7 +415,7 @@ bool QmlMetaProperty::isWritable() const
 {
     if (propertyCategory() == List || propertyCategory() == QmlList)
         return true;
-    else if (!d->name.isEmpty())
+    else if (!d->name.isEmpty() && d->object)
         return d->object->metaObject()->property(d->coreIdx).isWritable();
     else if (type() & SignalProperty)
         return true;
@@ -428,7 +428,7 @@ bool QmlMetaProperty::isWritable() const
 */
 bool QmlMetaProperty::isDesignable() const
 {
-    if (!d->name.isEmpty())
+    if (!d->name.isEmpty() && d->object)
         return d->object->metaObject()->property(d->coreIdx).isDesignable();
     else
         return false;
@@ -475,7 +475,10 @@ QString QmlMetaProperty::name() const
  */
 QMetaProperty QmlMetaProperty::property() const
 {
-    return d->object->metaObject()->property(d->coreIdx);
+    if (d->object)
+        return d->object->metaObject()->property(d->coreIdx);
+    else
+        return QMetaProperty();
 }
 
 /*!
@@ -484,7 +487,7 @@ QMetaProperty QmlMetaProperty::property() const
 */
 QmlBinding *QmlMetaProperty::binding() const
 {
-    if (!isProperty() || type() & Attached)
+    if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
     const QObjectList &children = object()->children();
@@ -509,7 +512,7 @@ QmlBinding *QmlMetaProperty::binding() const
 */
 QmlBinding *QmlMetaProperty::setBinding(QmlBinding *binding) const
 {
-    if (!isProperty() || type() & Attached)
+    if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
     const QObjectList &children = object()->children();
@@ -577,6 +580,9 @@ QObject *QmlMetaPropertyPrivate::attachedObject() const
 */
 QVariant QmlMetaProperty::read() const
 {
+    if (!d->object)
+        return QVariant();
+
     if (type() & SignalProperty) {
 
         const QObjectList &children = object()->children();
@@ -868,6 +874,9 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
 */
 void QmlMetaProperty::write(const QVariant &value) const
 {
+    if (!d->object)
+        return;
+
     QMetaProperty prop = d->object->metaObject()->property(d->coreIdx);
     if (type() & SignalProperty) {
 
@@ -885,7 +894,7 @@ void QmlMetaProperty::write(const QVariant &value) const
 */
 bool QmlMetaProperty::hasChangedNotifier() const
 {
-    if (type() & Property && !(type() & Attached)) {
+    if (type() & Property && !(type() & Attached) && d->object) {
         return d->object->metaObject()->property(d->coreIdx).hasNotifySignal();
     }
     return false;
@@ -914,7 +923,7 @@ bool QmlMetaProperty::needsChangedNotifier() const
 */
 bool QmlMetaProperty::connectNotifier(QObject *dest, int method) const
 {
-    if (!(type() & Property) || type() & Attached)
+    if (!(type() & Property) || (type() & Attached) || !d->object)
         return false;
 
     QMetaProperty prop = d->object->metaObject()->property(d->coreIdx);
@@ -935,7 +944,7 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, int method) const
 */
 bool QmlMetaProperty::connectNotifier(QObject *dest, const char *slot) const
 {
-    if (!(type() & Property) || type() & Attached)
+    if (!(type() & Property) || (type() & Attached) || !d->object)
         return false;
 
     QMetaProperty prop = d->object->metaObject()->property(d->coreIdx);

@@ -114,7 +114,6 @@ public:
     QmlContext *rootContext;
     QmlContext *currentBindContext;
     QmlExpression *currentExpression;
-    QmlEngine *q;
     bool isDebugging;
 #ifdef QT_SCRIPTTOOLS_LIB
     QScriptEngineDebugger *debugger;
@@ -127,7 +126,13 @@ public:
     QmlContext *setCurrentBindContext(QmlContext *);
     QStack<QmlContext *> activeContexts;
 
-    QScriptEngine scriptEngine;
+    struct QmlScriptEngine : public QScriptEngine
+    {
+        QmlScriptEngine(QmlEnginePrivate *priv)
+            : p(priv) {}
+        QmlEnginePrivate *p;
+    };
+    QmlScriptEngine scriptEngine;
 
     QUrl baseUrl;
 
@@ -188,6 +193,10 @@ public:
     bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return=0) const;
     void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
 
+    static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
+    static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
+
+    static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
 };
 
 class QmlScriptClass : public QScriptClass

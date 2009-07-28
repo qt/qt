@@ -801,6 +801,31 @@ void UiProgram::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
+void UiSignature::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        acceptChild(formals, visitor);
+    }
+    visitor->endVisit(this);
+}
+
+void UiFormalList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        for (UiFormalList *it = this; it; it = it->next) {
+            acceptChild(it->formal, visitor);
+        }
+    }
+    visitor->endVisit(this);
+}
+
+void UiFormal::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+    }
+    visitor->endVisit(this);
+}
+
 void UiPublicMember::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {

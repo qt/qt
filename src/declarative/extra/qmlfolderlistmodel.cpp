@@ -49,17 +49,68 @@ QT_BEGIN_NAMESPACE
 class QmlFolderListModelPrivate : public QObjectPrivate
 {
 public:
-    QmlFolderListModelPrivate() : count(0) {
+    QmlFolderListModelPrivate()
+        : sortField(QmlFolderListModel::Name), sortReversed(false), count(0) {
         folder = QDir::currentPath();
         nameFilters << QLatin1String("*");
+    }
+
+    void updateSorting() {
+        QDir::SortFlags flags = 0;
+        switch(sortField) {
+        case QmlFolderListModel::Unsorted:
+            flags |= QDir::Unsorted;
+            break;
+        case QmlFolderListModel::Name:
+            flags |= QDir::Name;
+            break;
+        case QmlFolderListModel::Time:
+            flags |= QDir::Time;
+            break;
+        case QmlFolderListModel::Size:
+            flags |= QDir::Size;
+            break;
+        case QmlFolderListModel::Type:
+            flags |= QDir::Type;
+            break;
+        }
+
+        if (sortReversed)
+            flags |= QDir::Reversed;
+
+        model.setSorting(flags);
     }
 
     QDirModel model;
     QString folder;
     QStringList nameFilters;
     QModelIndex folderIndex;
+    QmlFolderListModel::SortField sortField;
+    bool sortReversed;
     int count;
 };
+
+/*!
+    \qmlclass FolderListModel
+    \brief The FolderListModel provides a model of the contents of a folder in a filesystem.
+
+    FolderListModel provides access to the local filesystem.  The \e folder property
+    specifies the folder to list.
+
+    Qt uses "/" as a universal directory separator in the same way that "/" is
+    used as a path separator in URLs. If you always use "/" as a directory
+    separator, Qt will translate your paths to conform to the underlying
+    operating system.
+
+    The roles available are:
+    \list
+    \o fileName
+    \o filePath
+    \endlist
+
+    Additionally a file entry can be differentiated from a folder entry
+    via the \l isFolder() method.
+*/
 
 QmlFolderListModel::QmlFolderListModel(QObject *parent)
     : QListModelInterface(*(new QmlFolderListModelPrivate), parent)
@@ -73,6 +124,7 @@ QmlFolderListModel::QmlFolderListModel(QObject *parent)
     connect(&d->model, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&))
             , this, SLOT(dataChanged(const QModelIndex&,const QModelIndex&)));
     connect(&d->model, SIGNAL(modelReset()), this, SLOT(refresh()));
+    connect(&d->model, SIGNAL(layoutChanged()), this, SLOT(refresh()));
 }
 
 QmlFolderListModel::~QmlFolderListModel()
@@ -119,6 +171,11 @@ QString QmlFolderListModel::toString(int role) const
     return QString();
 }
 
+/*!
+    \qmlproperty string FolderListModel::folder
+
+    The \a folder property holds the folder the model is currently providing.
+*/
 QString QmlFolderListModel::folder() const
 {
     Q_D(const QmlFolderListModel);
@@ -138,6 +195,20 @@ void QmlFolderListModel::setFolder(const QString &folder)
     }
 }
 
+/*!
+    \qmlproperty list<string> FolderListModel::nameFilters
+
+    The \a nameFilters property contains a list of filename filters.
+    The filters may include the ? and * wildcards.
+
+    The example below filters on PNG and JPEG files:
+
+    \code
+    FolderListModel {
+        nameFilters: [ "*.png", "*.jpg" ]
+    }
+    \endcode
+*/
 QStringList QmlFolderListModel::nameFilters() const
 {
     Q_D(const QmlFolderListModel);
@@ -158,11 +229,50 @@ void QmlFolderListModel::classComplete()
         QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
 }
 
+QmlFolderListModel::SortField QmlFolderListModel::sortField() const
+{
+    Q_D(const QmlFolderListModel);
+    return d->sortField;
+}
+
+void QmlFolderListModel::setSortField(SortField field)
+{
+    Q_D(QmlFolderListModel);
+    if (field != d->sortField) {
+        d->sortField = field;
+        d->updateSorting();
+    }
+}
+
+bool QmlFolderListModel::sortReversed() const
+{
+    Q_D(const QmlFolderListModel);
+    return d->sortReversed;
+}
+
+void QmlFolderListModel::setSortReversed(bool rev)
+{
+    Q_D(QmlFolderListModel);
+    if (rev != d->sortReversed) {
+        d->sortReversed = rev;
+        d->updateSorting();
+    }
+}
+
+/*!
+    \qmlmethod bool FolderListModel::isFolder(int index)
+
+    Returns true if the entry \a index is a folder; otherwise
+    returns false.
+*/
 bool QmlFolderListModel::isFolder(int index) const
 {
     Q_D(const QmlFolderListModel);
-    if (index != -1)
-        return d->model.isDir(d->model.index(index, 0, d->folderIndex));
+    if (index != -1) {
+        QModelIndex idx = d->model.index(index, 0, d->folderIndex);
+        if (idx.isValid())
+            return d->model.isDir(idx);
+    }
     return false;
 }
 
@@ -203,6 +313,7 @@ void QmlFolderListModel::removed(const QModelIndex &index, int start, int end)
 void QmlFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex &end)
 {
     Q_D(QmlFolderListModel);
+    qDebug() << "data changed";
     if (start.parent() == d->folderIndex)
         emit itemsChanged(start.row(), end.row() - start.row() + 1, roles());
 }

@@ -247,7 +247,7 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
         unit->errors << unit->data.errors();
     } else {
         foreach (QmlScriptParser::Import imp, unit->data.imports()) {
-            if (!engine->d_func()->addToImport(&unit->imports, imp.uri, imp.qualifier, imp.version, imp.type)) {
+            if (!QmlEnginePrivate::get(engine)->addToImport(&unit->imports, imp.uri, imp.qualifier, imp.version, imp.type)) {
                 QmlError error;
                 error.setUrl(url);
                 error.setDescription(tr("Import %1 unavailable").arg(imp.uri));
@@ -323,7 +323,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         }
 
         QUrl url;
-        if (!engine->d_func()->resolveType(unit->imports, type, &ref.type, &url)) {
+        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, type, &ref.type, &url)) {
             // XXX could produce error message here.
         }
 

@@ -3,38 +3,38 @@ import Qt 4.6
 import "content"
 
 Rect {
-    width: 460
-    height: 700
-    color: activePalette.window
+    id: page; width: 460; height: 700; color: activePalette.window
     Script { source: "content/samegame.js" }
-    Rect{
+    Rect {
+        id: gameCanvas
         property int score: 0
-        y:20; width:400; height:600; id: gameCanvas;
-        //For Fixed Size
+        z:20; y:20; width:400; height:600; color: "white"; pen.width: 1
         anchors.horizontalCenter: parent.horizontalCenter
-        //For flexible width
-        //anchors.left: parent.left; anchors.leftMargin: 30
-        //anchors.right: parent.right; anchors.rightMargin: 30
-        color: "white"
-        pen.width: 1
         Image { id:background;
             source: "content/pics/background.png"
             anchors.fill: parent
         }
+        MouseRegion { id: gameMR
+            anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+        }
+    }
 
+    Dialog { id: dialog; anchors.centeredIn: parent; z: 21}
+    Button { 
+        id: btnA; text: "New Game"; onClicked: {initBoard();} 
+        anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.left: gameCanvas.left;
     }
-    HorizontalLayout {
-        anchors.top: gameCanvas.bottom
-        anchors.topMargin: 10
+    Text { 
+        text: "Score: " + gameCanvas.score; width:100; font.size:14 
+        anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.right: gameCanvas.right;
+    }
+    Text { 
+        text: "Just over 300 lines of QML/JS code!"
         anchors.horizontalCenter: parent.horizontalCenter
-        MediaButton { id: btnA; text: "New Game"; onClicked: {initBoard();} }
-        MediaButton { id: btnB; text: "Swap Tiles"; onClicked: {swapTileSrc(); dialog.opacity = 1;
-            dialog.text="Takes effect next game.";} }
-        Text{ text: "Score: " + gameCanvas.score; width:120; font.size:14 }
-    }
-    SameDialog {
-        id: dialog
-        anchors.centeredIn: parent
-        text: "Hello World"
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 16;
+        opacity: SequentialAnimation{ running: true; repeat: true;
+            NumberAnimation { from: 0; to: 1; duration: 1000; easing: "easeInQuad" }
+            NumberAnimation { from: 1; to: 0; duration: 1000; easing: "easeInQuad" }
+        }
     }
 }

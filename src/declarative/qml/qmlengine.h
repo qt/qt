@@ -87,27 +87,8 @@ public:
     static void setContextForObject(QObject *, QmlContext *);
 
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
-
-    static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
-    static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
-
+    static QScriptEngine *getScriptEngine(QmlEngine *e);
 private:
-    // LK: move to the private class
-    QScriptEngine *scriptEngine();
-    friend class QFxItem; // XXX
-    friend class QmlScriptPrivate; 
-    friend class QmlCompositeTypeManager; 
-    friend class QmlCompiler; 
-    friend class QmlScriptClass;
-    friend class QmlContext;
-    friend class QmlContextPrivate;
-    friend class QmlExpression;
-    friend class QmlExpressionPrivate;
-    friend class QmlBasicScript;
-    friend class QmlVME;
-    friend class QmlComponent;
-    friend class QmlContextScriptClass; //###
-    friend class QmlObjectScriptClass;      //###
     Q_DECLARE_PRIVATE(QmlEngine)
 };
 

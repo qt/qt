@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qmlcomponentjs.h"
 #include "qmlcomponentjs_p.h"
+#include "qmlcomponentjs_p_p.h"
+#include "qmlengine_p.h"
 #include "qmlcomponent.h"
 
 QT_BEGIN_NAMESPACE
+
 QmlComponentJS::QmlComponentJS(QmlEngine *engine, QObject *parent)
     : QmlComponent(*(new QmlComponentJSPrivate), parent)
 {

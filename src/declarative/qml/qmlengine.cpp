@@ -71,7 +71,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
 #include <qmlcomponent.h>
-#include <qmlcomponentjs.h>
+#include "private/qmlcomponentjs_p.h"
 #include "private/qmlmetaproperty_p.h"
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
@@ -94,11 +94,13 @@ struct StaticQtMetaObject : public QObject
 };
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
-: rootContext(0), currentBindContext(0), currentExpression(0), q(e), 
-  isDebugging(false), rootComponent(0), networkAccessManager(0), typeManager(e),
+: rootContext(0), currentBindContext(0), currentExpression(0), 
+  isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0),
+  scriptEngine(this), rootComponent(0), networkAccessManager(0), typeManager(e),
   uniqueId(1)
 {
-    QScriptValue qtObject = scriptEngine.newQMetaObject(StaticQtMetaObject::get());
+    QScriptValue qtObject = 
+        scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 }
 
@@ -146,6 +148,7 @@ Q_GLOBAL_STATIC(QmlEngineDebugServer, qmlEngineDebugServer);
 
 void QmlEnginePrivate::init()
 {
+    Q_Q(QmlEngine);
     scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
@@ -157,13 +160,11 @@ void QmlEnginePrivate::init()
         debugger->attachTo(&scriptEngine);
     }
 #endif
-    //###needed for the other funcs, but should it be exposed?
-    scriptEngine.globalObject().setProperty(QLatin1String("qmlEngine"),
-            scriptEngine.newQObject(q));
+
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
-            scriptEngine.newFunction(QmlEngine::createQmlObject, 1));
+            scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
-            scriptEngine.newFunction(QmlEngine::createComponent, 1));
+            scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
 
     if (QCoreApplication::instance()->thread() == q->thread() && 
         QmlEngineDebugServer::isDebuggingEnabled()) {
@@ -519,31 +520,35 @@ void QmlInstanceDeclarativeData::destroyed(QObject *object)
     delete this;
 }
 
+/*! A way to access the QScriptEngine, so that you can add your own objects.
+    This function is likely to be removed upon further reflection.
+*/
+QScriptEngine *QmlEngine::getScriptEngine(QmlEngine *e)
+{
+    return &e->d_func()->scriptEngine;
+}
 /*! \internal */
+/*
 QScriptEngine *QmlEngine::scriptEngine()
 {
     Q_D(QmlEngine);
     return &d->scriptEngine;
 }
+*/
 
 /*!
     Creates a QScriptValue allowing you to use \a object in QML script.
     \a engine is the QmlEngine it is to be created in.
 
-    The QScriptValue returned is a QtScript Object, not a QtScript QObject, due
-    to the special needs of QML requiring more functionality than a standard
+    The QScriptValue returned is a Qml Script Object, not a QtScript QObject,
+    due to the special needs of QML requiring more functionality than a standard
     QtScript QObject.
-
-    You'll want to use this function if you are writing C++ code which
-    dynamically creates and returns objects when called from QtScript,
-    and these objects are visual items in the QML tree.
-
-    \sa QScriptEngine::newQObject()
 */
-QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
+QScriptValue QmlEngine::qmlScriptObject(QObject* object,
+                                               QmlEngine* engine)
 {
-    return engine->scriptEngine()->newObject(new QmlObjectScriptClass(engine),
-            engine->scriptEngine()->newQObject(object));
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
+    return scriptEngine->newObject(new QmlObjectScriptClass(engine), scriptEngine->newQObject(object));
 }
 
 /*!
@@ -598,21 +603,23 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
 
     If you want to just create an arbitrary string of QML, instead of
     loading a qml file, consider the createQmlObject() function.
-    \sa QmlComponent::createObject(), QmlEngine::createQmlObject()
 */
-QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
+QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt, 
+                                               QScriptEngine *engine)
 {
     QmlComponentJS* c;
-    QmlEngine* activeEngine = qobject_cast<QmlEngine*>(
-            engine->globalObject().property(QLatin1String("qmlEngine")).toQObject());
-    QmlContext* context =activeEngine->d_func()->currentExpression->context();
-    if(ctxt->argumentCount() != 1 || !activeEngine){
+
+    QmlEnginePrivate *activeEnginePriv = 
+        static_cast<QmlScriptEngine*>(engine)->p;
+    QmlEngine* activeEngine = activeEnginePriv->q_func();
+
+    QmlContext* context = activeEnginePriv->currentExpression->context();
+    if(ctxt->argumentCount() != 1) {
         c = new QmlComponentJS(activeEngine);
     }else{
         QUrl url = QUrl(context->resolvedUrl(ctxt->argument(0).toString()));
-        if(!url.isValid()){
+        if(!url.isValid())
             url = QUrl(ctxt->argument(0).toString());
-        }
         c = new QmlComponentJS(activeEngine, url, activeEngine);
     }
     c->setContext(context);
@@ -643,21 +650,15 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     instead. 'New components' refers to external QML files that have not yet
     been loaded, and so it is safe to use createQmlObject to load built-in
     components.
-
-    \sa QmlEngine::createComponent()
 */
-QScriptValue QmlEngine::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
+QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    QmlEngine* activeEngine = qobject_cast<QmlEngine*>(
-            engine->globalObject().property(QLatin1String("qmlEngine")).toQObject());
-    if(ctxt->argumentCount() < 2 || !activeEngine){
-        if(ctxt->argumentCount() < 2){
-            qWarning() << "createQmlObject requires two arguments, A QML string followed by an existing QML item id.";
-        }else{
-            qWarning() << "createQmlObject cannot find engine.";
-        }
+    QmlEnginePrivate *activeEnginePriv = 
+        static_cast<QmlScriptEngine*>(engine)->p;
+    QmlEngine* activeEngine = activeEnginePriv->q_func();
+
+    if(ctxt->argumentCount() < 2) 
         return engine->nullValue();
-    }
 
     QString qml = ctxt->argument(0).toString();
     QUrl url;
@@ -669,33 +670,35 @@ QScriptValue QmlEngine::createQmlObject(QScriptContext *ctxt, QScriptEngine *eng
     QmlComponent component(activeEngine, qml.toUtf8(), url);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
-        foreach (const QmlError &error, errors) {
-            qWarning() <<"Error in createQmlObject(): "<< error;
-        }
+        qWarning() <<"QmlEngine::createQmlObject():";
+        foreach (const QmlError &error, errors) 
+            qWarning() << "    " << error;
 
         return engine->nullValue();
     }
 
     QObject *obj = component.create(qmlCtxt);
+
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
-        foreach (const QmlError &error, errors) {
-            qWarning() <<"Error in createQmlObject(): "<< error;
-        }
+        qWarning() <<"QmlEngine::createQmlObject():";
+        foreach (const QmlError &error, errors) 
+            qWarning() << "    " << error;
 
         return engine->nullValue();
     }
 
-    if(obj){
+    if(obj) {
         obj->setParent(parentArg);
         obj->setProperty("parent", QVariant::fromValue<QObject*>(parentArg));
-        return qmlScriptObject(obj, activeEngine);
+        return QmlEngine::qmlScriptObject(obj, activeEngine);
     }
     return engine->nullValue();
 }
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
-: QScriptClass(bindengine->scriptEngine()), engine(bindengine)
+: QScriptClass(QmlEngine::getScriptEngine(bindengine)), 
+  engine(bindengine)
 {
 }
 
@@ -762,8 +765,7 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
     } 
 
     for (int ii = 0; !rv && ii < bindContext->d_func()->defaultObjects.count(); ++ii) {
-        rv = engine->d_func()->queryObject(propName, id,
-                                    bindContext->d_func()->defaultObjects.at(ii));
+        rv = QmlEnginePrivate::get(engine)->queryObject(propName, id, bindContext->d_func()->defaultObjects.at(ii));
         if (rv) 
             *id |= (ii << 24);
     }
@@ -785,7 +787,8 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
 
     uint basicId = id & QmlScriptClass::ClassIdMask;
 
-    QScriptEngine *scriptEngine = engine->scriptEngine();
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
 
     switch (basicId) {
     case VariantPropertyId:
@@ -799,18 +802,18 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
 #endif
         QScriptValue rv;
         if (QmlMetaType::isObject(value.userType())) {
-            rv = scriptEngine->newObject(engine->d_func()->objectClass, scriptEngine->newVariant(value));
+            rv = scriptEngine->newObject(ep->objectClass, scriptEngine->newVariant(value));
         } else {
             rv = scriptEngine->newVariant(value);
         }
-        engine->d_func()->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, -1, index + bindContext->d_func()->notifyIndex);
+        ep->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, -1, index + bindContext->d_func()->notifyIndex);
         return rv;
     }
     default:
     {
         int objId = (id & ClassIdSelectorMask) >> 24;
         QObject *obj = bindContext->d_func()->defaultObjects.at(objId);
-        QScriptValue rv = engine->d_func()->propertyObject(name, obj,
+        QScriptValue rv = ep->propertyObject(name, obj,
                 id & ~QmlScriptClass::ClassIdSelectorMask);
         if (rv.isValid()) {
 #ifdef PROPERTY_DEBUG
@@ -844,7 +847,7 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
     int objIdx = (id & QmlScriptClass::ClassIdSelectorMask) >> 24;
     QObject *obj = bindContext->d_func()->defaultObjects.at(objIdx);
 
-    QScriptEngine *scriptEngine = engine->scriptEngine();
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
     QScriptValue oldact = scriptEngine->currentContext()->activationObject();
     scriptEngine->currentContext()->setActivationObject(scriptEngine->globalObject());
 
@@ -952,9 +955,10 @@ QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
     : QmlScriptClass(bindEngine)
 {
     engine = bindEngine;
-    prototypeObject = engine->scriptEngine()->newObject();
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(bindEngine);
+    prototypeObject = scriptEngine->newObject();
     prototypeObject.setProperty(QLatin1String("destroy"),
-            engine->scriptEngine()->newFunction(QmlObjectDestroy));
+                                scriptEngine->newFunction(QmlObjectDestroy));
 }
 
 QmlObjectScriptClass::~QmlObjectScriptClass()
@@ -980,7 +984,7 @@ QScriptClass::QueryFlags QmlObjectScriptClass::queryProperty(const QScriptValue 
 #endif
 
     if (obj)
-        rv = engine->d_func()->queryObject(propName, id, obj);
+        rv = QmlEnginePrivate::get(engine)->queryObject(propName, id, obj);
 
     return rv;
 }
@@ -996,7 +1000,8 @@ QScriptValue QmlObjectScriptClass::property(const QScriptValue &object,
     qWarning() << "QmlObject Property:" << propName << obj;
 #endif
 
-    QScriptValue rv = engine->d_func()->propertyObject(name, obj, id);
+    QScriptValue rv = 
+        QmlEnginePrivate::get(engine)->propertyObject(name, obj, id);
     if (rv.isValid()) {
 #ifdef PROPERTY_DEBUG
         qWarning() << "~Property: Resolved property" << propName
@@ -1022,7 +1027,7 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
     qWarning() << "Set QmlObject Property" << name.toString() << value.toVariant();
 #endif
 
-    QScriptEngine *scriptEngine = engine->scriptEngine();
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
     QScriptValue oldact = scriptEngine->currentContext()->activationObject();
     scriptEngine->currentContext()->setActivationObject(scriptEngine->globalObject());
 

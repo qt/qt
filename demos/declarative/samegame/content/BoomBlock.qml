@@ -3,18 +3,12 @@ import Qt 4.6
 Item { id:block
     property bool dying: false
     property bool spawned: false
-    property bool selected: false
     property int type: 0
     property int targetX: 0
     property int targetY: 0
 
     x: Follow { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
     y: Follow { source: targetY; spring: 2; damping: 0.2 }
-
-    MouseRegion {
-        id: gameMR; anchors.fill: parent
-        onClicked: handleClick(Math.floor(parent.x/width), Math.floor(parent.y/height));
-    }
 
     Image { id: img
         source: {
@@ -47,7 +41,6 @@ Item { id:block
     }
 
     states: [
-
         State{ name: "AliveState"; when: spawned == true && dying == false
             SetProperties { target: img; opacity: 1 }
         },
