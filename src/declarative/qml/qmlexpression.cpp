@@ -240,7 +240,7 @@ QVariant QmlExpressionPrivate::evalQtScript()
     if (me)
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
 
-    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QScriptValueList oldScopeChain =
         scriptEngine->currentContext()->scopeChain();
 

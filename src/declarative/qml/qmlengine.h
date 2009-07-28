@@ -86,8 +86,6 @@ public:
     static QmlContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QmlContext *);
 
-    static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
-    static QScriptEngine *getScriptEngine(QmlEngine *e);
 private:
     Q_DECLARE_PRIVATE(QmlEngine)
 };
