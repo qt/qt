@@ -54,7 +54,7 @@ class QFxListViewAttached : public QObject
     Q_OBJECT
 public:
     QFxListViewAttached(QObject *parent)
-        : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
+        : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
     ~QFxListViewAttached() {
         attachedProperties.remove(parent());
     }
