@@ -2704,18 +2704,22 @@ void tst_QScriptEngine::errorConstructors()
     QScriptEngine eng;
     QStringList prefixes;
     prefixes << "" << "Eval" << "Range" << "Reference" << "Syntax" << "Type" << "URI";
-    for (int x = 0; x < 2; ++x) {
+    for (int x = 0; x < 3; ++x) {
         for (int i = 0; i < prefixes.size(); ++i) {
             QString name = prefixes.at(i) + QLatin1String("Error");
             QString code = QString(i+1, QLatin1Char('\n'));
             if (x == 0)
+                code += QLatin1String("throw ");
+            else if (x == 1)
                 code += QLatin1String("new ");
             code += name + QLatin1String("()");
             QScriptValue ret = eng.evaluate(code);
             QVERIFY(ret.isError());
-            QVERIFY(!eng.hasUncaughtException());
+            QCOMPARE(eng.hasUncaughtException(), x == 0);
+            eng.clearExceptions();
             QVERIFY(ret.toString().startsWith(name));
-            QEXPECT_FAIL("", "in JSC, line number property is called 'line'", Continue);
+            if (x != 0)
+                QEXPECT_FAIL("", "JSC doesn't assign lineNumber when errors are not thrown", Continue);
             QCOMPARE(ret.property("lineNumber").toInt32(), i+2);
         }
     }
