@@ -42,6 +42,7 @@
 #include "qpaintengineex_p.h"
 #include "qpainter_p.h"
 #include "qstroker_p.h"
+#include "qbezier_p.h"
 #include <private/qpainterpath_p.h>
 
 #include <qvarlengtharray.h>
@@ -484,13 +485,14 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         QVectorPath strokePath(d->strokeHandler->pts.data(),
                                d->strokeHandler->types.size(),
                                d->strokeHandler->types.data(),
-                               QVectorPath::WindingFill);
+                               flags);
         fill(strokePath, pen.brush());
     } else {
         const qreal strokeWidth = d->stroker.strokeWidth();
         d->stroker.setStrokeWidth(strokeWidth * txscale);
         // For cosmetic pens we need a bit of trickery... We to process xform the input points
         if (types) {
+            bool isProject = state()->matrix.type() >= QTransform::TxProject;
             while (points < lastPoint) {
                 switch (*types) {
                 case QPainterPath::MoveToElement: {
@@ -508,10 +510,30 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
                     break;
                 }
                 case QPainterPath::CurveToElement: {
-                    QPointF c1 = ((QPointF *) points)[0] * state()->matrix;
-                    QPointF c2 = ((QPointF *) points)[1] * state()->matrix;
-                    QPointF e =  ((QPointF *) points)[2] * state()->matrix;
-                    d->activeStroker->cubicTo(c1.x(), c1.y(), c2.x(), c2.y(), e.x(), e.y());
+                    // Convert projective xformed curves to line
+                    // segments so they can be transformed more
+                    // accurately
+                    if (isProject) {
+                        // -1 access here is safe because there is
+                        // always an element prior to the cubicTo, we
+                        // just need the value..
+                        QPolygonF segment =
+                            QBezier::fromPoints(*(((QPointF *) points) - 1),
+                                                *((QPointF *) points),
+                                                *(((QPointF *) points) + 1),
+                                                *(((QPointF *) points) + 2)).toPolygon();
+
+                        for (QPolygonF::const_iterator it = segment.constBegin();
+                             it < segment.constEnd(); ++it) {
+                            const QPointF pt = *it * state()->matrix;
+                            d->activeStroker->lineTo(pt.x(), pt.y());
+                        }
+                    } else {
+                        QPointF c1 = ((QPointF *) points)[0] * state()->matrix;
+                        QPointF c2 = ((QPointF *) points)[1] * state()->matrix;
+                        QPointF e =  ((QPointF *) points)[2] * state()->matrix;
+                        d->activeStroker->cubicTo(c1.x(), c1.y(), c2.x(), c2.y(), e.x(), e.y());
+                    }
                     points += 6;
                     types += 3;
                     flags |= QVectorPath::CurvedShapeHint;
@@ -546,7 +568,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         QVectorPath strokePath(d->strokeHandler->pts.data(),
                                d->strokeHandler->types.size(),
                                d->strokeHandler->types.data(),
-                               QVectorPath::WindingFill);
+                               flags);
 
         QTransform xform = state()->matrix;
         state()->matrix = QTransform();
