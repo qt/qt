@@ -6377,10 +6377,8 @@ esac
 #   Different edition modules:
 #     network canvas table xml opengl sql
 #
-#   Options:
-#     stl
-#
 # Things that do not affect the Qt API/ABI:
+#     stl
 #     system-jpeg no-jpeg jpeg
 #     system-mng no-mng mng
 #     system-png no-png png
@@ -6401,7 +6399,7 @@ esac
 #     X11     : x11sm xinerama xcursor xfixes xrandr xrender mitshm fontconfig xkb
 #     Embedded: embedded freetype
 #
-ALL_OPTIONS="stl"
+ALL_OPTIONS=
 BUILD_CONFIG=
 BUILD_OPTIONS=
 
@@ -6413,12 +6411,6 @@ for config_option in $QMAKE_CONFIG $QT_CONFIG; do
         # take the last *-config setting.  this is the highest config being used,
         # and is the one that we will use for tagging plugins
         BUILD_CONFIG="$config_option"
-        ;;
-
-    stl)
-        # these config options affect the Qt API/ABI. they should influence
-        # the generation of the buildkey, so we don't skip them
-        SKIP="no"
         ;;
 
     *) # skip all other options since they don't affect the Qt API/ABI.
