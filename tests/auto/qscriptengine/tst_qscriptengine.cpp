@@ -1197,7 +1197,7 @@ void tst_QScriptEngine::evaluate_data()
     QTest::newRow("(spaces)")  << QString("  ") << -1 << false << -1;
     QTest::newRow("(empty)")   << QString("") << -1 << false << -1;
     QTest::newRow("0")     << QString("0")       << -1 << false << -1;
-    QTest::newRow("0=1")   << QString("\n0=1\n") << -1 << true  << 2;
+    QTest::newRow("0=1")   << QString("\n0=1;\n") << -1 << true  << 2;
     QTest::newRow("a=1")   << QString("a=1\n")   << -1 << false << -1;
     QTest::newRow("a=1;K") << QString("a=1;\nK") << -1 << true  << 2;
 
@@ -1210,7 +1210,7 @@ void tst_QScriptEngine::evaluate_data()
                          << -1 << true << 4;
 
     QTest::newRow("0")     << QString("0")       << 10 << false << -1;
-    QTest::newRow("0=1")   << QString("\n\n0=1\n") << 10 << true  << 12;
+    QTest::newRow("0=1")   << QString("\n\n0=1\n") << 10 << true  << 13;
     QTest::newRow("a=1")   << QString("a=1\n")   << 10 << false << -1;
     QTest::newRow("a=1;K") << QString("a=1;\n\nK") << 10 << true  << 12;
 
@@ -1305,8 +1305,7 @@ void tst_QScriptEngine::uncaughtException()
             QVERIFY(eng.uncaughtException().strictlyEquals(ret));
             eng.clearExceptions();
             QVERIFY(!eng.hasUncaughtException());
-            QEXPECT_FAIL("", "Exception line number is wrong", Continue);
-            QCOMPARE(eng.uncaughtExceptionLineNumber(), x+2);
+            QCOMPARE(eng.uncaughtExceptionLineNumber(), -1);
             QVERIFY(!eng.uncaughtException().isValid());
 
             eng.evaluate("2 = 3");
@@ -1315,8 +1314,7 @@ void tst_QScriptEngine::uncaughtException()
             QVERIFY(ret2.isError());
             QVERIFY(eng.hasUncaughtException());
             QVERIFY(eng.uncaughtException().strictlyEquals(ret2));
-            QEXPECT_FAIL("", "Exception line number is wrong", Continue);
-            QCOMPARE(eng.uncaughtExceptionLineNumber(), -1);
+            QCOMPARE(eng.uncaughtExceptionLineNumber(), 0);
             eng.clearExceptions();
             QVERIFY(!eng.hasUncaughtException());
             eng.evaluate("1 + 2");
