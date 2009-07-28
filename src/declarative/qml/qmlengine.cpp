@@ -520,6 +520,13 @@ void QmlInstanceDeclarativeData::destroyed(QObject *object)
     delete this;
 }
 
+/*! A way to access the QScriptEngine, so that you can add your own objects.
+    This function is likely to be removed upon further reflection.
+*/
+QScriptEngine *QmlEngine::getScriptEngine(QmlEngine *e)
+{
+    return &e->d_func()->scriptEngine;
+}
 /*! \internal */
 /*
 QScriptEngine *QmlEngine::scriptEngine()
@@ -533,14 +540,14 @@ QScriptEngine *QmlEngine::scriptEngine()
     Creates a QScriptValue allowing you to use \a object in QML script.
     \a engine is the QmlEngine it is to be created in.
 
-    The QScriptValue returned is a QtScript Object, not a QtScript QObject, due
-    to the special needs of QML requiring more functionality than a standard
+    The QScriptValue returned is a Qml Script Object, not a QtScript QObject,
+    due to the special needs of QML requiring more functionality than a standard
     QtScript QObject.
 */
-QScriptValue QmlEnginePrivate::qmlScriptObject(QObject* object, 
+QScriptValue QmlEngine::qmlScriptObject(QObject* object,
                                                QmlEngine* engine)
 {
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
     return scriptEngine->newObject(new QmlObjectScriptClass(engine), scriptEngine->newQObject(object));
 }
 
@@ -684,13 +691,13 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     if(obj) {
         obj->setParent(parentArg);
         obj->setProperty("parent", QVariant::fromValue<QObject*>(parentArg));
-        return qmlScriptObject(obj, activeEngine);
+        return QmlEngine::qmlScriptObject(obj, activeEngine);
     }
     return engine->nullValue();
 }
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
-: QScriptClass(QmlEnginePrivate::getScriptEngine(bindengine)), 
+: QScriptClass(QmlEngine::getScriptEngine(bindengine)), 
   engine(bindengine)
 {
 }
@@ -780,7 +787,7 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
 
     uint basicId = id & QmlScriptClass::ClassIdMask;
 
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
 
     switch (basicId) {
@@ -840,7 +847,7 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
     int objIdx = (id & QmlScriptClass::ClassIdSelectorMask) >> 24;
     QObject *obj = bindContext->d_func()->defaultObjects.at(objIdx);
 
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
     QScriptValue oldact = scriptEngine->currentContext()->activationObject();
     scriptEngine->currentContext()->setActivationObject(scriptEngine->globalObject());
 
@@ -948,7 +955,7 @@ QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
     : QmlScriptClass(bindEngine)
 {
     engine = bindEngine;
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(bindEngine);
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(bindEngine);
     prototypeObject = scriptEngine->newObject();
     prototypeObject.setProperty(QLatin1String("destroy"),
                                 scriptEngine->newFunction(QmlObjectDestroy));
@@ -1020,7 +1027,7 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
     qWarning() << "Set QmlObject Property" << name.toString() << value.toVariant();
 #endif
 
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    QScriptEngine *scriptEngine = QmlEngine::getScriptEngine(engine);
     QScriptValue oldact = scriptEngine->currentContext()->activationObject();
     scriptEngine->currentContext()->setActivationObject(scriptEngine->globalObject());
 
