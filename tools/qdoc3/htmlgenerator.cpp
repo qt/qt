@@ -2881,7 +2881,9 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
 }
 #endif
 
-void HtmlGenerator::generateLink(const Atom *atom, const Node * /* relative */, CodeMarker *marker)
+void HtmlGenerator::generateLink(const Atom* atom,
+                                 const Node* /* relative */,
+                                 CodeMarker* marker)
 {
     static QRegExp camelCase("[A-Z][A-Z][a-z]|[a-z][A-Z0-9]|_");
 
@@ -3472,6 +3474,7 @@ QString HtmlGenerator::getLink(const Atom *atom,
 {
     QString link;
     *node = 0;
+    inObsoleteLink = false;
 
     if (atom->string().contains(":") &&
             (atom->string().startsWith("file:")
@@ -3530,10 +3533,12 @@ QString HtmlGenerator::getLink(const Atom *atom,
                                     porting = true;
                             }
                             QString name = marker->plainFullName(relative);
-                            if (!porting && !name.startsWith("Q3"))
+                            if (!porting && !name.startsWith("Q3")) {
                                 relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
                                                                    .arg(atom->string())
                                                                    .arg(name));
+                                inObsoleteLink = true;
+                            }
 #if 0                            
                             qDebug() << "Link to Obsolete entity"
                                      << (*node)->name();
@@ -3689,10 +3694,14 @@ void HtmlGenerator::endLink()
                 out() << "</i>";
         }
         else {
+            if (inObsoleteLink) {
+                out() << "<sup>(obsolete)</sup>";
+            }
             out() << "</a>";
         }
     }
     inLink = false;
+    inObsoleteLink = false;
 }
 
 QT_END_NAMESPACE
