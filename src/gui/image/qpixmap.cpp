@@ -675,12 +675,7 @@ void QPixmap::resize_helper(const QSize &s)
         p.drawPixmap(0, 0, *this, 0, 0, qMin(width(), w), qMin(height(), h));
     }
 
-#if defined(Q_WS_MAC)
-#ifndef QT_MAC_NO_QUICKDRAW
-    if(macData && macData->qd_alpha)
-        macData->macQDUpdateAlpha();
-#endif
-#elif defined(Q_WS_X11)
+#if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
         QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data);
         pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
@@ -1952,11 +1947,6 @@ void QPixmap::detach()
 
     if (data->ref != 1) {
         *this = copy();
-#if defined(Q_WS_MAC) && !defined(QT_MAC_NO_QUICKDRAW)
-        if (id == QPixmapData::MacClass) {
-            macData->qd_alpha = 0;
-        }
-#endif
     }
     ++data->detach_no;
 

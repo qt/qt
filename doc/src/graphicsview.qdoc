@@ -141,7 +141,7 @@
         to scene coordinates where appropriate), before sending the events
         to the visualized scene.
 
-        Using its transformation matrix, QGraphicsView::matrix(), the view can
+        Using its transformation matrix, QGraphicsView::transform(), the view can
         \e transform the scene's coordinate system. This allows advanced
         navigation features such as zooming and rotation. For convenience,
         QGraphicsView also provides functions for translating between view and
@@ -174,7 +174,7 @@
         also provides many functions for mapping coordinates between the item
         and the scene, and from item to item. Also, like QGraphicsView, it can
         transform its coordinate system using a matrix:
-        QGraphicsItem::matrix(). This is useful for rotating and scaling
+        QGraphicsItem::transform(). This is useful for rotating and scaling
         individual items.
 
         Items can contain other items (children). Parent items'
@@ -461,11 +461,7 @@
 
         By making an item a child of another, you can achieve the most
         essential feature of item grouping: the items will move together, and
-        all transformations are propagated from parent to child. QGraphicsItem
-        can also handle all events for its children (see
-        QGraphicsItem::setHandlesChildEvents()). This allows the parent item
-        to act on behalf of its children, effectively treating all items as
-        one.
+        all transformations are propagated from parent to child.
 
         In addition, QGraphicsItemGroup is a special item that combines child
         event handling with a useful interface for adding and removing items

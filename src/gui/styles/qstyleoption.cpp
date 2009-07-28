@@ -4258,8 +4258,7 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
     parameters for drawing a title bar.
 
     QStyleOptionTitleBar contains all the information that QStyle
-    functions need to draw the title bars of QWorkspace's MDI
-    children.
+    functions need to draw the title bar of a QMdiSubWindow.
 
     For performance reasons, the access to the member variables is
     direct (i.e., using the \c . or \c -> operator). This low-level feel
@@ -4269,7 +4268,7 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
     For an example demonstrating how style options can be used, see
     the \l {widgets/styles}{Styles} example.
 
-    \sa QStyleOption, QStyleOptionComplex, QWorkspace
+    \sa QStyleOption, QStyleOptionComplex, QMdiSubWindow
 */
 
 /*!
@@ -4983,8 +4982,7 @@ QStyleOptionSizeGrip::QStyleOptionSizeGrip(int version)
 */
 
 /*!
-    Constructs a QStyleOptionGraphicsItem. The levelOfDetail parameter is
-    initialized to 1.
+    Constructs a QStyleOptionGraphicsItem.
 */
 QStyleOptionGraphicsItem::QStyleOptionGraphicsItem()
     : QStyleOption(Version, Type), levelOfDetail(1)
@@ -5054,7 +5052,7 @@ qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &wor
      To find the dimentions of an item in screen coordinates (i.e., pixels),
      you can use the mapping functions of QMatrix, such as QMatrix::map().
 
-     \sa QStyleOptionGraphicsItem::levelOfDetail
+     \sa QStyleOptionGraphicsItem::levelOfDetailFromTransform()
 */
 
 /*!

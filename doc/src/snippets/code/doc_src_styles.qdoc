@@ -1,5 +1,5 @@
 //! [0]
-    opt.init(q);
+    opt.initFrom(q);
         if (down)
         opt.state |= QStyle::State_Sunken;
     if (tristate && noChange)

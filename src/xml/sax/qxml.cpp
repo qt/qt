@@ -3037,19 +3037,13 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     parse() to work incrementally, and making subsequent calls to the
     parseContinue() function, until all the data has been processed.
 
-    A common way to perform incremental parsing is to connect the
-    \c readyRead() signal of the input source to a slot, and handle the
-    incoming data there. For example, the following code shows how a
-    parser for \l{http://web.resource.org/rss/1.0/}{RSS feeds} can be
-    used to incrementally parse data that it receives from a QHttp
-    object:
-
-    \snippet doc/src/snippets/xml/rsslisting/rsslisting.cpp 1
-
+    A common way to perform incremental parsing is to connect the \c
+    readyRead() signal of a \l{QNetworkReply} {network reply} a slot,
+    and handle the incoming data there. See QNetworkAccessManager.
+    
     Aspects of the parsing behavior can be adapted using setFeature()
-    and setProperty(). For example, the following code could be used
-    to enable reporting of namespace prefixes to the content handler:
-
+    and setProperty().
+    
     QXmlSimpleReader is not reentrant. If you want to use the class
     in threaded code, lock the code using QXmlSimpleReader with a
     locking mechanism, such as a QMutex.

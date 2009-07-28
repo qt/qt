@@ -3553,8 +3553,20 @@ void Configure::generateMakefiles()
 
 void Configure::showSummary()
 {
-    cout << endl << endl << "Qt is now configured for building. Just run '" << qPrintable(dictionary["QTBUILDINSTRUCTION"]) << "'." << endl
+    QString make = dictionary[ "MAKE" ];
+    if (!dictionary.contains("XQMAKESPEC")) {
+        cout << endl << endl << "Qt is now configured for building. Just run " << qPrintable(make) << "." << endl;
+        cout << "To reconfigure, run " << qPrintable(make) << " confclean and configure." << endl << endl;
+    } else if(dictionary.value("QMAKESPEC").startsWith("wince")) {
+        // we are cross compiling for Windows CE
+        cout << endl << endl << "Qt is now configured for building. To start the build run:" << endl
+             << "\tsetcepaths " << dictionary.value("XQMAKESPEC") << endl
+             << "\t" << qPrintable(make) << endl
+             << "To reconfigure, run " << qPrintable(make) << " confclean and configure." << endl << endl;
+    } else { // Compiling for Symbian OS
+        cout << endl << endl << "Qt is now configured for building. To start the build run:" << qPrintable(dictionary["QTBUILDINSTRUCTION"]) << "." << endl
         << "To reconfigure, run '" << qPrintable(dictionary["CONFCLEANINSTRUCTION"]) << "' and configure." << endl;
+    }
 }
 
 Configure::ProjectType Configure::projectType( const QString& proFileName )

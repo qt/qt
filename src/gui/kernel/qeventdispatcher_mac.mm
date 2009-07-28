@@ -506,16 +506,6 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
     wakeUp();
     emit awake();
 
-#ifndef QT_MAC_NO_QUICKDRAW
-    if(!qt_mac_safe_pdev) { //create an empty widget and this can be used for a port anytime
-        QWidget *tlw = new QWidget;
-        tlw->setAttribute(Qt::WA_DeleteOnClose);
-        tlw->setObjectName(QLatin1String("empty_widget"));
-        tlw->hide();
-        qt_mac_safe_pdev = tlw;
-    }
-#endif
-
     bool retVal = false;
     forever {
         if (d->interrupt)

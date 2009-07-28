@@ -1475,7 +1475,7 @@ void QGraphicsSceneDragDropEvent::acceptProposedAction()
 /*!
     Returns the action that was performed in this drag and drop.
     This should be set by the receiver of the drop and is
-    returned by QDrag::start().
+    returned by QDrag::exec().
 
     \sa setDropAction(), acceptProposedAction()
 */

@@ -3523,9 +3523,17 @@ QString HtmlGenerator::getLink(const Atom *atom,
                 if (relative) {
                     if (relative->parent() != *node) {
                         if (relative->status() != Node::Obsolete) {
-                            relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
-                                                               .arg(atom->string())
-                                                               .arg(marker->plainFullName(relative)));
+                            bool porting = false;
+                            if (relative->type() == Node::Fake) {
+                                const FakeNode* fake = static_cast<const FakeNode*>(relative);
+                                if (fake->title().startsWith("Porting"))
+                                    porting = true;
+                            }
+                            QString name = marker->plainFullName(relative);
+                            if (!porting && !name.startsWith("Q3"))
+                                relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
+                                                                   .arg(atom->string())
+                                                                   .arg(name));
 #if 0                            
                             qDebug() << "Link to Obsolete entity"
                                      << (*node)->name();

@@ -403,7 +403,11 @@ void tst_QFiledialog::directory()
     // Check my way
     QList<QListView*> list = qFindChildren<QListView*>(&fd, "listView");
     QVERIFY(list.count() > 0);
+#ifdef Q_OS_WIN
+    QCOMPARE(list.at(0)->rootIndex().data().toString().toLower(), temp.dirName().toLower());
+#else
     QCOMPARE(list.at(0)->rootIndex().data().toString(), temp.dirName());
+#endif
     QNonNativeFileDialog *dlg = new QNonNativeFileDialog(0, "", tempPath);
     QCOMPARE(model->index(tempPath), model->index(dlg->directory().absolutePath()));
     QCOMPARE(model->index(tempPath).data(QFileSystemModel::FileNameRole).toString(),
@@ -2044,6 +2048,7 @@ void tst_QFiledialog::task254490_selectFileMultipleTimes()
 
 void tst_QFiledialog::task257579_sideBarWithNonCleanUrls()
 {
+#if defined QT_BUILD_INTERNAL
     QDir tempDir = QDir::temp();
     QLatin1String dirname("autotest_task257579");
     tempDir.rmdir(dirname); //makes sure it doesn't exist any more
@@ -2055,10 +2060,16 @@ void tst_QFiledialog::task257579_sideBarWithNonCleanUrls()
     QCOMPARE(sidebar->urls().count(), 1);
     QVERIFY(sidebar->urls().first().toLocalFile() != url);
     QCOMPARE(sidebar->urls().first().toLocalFile(), QDir::cleanPath(url));
+
+#ifdef Q_OS_WIN
+    QCOMPARE(sidebar->model()->index(0,0).data().toString().toLower(), tempDir.dirName().toLower());
+#else
     QCOMPARE(sidebar->model()->index(0,0).data().toString(), tempDir.dirName());
+#endif
 
     //all tests are finished, we can remove the temporary dir
     QVERIFY(tempDir.rmdir(dirname));
+#endif
 }
 
 

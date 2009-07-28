@@ -1790,6 +1790,9 @@ void QMenuBarPrivate::_q_internalShortcutActivated(int id)
         activateAction(act, QAction::Trigger);
         //100 is the same as the default value in QPushButton::animateClick
         autoReleaseTimer.start(100, q);
+    } else if (act && q->style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation, 0, q)) {
+        // When we open a menu using a shortcut, we should end up in keyboard state
+        setKeyboardMode(true);
     }
 }
 

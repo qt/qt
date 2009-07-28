@@ -6116,6 +6116,7 @@ case "$XPLATFORM" in
                 ;;
             5.9)
                 canBuildWebKit="no"
+                canBuildQtConcurrent="no"
                 ;;
         esac
         ;;
@@ -6158,6 +6159,7 @@ EOF
                 ;;
             *)
                 canBuildWebKit="no"
+                canBuildQtConcurrent="no"
                 ;;
         esac
         ;;

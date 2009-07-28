@@ -196,7 +196,7 @@ void QPainterPrivate::checkEmulation()
             extended = emulationEngine;
             extended->setState(state);
         }
-    } else if (emulationEngine && emulationEngine != extended) {
+    } else if (emulationEngine == extended) {
         extended = emulationEngine->real_engine;
     }
 }
@@ -1031,7 +1031,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \o layoutDirection() defines the layout direction used by the
        painter when drawing text.
 
-    \o matrixEnabled() tells whether world transformation is enabled.
+    \o worldMatrixEnabled() tells whether world transformation is enabled.
 
     \o viewTransformEnabled() tells whether view transformation is
         enabled.
