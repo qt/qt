@@ -293,11 +293,15 @@ start:
     int startOffset = currentOffset();
 
     if (m_current == -1) {
+#ifndef QT_BUILD_SCRIPT_LIB /* the parser takes cate about automatic semicolon.
+                              this might add incorrect semicolons */
+        //m_delimited and m_isReparsing are now useless
         if (!m_terminator && !m_delimited && !m_isReparsing) {
             // automatic semicolon insertion if program incomplete
             token = ';';
             goto doneSemicolon;
         }
+#endif
         return 0;
     }
 
