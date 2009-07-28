@@ -71,9 +71,10 @@ public:
     virtual void setUniforms(QGLShaderProgram*) = 0;
 
     void setUniformsDirty();
+
     bool setOnPainter(QPainter*);
     void removeFromPainter(QPainter*);
-    const char* source();
+    const char* source() const;
 
 protected:
     void setSource(const QByteArray&);

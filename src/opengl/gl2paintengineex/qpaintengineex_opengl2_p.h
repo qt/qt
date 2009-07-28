@@ -88,8 +88,7 @@ public:
     bool canRestoreClip;
 };
 
-
-class QGL2PaintEngineEx : public QPaintEngineEx
+class Q_OPENGL_EXPORT QGL2PaintEngineEx : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QGL2PaintEngineEx)
 public:
@@ -116,9 +115,10 @@ public:
 
 
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
+    virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
+
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
 
     Type type() const { return OpenGL2; }
@@ -134,6 +134,9 @@ public:
     virtual void sync();
 
     const QGLContext* context();
+
+    QPixmapFilter *createPixmapFilter(int type) const;
+
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };

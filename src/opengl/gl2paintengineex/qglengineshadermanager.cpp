@@ -87,7 +87,6 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
       useTextureCoords(false),
       compositionMode(QPainter::CompositionMode_SourceOver),
       customSrcStage(0),
-      customSrcStagePrev(0),
       blitShaderProg(0),
       simpleShaderProg(0),
       currentShaderProg(0)
@@ -162,7 +161,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
 #if defined(QT_DEBUG)
         // Check that all the elements have been filled:
         for (int i = 0; i < TotalShaderCount; ++i) {
-            if (qglEngineShaderSourceCode[i] == 0) {
+            if (i != CustomImageSrcFragmentShader && qglEngineShaderSourceCode[i] == 0) {
                 int enumIndex = staticMetaObject.indexOfEnumerator("ShaderName");
                 QMetaEnum m = staticMetaObject.enumerator(enumIndex);
 
@@ -314,10 +313,9 @@ void QGLEngineShaderManager::setCompositionMode(QPainter::CompositionMode mode)
 void QGLEngineShaderManager::setCustomStage(QGLCustomShaderStage* stage)
 {
     // If the custom shader has changed, then destroy the previous compilation.
-    if (customSrcStagePrev && stage && customSrcStagePrev != stage)
-        removeCustomStage(customSrcStagePrev);
+    if (customSrcStage && stage && customSrcStage != stage)
+        removeCustomStage(customSrcStage);
 
-    customSrcStagePrev = customSrcStage;
     customSrcStage = stage;
     shaderProgNeedsChanging = true;
 }
@@ -326,7 +324,7 @@ void QGLEngineShaderManager::removeCustomStage(QGLCustomShaderStage* stage)
 {
     Q_UNUSED(stage); // Currently we only support one at a time...
 
-    QGLShader* compiledShader = compiledShaders[CustomImageSrcFragmentShader];
+    QGLShader *compiledShader = compiledShaders[CustomImageSrcFragmentShader];
 
     if (!compiledShader)
         return;
@@ -341,10 +339,8 @@ void QGLEngineShaderManager::removeCustomStage(QGLCustomShaderStage* stage)
         }
     }
 
-    delete compiledShader;
     compiledShaders[CustomImageSrcFragmentShader] = 0;
     customSrcStage = 0;
-    customSrcStagePrev = 0;
     shaderProgNeedsChanging = true;
 }
 
@@ -456,7 +452,6 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     requiredProgram.positionVertexShader = compiledShaders[positionVertexShaderName];
     requiredProgram.srcPixelFragShader = compiledShaders[srcPixelFragShaderName];
 
-
     const bool hasCompose = compositionMode > QPainter::CompositionMode_Plus;
     const bool hasMask = maskType != QGLEngineShaderManager::NoMask;
 
@@ -545,7 +540,6 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     else
         requiredProgram.compositionFragShader = 0;
 
-
     // At this point, requiredProgram is fully populated so try to find the program in the cache
     bool foundProgramInCache = false;
     for (int i = 0; i < cachedPrograms.size(); ++i) {
@@ -612,15 +606,24 @@ void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderNa
     if (compiledShaders[name])
         return;
 
-    QGLShader *newShader = new QGLShader(type, ctx, this);
+    QGLShader *newShader;
 
-    const char* sourceCode;
-    if (name == CustomImageSrcFragmentShader)
-        sourceCode = customSrcStage->source();
-    else
-        sourceCode = qglEngineShaderSourceCode[name];
+    QByteArray source;
+    if (name == CustomImageSrcFragmentShader) {
+        source = customSrcStage->source();
+        source += qglslCustomSrcFragmentShader;
 
-    newShader->compile(sourceCode);
+        newShader = customShaderCache.object(source);
+        if (!newShader) {
+            newShader = new QGLShader(type, ctx, this);
+            newShader->compile(source);
+            customShaderCache.insert(source, newShader);
+        }
+    } else {
+        source = qglEngineShaderSourceCode[name];
+        newShader = new QGLShader(type, ctx, this);
+        newShader->compile(source);
+    }
 
 #if defined(QT_DEBUG)
     // Name the shader for easier debugging

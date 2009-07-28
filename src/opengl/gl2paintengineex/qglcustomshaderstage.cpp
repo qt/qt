@@ -110,9 +110,9 @@ void QGLCustomShaderStage::removeFromPainter(QPainter* p)
     d->m_manager->setCustomStage(0);
 }
 
-const char* QGLCustomShaderStage::source()
+const char* QGLCustomShaderStage::source() const
 {
-    Q_D(QGLCustomShaderStage);
+    Q_D(const QGLCustomShaderStage);
     return d->m_source.constData();
 }
 
