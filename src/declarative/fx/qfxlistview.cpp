@@ -1630,7 +1630,7 @@ void QFxListView::destroyingItem(QFxItem *item)
     d->unrequestedItems.remove(item);
 }
 
-QObject *QFxListView::qmlAttachedProperties(QObject *obj)
+QFxListViewAttached *QFxListView::qmlAttachedProperties(QObject *obj)
 {
     return QFxListViewAttached::properties(obj);
 }
