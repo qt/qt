@@ -2450,6 +2450,9 @@ void tst_QScriptValue::call()
                              "cannot call function with thisObject created in "
                              "a different engine");
         QCOMPARE(fun.call(Object).isValid(), false);
+        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::call() failed: "
+                             "cannot call function with argument created in "
+                             "a different engine");
         QCOMPARE(fun.call(QScriptValue(), QScriptValueList() << QScriptValue(&eng, 123)).isValid(), false);
     }
 
