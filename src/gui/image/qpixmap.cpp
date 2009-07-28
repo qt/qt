@@ -649,7 +649,7 @@ void QPixmap::resize_helper(const QSize &s)
     QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
-        uninit = x11Data->uninit;
+        uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
     QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
@@ -1936,7 +1936,7 @@ void QPixmap::detach()
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class) {
         QX11PixmapData *d = static_cast<QX11PixmapData*>(data);
-        d->uninit = false;
+        d->flags &= ~QX11PixmapData::Uninitialized;
 
         // reset the cache data
         if (d->hd2) {

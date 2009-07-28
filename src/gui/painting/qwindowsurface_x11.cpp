@@ -154,7 +154,7 @@ void QX11WindowSurface::setGeometry(const QRect &rect)
 
         QX11PixmapData *oldData = static_cast<QX11PixmapData *>(d_ptr->device.pixmapData());
         Q_ASSERT(oldData);
-        if (!oldData->uninit && hasStaticContents()) {
+        if (!(oldData->flags & QX11PixmapData::Uninitialized) && hasStaticContents()) {
             // Copy the content of the old pixmap into the new one.
             QX11PixmapData *newData = new QX11PixmapData(QPixmapData::PixmapType);
             newData->resize(size.width(), size.height());
@@ -175,7 +175,7 @@ void QX11WindowSurface::setGeometry(const QRect &rect)
                       dx, dy, qMin(boundingRect.width(), size.width()),
                       qMin(boundingRect.height(), size.height()), dx, dy);
             XFreeGC(X11->display, tmpGc);
-            newData->uninit = false;
+            newData->flags &= ~QX11PixmapData::Uninitialized;
 
             d_ptr->device = QPixmap(newData);
         } else {
