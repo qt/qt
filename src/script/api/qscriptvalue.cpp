@@ -1857,33 +1857,63 @@ void QScriptValue::setProperty(const QScriptString &name,
     JSC::ExecState *exec = eng_p->currentFrame;
     JSC::JSValue jscValue = eng_p->scriptValueToJSCValue(value);
     JSC::Identifier id = name.d_ptr->identifier;
-    if (!jscValue) {
-        JSC::asObject(d->jscValue)->deleteProperty(exec, id);
-    } else {
-        if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
-            if (jscValue.isObject()) {
-                if (flags & QScriptValue::PropertyGetter)
-                    JSC::asObject(d->jscValue)->defineGetter(exec, id, JSC::asObject(jscValue));
-                if (flags & QScriptValue::PropertySetter)
-                    JSC::asObject(d->jscValue)->defineSetter(exec, id, JSC::asObject(jscValue));
+    JSC::JSObject *thisObject = JSC::asObject(d->jscValue);
+    JSC::JSValue setter = thisObject->lookupSetter(exec, id);
+    JSC::JSValue getter = thisObject->lookupGetter(exec, id);
+    if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
+        if (!jscValue) {
+            // deleting getter/setter
+            if ((flags & QScriptValue::PropertyGetter) && (flags & QScriptValue::PropertySetter)) {
+                // deleting both: just delete the property
+                thisObject->deleteProperty(exec, id);
+            } else if (flags & QScriptValue::PropertyGetter) {
+                // preserve setter, if there is one
+                thisObject->deleteProperty(exec, id);
+                if (setter && setter.isObject())
+                    thisObject->defineSetter(exec, id, JSC::asObject(setter));
+            } else { // flags & QScriptValue::PropertySetter
+                // preserve getter, if there is one
+                thisObject->deleteProperty(exec, id);
+                if (getter && getter.isObject())
+                    thisObject->defineGetter(exec, id, JSC::asObject(getter));
             }
         } else {
-            if (flags != QScriptValue::KeepExistingFlags) {
-                if (JSC::asObject(d->jscValue)->hasOwnProperty(exec, id))
-                    JSC::asObject(d->jscValue)->deleteProperty(exec, id);
-                unsigned attribs = 0;
-                if (flags & QScriptValue::ReadOnly)
-                    attribs |= JSC::ReadOnly;
-                if (flags & QScriptValue::SkipInEnumeration)
-                    attribs |= JSC::DontEnum;
-                if (flags & QScriptValue::Undeletable)
-                    attribs |= JSC::DontDelete;
-                attribs |= flags & QScriptValue::UserRange;
-                JSC::asObject(d->jscValue)->putWithAttributes(exec, id, jscValue, attribs);
+            if (jscValue.isObject()) { // ### should check if it has callData()
+                // defining getter/setter
+                if (flags & QScriptValue::PropertyGetter)
+                    thisObject->defineGetter(exec, id, JSC::asObject(jscValue));
+                if (flags & QScriptValue::PropertySetter)
+                    thisObject->defineSetter(exec, id, JSC::asObject(jscValue));
             } else {
-                JSC::PutPropertySlot slot;
-                JSC::asObject(d->jscValue)->put(exec, id, jscValue, slot);
+                qWarning("QScriptValue::setProperty(): getter/setter must be a function");
             }
+        }
+    } else {
+        // setting the value
+        if (getter && getter.isObject() && !(setter && setter.isObject())) {
+            qWarning("QScriptValue::setProperty() failed: "
+                     "property '%s' has a getter but no setter",
+                     qPrintable(name.toString()));
+            return;
+        }
+        if (!jscValue) {
+            // ### check if it's a getter/setter property
+            thisObject->deleteProperty(exec, id);
+        } else if (flags != QScriptValue::KeepExistingFlags) {
+            if (thisObject->hasOwnProperty(exec, id))
+                thisObject->deleteProperty(exec, id); // ### hmmm - can't we just update the attributes?
+            unsigned attribs = 0;
+            if (flags & QScriptValue::ReadOnly)
+                attribs |= JSC::ReadOnly;
+            if (flags & QScriptValue::SkipInEnumeration)
+                attribs |= JSC::DontEnum;
+            if (flags & QScriptValue::Undeletable)
+                attribs |= JSC::DontDelete;
+            attribs |= flags & QScriptValue::UserRange;
+            thisObject->putWithAttributes(exec, id, jscValue, attribs);
+        } else {
+            JSC::PutPropertySlot slot;
+            thisObject->put(exec, id, jscValue, slot);
         }
     }
 }

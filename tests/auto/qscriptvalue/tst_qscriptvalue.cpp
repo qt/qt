@@ -1849,18 +1849,19 @@ void tst_QScriptValue::getSetProperty()
 
             // kill the getter
             object4.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
-            QCOMPARE(object4.property("foo").isValid(), false);
+            QVERIFY(!(object4.propertyFlags("foo") & QScriptValue::PropertyGetter));
+            QVERIFY(object4.propertyFlags("foo") & QScriptValue::PropertySetter);
+            QCOMPARE(object4.property("foo").isUndefined(), true);
 
             // setter should still work
             object4.setProperty("foo", num);
-            QEXPECT_FAIL("", "Setter isn't called", Continue);
             QCOMPARE(object4.property("x").strictlyEquals(num), true);
 
             // kill the setter too
             object4.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
+            QVERIFY(!(object4.propertyFlags("foo") & QScriptValue::PropertySetter));
             // now foo is just a regular property
             object4.setProperty("foo", str);
-            QEXPECT_FAIL("", "Getter isn't called", Continue);
             QCOMPARE(object4.property("x").strictlyEquals(num), true);
             QCOMPARE(object4.property("foo").strictlyEquals(str), true);
         }
@@ -1871,8 +1872,7 @@ void tst_QScriptValue::getSetProperty()
             object4.setProperty("foo", eng.newFunction(setter), QScriptValue::PropertySetter);
             object4.setProperty("foo", str);
             QCOMPARE(object4.property("x").strictlyEquals(str), true);
-            QEXPECT_FAIL("", "Property should be invalid now", Continue);
-            QCOMPARE(object4.property("foo").isValid(), false);
+            QCOMPARE(object4.property("foo").isUndefined(), true);
 
             // getter() returns this.x
             object4.setProperty("foo", eng.newFunction(getter), QScriptValue::PropertyGetter);
@@ -1885,7 +1885,6 @@ void tst_QScriptValue::getSetProperty()
             object4.setProperty("foo", str);
 
             // getter should still work
-            QEXPECT_FAIL("", "Getter should still work", Continue);
             QCOMPARE(object4.property("foo").strictlyEquals(num), true);
 
             // kill the getter too
@@ -1908,13 +1907,10 @@ void tst_QScriptValue::getSetProperty()
         object4.setProperty("x", num);
         QCOMPARE(object4.property("foo").strictlyEquals(num), true);
 
-        // killing the getter will also kill the setter, since they are the same function
+        // killing the getter will preserve the setter, even though they are the same function
         object4.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
-        QCOMPARE(object4.property("foo").isValid(), false);
-        // now foo is just a regular property
-        object4.setProperty("foo", str);
-        QCOMPARE(object4.property("x").strictlyEquals(num), true);
-        QCOMPARE(object4.property("foo").strictlyEquals(str), true);
+        QVERIFY(object4.propertyFlags("foo") & QScriptValue::PropertySetter);
+        QCOMPARE(object4.property("foo").isUndefined(), true);
 
         // getter/setter that throws an error
         {
