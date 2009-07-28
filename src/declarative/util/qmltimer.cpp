@@ -55,12 +55,13 @@ class QmlTimerPrivate : public QObjectPrivate
 public:
     QmlTimerPrivate()
         : interval(1000), running(false), repeating(false), triggeredOnStart(false)
-        , componentComplete(false) {}
+        , classBegun(false), componentComplete(false) {}
     int interval;
     bool running;
     bool repeating;
     bool triggeredOnStart;
     QPauseAnimation pause;
+    bool classBegun;
     bool componentComplete;
 };
 
@@ -190,7 +191,7 @@ void QmlTimer::setTriggeredOnStart(bool triggeredOnStart)
 void QmlTimer::update()
 {
     Q_D(QmlTimer);
-    if (!d->componentComplete)
+    if (d->classBegun && !d->componentComplete)
         return;
     d->pause.stop();
     if (d->running) {
@@ -202,6 +203,12 @@ void QmlTimer::update()
             QMetaObject::invokeMethod(this, "ticked", Qt::QueuedConnection);
         }
     }
+}
+
+void QmlTimer::classBegin()
+{
+    Q_D(QmlTimer);
+    d->classBegun = true;
 }
 
 void QmlTimer::componentComplete()
