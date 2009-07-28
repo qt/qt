@@ -213,7 +213,10 @@ public:
         Kind_UiPublicMember,
         Kind_UiQualifiedId,
         Kind_UiScriptBinding,
-        Kind_UiSourceElement
+        Kind_UiSourceElement,
+        Kind_UiFormal,
+        Kind_UiFormalList,
+        Kind_UiSignature
     };
 
     inline Node()
@@ -267,6 +270,89 @@ public:
 
     virtual SourceLocation firstSourceLocation() const = 0;
     virtual SourceLocation lastSourceLocation() const = 0;
+};
+
+class UiFormal: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiFormal)
+
+    UiFormal(NameId *name, NameId *alias = 0)
+      : name(name), alias(alias)
+    { }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    NameId *name;
+    NameId *alias;
+    SourceLocation identifierToken;
+    SourceLocation asToken;
+    SourceLocation aliasToken;
+};
+
+class UiFormalList: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiFormalList)
+
+    UiFormalList(UiFormal *formal)
+            : formal(formal), next(this) {}
+
+    UiFormalList(UiFormalList *previous, UiFormal *formal)
+            : formal(formal)
+    {
+        next = previous->next;
+        previous->next = this;
+    }
+
+    UiFormalList *finish()
+    {
+        UiFormalList *head = next;
+        next = 0;
+        return head;
+    }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiFormal *formal;
+    UiFormalList *next;
+};
+
+class UiSignature: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiSignature)
+
+    UiSignature(UiFormalList *formals = 0)
+        : formals(formals)
+    { }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return SourceLocation(); }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    SourceLocation lparenToken;
+    UiFormalList *formals;
+    SourceLocation rparenToken;
 };
 
 class NestedExpression: public ExpressionNode
@@ -2205,6 +2291,12 @@ public:
         : fileName(0), importUri(uri), importId(0)
     { kind = K; }
 
+    virtual SourceLocation firstSourceLocation() const
+    { return importToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
+
     virtual void accept0(Visitor *visitor);
 
 // attributes
@@ -2235,6 +2327,21 @@ public:
         kind = K;
         next = previous->next;
         previous->next = this;
+    }
+
+    virtual SourceLocation firstSourceLocation() const
+    {
+        if (import) return import->firstSourceLocation();
+        else return SourceLocation();
+    }
+
+    virtual SourceLocation lastSourceLocation() const
+    {
+        for (const UiImportList *it = this; it; it = it->next)
+            if (!it->next && it->import)
+                return it->import->lastSourceLocation();
+
+        return SourceLocation();
     }
 
     UiImportList *finish()

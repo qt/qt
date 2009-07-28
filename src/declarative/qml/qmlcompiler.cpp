@@ -628,6 +628,9 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
     if (tr.component) 
         obj->url = tr.component->url();
+    if (tr.type)
+        obj->typeName = tr.type->qmlTypeName();
+    obj->className = tr.className;
 
     // This object is a "Component" element
     if (obj->metatype == &QmlComponent::staticMetaObject) {
@@ -1427,7 +1430,7 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
                                         const BindingContext &ctxt)
 {
     Q_ASSERT(prop->value);
-    int id = QmlMetaType::attachedPropertiesFuncId("Qt/4.6/"+prop->name); // XXX Should not hard-code namespace
+    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
     Q_ASSERT(id != -1); // This is checked in compileProperty()
 
     prop->index = id;
@@ -1714,7 +1717,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
             QmlParser::Object *root = v->object;
             QmlParser::Object *component = new QmlParser::Object;
             component->type = componentTypeRef();
-            component->typeName = "Component";
+            component->typeName = "Qt/4.6/Component";
             component->metatype = &QmlComponent::staticMetaObject;
             component->location = root->location;
             QmlParser::Value *componentValue = new QmlParser::Value;
@@ -2085,6 +2088,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     store.assignBinding.value = dataRef;
     store.assignBinding.context = ref.bindingContext.stack;
     store.assignBinding.owner = ref.bindingContext.owner;
+    store.line = prop->location.end.line;
 
     output->bytecode << store;
 }

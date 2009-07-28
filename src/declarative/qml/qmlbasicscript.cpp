@@ -656,7 +656,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
         return QVariant();
 
     QmlContextPrivate *contextPrivate = context->d_func();
-    QmlEnginePrivate *enginePrivate = context->engine()->d_func();
+    QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(context->engine());
 
     QStack<QVariant> stack;
 

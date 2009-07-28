@@ -192,6 +192,30 @@ public:
     }
 };
 
+inline void q_guard_addGuard(QGuard<QObject> *g)
+{
+    QObjectPrivate *p = QObjectPrivate::get(g->o);
+    if (p->wasDeleted) {
+        qWarning("QGuard: cannot add guard to deleted object");
+        g->o = 0;
+        return;
+    }
+
+    g->next = p->objectGuards;
+    p->objectGuards = g;
+    g->prev = &p->objectGuards;
+    if (g->next)
+        g->next->prev = &g->next;
+}
+
+inline void q_guard_removeGuard(QGuard<QObject> *g)
+{
+    if (g->next) g->next->prev = g->prev;
+    *g->prev = g->next;
+    g->next = 0;
+    g->prev = 0;
+}
+
 Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);
 

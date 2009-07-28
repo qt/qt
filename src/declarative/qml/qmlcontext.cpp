@@ -106,9 +106,9 @@ void QmlContextPrivate::init()
         parent->d_func()->childContexts.insert(q);
 
     //set scope chain
-    QScriptEngine *scriptEngine = engine->scriptEngine();
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QScriptValue scopeObj =
-        scriptEngine->newObject(engine->d_func()->contextClass, scriptEngine->newVariant(QVariant::fromValue((QObject*)q)));
+        scriptEngine->newObject(QmlEnginePrivate::get(engine)->contextClass, scriptEngine->newVariant(QVariant::fromValue((QObject*)q)));
     if (!parent)
         scopeChain.append(scriptEngine->globalObject());
     else

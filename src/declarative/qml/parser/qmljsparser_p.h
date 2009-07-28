@@ -120,6 +120,9 @@ public:
       AST::UiObjectMemberList *UiObjectMemberList;
       AST::UiArrayMemberList *UiArrayMemberList;
       AST::UiQualifiedId *UiQualifiedId;
+      AST::UiSignature *UiSignature;
+      AST::UiFormalList *UiFormalList;
+      AST::UiFormal *UiFormal;
     };
 
 public:
@@ -219,9 +222,9 @@ protected:
 
 
 
-#define J_SCRIPT_REGEXPLITERAL_RULE1 68
+#define J_SCRIPT_REGEXPLITERAL_RULE1 81
 
-#define J_SCRIPT_REGEXPLITERAL_RULE2 69
+#define J_SCRIPT_REGEXPLITERAL_RULE2 82
 
 QT_END_NAMESPACE
 

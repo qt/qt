@@ -56,6 +56,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qvector3d.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -105,6 +106,30 @@ public:
 private:
     QRect rect;
 };
+
+class QmlVector3DValueType : public QmlValueType
+{
+    Q_PROPERTY(qreal x READ x WRITE setX);
+    Q_PROPERTY(qreal y READ y WRITE setY);
+    Q_PROPERTY(qreal z READ z WRITE setZ);
+    Q_OBJECT
+public:
+    QmlVector3DValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    qreal x() const;
+    qreal y() const;
+    qreal z() const;
+    void setX(qreal);
+    void setY(qreal);
+    void setZ(qreal);
+
+private:
+    QVector3D vector;
+};
+
 QT_END_NAMESPACE
 
 #endif  // QMLVALUETYPE_P_H
