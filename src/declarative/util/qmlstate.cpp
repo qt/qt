@@ -110,6 +110,11 @@ void ActionEvent::clearReverseBindings()
 {
 }
 
+bool ActionEvent::override(ActionEvent *other)
+{
+    return false;
+}
+
 /*!
     \internal
 */
@@ -378,13 +383,15 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         if (action.event) {
             if (!action.event->isReversable())
                 continue;
-            /*for (jj = 0; jj < d->revertList.count(); ++jj) {
+            for (jj = 0; jj < d->revertList.count(); ++jj) {
                 ActionEvent *event = d->revertList.at(jj).event;
                 if (event && event->typeName() == action.event->typeName()) {
-                    found = true;
-                    break;
+                    if (action.event->override(event)) {
+                        found = true;
+                        break;
+                    }
                 }
-            }*/ //### not a close enough match
+            }
         } else {
             action.fromBinding = action.property.binding();
 
@@ -417,7 +424,18 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     // into this state need to be translated into apply actions
     for (int ii = 0; ii < d->revertList.count(); ++ii) {
         bool found = false;
-        if (!d->revertList.at(ii).event) {    //### corresponding test for events?
+        if (d->revertList.at(ii).event) {
+            ActionEvent *event = d->revertList.at(ii).event;
+            if (!event->isReversable())
+                continue;
+            for (int jj = 0; !found && jj < applyList.count(); ++jj) {
+                const Action &action = applyList.at(jj);
+                if (action.event && action.event->typeName() == event->typeName()) {
+                    if (action.event->override(event))
+                        found = true;
+                }
+            }
+        } else {
             for (int jj = 0; !found && jj < applyList.count(); ++jj) {
                 const Action &action = applyList.at(jj);
                 if (action.property == d->revertList.at(ii).property)
