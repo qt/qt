@@ -1330,15 +1330,15 @@ void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags
             for (int i=0; i<rects.size(); ++i) {
                 const QRect &r = rects.at(i);
                 const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
-                                           r.x() + r.width() + offset.x(),
-                                           r.y() + r.height() + offset.y() };
+                                           r.right() + offset.x(),
+                                           r.bottom() + offset.y() };
                 surface->Flip(surface, &dfbReg, i + 1 < rects.size() ? nonWaitFlags : flipFlags);
             }
         } else {
             const QRect r = region.boundingRect();
             const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
-                                       r.x() + r.width() + offset.x(),
-                                       r.y() + r.height() + offset.y() };
+                                       r.right() + offset.x(),
+                                       r.bottom() + offset.y() };
             surface->Flip(surface, &dfbReg, flipFlags);
         }
     }
