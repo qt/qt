@@ -63,7 +63,7 @@ public:
     void unlockDirectFB();
 
     // Reimplemented from QCustomRasterPaintDevice:
-    void* memory() const;
+    void *memory() const;
     QImage::Format format() const;
     int bytesPerLine() const;
     QSize size() const;
@@ -81,7 +81,7 @@ protected:
     {
         return (screen->deviceHeight() * 1000) / screen->physicalHeight();
     }
-
+protected:
     IDirectFBSurface *dfbSurface;
     QImage *lockedImage;
     QDirectFBScreen *screen;
