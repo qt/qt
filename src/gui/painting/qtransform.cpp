@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     allowing perspective transformations. QTransform's toAffine()
     method allows casting QTransform to QMatrix. If a perspective
     transformation has been specified on the matrix, then the
-    conversion to an affine QMatrix will cause loss of data.
+    conversion will cause loss of data.
 
     QTransform is the recommended transformation class in Qt.
 
@@ -125,11 +125,13 @@ QT_BEGIN_NAMESPACE
     which returns true if the matrix is non-singular (i.e. AB = BA =
     I). The inverted() function returns an inverted copy of \e this
     matrix if it is invertible (otherwise it returns the identity
-    matrix). In addition, QTransform provides the det() function
-    returning the matrix's determinant.
+    matrix), and adjoint() returns the matrix's classical adjoint.
+    In addition, QTransform provides the determinant() function which
+    returns the matrix's determinant.
 
-    Finally, the QTransform class supports matrix multiplication, and
-    objects of the class can be streamed as well as compared.
+    Finally, the QTransform class supports matrix multiplication, addition
+    and subtraction, and objects of the class can be streamed as well
+    as compared.
 
     \tableofcontents
 
@@ -191,7 +193,7 @@ QT_BEGIN_NAMESPACE
     The various matrix elements can be set when constructing the
     matrix, or by using the setMatrix() function later on. They can also
     be manipulated using the translate(), rotate(), scale() and
-    shear() convenience functions, The currently set values can be
+    shear() convenience functions. The currently set values can be
     retrieved using the m11(), m12(), m13(), m21(), m22(), m23(),
     m31(), m32(), m33(), dx() and dy() functions.
 
@@ -204,9 +206,9 @@ QT_BEGIN_NAMESPACE
     to 0) mapping a point to itself. Shearing is controlled by \c m12
     and \c m21. Setting these elements to values different from zero
     will twist the coordinate system. Rotation is achieved by
-    carefully setting both the shearing factors and the scaling
-    factors. Perspective transformation is achieved by carefully setting
-    both the projection factors and the scaling factors.
+    setting both the shearing factors and the scaling factors. Perspective
+    transformation is achieved by setting both the projection factors and
+    the scaling factors.
 
     Here's the combined transformations example using basic matrix
     operations:
@@ -958,8 +960,8 @@ QTransform & QTransform::operator=(const QTransform &matrix)
 
 /*!
     Resets the matrix to an identity matrix, i.e. all elements are set
-    to zero, except \c m11 and \c m22 (specifying the scale) which are
-    set to 1.
+    to zero, except \c m11 and \c m22 (specifying the scale) and \c m33
+    which are set to 1.
 
     \sa QTransform(), isIdentity(), {QTransform#Basic Matrix
     Operations}{Basic Matrix Operations}
@@ -2030,8 +2032,9 @@ QTransform::operator QVariant() const
 
 /*!
     \fn qreal QTransform::det() const
+    \obsolete
 
-    Returns the matrix's determinant.
+    Returns the matrix's determinant. Use determinant() instead.
 */
 
 
