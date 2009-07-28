@@ -57,11 +57,9 @@ class Q_DECLARATIVE_EXPORT QmlPalette : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPalette)
+    Q_ENUMS(ColorGroup)
 
-public:
-    QmlPalette(QObject *parent=0);
-    ~QmlPalette();
-
+    Q_PROPERTY(ColorGroup colorGroup READ colorGroup WRITE setColorGroup NOTIFY paletteChanged)
     Q_PROPERTY(QColor window READ window NOTIFY paletteChanged)
     Q_PROPERTY(QColor windowText READ windowText NOTIFY paletteChanged)
     Q_PROPERTY(QColor base READ base NOTIFY paletteChanged)
@@ -75,6 +73,13 @@ public:
     Q_PROPERTY(QColor shadow READ shadow NOTIFY paletteChanged)
     Q_PROPERTY(QColor highlight READ highlight NOTIFY paletteChanged)
     Q_PROPERTY(QColor highlightedText READ highlightedText NOTIFY paletteChanged)
+
+public:
+    QmlPalette(QObject *parent=0);
+    ~QmlPalette();
+
+    enum ColorGroup { Disabled = QPalette::Disabled, Active = QPalette::Active,
+                      Inactive = QPalette::Inactive, Normal = QPalette::Normal };
 
     QColor window() const;
     QColor windowText() const;
@@ -96,7 +101,8 @@ public:
 
     QPalette palette() const;
 
-    void setColorGroup(QPalette::ColorGroup);
+    ColorGroup colorGroup() const;
+    void setColorGroup(ColorGroup);
 
     bool virtual eventFilter(QObject *watched, QEvent *event);
     bool virtual event(QEvent *event);
