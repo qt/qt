@@ -94,7 +94,9 @@ inline RegExp::RegExp(JSGlobalData* globalData, const UString& pattern, const US
             break;
         default:
             m_constructionError = flagError;
+#if !ENABLE(YARR)
             m_regExp = 0;
+#endif
             return;
         }
     }
