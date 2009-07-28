@@ -1880,10 +1880,15 @@ void QScriptValue::setProperty(const QScriptString &name,
         } else {
             if (jscValue.isObject()) { // ### should check if it has callData()
                 // defining getter/setter
-                if (flags & QScriptValue::PropertyGetter)
-                    thisObject->defineGetter(exec, id, JSC::asObject(jscValue));
-                if (flags & QScriptValue::PropertySetter)
-                    thisObject->defineSetter(exec, id, JSC::asObject(jscValue));
+                if (id == exec->propertyNames().underscoreProto) {
+                    qWarning("QScriptValue::setProperty() failed: "
+                             "cannot set getter or setter of native property `__proto__'");
+                } else {
+                    if (flags & QScriptValue::PropertyGetter)
+                        thisObject->defineGetter(exec, id, JSC::asObject(jscValue));
+                    if (flags & QScriptValue::PropertySetter)
+                        thisObject->defineSetter(exec, id, JSC::asObject(jscValue));
+                }
             } else {
                 qWarning("QScriptValue::setProperty(): getter/setter must be a function");
             }

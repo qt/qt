@@ -1942,7 +1942,6 @@ void tst_QScriptValue::getSetProperty()
             object6.setProperty("__proto__", fun,
                                 QScriptValue::PropertyGetter | QScriptValue::PropertySetter
                                 | QScriptValue::UserRange);
-            QEXPECT_FAIL("", "Getter/setter shouldn't be allowed to change __proto__ (or should it?)", Continue);
             QVERIFY(object6.property("__proto__").strictlyEquals(object6.prototype()));
 
             object6.setProperty("__proto__", QScriptValue(),
