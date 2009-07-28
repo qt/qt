@@ -1775,7 +1775,7 @@ bool QTransform::quadToQuad(const QPolygonF &one,
     Sets the matrix elements to the specified values, \a m11,
     \a m12, \a m13 \a m21, \a m22, \a m23 \a m31, \a m32 and
     \a m33. Note that this function replaces the previous values.
-    QMatrix provides the translate(), rotate(), scale() and shear()
+    QTransform provides the translate(), rotate(), scale() and shear()
     convenience functions to manipulate the various matrix elements
     based on the currently defined coordinate system.
 
@@ -1953,8 +1953,11 @@ void QTransform::map(int x, int y, int *tx, int *ty) const
 }
 
 /*!
-  Returns the QTransform cast to a QMatrix.
- */
+  Returns the QTransform as an affine matrix.
+
+  \warning If a perspective transformation has been specified,
+  then the conversion will cause loss of data.
+*/
 const QMatrix &QTransform::toAffine() const
 {
     return affine;

@@ -2286,6 +2286,7 @@ bool QGraphicsWidget::close()
 #ifdef Q_NO_USING_KEYWORD
 /*!
     \fn const QObjectList &QGraphicsWidget::children() const
+    \internal
 
     This function returns the same value as QObject::children(). It's
     provided to differentiate between the obsolete member

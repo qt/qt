@@ -303,11 +303,12 @@
     drop shadow effects and for decoration objects that follow the parent
     item's geometry without drawing on top of it.
 
-    \value ItemUsesExtendedStyleOption The item makes use of either
-    QStyleOptionGraphicsItem::exposedRect or QStyleOptionGraphicsItem::matrix.
+    \value ItemUsesExtendedStyleOption The item makes use of either the
+    exposedRect or matrix member of the QStyleOptionGraphicsItem. Implementers
+    of QGraphicsItem subclasses should set that flag if this data is required.
     By default, the exposedRect is initialized to the item's boundingRect and
     the matrix is untransformed. Enable this flag for more fine-grained values.
-    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform for a more
+    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform() for a more
     fine-grained value.
 
     \value ItemHasNoContents The item does not paint anything (i.e., calling
