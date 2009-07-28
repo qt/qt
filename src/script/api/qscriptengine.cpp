@@ -1932,7 +1932,14 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
     JSC::JSValue buf[2];
     JSC::ArgList args(buf, sizeof(buf));
     JSC::UString jscPattern = QScript::qtStringToJSCUString(pattern);
-    JSC::UString jscFlags = QScript::qtStringToJSCUString(flags);
+    QString strippedFlags;
+    if (flags.contains(QLatin1Char('i')))
+        strippedFlags += QLatin1Char('i');
+    if (flags.contains(QLatin1Char('m')))
+        strippedFlags += QLatin1Char('m');
+    if (flags.contains(QLatin1Char('g')))
+        strippedFlags += QLatin1Char('g');
+    JSC::UString jscFlags = QScript::qtStringToJSCUString(strippedFlags);
     buf[0] = JSC::jsString(exec, jscPattern);
     buf[1] = JSC::jsString(exec, jscFlags);
     JSC::JSObject* result = JSC::constructRegExp(exec, args);

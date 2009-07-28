@@ -491,16 +491,12 @@ void tst_QScriptEngine::newRegExp()
         QVERIFY(!r5.strictlyEquals(r));
 
         QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
-        QEXPECT_FAIL("", "JSC doesn't throw error for invalid regexp flags", Continue);
         QVERIFY(r6.isError());
-        QEXPECT_FAIL("", "JSC doesn't throw error for invalid regexp flags", Continue);
-        QCOMPARE(r6.toString(), QString::fromLatin1("SyntaxError: invalid regular expression flag 'b'"));
+        QCOMPARE(r6.toString(), QString::fromLatin1("SyntaxError: Invalid regular expression: invalid regular expression flag"));
 
         QScriptValue r7 = eng.evaluate("/foo/gimp");
-        QEXPECT_FAIL("", "JSC doesn't throw error for invalid regexp flags", Continue);
         QVERIFY(r7.isError());
-        QEXPECT_FAIL("", "JSC doesn't throw error for invalid regexp flags", Continue);
-        QCOMPARE(r7.toString(), QString::fromLatin1("SyntaxError: Invalid regular expression flag 'p'"));
+        QCOMPARE(r7.toString(), QString::fromLatin1("SyntaxError: Invalid regular expression: invalid regular expression flag"));
 
         QScriptValue r8 = eng.evaluate("/foo/migmigmig");
         QVERIFY(r8.isRegExp());

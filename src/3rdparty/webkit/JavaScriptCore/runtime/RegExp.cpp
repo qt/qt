@@ -72,12 +72,33 @@ inline RegExp::RegExp(JSGlobalData* globalData, const UString& pattern, const US
 {
     // NOTE: The global flag is handled on a case-by-case basis by functions like
     // String::match and RegExpObject::match.
+#ifndef QT_BUILD_SCRIPT_LIB
     if (flags.find('g') != -1)
         m_flagBits |= Global;
     if (flags.find('i') != -1)
         m_flagBits |= IgnoreCase;
     if (flags.find('m') != -1)
         m_flagBits |= Multiline;
+#else //Invalid flags should throw a SyntaxError (ECMA Script 15.10.4.1)
+    static const char flagError[] = "invalid regular expression flag";
+    for (int i = 0; i < flags.size(); i++) {
+        switch (flags.data()[i]) {
+        case 'g':
+            m_flagBits |= Global;
+            break;
+        case 'i':
+            m_flagBits |= IgnoreCase;
+            break;
+        case 'm':
+            m_flagBits |= Multiline;
+            break;
+        default:
+            m_constructionError = flagError;
+            m_regExp = 0;
+            return;
+        }
+    }
+#endif
 
     compile(globalData);
 }
