@@ -320,6 +320,19 @@ void QGLEngineShaderManager::setCustomStage(QGLCustomShaderStage* stage)
     shaderProgNeedsChanging = true;
 }
 
+void QGLEngineShaderManager::shaderDestroyed(QObject *shader)
+{
+    // Remove any shader programs which has this as the srcPixel shader:
+    for (int i = 0; i < cachedPrograms.size(); ++i) {
+        if (cachedPrograms.at(i).srcPixelFragShader == shader) {
+            delete cachedPrograms.at(i).program;
+            cachedPrograms.removeAt(i--);
+        }
+    }
+
+    shaderProgNeedsChanging = true;
+}
+
 void QGLEngineShaderManager::removeCustomStage(QGLCustomShaderStage* stage)
 {
     Q_UNUSED(stage); // Currently we only support one at a time...
@@ -328,16 +341,6 @@ void QGLEngineShaderManager::removeCustomStage(QGLCustomShaderStage* stage)
 
     if (!compiledShader)
         return;
-
-    // Remove any shader programs which has this as the srcPixel shader:
-    for (int i = 0; i < cachedPrograms.size(); ++i) {
-        QGLEngineShaderProg &prog = cachedPrograms[i];
-        if (prog.srcPixelFragShader == compiledShader) {
-            delete prog.program;
-            cachedPrograms.removeOne(prog);
-            break;
-        }
-    }
 
     compiledShaders[CustomImageSrcFragmentShader] = 0;
     customSrcStage = 0;
@@ -618,6 +621,9 @@ void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderNa
             newShader = new QGLShader(type, ctx, this);
             newShader->compile(source);
             customShaderCache.insert(source, newShader);
+
+            connect(newShader, SIGNAL(destroyed(QObject *)),
+                    this, SLOT(shaderDestroyed(QObject *)));
         }
     } else {
         source = qglEngineShaderSourceCode[name];

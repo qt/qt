@@ -408,6 +408,9 @@ public:
     Q_ENUMS(ShaderName)
 #endif
 
+private slots:
+    void shaderDestroyed(QObject *shader);
+
 private:
     QGLContext*     ctx;
     bool            shaderProgNeedsChanging;
