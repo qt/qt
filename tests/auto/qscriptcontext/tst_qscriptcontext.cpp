@@ -530,12 +530,10 @@ void tst_QScriptContext::lineNumber()
     QScriptValue result = eng.evaluate("try { eval(\"foo = 123;\\n this[is{a{syntax|error@#$%@#% \"); } catch (e) { e.lineNumber; }", "foo.qs", 123);
     QVERIFY(!eng.hasUncaughtException());
     QVERIFY(result.isNumber());
-    QEXPECT_FAIL("", "error line number is wrong", Continue);
-    QCOMPARE(result.toInt32(), 124);
+    QCOMPARE(result.toInt32(), 2);
 
     result = eng.evaluate("foo = 123;\n bar = 42\n0 = 0");
     QVERIFY(eng.hasUncaughtException());
-    QEXPECT_FAIL("", "uncaught exception line number is wrong", Continue);
     QCOMPARE(eng.uncaughtExceptionLineNumber(), 3);
     QCOMPARE(result.property("lineNumber").toInt32(), 3);
 }
