@@ -230,6 +230,7 @@ class HtmlGenerator : public PageGenerator
     DcfSection dcfQmakeRoot;
     HelpProjectWriter *helpProjectWriter;
     bool inLink;
+    bool inObsoleteLink;
     bool inContents;
     bool inSectionHeading;
     bool inTableHeader;
