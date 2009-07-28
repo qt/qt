@@ -132,7 +132,6 @@ protected:
     virtual qreal minXExtent() const;
     virtual qreal maxXExtent() const;
     virtual void keyPressEvent(QKeyEvent *);
-    virtual void keyReleaseEvent(QKeyEvent *);
     virtual void componentComplete();
 
 private Q_SLOTS:

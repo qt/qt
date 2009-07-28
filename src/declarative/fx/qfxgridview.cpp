@@ -154,7 +154,7 @@ public:
     , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
-    , keyPressed(false), ownModel(false), wrap(false), autoHighlight(true)
+    , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false) {}
 
     void init();
@@ -316,7 +316,6 @@ public:
     QmlFollow *highlightXAnimator;
     QmlFollow *highlightYAnimator;
 
-    int keyPressed : 1;
     int ownModel : 1;
     int wrap : 1;
     int autoHighlight : 1;
@@ -1093,7 +1092,6 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
         if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Up)
             || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Left)) {
             if (currentIndex() >= d->columns || d->wrap) {
-                d->keyPressed = true;
                 d->moveReason = QFxGridViewPrivate::Key;
                 int index = currentIndex() - d->columns;
                 setCurrentIndex(index >= 0 ? index : d->model->count()-1);
@@ -1103,7 +1101,6 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
         } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Down)
                 || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Right)) {
             if (currentIndex() < d->model->count() - d->columns || d->wrap) {
-                d->keyPressed = true;
                 d->moveReason = QFxGridViewPrivate::Key;
                 int index = currentIndex()+d->columns;
                 setCurrentIndex(index < d->model->count() ? index : 0);
@@ -1113,7 +1110,6 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
         } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Left)
                 || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || d->wrap) {
-                d->keyPressed = true;
                 d->moveReason = QFxGridViewPrivate::Key;
                 int index = currentIndex() - 1;
                 setCurrentIndex(index >= 0 ? index : d->model->count()-1);
@@ -1123,7 +1119,6 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
         } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Right)
                 || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || d->wrap) {
-                d->keyPressed = true;
                 d->moveReason = QFxGridViewPrivate::Key;
                 int index = currentIndex() + 1;
                 setCurrentIndex(index < d->model->count() ? index : 0);
@@ -1134,16 +1129,6 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
     }
     d->moveReason = QFxGridViewPrivate::Other;
     QFxFlickable::keyPressEvent(event);
-}
-
-/*!
-  \reimp
-*/
-void QFxGridView::keyReleaseEvent(QKeyEvent *event)
-{
-    Q_D(QFxGridView);
-    d->keyPressed = false;
-    QFxFlickable::keyReleaseEvent(event);
 }
 
 /*!

@@ -821,7 +821,7 @@ void QFxItem::qmlLoaded()
             QFxItem* ret = qobject_cast<QFxItem*>(o);
             if (ret) {
                 ret->setItemParent(this);
-                QScriptValue v = QmlEngine::getScriptEngine(qmlEngine(this))->newQObject(ret);
+                QScriptValue v = QmlEnginePrivate::getScriptEngine(qmlEngine(this))->newQObject(ret);
                 emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
             }
 

@@ -175,7 +175,7 @@ public:
         , averageSize(100), currentIndex(-1), requestedIndex(-1)
         , currItemMode(QFxListView::Free), snapPos(0), highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
-        , keyPressed(false), ownModel(false), wrap(false), autoHighlight(true)
+        , ownModel(false), wrap(false), autoHighlight(true)
         , fixCurrentVisibility(false) {}
 
     void init();
@@ -371,7 +371,6 @@ public:
     QString sectionExpression;
     QString currentSection;
 
-    int keyPressed : 1;
     int ownModel : 1;
     int wrap : 1;
     int autoHighlight : 1;
@@ -1320,7 +1319,6 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
         if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Left)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || d->wrap) {
-                d->keyPressed = true;
                 d->moveReason = QFxListViewPrivate::Key;
                 int index = currentIndex()-1;
                 d->updateCurrent(index >= 0 ? index : d->model->count()-1);
@@ -1330,7 +1328,6 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
         } else if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Right)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || d->wrap) {
-                d->keyPressed = true;
                 d->moveReason = QFxListViewPrivate::Key;
                 int index = currentIndex()+1;
                 d->updateCurrent(index < d->model->count() ? index : 0);
@@ -1341,13 +1338,6 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
     }
     d->moveReason = QFxListViewPrivate::Other;
     QFxFlickable::keyPressEvent(event);
-}
-
-void QFxListView::keyReleaseEvent(QKeyEvent *event)
-{
-    Q_D(QFxListView);
-    d->keyPressed = false;
-    QFxFlickable::keyReleaseEvent(event);
 }
 
 void QFxListView::componentComplete()
