@@ -1290,7 +1290,7 @@ void tst_QScriptEngine::uncaughtException()
     QScriptEngine eng;
     QScriptValue fun = eng.newFunction(myFunction);
     QScriptValue throwFun = eng.newFunction(myThrowingFunction);
-    for (int x = 0; x < 2; ++x) {
+    for (int x = -1; x < 2; ++x) {
         {
             QScriptValue ret = eng.evaluate("a = 10;\nb = 20;\n0 = 0;\n", /*fileName=*/QString(), /*lineNumber=*/x);
             QVERIFY(eng.hasUncaughtException());
