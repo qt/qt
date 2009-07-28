@@ -170,7 +170,7 @@ void tst_Selftests::runSubTest_data()
     // with a warning that an uncaught exception was thrown.
     // This will time out and falsely fail, therefore we disable the test for that platform.
 # if !defined(Q_CC_INTEL) || !defined(Q_OS_WIN)
-    QTest::newRow("exception") << "exception" << QStringList();
+    QTest::newRow("exceptionthrow") << "exceptionthrow" << QStringList();
 # endif
 #endif
     QTest::newRow("qexecstringlist") << "qexecstringlist" << QStringList();
@@ -207,7 +207,7 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
     /* Windows-MSVC decide to output an error message when exceptions are thrown,
      * so let's not check stderr for those. */
 #if defined(Q_OS_WIN)
-    if(subdir != QLatin1String("exception") && subdir != QLatin1String("fetchbogus"))
+    if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus"))
 #endif
     if(subdir != QLatin1String("xunit"))
         QVERIFY2(err.isEmpty(), err.constData());
@@ -297,7 +297,9 @@ void tst_Selftests::runSubTest()
 
 void tst_Selftests::initTestCase()
 {
-    m_checkXMLBlacklist.append("crashes"); // This test crashes
+#ifndef Q_OS_UNIX
+    m_checkXMLBlacklist.append("crashes"); // This test crashes (XML valid on Unix only)
+#endif
     m_checkXMLBlacklist.append("waitwithoutgui"); // This test is not a QTestLib test.
 
     /* Output from several tests is broken with the XML output method,
@@ -343,7 +345,7 @@ void tst_Selftests::checkXML() const
          * this is what windows platforms says:
          * "This application has requested the Runtime to terminate it in an unusual way.
          * Please contact the application's support team for more information." */
-        if(subdir != QLatin1String("exception") && subdir != QLatin1String("fetchbogus"))
+        if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus"))
             QVERIFY2(err.isEmpty(), err.constData());
 
         QXmlStreamReader reader(out);
@@ -385,7 +387,7 @@ void tst_Selftests::checkXunitxml() const
      * this is what windows platforms says:
      * "This application has requested the Runtime to terminate it in an unusual way.
      * Please contact the application's support team for more information." */
-    if(subdir != QLatin1String("exception") && subdir != QLatin1String("fetchbogus"))
+    if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus"))
         QVERIFY2(err.isEmpty(), err.constData());
 
     QXmlStreamReader reader(out);

@@ -1966,10 +1966,9 @@ void QPixmap::fill( const QWidget *widget, const QPoint &off )
     QPainter p(this);
     p.translate(-off);
     widget->d_func()->paintBackground(&p, QRect(off, size()));
-
 }
 
-static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush)
+static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     Q_ASSERT(painter);
 
@@ -1978,25 +1977,38 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoin
         // Optimize pattern filling on mac by using HITheme directly
         // when filling with the standard widget background.
         // Defined in qmacstyle_mac.cpp
-        extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush);
-        qt_mac_fill_background(painter, rgn, offset, brush);
+        extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
+        qt_mac_fill_background(painter, rgn, brush);
 #else
-        const QRegion translated = rgn.translated(offset);
-        const QRect rect(translated.boundingRect());
-        painter->setClipRegion(translated);
+        const QRect rect(rgn.boundingRect());
+        painter->setClipRegion(rgn);
         painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
 #endif
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
-            painter->fillRect(rects.at(i).translated(offset), brush);
+            painter->fillRect(rects.at(i), brush);
     }
 }
 
-
-void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, const QPoint &offset, int flags) const
+void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int flags) const
 {
     Q_Q(const QWidget);
+
+#ifndef QT_NO_SCROLLAREA
+    bool resetBrushOrigin = false;
+    QPointF oldBrushOrigin;
+    //If we are painting the viewport of a scrollarea, we must apply an offset to the brush in case we are drawing a texture
+    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
+    if (scrollArea && scrollArea->viewport() == q) {
+        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
+        QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
+        oldBrushOrigin = painter->brushOrigin();
+        resetBrushOrigin = true;
+        painter->setBrushOrigin(-priv->contentsOffset());
+
+    }
+#endif // QT_NO_SCROLLAREA
 
     const QBrush autoFillBrush = q->palette().brush(q->backgroundRole());
 
@@ -2006,18 +2018,24 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, cons
         if (!(flags & DontSetCompositionMode) && painter->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
             painter->setCompositionMode(QPainter::CompositionMode_Source); //copy alpha straight in
 #endif
-        fillRegion(painter, rgn, offset, bg);
+        fillRegion(painter, rgn, bg);
     }
 
     if (q->autoFillBackground())
-        fillRegion(painter, rgn, offset, autoFillBrush);
+        fillRegion(painter, rgn, autoFillBrush);
+
 
     if (q->testAttribute(Qt::WA_StyledBackground)) {
-        painter->setClipRegion(rgn.translated(offset));
+        painter->setClipRegion(rgn);
         QStyleOption opt;
         opt.initFrom(q);
         q->style()->drawPrimitive(QStyle::PE_Widget, &opt, painter, q);
     }
+
+#ifndef QT_NO_SCROLLAREA
+    if (resetBrushOrigin)
+        painter->setBrushOrigin(oldBrushOrigin);
+#endif // QT_NO_SCROLLAREA
 }
 
 /*
@@ -4998,19 +5016,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
 
                     QPainter p(q);
-                    QPoint scrollAreaOffset;
-
-#ifndef QT_NO_SCROLLAREA
-                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
-                    if (scrollArea && scrollArea->viewport() == q) {
-                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
-                        QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
-                        scrollAreaOffset = priv->contentsOffset();
-                        p.translate(-scrollAreaOffset);
-                    }
-#endif // QT_NO_SCROLLAREA
-
-                    paintBackground(&p, toBePainted, scrollAreaOffset, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
+                    paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
                 }
 
                 if (!sharedPainter)
@@ -5443,8 +5449,6 @@ QString QWidget::windowIconText() const
 
     \list
     \o The file name of the specified path, obtained using QFileInfo::fileName().
-    \o An optional \c{*} character, if the \l windowModified property is set,
-    as per the Apple Human Interface Guidelines.
     \endlist
 
     On Windows and X11:
@@ -5493,7 +5497,7 @@ void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
 {
     if (extra->topextra && extra->topextra->caption.isEmpty()) {
 #ifdef Q_WS_MAC
-        setWindowTitle_helper(filePath);
+        setWindowTitle_helper(QFileInfo(filePath).fileName());
 #else
         Q_Q(QWidget);
         Q_UNUSED(filePath);

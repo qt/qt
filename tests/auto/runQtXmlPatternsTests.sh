@@ -34,6 +34,8 @@ qxmlserializer              \
 xmlpatterns                 \
 xmlpatternsxqts             \
 xmlpatternsdiagnosticsts    \
+xmlpatternsschema           \
+xmlpatternsschemats         \
 xmlpatternsview             \
 xmlpatternsxslts"
 

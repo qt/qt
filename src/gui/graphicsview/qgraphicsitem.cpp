@@ -307,8 +307,6 @@
     QStyleOptionGraphicsItem::exposedRect or QStyleOptionGraphicsItem::matrix.
     By default, the exposedRect is initialized to the item's boundingRect and
     the matrix is untransformed. Enable this flag for more fine-grained values.
-    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
-    and is always initialized to 1.
     Use QStyleOptionGraphicsItem::levelOfDetailFromTransform for a more
     fine-grained value.
 
@@ -326,6 +324,10 @@
 
     \value ItemAcceptsInputMethod The item supports input methods typically
     used for Asian languages.
+    This flag was introduced in Qt 4.6.
+
+    \value ItemAutoDetectsFocusProxy The item will assign any child that
+    gains input focus as its focus proxy. See also focusProxy().
     This flag was introduced in Qt 4.6.
 */
 
@@ -650,6 +652,10 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         // For root items only. This is the item that has either enabled or
         // disabled \a childFlag, or has been reparented.
         switch (int(childFlag)) {
+        case -2:
+            flag = AncestorFiltersChildEvents;
+            enabled = q->filtersChildEvents();
+            break;
         case -1:
             flag = AncestorHandlesChildEvents;
             enabled = q->handlesChildEvents();
@@ -670,7 +676,8 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         // Inherit the enabled-state from our parents.
         if ((parent && ((parent->d_ptr->ancestorFlags & flag)
                         || (int(parent->d_ptr->flags & childFlag) == childFlag)
-                        || (childFlag == -1 && parent->d_ptr->handlesChildEvents)))) {
+                        || (childFlag == -1 && parent->d_ptr->handlesChildEvents)
+                        || (childFlag == -2 && parent->d_ptr->filtersDescendantEvents)))) {
             enabled = true;
             ancestorFlags |= flag;
         }
@@ -691,7 +698,9 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             ancestorFlags &= ~flag;
 
         // Don't process children if the item has the main flag set on itself.
-        if ((childFlag != -1 &&  int(flags & childFlag) == childFlag) || (int(childFlag) == -1 && handlesChildEvents))
+        if ((childFlag != -1 &&  int(flags & childFlag) == childFlag)
+            || (int(childFlag) == -1 && handlesChildEvents)
+            || (int(childFlag) == -2 && filtersDescendantEvents))
             return;
     }
 
@@ -902,12 +911,12 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
     }
 
-    if (QGraphicsWidget *w = isWidget ? static_cast<QGraphicsWidget *>(q) : q->parentWidget()) {
-        // Update the child focus chain; when reparenting a widget that has a
+    QGraphicsItem *lastSubFocusItem = subFocusItem;
+    if (subFocusItem) {
+        // Update the child focus chain; when reparenting an item that has a
         // focus child, ensure that that focus child clears its focus child
         // chain from our parents before it's reparented.
-        if (QGraphicsWidget *focusChild = w->focusWidget())
-            focusChild->clearFocus();
+        subFocusItem->clearFocus();
     }
 
     // We anticipate geometry changes. If the item is deleted, it will be
@@ -953,6 +962,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         }
 
         // Inherit ancestor flags from the new parent.
+        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -969,6 +979,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     } else {
         // Inherit ancestor flags from the new parent.
+        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -992,6 +1003,21 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     // Resolve depth.
     resolveDepth(parent ? parent->d_ptr->depth : -1);
     dirtySceneTransform = 1;
+
+    // Restore the sub focus chain.
+    if (lastSubFocusItem)
+        lastSubFocusItem->d_ptr->setSubFocus();
+
+    // Auto-update focus proxy. The closest parent that detects
+    // focus proxies is updated as the proxy gains or loses focus.
+    QGraphicsItem *p = newParent;
+    while (p) {
+        if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
+            p->setFocusProxy(q);
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
@@ -1228,7 +1254,7 @@ void QGraphicsItem::setGroup(QGraphicsItemGroup *group)
     Returns a pointer to this item's parent item. If this item does not have a
     parent, 0 is returned.
 
-    \sa setParentItem(), children()
+    \sa setParentItem(), childItems()
 */
 QGraphicsItem *QGraphicsItem::parentItem() const
 {
@@ -1251,7 +1277,7 @@ QGraphicsItem *QGraphicsItem::topLevelItem() const
 }
 
 /*!
-    \since 4.4
+    \since 4.6
 
     Returns a pointer to the item's parent, cast to a QGraphicsObject. returns 0 if the parent item
     is not a QGraphicsObject.
@@ -1344,7 +1370,7 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
     the parent. You should not \l{QGraphicsScene::addItem()}{add} the
     item to the scene yourself.
 
-    \sa parentItem(), children()
+    \sa parentItem(), childItems()
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *parent)
 {
@@ -2289,10 +2315,10 @@ bool QGraphicsItem::acceptsHoverEvents() const
     stays "hovered" until the cursor leaves its area, including its
     children's areas.
 
-    If a parent item handles child events (setHandlesChildEvents()), it will
-    receive hover move, drag move, and drop events as the cursor passes
-    through its children, but it does not receive hover enter and hover leave,
-    nor drag enter and drag leave events on behalf of its children.
+    If a parent item handles child events, it will receive hover move,
+    drag move, and drop events as the cursor passes through its
+    children, but it does not receive hover enter and hover leave, nor
+    drag enter and drag leave events on behalf of its children.
 
     A QGraphicsWidget with window decorations will accept hover events
     regardless of the value of acceptHoverEvents().
@@ -2323,8 +2349,8 @@ void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
 
 /*! \since 4.6
 
-    Returns true if an item accepts touch events (QTouchEvent); otherwise, returns false. By
-    default, items do not accept touch events.
+    Returns true if an item accepts \l{QTouchEvent}{touch events};
+    otherwise, returns false. By default, items do not accept touch events.
 
     \sa setAcceptTouchEvents()
 */
@@ -2336,7 +2362,7 @@ bool QGraphicsItem::acceptTouchEvents() const
 /*!
     \since 4.6
 
-    If \a enabled is true, this item will accept touch events;
+    If \a enabled is true, this item will accept \l{QTouchEvent}{touch events};
     otherwise, it will ignore them. By default, items do not accept
     touch events.
 */
@@ -2352,6 +2378,44 @@ void QGraphicsItem::setAcceptTouchEvents(bool enabled)
 }
 
 /*!
+    \since 4.6
+
+    Returns true if this item filters child events (i.e., all events
+    intended for any of its children are instead sent to this item);
+    otherwise, false is returned.
+
+    The default value is false; child events are not filtered.
+
+    \sa setFiltersChildEvents()
+*/
+bool QGraphicsItem::filtersChildEvents() const
+{
+    return d_ptr->filtersDescendantEvents;
+}
+
+/*!
+    \since 4.6
+
+    If \a enabled is true, this item is set to filter all events for
+    all its children (i.e., all events intented for any of its
+    children are instead sent to this item); otherwise, if \a enabled
+    is false, this item will only handle its own events. The default
+    value is false.
+
+    \sa filtersChildEvents()
+*/
+void QGraphicsItem::setFiltersChildEvents(bool enabled)
+{
+    if (d_ptr->filtersDescendantEvents == enabled)
+        return;
+
+    d_ptr->filtersDescendantEvents = enabled;
+    d_ptr->updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
+}
+
+/*!
+    \obsolete
+
     Returns true if this item handles child events (i.e., all events
     intended for any of its children are instead sent to this item);
     otherwise, false is returned.
@@ -2372,6 +2436,8 @@ bool QGraphicsItem::handlesChildEvents() const
 }
 
 /*!
+    \obsolete
+
     If \a enabled is true, this item is set to handle all events for
     all its children (i.e., all events intented for any of its
     children are instead sent to this item); otherwise, if \a enabled
@@ -2399,70 +2465,163 @@ void QGraphicsItem::setHandlesChildEvents(bool enabled)
 }
 
 /*!
-    Returns true if this item has keyboard input focus; otherwise, returns
-    false.
+    Returns true if this item or its \l{focusProxy()}{focus proxy} has keyboard
+    input focus; otherwise, returns false.
 
-    \sa QGraphicsScene::focusItem(), setFocus(), QGraphicsScene::setFocusItem()
+    \sa focusItem(), setFocus(), QGraphicsScene::setFocusItem()
 */
 bool QGraphicsItem::hasFocus() const
 {
+    if (d_ptr->focusProxy)
+        return d_ptr->focusProxy->hasFocus();
     return (d_ptr->scene && d_ptr->scene->focusItem() == this);
 }
 
 /*!
     Gives keyboard input focus to this item. The \a focusReason argument will
-    be passed into any focus event generated by this function; it is used to
-    give an explanation of what caused the item to get focus.
+    be passed into any \l{QFocusEvent}{focus event} generated by this function;
+    it is used to give an explanation of what caused the item to get focus.
 
-    Only items that set the ItemIsFocusable flag can accept keyboard focus.
-
-    If this item is not visible (i.e., isVisible() returns false), not
-    enabled, not associated with a scene, or if it already has input focus,
-    this function will do nothing.
-
-    As a result of calling this function, this item will receive a focus in
-    event with \a focusReason. If another item already has focus, that item
-    will first receive a focus out event indicating that it has lost input
+    Only enabled items that set the ItemIsFocusable flag can accept keyboard
     focus.
 
-    \sa clearFocus(), hasFocus()
+    If this item is not visible, or not associated with a scene, it will not
+    gain immediate input focus. However, it will be registered as the preferred
+    focus item for its subtree of items, should it later become visible.
+
+    As a result of calling this function, this item will receive a 
+    \l{focusInEvent()}{focus in event} with \a focusReason. If another item
+    already has focus, that item will first receive a \l{focusOutEvent()}
+    {focus out event} indicating that it has lost input focus.
+
+    \sa clearFocus(), hasFocus(), focusItem(), focusProxy()
 */
 void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 {
-    if (!d_ptr->scene || !isEnabled() || hasFocus() || !(d_ptr->flags & ItemIsFocusable))
+    // Disabled / unfocusable items cannot accept focus.
+    if (!isEnabled() || !(d_ptr->flags & QGraphicsItem::ItemIsFocusable))
         return;
-    if (isVisible()) {
-        // Visible items immediately gain focus from scene.
-        d_ptr->scene->setFocusItem(this, focusReason);
-    } else if (d_ptr->isWidget) {
-        // Just set up subfocus.
-        static_cast<QGraphicsWidget *>(this)->d_func()->setFocusWidget();
+
+    // Find focus proxy.
+    QGraphicsItem *f = this;
+    while (f->d_ptr->focusProxy)
+        f = f->d_ptr->focusProxy;
+
+    // Return if it already has focus.
+    if (d_ptr->scene && d_ptr->scene->focusItem() == f)
+        return;
+
+    // Update the child focus chain.
+    d_ptr->setSubFocus();
+
+    // Update the scene's focus item.
+    if (d_ptr->scene) {
+        QGraphicsWidget *w = window();
+        if (!w || w->isActiveWindow()) {
+            // Visible items immediately gain focus from scene.
+            d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
+        }
     }
 }
 
 /*!
     Takes keyboard input focus from the item.
 
-    If it has focus, a focus out event is sent to this item to tell it that it
-    is about to lose the focus.
+    If it has focus, a \l{focusOutEvent()}{focus out event} is sent to this item
+    to tell it that it is about to lose the focus.
 
     Only items that set the ItemIsFocusable flag, or widgets that set an
     appropriate focus policy, can accept keyboard focus.
 
-    \sa setFocus(), QGraphicsWidget::focusPolicy
+    \sa setFocus(), hasFocus(), QGraphicsWidget::focusPolicy
 */
 void QGraphicsItem::clearFocus()
 {
     if (!d_ptr->scene)
         return;
-    if (d_ptr->isWidget) {
-        // Invisible widget items with focus must explicitly clear subfocus.
-        static_cast<QGraphicsWidget *>(this)->d_func()->clearFocusWidget();
-    }
-    if (d_ptr->scene->focusItem() == this) {
+    // Invisible items with focus must explicitly clear subfocus.
+    d_ptr->clearSubFocus();
+    if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
         d_ptr->scene->setFocusItem(0);
     }
+}
+
+/*!
+    \since 4.6
+
+    Returns this item's focus proxy, or 0 if this item has no
+    focus proxy.
+
+    \sa setFocusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+*/
+QGraphicsItem *QGraphicsItem::focusProxy() const
+{
+    return d_ptr->focusProxy;
+}
+
+/*!
+    \since 4.6
+
+    Sets the item's focus proxy to \a item.
+
+    If an item has a focus proxy, the focus proxy will receive
+    input focus when the item gains input focus. The item itself
+    will still have focus (i.e., hasFocus() will return true),
+    but only the focus proxy will receive the keyboard input.
+
+    A focus proxy can itself have a focus proxy, and so on. In
+    such case, keyboard input will be handled by the outermost
+    focus proxy.
+
+    The focus proxy \a item must belong to the same scene as
+    this item.
+
+    \sa focusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+*/
+void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
+{
+    if (item == d_ptr->focusProxy)
+        return;
+    if (item == this) {
+        qWarning("QGraphicsItem::setFocusProxy: cannot assign self as focus proxy");
+        return;
+    }
+    if (item) {
+        if (item->d_ptr->scene != d_ptr->scene) {
+            qWarning("QGraphicsItem::setFocusProxy: focus proxy must be in same scene");
+            return;
+        }
+        for (QGraphicsItem *f = item->focusProxy(); f != 0; f = f->focusProxy()) {
+            if (f == this) {
+                qWarning("QGraphicsItem::setFocusProxy: %p is already in the focus proxy chain", item);
+                return;
+            }
+        }
+    }
+
+    QGraphicsItem *lastFocusProxy = d_ptr->focusProxy;
+    d_ptr->focusProxy = item;
+    if (d_ptr->scene) {
+        if (lastFocusProxy)
+            d_ptr->scene->d_func()->focusProxyReverseMap.remove(lastFocusProxy, this);
+        if (item)
+            d_ptr->scene->d_func()->focusProxyReverseMap.insert(item, this);
+    }
+}
+
+/*!
+    \since 4.6
+
+    If this item, a child or descendant of this item currently has input
+    focus, this function will return a pointer to that item. If
+    no descendant has input focus, 0 is returned.
+
+    \sa hasFocus(), setFocus(), QWidget::focusWidget()
+*/
+QGraphicsItem *QGraphicsItem::focusItem() const
+{
+    return d_ptr->subFocusItem;
 }
 
 /*!
@@ -2600,7 +2759,7 @@ void QGraphicsItem::ungrabKeyboard()
     For convenience, you can also call scenePos() to determine the
     item's position in scene coordinates, regardless of its parent.
 
-    \sa x(), y(), setPos(), matrix(), {The Graphics View Coordinate System}
+    \sa x(), y(), setPos(), transform(), {The Graphics View Coordinate System}
 */
 QPointF QGraphicsItem::pos() const
 {
@@ -2616,10 +2775,12 @@ QPointF QGraphicsItem::pos() const
 */
 
 /*!
-  Set's the \a x coordinate of the item's position. Equivalent to
-  calling setPos(x, y()).
+    \since 4.6
 
-  \sa x(), setPos()
+    Set's the \a x coordinate of the item's position. Equivalent to
+    calling setPos(x, y()).
+
+    \sa x(), setPos()
 */
 void QGraphicsItem::setX(qreal x)
 {
@@ -2635,10 +2796,12 @@ void QGraphicsItem::setX(qreal x)
 */
 
 /*!
-  Set's the \a y coordinate of the item's position. Equivalent to
-  calling setPos(x(), y).
+    \since 4.6
 
-  \sa x(), setPos()
+    Set's the \a y coordinate of the item's position. Equivalent to
+    calling setPos(x(), y).
+
+    \sa x(), setPos()
 */
 void QGraphicsItem::setY(qreal y)
 {
@@ -3136,7 +3299,7 @@ void QGraphicsItem::setShear(qreal sh, qreal sv)
 /*!
     \since 4.6
 
-    Returns the origin point used for transformation in item coordinate.
+    Returns the origin point for the transformation in item coordinates.
 
     The default is QPointF(0,0).
 
@@ -3152,7 +3315,7 @@ QPointF QGraphicsItem::transformOrigin() const
 /*!
     \since 4.6
 
-    Sets the \a origin for transformation in item coordinate
+    Sets the \a origin point for the transformation in item coordinates.
 
     \sa transformOrigin(), {Transformations}
 */
@@ -3173,9 +3336,9 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
     \since 4.6
     \overload
 
-    Sets the origin for the transformation to the point
-    composed of \a x and \a y.
-    
+    Sets the origin point for the transformation in item coordinates.
+    This is equivalent to calling setTransformOrigin(QPointF(\a x, \a y)).
+
     \sa setTransformOrigin(), {Transformations}
 */
 
@@ -4551,6 +4714,34 @@ void QGraphicsItemPrivate::ensureSceneTransform()
 
 /*!
     \internal
+*/
+void QGraphicsItemPrivate::setSubFocus()
+{
+    // Update focus child chain.
+    QGraphicsItem *item = q_ptr;
+    QGraphicsItem *parent = item;
+    bool hidden = !visible;
+    do {
+        parent->d_func()->subFocusItem = item;
+    } while (!parent->isWindow() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::clearSubFocus()
+{
+    // Reset focus child chain.
+    QGraphicsItem *parent = q_ptr;
+    do {
+        if (parent->d_ptr->subFocusItem != q_ptr)
+            break;
+        parent->d_ptr->subFocusItem = 0;
+    } while (!parent->isWindow() && (parent = parent->d_ptr->parent));
+}
+
+/*!
+    \internal
 
     Tells us if it is a proxy widget
 */
@@ -5916,7 +6107,7 @@ void QGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event)
     focus in events for this item. The default implementation calls
     ensureVisible().
 
-    \sa focusOutEvent(), sceneEvent()
+    \sa focusOutEvent(), sceneEvent(), setFocus()
 */
 void QGraphicsItem::focusInEvent(QFocusEvent *event)
 {
@@ -5927,7 +6118,7 @@ void QGraphicsItem::focusInEvent(QFocusEvent *event)
     This event handler, for event \a event, can be reimplemented to receive
     focus out events for this item. The default implementation does nothing.
 
-    \sa focusInEvent(), sceneEvent()
+    \sa focusInEvent(), sceneEvent(), setFocus()
 */
 void QGraphicsItem::focusOutEvent(QFocusEvent *event)
 {
@@ -9587,13 +9778,10 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     setParentItem().
 
     The boundingRect() function of QGraphicsItemGroup returns the
-    bounding rectangle of all items in the item group. In addition,
-    item groups have handlesChildEvents() enabled by default, so all
-    events sent to a member of the group go to the item group (i.e.,
-    selecting one item in a group will select them all).
-    QGraphicsItemGroup ignores the ItemIgnoresTransformations flag on its
-    children (i.e., with respect to the geometry of the group item, the
-    children are treated as if they were transformable).
+    bounding rectangle of all items in the item group.
+    QGraphicsItemGroup ignores the ItemIgnoresTransformations flag on
+    its children (i.e., with respect to the geometry of the group
+    item, the children are treated as if they were transformable).
 
     There are two ways to construct an item group. The easiest and
     most common approach is to pass a list of items (e.g., all
@@ -9923,6 +10111,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemAcceptsInputMethod:
         str = "ItemAcceptsInputMethod";
+        break;
+    case QGraphicsItem::ItemAutoDetectsFocusProxy:
+        str = "ItemAutoDetectsFocusProxy";
         break;
     }
     debug << str;

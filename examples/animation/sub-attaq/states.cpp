@@ -83,7 +83,7 @@ void PlayState::onEntry(QEvent *)
     machine = new QStateMachine(this);
 
     //This state is when player is playing
-    LevelState *levelState = new LevelState(scene, this, machine->rootState());
+    LevelState *levelState = new LevelState(scene, this, machine);
 
     //This state is when the player is actually playing but the game is not paused
     QState *playingState = new QState(levelState);
@@ -105,10 +105,10 @@ void PlayState::onEntry(QEvent *)
     pauseState->addTransition(pressPpause);
 
     //This state is when player have lost
-    LostState *lostState = new LostState(scene, this, machine->rootState());
+    LostState *lostState = new LostState(scene, this, machine);
 
     //This state is when player have won
-    WinState *winState = new WinState(scene, this, machine->rootState());
+    WinState *winState = new WinState(scene, this, machine);
 
     //The boat has been destroyed then the game is finished
     levelState->addTransition(scene->boat, SIGNAL(boatExecutionFinished()),lostState);
@@ -136,7 +136,7 @@ void PlayState::onEntry(QEvent *)
     machine->setInitialState(levelState);
 
     //Final state
-    QFinalState *final = new QFinalState(machine->rootState());
+    QFinalState *final = new QFinalState(machine);
 
     //This transition is triggered when the player press space after completing a level
     CustomSpaceTransition *spaceTransition = new CustomSpaceTransition(scene->views().at(0), this, QEvent::KeyPress, Qt::Key_Space);

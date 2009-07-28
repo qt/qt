@@ -173,6 +173,10 @@ private slots:
     void disconnectFromHostWhenConnecting();
     void disconnectFromHostWhenConnected();
     void resetProxy();
+    void ignoreSslErrorsList_data();
+    void ignoreSslErrorsList();
+    void ignoreSslErrorsListWithSlot_data();
+    void ignoreSslErrorsListWithSlot();
 
     static void exitLoop()
     {
@@ -194,9 +198,11 @@ protected slots:
         if (errors.size() == 1 && errors.first().error() == QSslError::CertificateUntrusted)
             socket->ignoreSslErrors();
     }
+    void ignoreErrorListSlot(const QList<QSslError> &errors);
 
 private:
     QSslSocket *socket;
+    QList<QSslError> storedExpectedSslErrors;
 #endif // QT_NO_OPENSSL
 private:
     static int loopLevel;
@@ -609,7 +615,7 @@ void tst_QSslSocket::connectToHostEncryptedWithVerificationPeerName()
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
 
-    socket->addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem"));
+    socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(&socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -1417,9 +1423,7 @@ void tst_QSslSocket::verifyMode()
     QVERIFY(!socket.waitForEncrypted());
 
     QList<QSslError> expectedErrors = QList<QSslError>()
-                                      << QSslError(QSslError::UnableToGetLocalIssuerCertificate, socket.peerCertificate())
-                                      << QSslError(QSslError::CertificateUntrusted, socket.peerCertificate())
-                                      << QSslError(QSslError::UnableToVerifyFirstCertificate, socket.peerCertificate());
+                                      << QSslError(QSslError::SelfSignedCertificate, socket.peerCertificate());
     QCOMPARE(socket.sslErrors(), expectedErrors);
     socket.abort();
 
@@ -1537,6 +1541,82 @@ void tst_QSslSocket::resetProxy()
     socket2.setProxy(goodProxy);
     socket2.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY2(socket2.waitForConnected(10000), qPrintable(socket.errorString()));
+}
+
+void tst_QSslSocket::ignoreSslErrorsList_data()
+{
+    QTest::addColumn<QList<QSslError> >("expectedSslErrors");
+    QTest::addColumn<int>("expectedSslErrorSignalCount");
+
+    // construct the list of errors that we will get with the SSL handshake and that we will ignore
+    QList<QSslError> expectedSslErrors;
+    // fromPath gives us a list of certs, but it actually only contains one
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
+    QSslError wrongError(QSslError::SelfSignedCertificate);
+
+
+    QTest::newRow("SSL-failure-empty-list") << expectedSslErrors << 1;
+    expectedSslErrors.append(wrongError);
+    QTest::newRow("SSL-failure-wrong-error") << expectedSslErrors << 1;
+    expectedSslErrors.append(rightError);
+    QTest::newRow("allErrorsInExpectedList1") << expectedSslErrors << 0;
+    expectedSslErrors.removeAll(wrongError);
+    QTest::newRow("allErrorsInExpectedList2") << expectedSslErrors << 0;
+    expectedSslErrors.removeAll(rightError);
+    QTest::newRow("SSL-failure-empty-list-again") << expectedSslErrors << 1;
+}
+
+void tst_QSslSocket::ignoreSslErrorsList()
+{
+    QSslSocket socket;
+    connect(&socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+
+//    this->socket = &socket;
+    QSslCertificate cert;
+
+    QFETCH(QList<QSslError>, expectedSslErrors);
+    socket.ignoreSslErrors(expectedSslErrors);
+
+    QFETCH(int, expectedSslErrorSignalCount);
+    QSignalSpy sslErrorsSpy(&socket, SIGNAL(error(QAbstractSocket::SocketError)));
+
+    socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+
+    bool expectEncryptionSuccess = (expectedSslErrorSignalCount == 0);
+    QCOMPARE(socket.waitForEncrypted(10000), expectEncryptionSuccess);
+    QCOMPARE(sslErrorsSpy.count(), expectedSslErrorSignalCount);
+}
+
+void tst_QSslSocket::ignoreSslErrorsListWithSlot_data()
+{
+    ignoreSslErrorsList_data();
+}
+
+// this is not a test, just a slot called in the test below
+void tst_QSslSocket::ignoreErrorListSlot(const QList<QSslError> &)
+{
+    socket->ignoreSslErrors(storedExpectedSslErrors);
+}
+
+void tst_QSslSocket::ignoreSslErrorsListWithSlot()
+{
+    QSslSocket socket;
+    this->socket = &socket;
+
+    QFETCH(QList<QSslError>, expectedSslErrors);
+    // store the errors to ignore them later in the slot connected below
+    storedExpectedSslErrors = expectedSslErrors;
+    connect(&socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+    connect(&socket, SIGNAL(sslErrors(const QList<QSslError> &)),
+            this, SLOT(ignoreErrorListSlot(const QList<QSslError> &)));
+    socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+
+    QFETCH(int, expectedSslErrorSignalCount);
+    bool expectEncryptionSuccess = (expectedSslErrorSignalCount == 0);
+    QCOMPARE(socket.waitForEncrypted(10000), expectEncryptionSuccess);
 }
 
 #endif // QT_NO_OPENSSL

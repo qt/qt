@@ -79,6 +79,7 @@ QT_BEGIN_NAMESPACE
     \class QTextObjectInterface
     \brief The QTextObjectInterface class allows drawing of
            custom text objects in \l{QTextDocument}s.
+    \since 4.5
 
     A text object describes the structure of one or more elements in a
     text document; for instance, images imported from HTML are

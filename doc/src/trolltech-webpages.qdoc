@@ -165,11 +165,6 @@
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/supported-platforms/supported-platforms/
-    \title Qt 4 Supported Platforms
-*/
-
-/*!
     \externalpage http://www.qtsoftware.com/products/qtopia/
     \title Qt Extended
 */
@@ -242,4 +237,9 @@
 /*!
     \externalpage http://www.qtsoftware.com/developer/faqs/qt/installation
     \title Installation FAQ
+*/
+
+/*!
+    \externalpage http://qt.gitorious.org
+    \title Public Qt Repository
 */

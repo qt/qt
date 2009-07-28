@@ -854,7 +854,7 @@ QObject::~QObject()
 QObjectPrivate::Connection::~Connection()
 {
     if (argumentTypes != &DIRECT_CONNECTION_ONLY)
-        delete [] argumentTypes;
+        delete [] static_cast<int *>(argumentTypes);
 }
 
 

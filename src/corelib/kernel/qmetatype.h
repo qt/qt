@@ -79,7 +79,9 @@ public:
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
         QCursor = 74, QSizePolicy = 75, QKeySequence = 76, QPen = 77,
         QTextLength = 78, QTextFormat = 79, QMatrix = 80, QTransform = 81,
-        LastGuiType = 81 /* QTransform */,
+        QMatrix4x4 = 82, QVector2D = 83, QVector3D = 84, QVector4D = 85,
+        QQuaternion = 86,
+        LastGuiType = 86 /* QQuaternion */,
 
         FirstCoreExtType = 128 /* VoidStar */,
         VoidStar = 128, Long = 129, Short = 130, Char = 131, ULong = 132,
@@ -292,6 +294,11 @@ class QTextLength;
 class QTextFormat;
 class QMatrix;
 class QTransform;
+class QMatrix4x4;
+class QVector2D;
+class QVector3D;
+class QVector4D;
+class QQuaternion;
 
 QT_END_NAMESPACE
 
@@ -354,6 +361,11 @@ Q_DECLARE_BUILTIN_METATYPE(QTextLength, QTextLength)
 Q_DECLARE_BUILTIN_METATYPE(QTextFormat, QTextFormat)
 Q_DECLARE_BUILTIN_METATYPE(QMatrix, QMatrix)
 Q_DECLARE_BUILTIN_METATYPE(QTransform, QTransform)
+Q_DECLARE_BUILTIN_METATYPE(QMatrix4x4, QMatrix4x4)
+Q_DECLARE_BUILTIN_METATYPE(QVector2D, QVector2D)
+Q_DECLARE_BUILTIN_METATYPE(QVector3D, QVector3D)
+Q_DECLARE_BUILTIN_METATYPE(QVector4D, QVector4D)
+Q_DECLARE_BUILTIN_METATYPE(QQuaternion, QQuaternion)
 
 QT_END_HEADER
 

@@ -56,7 +56,7 @@
 #ifndef QT_NO_WIZARD
 #ifndef QT_NO_STYLE_WINDOWSVISTA
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <qobject.h>
 #include <qwidget.h>
 #include <qabstractbutton.h>

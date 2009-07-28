@@ -36,6 +36,7 @@ embedded:SUBDIRS += qws
 	contains(QT_BUILD_PARTS, tools):SUBDIRS += qtestlib
 }
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
+contains(QT_CONFIG, openvg): SUBDIRS += openvg
 contains(QT_CONFIG, dbus): SUBDIRS += dbus
 win32: SUBDIRS += activeqt
 contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns

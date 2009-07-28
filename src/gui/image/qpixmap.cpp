@@ -380,6 +380,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
 
 /*!
     \fn QPixmap::scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed)
+    \since 4.6
 
     This convenience function is equivalent to calling QPixmap::scroll(\a dx,
     \a dy, QRect(\a x, \a y, \a width, \a height), \a exposed).
@@ -388,6 +389,8 @@ QPixmap QPixmap::copy(const QRect &rect) const
 */
 
 /*!
+    \since 4.6
+
     Scrolls the area \a rect of this pixmap by (\a dx, \a dy). The exposed
     region is left unchanged. You can optionally pass a pointer to an empty
     QRegion to get the region that is \a exposed by the scroll operation.
@@ -668,12 +671,7 @@ void QPixmap::resize_helper(const QSize &s)
         p.drawPixmap(0, 0, *this, 0, 0, qMin(width(), w), qMin(height(), h));
     }
 
-#if defined(Q_WS_MAC)
-#ifndef QT_MAC_NO_QUICKDRAW
-    if(macData && macData->qd_alpha)
-        macData->macQDUpdateAlpha();
-#endif
-#elif defined(Q_WS_X11)
+#if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
         QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data);
         pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
@@ -1569,24 +1567,24 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     designed and optimized for showing images on screen. QBitmap is
     only a convenience class that inherits QPixmap, ensuring a depth
     of 1. The isQBitmap() function returns true if a QPixmap object is
-    really a bitmap, otherwise returns false. Finally, the QPicture class is a
-    paint device that records and replays QPainter commands.
+    really a bitmap, otherwise returns false. Finally, the QPicture class
+    is a paint device that records and replays QPainter commands.
 
     A QPixmap can easily be displayed on the screen using QLabel or
     one of QAbstractButton's subclasses (such as QPushButton and
     QToolButton). QLabel has a pixmap property, whereas
-    QAbstractButton has an icon property. And because QPixmap is a
-    QPaintDevice subclass, QPainter can be used to draw directly onto
-    pixmaps.
+    QAbstractButton has an icon property.
 
     In addition to the ordinary constructors, a QPixmap can be
     constructed using the static grabWidget() and grabWindow()
     functions which creates a QPixmap and paints the given widget, or
-    window, in it.
+    window, into it.
 
-    Note that the pixel data in a pixmap is internal and is managed by
-    the underlying window system. Pixels can only be accessed through
-    QPainter functions or by converting the QPixmap to a QImage.
+    QPixmap objects can be passed around by value since the QPixmap
+    class uses implicit data sharing. For more information, see the \l
+    {Implicit Data Sharing} documentation. QPixmap objects can also be
+    streamed.
+
     Depending on the system, QPixmap is stored using a RGB32 or a
     premultiplied alpha format. If the image has an alpha channel, and
     if the system allows, the preferred format is premultiplied alpha.
@@ -1596,6 +1594,13 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     have an equivalent internal representation, i.e. both QImage and
     QPixmap are stored on the client side and don't use any GDI
     resources).
+
+    Note that the pixel data in a pixmap is internal and is managed by
+    the underlying window system. Because QPixmap is a QPaintDevice
+    subclass, QPainter can be used to draw directly onto pixmaps.
+    Pixels can only be accessed through QPainter functions or by
+    converting the QPixmap to a QImage. However, the fill() function
+    is available for initializing the entire pixmap with a given color.
 
     There are functions to convert between QImage and
     QPixmap. Typically, the QImage class is used to load an image
@@ -1610,11 +1615,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     obtain a variety of information about the pixmap. In addition,
     there are several functions that enables transformation of the
     pixmap.
-
-    QPixmap objects can be passed around by value since the QPixmap
-    class uses implicit data sharing. For more information, see the \l
-    {Implicit Data Sharing} documentation. QPixmap objects can also be
-    streamed.
 
     \tableofcontents
 
@@ -1672,12 +1672,15 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     The hasAlphaChannel() returns true if the pixmap has a format that
     respects the alpha channel, otherwise returns false, while the
     hasAlpha() function returns true if the pixmap has an alpha
-    channel \e or a mask (otherwise false).
+    channel \e or a mask (otherwise false). The mask() function returns
+    the mask as a QBitmap object, which can be set using setMask().
 
-    The alphaChannel() function returns the alpha channel as a new
-    QPixmap object, while the mask() function returns the mask as a
-    QBitmap object. The alpha channel and mask can be set using the
-    setAlphaChannel() and setMask() functions, respectively.
+    The createHeuristicMask() function creates and returns a 1-bpp
+    heuristic mask (i.e. a QBitmap) for this pixmap. It works by
+    selecting a color from one of the corners and then chipping away
+    pixels of that color, starting at all the edges. The
+    createMaskFromColor() function creates and returns a mask (i.e. a
+    QBitmap) for the pixmap based on a given color.
 
     \row
     \o Low-level information
@@ -1715,14 +1718,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     \section1 Pixmap Transformations
 
     QPixmap supports a number of functions for creating a new pixmap
-    that is a transformed version of the original: The
-    createHeuristicMask() function creates and returns a 1-bpp
-    heuristic mask (i.e. a QBitmap) for this pixmap. It works by
-    selecting a color from one of the corners and then chipping away
-    pixels of that color, starting at all the edges. The
-    createMaskFromColor() function creates and returns a mask (i.e. a
-    QBitmap) for the pixmap based on a given color.
-
+    that is a transformed version of the original:
 
     The scaled(), scaledToWidth() and scaledToHeight() functions
     return scaled copies of the pixmap, while the copy() function
@@ -1736,11 +1732,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     transformed points of the original pixmap. The static trueMatrix()
     function returns the actual matrix used for transforming the
     pixmap.
-
-    There are also functions for changing attributes of a pixmap.
-    in-place: The fill() function fills the entire image with the
-    given color, the setMask() function sets a mask bitmap, and the
-    setAlphaChannel() function sets the pixmap's alpha channel.
 
     \sa QBitmap, QImage, QImageReader, QImageWriter
 */
@@ -1760,7 +1751,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     Returns true if this pixmap has an alpha channel, \e or has a
     mask, otherwise returns false.
 
-    \sa hasAlphaChannel(), alphaChannel(), mask()
+    \sa hasAlphaChannel(), mask()
 */
 bool QPixmap::hasAlpha() const
 {
@@ -1771,7 +1762,7 @@ bool QPixmap::hasAlpha() const
     Returns true if the pixmap has a format that respects the alpha
     channel, otherwise returns false.
 
-    \sa alphaChannel(), hasAlpha()
+    \sa hasAlpha()
 */
 bool QPixmap::hasAlphaChannel() const
 {
@@ -1779,7 +1770,7 @@ bool QPixmap::hasAlphaChannel() const
 }
 
 /*!
-  \reimp
+    \internal
 */
 int QPixmap::metric(PaintDeviceMetric metric) const
 {
@@ -1788,6 +1779,7 @@ int QPixmap::metric(PaintDeviceMetric metric) const
 
 /*!
     \fn void QPixmap::setAlphaChannel(const QPixmap &alphaChannel)
+    \obsolete
 
     Sets the alpha channel of this pixmap to the given \a alphaChannel
     by converting the \a alphaChannel into 32 bit and using the
@@ -1825,6 +1817,8 @@ void QPixmap::setAlphaChannel(const QPixmap &alphaChannel)
 }
 
 /*!
+    \obsolete
+
     Returns the alpha channel of the pixmap as a new grayscale QPixmap in which
     each pixel's red, green, and blue values are given the alpha value of the
     original pixmap. The color depth of the returned pixmap is the system depth
@@ -1843,7 +1837,9 @@ void QPixmap::setAlphaChannel(const QPixmap &alphaChannel)
     \image alphachannelimage.png The pixmap and channelImage QPixmaps
 
     \warning This is an expensive operation. The alpha channel of the
-    pixmap is extracted dynamically from the pixeldata.
+    pixmap is extracted dynamically from the pixeldata. Most usecases of this
+    function are covered by QPainter and compositionModes which will normally
+    execute faster.
 
     \sa setAlphaChannel(), {QPixmap#Pixmap Information}{Pixmap
     Information}
@@ -1854,7 +1850,7 @@ QPixmap QPixmap::alphaChannel() const
 }
 
 /*!
-  \reimp
+    \internal
 */
 QPaintEngine *QPixmap::paintEngine() const
 {
@@ -1864,7 +1860,7 @@ QPaintEngine *QPixmap::paintEngine() const
 /*!
     \fn QBitmap QPixmap::mask() const
 
-    Extracts a bitmap mask from the pixmap's alphachannel.
+    Extracts a bitmap mask from the pixmap's alpha channel.
 
     \warning This is potentially an expensive operation. The mask of
     the pixmap is extracted dynamically from the pixeldata.
@@ -1944,11 +1940,6 @@ void QPixmap::detach()
 
     if (data->ref != 1) {
         *this = copy();
-#if defined(Q_WS_MAC) && !defined(QT_MAC_NO_QUICKDRAW)
-        if (id == QPixmapData::MacClass) {
-            macData->qd_alpha = 0;
-        }
-#endif
     }
     ++data->detach_no;
 

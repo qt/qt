@@ -514,7 +514,7 @@ bool QLocalSocket::waitForReadyRead(int msecs)
             return false;
     }
 
-    qWarning("QLocalSocket::waitForReadyRead WaitForSingleObject failed with error code %d.", GetLastError());
+    qWarning("QLocalSocket::waitForReadyRead WaitForSingleObject failed with error code %d.", int(GetLastError()));
     return false;
 }
 

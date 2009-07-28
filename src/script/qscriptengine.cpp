@@ -935,7 +935,7 @@ QScriptSyntaxCheckResult QScriptEngine::checkSyntax(const QString &program)
   the file name is accessible through the "fileName" property if it's
   provided with this function.
 
-  \sa canEvaluate(), hasUncaughtException(), isEvaluating(), abortEvaluation()
+  \sa checkSyntax(), hasUncaughtException(), isEvaluating(), abortEvaluation()
 */
 QScriptValue QScriptEngine::evaluate(const QString &program, const QString &fileName, int lineNumber)
 {

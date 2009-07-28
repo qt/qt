@@ -264,7 +264,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     HINSTANCE appinst  = qWinAppInst();
     HWND parentw, destroyw = 0;
-    WId id;
+    WId id = 0;
 
     QString windowClassName = qt_reg_winclass(q);
 

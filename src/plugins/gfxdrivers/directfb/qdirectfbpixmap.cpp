@@ -345,6 +345,10 @@ QImage QDirectFBPixmapData::toImage() const
     if (!dfbSurface)
         return QImage();
 
+#if 0
+    // In later versions of DirectFB one can set a flag to tell
+    // DirectFB not to move the surface to videomemory. When that
+    // happens we can use this (hopefully faster) codepath
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
     QImage ret(w, h, QDirectFBScreen::getImageFormat(dfbSurface));
     if (IDirectFBSurface *imgSurface = screen->createDFBSurface(ret, QDirectFBScreen::DontTrackSurface)) {
@@ -361,6 +365,7 @@ QImage QDirectFBPixmapData::toImage() const
         imgSurface->Release(imgSurface);
         return ret;
     }
+#endif
 #endif
 
     QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
@@ -385,7 +390,7 @@ QImage *QDirectFBPixmapData::buffer()
     return lockedImage;
 }
 
-QImage * QDirectFBPixmapData::buffer(uint lockFlags)
+QImage * QDirectFBPixmapData::buffer(DFBSurfaceLockFlags lockFlags)
 {
     lockDirectFB(lockFlags);
     return lockedImage;

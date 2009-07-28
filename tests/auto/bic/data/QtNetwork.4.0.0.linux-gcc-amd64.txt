@@ -59,145 +59,37 @@ Class QBool
    base size=1 base align=1
 QBool (0x2aaaac20f1c0) 0
 
-Class QTypeInfo<bool>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<bool> (0x2aaaac2260e0) 0 empty
 
-Class QTypeInfo<char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<char> (0x2aaaac226380) 0 empty
 
-Class QTypeInfo<signed char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<signed char> (0x2aaaac226620) 0 empty
 
-Class QTypeInfo<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<unsigned char> (0x2aaaac2268c0) 0 empty
 
-Class QTypeInfo<short int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<short int> (0x2aaaac226b60) 0 empty
 
-Class QTypeInfo<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<short unsigned int> (0x2aaaac226e00) 0 empty
 
-Class QTypeInfo<int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<int> (0x2aaaac2370e0) 0 empty
 
-Class QTypeInfo<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<unsigned int> (0x2aaaac237380) 0 empty
 
-Class QTypeInfo<long int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long int> (0x2aaaac237620) 0 empty
 
-Class QTypeInfo<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long unsigned int> (0x2aaaac2378c0) 0 empty
 
-Class QTypeInfo<long long int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long long int> (0x2aaaac237b60) 0 empty
 
-Class QTypeInfo<long long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long long unsigned int> (0x2aaaac237e00) 0 empty
 
-Class QTypeInfo<float>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<float> (0x2aaaac2490e0) 0 empty
 
-Class QTypeInfo<double>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<double> (0x2aaaac249380) 0 empty
 
-Class QTypeInfo<long double>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<long double> (0x2aaaac249620) 0 empty
 
 Class QFlag
    size=4 align=4
    base size=4 base align=4
 QFlag (0x2aaaac249850) 0
 
-Class QFlags<Qt::MouseButton>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::MouseButton> (0x2aaaac275930) 0
 
-Class QFlags<Qt::Orientation>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::Orientation> (0x2aaaac275d20) 0
 
-Class QFlags<Qt::KeyboardModifier>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::KeyboardModifier> (0x2aaaac301150) 0
 
-Class QFlags<Qt::WindowType>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::WindowType> (0x2aaaac301540) 0
 
-Class QFlags<Qt::AlignmentFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::AlignmentFlag> (0x2aaaac301930) 0
 
-Class QFlags<Qt::ImageConversionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ImageConversionFlag> (0x2aaaac301d20) 0
 
-Class QFlags<Qt::DockWidgetArea>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::DockWidgetArea> (0x2aaaac346150) 0
 
-Class QFlags<Qt::ToolBarArea>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ToolBarArea> (0x2aaaac346540) 0
 
-Class QFlags<Qt::WindowState>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::WindowState> (0x2aaaac346930) 0
 
-Class QFlags<Qt::DropAction>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::DropAction> (0x2aaaac346d20) 0
 
-Class QFlags<Qt::ItemFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::ItemFlag> (0x2aaaac393150) 0
 
-Class QFlags<Qt::MatchFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<Qt::MatchFlag> (0x2aaaac393540) 0
 
 Class QInternal
    size=1 align=1
@@ -215,10 +107,6 @@ Class QGenericReturnArgument
 QGenericReturnArgument (0x2aaaac393f50) 0
   QGenericArgument (0x2aaaac3c3000) 0
 
-Class QMetaObject::<anonymous struct>
-   size=32 align=8
-   base size=32 base align=8
-QMetaObject::<anonymous struct> (0x2aaaac3c3850) 0
 
 Class QMetaObject
    size=32 align=8
@@ -235,10 +123,6 @@ Class QChar
    base size=2 base align=2
 QChar (0x2aaaac3fb4d0) 0
 
-Class QTypeInfo<QChar>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QChar> (0x2aaaac431540) 0 empty
 
 Class QBasicAtomic
    size=4 align=4
@@ -271,10 +155,6 @@ Class QByteRef
    base size=12 base align=8
 QByteRef (0x2aaaac552b60) 0
 
-Class QTypeInfo<QByteArray>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QByteArray> (0x2aaaac5dfbd0) 0 empty
 
 Class QString::Null
    size=1 align=1
@@ -291,10 +171,6 @@ Class QString
    base size=8 base align=8
 QString (0x2aaaac5dfee0) 0
 
-Class QFlags<QString::SectionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QString::SectionFlag> (0x2aaaac659770) 0
 
 Class QLatin1String
    size=8 align=8
@@ -312,10 +188,6 @@ Class QConstString
 QConstString (0x2aaaac8a9a10) 0
   QString (0x2aaaac8a9a80) 0
 
-Class QTypeInfo<QString>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QString> (0x2aaaac8bd000) 0 empty
 
 Class QListData::Data
    size=32 align=8
@@ -327,15 +199,7 @@ Class QListData
    base size=8 base align=8
 QListData (0x2aaaac8e0ee0) 0
 
-Class QList<QObject*>::<anonymous union>
-   size=8 align=8
-   base size=8 base align=8
-QList<QObject*>::<anonymous union> (0x2aaaaca00e00) 0
 
-Class QList<QObject*>
-   size=8 align=8
-   base size=8 base align=8
-QList<QObject*> (0x2aaaaca00cb0) 0
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -427,10 +291,6 @@ QIODevice (0x2aaaaca8d2a0) 0
   QObject (0x2aaaaca8d310) 0
       primary-for QIODevice (0x2aaaaca8d2a0)
 
-Class QFlags<QIODevice::OpenModeFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QIODevice::OpenModeFlag> (0x2aaaaca8de70) 0
 
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
@@ -455,10 +315,6 @@ Class QMapData
    base size=128 base align=8
 QMapData (0x2aaaacb2fa10) 0
 
-Class QFlags<QTextCodec::ConversionFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextCodec::ConversionFlag> (0x2aaaacc4b930) 0
 
 Class QTextCodec::ConverterState
    size=32 align=8
@@ -483,15 +339,7 @@ Class QTextCodec
 QTextCodec (0x2aaaacc4b690) 0 nearly-empty
     vptr=((& QTextCodec::_ZTV10QTextCodec) + 16u)
 
-Class QList<QByteArray>::<anonymous union>
-   size=8 align=8
-   base size=8 base align=8
-QList<QByteArray>::<anonymous union> (0x2aaaacc89230) 0
 
-Class QList<QByteArray>
-   size=8 align=8
-   base size=8 base align=8
-QList<QByteArray> (0x2aaaacc890e0) 0
 
 Class QTextEncoder
    size=40 align=8
@@ -503,30 +351,10 @@ Class QTextDecoder
    base size=40 base align=8
 QTextDecoder (0x2aaaacc89f50) 0
 
-Class <anonymous struct>
-   size=8 align=4
-   base size=8 base align=4
-<anonymous struct> (0x2aaaaccc53f0) 0
 
-Class <anonymous struct>::<anonymous union>
-   size=4 align=4
-   base size=4 base align=4
-<anonymous struct>::<anonymous union> (0x2aaaaccc55b0) 0
 
-Class <anonymous struct>
-   size=8 align=4
-   base size=8 base align=4
-<anonymous struct> (0x2aaaaccc54d0) 0
 
-Class <anonymous struct>
-   size=16 align=8
-   base size=16 base align=8
-<anonymous struct> (0x2aaaaccc5690) 0
 
-Class <anonymous struct>
-   size=16 align=8
-   base size=16 base align=8
-<anonymous struct> (0x2aaaaccc5770) 0
 
 Class __gconv_trans_data
    size=40 align=8
@@ -548,15 +376,7 @@ Class __gconv_info
    base size=16 base align=8
 __gconv_info (0x2aaaaccc5a80) 0
 
-Class <anonymous union>::<anonymous struct>
-   size=72 align=8
-   base size=72 base align=8
-<anonymous union>::<anonymous struct> (0x2aaaaccc5c40) 0
 
-Class <anonymous union>
-   size=72 align=8
-   base size=72 base align=8
-<anonymous union> (0x2aaaaccc5b60) 0
 
 Class _IO_marker
    size=24 align=8
@@ -568,10 +388,6 @@ Class _IO_FILE
    base size=216 base align=8
 _IO_FILE (0x2aaaaccc5d20) 0
 
-Class <anonymous struct>
-   size=32 align=8
-   base size=32 base align=8
-<anonymous struct> (0x2aaaaccc5e00) 0
 
 Vtable for QTextStream
 QTextStream::_ZTV11QTextStream: 4u entries
@@ -586,10 +402,6 @@ Class QTextStream
 QTextStream (0x2aaaaccc5e70) 0
     vptr=((& QTextStream::_ZTV11QTextStream) + 16u)
 
-Class QFlags<QTextStream::NumberFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QTextStream::NumberFlag> (0x2aaaacd47150) 0
 
 Class QTextStreamManipulator
    size=40 align=8
@@ -680,10 +492,6 @@ QFile (0x2aaaace11bd0) 0
     QObject (0x2aaaace11cb0) 0
         primary-for QIODevice (0x2aaaace11c40)
 
-Class QFlags<QFile::Permission>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QFile::Permission> (0x2aaaace47a80) 0
 
 Vtable for QTemporaryFile
 QTemporaryFile::_ZTV14QTemporaryFile: 31u entries
@@ -736,25 +544,13 @@ Class QRegExp
    base size=8 base align=8
 QRegExp (0x2aaaace768c0) 0
 
-Class QTypeInfo<QRegExp>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QRegExp> (0x2aaaace9e700) 0 empty
 
 Class QStringMatcher
    size=1048 align=8
    base size=1044 base align=8
 QStringMatcher (0x2aaaace9e930) 0
 
-Class QList<QString>::<anonymous union>
-   size=8 align=8
-   base size=8 base align=8
-QList<QString>::<anonymous union> (0x2aaaace9eee0) 0
 
-Class QList<QString>
-   size=8 align=8
-   base size=8 base align=8
-QList<QString> (0x2aaaace9ed90) 0
 
 Class QStringList
    size=8 align=8
@@ -762,15 +558,7 @@ Class QStringList
 QStringList (0x2aaaaced5070) 0
   QList<QString> (0x2aaaaced50e0) 0
 
-Class QList<QString>::iterator
-   size=8 align=8
-   base size=8 base align=8
-QList<QString>::iterator (0x2aaaacef8ee0) 0
 
-Class QList<QString>::const_iterator
-   size=8 align=8
-   base size=8 base align=8
-QList<QString>::const_iterator (0x2aaaacf172a0) 0
 
 Vtable for QProcess
 QProcess::_ZTV8QProcess: 31u entries
@@ -864,145 +652,45 @@ Class QFileInfo
    base size=8 base align=8
 QFileInfo (0x2aaaacf6ac40) 0
 
-Class QFlags<QFileInfo::Permission>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QFileInfo::Permission> (0x2aaaacfa8690) 0
 
-Class QTypeInfo<QFileInfo>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QFileInfo> (0x2aaaacfa8af0) 0 empty
 
-Class QList<QFileInfo>::<anonymous union>
-   size=8 align=8
-   base size=8 base align=8
-QList<QFileInfo>::<anonymous union> (0x2aaaacfd12a0) 0
 
-Class QList<QFileInfo>
-   size=8 align=8
-   base size=8 base align=8
-QList<QFileInfo> (0x2aaaacfd1150) 0
 
 Class QDir
    size=8 align=8
    base size=8 base align=8
 QDir (0x2aaaacfd13f0) 0
 
-Class QFlags<QDir::SortFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDir::SortFlag> (0x2aaaacfd1690) 0
 
-Class QFlags<QDir::Filter>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QDir::Filter> (0x2aaaacfd18c0) 0
 
 Class QUrl
    size=8 align=8
    base size=8 base align=8
 QUrl (0x2aaaad0765b0) 0
 
-Class QFlags<QUrl::FormattingOption>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QUrl::FormattingOption> (0x2aaaad0768c0) 0
 
-Class QTypeInfo<QUrl>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QUrl> (0x2aaaad0d5af0) 0 empty
 
 Class QMetaType
    size=1 align=1
    base size=0 base align=1
 QMetaType (0x2aaaad0f1150) 0 empty
 
-Class QMetaTypeId<QString>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QString> (0x2aaaad0f1850) 0 empty
 
-Class QMetaTypeId<int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<int> (0x2aaaad0f1a10) 0 empty
 
-Class QMetaTypeId<unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<unsigned int> (0x2aaaad0f1bd0) 0 empty
 
-Class QMetaTypeId<bool>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<bool> (0x2aaaad0f1d90) 0 empty
 
-Class QMetaTypeId<double>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<double> (0x2aaaad0f1f50) 0 empty
 
-Class QMetaTypeId<QByteArray>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QByteArray> (0x2aaaad10a150) 0 empty
 
-Class QMetaTypeId<QChar>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QChar> (0x2aaaad10a310) 0 empty
 
-Class QMetaTypeId<void>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<void> (0x2aaaad10a4d0) 0 empty
 
-Class QMetaTypeId<long int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<long int> (0x2aaaad10a690) 0 empty
 
-Class QMetaTypeId<short int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<short int> (0x2aaaad10a850) 0 empty
 
-Class QMetaTypeId<char>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<char> (0x2aaaad10aa10) 0 empty
 
-Class QMetaTypeId<long unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<long unsigned int> (0x2aaaad10abd0) 0 empty
 
-Class QMetaTypeId<short unsigned int>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<short unsigned int> (0x2aaaad10ad90) 0 empty
 
-Class QMetaTypeId<unsigned char>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<unsigned char> (0x2aaaad10af50) 0 empty
 
-Class QMetaTypeId<float>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<float> (0x2aaaad117150) 0 empty
 
-Class QMetaTypeId<QObject*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QObject*> (0x2aaaad117310) 0 empty
 
-Class QMetaTypeId<QWidget*>
-   size=1 align=1
-   base size=0 base align=1
-QMetaTypeId<QWidget*> (0x2aaaad1174d0) 0 empty
 
 Class QVariant::PrivateShared
    size=16 align=8
@@ -1029,35 +717,15 @@ Class QVariant
    base size=16 base align=8
 QVariant (0x2aaaad117620) 0
 
-Class QList<QVariant>::<anonymous union>
-   size=8 align=8
-   base size=8 base align=8
-QList<QVariant>::<anonymous union> (0x2aaaad1aa7e0) 0
 
-Class QList<QVariant>
-   size=8 align=8
-   base size=8 base align=8
-QList<QVariant> (0x2aaaad1aa690) 0
 
-Class QMap<QString, QVariant>::<anonymous union>
-   size=8 align=8
-   base size=8 base align=8
-QMap<QString, QVariant>::<anonymous union> (0x2aaaad1aab60) 0
 
-Class QMap<QString, QVariant>
-   size=8 align=8
-   base size=8 base align=8
-QMap<QString, QVariant> (0x2aaaad1aaa10) 0
 
 Class QVariantComparisonHelper
    size=8 align=8
    base size=8 base align=8
 QVariantComparisonHelper (0x2aaaad2184d0) 0
 
-Class QTypeInfo<QVariant>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QVariant> (0x2aaaad218f50) 0 empty
 
 Vtable for QSettings
 QSettings::_ZTV9QSettings: 14u entries
@@ -1128,10 +796,6 @@ Class QFileEngine
 QFileEngine (0x2aaaad29b380) 0
     vptr=((& QFileEngine::_ZTV11QFileEngine) + 16u)
 
-Class QFlags<QFileEngine::FileFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QFileEngine::FileFlag> (0x2aaaad29b770) 0
 
 Vtable for QFileEngineHandler
 QFileEngineHandler::_ZTV18QFileEngineHandler: 5u entries
@@ -1162,90 +826,54 @@ Class QHashDummyValue
    base size=0 base align=1
 QHashDummyValue (0x2aaaad2f5070) 0 empty
 
-Class QTypeInfo<QHashDummyValue>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QHashDummyValue> (0x2aaaad2f5230) 0 empty
 
 Class QPoint
    size=8 align=4
    base size=8 base align=4
 QPoint (0x2aaaad417540) 0
 
-Class QTypeInfo<QPoint>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPoint> (0x2aaaad417d20) 0 empty
 
 Class QPointF
    size=16 align=8
    base size=16 base align=8
 QPointF (0x2aaaad4458c0) 0
 
-Class QTypeInfo<QPointF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPointF> (0x2aaaad445af0) 0 empty
 
 Class QLine
    size=16 align=4
    base size=16 base align=4
 QLine (0x2aaaad4900e0) 0
 
-Class QTypeInfo<QLine>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QLine> (0x2aaaad4902a0) 0 empty
 
 Class QLineF
    size=32 align=8
    base size=32 base align=8
 QLineF (0x2aaaad4adb60) 0
 
-Class QTypeInfo<QLineF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QLineF> (0x2aaaad4d1150) 0 empty
 
 Class QSize
    size=8 align=4
    base size=8 base align=4
 QSize (0x2aaaad4fc230) 0
 
-Class QTypeInfo<QSize>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QSize> (0x2aaaad4fc930) 0 empty
 
 Class QSizeF
    size=16 align=8
    base size=16 base align=8
 QSizeF (0x2aaaad533b60) 0
 
-Class QTypeInfo<QSizeF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QSizeF> (0x2aaaad533f50) 0 empty
 
 Class QRect
    size=16 align=4
    base size=16 base align=4
 QRect (0x2aaaad583a10) 0
 
-Class QTypeInfo<QRect>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QRect> (0x2aaaad5ba7e0) 0 empty
 
 Class QRectF
    size=32 align=8
    base size=32 base align=8
 QRectF (0x2aaaad646380) 0
 
-Class QTypeInfo<QRectF>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QRectF> (0x2aaaad676310) 0 empty
 
 Class QLinkedListData
    size=32 align=8
@@ -1262,10 +890,6 @@ Class QBitRef
    base size=12 base align=8
 QBitRef (0x2aaaad7ea4d0) 0
 
-Class QTypeInfo<QBitArray>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QBitArray> (0x2aaaad8000e0) 0 empty
 
 Class QVectorData
    size=16 align=4
@@ -1287,40 +911,24 @@ Class QLocale
    base size=8 base align=8
 QLocale (0x2aaaad9201c0) 0
 
-Class QTypeInfo<QLocale>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QLocale> (0x2aaaad920c40) 0 empty
 
 Class QDate
    size=4 align=4
    base size=4 base align=4
 QDate (0x2aaaad9cc310) 0
 
-Class QTypeInfo<QDate>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QDate> (0x2aaaad9eb4d0) 0 empty
 
 Class QTime
    size=4 align=4
    base size=4 base align=4
 QTime (0x2aaaad9eb700) 0
 
-Class QTypeInfo<QTime>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QTime> (0x2aaaada11230) 0 empty
 
 Class QDateTime
    size=8 align=8
    base size=8 base align=8
 QDateTime (0x2aaaada11460) 0
 
-Class QTypeInfo<QDateTime>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QDateTime> (0x2aaaada38000) 0 empty
 
 Vtable for QFactoryInterface
 QFactoryInterface::_ZTV17QFactoryInterface: 5u entries
@@ -1480,10 +1088,6 @@ QEventLoop (0x2aaaada98bd0) 0
   QObject (0x2aaaada98c40) 0
       primary-for QEventLoop (0x2aaaada98bd0)
 
-Class QFlags<QEventLoop::ProcessEventsFlag>
-   size=4 align=4
-   base size=4 base align=4
-QFlags<QEventLoop::ProcessEventsFlag> (0x2aaaada98e70) 0
 
 Vtable for QEvent
 QEvent::_ZTV6QEvent: 4u entries
@@ -1575,20 +1179,12 @@ Class QModelIndex
    base size=24 base align=8
 QModelIndex (0x2aaaadb310e0) 0
 
-Class QTypeInfo<QModelIndex>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QModelIndex> (0x2aaaadb4b310) 0 empty
 
 Class QPersistentModelIndex
    size=8 align=8
    base size=8 base align=8
 QPersistentModelIndex (0x2aaaadb4b850) 0
 
-Class QTypeInfo<QPersistentModelIndex>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QPersistentModelIndex> (0x2aaaadb4ba80) 0 empty
 
 Vtable for QAbstractItemModel
 QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
@@ -1808,10 +1404,6 @@ Class QBasicTimer
    base size=4 base align=4
 QBasicTimer (0x2aaaadbf80e0) 0
 
-Class QTypeInfo<QBasicTimer>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QBasicTimer> (0x2aaaadbf89a0) 0 empty
 
 Vtable for QSocketNotifier
 QSocketNotifier::_ZTV15QSocketNotifier: 14u entries
@@ -1906,20 +1498,12 @@ Class QMetaMethod
    base size=12 base align=8
 QMetaMethod (0x2aaaadc547e0) 0
 
-Class QTypeInfo<QMetaMethod>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QMetaMethod> (0x2aaaadc54bd0) 0 empty
 
 Class QMetaEnum
    size=16 align=8
    base size=12 base align=8
 QMetaEnum (0x2aaaadc54e00) 0
 
-Class QTypeInfo<QMetaEnum>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QMetaEnum> (0x2aaaadc7e2a0) 0 empty
 
 Class QMetaProperty
    size=32 align=8
@@ -1931,10 +1515,6 @@ Class QMetaClassInfo
    base size=12 base align=8
 QMetaClassInfo (0x2aaaadc7e620) 0
 
-Class QTypeInfo<QMetaClassInfo>
-   size=1 align=1
-   base size=0 base align=1
-QTypeInfo<QMetaClassInfo> (0x2aaaadc7ea10) 0 empty
 
 Vtable for QPluginLoader
 QPluginLoader::_ZTV13QPluginLoader: 14u entries
@@ -2362,18 +1942,6 @@ QTcpSocket (0x2aaaade3c460) 0
       QObject (0x2aaaade3c5b0) 0
           primary-for QIODevice (0x2aaaade3c540)
 
-Class QList<QByteArray>::Node
-   size=8 align=8
-   base size=8 base align=8
-QList<QByteArray>::Node (0x2aaaaded5b60) 0
 
-Class QList<QString>::Node
-   size=8 align=8
-   base size=8 base align=8
-QList<QString>::Node (0x2aaaadf0dc40) 0
 
-Class QList<QFileInfo>::Node
-   size=8 align=8
-   base size=8 base align=8
-QList<QFileInfo>::Node (0x2aaaae004770) 0
 

@@ -121,6 +121,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     }
 
     ConversionData cd;
+    tor.normalizeTranslations(cd);
     cd.m_verbose = verbose;
     cd.m_ignoreUnfinished = ignoreUnfinished;
     cd.m_idBased = idBased;

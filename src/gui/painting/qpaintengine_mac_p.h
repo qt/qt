@@ -58,9 +58,6 @@
 #include "private/qpaintengine_p.h"
 #include "private/qpolygonclipper_p.h"
 #include "QtCore/qhash.h"
-#ifndef QT_MAC_NO_QUICKDRAW
-#include <private/qwidget_p.h>
-#endif
 
 typedef struct CGColorSpace *CGColorSpaceRef;
 QT_BEGIN_NAMESPACE
@@ -68,108 +65,6 @@ QT_BEGIN_NAMESPACE
 extern int qt_defaultDpi();
 extern int qt_defaultDpiX();
 extern int qt_defaultDpiY();
-
-#ifndef QT_MAC_NO_QUICKDRAW
-class QMacSavedPortInfo
-{
-    RgnHandle clip;
-    GWorldPtr world;
-    GDHandle handle;
-    PenState pen; //go pennstate
-    RGBColor back, fore;
-    bool valid_gworld;
-    void init();
-
-public:
-    inline QMacSavedPortInfo() { init(); }
-    inline QMacSavedPortInfo(QPaintDevice *pd) { init(); setPaintDevice(pd); }
-    inline QMacSavedPortInfo(QPaintDevice *pd, const QRect &r)
-        { init(); setPaintDevice(pd); setClipRegion(r); }
-    inline QMacSavedPortInfo(QPaintDevice *pd, const QRegion &r)
-        { init(); setPaintDevice(pd); setClipRegion(r); }
-    ~QMacSavedPortInfo();
-    static inline bool setClipRegion(const QRect &r);
-    static inline bool setClipRegion(const QRegion &r);
-    static inline bool setPaintDevice(QPaintDevice *);
-};
-
-inline bool
-QMacSavedPortInfo::setClipRegion(const QRect &rect)
-{
-    Rect r;
-    SetRect(&r, rect.x(), rect.y(), rect.right()+1, rect.bottom()+1);
-    ClipRect(&r);
-    return true;
-}
-
-inline bool
-QMacSavedPortInfo::setClipRegion(const QRegion &r)
-{
-    if(r.isEmpty())
-        return setClipRegion(QRect());
-    QMacSmartQuickDrawRegion rgn(r.toQDRgn());
-    SetClip(rgn);
-    return true;
-}
-
-inline bool
-QMacSavedPortInfo::setPaintDevice(QPaintDevice *pd)
-{
-    if(!pd)
-        return false;
-    bool ret = true;
-    extern GrafPtr qt_mac_qd_context(const QPaintDevice *); // qpaintdevice_mac.cpp
-    if(pd->devType() == QInternal::Widget)
-        SetPortWindowPort(qt_mac_window_for(static_cast<QWidget*>(pd)));
-    else if(pd->devType() == QInternal::Pixmap || pd->devType() == QInternal::Printer)
-        SetGWorld((GrafPtr)qt_mac_qd_context(pd), 0); //set the gworld
-    return ret;
-}
-
-inline void
-QMacSavedPortInfo::init()
-{
-    GetBackColor(&back);
-    GetForeColor(&fore);
-    GetGWorld(&world, &handle);
-    valid_gworld = true;
-    clip = NewRgn();
-    GetClip(clip);
-    GetPenState(&pen);
-}
-
-inline QMacSavedPortInfo::~QMacSavedPortInfo()
-{
-    bool set_state = false;
-    if(valid_gworld) {
-        set_state = IsValidPort(world);
-        if(set_state)
-            SetGWorld(world,handle); //always do this one first
-    } else {
-        setPaintDevice(qt_mac_safe_pdev);
-    }
-    if(set_state) {
-        SetClip(clip);
-        SetPenState(&pen);
-        RGBForeColor(&fore);
-        RGBBackColor(&back);
-    }
-    DisposeRgn(clip);
-}
-#else
-class QMacSavedPortInfo
-{
-public:
-    inline QMacSavedPortInfo() { }
-    inline QMacSavedPortInfo(QPaintDevice *) { }
-    inline QMacSavedPortInfo(QPaintDevice *, const QRect &) { }
-    inline QMacSavedPortInfo(QPaintDevice *, const QRegion &) { }
-    ~QMacSavedPortInfo() { }
-    static inline bool setClipRegion(const QRect &) { return false; }
-    static inline bool setClipRegion(const QRegion &) { return false; }
-    static inline bool setPaintDevice(QPaintDevice *) { return false; }
-};
-#endif
 
 class QCoreGraphicsPaintEnginePrivate;
 class QCoreGraphicsPaintEngine : public QPaintEngine

@@ -2437,7 +2437,7 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \note This signal will not be emitted if an item changes its state when
     expandAll() is invoked.
 
-    \sa isItemExpanded(), itemCollapsed(), expandItem()
+    \sa QTreeWidgetItem::isExpanded(), itemCollapsed(), expandItem()
 */
 
 /*!
@@ -2449,7 +2449,7 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \note This signal will not be emitted if an item changes its state when
     collapseAll() is invoked.
 
-    \sa isItemExpanded(), itemExpanded(), collapseItem()
+    \sa QTreeWidgetItem::isExpanded(), itemExpanded(), collapseItem()
 */
 
 /*!
@@ -3109,9 +3109,9 @@ bool QTreeWidget::isItemExpanded(const QTreeWidgetItem *item) const
 
     \sa expandItem(), collapseItem(), itemExpanded()
 
-  \obsolete
+    \obsolete
 
-  This function is deprecated. Use \l{QTreeWidgetItem::setExpanded()} instead.
+    This function is deprecated. Use \l{QTreeWidgetItem::setExpanded()} instead.
 */
 void QTreeWidget::setItemExpanded(const QTreeWidgetItem *item, bool expand)
 {

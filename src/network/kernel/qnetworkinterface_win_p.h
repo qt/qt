@@ -54,7 +54,7 @@
 //
 
 #include <winsock2.h>
-#include <windows.h>
+#include <qt_windows.h>
 #include <time.h>
 
 QT_BEGIN_NAMESPACE

@@ -83,6 +83,7 @@
 #include "qcursor.h"
 #include "qdesktopwidget.h"
 #include "qevent.h"
+#include "qfileinfo.h"
 #include "qimage.h"
 #include "qlayout.h"
 #include "qmenubar.h"
@@ -1115,23 +1116,9 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 //update handles
                 GrafPtr qd = 0;
                 CGContextRef cg = 0;
-#ifndef QT_MAC_NO_QUICKDRAW
-                {
-                    if(GetEventParameter(event, kEventParamGrafPort, typeGrafPtr, 0, sizeof(qd), 0, &qd) != noErr) {
-                        GDHandle dev = 0;
-                        GetGWorld(&qd, &dev); //just use the global port..
-                    }
-                }
-                bool end_cg_context = false;
-                if(GetEventParameter(event, kEventParamCGContextRef, typeCGContextRef, 0, sizeof(cg), 0, &cg) != noErr && qd) {
-                    end_cg_context = true;
-                    QDBeginCGContext(qd, &cg);
-                }
-#else
                 if(GetEventParameter(event, kEventParamCGContextRef, typeCGContextRef, 0, sizeof(cg), 0, &cg) != noErr) {
                     Q_ASSERT(false);
                 }
-#endif
                 widget->d_func()->hd = cg;
                 widget->d_func()->qd_hd = qd;
                 CGContextSaveGState(cg);
@@ -1197,22 +1184,13 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         p.setClipping(false);
                         if(was_unclipped)
                             widget->setAttribute(Qt::WA_PaintUnclipped);
-
-                        QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget->parent());
-                        QPoint scrollAreaOffset;
-                        if (scrollArea && scrollArea->viewport() == widget) {
-                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr);
-                            scrollAreaOffset = priv->contentsOffset();
-                            p.translate(-scrollAreaOffset);
-                        }
-
-                        widget->d_func()->paintBackground(&p, qrgn, scrollAreaOffset, widget->isWindow() ? DrawAsRoot : 0);
+                        widget->d_func()->paintBackground(&p, qrgn, widget->isWindow() ? DrawAsRoot : 0);
                         if (widget->testAttribute(Qt::WA_TintedBackground)) {
                             QColor tint = widget->palette().window().color();
                             tint.setAlphaF(.6);
                             const QVector<QRect> &rects = qrgn.rects();
                             for (int i = 0; i < rects.size(); ++i)
-                                p.fillRect(rects.at(i).translated(scrollAreaOffset), tint);
+                                p.fillRect(rects.at(i), tint);
                         }
                         p.end();
                         if (!redirectionOffset.isNull())
@@ -1260,10 +1238,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 widget->d_func()->hd = 0;
                 widget->d_func()->qd_hd = 0;
                 CGContextRestoreGState(cg);
-#ifndef QT_MAC_NO_QUICKDRAW
-                if(end_cg_context)
-                    QDEndCGContext(qd, &cg);
-#endif
             } else if(!HIObjectIsOfClass((HIObjectRef)hiview, kObjectQWidget)) {
                 CallNextEventHandler(er, event);
             }
@@ -2864,8 +2838,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
         SetWindowTitleWithCFString(qt_mac_window_for(q), QCFString(caption));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-          setTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(caption)))];
+        [qt_mac_window_for(q) setTitle:qt_mac_QStringToNSString(caption)];
 #endif
     }
 }
@@ -2887,7 +2860,8 @@ void QWidgetPrivate::setWindowFilePath_sys(const QString &filePath)
     Q_Q(QWidget);
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
-    [qt_mac_window_for(q) setRepresentedFilename:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(filePath)))];
+    QFileInfo fi(filePath);
+    [qt_mac_window_for(q) setRepresentedFilename:fi.exists() ? qt_mac_QStringToNSString(filePath) : @""];
 #else
     bool validRef = false;
     FSRef ref;
@@ -2977,8 +2951,7 @@ void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
         SetWindowAlternateTitle(qt_mac_window_for(q), QCFString(iconText));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-            setMiniwindowTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(iconText)))];
+        [qt_mac_window_for(q) setMiniwindowTitle:qt_mac_QStringToNSString(iconText)];
 #endif
     }
 }

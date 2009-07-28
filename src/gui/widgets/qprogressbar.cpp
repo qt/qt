@@ -190,10 +190,11 @@ bool QProgressBarPrivate::repaintRequired() const
     with setValue(). The progress bar can be rewound to the
     beginning with reset().
 
-    If minimum and maximum both are set to 0, the bar shows a busy indicator
-    instead of a percentage of steps. This is useful, for example, when using
-    QFtp or QHttp to download items when they are unable to determine the
-    size of the item being downloaded.
+    If minimum and maximum both are set to 0, the bar shows a busy
+    indicator instead of a percentage of steps. This is useful, for
+    example, when using QFtp or QNetworkAccessManager to download
+    items when they are unable to determine the size of the item being
+    downloaded.
 
     \table
     \row \o \inlineimage macintosh-progressbar.png Screenshot of a Macintosh style progress bar
@@ -443,11 +444,11 @@ QSize QProgressBar::minimumSizeHint() const
 QString QProgressBar::text() const
 {
     Q_D(const QProgressBar);
-    if (d->maximum == 0 || d->value < d->minimum
+    if ((d->maximum == 0 && d->minimum == 0) || d->value < d->minimum
             || (d->value == INT_MIN && d->minimum == INT_MIN))
         return QString();
 
-    qint64 totalSteps = qint64(d->maximum) - qint64(d->minimum);
+    qint64 totalSteps = qint64(d->maximum) - d->minimum;
 
     QString result = d->format;
     result.replace(QLatin1String("%m"), QString::number(totalSteps));
@@ -461,7 +462,7 @@ QString QProgressBar::text() const
         return result;
     }
 
-    int progress = int(((qreal(d->value) - qreal(d->minimum)) * 100.0) / totalSteps);
+    int progress = (qreal(d->value) - d->minimum) * 100.0 / totalSteps;
     result.replace(QLatin1String("%p"), QString::number(progress));
     return result;
 }

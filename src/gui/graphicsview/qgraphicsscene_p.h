@@ -130,6 +130,8 @@ public:
     QGraphicsWidget *tabFocusFirst;
     QGraphicsWidget *activeWindow;
     int activationRefCount;
+    void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason);
+    QMultiHash<QGraphicsItem *, QGraphicsItem *> focusProxyReverseMap;
 
     QList<QGraphicsWidget *> popupWidgets;
     void addPopup(QGraphicsWidget *widget);
@@ -172,6 +174,7 @@ public:
     QMultiMap<QGraphicsItem *, QGraphicsItem *> sceneEventFilters;
     void installSceneEventFilter(QGraphicsItem *watched, QGraphicsItem *filter);
     void removeSceneEventFilter(QGraphicsItem *watched, QGraphicsItem *filter);
+    bool filterDescendantEvent(QGraphicsItem *item, QEvent *event);
     bool filterEvent(QGraphicsItem *item, QEvent *event);
     bool sendEvent(QGraphicsItem *item, QEvent *event);
 

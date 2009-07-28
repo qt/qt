@@ -79,6 +79,7 @@ QT_BEGIN_NAMESPACE
 
 class QHttpNetworkRequest;
 class QHttpNetworkReply;
+class QByteArray;
 
 class QHttpNetworkConnectionPrivate;
 class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
@@ -116,6 +117,7 @@ public:
 #ifndef QT_NO_OPENSSL
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
+    void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
 
 Q_SIGNALS:
     void sslErrors(const QList<QSslError> &errors);
@@ -240,13 +242,14 @@ public:
         QAuthenticator authenticator;
         QAuthenticator proxyAuthenticator;
 #ifndef QT_NO_OPENSSL
-        bool ignoreSSLErrors;
+        bool ignoreAllSslErrors;
+        QList<QSslError> ignoreSslErrorsList;
 #endif
         Channel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
             lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
             authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
-            , ignoreSSLErrors(false)
+            , ignoreAllSslErrors(false)
 #endif
         {}
     };
@@ -255,14 +258,13 @@ public:
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
-    void appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
-    void appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
+    void appendUncompressedData(QHttpNetworkReply &reply, QByteArray &qba);
+    void appendUncompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
+    void appendCompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
     qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;
-
-    qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize);
 
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);

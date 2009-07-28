@@ -476,7 +476,11 @@ void QCursorData::update()
         qWarning("QCursor::update: Invalid cursor shape %d", cshape);
         return;
     }
+#ifdef Q_WS_WINCE
+    hcurs = LoadCursor(0, sh);
+#else
     hcurs = (HCURSOR)LoadImage(0, sh, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+#endif
 }
 
 QT_END_NAMESPACE

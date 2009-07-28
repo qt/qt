@@ -137,11 +137,6 @@ void TabletCanvas::paintImage(QPainter &painter, QTabletEvent *event)
     QPoint brushAdjust(10, 10);
 
     switch (myTabletDevice) {
-        case QTabletEvent::Stylus:
-            painter.setBrush(myBrush);
-            painter.setPen(myPen);
-            painter.drawLine(polyLine[1], event->pos());
-            break;
         case QTabletEvent::Airbrush:
             myBrush.setColor(myColor);
             myBrush.setStyle(brushPattern(event->pressure()));
@@ -156,10 +151,32 @@ void TabletCanvas::paintImage(QPainter &painter, QTabletEvent *event)
         case QTabletEvent::Puck:
         case QTabletEvent::FourDMouse:
         case QTabletEvent::RotationStylus:
-            qWarning("This input device is not supported by the example.");
+            {
+                const QString error(tr("This input device is not supported by the example."));
+#ifndef QT_NO_STATUSTIP
+                QStatusTipEvent status(error);
+                QApplication::sendEvent(this, &status);
+#else
+                qWarning() << error;
+#endif
+            }
             break;
         default:
-            qWarning("Unknown tablet device.");
+            {
+                const QString error(tr("Unknown tablet device - treating as stylus"));
+#ifndef QT_NO_STATUSTIP
+                QStatusTipEvent status(error);
+                QApplication::sendEvent(this, &status);
+#else
+                qWarning() << error;
+#endif
+            }
+            // FALL-THROUGH
+        case QTabletEvent::Stylus:
+            painter.setBrush(myBrush);
+            painter.setPen(myPen);
+            painter.drawLine(polyLine[1], event->pos());
+            break;
     }
 }
 //! [5]
@@ -250,7 +267,7 @@ void TabletCanvas::updateBrush(QTabletEvent *event)
 }
 //! [11]
 
-void TabletCanvas::resizeEvent(QResizeEvent *event)
+void TabletCanvas::resizeEvent(QResizeEvent *)
 {
     initImage();
     polyLine[0] = polyLine[1] = polyLine[2] = QPoint();

@@ -52,13 +52,12 @@ static const int RESOLVER_TIMEOUT = 2000;
 #include <qurl.h>
 #include <qfile.h>
 #include <private/qmutexpool_p.h>
+#include <private/qnet_unix_p.h>
 
-extern "C" {
 #include <sys/types.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <resolv.h>
-}
 
 #if defined (QT_NO_GETADDRINFO)
 #include <qmutex.h>
@@ -180,7 +179,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         }
         results.setHostName(QString::fromLatin1(hbuf));
 #else
-        in_addr_t inetaddr = inet_addr(hostName.toLatin1().constData());
+        in_addr_t inetaddr = qt_safe_inet_addr(hostName.toLatin1().constData());
         struct hostent *ent = gethostbyaddr((const char *)&inetaddr, sizeof(inetaddr), AF_INET);
         if (!ent) {
             results.setError(QHostInfo::HostNotFound);

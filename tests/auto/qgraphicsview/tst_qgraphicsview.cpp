@@ -2253,6 +2253,8 @@ void tst_QGraphicsView::viewportUpdateMode2()
     QTest::qWait(300);
     const QRect viewportRect = view.viewport()->rect();
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
+
+#if defined QT_BUILD_INTERNAL
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
 
     QRect boundingRect;
@@ -2280,6 +2282,7 @@ void tst_QGraphicsView::viewportUpdateMode2()
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     // Note that we adjust by 2 for antialiasing.
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(boundingRect.adjusted(-2, -2, 2, 2) & viewportRect));
+#endif
 }
 
 void tst_QGraphicsView::acceptDrops()
@@ -3338,6 +3341,15 @@ void tst_QGraphicsView::render()
 {
     // ### This test can be much more thorough - see QGraphicsScene::render.
     QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(200, 200);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
     RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
     RenderTester *r3 = new RenderTester(QRectF(0, 50, 50, 50));
@@ -3347,14 +3359,7 @@ void tst_QGraphicsView::render()
     scene.addItem(r3);
     scene.addItem(r4);
 
-    QGraphicsView view(&scene);
-    view.setFrameStyle(0);
-    view.resize(200, 200);
-    view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(200);
+    qApp->processEvents();
 
     QCOMPARE(r1->paints, 1);
     QCOMPARE(r2->paints, 1);
@@ -3452,6 +3457,7 @@ void tst_QGraphicsView::update()
     const QRect viewportRect = view.viewport()->rect();
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
 
+#if defined QT_BUILD_INTERNAL
     const bool intersects = updateRect.intersects(viewportRect);
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
     QCOMPARE(viewPrivate->updateRect(updateRect), intersects);
@@ -3470,6 +3476,7 @@ void tst_QGraphicsView::update()
         QCOMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect.adjusted(-2, -2, 2, 2) & viewportRect));
     }
     QVERIFY(!viewPrivate->fullUpdatePending);
+#endif
 }
 
 void tst_QGraphicsView::inputMethodSensitivity()

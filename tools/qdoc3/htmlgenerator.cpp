@@ -294,6 +294,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     nonCompatClasses.clear();
     mainClasses.clear();
     compatClasses.clear();
+    obsoleteClasses.clear();
     moduleClassMap.clear();
     moduleNamespaceMap.clear();
     funcIndex.clear();
@@ -381,7 +382,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::AutoLink:
         if (!inLink && !inContents && !inSectionHeading) {
             const Node *node = 0;
-            QString link = getLink(atom, relative, marker, node);
+            QString link = getLink(atom, relative, marker, &node);
             if (!link.isEmpty()) {
                 beginLink(link, node, relative, marker);
                 generateLink(atom, relative, marker);
@@ -567,6 +568,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else if (atom->string() == "compatclasses") {
             generateCompactList(relative, marker, compatClasses);
         }
+        else if (atom->string() == "obsoleteclasses") {
+            generateCompactList(relative, marker, obsoleteClasses);
+        }
         else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative, marker);
         }
@@ -648,11 +652,12 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::Link:
         {
             const Node *node = 0;
-            QString myLink = getLink(atom, relative, marker, node);
-            if (myLink.isEmpty())
+            QString myLink = getLink(atom, relative, marker, &node);
+            if (myLink.isEmpty()) {
                 relative->doc().location().warning(tr("Cannot link to '%1' in %2")
                         .arg(atom->string())
                         .arg(marker->plainFullName(relative)));
+            }
             beginLink(myLink, node, relative, marker);
             skipAhead = 1;
         }
@@ -1842,6 +1847,9 @@ HtmlGenerator::generateAnnotatedList(const Node *relative,
     int row = 0;
     foreach (const QString &name, nodeMap.keys()) {
         const Node *node = nodeMap[name];
+
+        if (node->status() == Node::Obsolete)
+            continue;
 
         if (++row % 2 == 1)
             out() << "<tr valign=\"top\" class=\"odd\">";
@@ -3261,6 +3269,9 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
                     if ((*c)->status() == Node::Compat) {
                         compatClasses.insert(className, *c);
                     }
+                    else if ((*c)->status() == Node::Obsolete) {
+                        obsoleteClasses.insert(className, *c);
+                    }
                     else {
                         nonCompatClasses.insert(className, *c);
                         if ((*c)->status() == Node::Main)
@@ -3457,10 +3468,10 @@ const QPair<QString,QString> HtmlGenerator::anchorForNode(const Node *node)
 QString HtmlGenerator::getLink(const Atom *atom,
                                const Node *relative,
                                CodeMarker *marker,
-                               const Node *node)
+                               const Node** node)
 {
     QString link;
-    node = 0;
+    *node = 0;
 
     if (atom->string().contains(":") &&
             (atom->string().startsWith("file:")
@@ -3484,40 +3495,82 @@ QString HtmlGenerator::getLink(const Atom *atom,
 
         QString first = path.first().trimmed();
         if (first.isEmpty()) {
-            node = relative;
+            *node = relative;
         }
         else if (first.endsWith(".html")) {
-            node = tre->root()->findNode(first, Node::Fake);
+            *node = tre->root()->findNode(first, Node::Fake);
         }
         else {
-            node = marker->resolveTarget(first, tre, relative);
-            if (!node)
-                node = tre->findFakeNodeByTitle(first);
-            if (!node)
-                node = tre->findUnambiguousTarget(first, targetAtom);
+            *node = marker->resolveTarget(first, tre, relative);
+            if (!*node)
+                *node = tre->findFakeNodeByTitle(first);
+            if (!*node)
+                *node = tre->findUnambiguousTarget(first, targetAtom);
         }
 
-        if (node) {
-            if (!node->url().isEmpty())
-                return node->url();
+        if (*node) {
+            if (!(*node)->url().isEmpty())
+                return (*node)->url();
             else
                 path.removeFirst();
         }
         else {
-            node = relative;
+            *node = relative;
+        }
+
+        if (*node) {
+            if ((*node)->status() == Node::Obsolete) {
+                if (relative) {
+                    if (relative->parent() != *node) {
+                        if (relative->status() != Node::Obsolete) {
+                            bool porting = false;
+                            if (relative->type() == Node::Fake) {
+                                const FakeNode* fake = static_cast<const FakeNode*>(relative);
+                                if (fake->title().startsWith("Porting"))
+                                    porting = true;
+                            }
+                            QString name = marker->plainFullName(relative);
+                            if (!porting && !name.startsWith("Q3"))
+                                relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
+                                                                   .arg(atom->string())
+                                                                   .arg(name));
+#if 0                            
+                            qDebug() << "Link to Obsolete entity"
+                                     << (*node)->name();
+                            qDebug() << "  relative entity"
+                                     << relative->name();
+#endif                            
+                        }
+                    }
+                }
+                else {
+                    qDebug() << "Link to Obsolete entity"
+                             << (*node)->name() << "no relative";
+                }
+            }
+#if 0                    
+            else if ((*node)->status() == Node::Deprecated) {
+                qDebug() << "Link to Deprecated entity";
+            }
+            else if ((*node)->status() == Node::Internal) {
+                qDebug() << "Link to Internal entity";
+            }
+            //else
+            //qDebug() << "Node Status:" << (*node)->status();
+#endif                
         }
 
         while (!path.isEmpty()) {
-            targetAtom = tre->findTarget(path.first(), node);
+            targetAtom = tre->findTarget(path.first(), *node);
             if (targetAtom == 0)
                 break;
             path.removeFirst();
         }
 
         if (path.isEmpty()) {
-            link = linkForNode(node, relative);
+            link = linkForNode(*node, relative);
             if (targetAtom)
-                link += "#" + refForAtom(targetAtom, node);
+                link += "#" + refForAtom(targetAtom, *node);
         }
     }
     return link;

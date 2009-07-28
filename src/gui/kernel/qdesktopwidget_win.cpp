@@ -354,10 +354,8 @@ int QDesktopWidget::screenNumber(const QPoint &point) const
 void QDesktopWidget::resizeEvent(QResizeEvent *)
 {
     Q_D(QDesktopWidget);
-    QVector<QRect> oldrects;
-    oldrects = *d->rects;
-    QVector<QRect> oldworkrects;
-    oldworkrects = *d->workrects;
+    const QVector<QRect> oldrects(*d->rects);
+    const QVector<QRect> oldworkrects(*d->workrects);
     int oldscreencount = d->screenCount;
 
     QDesktopWidgetPrivate::cleanup();
@@ -368,17 +366,21 @@ void QDesktopWidget::resizeEvent(QResizeEvent *)
 #endif
 
     for (int i = 0; i < qMin(oldscreencount, d->screenCount); ++i) {
-        QRect oldrect = oldrects[i];
-        QRect newrect = d->rects->at(i);
+        const QRect oldrect = oldrects[i];
+        const QRect newrect = d->rects->at(i);
         if (oldrect != newrect)
             emit resized(i);
     }
 
     for (int j = 0; j < qMin(oldscreencount, d->screenCount); ++j) {
-        QRect oldrect = oldworkrects[j];
-        QRect newrect = d->workrects->at(j);
+        const QRect oldrect = oldworkrects[j];
+        const QRect newrect = d->workrects->at(j);
         if (oldrect != newrect)
             emit workAreaResized(j);
+    }
+
+    if (oldscreencount != d->screenCount) {
+        emit screenCountChanged(d->screenCount);
     }
 }
 

@@ -1621,14 +1621,28 @@ qint64 QSocks5SocketEngine::pendingDatagramSize() const
 
 int QSocks5SocketEngine::option(SocketOption option) const
 {
-    Q_UNUSED(option);
+    Q_D(const QSocks5SocketEngine);
+    if (d->data && d->data->controlSocket) {
+        // convert the enum and call the real socket
+        if (option == QAbstractSocketEngine::LowDelayOption)
+            return d->data->controlSocket->socketOption(QAbstractSocket::LowDelayOption).toInt();
+        if (option == QAbstractSocketEngine::KeepAliveOption)
+            return d->data->controlSocket->socketOption(QAbstractSocket::KeepAliveOption).toInt();
+    }
     return -1;
 }
 
 bool QSocks5SocketEngine::setOption(SocketOption option, int value)
 {
-    Q_UNUSED(option);
-    Q_UNUSED(value);
+    Q_D(QSocks5SocketEngine);
+    if (d->data && d->data->controlSocket) {
+        // convert the enum and call the real socket
+        if (option == QAbstractSocketEngine::LowDelayOption)
+            d->data->controlSocket->setSocketOption(QAbstractSocket::LowDelayOption, value);
+        if (option == QAbstractSocketEngine::KeepAliveOption)
+            d->data->controlSocket->setSocketOption(QAbstractSocket::KeepAliveOption, value);
+        return true;
+    }
     return false;
 }
 

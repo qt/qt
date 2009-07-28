@@ -87,6 +87,7 @@ public:
     Qt::CaseSensitivity cs;
     int role;
     int column;
+    int maxVisibleItems;
     QCompleter::ModelSorting sorting;
     bool wrap;
 

@@ -41,7 +41,7 @@
 
 #include "qkeymapper_p.h"
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <qdebug.h>
 #include <private/qevent_p.h>
 #include <private/qlocale_p.h>
@@ -851,8 +851,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
                     }
                 } else if (msgType == WM_KEYUP) {
                     if (dirStatus == VK_LSHIFT
-                        && (msg.wParam == VK_SHIFT && GetKeyState(VK_LCONTROL)
-                        || msg.wParam == VK_CONTROL && GetKeyState(VK_LSHIFT))) {
+                        && ((msg.wParam == VK_SHIFT && GetKeyState(VK_LCONTROL))
+                        || (msg.wParam == VK_CONTROL && GetKeyState(VK_LSHIFT)))) {
                             k0 = q->sendKeyEvent(widget, grab, QEvent::KeyPress, Qt::Key_Direction_L, 0,
                                                  QString(), false, 0,
                                                  scancode, msg.wParam, nModifiers);
@@ -861,8 +861,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
                                                  scancode, msg.wParam, nModifiers);
                             dirStatus = 0;
                         } else if (dirStatus == VK_RSHIFT
-                                   && (msg.wParam == VK_SHIFT && GetKeyState(VK_RCONTROL)
-                                   || msg.wParam == VK_CONTROL && GetKeyState(VK_RSHIFT))) {
+                                   && ( (msg.wParam == VK_SHIFT && GetKeyState(VK_RCONTROL))
+                                   || (msg.wParam == VK_CONTROL && GetKeyState(VK_RSHIFT)))) {
                                 k0 = q->sendKeyEvent(widget, grab, QEvent::KeyPress, Qt::Key_Direction_R,
                                                      0, QString(), false, 0,
                                                      scancode, msg.wParam, nModifiers);

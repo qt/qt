@@ -80,4 +80,14 @@ SchemaType::DerivationMethod AnySimpleType::derivationMethod() const
     return DerivationRestriction;
 }
 
+bool AnySimpleType::isSimpleType() const
+{
+    return true;
+}
+
+bool AnySimpleType::isComplexType() const
+{
+    return false;
+}
+
 QT_END_NAMESPACE

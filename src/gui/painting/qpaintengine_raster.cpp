@@ -110,10 +110,6 @@ extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // 
 #define qt_swap_int(x, y) { int tmp = (x); (x) = (y); (y) = tmp; }
 #define qt_swap_qreal(x, y) { qreal tmp = (x); (x) = (y); (y) = tmp; }
 
-#ifdef Q_WS_WIN
-static bool qt_enable_16bit_colors = false;
-#endif
-
 // #define QT_DEBUG_DRAW
 #ifdef QT_DEBUG_DRAW
 void dumpClip(int width, int height, QClipData *clip);
@@ -1105,6 +1101,9 @@ void QRasterPaintEnginePrivate::systemStateChanged()
 #ifdef QT_DEBUG_DRAW
     qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
 #endif
+
+    exDeviceRect = deviceRect;
+
     Q_Q(QRasterPaintEngine);
     q->state()->strokeFlags |= QPaintEngine::DirtyClipRegion;
     q->state()->fillFlags |= QPaintEngine::DirtyClipRegion;
@@ -1712,11 +1711,30 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint && s->lastPen.brush().isOpaque()) {
-        strokePolygonCosmetic((QPointF *) path.points(), path.elementCount(),
-                              path.hasImplicitClose()
-                              ? WindingMode
-                              : PolylineMode);
+    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+        && s->lastPen.brush().isOpaque()) {
+        int count = path.elementCount();
+        QPointF *points = (QPointF *) path.points();
+        const QPainterPath::ElementType *types = path.elements();
+        if (types) {
+            int first = 0;
+            int last;
+            while (first < count) {
+                while (first < count && types[first] != QPainterPath::MoveToElement) ++first;
+                last = first + 1;
+                while (last < count && types[last] == QPainterPath::LineToElement) ++last;
+                strokePolygonCosmetic(points + first, last - first,
+                                      path.hasImplicitClose() && last == count // only close last one..
+                                      ? WindingMode
+                                      : PolylineMode);
+                first = last;
+            }
+        } else {
+            strokePolygonCosmetic(points, count,
+                                  path.hasImplicitClose()
+                                  ? WindingMode
+                                  : PolylineMode);
+        }
 
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
         qreal width = s->lastPen.isCosmetic()
@@ -4661,104 +4679,6 @@ static int qt_intersect_spans(QT_FT_Span *spans, int numSpans,
     return n;
 }
 
-/*
-    \internal
-    Clip spans to \a{clip}-region.
-    Returns number of unclipped spans
-*/
-static int qt_intersect_spans(QT_FT_Span *spans, int numSpans,
-                              int *currSpan,
-                              QT_FT_Span *outSpans, int maxOut,
-                              const QRegion &clip)
-{
-    const QVector<QRect> rects = clip.rects();
-    const int numRects = rects.size();
-
-    int r = 0;
-    short miny, minx, maxx, maxy;
-    {
-        const QRect &rect = rects[0];
-        miny = rect.top();
-        minx = rect.left();
-        maxx = rect.right();
-        maxy = rect.bottom();
-    }
-
-    // TODO: better mapping of currY and startRect
-
-    int n = 0;
-    int i = *currSpan;
-    int currY = spans[i].y;
-    while (i < numSpans) {
-
-        if (spans[i].y != currY && r != 0) {
-            currY = spans[i].y;
-            r = 0;
-            const QRect &rect = rects[r];
-            miny = rect.top();
-            minx = rect.left();
-            maxx = rect.right();
-            maxy = rect.bottom();
-        }
-
-        if (spans[i].y < miny) {
-            ++i;
-            continue;
-        }
-
-        if (spans[i].y > maxy || spans[i].x > maxx) {
-            if (++r >= numRects) {
-                ++i;
-                continue;
-            }
-
-            const QRect &rect = rects[r];
-            miny = rect.top();
-            minx = rect.left();
-            maxx = rect.right();
-            maxy = rect.bottom();
-            continue;
-        }
-
-        if (spans[i].x + spans[i].len <= minx) {
-            ++i;
-            continue;
-        }
-
-        outSpans[n].y = spans[i].y;
-        outSpans[n].coverage = spans[i].coverage;
-
-        if (spans[i].x < minx) {
-            const ushort cutaway = minx - spans[i].x;
-            outSpans[n].len = qMin(spans[i].len - cutaway, maxx - minx + 1);
-            outSpans[n].x = minx;
-            if (outSpans[n].len == spans[i].len - cutaway) {
-                ++i;
-            } else {
-                // span wider than current rect
-                spans[i].len -= outSpans[n].len + cutaway;
-                spans[i].x = maxx + 1;
-            }
-        } else { // span starts inside current rect
-            outSpans[n].x = spans[i].x;
-            outSpans[n].len = qMin(spans[i].len,
-                                   ushort(maxx - spans[i].x + 1));
-            if (outSpans[n].len == spans[i].len) {
-                ++i;
-            } else {
-                // span wider than current rect
-                spans[i].len -= outSpans[n].len;
-                spans[i].x = maxx + 1;
-            }
-        }
-
-        if (++n >= maxOut)
-            break;
-    }
-
-    *currSpan = i;
-    return n;
-}
 
 static void qt_span_fill_clipRect(int count, const QSpan *spans,
                                   void *userData)

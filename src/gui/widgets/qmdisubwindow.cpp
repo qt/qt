@@ -1066,7 +1066,7 @@ void QMdiSubWindowPrivate::createSystemMenu()
     addToSystemMenu(CloseAction, QMdiSubWindow::tr("&Close"), SLOT(close()));
     actions[CloseAction]->setIcon(style->standardIcon(QStyle::SP_TitleBarCloseButton, 0, q));
 #if !defined(QT_NO_SHORTCUT)
-    actions[CloseAction]->setShortcut(QKeySequence::Close);
+    actions[CloseAction]->setShortcuts(QKeySequence::Close);
 #endif
     updateActions();
 }

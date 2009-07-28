@@ -65,6 +65,8 @@
 #include <ctype.h>
 #endif
 
+#include <netinet/tcp.h>
+
 QT_BEGIN_NAMESPACE
 
 #if defined QNATIVESOCKETENGINE_DEBUG
@@ -203,6 +205,8 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         return -1;
 
     int n = -1;
+    int level = SOL_SOCKET; // default
+
     switch (opt) {
     case QNativeSocketEngine::ReceiveBufferSocketOption:
         n = SO_RCVBUF;
@@ -222,11 +226,18 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     case QNativeSocketEngine::ReceiveOutOfBandData:
         n = SO_OOBINLINE;
         break;
+    case QNativeSocketEngine::LowDelayOption:
+        level = IPPROTO_TCP;
+        n = TCP_NODELAY;
+        break;
+    case QNativeSocketEngine::KeepAliveOption:
+        n = SO_KEEPALIVE;
+        break;
     }
 
     int v = -1;
     QT_SOCKOPTLEN_T len = sizeof(v);
-    if (getsockopt(socketDescriptor, SOL_SOCKET, n, (char *) &v, &len) != -1)
+    if (getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
         return v;
     return -1;
 }
@@ -242,6 +253,8 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         return false;
 
     int n = 0;
+    int level = SOL_SOCKET; // default
+
     switch (opt) {
     case QNativeSocketEngine::ReceiveBufferSocketOption:
         n = SO_RCVBUF;
@@ -282,9 +295,16 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     case QNativeSocketEngine::ReceiveOutOfBandData:
         n = SO_OOBINLINE;
         break;
+    case QNativeSocketEngine::LowDelayOption:
+        level = IPPROTO_TCP;
+        n = TCP_NODELAY;
+        break;
+    case QNativeSocketEngine::KeepAliveOption:
+        n = SO_KEEPALIVE;
+        break;
     }
 
-    return ::setsockopt(socketDescriptor, SOL_SOCKET, n, (char *) &v, sizeof(v)) == 0;
+    return ::setsockopt(socketDescriptor, level, n, (char *) &v, sizeof(v)) == 0;
 }
 
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
@@ -508,7 +528,7 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
     int nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
     qint64 available = 0;
-    if (::ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
+    if (qt_safe_ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
         available = (qint64) nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -634,8 +654,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
     ssize_t sentBytes;
     do {
-        sentBytes = ::sendto(socketDescriptor, data, len,
-                             0, sockAddrPtr, sockAddrSize);
+        sentBytes = qt_safe_sendto(socketDescriptor, data, len,
+                                   0, sockAddrPtr, sockAddrSize);
     } while (sentBytes == -1 && errno == EINTR);
 
     if (sentBytes < 0) {

@@ -1410,7 +1410,8 @@ public:
         ToolButtonIconOnly,
         ToolButtonTextOnly,
         ToolButtonTextBesideIcon,
-        ToolButtonTextUnderIcon
+        ToolButtonTextUnderIcon,
+        ToolButtonFollowStyle
     };
 
     enum LayoutDirection {

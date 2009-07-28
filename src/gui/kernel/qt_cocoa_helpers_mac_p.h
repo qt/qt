@@ -105,6 +105,8 @@
 #include <qpoint.h>
 #include "private/qt_mac_p.h"
 
+struct HIContentBorderMetrics;
+
 #ifdef Q_WS_MAC32
 typedef struct _NSPoint NSPoint; // Just redefine here so I don't have to pull in all of Cocoa.
 #else
@@ -122,8 +124,8 @@ bool macWindowToolbarIsVisible( void * /*OSWindowRef*/ window );
 void macWindowSetHasShadow( void * /*OSWindowRef*/ window, bool hasShadow );
 void macWindowFlush(void * /*OSWindowRef*/ window);
 void macSendToolbarChangeEvent(QWidget *widget);
-struct HIContentBorderMetrics;
 void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::HIContentBorderMetrics &metrics);
+void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show);
 void * /*NSImage */qt_mac_create_nsimage(const QPixmap &pm);
 void qt_mac_update_mouseTracking(QWidget *widget);
 OSStatus qt_mac_drawCGImage(CGContextRef cg, const CGRect *inbounds, CGImageRef);
@@ -132,6 +134,7 @@ void qt_dispatchTabletProximityEvent(void * /*NSEvent * */ tabletEvent);
 #ifdef QT_MAC_USE_COCOA
 bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);
 #endif
+void qt_mac_menu_collapseSeparators(void * /*NSMenu */ menu, bool collapse);
 bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);
 void qt_dispatchModifiersChanged(void * /*NSEvent * */flagsChangedEvent, QWidget *widgetToGetEvent);
 void qt_mac_dispatchNCMouseMessage(void */* NSWindow* */eventWindow, void */* NSEvent* */mouseEvent, 
@@ -143,6 +146,9 @@ struct ::TabletProximityRec;
 void qt_dispatchTabletProximityEvent(const ::TabletProximityRec &proxRec);
 Qt::KeyboardModifiers qt_cocoaModifiers2QtModifiers(ulong modifierFlags);
 Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations);
+QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height);
+void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayIcon, QIcon *retIcon,
+                                      QStyle::StandardPixmap standardIcon = QStyle::SP_CustomBase);
 inline int flipYCoordinate(int y)
 {
     return QApplication::desktop()->screenGeometry(0).height() - y;    

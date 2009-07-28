@@ -259,7 +259,6 @@ void MainWindow::createActions()
     connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
 
     closeAct = new QAction(tr("Cl&ose"), this);
-    closeAct->setShortcut(tr("Ctrl+F4"));
     closeAct->setStatusTip(tr("Close the active window"));
     connect(closeAct, SIGNAL(triggered()),
             mdiArea, SLOT(closeActiveSubWindow()));

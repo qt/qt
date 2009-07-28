@@ -263,9 +263,8 @@ public:
     struct QMacMenuPrivate {
         QList<QMacMenuAction*> actionItems;
         OSMenuRef menu;
-        QMenuPrivate *qmenu;
-        QMacMenuPrivate(QMenuPrivate *menu);
-        ~QMacMenuPrivate();    
+        QMacMenuPrivate();
+        ~QMacMenuPrivate();
 
         bool merged(const QAction *action) const;
         void addAction(QAction *, QMacMenuAction* =0, QMenuPrivate *qmenu = 0);
@@ -285,6 +284,7 @@ public:
     } *mac_menu;
     OSMenuRef macMenu(OSMenuRef merge);
     void setMacMenuEnabled(bool enable = true);
+    void syncSeparatorsCollapsible(bool collapsible);
     static QHash<OSMenuRef, OSMenuRef> mergeMenuHash;
     static QHash<OSMenuRef, QMenuMergeList*> mergeMenuItemsHash;
 #endif

@@ -50,6 +50,10 @@
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -2132,3 +2136,4 @@ void tst_QProcess::invalidProgramString()
 
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"
+#endif

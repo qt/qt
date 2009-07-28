@@ -1697,6 +1697,7 @@
     \value ToolButtonTextOnly Only display the text.
     \value ToolButtonTextBesideIcon The text appears beside the icon.
     \value ToolButtonTextUnderIcon The text appears under the icon.
+    \value ToolButtonFollowStyle Follow the \l{QStyle::SH_ToolButtonStyle}{style}.
 */
 
 /*!

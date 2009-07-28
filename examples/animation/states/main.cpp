@@ -124,10 +124,9 @@ int main(int argc, char *argv[])
     scene.addItem(p6);
 
     QStateMachine machine;
-    QState *root = machine.rootState();
-    QState *state1 = new QState(root);
-    QState *state2 = new QState(root);
-    QState *state3 = new QState(root);
+    QState *state1 = new QState(&machine);
+    QState *state2 = new QState(&machine);
+    QState *state3 = new QState(&machine);
     machine.setInitialState(state1);
 
     // State 1

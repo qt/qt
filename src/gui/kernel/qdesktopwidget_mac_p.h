@@ -64,7 +64,8 @@ public:
     int appScreen;
     int screenCount;
 
-    NSArray *displays;
+    QVector<QRectF> availableRects; 
+    QVector<QRectF> screenRects; 
 
     QRect availableRect(int screenIndex) const;
     QRect screenRect(int screenIndex) const;
