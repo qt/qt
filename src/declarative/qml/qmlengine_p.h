@@ -193,12 +193,9 @@ public:
     bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return=0) const;
     void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
 
-
-    static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
 
-    static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
 };
 

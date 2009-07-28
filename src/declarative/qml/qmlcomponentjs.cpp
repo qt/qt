@@ -84,7 +84,7 @@ QScriptValue QmlComponentJS::createObject()
 {
     Q_D(QmlComponentJS);
     QObject* ret = create(d->ctxt);
-    return QmlEnginePrivate::qmlScriptObject(ret, d->engine);
+    return QmlEngine::qmlScriptObject(ret, d->engine);
 }
 
 /*!
