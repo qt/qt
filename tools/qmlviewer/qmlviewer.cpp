@@ -16,9 +16,10 @@
 #include "qmlviewer.h"
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
-#include "qmlpalette.h"
 #include "qml.h"
 #include <private/qperformancelog_p.h>
+#include <QAbstractAnimation>
+#include <private/qabstractanimation_p.h>
 #include "deviceskin.h"
 
 #include <QNetworkDiskCache>
@@ -132,8 +133,6 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     devicemode = false;
     skin = 0;
     canvas = 0;
-    palette = 0;
-    disabledPalette = 0;
     record_autotime = 0;
     record_period = 20;
 
@@ -157,6 +156,14 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     layout->addWidget(canvas);
 
     setupProxy();
+
+    connect(&autoStartTimer, SIGNAL(triggered()), this, SLOT(autoStartRecording()));
+    connect(&autoStopTimer, SIGNAL(triggered()), this, SLOT(autoStopRecording()));
+    connect(&recordTimer, SIGNAL(triggered()), this, SLOT(recordFrame()));
+    autoStartTimer.setRunning(false);
+    autoStopTimer.setRunning(false);
+    recordTimer.setRunning(false);
+    recordTimer.setRepeating(true);
 }
 
 QMenuBar *QmlViewer::menuBar() const
@@ -302,7 +309,7 @@ void QmlViewer::takeSnapShot()
 
 void QmlViewer::toggleRecordingWithSelection()
 {
-    if (!recordTimer.isActive()) {
+    if (!recordTimer.isRunning()) {
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save Video File"), "", tr("Common Video files (*.avi *.mpeg *.mov);; GIF Animation (*.gif);; Individual PNG frames (*.png);; All ffmpeg formats (*.*)"));
         if (fileName.isEmpty())
             return;
@@ -319,7 +326,7 @@ void QmlViewer::toggleRecording()
         toggleRecordingWithSelection();
         return;
     }
-    bool recording = !recordTimer.isActive();
+    bool recording = !recordTimer.isRunning();
     recordAction->setText(recording ? tr("&Stop Recording Video\tF2") : tr("&Start Recording Video\tF2"));
     setRecording(recording);
 }
@@ -382,7 +389,6 @@ void QmlViewer::openQml(const QString& fileName)
         }
     }
 
-    setupPalettes();
     canvas->setUrl(url);
 
     QTime t;
@@ -405,19 +411,6 @@ void QmlViewer::openQml(const QString& fileName)
 #ifdef QTOPIA
     show();
 #endif
-}
-
-void QmlViewer:: setupPalettes()
-{
-    delete palette;
-    palette = new QmlPalette;
-    QmlContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("activePalette", palette);
-
-    delete disabledPalette;
-    disabledPalette = new QmlPalette;
-    disabledPalette->setColorGroup(QPalette::Disabled);
-    ctxt->setContextProperty("disabledPalette", disabledPalette);
 }
 
 void QmlViewer::setSkin(const QString& skinDirectory)
@@ -480,7 +473,7 @@ void QmlViewer::setSkin(const QString& skinDirectory)
 void QmlViewer::setAutoRecord(int from, int to)
 {
     record_autotime = to-from;
-    autoStartTimer.start(from,this);
+    autoStartTimer.setInterval(from);
 }
 
 void QmlViewer::setRecordArgs(const QStringList& a)
@@ -537,11 +530,15 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
 
 void QmlViewer::setRecording(bool on)
 {
-    if (on == recordTimer.isActive())
+    if (on == recordTimer.isRunning())
         return;
 
+    QUnifiedTimer::instance()->setTimingInterval(on ? record_period:16);
+    QUnifiedTimer::instance()->setConsistentTiming(on);
     if (on) {
-        recordTimer.start(record_period,this);
+        canvas->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+        recordTimer.setInterval(record_period);
+        recordTimer.setRunning(true);
         QString fmt = record_file.right(4).toLower();
         if (fmt != ".png" && fmt != ".gif") {
             // Stream video to ffmpeg
@@ -549,6 +546,7 @@ void QmlViewer::setRecording(bool on)
             QProcess *proc = new QProcess(this);
             connect(proc, SIGNAL(finished(int)), this, SLOT(ffmpegFinished(int)));
             frame_stream = proc;
+            frame = QImage(canvas->width(),canvas->height(),QImage::Format_RGB32);
 
             QStringList args;
             args << "-sameq"; // ie. high
@@ -567,7 +565,8 @@ void QmlViewer::setRecording(bool on)
             frame_stream = 0;
         }
     } else {
-        recordTimer.stop();
+        canvas->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
+        recordTimer.setRunning(false);
         if (frame_stream) {
             qDebug() << "Saving video...";
             frame_stream->close();
@@ -645,7 +644,7 @@ void QmlViewer::setRecording(bool on)
             frames.clear();
         }
     }
-    qDebug() << "Recording: " << (recordTimer.isActive()?"ON":"OFF");
+    qDebug() << "Recording: " << (recordTimer.isRunning()?"ON":"OFF");
 }
 
 void QmlViewer::ffmpegFinished(int code)
@@ -653,23 +652,25 @@ void QmlViewer::ffmpegFinished(int code)
     qDebug() << "ffmpeg returned" << code << frame_stream->readAllStandardError();
 }
 
-void QmlViewer::timerEvent(QTimerEvent *event)
+void QmlViewer::autoStartRecording()
 {
-    if (event->timerId() == recordTimer.timerId()) {
-        if (frame_stream) {
-            QImage frame = QPixmap::grabWidget(canvas).toImage();
-            frame_stream->write((char*)frame.bits(),frame.numBytes());
-        } else {
-            frames.append(new QImage(QPixmap::grabWidget(canvas).toImage()));
-        }
-        if (record_autotime && autoTimer.elapsed() >= record_autotime)
-            setRecording(false);
-    } else if (event->timerId() == autoStartTimer.timerId()) {
-        autoTimer.start();
-        autoStartTimer.stop();
-        setRecording(true);
+    setRecording(true);
+    autoStopTimer.setInterval(record_autotime);
+    autoStopTimer.setRunning(true);
+}
+
+void QmlViewer::autoStopRecording()
+{
+    setRecording(true);
+}
+
+void QmlViewer::recordFrame()
+{
+    canvas->QWidget::render(&frame);
+    if (frame_stream) {
+        frame_stream->write((char*)frame.bits(),frame.numBytes());
     } else {
-        QWidget::timerEvent(event);
+        frames.append(new QImage(frame));
     }
 }
 

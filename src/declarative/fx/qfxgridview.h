@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 class QFxVisualItemModel;
+class QFxGridViewAttached;
 class QFxGridViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
 {
@@ -109,7 +110,7 @@ public:
     int cellHeight() const;
     void setCellHeight(int);
 
-    static QObject *qmlAttachedProperties(QObject *);
+    static QFxGridViewAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void countChanged();

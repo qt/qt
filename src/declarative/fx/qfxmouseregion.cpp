@@ -46,7 +46,7 @@
 
 
 QT_BEGIN_NAMESPACE
-static const int DragThreshold = 5;
+static const qreal DragThreshold = 5;
 static const int PressAndHoldDelay = 800;
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Drag,QFxDrag)
@@ -85,12 +85,12 @@ void QFxDrag::setAxis(const QString &a)
 
     If x-axis dragging is enabled, xmin limits how far to the left the target can be dragged. If x-axis dragging is not enabled, this property has no effect.
 */
-int QFxDrag::xmin() const
+qreal QFxDrag::xmin() const
 {
     return _xmin;
 }
 
-void QFxDrag::setXmin(int m)
+void QFxDrag::setXmin(qreal m)
 {
     _xmin = m;
 }
@@ -101,12 +101,12 @@ void QFxDrag::setXmin(int m)
 
     If x-axis dragging is enabled, xmax limits how far to the right the target can be dragged. If x-axis dragging is not enabled, this property has no effect.
 */
-int QFxDrag::xmax() const
+qreal QFxDrag::xmax() const
 {
     return _xmax;
 }
 
-void QFxDrag::setXmax(int m)
+void QFxDrag::setXmax(qreal m)
 {
     _xmax = m;
 }
@@ -117,12 +117,12 @@ void QFxDrag::setXmax(int m)
 
     If y-axis dragging is enabled, ymin limits how far up the target can be dragged. If y-axis dragging is not enabled, this property has no effect.
 */
-int QFxDrag::ymin() const
+qreal QFxDrag::ymin() const
 {
     return _ymin;
 }
 
-void QFxDrag::setYmin(int m)
+void QFxDrag::setYmin(qreal m)
 {
     _ymin = m;
 }
@@ -133,12 +133,12 @@ void QFxDrag::setYmin(int m)
 
     If y-axis dragging is enabled, ymax limits how far down the target can be dragged. If y-axis dragging is not enabled, this property has no effect.
 */
-int QFxDrag::ymax() const
+qreal QFxDrag::ymax() const
 {
     return _ymax;
 }
 
-void QFxDrag::setYmax(int m)
+void QFxDrag::setYmax(qreal m)
 {
     _ymax = m;
 }
@@ -266,21 +266,21 @@ QFxMouseRegion::~QFxMouseRegion()
 }
 
 /*!
-    \qmlproperty int MouseRegion::mouseX
-    \qmlproperty int MouseRegion::mouseY
+    \qmlproperty real MouseRegion::mouseX
+    \qmlproperty real MouseRegion::mouseY
 
     The coordinates of the mouse while pressed. The coordinates are relative to the item that was pressed.
 */
-int QFxMouseRegion::mouseX() const
+qreal QFxMouseRegion::mouseX() const
 {
     Q_D(const QFxMouseRegion);
-    return int(d->lastPos.x());
+    return d->lastPos.x();
 }
 
-int QFxMouseRegion::mouseY() const
+qreal QFxMouseRegion::mouseY() const
 {
     Q_D(const QFxMouseRegion);
-    return int(d->lastPos.y());
+    return d->lastPos.y();
 }
 
 /*!
@@ -342,8 +342,8 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (drag()->target()) {
         if (!d->moved) {
-            if (d->dragX) d->startX = int(drag()->target()->x());   //### change startX and startY to qreal?
-            if (d->dragY) d->startY = int(drag()->target()->y());
+            if (d->dragX) d->startX = drag()->target()->x();
+            if (d->dragY) d->startY = drag()->target()->y();
         }
 
         QPointF startLocalPos;
@@ -356,8 +356,8 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             curLocalPos = event->scenePos();
         }
 
-        int dx = int(qAbs(curLocalPos.x() - startLocalPos.x()));
-        int dy = int(qAbs(curLocalPos.y() - startLocalPos.y()));
+        qreal dx = qAbs(curLocalPos.x() - startLocalPos.x());
+        qreal dy = qAbs(curLocalPos.y() - startLocalPos.y());
         if ((d->dragX && !(dx < DragThreshold)) || (d->dragY && !(dy < DragThreshold)))
             d->dragged = true;
         if (!keepMouseGrab()) {
@@ -530,10 +530,10 @@ QFxDrag *QFxMouseRegion::drag()
 /*!
     \qmlproperty Item MouseRegion::drag.target
     \qmlproperty string MouseRegion::drag.axis
-    \qmlproperty int MouseRegion::drag.xmin
-    \qmlproperty int MouseRegion::drag.xmax
-    \qmlproperty int MouseRegion::drag.ymin
-    \qmlproperty int MouseRegion::drag.ymax
+    \qmlproperty real MouseRegion::drag.xmin
+    \qmlproperty real MouseRegion::drag.xmax
+    \qmlproperty real MouseRegion::drag.ymin
+    \qmlproperty real MouseRegion::drag.ymax
 
     drag provides a convenient way to make an item draggable.
 

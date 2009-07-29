@@ -11,6 +11,8 @@ Rect {
 //        folder: "E:"
     }
 
+    Palette { id: activePalette; colorGroup: "Active" }
+
     Component {
         id: FolderDelegate
         Rect {
