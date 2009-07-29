@@ -26,6 +26,7 @@ class PreviewDeviceSkin;
 class QFxTestEngine;
 class QmlPalette;
 class QProcess;
+class RecordingDialog;
 
 class QmlViewer : public QWidget
 {
@@ -34,10 +35,9 @@ public:
     QmlViewer(QWidget *parent=0, Qt::WindowFlags flags=0);
 
     void setRecordDither(const QString& s) { record_dither = s; }
-    void setRecordPeriod(int ms);
+    void setRecordRate(int fps);
     void setRecordFile(const QString&);
     void setRecordArgs(const QStringList&);
-    int recordPeriod() const { return record_period; }
     void setRecording(bool on);
     bool isRecording() const { return recordTimer.isRunning(); }
     void setAutoRecord(int from, int to);
@@ -69,10 +69,13 @@ private slots:
     void autoStartRecording();
     void autoStopRecording();
     void recordFrame();
+    void chooseRecordingOptions();
+    void pickRecordingFile();
 
 private:
     void setupProxy();
     void setupPalettes();
+    QString getVideoFileName();
 
     QString currentFileName;
     PreviewDeviceSkin *skin;
@@ -81,6 +84,7 @@ private:
     QmlPalette *palette;
     QmlPalette *disabledPalette;
     QmlTimer recordTimer;
+    QString frame_fmt;
     QImage frame;
     QList<QImage*> frames;
     QProcess* frame_stream;
@@ -89,13 +93,20 @@ private:
     QString record_dither;
     QString record_file;
     QStringList record_args;
-    int record_period;
+    int record_rate;
     int record_autotime;
     bool devicemode;
     QAction *recordAction;
     QString currentSkin;
     bool scaleSkin;
     mutable QMenuBar *mb;
+    RecordingDialog *recdlg;
+
+    void senseImageMagick();
+    void senseFfmpeg();
+    QWidget *ffmpegHelpWindow;
+    bool ffmpegAvailable;
+    bool convertAvailable;
 };
 
 QT_END_NAMESPACE

@@ -12,6 +12,7 @@
 ****************************************************************************/
 
 #include <qfxview.h>
+#include "ui_recopts.h"
 
 #include "qmlviewer.h"
 #include <QtDeclarative/qmlcontext.h>
@@ -30,6 +31,7 @@
 #include <QWidget>
 #include <QApplication>
 #include <QDir>
+#include <QTextBrowser>
 #include <QFile>
 #include <QFileInfo>
 #include <QVBoxLayout>
@@ -127,6 +129,79 @@ void PreviewDeviceSkin::slotPopupMenu()
     menu->exec(QCursor::pos());
 }
 
+static struct { const char *name, *args; } ffmpegprofiles[] = {
+    {"Maximum Quality", "-sameq"},
+    {"High Quality", "-qcomp 0.75"},
+    {"Medium Quality", "-qcomp 0.5"},
+    {"Low Quality", "-qcomp 0.2"},
+    {"Custom ffmpeg arguments", ""},
+    {0,0}
+};
+
+class RecordingDialog : public QDialog, public Ui::RecordingOptions {
+    Q_OBJECT
+
+public:
+    RecordingDialog(QWidget *parent) : QDialog(parent)
+    {
+        setupUi(this);
+        hz->setValidator(new QDoubleValidator(hz));
+        for (int i=0; ffmpegprofiles[i].name; ++i) {
+            profile->addItem(ffmpegprofiles[i].name);
+        }
+    }
+
+    void setArguments(QString a)
+    {
+        int i;
+        for (i=0; ffmpegprofiles[i].args[0]; ++i) {
+            if (ffmpegprofiles[i].args == a) {
+                profile->setCurrentIndex(i);
+                args->setText(QLatin1String(ffmpegprofiles[i].args));
+                return;
+            }
+        }
+        customargs = a;
+        args->setText(a);
+        profile->setCurrentIndex(i);
+    }
+
+    QString arguments() const
+    {
+        int i = profile->currentIndex();
+        return ffmpegprofiles[i].args[0] ? QLatin1String(ffmpegprofiles[i].args) : customargs;
+    }
+
+private slots:
+    void pickProfile(int i)
+    {
+        if (ffmpegprofiles[i].args[0]) {
+            args->setText(QLatin1String(ffmpegprofiles[i].args));
+        } else {
+            args->setText(customargs);
+        }
+    }
+
+    void storeCustomArgs(QString s)
+    {
+        setArguments(s);
+    }
+
+private:
+    QString customargs;
+};
+
+QString QmlViewer::getVideoFileName()
+{
+    QString title = convertAvailable || ffmpegAvailable ? tr("Save Video File") : tr("Save PNG Frames");
+    QStringList types;
+    if (ffmpegAvailable) types += tr("Common Video files")+QLatin1String(" (*.avi *.mpeg *.mov)");
+    if (convertAvailable) types += tr("GIF Animation")+QLatin1String(" (*.gif)");
+    types += tr("Individual PNG frames")+QLatin1String(" (*.png)");
+    if (ffmpegAvailable) types += tr("All ffmpeg formats (*.*)");
+    return QFileDialog::getSaveFileName(this, title, "", types.join(";; "));
+}
+
 
 QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
@@ -137,7 +212,28 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     palette = 0;
     disabledPalette = 0;
     record_autotime = 0;
-    record_period = 20;
+    record_rate = 50;
+    record_args += QLatin1String("-sameq");
+
+    recdlg = new RecordingDialog(this);
+    connect(recdlg->pickfile, SIGNAL(clicked()), this, SLOT(pickRecordingFile()));
+    senseFfmpeg();
+    senseImageMagick();
+    if (!ffmpegAvailable)
+        recdlg->ffmpegOptions->hide();
+    if (!ffmpegAvailable && !convertAvailable)
+        recdlg->rateOptions->hide();
+    QString warn;
+    if (!ffmpegAvailable) {
+        if (!convertAvailable)
+            warn = tr("ffmpeg and ImageMagick not available - no video output");
+        else
+            warn = tr("ffmpeg not available - GIF and PNG outputs only");
+        recdlg->warning->setText(warn);
+    } else {
+        recdlg->warning->hide();
+    }
+        
 
     if (!(flags & Qt::FramelessWindowHint))
         createMenu(menuBar(),0);
@@ -204,6 +300,10 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     recordAction = new QAction(tr("Start Recording &Video\tF2"), parent);
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
+
+    QAction *recordOptions = new QAction(tr("Recording &Options..."), parent);
+    connect(recordOptions, SIGNAL(triggered()), this, SLOT(chooseRecordingOptions()));
+    recordMenu->addAction(recordOptions);
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -310,15 +410,57 @@ void QmlViewer::takeSnapShot()
     ++snapshotcount;
 }
 
+void QmlViewer::pickRecordingFile()
+{
+    QString fileName = getVideoFileName();
+    if (!fileName.isEmpty())
+        recdlg->file->setText(fileName);
+}
+
+void QmlViewer::chooseRecordingOptions()
+{
+    recdlg->file->setText(record_file);
+    if (record_rate == 24)
+        recdlg->hz24->setChecked(true);
+    else if (record_rate == 25)
+        recdlg->hz25->setChecked(true);
+    else if (record_rate == 50)
+        recdlg->hz50->setChecked(true);
+    else if (record_rate == 60)
+        recdlg->hz60->setChecked(true);
+    else {
+        recdlg->hzCustom->setChecked(true);
+        recdlg->hz->setText(QString::number(record_rate));
+    }
+    recdlg->setArguments(record_args.join(" "));
+    if (recdlg->exec()) {
+        record_file = recdlg->file->text();
+        if (recdlg->hz24->isChecked())
+            record_rate = 24;
+        else if (recdlg->hz25->isChecked())
+            record_rate = 25;
+        else if (recdlg->hz50->isChecked())
+            record_rate = 50;
+        else if (recdlg->hz60->isChecked())
+            record_rate = 60;
+        else {
+            record_rate = recdlg->hz->text().toDouble();
+        }
+        record_args = recdlg->arguments().split(" ",QString::SkipEmptyParts);
+    }
+}
+
 void QmlViewer::toggleRecordingWithSelection()
 {
     if (!recordTimer.isRunning()) {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Video File"), "", tr("Common Video files (*.avi *.mpeg *.mov);; GIF Animation (*.gif);; Individual PNG frames (*.png);; All ffmpeg formats (*.*)"));
-        if (fileName.isEmpty())
-            return;
-        if (!fileName.contains(QRegExp(".[^\\/]*$")))
-            fileName += ".avi";
-        setRecordFile(fileName);
+        if (record_file.isEmpty()) {
+            QString fileName = getVideoFileName();
+            if (fileName.isEmpty())
+                return;
+            if (!fileName.contains(QRegExp(".[^\\/]*$")))
+                fileName += ".avi";
+            setRecordFile(fileName);
+        }
     }
     toggleRecording();
 }
@@ -503,9 +645,9 @@ void QmlViewer::setRecordFile(const QString& f)
     record_file = f;
 }
 
-void QmlViewer::setRecordPeriod(int ms)
+void QmlViewer::setRecordRate(int fps)
 {
-    record_period = ms;
+    record_rate = fps;
 }
 
 void QmlViewer::sceneResized(QSize size)
@@ -545,32 +687,63 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
+void QmlViewer::senseImageMagick()
+{
+    QProcess proc;
+    proc.start("convert", QStringList() << "-h");
+    proc.waitForFinished(2000);
+    QString help = proc.readAllStandardOutput();
+    convertAvailable = help.contains("ImageMagick");
+}
+
+void QmlViewer::senseFfmpeg()
+{
+    QProcess proc;
+    proc.start("ffmpeg", QStringList() << "-h");
+    proc.waitForFinished(2000);
+    QString ffmpegHelp = proc.readAllStandardOutput();
+    ffmpegAvailable = ffmpegHelp.contains("-s ");
+    ffmpegHelp = tr("Video recording use ffmpeg:")+"\n\n"+ffmpegHelp;
+
+    QDialog *d = new QDialog(recdlg);
+    QVBoxLayout *l = new QVBoxLayout(d);
+    QTextBrowser *b = new QTextBrowser(d);
+    QFont f = b->font();
+    f.setFamily("courier");
+    b->setFont(f);
+    b->setText(ffmpegHelp);
+    l->addWidget(b);
+    d->setLayout(l);
+    ffmpegHelpWindow = d;
+    connect(recdlg->ffmpegHelp,SIGNAL(clicked()), ffmpegHelpWindow, SLOT(show()));
+}
+
 void QmlViewer::setRecording(bool on)
 {
     if (on == recordTimer.isRunning())
         return;
 
-    QUnifiedTimer::instance()->setTimingInterval(on ? record_period:16);
+    int period = int(1000/record_rate+0.5);
+    QUnifiedTimer::instance()->setTimingInterval(on ? period:16);
     QUnifiedTimer::instance()->setConsistentTiming(on);
     if (on) {
         canvas->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-        recordTimer.setInterval(record_period);
+        recordTimer.setInterval(period);
         recordTimer.setRunning(true);
-        QString fmt = record_file.right(4).toLower();
-        if (fmt != ".png" && fmt != ".gif") {
+        frame_fmt = record_file.right(4).toLower();
+        frame = QImage(canvas->width(),canvas->height(),QImage::Format_RGB32);
+        if (frame_fmt != ".png" && (!convertAvailable || frame_fmt != ".gif")) {
             // Stream video to ffmpeg
 
             QProcess *proc = new QProcess(this);
             connect(proc, SIGNAL(finished(int)), this, SLOT(ffmpegFinished(int)));
             frame_stream = proc;
-            frame = QImage(canvas->width(),canvas->height(),QImage::Format_RGB32);
 
             QStringList args;
-            args << "-sameq"; // ie. high
             args << "-y";
-            args << "-r" << QString::number(1000/record_period);
+            args << "-r" << QString::number(record_rate);
             args << "-f" << "rawvideo";
-            args << "-pix_fmt" << "rgb32";
+            args << "-pix_fmt" << (frame_fmt == ".gif" ? "rgb24" : "rgb32");
             args << "-s" << QString("%1x%2").arg(canvas->width()).arg(canvas->height());
             args << "-i" << "-";
             args += record_args;
@@ -635,7 +808,7 @@ void QmlViewer::setRecording(bool on)
                     // ImageMagick and gifsicle for GIF encoding
                     progress.setLabelText(tr("Converting frames to GIF file..."));
                     QStringList args;
-                    args << "-delay" << QString::number(record_period/10);
+                    args << "-delay" << QString::number(period/10);
                     args << inputs;
                     args << record_file;
                     qDebug() << "Converting..." << record_file << "(this may take a while)";
@@ -685,7 +858,13 @@ void QmlViewer::recordFrame()
 {
     canvas->QWidget::render(&frame);
     if (frame_stream) {
-        frame_stream->write((char*)frame.bits(),frame.numBytes());
+        if (frame_fmt == ".gif") {
+            // ffmpeg can't do 32bpp with gif
+            QImage rgb24 = frame.convertToFormat(QImage::Format_RGB888);
+            frame_stream->write((char*)rgb24.bits(),rgb24.numBytes());
+        } else {
+            frame_stream->write((char*)frame.bits(),frame.numBytes());
+        }
     } else {
         frames.append(new QImage(frame));
     }
