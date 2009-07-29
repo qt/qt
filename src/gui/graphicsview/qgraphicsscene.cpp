@@ -2356,6 +2356,10 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
+    // Auto-activate the first inactive window if the scene is active.
+    if (d->activationRefCount > 0 && !d->activeWindow && item->isWindow())
+        setActiveWindow(static_cast<QGraphicsWidget *>(item));
+
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
     if (!d->focusItem && item->focusItem())
