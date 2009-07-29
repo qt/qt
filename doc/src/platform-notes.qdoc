@@ -378,9 +378,6 @@
     improve support for this feature.
 */
 
-    \row    \o \l{QNX}           \o Intel 32-bit, PowerPC   \o unsupported/qnx-<arch>-g++       \o QNX 6.4 GCC
-    \row    \o VxWorks           \o Intel 32-bit, PowerPC   \o unsupported/vxworks-<arch>-g++   \o VxWorks 6.7 GCC
-
 /*!
     \page platform-notes-windows-ce.html
     \title Platform Notes - Windows CE
