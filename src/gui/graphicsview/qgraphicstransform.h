@@ -65,7 +65,7 @@ public:
     QTransform transform() const;
     virtual void applyTo(QTransform *transform) const = 0;
 
-protected slots:
+protected Q_SLOTS:
     void update();
 
 protected:
