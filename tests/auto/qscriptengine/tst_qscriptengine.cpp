@@ -487,8 +487,9 @@ void tst_QScriptEngine::newRegExp()
         QScriptValue r5 = rxCtor.construct(QScriptValueList() << r);
         QVERIFY(r5.isRegExp());
         QCOMPARE(r5.toString(), QString::fromLatin1("/foo/gim"));
-        QEXPECT_FAIL("", "Constructing regexp from another gives back identical object (bug in JSC?)", Continue);
-        QVERIFY(!r5.strictlyEquals(r));
+        // In JSC, constructing a RegExp from another produces the same identical object.
+        // This is different from SpiderMonkey and old back-end.
+        QVERIFY(r5.strictlyEquals(r));
 
         QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
         QVERIFY(r6.isError());
@@ -504,12 +505,12 @@ void tst_QScriptEngine::newRegExp()
 
         QScriptValue r9 = rxCtor.construct();
         QVERIFY(r9.isRegExp());
-        QEXPECT_FAIL("", "String representation of regexp with empty pattern is wrong", Continue);
+        QEXPECT_FAIL("", "JSC: String representation of regexp with empty pattern is wrong", Continue);
         QCOMPARE(r9.toString(), QString::fromLatin1("/(?:)/"));
 
         QScriptValue r10 = rxCtor.construct(QScriptValueList() << "" << "gim");
         QVERIFY(r10.isRegExp());
-        QEXPECT_FAIL("", "String representation of regexp with empty pattern is wrong", Continue);
+        QEXPECT_FAIL("", "JSC: String representation of regexp with empty pattern is wrong", Continue);
         QCOMPARE(r10.toString(), QString::fromLatin1("/(?:)/gim"));
 
         QScriptValue r11 = rxCtor.construct(QScriptValueList() << "{1.*}" << "g");
@@ -976,26 +977,26 @@ void tst_QScriptEngine::globalObjectProperties()
     QVERIFY(global.property("Error").isFunction());
     QCOMPARE(global.propertyFlags("Error"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("EvalError").isFunction());
-    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC doesn't set DontEnum flag for Error constructors", Continue);
     QCOMPARE(global.propertyFlags("EvalError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("RangeError").isFunction());
-    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC doesn't set DontEnum flag for Error constructors", Continue);
     QCOMPARE(global.propertyFlags("RangeError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("ReferenceError").isFunction());
-    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC doesn't set DontEnum flag for Error constructors", Continue);
     QCOMPARE(global.propertyFlags("ReferenceError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("SyntaxError").isFunction());
-    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC doesn't set DontEnum flag for Error constructors", Continue);
     QCOMPARE(global.propertyFlags("SyntaxError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("TypeError").isFunction());
-    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC doesn't set DontEnum flag for Error constructors", Continue);
     QCOMPARE(global.propertyFlags("TypeError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("URIError").isFunction());
-    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC doesn't set DontEnum flag for Error constructors", Continue);
     QCOMPARE(global.propertyFlags("URIError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("Math").isObject());
     QVERIFY(!global.property("Math").isFunction());
-    QEXPECT_FAIL("", "JSC sets DontDelete flag for Math object", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object", Continue);
     QCOMPARE(global.propertyFlags("Math"), QScriptValue::SkipInEnumeration);
 
     // enumeration
@@ -3325,7 +3326,7 @@ void tst_QScriptEngine::continueInSwitch()
 
 void tst_QScriptEngine::readOnlyPrototypeProperty()
 {
-    QSKIP("JSC is wrong?", SkipAll);
+    QSKIP("JSC semantics differ from old back-end and SpiderMonkey", SkipAll);
     QScriptEngine eng;
     QCOMPARE(eng.evaluate("o = {}; o.__proto__ = parseInt; o.length").toInt32(), 2);
     QCOMPARE(eng.evaluate("o.length = 4; o.length").toInt32(), 2);
@@ -3572,6 +3573,7 @@ void tst_QScriptEngine::throwInsideWithStatement()
         QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bad"));
     }
     {
+        eng.clearExceptions();
         QScriptValue ret = eng.evaluate(
             "o = { bug : \"no bug\" };"
             "with (o) {"
@@ -3581,12 +3583,12 @@ void tst_QScriptEngine::throwInsideWithStatement()
             "    bug;"
             "  }"
             "}");
-        QEXPECT_FAIL("", "Test is wrong?", Continue);
-        QVERIFY(ret.isString());
-        QEXPECT_FAIL("", "Test is wrong?", Continue);
-        QCOMPARE(ret.toString(), QString::fromLatin1("no bug"));
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
+        QVERIFY(eng.hasUncaughtException());
     }
     {
+        eng.clearExceptions();
         QScriptValue ret = eng.evaluate(
             "o = { bug : \"no bug\" };"
             "with (o) {"
