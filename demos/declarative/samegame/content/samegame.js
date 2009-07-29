@@ -21,6 +21,10 @@ function initBoard()
             board[i].destroy();
     }
 
+    maxX = Math.floor(gameCanvas.width/tileSize);
+    maxY = Math.floor(gameCanvas.height/tileSize);
+    maxIndex = maxY*maxX;
+
     //Initialize Board
     board = new Array(maxIndex);
     gameCanvas.score = 0;
