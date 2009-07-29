@@ -9939,6 +9939,11 @@ QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem syste
 
 void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
 {
+    if (!info) {
+        qWarning("QGraphicsEffectSource::draw: Can only begin as a result of QGraphicsEffect::draw");
+        return;
+    }
+
     if (painter == info->painter) {
         QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
         scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
@@ -9956,29 +9961,50 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
 
 QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
 {
+    const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
+    if (!info && deviceCoordinates) {
+        // Device coordinates without info not yet supported.
+        qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
+        return QPixmap();
+    }
+
     const QRectF sourceRect = boundingRect(system);
     const QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
     if (offset)
         *offset = sourceRect.toAlignedRect().topLeft();
 
-    const QTransform translateTransform = QTransform::fromTranslate(-effectRect.x(),
-                                                                    -effectRect.y());
-    const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
-    QTransform effectTransform = deviceCoordinates ? translateTransform
-                                                   : info->transformPtr->inverted();
-    if (!deviceCoordinates)
-        effectTransform *= translateTransform;
-    *info->transformPtr *= effectTransform;
-
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);
     QPainter pixmapPainter(&pixmap);
-    pixmapPainter.setRenderHints(info->painter->renderHints());
+    pixmapPainter.setRenderHints(info ? info->painter->renderHints() : QPainter::TextAntialiasing);
 
-    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
-    scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
-                 info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
-                 info->drawItem);
+    const QTransform translateTransform = QTransform::fromTranslate(-effectRect.x(),
+                                                                    -effectRect.y());
+    if (!info) {
+        // Logical coordinates without info.
+        QTransform sceneTransform = item->sceneTransform();
+        QTransform effectTransform = sceneTransform.inverted();
+        effectTransform *= translateTransform;
+
+        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+        scened->draw(item, &pixmapPainter, 0, &sceneTransform, 0, 0, qreal(1.0),
+                     &effectTransform, false, true);
+    } else if (deviceCoordinates) {
+        // Device coordinates with info.
+        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+        scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
+                     info->widget, info->opacity, &translateTransform, info->wasDirtySceneTransform,
+                     info->drawItem);
+    } else {
+        // Item coordinates with info.
+        QTransform effectTransform = info->transformPtr->inverted();
+        effectTransform *= translateTransform;
+
+        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+        scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
+                     info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
+                     info->drawItem);
+    }
     return pixmap;
 }
 
