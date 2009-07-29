@@ -1425,7 +1425,7 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestLog::stopLogging();
 }
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 class FatalSignalHandler
 {
 public:
@@ -1601,7 +1601,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     } else
 #endif
     {
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
         FatalSignalHandler handler;
 #endif
         qInvokeTestMethods(testObject);
