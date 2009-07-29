@@ -536,6 +536,18 @@ static inline void* currentThreadStackBase()
     stack_t s;
     thr_stksegment(&s);
     return s.ss_sp;
+#elif PLATFORM(AIX)
+    pthread_t thread = pthread_self();
+    struct __pthrdsinfo threadinfo;
+    char regbuf[256];
+    int regbufsize = sizeof regbuf;
+
+    if (pthread_getthrds_np(&thread, PTHRDSINFO_QUERY_ALL,
+                            &threadinfo, sizeof threadinfo,
+                            &regbuf, &regbufsize) == 0)
+        return threadinfo.__pi_stackaddr;
+
+    return 0;
 #elif PLATFORM(OPENBSD)
     pthread_t thread = pthread_self();
     stack_t stack;
