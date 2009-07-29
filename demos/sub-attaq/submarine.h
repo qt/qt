@@ -45,6 +45,7 @@
 //Qt
 #include <QtCore/QVariantAnimation>
 #include <QtGui/QGraphicsWidget>
+#include <QtGui/QGraphicsTransform>
 
 class PixmapItem;
 
@@ -75,6 +76,8 @@ public:
 
     virtual int type() const;
 
+    QGraphicsRotation3D *rotation3d() const { return graphicsRotation; }
+
 signals:
     void subMarineDestroyed();
     void subMarineExecutionFinished();
@@ -87,6 +90,7 @@ private:
     int speed;
     Movement direction;
     PixmapItem *pixmapItem;
+    QGraphicsRotation3D *graphicsRotation;
 };
 
 #endif //__SUBMARINE__H__

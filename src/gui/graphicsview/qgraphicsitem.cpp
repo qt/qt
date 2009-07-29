@@ -1197,6 +1197,13 @@ QGraphicsItem::~QGraphicsItem()
     else
         d_ptr->setParentItemHelper(0);
 
+    if (d_ptr->transformData) {
+        for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
+            QGraphicsTransform *t = d_ptr->transformData->graphicsTransforms.at(i);
+            static_cast<QGraphicsTransformPrivate *>(t->d_ptr)->item = 0;
+            delete t;
+        }
+    }
     delete d_ptr->transformData;
     delete d_ptr;
 
@@ -2980,94 +2987,19 @@ QTransform QGraphicsItem::transform() const
 /*!
     \since 4.6
 
-    Returns the rotation around the X axis.
-
-    The default is 0
-
-    \warning The value doesn't take in account any rotation set with
-    the setTransform() method.
-
-    \sa setXRotation(), {Transformations}
-*/
-qreal QGraphicsItem::xRotation() const
-{
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->xRotation;
-}
-
-/*!
-    \since 4.6
-
-    Sets the rotation around the X axis to \a angle degrees.
-
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa xRotation(), setTransformOrigin(), {Transformations}
-*/
-void QGraphicsItem::setXRotation(qreal angle)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xRotation = angle;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the rotation around the Y axis.
-
-    The default is 0
-
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa setYRotation(), {Transformations}
-*/
-qreal QGraphicsItem::yRotation() const
-{
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->yRotation;
-}
-
-/*!
-    \since 4.6
-
-    Sets the rotation around the Y axis to \a angle degrees.
-
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa yRotation(), setTransformOrigin() {Transformations}
-*/
-void QGraphicsItem::setYRotation(qreal angle)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->yRotation = angle;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
     Returns the rotation around the Z axis.
 
     The default is 0
 
     \warning The value doesn't take in account any rotation set with the setTransform() method.
 
-    \sa setZRotation(), {Transformations}
+    \sa setRotation(), {Transformations}
 */
-qreal QGraphicsItem::zRotation() const
+qreal QGraphicsItem::rotation() const
 {
     if (!d_ptr->transformData)
         return 0;
-    return d_ptr->transformData->zRotation;
+    return d_ptr->transformData->rotation;
 }
 
 /*!
@@ -3077,224 +3009,107 @@ qreal QGraphicsItem::zRotation() const
 
     \warning The value doesn't take in account any rotation set with the setTransform() method.
 
-    \sa zRotation(), setTransformOrigin(), {Transformations}
+    \sa rotation(), setTransformOriginPoint(), {Transformations}
 */
-void QGraphicsItem::setZRotation(qreal angle)
+void QGraphicsItem::setRotation(qreal angle)
 {
     prepareGeometryChange();
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->zRotation = angle;
+    d_ptr->transformData->rotation = angle;
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->rotationChanged();
 }
 
 /*!
     \since 4.6
 
-    This convenience function set the rotation angles around the 3 axes
-    to \a x, \a y and \a z.
-
-    \sa setXRotation(), setYRotation(), setZRotation(), {Transformations}
-*/
-void QGraphicsItem::setRotation(qreal x, qreal y, qreal z)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xRotation = x;
-    d_ptr->transformData->yRotation = y;
-    d_ptr->transformData->zRotation = z;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the scale factor on the X axis.
+    Returns the scale factor of the item.
 
     The default is 1
 
     \warning The value doesn't take in account any scaling set with the setTransform() method.
 
-    \sa setXScale(), {Transformations}
+    \sa setScale(), {Transformations}
 */
-qreal QGraphicsItem::xScale() const
+qreal QGraphicsItem::scale() const
 {
     if (!d_ptr->transformData)
-        return 1;
-    return d_ptr->transformData->xScale;
+        return 1.;
+    return d_ptr->transformData->scale;
 }
 
 /*!
     \since 4.6
 
-    Sets the scale factor on the X axis to \a factor.
+    Sets the scale factor of the item to \a factor.
 
     \warning The value doesn't take in account any scaling set with the setTransform() method.
 
-    \sa xScale(), setTransformOrigin(), {Transformations}
+    \sa scale(), setTransformOriginPoint(), {Transformations}
 */
-void QGraphicsItem::setXScale(qreal factor)
+void QGraphicsItem::setScale(qreal factor)
 {
     prepareGeometryChange();
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xScale = factor;
+    d_ptr->transformData->scale = factor;
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->scaleChanged();
 }
+
 
 /*!
     \since 4.6
 
-    Returns the scale factor on the Y axis.
+    returns list of graphics transformations on the item.
 
-    The default is 1
-
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa setYScale(), {Transformations}
+    \sa scale(), setTransformOriginPoint(), {Transformations}
 */
-qreal QGraphicsItem::yScale() const
+QList<QGraphicsTransform *> QGraphicsItem::transformations() const
 {
     if (!d_ptr->transformData)
-        return 1;
-    return d_ptr->transformData->yScale;
+        return QList<QGraphicsTransform *>();
+    return d_ptr->transformData->graphicsTransforms;
 }
 
 /*!
     \since 4.6
 
-    Sets the scale factor on the Y axis to \a factor.
+    Sets a list of graphics transformations on the item to \a transformations.
 
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa yScale(), setTransformOrigin(), {Transformations}
+    \sa scale(), setTransformOriginPoint(), {Transformations}
 */
-void QGraphicsItem::setYScale(qreal factor)
+void QGraphicsItem::setTransformations(const QList<QGraphicsTransform *> &transformations)
 {
     prepareGeometryChange();
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->yScale = factor;
+    d_ptr->transformData->graphicsTransforms = transformations;
+    for (int i = 0; i < transformations.size(); ++i)
+        transformations.at(i)->d_func()->setItem(this);
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
-/*!
-    \since 4.6
 
-    This convenience function set the scaling factors on X and Y axis to \a sx and \a sy.
-
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa setXScale(), setYScale(), {Transformations}
-*/
-void QGraphicsItem::setScale(qreal sx, qreal sy)
+void QGraphicsItemPrivate::appendGraphicsTransform(QGraphicsTransform *t)
 {
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xScale = sx;
-    d_ptr->transformData->yScale = sy;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
+    if (!transformData)
+        transformData = new QGraphicsItemPrivate::TransformData;
+    if (!transformData->graphicsTransforms.contains(t))
+        transformData->graphicsTransforms.append(t);
 
-/*!
-    \since 4.6
-
-    Returns the horizontal shear.
-
-    The default is 0
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa setHorizontalShear(), {Transformations}
-*/
-qreal QGraphicsItem::horizontalShear() const
-{
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->horizontalShear;
-}
-
-/*!
-    \since 4.6
-
-    Sets the horizontal shear to \a shear.
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa horizontalShear(), {Transformations}
-*/
-void QGraphicsItem::setHorizontalShear(qreal shear)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->horizontalShear = shear;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the vertical shear.
-
-    The default is 0
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa setHorizontalShear(), {Transformations}
-*/
-qreal QGraphicsItem::verticalShear() const
-{
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->verticalShear;
-}
-
-/*!
-    \since 4.6
-
-    Sets the vertical shear to \a shear.
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa verticalShear(), {Transformations}
-*/
-void QGraphicsItem::setVerticalShear(qreal shear)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->verticalShear = shear;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    This convenience function sets the horizontal shear to \a sh and the vertical shear to \a sv.
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa setHorizontalShear(), setVerticalShear()
-*/
-void QGraphicsItem::setShear(qreal sh, qreal sv)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->horizontalShear = sh;
-    d_ptr->transformData->verticalShear = sv;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
+    Q_Q(QGraphicsItem);
+    t->d_func()->setItem(q);
+    transformData->onlyTransform = false;
+    dirtySceneTransform = 1;
 }
 
 /*!
@@ -3304,9 +3119,9 @@ void QGraphicsItem::setShear(qreal sh, qreal sv)
 
     The default is QPointF(0,0).
 
-    \sa setTransformOrigin(), {Transformations}
+    \sa setTransformOriginPoint(), {Transformations}
 */
-QPointF QGraphicsItem::transformOrigin() const
+QPointF QGraphicsItem::transformOriginPoint() const
 {
     if (!d_ptr->transformData)
         return QPointF(0,0);
@@ -3318,9 +3133,9 @@ QPointF QGraphicsItem::transformOrigin() const
 
     Sets the \a origin point for the transformation in item coordinates.
 
-    \sa transformOrigin(), {Transformations}
+    \sa transformOriginPoint(), {Transformations}
 */
-void QGraphicsItem::setTransformOrigin(const QPointF &origin)
+void QGraphicsItem::setTransformOriginPoint(const QPointF &origin)
 {
     prepareGeometryChange();
     if (!d_ptr->transformData)
@@ -3332,15 +3147,15 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 }
 
 /*!
-    \fn void QGraphicsItem::setTransformOrigin(qreal x, qreal y)
+    \fn void QGraphicsItem::setTransformOriginPoint(qreal x, qreal y)
 
     \since 4.6
     \overload
 
     Sets the origin point for the transformation in item coordinates.
-    This is equivalent to calling setTransformOrigin(QPointF(\a x, \a y)).
+    This is equivalent to calling setTransformOriginPoint(QPointF(\a x, \a y)).
 
-    \sa setTransformOrigin(), {Transformations}
+    \sa setTransformOriginPoint(), {Transformations}
 */
 
 
@@ -3619,7 +3434,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 
     \warning using this function doesnt affect the value of the transformation properties
 
-    \sa transform(), setRotation(), setScale(), setShear(), setTransformOrigin(), {The Graphics View Coordinate System}, {Transformations}
+    \sa transform(), setRotation(), setScale(), setTransformOriginPoint(), {The Graphics View Coordinate System}, {Transformations}
 */
 void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 {
@@ -3733,7 +3548,7 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 
 /*!
     \obsolete
-    Use setPos() or setTransformOrigin() instead.
+    Use setPos() or setTransformOriginPoint() instead.
 
     Translates the current item transformation by (\a dx, \a dy).
 
@@ -6857,6 +6672,41 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \sa pos()
 */
 
+/*!
+  \property QGraphicsObject::rotation
+  This property holds the rotation of the item in degrees.
+
+  This specifies how many degrees to rotate the item around its transformOrigin.
+  The default rotation is 0 degrees (i.e. not rotated at all).
+*/
+
+/*!
+  \fn QGraphicsObject::rotationChanged()
+
+  This signal gets emitted whenever the roation of the item changes.
+*/
+
+/*!
+  \property QGraphicsObject::scale
+  This property holds the scale of the item.
+
+  A scale of less than 1 means the item will be displayed smaller than
+  normal, and a scale of greater than 1 means the item will be
+  displayed larger than normal.  A negative scale means the item will
+  be mirrored.
+
+  By default, items are displayed at a scale of 1 (i.e. at their
+  normal size).
+
+  Scaling is from the item's transformOrigin.
+*/
+
+/*!
+  \fn void QGraphicsObject::scaleChanged()
+
+  This signal is emitted when the scale of the item changes.
+*/
+
 
 /*!
   \property QGraphicsObject::enabled
@@ -6896,6 +6746,15 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \sa visible
 */
 
+/*!
+  \property QGraphicsObject::transformOriginPoint
+  \brief the transformation origin
+
+  This property sets a specific point in the items coordiante system as the
+  origin for scale and rotation.
+
+  \sa scale, rotation, QGraphicsItem::transformOriginPoint()
+*/
 
 
 /*!

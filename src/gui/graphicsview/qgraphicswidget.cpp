@@ -1728,39 +1728,6 @@ QGraphicsWidget *QGraphicsWidget::focusWidget() const
     return 0;
 }
 
-/*! \property QGraphicsWidget::horizontalShear
-  \brief This property holds the horizontal shear value for the item.
- */
-
-/*! \property QGraphicsWidget::transformOrigin
-    \brief This property holds the origin point used for transformations
-    in item coordinates.
- */
-
-/*! \property QGraphicsWidget::verticalShear
-  \brief This property holds the vertical shear value for the item.
- */
-
-/*! \property QGraphicsWidget::xRotation
-  \brief This property holds the value for rotation around the x axis.
- */
-
-/*! \property QGraphicsWidget::xScale
-  \brief This property holds the scale factor for the x axis.
- */
-
-/*! \property QGraphicsWidget::yRotation
-  \brief This property holds the value for rotation around the y axis.
- */
-
-/*! \property QGraphicsWidget::yScale
-  \brief This property holds the scale factor for the y axis.
- */
-
-/*! \property QGraphicsWidget::zRotation
-  \brief This property holds the value for rotation around the z axis.
- */
-
 #ifndef QT_NO_SHORTCUT
 /*!
     \since 4.5
