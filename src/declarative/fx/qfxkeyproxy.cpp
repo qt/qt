@@ -181,10 +181,17 @@ void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
 
 QVariant QFxKeyProxy::inputMethodQuery(Qt::InputMethodQuery query) const
 {
+    struct QFxItemAccessor : public QFxItem {
+        public:
+            QVariant inputMethodQuery(Qt::InputMethodQuery query) const {
+                return QGraphicsItem::inputMethodQuery(query);
+            }
+    };
+
     for (int ii = 0; ii < d->targets.count(); ++ii) {
         QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
         if (i && (i->options() & AcceptsInputMethods) && i == d->imeItem) { //### how robust is i == d->imeItem check?
-            QVariant v = i->inputMethodQuery(query);
+            QVariant v = ((QFxItemAccessor*)i)->inputMethodQuery(query);
             if (v.type() == QVariant::RectF)
                 v = mapRectFromItem(i, v.toRectF());  //### cost?
             return v;

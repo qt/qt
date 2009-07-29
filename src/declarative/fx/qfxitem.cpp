@@ -1725,6 +1725,8 @@ void QFxItem::classBegin()
     d->_componentComplete = false;
     if (d->_stateGroup)
         d->_stateGroup->classBegin();
+    if (d->_anchors)
+        d->_anchors->classBegin();
 }
 
 /*!
@@ -1743,8 +1745,10 @@ void QFxItem::componentComplete()
     d->_componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
-    if (d->_anchors) 
-        d->anchors()->d_func()->updateOnComplete();
+    if (d->_anchors) {
+        d->_anchors->componentComplete(); 
+        d->_anchors->d_func()->updateOnComplete();
+    }
 }
 
 QmlStateGroup *QFxItemPrivate::states()
@@ -2162,24 +2166,6 @@ void QFxItemPrivate::gvAddMouseFilter()
     Q_Q(QFxItem);
     if (q->scene())
         q->installSceneEventFilter(q);
-}
-
-QPixmap QFxItem::string(const QString &str, const QColor &c, const QFont &f)
-{
-    QFontMetrics fm(f);
-    QSize size(fm.width(str), fm.height()*(str.count(QLatin1Char('\n'))+1)); //fm.boundingRect(str).size();
-    QPixmap img(size);
-    img.fill(Qt::transparent);
-    QPainter p(&img);
-    p.setPen(c);
-    p.setFont(f);
-    p.drawText(img.rect(), Qt::AlignVCenter, str);
-    return img;
-}
-
-QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
-{
-    return QGraphicsItem::inputMethodQuery(query);
 }
 
 QT_END_NAMESPACE

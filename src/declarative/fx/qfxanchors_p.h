@@ -66,7 +66,8 @@ public:
       : updatingMe(false), updatingHorizontalAnchor(0),
         updatingVerticalAnchor(0), item(0), usedAnchors(0), fill(0),
         centeredIn(0), leftMargin(0), rightMargin(0), topMargin(0), 
-        bottomMargin(0), vCenterOffset(0), hCenterOffset(0)
+        bottomMargin(0), vCenterOffset(0), hCenterOffset(0),
+        componentComplete(true)
     {
     }
 
@@ -126,6 +127,7 @@ public:
     qreal vCenterOffset;
     qreal hCenterOffset;
 
+    bool componentComplete;
 };
 
 QT_END_NAMESPACE

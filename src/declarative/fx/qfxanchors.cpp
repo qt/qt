@@ -237,7 +237,19 @@ void QFxAnchorsPrivate::remDepend(QFxItem *item)
 
 bool QFxAnchorsPrivate::isItemComplete() const
 {
-    return item->isComponentComplete();
+    return componentComplete;
+}
+
+void QFxAnchors::classBegin()
+{
+    Q_D(QFxAnchors);
+    d->componentComplete = false;
+}
+
+void QFxAnchors::componentComplete()
+{
+    Q_D(QFxAnchors);
+    d->componentComplete = true;
 }
 
 void QFxAnchorsPrivate::setItemHeight(qreal v)

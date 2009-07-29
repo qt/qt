@@ -144,6 +144,8 @@ public:
             Q_Q(QFxItem);
             _anchors = new QFxAnchors;
             _anchors->setItem(q);
+            if (!_componentComplete)
+                _anchors->classBegin();
         }
         return _anchors;
     }

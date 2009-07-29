@@ -147,6 +147,9 @@ public:
 
     void setItem(QFxItem *item);
 
+    void classBegin();
+    void componentComplete();
+
 Q_SIGNALS:
     void leftMarginChanged();
     void rightMarginChanged();

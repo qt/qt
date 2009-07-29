@@ -208,8 +208,6 @@ public:
 
     QmlList<QGraphicsTransform *> *transform();
 
-    bool isComponentComplete() const;
-
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
@@ -241,10 +239,6 @@ public:
 
     bool hasActiveFocus() const;
 
-    static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont()); // ### remove me, make private for now
-
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;  //### for KeyProxy
-
 public Q_SLOTS:
     void newChild(const QString &url);
 
@@ -266,6 +260,7 @@ Q_SIGNALS:
     void newChildCreated(const QString &url, QScriptValue);
 
 protected:
+    bool isComponentComplete() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     virtual void childrenChanged();
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
