@@ -517,6 +517,13 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
 
+    // ### Qt 5: Disambiguate
+#ifdef Q_NO_USING_KEYWORD
+    const QObjectList &children() const { return QObject::children(); }
+#else
+    using QObject::children;
+#endif
+
 Q_SIGNALS:
     void parentChanged();
     void opacityChanged();
