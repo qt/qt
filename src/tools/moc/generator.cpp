@@ -408,8 +408,8 @@ void Generator::generateCode()
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
             for (int k = j; k >= 0; --k)
                 fprintf(out, "static_cast< %s*>(", iface.at(k).className.constData());
-            fprintf(out, "%sconst_cast< %s*>(this)%s;\n",
-                    (iface.at(j).isCast?"*":""), cdef->classname.constData(), QByteArray(j+1, ')').constData());
+            fprintf(out, "const_cast< %s*>(this)%s;\n",
+                    cdef->classname.constData(), QByteArray(j+1, ')').constData());
         }
     }
     if (!purestSuperClass.isEmpty() && !isQObject) {

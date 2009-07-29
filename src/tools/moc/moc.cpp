@@ -652,11 +652,8 @@ void Moc::parse()
                 case Q_CLASSINFO_TOKEN:
                     parseClassInfo(&def);
                     break;
-                case Q_CAST_INTERFACES_TOKEN:
-                    parseInterfaces(&def, true);
-                    break;
                 case Q_INTERFACES_TOKEN:
-                    parseInterfaces(&def, false);
+                    parseInterfaces(&def);
                     break;
                 case Q_PRIVATE_SLOT_TOKEN:
                     parseSlotInPrivate(&def, access);
@@ -1058,12 +1055,12 @@ void Moc::parseClassInfo(ClassDef *def)
     def->classInfoList += infoDef;
 }
 
-void Moc::parseInterfaces(ClassDef *def, bool isCast)
+void Moc::parseInterfaces(ClassDef *def)
 {
     next(LPAREN);
     while (test(IDENTIFIER)) {
         QList<ClassDef::Interface> iface;
-        iface += ClassDef::Interface(lexem(), isCast);
+        iface += ClassDef::Interface(lexem());
         while (test(SCOPE)) {
             iface.last().className += lexem();
             next(IDENTIFIER);
@@ -1071,7 +1068,7 @@ void Moc::parseInterfaces(ClassDef *def, bool isCast)
         }
         while (test(COLON)) {
             next(IDENTIFIER);
-            iface += ClassDef::Interface(lexem(), isCast);
+            iface += ClassDef::Interface(lexem());
             while (test(SCOPE)) {
                 iface.last().className += lexem();
                 next(IDENTIFIER);

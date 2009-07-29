@@ -237,7 +237,6 @@ static const Keyword keywords[] = {
     { "Q_SETS", "Q_FLAGS_TOKEN" },
     { "Q_CLASSINFO", "Q_CLASSINFO_TOKEN" },
     { "Q_INTERFACES", "Q_INTERFACES_TOKEN" },
-    { "Q_CAST_INTERFACES", "Q_CAST_INTERFACES_TOKEN" },
     { "signals", "SIGNALS" },
     { "slots", "SLOTS" },
     { "Q_SIGNALS", "Q_SIGNALS_TOKEN" },
