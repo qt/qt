@@ -43,6 +43,7 @@
 #define QNETWORKCOOKIEJAR_H
 
 #include <QtCore/QObject>
+#include <QtCore/QUrl>
 
 QT_BEGIN_HEADER
 
