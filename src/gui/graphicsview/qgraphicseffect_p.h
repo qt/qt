@@ -92,6 +92,7 @@ public:
             delete source;
         }
         source = newSource;
+        q_func()->sourceChanged(newSource);
     }
     QRectF boundingRect;
     QPixmap sourcePixmap;

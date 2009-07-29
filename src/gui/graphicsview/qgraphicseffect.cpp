@@ -187,12 +187,21 @@ bool QGraphicsEffect::isEnabled() const
     return d->isEnabled;
 }
 
+QGraphicsEffectSource *QGraphicsEffect::source() const
+{
+    Q_D(const QGraphicsEffect);
+    return d->source;
+}
+
 void QGraphicsEffect::updateBoundingRect()
 {
     Q_D(QGraphicsEffect);
     if (d->source)
         d->source->update();
 }
+
+void QGraphicsEffect::sourceChanged(QGraphicsEffectSource *)
+{}
 
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
     : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)
