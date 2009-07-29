@@ -1492,7 +1492,7 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     // connect(function)
     QCOMPARE(m_engine->evaluate("myObject.mySignal.connect(123)").isError(), true);
 
-    m_engine->evaluate("myHandler = function() { global.gotSignal = true; global.signalArgs = arguments; global.slotThisObject = this; global.signalSender = __qt_sender__; }");
+    m_engine->evaluate("myHandler = function() { global.gotSignal = true; global.signalArgs = arguments; global.slotThisObject = this; }");
 
     m_myObject->clearConnectedSignal();
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myHandler)").isUndefined());
@@ -1502,8 +1502,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_engine->evaluate("myObject.mySignal()");
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 0.0);
-    QEXPECT_FAIL("", "__qt_sender__ not implemented", Continue);
-    QCOMPARE(m_engine->evaluate("signalSender").toQObject(), (QObject *)m_myObject);
     QVERIFY(m_engine->evaluate("slotThisObject").strictlyEquals(m_engine->globalObject()));
 
     m_engine->evaluate("gotSignal = false");
@@ -1636,8 +1634,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 0.0);
     QVERIFY(m_engine->evaluate("slotThisObject").strictlyEquals(m_engine->evaluate("otherObject")));
-    QEXPECT_FAIL("", "__qt_sender__ not implemented", Continue);
-    QVERIFY(m_engine->evaluate("signalSender").strictlyEquals(m_engine->evaluate("myObject")));
     QCOMPARE(m_engine->evaluate("slotThisObject").property("name").toString(), QLatin1String("foo"));
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(otherObject, myHandler)").isUndefined());
 
@@ -1648,8 +1644,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
     QVERIFY(m_engine->evaluate("slotThisObject").strictlyEquals(m_engine->evaluate("yetAnotherObject")));
-    QEXPECT_FAIL("", "__qt_sender__ not implemented", Continue);
-    QVERIFY(m_engine->evaluate("signalSender").strictlyEquals(m_engine->evaluate("myObject")));
     QCOMPARE(m_engine->evaluate("slotThisObject").property("name").toString(), QLatin1String("bar"));
     QVERIFY(m_engine->evaluate("myObject.mySignal2.disconnect(yetAnotherObject, myHandler)").isUndefined());
 
@@ -1659,8 +1653,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
     QCOMPARE(m_engine->evaluate("slotThisObject").toQObject(), (QObject *)m_myObject);
-    QEXPECT_FAIL("", "__qt_sender__ not implemented", Continue);
-    QVERIFY(m_engine->evaluate("signalSender").strictlyEquals(m_engine->evaluate("myObject")));
     QVERIFY(m_engine->evaluate("myObject.mySignal2.disconnect(myObject, myHandler)").isUndefined());
 
     // connect(obj, string)
