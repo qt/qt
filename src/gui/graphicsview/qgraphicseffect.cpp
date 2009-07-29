@@ -424,7 +424,7 @@ int QGraphicsBlurEffect::blurRadius() const
 void QGraphicsBlurEffect::setBlurRadius(int radius)
 {
     Q_D(QGraphicsBlurEffect);
-    d->filter->setBlurRadius(radius);
+    d->filter->setRadius(radius);
     updateBoundingRect();
 }
 

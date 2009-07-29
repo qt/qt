@@ -246,25 +246,11 @@ void QGraphicsShaderEffect::setPixelShaderFragment(const QByteArray& code)
 /*!
     \reimp
 */
-void QGraphicsShaderEffect::draw(QPainter *painter)
+void QGraphicsShaderEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsShaderEffect);
 
 #ifdef QGL_HAVE_CUSTOM_SHADERS
-    // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(sourceBoundingRect());
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return;
-
-    if (deviceRect.x() != 0 || deviceRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-deviceRect.x(), -deviceRect.y());
-
-    QPixmap pixmap(deviceRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
-        return;
-
     // Set the custom shader on the paint engine.  The setOnPainter()
     // call may fail if the paint engine is not GL2.  In that case,
     // we fall through to drawing the pixmap normally.
@@ -274,17 +260,25 @@ void QGraphicsShaderEffect::draw(QPainter *painter)
     }
     bool usingShader = d->customShaderStage->setOnPainter(painter);
 
-    // Draw using an untransformed painter.
-    QTransform restoreTransform = painter->worldTransform();
-    painter->setWorldTransform(QTransform());
-    painter->drawPixmap(deviceRect.topLeft(), pixmap);
-    painter->setWorldTransform(restoreTransform);
+    QPoint offset;
+    if (source->isPixmap()) {
+        // No point in drawing in device coordinates (pixmap will be scaled anyways).
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        painter->drawPixmap(offset, pixmap);
+    } else {
+        // Draw pixmap in device coordinates to avoid pixmap scaling.
+        const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+        QTransform restoreTransform = painter->worldTransform();
+        painter->setWorldTransform(QTransform());
+        painter->drawPixmap(offset, pixmap);
+        painter->setWorldTransform(restoreTransform);
+    }
 
     // Remove the custom shader to return to normal painting operations.
     if (usingShader)
         d->customShaderStage->removeFromPainter(painter);
 #else
-    drawSource(painter);
+    source->draw(painter);
 #endif
 }
 
