@@ -21,6 +21,7 @@
 #ifndef JSWebKitCSSMatrix_h
 #define JSWebKitCSSMatrix_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class WebKitCSSMatrix;
 
-class JSWebKitCSSMatrix : public DOMObject {
-    typedef DOMObject Base;
+class JSWebKitCSSMatrix : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSWebKitCSSMatrix(PassRefPtr<JSC::Structure>, PassRefPtr<WebKitCSSMatrix>);
+    JSWebKitCSSMatrix(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebKitCSSMatrix>);
     virtual ~JSWebKitCSSMatrix();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -51,7 +52,7 @@ private:
     RefPtr<WebKitCSSMatrix> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, WebKitCSSMatrix*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, WebKitCSSMatrix*);
 WebKitCSSMatrix* toWebKitCSSMatrix(JSC::JSValue);
 
 class JSWebKitCSSMatrixPrototype : public JSC::JSObject {

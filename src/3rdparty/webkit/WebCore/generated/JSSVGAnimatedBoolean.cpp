@@ -71,9 +71,8 @@ JSObject* JSSVGAnimatedBooleanPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGAnimatedBoolean::s_info = { "SVGAnimatedBoolean", 0, &JSSVGAnimatedBooleanTable, 0 };
 
-JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimatedBoolean> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedBoolean> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -95,15 +94,17 @@ bool JSSVGAnimatedBoolean::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsSVGAnimatedBooleanBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedBoolean* castedThis = static_cast<JSSVGAnimatedBoolean*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(static_cast<JSSVGAnimatedBoolean*>(asObject(slot.slotBase()))->impl());
+    SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(castedThis->impl());
     return jsBoolean(imp->baseVal());
 }
 
 JSValue jsSVGAnimatedBooleanAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedBoolean* castedThis = static_cast<JSSVGAnimatedBoolean*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(static_cast<JSSVGAnimatedBoolean*>(asObject(slot.slotBase()))->impl());
+    SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(castedThis->impl());
     return jsBoolean(imp->animVal());
 }
 
@@ -120,9 +121,9 @@ void setJSSVGAnimatedBooleanBaseVal(ExecState* exec, JSObject* thisObject, JSVal
         static_cast<JSSVGAnimatedBoolean*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAnimatedBoolean*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedBoolean* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedBoolean* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGAnimatedBoolean>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGAnimatedBoolean>(exec, globalObject, object, context);
 }
 SVGAnimatedBoolean* toSVGAnimatedBoolean(JSC::JSValue value)
 {

@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "JSSVGPODTypeWrapper.h"
 #include "SVGElement.h"
@@ -32,10 +33,10 @@
 
 namespace WebCore {
 
-class JSSVGLength : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGLength : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGLength(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> >, SVGElement* context);
+    JSSVGLength(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> >, SVGElement* context);
     virtual ~JSSVGLength();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,22 +49,20 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom attributes
     JSC::JSValue value(JSC::ExecState*) const;
 
     // Custom functions
     JSC::JSValue convertToSpecifiedUnits(JSC::ExecState*, const JSC::ArgList&);
-    JSSVGPODTypeWrapper<SVGLength>* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
+    JSSVGPODTypeWrapper<SVGLength> * impl() const { return m_impl.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
     RefPtr<JSSVGPODTypeWrapper<SVGLength> > m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<SVGLength>*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<SVGLength>*, SVGElement* context);
 SVGLength toSVGLength(JSC::JSValue);
 
 class JSSVGLengthPrototype : public JSC::JSObject {

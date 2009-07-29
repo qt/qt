@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGNumberList;
 
-class JSSVGNumberList : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGNumberList : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGNumberList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGNumberList>, SVGElement* context);
+    JSSVGNumberList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGNumberList>, SVGElement* context);
     virtual ~JSSVGNumberList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,14 +49,12 @@ public:
     }
 
     SVGNumberList* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGNumberList > m_impl;
+    RefPtr<SVGNumberList> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGNumberList*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGNumberList*, SVGElement* context);
 SVGNumberList* toSVGNumberList(JSC::JSValue);
 
 class JSSVGNumberListPrototype : public JSC::JSObject {

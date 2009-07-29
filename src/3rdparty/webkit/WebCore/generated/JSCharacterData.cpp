@@ -66,12 +66,12 @@ static JSC_CONST_HASHTABLE HashTable JSCharacterDataConstructorTable =
     { 1, 0, JSCharacterDataConstructorTableValues, 0 };
 #endif
 
-class JSCharacterDataConstructor : public DOMObject {
+class JSCharacterDataConstructor : public DOMConstructorObject {
 public:
-    JSCharacterDataConstructor(ExecState* exec)
-        : DOMObject(JSCharacterDataConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCharacterDataConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCharacterDataConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCharacterDataPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCharacterDataPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -123,8 +123,8 @@ bool JSCharacterDataPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSCharacterData::s_info = { "CharacterData", &JSNode::s_info, &JSCharacterDataTable, 0 };
 
-JSCharacterData::JSCharacterData(PassRefPtr<Structure> structure, PassRefPtr<CharacterData> impl)
-    : JSNode(structure, impl)
+JSCharacterData::JSCharacterData(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CharacterData> impl)
+    : JSNode(structure, globalObject, impl)
 {
 }
 
@@ -140,21 +140,24 @@ bool JSCharacterData::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsCharacterDataData(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CharacterData* imp = static_cast<CharacterData*>(static_cast<JSCharacterData*>(asObject(slot.slotBase()))->impl());
+    CharacterData* imp = static_cast<CharacterData*>(castedThis->impl());
     return jsString(exec, imp->data());
 }
 
 JSValue jsCharacterDataLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CharacterData* imp = static_cast<CharacterData*>(static_cast<JSCharacterData*>(asObject(slot.slotBase()))->impl());
+    CharacterData* imp = static_cast<CharacterData*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsCharacterDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCharacterData*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCharacterData* domObject = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
+    return JSCharacterData::getConstructor(exec, domObject->globalObject());
 }
 void JSCharacterData::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -169,9 +172,9 @@ void setJSCharacterDataData(ExecState* exec, JSObject* thisObject, JSValue value
     setDOMException(exec, ec);
 }
 
-JSValue JSCharacterData::getConstructor(ExecState* exec)
+JSValue JSCharacterData::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCharacterDataConstructor>(exec);
+    return getDOMConstructor<JSCharacterDataConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionSubstringData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

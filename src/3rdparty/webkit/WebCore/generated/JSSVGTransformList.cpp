@@ -90,9 +90,8 @@ bool JSSVGTransformListPrototype::getOwnPropertySlot(ExecState* exec, const Iden
 
 const ClassInfo JSSVGTransformList::s_info = { "SVGTransformList", 0, &JSSVGTransformListTable, 0 };
 
-JSSVGTransformList::JSSVGTransformList(PassRefPtr<Structure> structure, PassRefPtr<SVGTransformList> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGTransformList::JSSVGTransformList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTransformList> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -114,8 +113,9 @@ bool JSSVGTransformList::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsSVGTransformListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTransformList* castedThis = static_cast<JSSVGTransformList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTransformList* imp = static_cast<SVGTransformList*>(static_cast<JSSVGTransformList*>(asObject(slot.slotBase()))->impl());
+    SVGTransformList* imp = static_cast<SVGTransformList*>(castedThis->impl());
     return jsNumber(exec, imp->numberOfItems());
 }
 
@@ -192,7 +192,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionCreateSVGTransformFromM
     TransformationMatrix matrix = toSVGMatrix(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransformFromMatrix(matrix)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransformFromMatrix(matrix)).get(), castedThisObj->context());
     return result;
 }
 
@@ -205,13 +205,13 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionConsolidate(ExecState* 
     SVGTransformList* imp = static_cast<SVGTransformList*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->consolidate()).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->consolidate()).get(), castedThisObj->context());
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGTransformList* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGTransformList* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGTransformList>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGTransformList>(exec, globalObject, object, context);
 }
 SVGTransformList* toSVGTransformList(JSC::JSValue value)
 {

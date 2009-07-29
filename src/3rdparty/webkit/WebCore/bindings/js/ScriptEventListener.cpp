@@ -71,8 +71,9 @@ PassRefPtr<JSLazyEventListener> createAttributeEventListener(Node* node, Attribu
 
     // Ensure that 'node' has a JavaScript wrapper to mark the event listener we're creating.
     {
-        JSLock lock(false);
-        toJS(globalObject->globalExec(), node);
+        JSLock lock(SilenceAssertionsOnly);
+        // FIXME: Should pass the global object associated with the node
+        toJS(globalObject->globalExec(), globalObject, node);
     }
 
     return JSLazyEventListener::create(attr->localName().string(), eventParameterName(node->isSVGElement()), attr->value(), globalObject, node, scriptController->eventHandlerLineNumber());

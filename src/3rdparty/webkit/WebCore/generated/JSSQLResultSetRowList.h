@@ -23,6 +23,7 @@
 
 #if ENABLE(DATABASE)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class SQLResultSetRowList;
 
-class JSSQLResultSetRowList : public DOMObject {
-    typedef DOMObject Base;
+class JSSQLResultSetRowList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSQLResultSetRowList(PassRefPtr<JSC::Structure>, PassRefPtr<SQLResultSetRowList>);
+    JSSQLResultSetRowList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SQLResultSetRowList>);
     virtual ~JSSQLResultSetRowList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -55,7 +56,7 @@ private:
     RefPtr<SQLResultSetRowList> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SQLResultSetRowList*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SQLResultSetRowList*);
 SQLResultSetRowList* toSQLResultSetRowList(JSC::JSValue);
 
 class JSSQLResultSetRowListPrototype : public JSC::JSObject {

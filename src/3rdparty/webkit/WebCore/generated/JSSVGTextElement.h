@@ -33,7 +33,7 @@ class SVGTextElement;
 class JSSVGTextElement : public JSSVGTextPositioningElement {
     typedef JSSVGTextPositioningElement Base;
 public:
-    JSSVGTextElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGTextElement>);
+    JSSVGTextElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGTextElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

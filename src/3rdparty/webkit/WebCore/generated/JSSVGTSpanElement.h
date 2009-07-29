@@ -33,7 +33,7 @@ class SVGTSpanElement;
 class JSSVGTSpanElement : public JSSVGTextPositioningElement {
     typedef JSSVGTextPositioningElement Base;
 public:
-    JSSVGTSpanElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGTSpanElement>);
+    JSSVGTSpanElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGTSpanElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

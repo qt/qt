@@ -23,6 +23,7 @@
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class JavaScriptCallFrame;
 
-class JSJavaScriptCallFrame : public DOMObject {
-    typedef DOMObject Base;
+class JSJavaScriptCallFrame : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSJavaScriptCallFrame(PassRefPtr<JSC::Structure>, PassRefPtr<JavaScriptCallFrame>);
+    JSJavaScriptCallFrame(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JavaScriptCallFrame>);
     virtual ~JSJavaScriptCallFrame();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -60,7 +61,7 @@ private:
     RefPtr<JavaScriptCallFrame> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JavaScriptCallFrame*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JavaScriptCallFrame*);
 JavaScriptCallFrame* toJavaScriptCallFrame(JSC::JSValue);
 
 class JSJavaScriptCallFramePrototype : public JSC::JSObject {

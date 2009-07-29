@@ -23,6 +23,7 @@
 
 #if ENABLE(DATABASE)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class SQLTransaction;
 
-class JSSQLTransaction : public DOMObject {
-    typedef DOMObject Base;
+class JSSQLTransaction : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSQLTransaction(PassRefPtr<JSC::Structure>, PassRefPtr<SQLTransaction>);
+    JSSQLTransaction(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SQLTransaction>);
     virtual ~JSSQLTransaction();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -49,7 +50,7 @@ private:
     RefPtr<SQLTransaction> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SQLTransaction*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SQLTransaction*);
 SQLTransaction* toSQLTransaction(JSC::JSValue);
 
 class JSSQLTransactionPrototype : public JSC::JSObject {

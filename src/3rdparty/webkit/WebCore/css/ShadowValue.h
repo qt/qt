@@ -1,6 +1,6 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2008, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -35,9 +35,11 @@ public:
     static PassRefPtr<ShadowValue> create(PassRefPtr<CSSPrimitiveValue> x,
         PassRefPtr<CSSPrimitiveValue> y,
         PassRefPtr<CSSPrimitiveValue> blur,
+        PassRefPtr<CSSPrimitiveValue> spread,
+        PassRefPtr<CSSPrimitiveValue> style,
         PassRefPtr<CSSPrimitiveValue> color)
     {
-        return adoptRef(new ShadowValue(x, y, blur, color));
+        return adoptRef(new ShadowValue(x, y, blur, spread, style, color));
     }
 
     virtual String cssText() const;
@@ -45,12 +47,16 @@ public:
     RefPtr<CSSPrimitiveValue> x;
     RefPtr<CSSPrimitiveValue> y;
     RefPtr<CSSPrimitiveValue> blur;
+    RefPtr<CSSPrimitiveValue> spread;
+    RefPtr<CSSPrimitiveValue> style;
     RefPtr<CSSPrimitiveValue> color;
 
 private:
     ShadowValue(PassRefPtr<CSSPrimitiveValue> x,
         PassRefPtr<CSSPrimitiveValue> y,
         PassRefPtr<CSSPrimitiveValue> blur,
+        PassRefPtr<CSSPrimitiveValue> spread,
+        PassRefPtr<CSSPrimitiveValue> style,
         PassRefPtr<CSSPrimitiveValue> color);
 };
 

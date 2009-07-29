@@ -71,12 +71,12 @@ static JSC_CONST_HASHTABLE HashTable JSKeyboardEventConstructorTable =
     { 1, 0, JSKeyboardEventConstructorTableValues, 0 };
 #endif
 
-class JSKeyboardEventConstructor : public DOMObject {
+class JSKeyboardEventConstructor : public DOMConstructorObject {
 public:
-    JSKeyboardEventConstructor(ExecState* exec)
-        : DOMObject(JSKeyboardEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSKeyboardEventConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSKeyboardEventConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSKeyboardEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSKeyboardEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -124,8 +124,8 @@ bool JSKeyboardEventPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSKeyboardEvent::s_info = { "KeyboardEvent", &JSUIEvent::s_info, &JSKeyboardEventTable, 0 };
 
-JSKeyboardEvent::JSKeyboardEvent(PassRefPtr<Structure> structure, PassRefPtr<KeyboardEvent> impl)
-    : JSUIEvent(structure, impl)
+JSKeyboardEvent::JSKeyboardEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<KeyboardEvent> impl)
+    : JSUIEvent(structure, globalObject, impl)
 {
 }
 
@@ -141,60 +141,68 @@ bool JSKeyboardEvent::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsKeyboardEventKeyIdentifier(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    KeyboardEvent* imp = static_cast<KeyboardEvent*>(static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->impl());
+    KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
     return jsString(exec, imp->keyIdentifier());
 }
 
 JSValue jsKeyboardEventKeyLocation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    KeyboardEvent* imp = static_cast<KeyboardEvent*>(static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->impl());
+    KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
     return jsNumber(exec, imp->keyLocation());
 }
 
 JSValue jsKeyboardEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    KeyboardEvent* imp = static_cast<KeyboardEvent*>(static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->impl());
+    KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
     return jsBoolean(imp->ctrlKey());
 }
 
 JSValue jsKeyboardEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    KeyboardEvent* imp = static_cast<KeyboardEvent*>(static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->impl());
+    KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
     return jsBoolean(imp->shiftKey());
 }
 
 JSValue jsKeyboardEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    KeyboardEvent* imp = static_cast<KeyboardEvent*>(static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->impl());
+    KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
     return jsBoolean(imp->altKey());
 }
 
 JSValue jsKeyboardEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    KeyboardEvent* imp = static_cast<KeyboardEvent*>(static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->impl());
+    KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
     return jsBoolean(imp->metaKey());
 }
 
 JSValue jsKeyboardEventAltGraphKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    KeyboardEvent* imp = static_cast<KeyboardEvent*>(static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->impl());
+    KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
     return jsBoolean(imp->altGraphKey());
 }
 
 JSValue jsKeyboardEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSKeyboardEvent* domObject = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
+    return JSKeyboardEvent::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSKeyboardEvent::getConstructor(ExecState* exec)
+JSValue JSKeyboardEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSKeyboardEventConstructor>(exec);
+    return getDOMConstructor<JSKeyboardEventConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsKeyboardEventPrototypeFunctionInitKeyboardEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedLength : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedLength : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedLength(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedLength>, SVGElement* context);
+    JSSVGAnimatedLength(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedLength>, SVGElement* context);
     virtual ~JSSVGAnimatedLength();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,12 @@ public:
     }
 
     SVGAnimatedLength* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedLength > m_impl;
+    RefPtr<SVGAnimatedLength> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedLength*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedLength*, SVGElement* context);
 SVGAnimatedLength* toSVGAnimatedLength(JSC::JSValue);
 
 class JSSVGAnimatedLengthPrototype : public JSC::JSObject {

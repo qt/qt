@@ -75,12 +75,12 @@ static JSC_CONST_HASHTABLE HashTable JSSVGTextPathElementConstructorTable =
     { 18, 15, JSSVGTextPathElementConstructorTableValues, 0 };
 #endif
 
-class JSSVGTextPathElementConstructor : public DOMObject {
+class JSSVGTextPathElementConstructor : public DOMConstructorObject {
 public:
-    JSSVGTextPathElementConstructor(ExecState* exec)
-        : DOMObject(JSSVGTextPathElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGTextPathElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGTextPathElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGTextPathElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGTextPathElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -133,8 +133,8 @@ bool JSSVGTextPathElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
 
 const ClassInfo JSSVGTextPathElement::s_info = { "SVGTextPathElement", &JSSVGTextContentElement::s_info, &JSSVGTextPathElementTable, 0 };
 
-JSSVGTextPathElement::JSSVGTextPathElement(PassRefPtr<Structure> structure, PassRefPtr<SVGTextPathElement> impl)
-    : JSSVGTextContentElement(structure, impl)
+JSSVGTextPathElement::JSSVGTextPathElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextPathElement> impl)
+    : JSSVGTextContentElement(structure, globalObject, impl)
 {
 }
 
@@ -150,43 +150,48 @@ bool JSSVGTextPathElement::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsSVGTextPathElementStartOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->startOffsetAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementMethod(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->methodAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementSpacing(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->spacingAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSSVGTextPathElement* domObject = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
+    return JSSVGTextPathElement::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSSVGTextPathElement::getConstructor(ExecState* exec)
+JSValue JSSVGTextPathElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGTextPathElementConstructor>(exec);
+    return getDOMConstructor<JSSVGTextPathElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters

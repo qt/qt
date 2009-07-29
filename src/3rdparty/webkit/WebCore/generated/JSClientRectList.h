@@ -21,6 +21,7 @@
 #ifndef JSClientRectList_h
 #define JSClientRectList_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class ClientRectList;
 
-class JSClientRectList : public DOMObject {
-    typedef DOMObject Base;
+class JSClientRectList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSClientRectList(PassRefPtr<JSC::Structure>, PassRefPtr<ClientRectList>);
+    JSClientRectList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<ClientRectList>);
     virtual ~JSClientRectList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,7 +47,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     ClientRectList* impl() const { return m_impl.get(); }
 
 private:
@@ -54,7 +55,7 @@ private:
     static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, ClientRectList*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, ClientRectList*);
 ClientRectList* toClientRectList(JSC::JSValue);
 
 class JSClientRectListPrototype : public JSC::JSObject {

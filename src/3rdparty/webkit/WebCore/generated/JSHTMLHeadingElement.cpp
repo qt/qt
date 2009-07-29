@@ -62,12 +62,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLHeadingElementConstructorTable =
     { 1, 0, JSHTMLHeadingElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLHeadingElementConstructor : public DOMObject {
+class JSHTMLHeadingElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLHeadingElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLHeadingElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLHeadingElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLHeadingElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLHeadingElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLHeadingElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,8 +109,8 @@ JSObject* JSHTMLHeadingElementPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSHTMLHeadingElement::s_info = { "HTMLHeadingElement", &JSHTMLElement::s_info, &JSHTMLHeadingElementTable, 0 };
 
-JSHTMLHeadingElement::JSHTMLHeadingElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLHeadingElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLHeadingElement::JSHTMLHeadingElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLHeadingElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +126,16 @@ bool JSHTMLHeadingElement::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsHTMLHeadingElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLHeadingElement* castedThis = static_cast<JSHTMLHeadingElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLHeadingElement* imp = static_cast<HTMLHeadingElement*>(static_cast<JSHTMLHeadingElement*>(asObject(slot.slotBase()))->impl());
+    HTMLHeadingElement* imp = static_cast<HTMLHeadingElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLHeadingElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLHeadingElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLHeadingElement* domObject = static_cast<JSHTMLHeadingElement*>(asObject(slot.slotBase()));
+    return JSHTMLHeadingElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLHeadingElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -146,9 +148,9 @@ void setJSHTMLHeadingElementAlign(ExecState* exec, JSObject* thisObject, JSValue
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLHeadingElement::getConstructor(ExecState* exec)
+JSValue JSHTMLHeadingElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLHeadingElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLHeadingElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

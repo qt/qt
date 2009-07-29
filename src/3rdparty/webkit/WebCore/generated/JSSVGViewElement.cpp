@@ -89,8 +89,8 @@ bool JSSVGViewElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSSVGViewElement::s_info = { "SVGViewElement", &JSSVGElement::s_info, &JSSVGViewElementTable, 0 };
 
-JSSVGViewElement::JSSVGViewElement(PassRefPtr<Structure> structure, PassRefPtr<SVGViewElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGViewElement::JSSVGViewElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGViewElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -106,39 +106,44 @@ bool JSSVGViewElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsSVGViewElementViewTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGViewElement* castedThis = static_cast<JSSVGViewElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGViewElement* imp = static_cast<SVGViewElement*>(static_cast<JSSVGViewElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->viewTarget()), imp);
+    SVGViewElement* imp = static_cast<SVGViewElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->viewTarget()), imp);
 }
 
 JSValue jsSVGViewElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGViewElement* castedThis = static_cast<JSSVGViewElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGViewElement* imp = static_cast<SVGViewElement*>(static_cast<JSSVGViewElement*>(asObject(slot.slotBase()))->impl());
+    SVGViewElement* imp = static_cast<SVGViewElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGViewElementViewBox(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGViewElement* castedThis = static_cast<JSSVGViewElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGViewElement* imp = static_cast<SVGViewElement*>(static_cast<JSSVGViewElement*>(asObject(slot.slotBase()))->impl());
+    SVGViewElement* imp = static_cast<SVGViewElement*>(castedThis->impl());
     RefPtr<SVGAnimatedRect> obj = imp->viewBoxAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGViewElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGViewElement* castedThis = static_cast<JSSVGViewElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGViewElement* imp = static_cast<SVGViewElement*>(static_cast<JSSVGViewElement*>(asObject(slot.slotBase()))->impl());
+    SVGViewElement* imp = static_cast<SVGViewElement*>(castedThis->impl());
     RefPtr<SVGAnimatedPreserveAspectRatio> obj = imp->preserveAspectRatioAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGViewElementZoomAndPan(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGViewElement* castedThis = static_cast<JSSVGViewElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGViewElement* imp = static_cast<SVGViewElement*>(static_cast<JSSVGViewElement*>(asObject(slot.slotBase()))->impl());
+    SVGViewElement* imp = static_cast<SVGViewElement*>(castedThis->impl());
     return jsNumber(exec, imp->zoomAndPan());
 }
 

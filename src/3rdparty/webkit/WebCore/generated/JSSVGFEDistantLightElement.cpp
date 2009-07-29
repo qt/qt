@@ -73,8 +73,8 @@ JSObject* JSSVGFEDistantLightElementPrototype::self(ExecState* exec, JSGlobalObj
 
 const ClassInfo JSSVGFEDistantLightElement::s_info = { "SVGFEDistantLightElement", &JSSVGElement::s_info, &JSSVGFEDistantLightElementTable, 0 };
 
-JSSVGFEDistantLightElement::JSSVGFEDistantLightElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFEDistantLightElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFEDistantLightElement::JSSVGFEDistantLightElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDistantLightElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -90,18 +90,20 @@ bool JSSVGFEDistantLightElement::getOwnPropertySlot(ExecState* exec, const Ident
 
 JSValue jsSVGFEDistantLightElementAzimuth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEDistantLightElement* castedThis = static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->azimuthAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEDistantLightElementElevation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEDistantLightElement* castedThis = static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->elevationAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 
