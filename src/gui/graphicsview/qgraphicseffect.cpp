@@ -102,6 +102,29 @@
 
 */
 
+QGraphicsEffectSource::QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{}
+
+QGraphicsEffectSource::~QGraphicsEffectSource()
+{}
+
+QRectF QGraphicsEffectSource::boundingRect(bool deviceCoordinates) const
+{ return d_func()->boundingRect(deviceCoordinates); }
+
+const QGraphicsItem *QGraphicsEffectSource::graphicsItem() const
+{ return d_func()->graphicsItem(); }
+
+const QStyleOption *QGraphicsEffectSource::styleOption() const
+{ return d_func()->styleOption(); }
+
+void QGraphicsEffectSource::draw(QPainter *painter)
+{ d_func()->draw(painter); }
+
+bool QGraphicsEffectSource::drawIntoPixmap(QPixmap *pixmap, const QPoint &offset)
+{ return d_func()->drawIntoPixmap(pixmap, offset); }
+
+
 QGraphicsEffect::QGraphicsEffect()
     : QObject(*new QGraphicsEffectPrivate, 0)
 {}
@@ -121,31 +144,40 @@ QGraphicsEffect::~QGraphicsEffect()
 
 QRectF QGraphicsEffect::boundingRect() const
 {
-    return sourceBoundingRect();
-}
-
-QRectF QGraphicsEffect::sourceBoundingRect() const
-{
     Q_D(const QGraphicsEffect);
+    // return d->boundingRect;
     if (d->source)
-        return d->source->boundingRect();
+        return boundingRectFor(d->source->boundingRect());
     return QRectF();
 }
 
-void QGraphicsEffect::drawSource(QPainter *painter)
+QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
 {
-    Q_D(QGraphicsEffect);
-    if (d->source)
-        d->source->draw(painter);
+    return rect;
 }
 
-bool QGraphicsEffect::drawSourceIntoPixmap(QPixmap *pixmap, const QTransform &itemToPixmapTransform)
-{
-    Q_D(QGraphicsEffect);
-    if (d->source)
-        return d->source->drawIntoPixmap(pixmap, itemToPixmapTransform);
-    return false;
-}
+//QRectF QGraphicsEffect::sourceBoundingRect(bool deviceCoordinates) const
+//{
+//    Q_D(const QGraphicsEffect);
+//    if (d->source)
+//        return d->source->boundingRect(deviceCoordinates);
+//    return QRectF();
+//}
+
+//void QGraphicsEffect::drawSource(QPainter *painter)
+//{
+//    Q_D(QGraphicsEffect);
+//    if (d->source)
+//        d->source->d_func()->draw(painter);
+//}
+
+//bool QGraphicsEffect::drawSourceIntoPixmap(QPixmap *pixmap, const QPoint &offset)
+//{
+//    Q_D(QGraphicsEffect);
+//    if (d->source)
+//        return d->source->d_func()->drawIntoPixmap(pixmap, offset);
+//    return false;
+//}
 
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
     : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)
@@ -154,30 +186,20 @@ QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
 QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
 {}
 
-void QGraphicsGrayscaleEffect::draw(QPainter *painter)
+void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsGrayscaleEffect);
-    if (!d->source)
-        return;
-
     // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(d->source->boundingRect());
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return;
-
-    if (deviceRect.x() != 0 || deviceRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-deviceRect.x(), -deviceRect.y());
-
-    QPixmap pixmap(deviceRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
+    const QRect sourceRect = source->boundingRect(/*deviceCoordinates=*/true)
+                             .toRect().adjusted(-1, -1, 1, 1);
+    QPixmap pixmap(sourceRect.size());
+    if (!source->drawIntoPixmap(&pixmap, sourceRect.topLeft()))
         return;
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, deviceRect.topLeft(), pixmap, pixmap.rect());
+    d->filter->draw(painter, sourceRect.topLeft(), pixmap, pixmap.rect());
     painter->setWorldTransform(restoreTransform);
 
 }
@@ -201,30 +223,19 @@ void QGraphicsColorizeEffect::setColor(const QColor &c)
     d->filter->setColor(c);
 }
 
-void QGraphicsColorizeEffect::draw(QPainter *painter)
+void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsColorizeEffect);
-    if (!d->source)
-        return;
-
-    // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(d->source->boundingRect());
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return;
-
-    if (deviceRect.x() != 0 || deviceRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-deviceRect.x(), -deviceRect.y());
-
-    QPixmap pixmap(deviceRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
+    const QRect sourceRect = source->boundingRect(/*deviceCoordinates=*/true)
+                             .toRect().adjusted(-1, -1, 1, 1);
+    QPixmap pixmap(sourceRect.size());
+    if (!source->drawIntoPixmap(&pixmap, sourceRect.topLeft()))
         return;
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, deviceRect.topLeft(), pixmap, pixmap.rect());
+    d->filter->draw(painter, sourceRect.topLeft(), pixmap, pixmap.rect());
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -249,24 +260,14 @@ void QGraphicsPixelizeEffect::setPixelSize(int size)
     d->pixelSize = size;
 }
 
-void QGraphicsPixelizeEffect::draw(QPainter *painter)
+void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsPixelizeEffect);
-    if (!d->source)
-        return;
-
     // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(d->source->boundingRect());
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return;
-
-    if (deviceRect.x() != 0 || deviceRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-deviceRect.x(), -deviceRect.y());
-
-    QPixmap pixmap(deviceRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap))
+    const QRect sourceRect = source->boundingRect(/*deviceCoordinates=*/true)
+                             .toRect().adjusted(-1, -1, 1, 1);
+    QPixmap pixmap(sourceRect.size());
+    if (!source->drawIntoPixmap(&pixmap, sourceRect.topLeft()))
         return;
 
     // pixelize routine
@@ -292,7 +293,7 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter)
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(deviceRect.topLeft(), img);
+    painter->drawImage(sourceRect.topLeft(), img);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -382,42 +383,32 @@ void QGraphicsBlurEffect::setBlurRadius(int radius)
     d->filter->setBlurRadius(radius);
 }
 
-QRectF QGraphicsBlurEffect::boundingRect() const
+QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsBlurEffect);
-    if (d->source)
-        return d->filter->boundingRectFor(d->source->boundingRect());
-    return QRectF();
+    return d->filter->boundingRectFor(rect);
 }
 
-void QGraphicsBlurEffect::draw(QPainter *painter)
+//QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
+//{
+//    Q_D(const QGraphicsBlurEffect);
+//    return d->filter->boundingRectFor(rect);
+//}
+
+void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBlurEffect);
-    if (!d->source)
-        return;
-
-    // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(d->source->boundingRect());
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return;
-
-    // ### Potentially big rect; must be clipped to the viewport rect.
-    const qreal delta = d->blurRadius * 3;
-    const QRect effectRect = deviceBounds.adjusted(-delta, -delta, delta, delta)
-                                         .toRect().adjusted(-1, -1, 1, 1);
-    if (effectRect.x() != 0 || effectRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-effectRect.x(), -effectRect.y());
+    const QRectF sourceRect = source->boundingRect(/*deviceCoordinates=*/true);
+    const QRect effectRect = d->filter->boundingRectFor(sourceRect).toRect().adjusted(-1, -1, 1, 1);
 
     QPixmap pixmap(effectRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
+    if (!source->drawIntoPixmap(&pixmap, effectRect.topLeft()))
         return;
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, deviceRect.topLeft(), pixmap, pixmap.rect());
+    d->filter->draw(painter, sourceRect.topLeft(), pixmap, pixmap.rect());
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -454,13 +445,20 @@ void QGraphicsBloomEffect::setOpacity(qreal alpha)
     d->opacity = alpha;
 }
 
-QRectF QGraphicsBloomEffect::boundingRect() const
+//QRectF QGraphicsBloomEffect::boundingRectFor(nst QGraphicsEffectSource *source) const
+//{
+//    Q_D(const QGraphicsBloomEffect);
+//    if (!d->source)
+//        return QRectF();
+//    const qreal delta = d->blurRadius * 3;
+//    return sourceBoundingRect().adjusted(-delta, -delta, delta, delta);
+//}
+
+QRectF QGraphicsBloomEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsBloomEffect);
-    if (!d->source)
-        return QRectF();
-    qreal delta = d->blurRadius * 3;
-    return d->source->boundingRect().adjusted(-delta, -delta, delta, delta);
+    const qreal delta = d->blurRadius * 3;
+    return rect.adjusted(-delta, -delta, delta, delta);
 }
 
 // Change brightness (positive integer) of each pixel
@@ -494,24 +492,14 @@ static QImage composited(const QImage& img1, const QImage& img2, qreal opacity, 
     return result;
 }
 
-void QGraphicsBloomEffect::draw(QPainter *painter)
+void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBloomEffect);
-    if (!d->source)
-        return;
+    const QRectF sourceRect = source->boundingRect(/*deviceCoordinates=*/true);
+    const QRect effectRect = boundingRectFor(sourceRect).toRect().adjusted(-1, -1, 1, 1);
 
-    // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(d->source->boundingRect());
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return;
-
-    if (deviceRect.x() != 0 || deviceRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-deviceRect.x(), -deviceRect.y());
-
-    QPixmap pixmap(deviceRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
+    QPixmap pixmap(effectRect.size());
+    if (!source->drawIntoPixmap(&pixmap, effectRect.topLeft()))
         return;
 
     // bloom routine
@@ -524,7 +512,7 @@ void QGraphicsBloomEffect::draw(QPainter *painter)
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(deviceRect.topLeft() - QPointF(radius * 3, radius * 3), img);
+    painter->drawImage(effectRect.topLeft(), img);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -573,49 +561,31 @@ void QGraphicsFrameEffect::setFrameOpacity(qreal opacity)
     d->alpha = opacity;
 }
 
-QRectF QGraphicsFrameEffect::boundingRect() const
+//QRectF QGraphicsFrameEffect::boundingRect() const
+//{
+//    Q_D(const QGraphicsFrameEffect);
+//    if (!d->source)
+//        return QRectF();
+//    return d->source->boundingRect().adjusted(-d->width, -d->width, d->width, d->width);
+//}
+
+QRectF QGraphicsFrameEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsFrameEffect);
-    if (!d->source)
-        return QRectF();
-    return d->source->boundingRect().adjusted(-d->width, -d->width, d->width, d->width);
+    return rect.adjusted(-d->width, -d->width, d->width, d->width);
 }
 
-void QGraphicsFrameEffect::draw(QPainter *painter)
+void QGraphicsFrameEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsFrameEffect);
-    if (!d->source)
-        return;
-
-    // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(d->source->boundingRect());
-    if (deviceBounds.isEmpty())
-        return;
-
-    QRect frameRect = deviceBounds.adjusted(-d->width, -d->width, d->width, d->width)
-                      .toRect().adjusted(-1, -1, 1, 1);
-
-    if (frameRect.x() != 0 || frameRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-frameRect.x(), -frameRect.y());
-
-    QPixmap pixmap(frameRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
-        return;
-
-    painter->save();
-    painter->setWorldTransform(QTransform());
-
     painter->save();
     painter->setOpacity(painter->opacity() * d->alpha);
     painter->setPen(Qt::NoPen);
     painter->setBrush(d->color);
-    painter->drawRoundedRect(frameRect, 20, 20, Qt::RelativeSize);
+    painter->drawRoundedRect(boundingRect(), 20, 20, Qt::RelativeSize);
     painter->restore();
 
-    painter->drawPixmap(frameRect.topLeft(), pixmap);
-
-    painter->restore();
+    source->draw(painter);
 }
 
 QGraphicsShadowEffect::QGraphicsShadowEffect()
@@ -663,46 +633,50 @@ void  QGraphicsShadowEffect::setOpacity(qreal opacity)
     d->alpha = opacity;
 }
 
-QRectF QGraphicsShadowEffect::boundingRect() const
+//QRectF QGraphicsShadowEffect::boundingRect() const
+//{
+//    Q_D(const QGraphicsShadowEffect);
+//    if (!d->source)
+//        return QRectF();
+//    const QRectF srcBrect = d->source->boundingRect();
+//    QRectF shadowRect = srcBrect;
+//    shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
+//    QRectF blurRect = shadowRect;
+//    qreal delta = d->radius * 3;
+//    blurRect.adjust(-delta, -delta, delta, delta);
+//    QRectF totalRect = blurRect.united(srcBrect);
+//    return totalRect;
+//}
+
+QRectF QGraphicsShadowEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsShadowEffect);
-    if (!d->source)
-        return QRectF();
-    const QRectF srcBrect = d->source->boundingRect();
-    QRectF shadowRect = srcBrect;
+    QRectF shadowRect = rect;
     shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
     QRectF blurRect = shadowRect;
     qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
-    QRectF totalRect = blurRect.united(srcBrect);
+    QRectF totalRect = blurRect.united(rect);
     return totalRect;
 }
 
-void QGraphicsShadowEffect::draw(QPainter *painter)
+void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsShadowEffect);
     if (!d->source)
         return;
 
-    // Find the item's bounds in device coordinates.
-    QTransform itemToPixmapTransform(painter->worldTransform());
-    QRectF deviceBounds = itemToPixmapTransform.mapRect(d->source->boundingRect());
-    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
-    if (deviceRect.isEmpty())
-        return;
+    const QRectF sourceRect = source->boundingRect(/*deviceCoordinates=*/true);
 
-    QRectF shadowRect = deviceBounds;
+    QRectF shadowRect = sourceRect;
     shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
     QRectF blurRect = shadowRect;
     qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
-    QRect totalRect = blurRect.united(deviceRect).toRect().adjusted(-1, -1, 1, 1);
-
-    if (totalRect.x() != 0 || totalRect.y() != 0)
-        itemToPixmapTransform *= QTransform::fromTranslate(-totalRect.x(), -totalRect.y());
+    QRect totalRect = blurRect.united(sourceRect).toRect().adjusted(-1, -1, 1, 1);
 
     QPixmap pixmap(totalRect.size());
-    if (!d->source->drawIntoPixmap(&pixmap, itemToPixmapTransform))
+    if (!source->drawIntoPixmap(&pixmap, totalRect.topLeft()))
         return;
 
     QImage img = pixmap.toImage();
@@ -719,14 +693,14 @@ void QGraphicsShadowEffect::draw(QPainter *painter)
 
     qreal shadowx = blurRect.x() + delta;
     qreal shadowy = blurRect.y() + delta;
-    if (blurRect.x() < deviceRect.x())
-        shadowx = blurRect.x() + d->offset.x();
-    if (blurRect.y() < deviceRect.y())
+    if (blurRect.x() < sourceRect.x())
+        shadowx = sourceRect.x() + d->offset.x();
+    if (blurRect.y() < sourceRect.y())
         shadowy = blurRect.y() + d->offset.y();
     painter->drawImage(shadowx, shadowy, shadowImage);
 
-    qreal itemx = qMin(blurRect.x(), deviceBounds.x());
-    qreal itemy = qMin(blurRect.y(), deviceBounds.y());
+    qreal itemx = qMin(blurRect.x(), sourceRect.x());
+    qreal itemy = qMin(blurRect.y(), sourceRect.y());
     painter->drawPixmap(itemx, itemy, pixmap);
 
     painter->setWorldTransform(restoreTransform);

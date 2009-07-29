@@ -510,43 +510,49 @@ struct QGraphicsItemPrivate::TransformData {
     }
 };
 
-class QGraphicsItemEffectSource : public QGraphicsEffectSource
+struct QGraphicsItemPaintInfo
+{
+    inline QGraphicsItemPaintInfo(const QTransform *const xform1, QTransform *xform2,
+                                  QRegion *r, QWidget *w, QStyleOptionGraphicsItem *opt,
+                                  qreal o, bool b1, bool b2)
+        : viewTransform(xform1), transformPtr(xform2), exposedRegion(r), widget(w),
+          option(opt), opacity(o), wasDirtySceneTransform(b1), drawItem(b2)
+    {}
+
+    const QTransform *viewTransform;
+    QTransform *transformPtr;
+    QRegion *exposedRegion;
+    QWidget *widget;
+    QStyleOptionGraphicsItem *option;
+    qreal opacity;
+    quint32 wasDirtySceneTransform : 1;
+    quint32 drawItem : 1;
+};
+
+class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
-    QGraphicsItemEffectSource(QGraphicsItem *i)
-        : QGraphicsEffectSource(), item(i), option(0), widget(0)
+    QGraphicsItemEffectSourcePrivate(QGraphicsItem *i)
+        : QGraphicsEffectSourcePrivate(), item(i), info(0)
     {}
 
     inline void detach()
     { item->setGraphicsEffect(0); }
 
-    inline QRectF boundingRect()
-    { return item->boundingRect(); }
+    inline const QGraphicsItem *graphicsItem() const
+    { return item; }
 
-    inline void draw(QPainter *painter)
-    { item->paint(painter, option, widget); }
+    inline const QStyleOption *styleOption() const
+    { return info ? info->option : 0; }
 
-    inline bool drawIntoPixmap(QPixmap *pixmap, const QTransform &itemToPixmapTransform)
-    {
-        pixmap->fill(Qt::transparent);
-        QPainter pixmapPainter(pixmap);
-        if (!itemToPixmapTransform.isIdentity())
-            pixmapPainter.setWorldTransform(itemToPixmapTransform);
-        item->paint(&pixmapPainter, option, widget);
-        return true;
-    }
+    QRectF boundingRect(bool deviceCoordinates) const;
+    void draw(QPainter *);
+    bool drawIntoPixmap(QPixmap *pixmap, const QPoint &offset);
 
-    inline void setPaintInfo(const QStyleOptionGraphicsItem *o, QWidget *w)
-    { option = o; widget = w; }
-
-    void resetPaintInfo()
-    { option = 0; widget = 0; }
-
-private:
     QGraphicsItem *item;
-    const QStyleOptionGraphicsItem *option;
-    QWidget *widget;
+    QGraphicsItemPaintInfo *info;
 };
+
 
 /*!
     \internal

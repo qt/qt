@@ -164,6 +164,13 @@ void RobotLimb::paint(QPainter *painter,
 Robot::Robot()
 {
     QGraphicsItem *torsoItem = new RobotTorso(this);    
+    //    torsoItem->setGraphicsEffect(new QGraphicsBloomEffect);
+    //    torsoItem->setGraphicsEffect(new QGraphicsBlurEffect);
+    //    torsoItem->setGraphicsEffect(new QGraphicsFrameEffect);
+    //    torsoItem->setGraphicsEffect(new QGraphicsShadowEffect);
+    //    torsoItem->setGraphicsEffect(new QGraphicsColorizeEffect);
+    //    torsoItem->setGraphicsEffect(new QGraphicsPixelizeEffect);
+    //    torsoItem->setGraphicsEffect(new QGraphicsGrayscaleEffect);
     QGraphicsItem *headItem = new RobotHead(torsoItem);
     QGraphicsItem *upperLeftArmItem = new RobotLimb(torsoItem);
     QGraphicsItem *lowerLeftArmItem = new RobotLimb(upperLeftArmItem);

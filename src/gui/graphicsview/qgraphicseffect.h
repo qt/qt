@@ -64,6 +64,30 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+class QGraphicsEffectSourcePrivate;
+class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
+{
+    Q_OBJECT
+public:
+    ~QGraphicsEffectSource();
+    QRectF boundingRect(bool deviceCoordinates = false) const;
+    const QGraphicsItem *graphicsItem() const;
+    const QStyleOption *styleOption() const;
+    void draw(QPainter *painter);
+    bool drawIntoPixmap(QPixmap *pixmap, const QPoint &offset = QPoint());
+
+protected:
+    QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
+
+private:
+    Q_DECLARE_PRIVATE(QGraphicsEffectSource);
+    Q_DISABLE_COPY(QGraphicsEffectSource);
+    friend class QGraphicsEffect;
+    friend class QGraphicsEffectPrivate;
+    friend class QGraphicsScenePrivate;
+    friend class QGraphicsItem;
+};
+
 class QGraphicsEffectPrivate;
 class Q_GUI_EXPORT QGraphicsEffect : public QObject
 {
@@ -71,21 +95,19 @@ class Q_GUI_EXPORT QGraphicsEffect : public QObject
 public:
     QGraphicsEffect();
     virtual ~QGraphicsEffect();
-
-    virtual QRectF boundingRect() const;
+    QRectF boundingRect() const;
 
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);
-    virtual void draw(QPainter *painter) = 0;
-    void drawSource(QPainter *painter);
-    bool drawSourceIntoPixmap(QPixmap *pixmap, const QTransform &xform = QTransform());
-    QRectF sourceBoundingRect() const;
+    virtual QRectF boundingRectFor(const QRectF &rect) const;
+    virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
 
 private:
-    friend class QGraphicsScenePrivate;
-    friend class QGraphicsItem;
     Q_DECLARE_PRIVATE(QGraphicsEffect)
     Q_DISABLE_COPY(QGraphicsEffect)
+    friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
+    friend class QGraphicsScenePrivate;
 };
 
 class QGraphicsGrayscaleEffectPrivate;
@@ -97,7 +119,7 @@ public:
     ~QGraphicsGrayscaleEffect();
 
 protected:
-    void draw(QPainter *painter);
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsGrayscaleEffect)
@@ -115,7 +137,7 @@ public:
     void setColor(const QColor &c);
 
 protected:
-    void draw(QPainter *painter);
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsColorizeEffect)
@@ -133,7 +155,7 @@ public:
     void setPixelSize(int pixelSize);
 
 protected:
-    void draw(QPainter *painter);
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsPixelizeEffect)
@@ -150,10 +172,11 @@ public:
     int blurRadius() const;
     void setBlurRadius(int blurRadius);
 
-    QRectF boundingRect() const;
+    //    QRectF boundingRect() const;
 
 protected:
-    void draw(QPainter *painter);
+    QRectF boundingRectFor(const QRectF &rect) const;
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsBlurEffect)
@@ -173,10 +196,11 @@ public:
     qreal opacity() const;
     void setOpacity(qreal opacity);
 
-    QRectF boundingRect() const;
+    //    QRectF boundingRect() const;
 
 protected:
-    void draw(QPainter *painter);
+    QRectF boundingRectFor(const QRectF &rect) const;
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsBloomEffect)
@@ -199,10 +223,11 @@ public:
     qreal frameOpacity() const;
     void setFrameOpacity(qreal opacity);
 
-    QRectF boundingRect() const;
+    //    QRectF boundingRect() const;
 
 protected:
-    void draw(QPainter *painter);
+    QRectF boundingRectFor(const QRectF &rect) const;
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsFrameEffect)
@@ -227,10 +252,11 @@ public:
     qreal opacity() const;
     void setOpacity(qreal opacity);
 
-    QRectF boundingRect() const;
+    //    QRectF boundingRect() const;
 
 protected:
-    void draw(QPainter *painter);
+    QRectF boundingRectFor(const QRectF &rect) const;
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsShadowEffect)

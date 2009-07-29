@@ -208,7 +208,7 @@
 
 #ifndef QT_NO_GRAPHICSVIEW
 
-#include "qgraphicseffect.h"
+#include "qgraphicseffect_p.h"
 #include "qgraphicsitem.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicslayout.h"
@@ -3920,19 +3920,6 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     QGraphicsItemPrivate *itemd = item->d_ptr;
     QGraphicsItem::CacheMode cacheMode = QGraphicsItem::CacheMode(itemd->cacheMode);
 
-    bool noCache = cacheMode == QGraphicsItem::NoCache ||
-#ifdef Q_WS_X11
-        !X11->use_xrender;
-#else
-        false;
-#endif
-
-    // Render using effect, works now only for no cache mode
-    if (noCache && itemd->graphicsEffect) {
-        itemd->graphicsEffect->draw(painter);
-        return;
-    }
-
     // Render directly, using no cache.
     if (cacheMode == QGraphicsItem::NoCache
 #ifdef Q_WS_X11
@@ -4245,7 +4232,7 @@ void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,
                                                  const QTransform *const viewTransform,
                                                  QRegion *exposedRegion, QWidget *widget,
-                                                 qreal parentOpacity)
+                                                 qreal parentOpacity, QPoint *effectOffset)
 {
     Q_ASSERT(item);
 
@@ -4298,7 +4285,10 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         ENSURE_TRANSFORM_PTR
         QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toRect()
                                                         : transformPtr->mapRect(brect).toRect();
-        item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+        if (widget) {
+            item->d_ptr->paintedViewBoundingRects.insert(widget, effectOffset ?
+                    viewBoundingRect.translated(*effectOffset) : viewBoundingRect);
+        }
         viewBoundingRect.adjust(-1, -1, 1, 1);
         drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect) : !viewBoundingRect.isEmpty();
         if (!drawItem) {
@@ -4312,13 +4302,42 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         }
     } // else we know for sure this item has children we must process.
 
+    if (itemHasChildren && itemClipsChildrenToShape)
+        ENSURE_TRANSFORM_PTR;
+
+    if (item->d_ptr->graphicsEffect) {
+        ENSURE_TRANSFORM_PTR;
+        QGraphicsItemPaintInfo info(viewTransform, transformPtr, exposedRegion, widget, &styleOptionTmp,
+                                    opacity, wasDirtyParentSceneTransform, drawItem);
+        QGraphicsEffectSource *source = item->d_ptr->graphicsEffect->d_func()->source;
+        QGraphicsItemEffectSourcePrivate *sourced = static_cast<QGraphicsItemEffectSourcePrivate *>
+                                                    (source->d_func());
+        sourced->info = &info;
+        const QTransform restoreTransform = painter->worldTransform();
+        painter->setWorldTransform(*transformPtr);
+        item->d_ptr->graphicsEffect->draw(painter, source);
+        painter->setWorldTransform(restoreTransform);
+    } else {
+        draw(item, painter, viewTransform, transformPtr, exposedRegion, widget, opacity,
+             effectOffset, wasDirtyParentSceneTransform, drawItem);
+    }
+}
+
+void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const QTransform *const viewTransform,
+                                 const QTransform *const transformPtr, QRegion *exposedRegion, QWidget *widget, qreal opacity,
+                                 QPoint *effectOffset, bool wasDirtyParentSceneTransform, bool drawItem)
+{
+    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    const bool itemHasChildren = !item->d_ptr->children.isEmpty();
+
     int i = 0;
     if (itemHasChildren) {
         item->d_ptr->ensureSortedChildren();
 
         if (itemClipsChildrenToShape) {
             painter->save();
-            ENSURE_TRANSFORM_PTR
+            Q_ASSERT(transformPtr);
             painter->setWorldTransform(*transformPtr);
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         }
@@ -4332,15 +4351,15 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                 break;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity);
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectOffset);
         }
     }
 
     // Draw item
     if (drawItem) {
         Q_ASSERT(!itemIsFullyTransparent);
-        Q_ASSERT(itemHasContents);
-        ENSURE_TRANSFORM_PTR
+        Q_ASSERT(!(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents));
+        Q_ASSERT(transformPtr);
         item->d_ptr->initStyleOption(&styleOptionTmp, *transformPtr, exposedRegion
                                      ? *exposedRegion : QRegion(), exposedRegion == 0);
 
@@ -4356,20 +4375,10 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);
 
-        QGraphicsItemEffectSource *source = item->d_ptr->graphicsEffect
-                                            ? static_cast<QGraphicsItemEffectSource *>
-                                              (item->d_ptr->graphicsEffect->d_func()->source)
-                                            : 0;
-        if (source)
-            source->setPaintInfo(&styleOptionTmp, widget);
-
-        if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget && !source)
+        if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget)
             item->paint(painter, &styleOptionTmp, widget);
         else
             drawItemHelper(item, painter, &styleOptionTmp, widget, painterStateProtection);
-
-        if (source)
-            source->resetPaintInfo();
 
         if (savePainter)
             painter->restore();
@@ -4383,7 +4392,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                 child->d_ptr->dirtySceneTransform = 1;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity);
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectOffset);
         }
     }
 

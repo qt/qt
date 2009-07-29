@@ -1016,10 +1016,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 */
 void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
 {
-    if (!dirtyChildrenBoundingRect) {
-        *rect |= x->mapRect(childrenBoundingRect);
-        return;
-    }
+    //    if (!dirtyChildrenBoundingRect) {
+    //        *rect |= x->mapRect(childrenBoundingRect);
+    //        return;
+    //    }
 
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
@@ -2231,7 +2231,9 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
             oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
     } else {
         // Set new effect.
-        effect->d_func()->setGraphicsEffectSource(new QGraphicsItemEffectSource(this));
+        QGraphicsEffectSourcePrivate *sourced = new QGraphicsItemEffectSourcePrivate(this);
+        QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
+        effect->d_func()->setGraphicsEffectSource(source);
         d_ptr->graphicsEffect = effect;
     }
 
@@ -3843,8 +3845,8 @@ void QGraphicsItem::setZValue(qreal z)
 */
 QRectF QGraphicsItem::childrenBoundingRect() const
 {
-    if (!d_ptr->dirtyChildrenBoundingRect)
-        return d_ptr->childrenBoundingRect;
+    //    if (!d_ptr->dirtyChildrenBoundingRect)
+    //        return d_ptr->childrenBoundingRect;
 
     QRectF childRect;
     QTransform x;
@@ -9922,6 +9924,54 @@ QPainterPath QGraphicsItemGroup::opaqueArea() const
 int QGraphicsItemGroup::type() const
 {
     return Type;
+}
+
+QRectF QGraphicsItemEffectSourcePrivate::boundingRect(bool deviceCoordinates) const
+{
+    QRectF rect = item->boundingRect();
+    rect |= item->childrenBoundingRect();
+    if (deviceCoordinates && info) {
+        Q_ASSERT(info->transformPtr);
+        return info->transformPtr->mapRect(rect);
+    }
+    return rect;
+}
+
+void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
+{
+    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+    scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
+                 info->widget, info->opacity, 0, info->wasDirtySceneTransform, info->drawItem);
+}
+
+bool QGraphicsItemEffectSourcePrivate::drawIntoPixmap(QPixmap *pixmap, const QPoint &offset)
+{
+    QPoint effectOffset(offset);
+
+    QTransform viewTransform(Qt::Uninitialized);
+    if (info->viewTransform) {
+        viewTransform = *info->viewTransform;
+        viewTransform *= QTransform::fromTranslate(-effectOffset.x(), -effectOffset.y());
+    } else {
+        viewTransform = QTransform::fromTranslate(-effectOffset.x(), -effectOffset.y());
+    }
+
+    *info->transformPtr *= QTransform::fromTranslate(-effectOffset.x(), -effectOffset.y());
+
+    QRegion exposedRegion;
+    if (info->exposedRegion) {
+        exposedRegion = *info->exposedRegion;
+        exposedRegion.translate(-effectOffset.x(), -effectOffset.y());
+    }
+
+    pixmap->fill(Qt::transparent);
+    QPainter pixmapPainter(pixmap);
+    pixmapPainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
+    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
+    scened->draw(item, &pixmapPainter, &viewTransform, info->transformPtr, &exposedRegion,
+                 info->widget, info->opacity, &effectOffset, info->wasDirtySceneTransform,
+                 info->drawItem);
+    return true;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

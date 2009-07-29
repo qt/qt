@@ -61,15 +61,21 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsEffectSource
+class QGraphicsEffectSourcePrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QGraphicsEffectSource)
 public:
-    QGraphicsEffectSource() {}
-    virtual ~QGraphicsEffectSource() {}
+    QGraphicsEffectSourcePrivate() : QObjectPrivate() {}
+    virtual ~QGraphicsEffectSourcePrivate() {}
     virtual void detach() = 0;
-    virtual QRectF boundingRect() = 0;
+    virtual QRectF boundingRect(bool deviceCoordinates = false) const = 0;
+    virtual const QGraphicsItem *graphicsItem() const = 0;
+    virtual const QStyleOption *styleOption() const = 0;
     virtual void draw(QPainter *p) = 0;
-    virtual bool drawIntoPixmap(QPixmap *, const QTransform & = QTransform()) = 0;
+    virtual bool drawIntoPixmap(QPixmap *, const QPoint &offset = QPoint()) = 0;
+    friend class QGraphicsScenePrivate;
+    friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
 };
 
 class QGraphicsEffectPrivate : public QObjectPrivate
@@ -81,11 +87,12 @@ public:
     inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)
     {
         if (source) {
-            source->detach();
+            source->d_func()->detach();
             delete source;
         }
         source = newSource;
     }
+    QRectF boundingRect;
 };
 
 class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
