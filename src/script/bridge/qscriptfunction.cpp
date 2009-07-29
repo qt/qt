@@ -143,6 +143,7 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
+    QScriptContextPrivate::get(ctx)->calledAsConstructor = true;
     eng_p->currentFrame = exec;
 
     //We might have nested eval inside our function so we should create another scope
@@ -213,6 +214,7 @@ JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *exec, JSC:
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
+    QScriptContextPrivate::get(ctx)->calledAsConstructor = true;
     eng_p->currentFrame = exec;
 
     //We might have nested eval inside our function so we should create another scope

@@ -45,6 +45,8 @@
 
 #include "../api/qscriptengine.h"
 #include "../api/qscriptengine_p.h"
+#include "../api/qscriptcontext.h"
+#include "../api/qscriptcontext_p.h"
 #include "../api/qscriptclass.h"
 #include "../api/qscriptclasspropertyiterator.h"
 
@@ -240,6 +242,7 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
+    QScriptContextPrivate::get(ctx)->calledAsConstructor = true;
     eng_p->currentFrame = exec;
     QScriptValue defaultObject = ctx->thisObject();
     QScriptValue result = qvariant_cast<QScriptValue>(scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx)));

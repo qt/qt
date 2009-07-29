@@ -189,6 +189,11 @@ const QScriptContextPrivate *QScriptContextPrivate::get(const QScriptContext *q)
     return q->d_func();
 }
 
+QScriptContextPrivate *QScriptContextPrivate::get(QScriptContext *q)
+{
+    return q->d_func();
+}
+
 /*!
   \internal
 */

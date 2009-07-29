@@ -73,6 +73,7 @@ private slots:
     void pushAndPopScope();
     void getSetActivationObject();
     void toString();
+    void calledAsConstructor();
     void argumentsObjectInNative();
 };
 
@@ -741,6 +742,37 @@ void tst_QScriptContext::toString()
     QVERIFY(ret.isString());
     QEXPECT_FAIL("", "", Continue);
     QCOMPARE(ret.toString(), QString::fromLatin1("foo (first=1, second=2, third=3) at script.qs:2"));
+}
+
+static QScriptValue storeCalledAsConstructor(QScriptContext *ctx, QScriptEngine *eng)
+{
+    ctx->callee().setProperty("calledAsConstructor", ctx->isCalledAsConstructor());
+    return eng->undefinedValue();
+}
+
+static QScriptValue storeCalledAsConstructorV2(QScriptContext *ctx, QScriptEngine *eng, void *)
+{
+    ctx->callee().setProperty("calledAsConstructor", ctx->isCalledAsConstructor());
+    return eng->undefinedValue();
+}
+
+void tst_QScriptContext::calledAsConstructor()
+{
+    QScriptEngine eng;
+    {
+        QScriptValue fun = eng.newFunction(storeCalledAsConstructor);
+        fun.call();
+        QVERIFY(!fun.property("calledAsConstructor").toBool());
+        fun.construct();
+        QVERIFY(fun.property("calledAsConstructor").toBool());
+    }
+    {
+        QScriptValue fun = eng.newFunction(storeCalledAsConstructorV2, (void*)0);
+        fun.call();
+        QVERIFY(!fun.property("calledAsConstructor").toBool());
+        fun.construct();
+        QVERIFY(fun.property("calledAsConstructor").toBool());
+    }
 }
 
 static QScriptValue argumentsObjectInNative_test1(QScriptContext *ctx, QScriptEngine *)
