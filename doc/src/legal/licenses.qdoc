@@ -39,6 +39,19 @@
 **
 ****************************************************************************/
 
+/*!
+    \group licensing
+    \title Licensing Information
+    \ingroup topics
+    \brief Information about licenses and licensing issues.
+
+    These documents include information about Qt's licenses and the licenses
+    of third party components used in Qt.
+
+    \generatelist{related}
+*/
+
+
 /*! 
     \page licenses.html
     \title Other Licenses Used in Qt
