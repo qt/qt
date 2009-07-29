@@ -39,6 +39,7 @@
 #include "SourceCode.h"
 #include "FunctionPrototype.h"
 #include "JSFunction.h"
+#include "Parser.h"
 
 #include "utils/qscriptdate_p.h"
 #include "bridge/qscriptfunction_p.h"
@@ -2189,26 +2190,35 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 
     JSC::UString jscProgram = QScript::qtStringToJSCUString(program);
     JSC::UString jscFileName = QScript::qtStringToJSCUString(fileName);
-
     JSC::ExecState* exec = d->currentFrame;
+    JSC::SourceCode source = JSC::makeSource(jscProgram, jscFileName, lineNumber);
+
     exec->clearException();
-    JSC::ScopeChain scopeChain = JSC::ScopeChain(exec->scopeChain());
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
-    JSC::Completion comp = JSC::evaluate(exec, scopeChain,
-                                         JSC::makeSource(jscProgram, jscFileName, lineNumber),
-                                         d->thisForContext(exec));
-    if ((comp.complType() == JSC::Normal) || (comp.complType() == JSC::ReturnValue)) {
-        Q_ASSERT(!exec->hadException());
-        return d->scriptValueFromJSCValue(comp.value());
+
+    int errorLine;
+    JSC::UString errorMessage;
+    WTF::RefPtr<JSC::EvalNode> evalNode = exec->globalData().parser->parse<JSC::EvalNode>(exec, exec->dynamicGlobalObject()->debugger(), source, &errorLine, &errorMessage);
+    if (!evalNode) {
+        JSC::JSValue exceptionValue = JSC::Error::create(exec, JSC::SyntaxError, errorMessage, errorLine, source.provider()->asID(), 0);
+        exec->setException(exceptionValue);
+        return d->scriptValueFromJSCValue(exceptionValue);
     }
 
-    if (comp.complType() == JSC::Throw) {
-        exec->setException(comp.value());
-        return d->scriptValueFromJSCValue(comp.value());
+    JSC::JSValue thisValue = d->thisForContext(exec);
+    JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
+    JSC::JSValue exceptionValue;
+    JSC::JSValue result = exec->interpreter()->execute(evalNode.get(), exec, thisObject, exec->scopeChain(), &exceptionValue);
+
+    if (exceptionValue) {
+        exec->setException(exceptionValue);
+        return d->scriptValueFromJSCValue(exceptionValue);
     }
 
-    return QScriptValue();
+    Q_ASSERT(!exec->hadException());
+    return d->scriptValueFromJSCValue(result);
 }
+
 
 /*!
   Returns the current context.

@@ -1283,6 +1283,9 @@ void tst_QScriptEngine::nestedEvaluate()
     QCOMPARE(result.property("thisObjectIdBefore").toString(), QString("foo"));
     QCOMPARE(result.property("thisObjectIdAfter").toString(), QString("foo"));
     QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
+    QScriptValue bar = eng.evaluate("bar");
+    QVERIFY(bar.isError());
+    QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
 }
 
 void tst_QScriptEngine::uncaughtException()
