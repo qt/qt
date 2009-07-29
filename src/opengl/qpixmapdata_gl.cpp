@@ -191,6 +191,8 @@ QGLPixmapData::~QGLPixmapData()
     if (!shareWidget)
         return;
 
+    delete m_engine;
+
     if (m_texture.id) {
         QGLShareContextScope ctx(shareWidget->context());
         glDeleteTextures(1, &m_texture.id);
@@ -463,10 +465,8 @@ void QGLPixmapData::swapBuffers()
     m_renderFbo->release();
 
     qgl_fbo_pool()->release(m_renderFbo);
-    delete m_engine;
 
     m_renderFbo = 0;
-    m_engine = 0;
 }
 
 void QGLPixmapData::makeCurrent()
@@ -493,7 +493,7 @@ QPaintEngine* QGLPixmapData::paintEngine() const
     if (!isValid())
         return 0;
 
-    if (m_engine)
+    if (m_renderFbo)
         return m_engine;
 
     if (useFramebufferObjects()) {
@@ -511,7 +511,8 @@ QPaintEngine* QGLPixmapData::paintEngine() const
         m_renderFbo = qgl_fbo_pool()->acquire(size(), format);
 
         if (m_renderFbo) {
-            m_engine = new QGL2PaintEngineEx;
+            if (!m_engine)
+                m_engine = new QGL2PaintEngineEx;
             return m_engine;
         }
 

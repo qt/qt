@@ -428,10 +428,9 @@ private:
     QGLShaderProgram*     simpleShaderProg;
     QGLEngineShaderProg*  currentShaderProg;
 
-    QCache<QByteArray, QGLShader> customShaderCache;
-
     // TODO: Possibly convert to a LUT
     QList<QGLEngineShaderProg> cachedPrograms;
+    QCache<QByteArray, QGLShader> customShaderCache;
 
     QGLShader* compiledShaders[TotalShaderCount];
 
