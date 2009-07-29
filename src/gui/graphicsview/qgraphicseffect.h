@@ -75,7 +75,6 @@ public:
     const QGraphicsItem *graphicsItem() const;
     const QStyleOption *styleOption() const;
     void draw(QPainter *painter);
-    bool drawIntoPixmap(QPixmap *pixmap, const QPoint &offset = QPoint());
     QPixmap pixmap(bool deviceCoordinates, QPoint *offset = 0) const;
 
 protected:

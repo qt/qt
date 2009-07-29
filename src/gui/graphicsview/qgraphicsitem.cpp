@@ -9972,43 +9972,13 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(bool deviceCoordinates, QPoint 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);
     QPainter pixmapPainter(&pixmap);
-    pixmapPainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
+    pixmapPainter.setRenderHints(info->painter->renderHints());
 
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
     scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
                  info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
                  info->drawItem);
     return pixmap;
-}
-
-bool QGraphicsItemEffectSourcePrivate::drawIntoPixmap(QPixmap *pixmap, const QPoint &offset)
-{
-    QPoint effectOffset(offset);
-
-    QTransform viewTransform(Qt::Uninitialized);
-    if (info->viewTransform) {
-        viewTransform = *info->viewTransform;
-        viewTransform *= QTransform::fromTranslate(-effectOffset.x(), -effectOffset.y());
-    } else {
-        viewTransform = QTransform::fromTranslate(-effectOffset.x(), -effectOffset.y());
-    }
-
-    *info->transformPtr *= QTransform::fromTranslate(-effectOffset.x(), -effectOffset.y());
-
-    QRegion exposedRegion;
-    if (info->exposedRegion) {
-        exposedRegion = *info->exposedRegion;
-        exposedRegion.translate(-effectOffset.x(), -effectOffset.y());
-    }
-
-    pixmap->fill(Qt::transparent);
-    QPainter pixmapPainter(pixmap);
-    pixmapPainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
-    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
-    scened->draw(item, &pixmapPainter, &viewTransform, info->transformPtr, &exposedRegion,
-                 info->widget, info->opacity, 0, info->wasDirtySceneTransform,
-                 info->drawItem);
-    return true;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

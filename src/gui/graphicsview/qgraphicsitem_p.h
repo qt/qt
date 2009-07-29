@@ -548,7 +548,6 @@ public:
 
     QRectF boundingRect(bool deviceCoordinates) const;
     void draw(QPainter *);
-    bool drawIntoPixmap(QPixmap *pixmap, const QPoint &offset);
     QPixmap pixmap(bool deviceCoordinates, QPoint *offset) const;
 
     QGraphicsItem *item;

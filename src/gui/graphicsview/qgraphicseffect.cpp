@@ -121,9 +121,6 @@ const QStyleOption *QGraphicsEffectSource::styleOption() const
 void QGraphicsEffectSource::draw(QPainter *painter)
 { d_func()->draw(painter); }
 
-bool QGraphicsEffectSource::drawIntoPixmap(QPixmap *pixmap, const QPoint &offset)
-{ return d_func()->drawIntoPixmap(pixmap, offset); }
-
 QPixmap QGraphicsEffectSource::pixmap(bool deviceCoordinates, QPoint *offset) const
 { return d_func()->pixmap(deviceCoordinates, offset); }
 
@@ -177,29 +174,6 @@ QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
     return rect;
 }
 
-//QRectF QGraphicsEffect::sourceBoundingRect(bool deviceCoordinates) const
-//{
-//    Q_D(const QGraphicsEffect);
-//    if (d->source)
-//        return d->source->boundingRect(deviceCoordinates);
-//    return QRectF();
-//}
-
-//void QGraphicsEffect::drawSource(QPainter *painter)
-//{
-//    Q_D(QGraphicsEffect);
-//    if (d->source)
-//        d->source->d_func()->draw(painter);
-//}
-
-//bool QGraphicsEffect::drawSourceIntoPixmap(QPixmap *pixmap, const QPoint &offset)
-//{
-//    Q_D(QGraphicsEffect);
-//    if (d->source)
-//        return d->source->d_func()->drawIntoPixmap(pixmap, offset);
-//    return false;
-//}
-
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
     : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)
 {}
@@ -210,17 +184,13 @@ QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
 void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsGrayscaleEffect);
-    // Find the item's bounds in device coordinates.
-    const QRect sourceRect = source->boundingRect(/*deviceCoordinates=*/true)
-                             .toRect().adjusted(-1, -1, 1, 1);
-    QPixmap pixmap(sourceRect.size());
-    if (!source->drawIntoPixmap(&pixmap, sourceRect.topLeft()))
-        return;
+    QPoint offset;
+    const QPixmap pixmap = source->pixmap(true, &offset);
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, sourceRect.topLeft(), pixmap, pixmap.rect());
+    d->filter->draw(painter, offset, pixmap, pixmap.rect());
     painter->setWorldTransform(restoreTransform);
 
 }
@@ -247,16 +217,13 @@ void QGraphicsColorizeEffect::setColor(const QColor &c)
 void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsColorizeEffect);
-    const QRect sourceRect = source->boundingRect(/*deviceCoordinates=*/true)
-                             .toRect().adjusted(-1, -1, 1, 1);
-    QPixmap pixmap(sourceRect.size());
-    if (!source->drawIntoPixmap(&pixmap, sourceRect.topLeft()))
-        return;
+    QPoint offset;
+    const QPixmap pixmap = source->pixmap(true, &offset);
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, sourceRect.topLeft(), pixmap, pixmap.rect());
+    d->filter->draw(painter, offset, pixmap, pixmap.rect());
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -284,12 +251,8 @@ void QGraphicsPixelizeEffect::setPixelSize(int size)
 void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsPixelizeEffect);
-    // Find the item's bounds in device coordinates.
-    const QRect sourceRect = source->boundingRect(/*deviceCoordinates=*/true)
-                             .toRect().adjusted(-1, -1, 1, 1);
-    QPixmap pixmap(sourceRect.size());
-    if (!source->drawIntoPixmap(&pixmap, sourceRect.topLeft()))
-        return;
+    QPoint offset;
+    const QPixmap pixmap = source->pixmap(true, &offset);
 
     // pixelize routine
     QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
@@ -314,7 +277,7 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(sourceRect.topLeft(), img);
+    painter->drawImage(offset, img);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -410,9 +373,6 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
     return d->filter->boundingRectFor(rect);
 }
 
-//QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
-//{
-//    Q_D(const QGraphicsBlurEffect);
 //    return d->filter->boundingRectFor(rect);
 //}
 
@@ -462,15 +422,6 @@ void QGraphicsBloomEffect::setOpacity(qreal alpha)
     d->opacity = alpha;
 }
 
-//QRectF QGraphicsBloomEffect::boundingRectFor(nst QGraphicsEffectSource *source) const
-//{
-//    Q_D(const QGraphicsBloomEffect);
-//    if (!d->source)
-//        return QRectF();
-//    const qreal delta = d->blurRadius * 3;
-//    return sourceBoundingRect().adjusted(-delta, -delta, delta, delta);
-//}
-
 QRectF QGraphicsBloomEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsBloomEffect);
@@ -512,15 +463,11 @@ static QImage composited(const QImage& img1, const QImage& img2, qreal opacity, 
 void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBloomEffect);
-    const QRectF sourceRect = source->boundingRect(/*deviceCoordinates=*/true);
-    const QRect effectRect = boundingRectFor(sourceRect).toRect().adjusted(-1, -1, 1, 1);
-
-    QPixmap pixmap(effectRect.size());
-    if (!source->drawIntoPixmap(&pixmap, effectRect.topLeft()))
-        return;
+    QPoint offset;
+    const QPixmap pixmap = source->pixmap(true, &offset);
 
     // bloom routine
-    int radius = d->blurRadius;
+    const int radius = d->blurRadius;
     QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
     QImage overlay = blurred(img, img.rect(), radius);
     overlay = brightened(overlay, 70);
@@ -529,7 +476,7 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(effectRect.topLeft(), img);
+    painter->drawImage(offset - QPoint(radius * 3, radius * 3), img);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -578,14 +525,6 @@ void QGraphicsFrameEffect::setFrameOpacity(qreal opacity)
     d->alpha = opacity;
 }
 
-//QRectF QGraphicsFrameEffect::boundingRect() const
-//{
-//    Q_D(const QGraphicsFrameEffect);
-//    if (!d->source)
-//        return QRectF();
-//    return d->source->boundingRect().adjusted(-d->width, -d->width, d->width, d->width);
-//}
-
 QRectF QGraphicsFrameEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsFrameEffect);
@@ -614,87 +553,72 @@ QGraphicsShadowEffect::~QGraphicsShadowEffect()
 {
 }
 
-QPointF  QGraphicsShadowEffect::shadowOffset() const
+QPointF QGraphicsShadowEffect::shadowOffset() const
 {
     Q_D(const QGraphicsShadowEffect);
     return d->offset;
 }
 
-void  QGraphicsShadowEffect::setShadowOffset(const QPointF &ofs)
+void QGraphicsShadowEffect::setShadowOffset(const QPointF &ofs)
 {
     Q_D(QGraphicsShadowEffect);
     d->offset = ofs;
 }
 
-int  QGraphicsShadowEffect::blurRadius() const
+int QGraphicsShadowEffect::blurRadius() const
 {
     Q_D(const QGraphicsShadowEffect);
     return d->radius;
 }
 
-void  QGraphicsShadowEffect::setBlurRadius(int blurRadius)
+void QGraphicsShadowEffect::setBlurRadius(int blurRadius)
 {
     Q_D(QGraphicsShadowEffect);
     d->radius = blurRadius;
 }
 
-qreal  QGraphicsShadowEffect::opacity() const
+qreal QGraphicsShadowEffect::opacity() const
 {
     Q_D(const QGraphicsShadowEffect);
     return d->alpha;
 }
 
-void  QGraphicsShadowEffect::setOpacity(qreal opacity)
+void QGraphicsShadowEffect::setOpacity(qreal opacity)
 {
     Q_D(QGraphicsShadowEffect);
     d->alpha = opacity;
 }
 
-//QRectF QGraphicsShadowEffect::boundingRect() const
-//{
-//    Q_D(const QGraphicsShadowEffect);
-//    if (!d->source)
-//        return QRectF();
-//    const QRectF srcBrect = d->source->boundingRect();
-//    QRectF shadowRect = srcBrect;
-//    shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
-//    QRectF blurRect = shadowRect;
-//    qreal delta = d->radius * 3;
-//    blurRect.adjust(-delta, -delta, delta, delta);
-//    QRectF totalRect = blurRect.united(srcBrect);
-//    return totalRect;
-//}
-
 QRectF QGraphicsShadowEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsShadowEffect);
-    QRectF shadowRect = rect;
-    shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
+    QRectF shadowRect = rect.translated(d->offset);
     QRectF blurRect = shadowRect;
     qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
-    QRectF totalRect = blurRect.united(rect);
-    return totalRect;
+    blurRect |= rect;
+    return blurRect;
 }
 
 void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsShadowEffect);
-    if (!d->source)
-        return;
-
     const QRectF sourceRect = source->boundingRect(/*deviceCoordinates=*/true);
-
-    QRectF shadowRect = sourceRect;
-    shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
+    const QRectF shadowRect = sourceRect.translated(d->offset);
     QRectF blurRect = shadowRect;
     qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
-    QRect totalRect = blurRect.united(sourceRect).toRect().adjusted(-1, -1, 1, 1);
+    blurRect |= sourceRect;
+    const QRect effectRect = blurRect.toAlignedRect();
 
-    QPixmap pixmap(totalRect.size());
-    if (!source->drawIntoPixmap(&pixmap, totalRect.topLeft()))
-        return;
+    QPixmap pixmap(effectRect.size());
+    pixmap.fill(Qt::transparent);
+    QPainter pixmapPainter(&pixmap);
+    pixmapPainter.setRenderHints(painter->renderHints());
+    pixmapPainter.setWorldTransform(painter->worldTransform());
+    pixmapPainter.translate(-effectRect.topLeft());
+    source->draw(&pixmapPainter);
+    pixmapPainter.end();
 
     QImage img = pixmap.toImage();
     QImage shadowImage(img.size(), QImage::Format_ARGB32);
@@ -705,21 +629,8 @@ void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-
-    QRect shadowAlignedRect = shadowRect.toAlignedRect();
-
-    qreal shadowx = blurRect.x() + delta;
-    qreal shadowy = blurRect.y() + delta;
-    if (blurRect.x() < sourceRect.x())
-        shadowx = sourceRect.x() + d->offset.x();
-    if (blurRect.y() < sourceRect.y())
-        shadowy = blurRect.y() + d->offset.y();
-    painter->drawImage(shadowx, shadowy, shadowImage);
-
-    qreal itemx = qMin(blurRect.x(), sourceRect.x());
-    qreal itemy = qMin(blurRect.y(), sourceRect.y());
-    painter->drawPixmap(itemx, itemy, pixmap);
-
+    painter->drawImage(effectRect.topLeft() + d->offset, shadowImage);
+    painter->drawPixmap(effectRect.topLeft(), pixmap);
     painter->setWorldTransform(restoreTransform);
 }
 

@@ -72,7 +72,6 @@ public:
     virtual const QGraphicsItem *graphicsItem() const = 0;
     virtual const QStyleOption *styleOption() const = 0;
     virtual void draw(QPainter *p) = 0;
-    virtual bool drawIntoPixmap(QPixmap *, const QPoint &offset = QPoint()) = 0;
     virtual QPixmap pixmap(bool deviceCoordinates, QPoint *offset = 0) const = 0;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
@@ -168,7 +167,7 @@ class QGraphicsShadowEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsShadowEffect)
 public:
-    QGraphicsShadowEffectPrivate() : offset(4,4), radius(8), alpha(0.7) {}
+    QGraphicsShadowEffectPrivate() : offset(4, 4), radius(8), alpha(0.7) {}
 
     QPointF offset;
     int radius;
