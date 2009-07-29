@@ -50,8 +50,6 @@
 
 #include <stdlib.h>
 
-#include "qeventdispatcher_unix_p.h" // for the timeval operators
-
 #ifdef Q_OS_MAC
 #include <mach/mach_time.h>
 #endif
