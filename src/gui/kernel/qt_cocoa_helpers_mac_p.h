@@ -125,6 +125,7 @@ void macWindowSetHasShadow( void * /*OSWindowRef*/ window, bool hasShadow );
 void macWindowFlush(void * /*OSWindowRef*/ window);
 void macSendToolbarChangeEvent(QWidget *widget);
 void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::HIContentBorderMetrics &metrics);
+void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show);
 void * /*NSImage */qt_mac_create_nsimage(const QPixmap &pm);
 void qt_mac_update_mouseTracking(QWidget *widget);
 OSStatus qt_mac_drawCGImage(CGContextRef cg, const CGRect *inbounds, CGImageRef);

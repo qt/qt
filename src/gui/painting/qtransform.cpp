@@ -52,7 +52,9 @@ QT_BEGIN_NAMESPACE
 
 #define Q_NEAR_CLIP 0.000001
 
-
+#ifdef MAP
+#  undef MAP
+#endif
 #define MAP(x, y, nx, ny) \
     do { \
         qreal FX_ = x; \

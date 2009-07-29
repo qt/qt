@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the Qt Assistant of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,32 +39,68 @@
 **
 ****************************************************************************/
 
-#include "spin_ai_with_error.h"
+#include "qhelpsearchindexreader_p.h"
 
-#include <QtPlugin>
+QT_BEGIN_NAMESPACE
 
-QState *SpinAiWithError::create(QState *parentState, QObject *tank)
+namespace qt {
+    namespace fulltextsearch {
+
+QHelpSearchIndexReader::QHelpSearchIndexReader()
+    : QThread()
+    , m_cancel(false)
 {
-    QState *topLevel = new QState(parentState);
-    QState *spinState = new SpinState(tank, topLevel);
-    topLevel->setInitialState(spinState);
-
-    // When tank is spotted, fire two times and go back to spin state
-    // (no initial state set for fireState will lead to run-time error in machine)
-    QState *fireState = new QState(topLevel);
-
-    QState *fireOnce = new QState(fireState);
-    connect(fireOnce, SIGNAL(entered()), tank, SLOT(fireCannon()));
-
-    QState *fireTwice = new QState(fireState);
-    connect(fireTwice, SIGNAL(entered()), tank, SLOT(fireCannon()));
-
-    fireOnce->addTransition(tank, SIGNAL(actionCompleted()), fireTwice);
-    fireTwice->addTransition(tank, SIGNAL(actionCompleted()), spinState);
-
-    spinState->addTransition(tank, SIGNAL(tankSpotted(qreal,qreal)), fireState);
-
-    return topLevel;
+    // nothing todo
 }
 
-Q_EXPORT_PLUGIN2(spin_ai_with_error, SpinAiWithError)
+QHelpSearchIndexReader::~QHelpSearchIndexReader()
+{
+    mutex.lock();
+    this->m_cancel = true;
+    mutex.unlock();
+
+    wait();
+}
+
+void QHelpSearchIndexReader::cancelSearching()
+{
+    mutex.lock();
+    this->m_cancel = true;
+    mutex.unlock();
+}
+
+void QHelpSearchIndexReader::search(const QString &collectionFile, const QString &indexFilesFolder,
+    const QList<QHelpSearchQuery> &queryList)
+{
+    wait();
+
+    this->hitList.clear();
+    this->m_cancel = false;
+    this->m_query = queryList;
+    this->m_collectionFile = collectionFile;
+    this->m_indexFilesFolder = indexFilesFolder;
+
+    start(QThread::NormalPriority);
+}
+
+int QHelpSearchIndexReader::hitsCount() const
+{
+    QMutexLocker lock(&mutex);
+    return hitList.count();
+}
+
+QList<QHelpSearchEngine::SearchHit> QHelpSearchIndexReader::hits(int start,
+                                                                 int end) const
+{
+    QList<QHelpSearchEngine::SearchHit> hits;
+    QMutexLocker lock(&mutex);
+    for (int i = start; i < end && i < hitList.count(); ++i)
+        hits.append(hitList.at(i));
+    return hits;
+}
+
+
+    }   // namespace fulltextsearch
+}   // namespace qt
+
+QT_END_NAMESPACE

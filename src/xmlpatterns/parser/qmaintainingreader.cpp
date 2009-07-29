@@ -147,7 +147,8 @@ void MaintainingReader<TokenLookupClass, LookupKey>::validateElement(const Looku
 
     if(m_elementDescriptions.contains(elementName))
     {
-        const ElementDescription<TokenLookupClass, LookupKey> &desc = m_elementDescriptions.value(elementName);
+        // QHash::value breaks in Metrowerks Compiler
+        const ElementDescription<TokenLookupClass, LookupKey> &desc = *m_elementDescriptions.find(elementName);
         const int attCount = m_currentAttributes.count();
 
         QSet<typename TokenLookupClass::NodeName> encounteredXSLTAtts;

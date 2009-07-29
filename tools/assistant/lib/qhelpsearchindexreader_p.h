@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the Qt Assistant of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,67 +39,70 @@
 **
 ****************************************************************************/
 
-#ifndef RANDOM_AI_PLUGIN_H
-#define RANDOM_AI_PLUGIN_H
+#ifndef QHELPSEARCHINDEXREADER_H
+#define QHELPSEARCHINDEXREADER_H
 
-#include <QObject>
-#include <QState>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists for the convenience
+// of the help generator tools. This header file may change from version
+// to version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <tankgame/plugin.h>
+#include "qhelpsearchengine.h"
 
-class SelectActionState: public QState
+#include <QtCore/QList>
+#include <QtCore/QMutex>
+#include <QtCore/QObject>
+#include <QtCore/QString>
+#include <QtCore/QThread>
+#include <QtCore/QWaitCondition>
+
+QT_BEGIN_NAMESPACE
+
+class QHelpEngineCore;
+
+namespace qt {
+    namespace fulltextsearch {
+
+class QHelpSearchIndexReader : public QThread
 {
     Q_OBJECT
+
 public:
-    SelectActionState(QState *parent = 0) : QState(parent)
-    {
-    }
+    QHelpSearchIndexReader();
+    ~QHelpSearchIndexReader();
+
+    void cancelSearching();
+    void search(const QString &collectionFile,
+        const QString &indexFilesFolder,
+        const QList<QHelpSearchQuery> &queryList);
+    int hitsCount() const;
+    QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const;
 
 signals:
-    void fireSelected();
-    void moveForwardsSelected();
-    void moveBackwardsSelected();
-    void turnSelected();
+    void searchingStarted();
+    void searchingFinished(int hits);
 
 protected:
-    void onEntry(QEvent *)
-    {
-        int rand = qrand() % 4;
-        switch (rand) {
-        case 0: emit fireSelected(); break;
-        case 1: emit moveForwardsSelected(); break;
-        case 2: emit moveBackwardsSelected(); break;
-        case 3: emit turnSelected(); break;
-        };
-    }
+    mutable QMutex mutex;
+    QList<QHelpSearchEngine::SearchHit> hitList;
+    bool m_cancel;
+    QString m_collectionFile;
+    QList<QHelpSearchQuery> m_query;
+    QString m_indexFilesFolder;
+
+private:
+    virtual void run()=0;
 };
 
-class RandomDistanceState: public QState
-{
-    Q_OBJECT
-public:
-    RandomDistanceState(QState *parent = 0) : QState(parent)
-    {
-    }
+    }   // namespace fulltextsearch
+}  // namespace qt
 
-signals:
-    void distanceComputed(qreal distance);
+QT_END_NAMESPACE
 
-protected:
-    void onEntry(QEvent *)
-    {
-        emit distanceComputed(qreal(qrand() % 180));
-    }
-};
-
-class RandomAiPlugin: public QObject, public Plugin
-{
-    Q_OBJECT
-    Q_INTERFACES(Plugin)
-public:
-    RandomAiPlugin() { setObjectName("Random"); }
-
-    virtual QState *create(QState *parentState, QObject *tank);
-};
-
-#endif // RANDOM_AI_PLUGIN_H
+#endif  // QHELPSEARCHINDEXREADER_H

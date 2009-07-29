@@ -675,8 +675,9 @@ QWheelEvent::QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta, 
     The QWidget::setEnable() function can be used to enable or disable
     mouse and keyboard events for a widget.
 
-    The event handlers QWidget::keyPressEvent() and
-    QWidget::keyReleaseEvent() receive key events.
+    The event handlers QWidget::keyPressEvent(), QWidget::keyReleaseEvent(),
+    QGraphicsItem::keyPressEvent() and QGraphicsItem::keyReleaseEvent()
+    receive key events.
 
     \sa QFocusEvent, QWidget::grabKeyboard()
 */
@@ -992,8 +993,9 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     The reason for a particular focus event is returned by reason()
     in the appropriate event handler.
 
-    The event handlers QWidget::focusInEvent() and
-    QWidget::focusOutEvent() receive focus events.
+    The event handlers QWidget::focusInEvent(),
+    QWidget::focusOutEvent(), QGraphicsItem::focusInEvent and
+    QGraphicsItem::focusOutEvent() receive focus events.
 
     \sa QWidget::setFocus(), QWidget::setFocusPolicy(), {Keyboard Focus}
 */
@@ -1611,12 +1613,14 @@ Qt::ButtonState QContextMenuEvent::state() const
     string is controlled by the widget only). The AttributeType enum
     describes the different attributes that can be set.
 
-    A class implementing QWidget::inputMethodEvent() should at least
-    understand and honor the \l TextFormat and \l Cursor attributes.
+    A class implementing QWidget::inputMethodEvent() or 
+    QGraphicsItem::inputMethodEvent() should at least understand and
+    honor the \l TextFormat and \l Cursor attributes.
 
     Since input methods need to be able to query certain properties
-    from the widget, the widget must also implement
-    QWidget::inputMethodQuery().
+    from the widget or graphics item, subclasses must also implement
+    QWidget::inputMethodQuery() and QGraphicsItem::inputMethodQuery(),
+    respectively.
 
     When receiving an input method event, the text widget has to performs the
     following steps:

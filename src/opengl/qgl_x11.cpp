@@ -1536,15 +1536,21 @@ void QGLExtensions::init()
     }
 }
 
-
+#if !defined(glXBindTexImageEXT)
 typedef void (*qt_glXBindTexImageEXT)(Display*, GLXDrawable, int, const int*);
-typedef void (*qt_glXReleaseTexImageEXT)(Display*, GLXDrawable, int);
 static qt_glXBindTexImageEXT glXBindTexImageEXT = 0;
+#endif
+#if !defined(glXReleaseTexImageEXT)
+typedef void (*qt_glXReleaseTexImageEXT)(Display*, GLXDrawable, int);
 static qt_glXReleaseTexImageEXT glXReleaseTexImageEXT = 0;
+#endif
 static bool qt_resolved_texture_from_pixmap = false;
 
 QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qint64 key, bool canInvert)
 {
+#if !defined(Q_OS_LINUX)
+    return 0;
+#else
     Q_Q(QGLContext);
 
     if (pm->data_ptr()->classId() != QPixmapData::X11Class)
@@ -1558,6 +1564,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qi
     if ( !(QGLExtensions::glExtensions & QGLExtensions::NPOTTextures) &&
          !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0))
         return 0;
+
 
     if (!qt_resolved_texture_from_pixmap) {
         qt_resolved_texture_from_pixmap = true;
@@ -1644,11 +1651,12 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pm, const qi
 
     return texture;
 #endif //!defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
+#endif //!defined(Q_OS_LINUX
 }
 
 void QGLTexture::deleteBoundPixmap()
 {
-#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
+#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX) && defined(Q_OS_LINUX)
     if (boundPixmap) {
         glXReleaseTexImageEXT(QX11Info::display(), boundPixmap, GLX_FRONT_LEFT_EXT);
         glXDestroyPixmap(QX11Info::display(), boundPixmap);

@@ -121,7 +121,7 @@
 
     Normally, QPainter draws in a "natural" coordinate system, but it
     is able to perform view and world transformations using the
-    QMatrix class. For more information, see \l {The Coordinate
+    QTransform class. For more information, see \l {The Coordinate
     System} documentation which also describes the rendering process,
     i.e. the relation between the logical representation and the
     rendered pixels, and the benefits of anti-aliased painting.
