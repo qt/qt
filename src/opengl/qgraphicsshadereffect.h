@@ -78,8 +78,6 @@ private:
     friend class QGLCustomShaderEffectStage;
 };
 
-Q_DECLARE_METATYPE(QGraphicsShaderEffect *)
-
 #endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
