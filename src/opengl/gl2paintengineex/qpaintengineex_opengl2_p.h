@@ -150,7 +150,7 @@ public:
             q(q_ptr),
             width(0), height(0),
             ctx(0),
-            currentBrush( &(q->state()->brush) ),
+            currentBrush(0),
             inverseScale(1),
             shaderManager(0)
     { }
