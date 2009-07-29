@@ -161,10 +161,17 @@ QColor QmlPalette::darker(const QColor& color) const
     return color.darker();
 }
 
-void QmlPalette::setColorGroup(QPalette::ColorGroup colorGroup)
+QmlPalette::ColorGroup QmlPalette::colorGroup() const
+{
+    Q_D(const QmlPalette);
+    return (QmlPalette::ColorGroup)int(d->group);
+}
+
+void QmlPalette::setColorGroup(ColorGroup colorGroup)
 {
     Q_D(QmlPalette);
-    d->group = colorGroup;
+    d->group = (QPalette::ColorGroup)int(colorGroup);
+    emit paletteChanged();
 }
 
 QPalette QmlPalette::palette() const

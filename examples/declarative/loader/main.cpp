@@ -11,7 +11,7 @@
 #include <QmlContext>
 #include <QmlComponent>
 #include <qfxview.h>
-#include "qmlpalette.h"
+#include <QDebug>
 
 QFxView *canvas = 0;
 
@@ -173,7 +173,6 @@ int main(int argc, char *argv[])
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("qmlLauncher", launcher);
-    ctxt->setContextProperty("activePalette", new QmlPalette);
     canvas->setUrl(QUrl("qrc:/loader.qml"));
 #ifdef Q_OS_SYMBIAN
     canvas->setContentResizable(true);

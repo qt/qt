@@ -5,6 +5,7 @@ import "content"
 Rect {
     id: page; width: 460; height: 700; color: activePalette.window
     Script { source: "content/samegame.js" }
+    Palette { id: activePalette; colorGroup: "Active" }
     Rect {
         id: gameCanvas
         property int score: 0
