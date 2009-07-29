@@ -6,6 +6,7 @@ HEADERS += access/qftp.h \
            access/qhttpnetworkrequest_p.h \
            access/qhttpnetworkreply_p.h \
 	   access/qhttpnetworkconnection_p.h \
+           access/qhttpnetworkconnectionchannel_p.h \
            access/qnetworkaccessmanager.h \
            access/qnetworkaccessmanager_p.h \
 	   access/qnetworkaccesscache_p.h \
@@ -36,6 +37,7 @@ SOURCES += access/qftp.cpp \
 	   access/qhttpnetworkrequest.cpp \
 	   access/qhttpnetworkreply.cpp \
 	   access/qhttpnetworkconnection.cpp \
+           access/qhttpnetworkconnectionchannel.cpp \
            access/qnetworkaccessmanager.cpp \
 	   access/qnetworkaccesscache.cpp \
            access/qnetworkaccessbackend.cpp \
