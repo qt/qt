@@ -283,14 +283,17 @@ QT_USE_NAMESPACE
 
 - (void)finishOffWithCode:(NSInteger)code
 {
-    // Finish the QColorDialog as well. But since a call to accept or reject will
-    // close down the QEventLoop found in QDialog, we need to make sure that the
-    // current thread has exited the native dialogs modal session/run loop first.
-    // We ensure this by posting the call:
     mResultCode = code;
     if (mDialogIsExecuting) {
+        // We stop the current modal event loop. The control
+        // will then return inside -(void)exec below.
+        // It's important that the modal event loop is stopped before
+        // we accept/reject QColorDialog, since QColorDialog has its
+        // own event loop that needs to be stopped last. 
         [NSApp stopModalWithCode:code];
     } else {
+        // Since we are not in a modal event loop, we can safely close
+        // down QColorDialog
         if (mResultCode == NSCancelButton)
             mPriv->colorDialog()->reject();
         else
