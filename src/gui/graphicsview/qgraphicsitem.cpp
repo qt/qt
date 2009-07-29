@@ -1188,16 +1188,6 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
-    if (d_ptr->isFocusRealm && d_ptr->scene)
-        d_ptr->scene->d_func()->focusItemForFocusArea.remove(this);
-    if (d_ptr->isFocusItemForArea && d_ptr->scene) {
-        QGraphicsItem *prnt = parentItem();
-        while (prnt && !prnt->d_func()->isFocusRealm)
-            prnt = prnt->parentItem();
-        if (prnt && d_ptr->scene->d_func()->focusItemForFocusArea.value(prnt) == this)
-            d_ptr->scene->d_func()->focusItemForFocusArea.remove(prnt);
-    }
-
     clearFocus();
     if (!d_ptr->children.isEmpty()) {
         QList<QGraphicsItem *> oldChildren = d_ptr->children;

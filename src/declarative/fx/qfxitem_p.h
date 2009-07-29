@@ -197,18 +197,6 @@ public:
     void gvRemoveMouseFilter();
     void gvAddMouseFilter();
 
-    virtual void setActiveFocus(bool b) {
-        Q_Q(QFxItem);
-        QGraphicsItemPrivate::setActiveFocus(b);
-        q->activeFocusChanged(b);
-    }
-
-    virtual void setFocusItemForArea(bool b) {
-        Q_Q(QFxItem);
-        QGraphicsItemPrivate::setFocusItemForArea(b);
-        q->focusChanged(b);
-    }
-
     virtual void setPosHelper(const QPointF &pos)
     {
         Q_Q(QFxItem);

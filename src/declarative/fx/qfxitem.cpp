@@ -1897,8 +1897,6 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
         if (options() & QFxItem::MouseFilter)
             d->gvAddMouseFilter();
 
-        if (d->canvas && d->isFocusItemForArea)
-            d->canvas->setFocusItem(this);
     } else if (change == ItemChildAddedChange ||
                change == ItemChildRemovedChange) {
         childrenChanged();
@@ -2154,28 +2152,49 @@ QFxItem *QFxItem::mouseGrabberItem() const
 
 bool QFxItem::hasFocus() const
 {
-    Q_D(const QFxItem);
-    return d->isFocusItemForArea;
+    const QGraphicsItem *current = this->parentItem();
+    while (current && !(current->flags() & ItemAutoDetectsFocusProxy))
+        current = current->parentItem();
+
+    if (current)
+        return current->focusProxy() == this;
+    else
+        return QGraphicsItem::hasFocus();
 }
 
 void QFxItem::setFocus(bool focus)
 {
-    Q_D(QFxItem);
     QGraphicsScene *s = scene();
-    if (s) {
-        if (d->hasActiveFocus)
-            s->setFocusItem(focus ? this : 0);
-        else if (focus)
-            s->setFocusItem(this);
-        else {
-            d->isFocusItemForArea = false;
-            focusChanged(false);
-        }
-
-    } else {
-        d->isFocusItemForArea = focus;
+    if (!s) {
+        if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
+        else QGraphicsItem::clearFocus();
         focusChanged(focus);
+        return;
     }
+
+    QGraphicsItem *current = this->parentItem();
+    while (current && !(current->flags() & ItemAutoDetectsFocusProxy))
+        current = current->parentItem();
+
+    if (!current) {
+        if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
+        else QGraphicsItem::clearFocus();
+        focusChanged(focus);
+        return;
+    }
+
+    if (current->focusProxy() && current->focusProxy() != this) {
+        QFxItem *currentItem = qobject_cast<QFxItem *>(current->focusProxy());
+        if (currentItem) 
+            currentItem->setFocus(false);
+    }
+
+    if (current->focusProxy() == this && !focus)
+        current->setFocusProxy(0);
+    else if (focus)
+        current->setFocusProxy(this);
+
+    focusChanged(focus);
 }
 
 /*!
@@ -2185,8 +2204,7 @@ void QFxItem::setFocus(bool focus)
 
 bool QFxItem::hasActiveFocus() const
 {
-    Q_D(const QFxItem);
-    return d->hasActiveFocus;
+    return QGraphicsItem::hasFocus();
 }
 
 bool QFxItem::activeFocusPanel() const
@@ -2242,7 +2260,8 @@ void QFxItem::setOptions(Options options, bool set)
     setFiltersChildEvents(d->options & ChildMouseFilter);
     setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
     setAcceptHoverEvents(d->options & HoverEvents);
-    d->isFocusRealm = static_cast<bool>(d->options & IsFocusRealm);
+
+    setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->options & MouseFilter)

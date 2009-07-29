@@ -164,9 +164,6 @@ public:
         acceptedTouchBeginEvent(0),
         filtersDescendantEvents(0),
         sceneTransformTranslateOnly(0),
-        isFocusRealm(0),
-        isFocusItemForArea(0),
-        hasActiveFocus(0),
         mouseSetsFocus(1),
         globalStackingOrder(-1),
         q_ptr(0)
@@ -405,14 +402,6 @@ public:
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
 
-    virtual void setActiveFocus(bool b) {
-        hasActiveFocus = b;
-    }
-
-    virtual void setFocusItemForArea(bool b) {
-        isFocusItemForArea = b;
-    }
-
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
@@ -473,6 +462,7 @@ public:
     quint32 acceptedTouchBeginEvent : 1;
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
+    quint32 mouseSetsFocus : 1;
     quint32 unused : 4; // feel free to use
 
     // Optional stacking order
