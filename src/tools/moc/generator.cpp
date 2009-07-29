@@ -66,7 +66,9 @@ enum PropertyFlags  {
     ResolveEditable = 0x00080000,
     User = 0x00100000,
     ResolveUser = 0x00200000,
-    Notify = 0x00400000
+    Notify = 0x00400000,
+    Dynamic = 0x00800000,
+    Constant = 0x00000400
 };
 enum MethodFlags {
     AccessPrivate = 0x00,
@@ -596,6 +598,9 @@ void Generator::generateProperties()
 
         if (p.notifyId != -1)
             flags |= Notify;
+
+        if (p.constant)
+            flags |= Constant;
 
         fprintf(out, "    %4d, %4d, ",
                 strreg(p.name),
