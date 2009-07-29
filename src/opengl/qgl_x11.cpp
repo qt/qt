@@ -58,11 +58,16 @@
 #include <private/qglpixelbuffer_p.h>
 #endif
 
+// We always define GLX_EXT_texture_from_pixmap ourselves because
+// we can't trust system headers to do it properly
+#define GLX_EXT_texture_from_pixmap 1
+
 #define INT8  dummy_INT8
 #define INT32 dummy_INT32
 #include <GL/glx.h>
 #undef  INT8
 #undef  INT32
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
@@ -82,7 +87,7 @@ extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
 #define GLX_SAMPLES_ARB         100001
 #endif
 
-#ifndef GLX_EXT_texture_from_pixmap
+#ifndef GLX_TEXTURE_2D_BIT_EXT
 #define GLX_TEXTURE_2D_BIT_EXT             0x00000002
 #define GLX_TEXTURE_RECTANGLE_BIT_EXT      0x00000004
 #define GLX_BIND_TO_TEXTURE_RGB_EXT        0x20D0
@@ -1537,7 +1542,7 @@ void QGLExtensions::init()
 }
 
 // Solaris defines glXBindTexImageEXT as part of the GL library
-#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX) && !defined(glXBindTexImageEXT)
+#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
 typedef void (*qt_glXBindTexImageEXT)(Display*, GLXDrawable, int, const int*);
 typedef void (*qt_glXReleaseTexImageEXT)(Display*, GLXDrawable, int);
 static qt_glXBindTexImageEXT glXBindTexImageEXT = 0;
@@ -1579,7 +1584,7 @@ bool qt_resolveTextureFromPixmap()
 
     return glXBindTexImageEXT && glXReleaseTexImageEXT;
 }
-#endif //defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX) && !defined(glXBindTexImageEXT)
+#endif //defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
 
 
 QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, const qint64 key, bool canInvert)
@@ -1591,10 +1596,8 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
 
     Q_ASSERT(pmd->classId() == QPixmapData::X11Class);
 
-#if !defined(glXBindTexImageEXT)
     if (!qt_resolveTextureFromPixmap())
         return 0;
-#endif
 
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
     const QX11Info &x11Info = pixmapData->xinfo;
