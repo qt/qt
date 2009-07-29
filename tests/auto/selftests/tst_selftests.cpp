@@ -180,9 +180,10 @@ void tst_Selftests::runSubTest_data()
     QTest::newRow("benchliboptions") << "benchliboptions" << QStringList("-eventcounter");
     QTest::newRow("benchlibwalltime") << "benchlibwalltime" << QStringList();
 
-    //### QWS tests are currently run on a virtual machine, where ticks are not
-    //### monotonously increasing
-#if defined(HAVE_TICK_COUNTER) && !defined(Q_WS_QWS)
+    //### This test is affected by the speed of the CPU and whether the tick counter is
+    //### monotonically increasing. It won't work on some machines so leave it off by default.
+    //### Feel free to uncomment for your own testing.
+#if 0
     QTest::newRow("benchlibtickcounter") << "benchlibtickcounter" << QStringList("-tickcounter");
 #endif
 
