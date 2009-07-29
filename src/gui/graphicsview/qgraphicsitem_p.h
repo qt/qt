@@ -546,6 +546,12 @@ public:
     inline void update()
     { item->update(); }
 
+    inline bool isPixmap() const
+    {
+        return (item->type() == QGraphicsPixmapItem::Type);
+            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+    }
+
     inline const QStyleOption *styleOption() const
     { return info ? info->option : 0; }
 

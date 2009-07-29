@@ -75,6 +75,7 @@ public:
     const QStyleOption *styleOption() const;
     void draw(QPainter *painter);
     void update();
+    bool isPixmap() const;
     QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
     QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates, QPoint *offset = 0) const;
 

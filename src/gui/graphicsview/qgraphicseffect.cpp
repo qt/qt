@@ -124,6 +124,9 @@ void QGraphicsEffectSource::draw(QPainter *painter)
 void QGraphicsEffectSource::update()
 { d_func()->update(); }
 
+bool QGraphicsEffectSource::isPixmap() const
+{ return d_func()->isPixmap(); }
+
 QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
 { return d_func()->pixmap(system, offset); }
 
@@ -145,7 +148,6 @@ QGraphicsEffect::~QGraphicsEffect()
 QRectF QGraphicsEffect::boundingRect() const
 {
     Q_D(const QGraphicsEffect);
-    // return d->boundingRect;
     if (d->source)
         return boundingRectFor(d->source->boundingRect());
     return QRectF();
@@ -214,9 +216,15 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
 {
     Q_D(QGraphicsGrayscaleEffect);
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+    if (source->isPixmap()) {
+        // No point in drawing in device coordinates (pixmap will be scaled anyways).
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        d->filter->draw(painter, offset, pixmap, pixmap.rect());
+        return;
+    }
 
-    // Draw the pixmap with the filter using an untransformed painter.
+    // Draw pixmap in device coordinates to avoid pixmap scaling;
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap, pixmap.rect());
@@ -247,9 +255,15 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 {
     Q_D(QGraphicsColorizeEffect);
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+    if (source->isPixmap()) {
+        // No point in drawing in device coordinates (pixmap will be scaled anyways).
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        d->filter->draw(painter, offset, pixmap, pixmap.rect());
+        return;
+    }
 
-    // Draw the pixmap with the filter using an untransformed painter.
+    // Draw pixmap in deviceCoordinates to avoid pixmap scaling.
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap, pixmap.rect());
@@ -277,36 +291,54 @@ void QGraphicsPixelizeEffect::setPixelSize(int size)
     d->pixelSize = size;
 }
 
-void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+static inline void pixelize(QImage *image, int pixelSize)
 {
-    Q_D(QGraphicsPixelizeEffect);
-    QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
-
-    // pixelize routine
-    QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-    if (d->pixelSize > 0) {
-        int width = img.width();
-        int height = img.height();
-        for (int y = 0; y < height; y += d->pixelSize) {
-            int ys = qMin(height - 1, y + d->pixelSize / 2);
-            QRgb *sbuf = reinterpret_cast<QRgb*>(img.scanLine(ys));
-            for (int x = 0; x < width; x += d->pixelSize) {
-                int xs = qMin(width - 1, x + d->pixelSize / 2);
-                QRgb color = sbuf[xs];
-                for (int yi = 0; yi < qMin(d->pixelSize, height - y); ++yi) {
-                    QRgb *buf = reinterpret_cast<QRgb*>(img.scanLine(y + yi));
-                    for (int xi = 0; xi < qMin(d->pixelSize, width - x); ++xi)
-                        buf[x + xi] = color;
-                }
+    Q_ASSERT(pixelSize > 0);
+    Q_ASSERT(image);
+    int width = image->width();
+    int height = image->height();
+    for (int y = 0; y < height; y += pixelSize) {
+        int ys = qMin(height - 1, y + pixelSize / 2);
+        QRgb *sbuf = reinterpret_cast<QRgb*>(image->scanLine(ys));
+        for (int x = 0; x < width; x += pixelSize) {
+            int xs = qMin(width - 1, x + pixelSize / 2);
+            QRgb color = sbuf[xs];
+            for (int yi = 0; yi < qMin(pixelSize, height - y); ++yi) {
+                QRgb *buf = reinterpret_cast<QRgb*>(image->scanLine(y + yi));
+                for (int xi = 0; xi < qMin(pixelSize, width - x); ++xi)
+                    buf[x + xi] = color;
             }
         }
     }
+}
 
-    // Draw using an untransformed painter.
+void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+{
+    Q_D(QGraphicsPixelizeEffect);
+    if (d->pixelSize <= 0) {
+        source->draw(painter);
+        return;
+    }
+
+    QPoint offset;
+    if (source->isPixmap()) {
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+        pixelize(&image, d->pixelSize);
+        painter->drawImage(offset, image);
+        return;
+    }
+
+    // Draw pixmap in device coordinates to avoid pixmap scaling.
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+
+    // pixelize routine
+    QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    pixelize(&image, d->pixelSize);
+
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(offset, img);
+    painter->drawImage(offset, image);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -403,16 +435,20 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
     return d->filter->boundingRectFor(rect);
 }
 
-//    return d->filter->boundingRectFor(rect);
-//}
-
 void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBlurEffect);
-    QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
 
-    // Draw the pixmap with the filter using an untransformed painter.
+    QPoint offset;
+    if (source->isPixmap()) {
+        // No point in drawing in device coordinates (pixmap will be scaled anyways).
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        d->filter->draw(painter, offset, pixmap, pixmap.rect());
+        return;
+    }
+
+    // Draw pixmap in device coordinates to avoid pixmap scaling.
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap, pixmap.rect());
@@ -494,11 +530,29 @@ static QImage composited(const QImage& img1, const QImage& img2, qreal opacity, 
 void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBloomEffect);
+
     QPoint offset;
+    const int radius = d->blurRadius;
+    const int delta = radius * 3;
+
+    if (source->isPixmap()) {
+        // No point in drawing in device coordinates (pixmap will be scaled anyways).
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+
+        // bloom routine
+        QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        QImage overlay = blurred(img, img.rect(), radius);
+        overlay = brightened(overlay, 70);
+        img = composited(img, overlay, d->opacity, QPainter::CompositionMode_Overlay);
+
+        painter->drawImage(offset - QPoint(delta, delta), img);
+        return;
+    }
+
+    // Draw pixmap in device coordinates to avoid pixmap scaling.
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
 
     // bloom routine
-    const int radius = d->blurRadius;
     QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
     QImage overlay = blurred(img, img.rect(), radius);
     overlay = brightened(overlay, 70);
