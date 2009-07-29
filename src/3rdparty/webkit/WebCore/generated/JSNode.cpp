@@ -110,12 +110,12 @@ static JSC_CONST_HASHTABLE HashTable JSNodeConstructorTable =
     { 67, 63, JSNodeConstructorTableValues, 0 };
 #endif
 
-class JSNodeConstructor : public DOMObject {
+class JSNodeConstructor : public DOMConstructorObject {
 public:
-    JSNodeConstructor(ExecState* exec)
-        : DOMObject(JSNodeConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSNodeConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSNodeConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSNodePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSNodePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -198,8 +198,8 @@ bool JSNodePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 const ClassInfo JSNode::s_info = { "Node", 0, &JSNodeTable, 0 };
 
-JSNode::JSNode(PassRefPtr<Structure> structure, PassRefPtr<Node> impl)
-    : DOMObject(structure)
+JSNode::JSNode(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Node> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -217,126 +217,144 @@ JSObject* JSNode::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 
 JSValue jsNodeNodeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsStringOrNull(exec, imp->nodeName());
 }
 
 JSValue jsNodeNodeValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsStringOrNull(exec, imp->nodeValue());
 }
 
 JSValue jsNodeNodeType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsNumber(exec, imp->nodeType());
 }
 
 JSValue jsNodeParentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->parentNode()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentNode()));
 }
 
 JSValue jsNodeChildNodes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->childNodes()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->childNodes()));
 }
 
 JSValue jsNodeFirstChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->firstChild()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->firstChild()));
 }
 
 JSValue jsNodeLastChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->lastChild()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->lastChild()));
 }
 
 JSValue jsNodePreviousSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->previousSibling()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->previousSibling()));
 }
 
 JSValue jsNodeNextSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->nextSibling()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nextSibling()));
 }
 
 JSValue jsNodeAttributes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->attributes()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->attributes()));
 }
 
 JSValue jsNodeOwnerDocument(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->ownerDocument()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerDocument()));
 }
 
 JSValue jsNodeNamespaceURI(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsStringOrNull(exec, imp->namespaceURI());
 }
 
 JSValue jsNodePrefix(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsStringOrNull(exec, imp->prefix());
 }
 
 JSValue jsNodeLocalName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsStringOrNull(exec, imp->localName());
 }
 
 JSValue jsNodeBaseURI(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsStringOrNull(exec, imp->baseURI());
 }
 
 JSValue jsNodeTextContent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
+    Node* imp = static_cast<Node*>(castedThis->impl());
     return jsStringOrNull(exec, imp->textContent());
 }
 
 JSValue jsNodeParentElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->parentElement()));
+    Node* imp = static_cast<Node*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentElement()));
 }
 
 JSValue jsNodeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSNode*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSNode* domObject = static_cast<JSNode*>(asObject(slot.slotBase()));
+    return JSNode::getConstructor(exec, domObject->globalObject());
 }
 void JSNode::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -367,9 +385,9 @@ void setJSNodeTextContent(ExecState* exec, JSObject* thisObject, JSValue value)
     setDOMException(exec, ec);
 }
 
-JSValue JSNode::getConstructor(ExecState* exec)
+JSValue JSNode::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSNodeConstructor>(exec);
+    return getDOMConstructor<JSNodeConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsNodePrototypeFunctionInsertBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -431,7 +449,7 @@ JSValue JSC_HOST_CALL jsNodePrototypeFunctionCloneNode(ExecState* exec, JSObject
     bool deep = args.at(0).toBoolean(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->cloneNode(deep)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->cloneNode(deep)));
     return result;
 }
 

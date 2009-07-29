@@ -121,10 +121,10 @@ signals:
 private slots:
     void checkStopWatch()
     {
-#ifndef Q_OS_WINCE
-        if (stopWatch.elapsed() >= OneMinute)
-#else
+#if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
         if (stopWatch.elapsed() >= OneMinute / 2)
+#else
+        if (stopWatch.elapsed() >= OneMinute)
 #endif
             quit();
 
@@ -138,7 +138,7 @@ void tst_QObjectRace::moveToThreadRace()
 {
     RaceObject *object = new RaceObject;
 
-    enum { ThreadCount = 10 };
+    enum { ThreadCount = 6 };
     RaceThread *threads[ThreadCount];
     for (int i = 0; i < ThreadCount; ++i) {
         threads[i] = new RaceThread;

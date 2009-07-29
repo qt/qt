@@ -2148,6 +2148,14 @@ void tst_QScriptValue::getSetScope()
 
     QCOMPARE(object2.scope().strictlyEquals(object), true);
 
+    object.setProperty("foo", 123);
+    QVERIFY(!object2.property("foo").isValid());
+    {
+        QScriptValue ret = object2.property("foo", QScriptValue::ResolveScope);
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
+    }
+
     QScriptValue inv;
     inv.setScope(object);
     QCOMPARE(inv.scope().isValid(), false);

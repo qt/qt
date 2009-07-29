@@ -1211,7 +1211,10 @@ void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
     if (collapse) {
         bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
         NSMenuItem *previousItem = nil;
-        for (NSMenuItem *item in [menu itemArray]) {
+            
+        NSArray *itemArray = [menu itemArray];
+        for (unsigned int i = 0; i < [itemArray count]; ++i) {
+            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
             if ([item isSeparatorItem]) {
                 [item setHidden:previousIsSeparator];
             }
@@ -1226,7 +1229,9 @@ void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
         if (previousItem && previousIsSeparator)
             [previousItem setHidden:YES];
     } else {
-        for (NSMenuItem *item in [menu itemArray]) {
+        NSArray *itemArray = [menu itemArray];
+        for (unsigned int i = 0; i < [itemArray count]; ++i) {
+            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
             if (QAction *action = reinterpret_cast<QAction *>([item tag]))
                 [item setHidden:!action->isVisible()];
         }

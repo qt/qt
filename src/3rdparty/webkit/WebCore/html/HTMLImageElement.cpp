@@ -110,7 +110,7 @@ void HTMLImageElement::parseMappedAttribute(MappedAttribute* attr)
         if (attr->value().string()[0] == '#')
             usemap = attr->value();
         else
-            usemap = document()->completeURL(parseURL(attr->value())).string();
+            usemap = document()->completeURL(deprecatedParseURL(attr->value())).string();
         setIsLink(!attr->isNull());
     } else if (attrName == ismapAttr)
         ismap = true;
@@ -317,6 +317,12 @@ String HTMLImageElement::border() const
 void HTMLImageElement::setBorder(const String& value)
 {
     setAttribute(borderAttr, value);
+}
+
+bool HTMLImageElement::draggable() const
+{
+    // Image elements are draggable by default.
+    return !equalIgnoringCase(getAttribute(draggableAttr), "false");
 }
 
 void HTMLImageElement::setHeight(int value)

@@ -39,9 +39,10 @@ namespace JSC {
 namespace WebCore {
 
     class JSNode;
+    class JSDOMGlobalObject;
     class HTMLElement;
 
-    JSNode* createJSHTMLWrapper(JSC::ExecState*, PassRefPtr<HTMLElement>);
+    JSNode* createJSHTMLWrapper(JSC::ExecState*, JSDOMGlobalObject*, PassRefPtr<HTMLElement>);
 
 }
  

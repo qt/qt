@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qabstracteventdispatcher.h"
 #include "qaccessible.h"
 #include "qapplication.h"

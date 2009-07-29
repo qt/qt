@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#if ENABLE(SHARED_WORKERS)
+#if ENABLE(WORKERS)
 
 #include "JSAbstractWorker.h"
 
@@ -45,7 +45,7 @@ namespace WebCore {
 
 void JSAbstractWorker::mark()
 {
-    DOMObject::mark();
+    Base::mark();
 
     markIfNotNull(m_impl->onerror());
 
@@ -82,12 +82,6 @@ JSValue JSAbstractWorker::removeEventListener(ExecState* exec, const ArgList& ar
     return jsUndefined();
 }
 
-JSValue toJS(ExecState* exec, AbstractWorker* baseObject)
-{
-    // Just call the JSEventTarget implementation of toJS(), which already differentiates between the different implementations.
-    return toJS(exec, static_cast<EventTarget*>(baseObject));
-}
-
 } // namespace WebCore
 
-#endif // ENABLE(SHARED_WORKERS)
+#endif // ENABLE(WORKERS)

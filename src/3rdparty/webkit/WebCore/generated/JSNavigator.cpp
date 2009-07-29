@@ -94,8 +94,8 @@ bool JSNavigatorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 const ClassInfo JSNavigator::s_info = { "Navigator", 0, &JSNavigatorTable, 0 };
 
-JSNavigator::JSNavigator(PassRefPtr<Structure> structure, PassRefPtr<Navigator> impl)
-    : DOMObject(structure)
+JSNavigator::JSNavigator(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Navigator> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -117,99 +117,113 @@ bool JSNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& property
 
 JSValue jsNavigatorAppCodeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->appCodeName());
 }
 
 JSValue jsNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->appName());
 }
 
 JSValue jsNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->appVersion());
 }
 
 JSValue jsNavigatorLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->language());
 }
 
 JSValue jsNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->userAgent());
 }
 
 JSValue jsNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->platform());
 }
 
 JSValue jsNavigatorPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->plugins()));
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->plugins()));
 }
 
 JSValue jsNavigatorMimeTypes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->mimeTypes()));
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->mimeTypes()));
 }
 
 JSValue jsNavigatorProduct(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->product());
 }
 
 JSValue jsNavigatorProductSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->productSub());
 }
 
 JSValue jsNavigatorVendor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->vendor());
 }
 
 JSValue jsNavigatorVendorSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsString(exec, imp->vendorSub());
 }
 
 JSValue jsNavigatorCookieEnabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsBoolean(imp->cookieEnabled());
 }
 
 JSValue jsNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    Navigator* imp = static_cast<Navigator*>(castedThis->impl());
     return jsBoolean(imp->onLine());
 }
 
@@ -226,9 +240,9 @@ JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionJavaEnabled(ExecState* exec, J
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Navigator* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Navigator* object)
 {
-    return getDOMObjectWrapper<JSNavigator>(exec, object);
+    return getDOMObjectWrapper<JSNavigator>(exec, globalObject, object);
 }
 Navigator* toNavigator(JSC::JSValue value)
 {

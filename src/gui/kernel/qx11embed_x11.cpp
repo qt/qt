@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qx11embed_x11.h"
 #include <qapplication.h>
 #include <qevent.h>

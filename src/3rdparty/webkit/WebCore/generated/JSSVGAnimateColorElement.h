@@ -33,7 +33,7 @@ class SVGAnimateColorElement;
 class JSSVGAnimateColorElement : public JSSVGAnimationElement {
     typedef JSSVGAnimationElement Base;
 public:
-    JSSVGAnimateColorElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimateColorElement>);
+    JSSVGAnimateColorElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimateColorElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

@@ -685,6 +685,13 @@ QT_BEGIN_NAMESPACE
     Returns a textual representation of the given \a rectangle.
 */
 
+/*!
+    \fn char *QTest::toString(const QVariant &variant)
+    \overload
+
+    Returns a textual representation of the given \a variant.
+*/
+
 /*! \fn void QTest::qWait(int ms)
 
     Waits for \a ms milliseconds. While waiting, events will be processed and

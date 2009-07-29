@@ -76,8 +76,8 @@ JSObject* JSScreenPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSScreen::s_info = { "Screen", 0, &JSScreenTable, 0 };
 
-JSScreen::JSScreen(PassRefPtr<Structure> structure, PassRefPtr<Screen> impl)
-    : DOMObject(structure)
+JSScreen::JSScreen(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Screen> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -99,63 +99,71 @@ bool JSScreen::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNam
 
 JSValue jsScreenHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->height());
 }
 
 JSValue jsScreenWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->width());
 }
 
 JSValue jsScreenColorDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->colorDepth());
 }
 
 JSValue jsScreenPixelDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->pixelDepth());
 }
 
 JSValue jsScreenAvailLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->availLeft());
 }
 
 JSValue jsScreenAvailTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->availTop());
 }
 
 JSValue jsScreenAvailHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->availHeight());
 }
 
 JSValue jsScreenAvailWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
+    Screen* imp = static_cast<Screen*>(castedThis->impl());
     return jsNumber(exec, imp->availWidth());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Screen* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Screen* object)
 {
-    return getDOMObjectWrapper<JSScreen>(exec, object);
+    return getDOMObjectWrapper<JSScreen>(exec, globalObject, object);
 }
 Screen* toScreen(JSC::JSValue value)
 {

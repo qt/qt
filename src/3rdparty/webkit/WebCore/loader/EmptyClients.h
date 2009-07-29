@@ -125,12 +125,16 @@ public:
 
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned) { }
 
-    virtual void setToolTip(const String&) { }
+    virtual void setToolTip(const String&, TextDirection) { }
 
     virtual void print(Frame*) { }
 
 #if ENABLE(DATABASE)
     virtual void exceededDatabaseQuota(Frame*, const String&) { }
+#endif
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+    virtual void reachedMaxAppCacheSize(int64_t) { }
 #endif
 
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) { }
@@ -287,8 +291,9 @@ public:
     virtual void registerForIconNotification(bool) { }
 
 #if USE(V8)
-    virtual void didCreateScriptContext() { }
-    virtual void didDestroyScriptContext() { }
+    virtual void didCreateScriptContextForFrame() { }
+    virtual void didDestroyScriptContextForFrame() { }
+    virtual void didCreateIsolatedScriptContext() { }
 #endif
 
 #if PLATFORM(MAC)

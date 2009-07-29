@@ -230,6 +230,7 @@ class HtmlGenerator : public PageGenerator
     DcfSection dcfQmakeRoot;
     HelpProjectWriter *helpProjectWriter;
     bool inLink;
+    bool inObsoleteLink;
     bool inContents;
     bool inSectionHeading;
     bool inTableHeader;
@@ -251,6 +252,7 @@ class HtmlGenerator : public PageGenerator
     QStringList customHeadElements;
     const Tree *tre;
     bool slow;
+    bool obsoleteLinks;
     QMap<QString, QMap<QString, const Node *> > moduleClassMap;
     QMap<QString, QMap<QString, const Node *> > moduleNamespaceMap;
     QMap<QString, const Node *> nonCompatClasses;

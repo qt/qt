@@ -23,6 +23,7 @@
 
 #if ENABLE(VIDEO)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class MediaError;
 
-class JSMediaError : public DOMObject {
-    typedef DOMObject Base;
+class JSMediaError : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMediaError(PassRefPtr<JSC::Structure>, PassRefPtr<MediaError>);
+    JSMediaError(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MediaError>);
     virtual ~JSMediaError();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     MediaError* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<MediaError> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, MediaError*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, MediaError*);
 MediaError* toMediaError(JSC::JSValue);
 
 class JSMediaErrorPrototype : public JSC::JSObject {

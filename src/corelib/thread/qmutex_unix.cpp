@@ -49,6 +49,10 @@
 
 #include <errno.h>
 
+#if defined(Q_OS_VXWORKS) && defined(wakeup)
+#undef wakeup
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static void report_error(int code, const char *where, const char *what)

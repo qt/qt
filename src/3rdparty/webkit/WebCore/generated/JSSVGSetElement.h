@@ -33,7 +33,7 @@ class SVGSetElement;
 class JSSVGSetElement : public JSSVGAnimationElement {
     typedef JSSVGAnimationElement Base;
 public:
-    JSSVGSetElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGSetElement>);
+    JSSVGSetElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGSetElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

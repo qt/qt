@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
+
 #include "qsvghandler_p.h"
 
 #ifndef QT_NO_SVG
@@ -354,7 +356,7 @@ static qreal toDouble(const QChar *&str)
         if (neg)
             val = -val;
     } else {
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) && !defined(Q_OS_VXWORKS)
         if(sizeof(qreal) == sizeof(float))
             val = strtof(temp, 0);
         else

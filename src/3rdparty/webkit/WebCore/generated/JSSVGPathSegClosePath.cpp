@@ -56,8 +56,8 @@ JSObject* JSSVGPathSegClosePathPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegClosePath::s_info = { "SVGPathSegClosePath", &JSSVGPathSeg::s_info, 0, 0 };
 
-JSSVGPathSegClosePath::JSSVGPathSegClosePath(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegClosePath> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegClosePath::JSSVGPathSegClosePath(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegClosePath> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 

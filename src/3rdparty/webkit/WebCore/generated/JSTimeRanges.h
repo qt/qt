@@ -21,6 +21,7 @@
 #ifndef JSTimeRanges_h
 #define JSTimeRanges_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class TimeRanges;
 
-class JSTimeRanges : public DOMObject {
-    typedef DOMObject Base;
+class JSTimeRanges : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSTimeRanges(PassRefPtr<JSC::Structure>, PassRefPtr<TimeRanges>);
+    JSTimeRanges(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<TimeRanges>);
     virtual ~JSTimeRanges();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -50,7 +51,7 @@ private:
     RefPtr<TimeRanges> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, TimeRanges*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, TimeRanges*);
 TimeRanges* toTimeRanges(JSC::JSValue);
 
 class JSTimeRangesPrototype : public JSC::JSObject {

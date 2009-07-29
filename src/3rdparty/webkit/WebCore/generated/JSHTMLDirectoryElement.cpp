@@ -60,12 +60,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLDirectoryElementConstructorTable =
     { 1, 0, JSHTMLDirectoryElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLDirectoryElementConstructor : public DOMObject {
+class JSHTMLDirectoryElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLDirectoryElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLDirectoryElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLDirectoryElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLDirectoryElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDirectoryElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDirectoryElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,8 +107,8 @@ JSObject* JSHTMLDirectoryElementPrototype::self(ExecState* exec, JSGlobalObject*
 
 const ClassInfo JSHTMLDirectoryElement::s_info = { "HTMLDirectoryElement", &JSHTMLElement::s_info, &JSHTMLDirectoryElementTable, 0 };
 
-JSHTMLDirectoryElement::JSHTMLDirectoryElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLDirectoryElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLDirectoryElement::JSHTMLDirectoryElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDirectoryElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -124,14 +124,16 @@ bool JSHTMLDirectoryElement::getOwnPropertySlot(ExecState* exec, const Identifie
 
 JSValue jsHTMLDirectoryElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDirectoryElement* castedThis = static_cast<JSHTMLDirectoryElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDirectoryElement* imp = static_cast<HTMLDirectoryElement*>(static_cast<JSHTMLDirectoryElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDirectoryElement* imp = static_cast<HTMLDirectoryElement*>(castedThis->impl());
     return jsBoolean(imp->compact());
 }
 
 JSValue jsHTMLDirectoryElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDirectoryElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLDirectoryElement* domObject = static_cast<JSHTMLDirectoryElement*>(asObject(slot.slotBase()));
+    return JSHTMLDirectoryElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDirectoryElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -144,9 +146,9 @@ void setJSHTMLDirectoryElementCompact(ExecState* exec, JSObject* thisObject, JSV
     imp->setCompact(value.toBoolean(exec));
 }
 
-JSValue JSHTMLDirectoryElement::getConstructor(ExecState* exec)
+JSValue JSHTMLDirectoryElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLDirectoryElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLDirectoryElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

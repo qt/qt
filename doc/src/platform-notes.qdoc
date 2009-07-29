@@ -60,6 +60,10 @@
     \tableofcontents{1 Platform Notes - Embedded Linux}
     \o \l{Platform Notes - Windows CE}
     \tableofcontents{1 Platform Notes - Windows CE}
+    \o \l{Platform Notes - QNX}
+    \tableofcontents{1 Platform Notes - QNX}
+    \o \l{Platform Notes - VxWorks}
+    \tableofcontents{1 Platform Notes - VxWorks}
     \endlist
 
     See also the \l{Compiler Notes} for information about compiler-specific
@@ -374,6 +378,8 @@
     improve support for this feature.
 */
 
+    \row    \o \l{QNX}           \o Intel 32-bit, PowerPC   \o unsupported/qnx-<arch>-g++       \o QNX 6.4 GCC
+    \row    \o VxWorks           \o Intel 32-bit, PowerPC   \o unsupported/vxworks-<arch>-g++   \o VxWorks 6.7 GCC
 
 /*!
     \page platform-notes-windows-ce.html

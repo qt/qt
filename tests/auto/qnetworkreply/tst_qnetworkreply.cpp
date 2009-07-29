@@ -2642,6 +2642,8 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QCOMPARE(file.size(), qint64(data.size()));
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
+
+    delete reply;
 #endif
 }
 

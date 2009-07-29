@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedTransformList : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedTransformList : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedTransformList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedTransformList>, SVGElement* context);
+    JSSVGAnimatedTransformList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedTransformList>, SVGElement* context);
     virtual ~JSSVGAnimatedTransformList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,12 @@ public:
     }
 
     SVGAnimatedTransformList* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedTransformList > m_impl;
+    RefPtr<SVGAnimatedTransformList> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedTransformList*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedTransformList*, SVGElement* context);
 SVGAnimatedTransformList* toSVGAnimatedTransformList(JSC::JSValue);
 
 class JSSVGAnimatedTransformListPrototype : public JSC::JSObject {

@@ -61,6 +61,7 @@
 #include <private/qthread_p.h>
 #include <qlibraryinfo.h>
 #include <private/qfactoryloader_p.h>
+#include <private/qfunctions_p.h>
 
 #ifdef Q_OS_UNIX
 #  if !defined(QT_NO_GLIB)
@@ -81,6 +82,10 @@
 
 #ifdef Q_OS_UNIX
 #  include <locale.h>
+#endif
+
+#ifdef Q_OS_VXWORKS
+#  include <taskLib.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1821,8 +1826,9 @@ qint64 QCoreApplication::applicationPid()
 {
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     return GetCurrentProcessId();
+#elif defined(Q_OS_VXWORKS)
+    return (pid_t) taskIdCurrent;
 #else
-    // UNIX
     return getpid();
 #endif
 }

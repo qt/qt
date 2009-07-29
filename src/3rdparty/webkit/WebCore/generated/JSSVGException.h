@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGException;
 
-class JSSVGException : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGException : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGException(PassRefPtr<JSC::Structure>, PassRefPtr<SVGException>, SVGElement* context);
+    JSSVGException(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGException>, SVGElement* context);
     virtual ~JSSVGException();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,16 +48,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     SVGException* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGException > m_impl;
+    RefPtr<SVGException> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGException*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGException*, SVGElement* context);
 SVGException* toSVGException(JSC::JSValue);
 
 class JSSVGExceptionPrototype : public JSC::JSObject {

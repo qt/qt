@@ -21,6 +21,7 @@
 #ifndef JSValidityState_h
 #define JSValidityState_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class ValidityState;
 
-class JSValidityState : public DOMObject {
-    typedef DOMObject Base;
+class JSValidityState : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSValidityState(PassRefPtr<JSC::Structure>, PassRefPtr<ValidityState>);
+    JSValidityState(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<ValidityState>);
     virtual ~JSValidityState();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -50,7 +51,7 @@ private:
     RefPtr<ValidityState> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, ValidityState*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, ValidityState*);
 ValidityState* toValidityState(JSC::JSValue);
 
 class JSValidityStatePrototype : public JSC::JSObject {

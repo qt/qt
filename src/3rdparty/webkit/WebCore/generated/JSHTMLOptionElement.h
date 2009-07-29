@@ -31,7 +31,7 @@ class HTMLOptionElement;
 class JSHTMLOptionElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLOptionElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLOptionElement>);
+    JSHTMLOptionElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLOptionElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -43,7 +43,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     HTMLOptionElement* impl() const
     {
         return static_cast<HTMLOptionElement*>(Base::impl());
