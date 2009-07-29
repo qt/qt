@@ -868,11 +868,13 @@ bool QDB2Result::fetch(int i)
                             SQL_FETCH_ABSOLUTE,
                             actualIdx);
     }
-    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
         setLastError(qMakeError(QCoreApplication::translate("QDB2Result",
                                 "Unable to fetch record %1").arg(i), QSqlError::StatementError, d));
         return false;
     }
+    else if (r == SQL_NO_DATA)
+        return false;
     setAt(i);
     return true;
 }
