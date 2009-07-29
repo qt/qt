@@ -40,18 +40,6 @@
 ****************************************************************************/
 
 /*!
-    \group groups
-    \title Grouped Classes
-    \ingroup classlists
-
-    This page provides a way of navigating Qt's classes by grouping
-    related classes together. Some classes may appear in more than one group.
-
-    \generatelist{related}
-
-*/
-
-/*!
     \group advanced
     \title Advanced Widgets
     \ingroup groups
