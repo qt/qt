@@ -33,7 +33,7 @@ class SVGSwitchElement;
 class JSSVGSwitchElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGSwitchElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGSwitchElement>);
+    JSSVGSwitchElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGSwitchElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

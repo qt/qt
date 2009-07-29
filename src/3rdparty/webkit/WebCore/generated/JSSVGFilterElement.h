@@ -33,7 +33,7 @@ class SVGFilterElement;
 class JSSVGFilterElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFilterElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFilterElement>);
+    JSSVGFilterElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFilterElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

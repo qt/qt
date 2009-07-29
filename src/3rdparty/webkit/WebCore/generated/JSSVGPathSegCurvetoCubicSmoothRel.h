@@ -33,7 +33,7 @@ class SVGPathSegCurvetoCubicSmoothRel;
 class JSSVGPathSegCurvetoCubicSmoothRel : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegCurvetoCubicSmoothRel(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegCurvetoCubicSmoothRel>, SVGElement* context);
+    JSSVGPathSegCurvetoCubicSmoothRel(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegCurvetoCubicSmoothRel>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

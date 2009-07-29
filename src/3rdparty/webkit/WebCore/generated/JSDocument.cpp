@@ -190,12 +190,12 @@ static JSC_CONST_HASHTABLE HashTable JSDocumentConstructorTable =
     { 1, 0, JSDocumentConstructorTableValues, 0 };
 #endif
 
-class JSDocumentConstructor : public DOMObject {
+class JSDocumentConstructor : public DOMConstructorObject {
 public:
-    JSDocumentConstructor(ExecState* exec)
-        : DOMObject(JSDocumentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSDocumentConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSDocumentConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSDocumentPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSDocumentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -278,8 +278,8 @@ bool JSDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 const ClassInfo JSDocument::s_info = { "Document", &JSNode::s_info, &JSDocumentTable, 0 };
 
-JSDocument::JSDocument(PassRefPtr<Structure> structure, PassRefPtr<Document> impl)
-    : JSNode(structure, impl)
+JSDocument::JSDocument(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Document> impl)
+    : JSNode(structure, globalObject, impl)
 {
 }
 
@@ -295,209 +295,239 @@ JSObject* JSDocument::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 
 JSValue jsDocumentDoctype(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->doctype()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->doctype()));
 }
 
 JSValue jsDocumentImplementation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->implementation()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->implementation()));
 }
 
 JSValue jsDocumentDocumentElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->documentElement()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->documentElement()));
 }
 
 JSValue jsDocumentInputEncoding(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrNull(exec, imp->inputEncoding());
 }
 
 JSValue jsDocumentXMLEncoding(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrNull(exec, imp->xmlEncoding());
 }
 
 JSValue jsDocumentXMLVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrNull(exec, imp->xmlVersion());
 }
 
 JSValue jsDocumentXMLStandalone(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsBoolean(imp->xmlStandalone());
 }
 
 JSValue jsDocumentDocumentURI(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrNull(exec, imp->documentURI());
 }
 
 JSValue jsDocumentDefaultView(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->defaultView()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->defaultView()));
 }
 
 JSValue jsDocumentStyleSheets(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->styleSheets()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->styleSheets()));
 }
 
 JSValue jsDocumentTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsString(exec, imp->title());
 }
 
 JSValue jsDocumentReferrer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsString(exec, imp->referrer());
 }
 
 JSValue jsDocumentDomain(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsString(exec, imp->domain());
 }
 
 JSValue jsDocumentURL(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsString(exec, imp->url());
 }
 
 JSValue jsDocumentCookie(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsString(exec, imp->cookie());
 }
 
 JSValue jsDocumentBody(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->body()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->body()));
 }
 
 JSValue jsDocumentImages(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->images()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->images()));
 }
 
 JSValue jsDocumentApplets(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->applets()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->applets()));
 }
 
 JSValue jsDocumentLinks(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->links()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->links()));
 }
 
 JSValue jsDocumentForms(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->forms()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->forms()));
 }
 
 JSValue jsDocumentAnchors(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->anchors()));
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->anchors()));
 }
 
 JSValue jsDocumentLastModified(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsString(exec, imp->lastModified());
 }
 
 JSValue jsDocumentLocation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDocument*>(asObject(slot.slotBase()))->location(exec);
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
+    return castedThis->location(exec);
 }
 
 JSValue jsDocumentCharset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrUndefined(exec, imp->charset());
 }
 
 JSValue jsDocumentDefaultCharset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrUndefined(exec, imp->defaultCharset());
 }
 
 JSValue jsDocumentReadyState(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrUndefined(exec, imp->readyState());
 }
 
 JSValue jsDocumentCharacterSet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrNull(exec, imp->characterSet());
 }
 
 JSValue jsDocumentPreferredStylesheetSet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrNull(exec, imp->preferredStylesheetSet());
 }
 
 JSValue jsDocumentSelectedStylesheetSet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     return jsStringOrNull(exec, imp->selectedStylesheetSet());
 }
 
 JSValue jsDocumentOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onabort()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -507,8 +537,9 @@ JSValue jsDocumentOnabort(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOnblur(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onblur()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -518,8 +549,9 @@ JSValue jsDocumentOnblur(ExecState* exec, const Identifier&, const PropertySlot&
 
 JSValue jsDocumentOnchange(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onchange()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -529,8 +561,9 @@ JSValue jsDocumentOnchange(ExecState* exec, const Identifier&, const PropertySlo
 
 JSValue jsDocumentOnclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onclick()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -540,8 +573,9 @@ JSValue jsDocumentOnclick(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOncontextmenu(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->oncontextmenu()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -551,8 +585,9 @@ JSValue jsDocumentOncontextmenu(ExecState* exec, const Identifier&, const Proper
 
 JSValue jsDocumentOndblclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondblclick()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -562,8 +597,9 @@ JSValue jsDocumentOndblclick(ExecState* exec, const Identifier&, const PropertyS
 
 JSValue jsDocumentOndrag(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondrag()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -573,8 +609,9 @@ JSValue jsDocumentOndrag(ExecState* exec, const Identifier&, const PropertySlot&
 
 JSValue jsDocumentOndragend(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondragend()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -584,8 +621,9 @@ JSValue jsDocumentOndragend(ExecState* exec, const Identifier&, const PropertySl
 
 JSValue jsDocumentOndragenter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondragenter()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -595,8 +633,9 @@ JSValue jsDocumentOndragenter(ExecState* exec, const Identifier&, const Property
 
 JSValue jsDocumentOndragleave(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondragleave()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -606,8 +645,9 @@ JSValue jsDocumentOndragleave(ExecState* exec, const Identifier&, const Property
 
 JSValue jsDocumentOndragover(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondragover()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -617,8 +657,9 @@ JSValue jsDocumentOndragover(ExecState* exec, const Identifier&, const PropertyS
 
 JSValue jsDocumentOndragstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondragstart()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -628,8 +669,9 @@ JSValue jsDocumentOndragstart(ExecState* exec, const Identifier&, const Property
 
 JSValue jsDocumentOndrop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->ondrop()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -639,8 +681,9 @@ JSValue jsDocumentOndrop(ExecState* exec, const Identifier&, const PropertySlot&
 
 JSValue jsDocumentOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -650,8 +693,9 @@ JSValue jsDocumentOnerror(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOnfocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onfocus()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -661,8 +705,9 @@ JSValue jsDocumentOnfocus(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOninput(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->oninput()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -672,8 +717,9 @@ JSValue jsDocumentOninput(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOnkeydown(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onkeydown()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -683,8 +729,9 @@ JSValue jsDocumentOnkeydown(ExecState* exec, const Identifier&, const PropertySl
 
 JSValue jsDocumentOnkeypress(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onkeypress()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -694,8 +741,9 @@ JSValue jsDocumentOnkeypress(ExecState* exec, const Identifier&, const PropertyS
 
 JSValue jsDocumentOnkeyup(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onkeyup()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -705,8 +753,9 @@ JSValue jsDocumentOnkeyup(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOnload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onload()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -716,8 +765,9 @@ JSValue jsDocumentOnload(ExecState* exec, const Identifier&, const PropertySlot&
 
 JSValue jsDocumentOnmousedown(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onmousedown()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -727,8 +777,9 @@ JSValue jsDocumentOnmousedown(ExecState* exec, const Identifier&, const Property
 
 JSValue jsDocumentOnmousemove(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onmousemove()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -738,8 +789,9 @@ JSValue jsDocumentOnmousemove(ExecState* exec, const Identifier&, const Property
 
 JSValue jsDocumentOnmouseout(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseout()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -749,8 +801,9 @@ JSValue jsDocumentOnmouseout(ExecState* exec, const Identifier&, const PropertyS
 
 JSValue jsDocumentOnmouseover(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseover()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -760,8 +813,9 @@ JSValue jsDocumentOnmouseover(ExecState* exec, const Identifier&, const Property
 
 JSValue jsDocumentOnmouseup(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseup()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -771,8 +825,9 @@ JSValue jsDocumentOnmouseup(ExecState* exec, const Identifier&, const PropertySl
 
 JSValue jsDocumentOnmousewheel(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onmousewheel()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -782,8 +837,9 @@ JSValue jsDocumentOnmousewheel(ExecState* exec, const Identifier&, const Propert
 
 JSValue jsDocumentOnscroll(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onscroll()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -793,8 +849,9 @@ JSValue jsDocumentOnscroll(ExecState* exec, const Identifier&, const PropertySlo
 
 JSValue jsDocumentOnselect(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onselect()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -804,8 +861,9 @@ JSValue jsDocumentOnselect(ExecState* exec, const Identifier&, const PropertySlo
 
 JSValue jsDocumentOnsubmit(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onsubmit()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -815,8 +873,9 @@ JSValue jsDocumentOnsubmit(ExecState* exec, const Identifier&, const PropertySlo
 
 JSValue jsDocumentOnbeforecut(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforecut()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -826,8 +885,9 @@ JSValue jsDocumentOnbeforecut(ExecState* exec, const Identifier&, const Property
 
 JSValue jsDocumentOncut(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->oncut()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -837,8 +897,9 @@ JSValue jsDocumentOncut(ExecState* exec, const Identifier&, const PropertySlot& 
 
 JSValue jsDocumentOnbeforecopy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforecopy()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -848,8 +909,9 @@ JSValue jsDocumentOnbeforecopy(ExecState* exec, const Identifier&, const Propert
 
 JSValue jsDocumentOncopy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->oncopy()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -859,8 +921,9 @@ JSValue jsDocumentOncopy(ExecState* exec, const Identifier&, const PropertySlot&
 
 JSValue jsDocumentOnbeforepaste(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforepaste()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -870,8 +933,9 @@ JSValue jsDocumentOnbeforepaste(ExecState* exec, const Identifier&, const Proper
 
 JSValue jsDocumentOnpaste(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onpaste()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -881,8 +945,9 @@ JSValue jsDocumentOnpaste(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOnreset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onreset()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -892,8 +957,9 @@ JSValue jsDocumentOnreset(ExecState* exec, const Identifier&, const PropertySlot
 
 JSValue jsDocumentOnsearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onsearch()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -903,8 +969,9 @@ JSValue jsDocumentOnsearch(ExecState* exec, const Identifier&, const PropertySlo
 
 JSValue jsDocumentOnselectstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(asObject(slot.slotBase()))->impl());
+    Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->onselectstart()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -914,7 +981,8 @@ JSValue jsDocumentOnselectstart(ExecState* exec, const Identifier&, const Proper
 
 JSValue jsDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDocument*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSDocument* domObject = static_cast<JSDocument*>(asObject(slot.slotBase()));
+    return JSDocument::getConstructor(exec, domObject->globalObject());
 }
 void JSDocument::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -1366,9 +1434,9 @@ void setJSDocumentOnselectstart(ExecState* exec, JSObject* thisObject, JSValue v
     imp->setOnselectstart(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValue JSDocument::getConstructor(ExecState* exec)
+JSValue JSDocument::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSDocumentConstructor>(exec);
+    return getDOMConstructor<JSDocumentConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -1382,7 +1450,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElement(ExecState* exec, 
     const UString& tagName = valueToStringWithNullCheck(exec, args.at(0));
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createElement(tagName, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createElement(tagName, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1396,7 +1464,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateDocumentFragment(ExecStat
     Document* imp = static_cast<Document*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createDocumentFragment()));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createDocumentFragment()));
     return result;
 }
 
@@ -1410,7 +1478,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTextNode(ExecState* exec,
     const UString& data = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createTextNode(data)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createTextNode(data)));
     return result;
 }
 
@@ -1424,7 +1492,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateComment(ExecState* exec, 
     const UString& data = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createComment(data)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createComment(data)));
     return result;
 }
 
@@ -1439,7 +1507,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateCDATASection(ExecState* e
     const UString& data = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createCDATASection(data, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createCDATASection(data, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1456,7 +1524,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateProcessingInstruction(Exe
     const UString& data = args.at(1).toString(exec);
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createProcessingInstruction(target, data, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createProcessingInstruction(target, data, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1472,7 +1540,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttribute(ExecState* exec
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createAttribute(name, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createAttribute(name, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1488,7 +1556,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEntityReference(ExecState
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createEntityReference(name, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createEntityReference(name, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1503,7 +1571,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagName(ExecState*
     const UString& tagname = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementsByTagName(tagname)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getElementsByTagName(tagname)));
     return result;
 }
 
@@ -1519,7 +1587,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionImportNode(ExecState* exec, JSO
     bool deep = args.at(1).toBoolean(exec);
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->importNode(importedNode, deep, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->importNode(importedNode, deep, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1536,7 +1604,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElementNS(ExecState* exec
     const UString& qualifiedName = valueToStringWithNullCheck(exec, args.at(1));
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createElementNS(namespaceURI, qualifiedName, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createElementNS(namespaceURI, qualifiedName, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1553,7 +1621,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttributeNS(ExecState* ex
     const UString& qualifiedName = valueToStringWithNullCheck(exec, args.at(1));
 
 
-    JSC::JSValue result = toJSNewlyCreated(exec, WTF::getPtr(imp->createAttributeNS(namespaceURI, qualifiedName, ec)));
+    JSC::JSValue result = toJSNewlyCreated(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createAttributeNS(namespaceURI, qualifiedName, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1569,7 +1637,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagNameNS(ExecStat
     const UString& localName = args.at(1).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementsByTagNameNS(namespaceURI, localName)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getElementsByTagNameNS(namespaceURI, localName)));
     return result;
 }
 
@@ -1583,7 +1651,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementById(ExecState* exec,
     const UString& elementId = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementById(elementId)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getElementById(elementId)));
     return result;
 }
 
@@ -1598,7 +1666,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionAdoptNode(ExecState* exec, JSOb
     Node* source = toNode(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->adoptNode(source, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->adoptNode(source, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1614,7 +1682,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEvent(ExecState* exec, JS
     const UString& eventType = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createEvent(eventType, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createEvent(eventType, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1628,7 +1696,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateRange(ExecState* exec, JS
     Document* imp = static_cast<Document*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createRange()));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createRange()));
     return result;
 }
 
@@ -1646,7 +1714,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNodeIterator(ExecState* e
     bool expandEntityReferences = args.at(3).toBoolean(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createNodeIterator(root, whatToShow, filter.get(), expandEntityReferences, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createNodeIterator(root, whatToShow, filter.get(), expandEntityReferences, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1665,7 +1733,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTreeWalker(ExecState* exe
     bool expandEntityReferences = args.at(3).toBoolean(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createTreeWalker(root, whatToShow, filter.get(), expandEntityReferences, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createTreeWalker(root, whatToShow, filter.get(), expandEntityReferences, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1681,7 +1749,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetOverrideStyle(ExecState* exe
     const UString& pseudoElement = args.at(1).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getOverrideStyle(element, pseudoElement)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getOverrideStyle(element, pseudoElement)));
     return result;
 }
 
@@ -1704,7 +1772,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateExpression(ExecState* exe
     }
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createExpression(expression, resolver, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createExpression(expression, resolver, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1719,7 +1787,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNSResolver(ExecState* exe
     Node* nodeResolver = toNode(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createNSResolver(nodeResolver)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createNSResolver(nodeResolver)));
     return result;
 }
 
@@ -1745,7 +1813,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionEvaluate(ExecState* exec, JSObj
     XPathResult* inResult = toXPathResult(args.at(4));
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->evaluate(expression, contextNode, resolver, type, inResult, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->evaluate(expression, contextNode, resolver, type, inResult, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1846,7 +1914,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByName(ExecState* ex
     const UString& elementName = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementsByName(elementName)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getElementsByName(elementName)));
     return result;
 }
 
@@ -1861,7 +1929,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionElementFromPoint(ExecState* exe
     int y = args.at(1).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->elementFromPoint(x, y)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->elementFromPoint(x, y)));
     return result;
 }
 
@@ -1874,7 +1942,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetSelection(ExecState* exec, J
     Document* imp = static_cast<Document*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getSelection()));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getSelection()));
     return result;
 }
 
@@ -1891,7 +1959,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetCSSCanvasContext(ExecState* 
     int height = args.at(3).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getCSSCanvasContext(contextId, name, width, height)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getCSSCanvasContext(contextId, name, width, height)));
     return result;
 }
 
@@ -1905,7 +1973,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByClassName(ExecStat
     const UString& tagname = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementsByClassName(tagname)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getElementsByClassName(tagname)));
     return result;
 }
 
@@ -1920,7 +1988,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelector(ExecState* exec, 
     const UString& selectors = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelector(selectors, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->querySelector(selectors, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1936,7 +2004,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelectorAll(ExecState* exe
     const UString& selectors = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelectorAll(selectors, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->querySelectorAll(selectors, ec)));
     setDOMException(exec, ec);
     return result;
 }

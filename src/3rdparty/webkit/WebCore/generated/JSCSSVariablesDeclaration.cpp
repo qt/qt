@@ -69,12 +69,12 @@ static JSC_CONST_HASHTABLE HashTable JSCSSVariablesDeclarationConstructorTable =
     { 1, 0, JSCSSVariablesDeclarationConstructorTableValues, 0 };
 #endif
 
-class JSCSSVariablesDeclarationConstructor : public DOMObject {
+class JSCSSVariablesDeclarationConstructor : public DOMConstructorObject {
 public:
-    JSCSSVariablesDeclarationConstructor(ExecState* exec)
-        : DOMObject(JSCSSVariablesDeclarationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSVariablesDeclarationConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSVariablesDeclarationConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSVariablesDeclarationPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSVariablesDeclarationPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -125,8 +125,8 @@ bool JSCSSVariablesDeclarationPrototype::getOwnPropertySlot(ExecState* exec, con
 
 const ClassInfo JSCSSVariablesDeclaration::s_info = { "CSSVariablesDeclaration", 0, &JSCSSVariablesDeclarationTable, 0 };
 
-JSCSSVariablesDeclaration::JSCSSVariablesDeclaration(PassRefPtr<Structure> structure, PassRefPtr<CSSVariablesDeclaration> impl)
-    : DOMObject(structure)
+JSCSSVariablesDeclaration::JSCSSVariablesDeclaration(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSVariablesDeclaration> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -168,28 +168,32 @@ bool JSCSSVariablesDeclaration::getOwnPropertySlot(ExecState* exec, unsigned pro
 
 JSValue jsCSSVariablesDeclarationCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSVariablesDeclaration* castedThis = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()))->impl());
+    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(castedThis->impl());
     return jsString(exec, imp->cssText());
 }
 
 JSValue jsCSSVariablesDeclarationLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSVariablesDeclaration* castedThis = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()))->impl());
+    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsCSSVariablesDeclarationParentRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSVariablesDeclaration* castedThis = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->parentRule()));
+    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
 }
 
 JSValue jsCSSVariablesDeclarationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSVariablesDeclaration* domObject = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
+    return JSCSSVariablesDeclaration::getConstructor(exec, domObject->globalObject());
 }
 void JSCSSVariablesDeclaration::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -209,9 +213,9 @@ void JSCSSVariablesDeclaration::getPropertyNames(ExecState* exec, PropertyNameAr
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSCSSVariablesDeclaration::getConstructor(ExecState* exec)
+JSValue JSCSSVariablesDeclaration::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSVariablesDeclarationConstructor>(exec);
+    return getDOMConstructor<JSCSSVariablesDeclarationConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsCSSVariablesDeclarationPrototypeFunctionGetVariableValue(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -280,9 +284,9 @@ JSValue JSCSSVariablesDeclaration::indexGetter(ExecState* exec, const Identifier
     JSCSSVariablesDeclaration* thisObj = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
     return jsStringOrNull(exec, thisObj->impl()->item(slot.index()));
 }
-JSC::JSValue toJS(JSC::ExecState* exec, CSSVariablesDeclaration* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CSSVariablesDeclaration* object)
 {
-    return getDOMObjectWrapper<JSCSSVariablesDeclaration>(exec, object);
+    return getDOMObjectWrapper<JSCSSVariablesDeclaration>(exec, globalObject, object);
 }
 CSSVariablesDeclaration* toCSSVariablesDeclaration(JSC::JSValue value)
 {

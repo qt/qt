@@ -66,12 +66,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLLabelElementConstructorTable =
     { 1, 0, JSHTMLLabelElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLLabelElementConstructor : public DOMObject {
+class JSHTMLLabelElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLLabelElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLLabelElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLLabelElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLLabelElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLLabelElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLLabelElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -113,8 +113,8 @@ JSObject* JSHTMLLabelElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLLabelElement::s_info = { "HTMLLabelElement", &JSHTMLElement::s_info, &JSHTMLLabelElementTable, 0 };
 
-JSHTMLLabelElement::JSHTMLLabelElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLLabelElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLLabelElement::JSHTMLLabelElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLabelElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -130,28 +130,32 @@ bool JSHTMLLabelElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLLabelElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLabelElement* castedThis = static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->form()));
+    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLLabelElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLabelElement* castedThis = static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()))->impl());
+    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThis->impl());
     return jsString(exec, imp->accessKey());
 }
 
 JSValue jsHTMLLabelElementHtmlFor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLabelElement* castedThis = static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()))->impl());
+    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThis->impl());
     return jsString(exec, imp->htmlFor());
 }
 
 JSValue jsHTMLLabelElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLLabelElement* domObject = static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()));
+    return JSHTMLLabelElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLLabelElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -170,9 +174,9 @@ void setJSHTMLLabelElementHtmlFor(ExecState* exec, JSObject* thisObject, JSValue
     imp->setHtmlFor(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLLabelElement::getConstructor(ExecState* exec)
+JSValue JSHTMLLabelElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLLabelElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLLabelElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

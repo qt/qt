@@ -33,7 +33,7 @@ class SVGFEComponentTransferElement;
 class JSSVGFEComponentTransferElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFEComponentTransferElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEComponentTransferElement>);
+    JSSVGFEComponentTransferElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFEComponentTransferElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

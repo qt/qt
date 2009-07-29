@@ -78,8 +78,8 @@ bool JSHTMLOptionsCollectionPrototype::getOwnPropertySlot(ExecState* exec, const
 
 const ClassInfo JSHTMLOptionsCollection::s_info = { "HTMLOptionsCollection", &JSHTMLCollection::s_info, &JSHTMLOptionsCollectionTable, 0 };
 
-JSHTMLOptionsCollection::JSHTMLOptionsCollection(PassRefPtr<Structure> structure, PassRefPtr<HTMLOptionsCollection> impl)
-    : JSHTMLCollection(structure, impl)
+JSHTMLOptionsCollection::JSHTMLOptionsCollection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptionsCollection> impl)
+    : JSHTMLCollection(structure, globalObject, impl)
 {
 }
 
@@ -95,14 +95,16 @@ bool JSHTMLOptionsCollection::getOwnPropertySlot(ExecState* exec, const Identifi
 
 JSValue jsHTMLOptionsCollectionSelectedIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLOptionsCollection* imp = static_cast<HTMLOptionsCollection*>(static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()))->impl());
+    HTMLOptionsCollection* imp = static_cast<HTMLOptionsCollection*>(castedThis->impl());
     return jsNumber(exec, imp->selectedIndex());
 }
 
 JSValue jsHTMLOptionsCollectionLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()))->length(exec);
+    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()));
+    return castedThis->length(exec);
 }
 
 void JSHTMLOptionsCollection::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)

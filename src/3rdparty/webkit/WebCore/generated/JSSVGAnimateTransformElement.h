@@ -33,7 +33,7 @@ class SVGAnimateTransformElement;
 class JSSVGAnimateTransformElement : public JSSVGAnimationElement {
     typedef JSSVGAnimationElement Base;
 public:
-    JSSVGAnimateTransformElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimateTransformElement>);
+    JSSVGAnimateTransformElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimateTransformElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

@@ -61,8 +61,8 @@ bool JSCanvasGradientPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSCanvasGradient::s_info = { "CanvasGradient", 0, 0, 0 };
 
-JSCanvasGradient::JSCanvasGradient(PassRefPtr<Structure> structure, PassRefPtr<CanvasGradient> impl)
-    : DOMObject(structure)
+JSCanvasGradient::JSCanvasGradient(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasGradient> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -93,9 +93,9 @@ JSValue JSC_HOST_CALL jsCanvasGradientPrototypeFunctionAddColorStop(ExecState* e
     return jsUndefined();
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, CanvasGradient* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CanvasGradient* object)
 {
-    return getDOMObjectWrapper<JSCanvasGradient>(exec, object);
+    return getDOMObjectWrapper<JSCanvasGradient>(exec, globalObject, object);
 }
 CanvasGradient* toCanvasGradient(JSC::JSValue value)
 {

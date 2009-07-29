@@ -60,12 +60,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLMarqueeElementConstructorTable =
     { 1, 0, JSHTMLMarqueeElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLMarqueeElementConstructor : public DOMObject {
+class JSHTMLMarqueeElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLMarqueeElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLMarqueeElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLMarqueeElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLMarqueeElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLMarqueeElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLMarqueeElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,8 +114,8 @@ bool JSHTMLMarqueeElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
 
 const ClassInfo JSHTMLMarqueeElement::s_info = { "HTMLMarqueeElement", &JSHTMLElement::s_info, &JSHTMLMarqueeElementTable, 0 };
 
-JSHTMLMarqueeElement::JSHTMLMarqueeElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLMarqueeElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLMarqueeElement::JSHTMLMarqueeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMarqueeElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -131,11 +131,12 @@ bool JSHTMLMarqueeElement::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsHTMLMarqueeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLMarqueeElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLMarqueeElement* domObject = static_cast<JSHTMLMarqueeElement*>(asObject(slot.slotBase()));
+    return JSHTMLMarqueeElement::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSHTMLMarqueeElement::getConstructor(ExecState* exec)
+JSValue JSHTMLMarqueeElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLMarqueeElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLMarqueeElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLMarqueeElementPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

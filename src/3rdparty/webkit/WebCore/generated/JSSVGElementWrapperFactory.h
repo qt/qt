@@ -40,9 +40,10 @@ namespace JSC {
 namespace WebCore {
 
     class JSNode;
+    class JSDOMGlobalObject;
     class SVGElement;
 
-    JSNode* createJSSVGWrapper(JSC::ExecState*, PassRefPtr<SVGElement>);
+    JSNode* createJSSVGWrapper(JSC::ExecState*, JSDOMGlobalObject*, PassRefPtr<SVGElement>);
 
 }
  

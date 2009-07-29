@@ -33,7 +33,7 @@ class SVGPathSegLinetoRel;
 class JSSVGPathSegLinetoRel : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegLinetoRel(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegLinetoRel>, SVGElement* context);
+    JSSVGPathSegLinetoRel(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegLinetoRel>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

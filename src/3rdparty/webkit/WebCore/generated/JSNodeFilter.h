@@ -21,6 +21,7 @@
 #ifndef JSNodeFilter_h
 #define JSNodeFilter_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class NodeFilter;
 
-class JSNodeFilter : public DOMObject {
-    typedef DOMObject Base;
+class JSNodeFilter : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNodeFilter(PassRefPtr<JSC::Structure>, PassRefPtr<NodeFilter>);
+    JSNodeFilter(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<NodeFilter>);
     virtual ~JSNodeFilter();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,7 +47,7 @@ public:
 
     virtual void mark();
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue acceptNode(JSC::ExecState*, const JSC::ArgList&);
@@ -56,7 +57,7 @@ private:
     RefPtr<NodeFilter> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, NodeFilter*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, NodeFilter*);
 PassRefPtr<NodeFilter> toNodeFilter(JSC::JSValue);
 
 class JSNodeFilterPrototype : public JSC::JSObject {

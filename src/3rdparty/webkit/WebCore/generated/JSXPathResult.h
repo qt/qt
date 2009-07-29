@@ -23,6 +23,7 @@
 
 #if ENABLE(XPATH)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class XPathResult;
 
-class JSXPathResult : public DOMObject {
-    typedef DOMObject Base;
+class JSXPathResult : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathResult(PassRefPtr<JSC::Structure>, PassRefPtr<XPathResult>);
+    JSXPathResult(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathResult>);
     virtual ~JSXPathResult();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     XPathResult* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<XPathResult> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, XPathResult*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, XPathResult*);
 XPathResult* toXPathResult(JSC::JSValue);
 
 class JSXPathResultPrototype : public JSC::JSObject {

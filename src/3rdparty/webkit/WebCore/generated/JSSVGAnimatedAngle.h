@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedAngle : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedAngle : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedAngle(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedAngle>, SVGElement* context);
+    JSSVGAnimatedAngle(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedAngle>, SVGElement* context);
     virtual ~JSSVGAnimatedAngle();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,12 @@ public:
     }
 
     SVGAnimatedAngle* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedAngle > m_impl;
+    RefPtr<SVGAnimatedAngle> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedAngle*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedAngle*, SVGElement* context);
 SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValue);
 
 class JSSVGAnimatedAnglePrototype : public JSC::JSObject {

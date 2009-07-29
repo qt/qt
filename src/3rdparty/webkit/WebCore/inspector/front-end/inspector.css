@@ -644,6 +644,10 @@ body.console-visible #console {
     margin-right: -6px;
 }
 
+.console-group-messages .add-attribute {
+    display: none;
+}
+
 .console-formatted-object, .console-formatted-node {
     position: relative;
     display: inline-block;
@@ -766,6 +770,11 @@ body.console-visible #console {
 .resource-view.headers-visible .source-view-frame {
     height: auto;
     vertical-align: top;
+}
+
+.invisible {
+    color: inherit;
+    text-decoration: none;
 }
 
 .webkit-line-gutter-backdrop {
@@ -1088,6 +1097,11 @@ body.console-visible #console {
 .webkit-html-external-link:hover {
     /* Keep this in sync with view-source.css (.webkit-html-external-link:hover) */
     text-decoration: underline;
+}
+
+.add-attribute {
+    margin-left: 1px;
+    margin-right: 1px;
 }
 
 .placard {
@@ -3101,4 +3115,42 @@ body.inactive .sidebar-tree-item.selected .bubble.search-matches {
     overflow: hidden;
     border-left: 1px solid rgb(184, 184, 184);
     margin-left: -1px;
+}
+
+ol.breakpoint-list {
+    -webkit-padding-start: 2px;
+    list-style: none;
+    margin: 0;
+}
+
+.breakpoint-list li {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+.breakpoint-list .checkbox-elem {
+    font-size: 10px;
+    margin: 0 4px;
+    vertical-align: top;
+    position: relative;
+    z-index: 1;
+}
+
+.breakpoint-list .source-text {
+    font-family: monospace;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin: 2px 0 0px 20px;
+}
+
+.breakpoint-list a {
+    color: rgb(33%, 33%, 33%);
+    cursor: pointer;
+}
+
+.breakpoint-list a:hover {
+    color: rgb(15%, 15%, 15%);
 }

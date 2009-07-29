@@ -350,6 +350,7 @@ DEFINE_GLOBAL(QualifiedName, deferAttr, nullAtom, "defer", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, dirAttr, nullAtom, "dir", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, directionAttr, nullAtom, "direction", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, disabledAttr, nullAtom, "disabled", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, draggableAttr, nullAtom, "draggable", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, enctypeAttr, nullAtom, "enctype", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, endAttr, nullAtom, "end", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, expandedAttr, nullAtom, "expanded", xhtmlNamespaceURI);
@@ -464,6 +465,7 @@ DEFINE_GLOBAL(QualifiedName, onwebkitanimationendAttr, nullAtom, "onwebkitanimat
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationiterationAttr, nullAtom, "onwebkitanimationiteration", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationstartAttr, nullAtom, "onwebkitanimationstart", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkittransitionendAttr, nullAtom, "onwebkittransitionend", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, patternAttr, nullAtom, "pattern", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, placeholderAttr, nullAtom, "placeholder", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, playcountAttr, nullAtom, "playcount", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, pluginurlAttr, nullAtom, "pluginurl", xhtmlNamespaceURI);
@@ -475,6 +477,7 @@ DEFINE_GLOBAL(QualifiedName, progressAttr, nullAtom, "progress", xhtmlNamespaceU
 DEFINE_GLOBAL(QualifiedName, promptAttr, nullAtom, "prompt", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, readonlyAttr, nullAtom, "readonly", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, relAttr, nullAtom, "rel", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, requiredAttr, nullAtom, "required", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, resultsAttr, nullAtom, "results", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, revAttr, nullAtom, "rev", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, roleAttr, nullAtom, "role", xhtmlNamespaceURI);
@@ -588,6 +591,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&dirAttr,
         (WebCore::QualifiedName*)&directionAttr,
         (WebCore::QualifiedName*)&disabledAttr,
+        (WebCore::QualifiedName*)&draggableAttr,
         (WebCore::QualifiedName*)&enctypeAttr,
         (WebCore::QualifiedName*)&endAttr,
         (WebCore::QualifiedName*)&expandedAttr,
@@ -702,6 +706,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onwebkitanimationiterationAttr,
         (WebCore::QualifiedName*)&onwebkitanimationstartAttr,
         (WebCore::QualifiedName*)&onwebkittransitionendAttr,
+        (WebCore::QualifiedName*)&patternAttr,
         (WebCore::QualifiedName*)&placeholderAttr,
         (WebCore::QualifiedName*)&playcountAttr,
         (WebCore::QualifiedName*)&pluginurlAttr,
@@ -713,6 +718,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&promptAttr,
         (WebCore::QualifiedName*)&readonlyAttr,
         (WebCore::QualifiedName*)&relAttr,
+        (WebCore::QualifiedName*)&requiredAttr,
         (WebCore::QualifiedName*)&resultsAttr,
         (WebCore::QualifiedName*)&revAttr,
         (WebCore::QualifiedName*)&roleAttr,
@@ -756,7 +762,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&widthAttr,
         (WebCore::QualifiedName*)&wrapAttr,
     };
-    *size = 233;
+    *size = 236;
     return HTMLAttr;
 }
 
@@ -1075,6 +1081,7 @@ void init()
     const char *dirAttrString = "dir";
     const char *directionAttrString = "direction";
     const char *disabledAttrString = "disabled";
+    const char *draggableAttrString = "draggable";
     const char *enctypeAttrString = "enctype";
     const char *endAttrString = "end";
     const char *expandedAttrString = "expanded";
@@ -1189,6 +1196,7 @@ void init()
     const char *onwebkitanimationiterationAttrString = "onwebkitanimationiteration";
     const char *onwebkitanimationstartAttrString = "onwebkitanimationstart";
     const char *onwebkittransitionendAttrString = "onwebkittransitionend";
+    const char *patternAttrString = "pattern";
     const char *placeholderAttrString = "placeholder";
     const char *playcountAttrString = "playcount";
     const char *pluginurlAttrString = "pluginurl";
@@ -1200,6 +1208,7 @@ void init()
     const char *promptAttrString = "prompt";
     const char *readonlyAttrString = "readonly";
     const char *relAttrString = "rel";
+    const char *requiredAttrString = "required";
     const char *resultsAttrString = "results";
     const char *revAttrString = "rev";
     const char *roleAttrString = "role";
@@ -1308,6 +1317,7 @@ void init()
     new ((void*)&dirAttr) QualifiedName(nullAtom, dirAttrString, nullAtom);
     new ((void*)&directionAttr) QualifiedName(nullAtom, directionAttrString, nullAtom);
     new ((void*)&disabledAttr) QualifiedName(nullAtom, disabledAttrString, nullAtom);
+    new ((void*)&draggableAttr) QualifiedName(nullAtom, draggableAttrString, nullAtom);
     new ((void*)&enctypeAttr) QualifiedName(nullAtom, enctypeAttrString, nullAtom);
     new ((void*)&endAttr) QualifiedName(nullAtom, endAttrString, nullAtom);
     new ((void*)&expandedAttr) QualifiedName(nullAtom, expandedAttrString, nullAtom);
@@ -1422,6 +1432,7 @@ void init()
     new ((void*)&onwebkitanimationiterationAttr) QualifiedName(nullAtom, onwebkitanimationiterationAttrString, nullAtom);
     new ((void*)&onwebkitanimationstartAttr) QualifiedName(nullAtom, onwebkitanimationstartAttrString, nullAtom);
     new ((void*)&onwebkittransitionendAttr) QualifiedName(nullAtom, onwebkittransitionendAttrString, nullAtom);
+    new ((void*)&patternAttr) QualifiedName(nullAtom, patternAttrString, nullAtom);
     new ((void*)&placeholderAttr) QualifiedName(nullAtom, placeholderAttrString, nullAtom);
     new ((void*)&playcountAttr) QualifiedName(nullAtom, playcountAttrString, nullAtom);
     new ((void*)&pluginurlAttr) QualifiedName(nullAtom, pluginurlAttrString, nullAtom);
@@ -1433,6 +1444,7 @@ void init()
     new ((void*)&promptAttr) QualifiedName(nullAtom, promptAttrString, nullAtom);
     new ((void*)&readonlyAttr) QualifiedName(nullAtom, readonlyAttrString, nullAtom);
     new ((void*)&relAttr) QualifiedName(nullAtom, relAttrString, nullAtom);
+    new ((void*)&requiredAttr) QualifiedName(nullAtom, requiredAttrString, nullAtom);
     new ((void*)&resultsAttr) QualifiedName(nullAtom, resultsAttrString, nullAtom);
     new ((void*)&revAttr) QualifiedName(nullAtom, revAttrString, nullAtom);
     new ((void*)&roleAttr) QualifiedName(nullAtom, roleAttrString, nullAtom);

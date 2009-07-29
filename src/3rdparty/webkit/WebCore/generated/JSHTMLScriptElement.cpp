@@ -68,12 +68,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLScriptElementConstructorTable =
     { 1, 0, JSHTMLScriptElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLScriptElementConstructor : public DOMObject {
+class JSHTMLScriptElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLScriptElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLScriptElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLScriptElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLScriptElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLScriptElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLScriptElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -115,8 +115,8 @@ JSObject* JSHTMLScriptElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLScriptElement::s_info = { "HTMLScriptElement", &JSHTMLElement::s_info, &JSHTMLScriptElementTable, 0 };
 
-JSHTMLScriptElement::JSHTMLScriptElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLScriptElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLScriptElement::JSHTMLScriptElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLScriptElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -132,56 +132,64 @@ bool JSHTMLScriptElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsHTMLScriptElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLScriptElement* castedThis = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
+    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(castedThis->impl());
     return jsString(exec, imp->text());
 }
 
 JSValue jsHTMLScriptElementHtmlFor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLScriptElement* castedThis = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
+    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(castedThis->impl());
     return jsString(exec, imp->htmlFor());
 }
 
 JSValue jsHTMLScriptElementEvent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLScriptElement* castedThis = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
+    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(castedThis->impl());
     return jsString(exec, imp->event());
 }
 
 JSValue jsHTMLScriptElementCharset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLScriptElement* castedThis = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
+    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(castedThis->impl());
     return jsString(exec, imp->charset());
 }
 
 JSValue jsHTMLScriptElementDefer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLScriptElement* castedThis = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
+    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(castedThis->impl());
     return jsBoolean(imp->defer());
 }
 
 JSValue jsHTMLScriptElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLScriptElement* castedThis = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
+    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(castedThis->impl());
     return jsString(exec, imp->src());
 }
 
 JSValue jsHTMLScriptElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLScriptElement* castedThis = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->impl());
+    HTMLScriptElement* imp = static_cast<HTMLScriptElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLScriptElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLScriptElement* domObject = static_cast<JSHTMLScriptElement*>(asObject(slot.slotBase()));
+    return JSHTMLScriptElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLScriptElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -230,9 +238,9 @@ void setJSHTMLScriptElementType(ExecState* exec, JSObject* thisObject, JSValue v
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLScriptElement::getConstructor(ExecState* exec)
+JSValue JSHTMLScriptElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLScriptElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLScriptElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

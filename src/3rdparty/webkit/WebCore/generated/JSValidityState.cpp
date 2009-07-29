@@ -76,8 +76,8 @@ JSObject* JSValidityStatePrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSValidityState::s_info = { "ValidityState", 0, &JSValidityStateTable, 0 };
 
-JSValidityState::JSValidityState(PassRefPtr<Structure> structure, PassRefPtr<ValidityState> impl)
-    : DOMObject(structure)
+JSValidityState::JSValidityState(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ValidityState> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -99,70 +99,79 @@ bool JSValidityState::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsValidityStateValueMissing(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->valueMissing());
 }
 
 JSValue jsValidityStateTypeMismatch(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->typeMismatch());
 }
 
 JSValue jsValidityStatePatternMismatch(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->patternMismatch());
 }
 
 JSValue jsValidityStateTooLong(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->tooLong());
 }
 
 JSValue jsValidityStateRangeUnderflow(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->rangeUnderflow());
 }
 
 JSValue jsValidityStateRangeOverflow(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->rangeOverflow());
 }
 
 JSValue jsValidityStateStepMismatch(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->stepMismatch());
 }
 
 JSValue jsValidityStateCustomError(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->customError());
 }
 
 JSValue jsValidityStateValid(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSValidityState* castedThis = static_cast<JSValidityState*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ValidityState* imp = static_cast<ValidityState*>(static_cast<JSValidityState*>(asObject(slot.slotBase()))->impl());
+    ValidityState* imp = static_cast<ValidityState*>(castedThis->impl());
     return jsBoolean(imp->valid());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, ValidityState* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, ValidityState* object)
 {
-    return getDOMObjectWrapper<JSValidityState>(exec, object);
+    return getDOMObjectWrapper<JSValidityState>(exec, globalObject, object);
 }
 ValidityState* toValidityState(JSC::JSValue value)
 {

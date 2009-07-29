@@ -33,7 +33,7 @@ class SVGElement;
 class JSSVGElement : public JSElement {
     typedef JSElement Base;
 public:
-    JSSVGElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGElement>);
+    JSSVGElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

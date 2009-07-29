@@ -73,8 +73,8 @@ JSObject* JSSVGPathSegLinetoRelPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegLinetoRel::s_info = { "SVGPathSegLinetoRel", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoRelTable, 0 };
 
-JSSVGPathSegLinetoRel::JSSVGPathSegLinetoRel(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegLinetoRel> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegLinetoRel::JSSVGPathSegLinetoRel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoRel> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -90,15 +90,17 @@ bool JSSVGPathSegLinetoRel::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsSVGPathSegLinetoRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegLinetoRel* castedThis = static_cast<JSSVGPathSegLinetoRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(static_cast<JSSVGPathSegLinetoRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegLinetoRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegLinetoRel* castedThis = static_cast<JSSVGPathSegLinetoRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(static_cast<JSSVGPathSegLinetoRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 

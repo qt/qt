@@ -38,7 +38,7 @@ Object.type = function(obj, win)
     win = win || window;
 
     if (obj instanceof win.Node)
-        return "node";
+        return (obj.nodeType === undefined ? type : "node");
     if (obj instanceof win.String)
         return "string";
     if (obj instanceof win.Array)
@@ -94,12 +94,12 @@ Object.describe = function(obj, abbreviated)
     }
 }
 
-Object.sortedProperties = function(obj)
+Object.sortedProperties = function(obj, sortFunc)
 {
     var properties = [];
     for (var prop in obj)
         properties.push(prop);
-    properties.sort();
+    properties.sort(sortFunc);
     return properties;
 }
 
