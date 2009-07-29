@@ -3152,28 +3152,33 @@ void tst_QScriptEngine::getterSetterThisObject()
         eng.evaluate("__defineSetter__('x', function() { return this; });");
         {
             QScriptValue ret = eng.evaluate("x = 'foo'");
-            QEXPECT_FAIL("", "JSC is wrong?", Continue);
-            QVERIFY(ret.equals(eng.globalObject()));
+            // SpiderMonkey says setter return value, JSC says RHS.
+            QVERIFY(ret.isString());
+            QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
         }
         {
             QScriptValue ret = eng.evaluate("(function() { return x = 'foo'; })()");
-            QEXPECT_FAIL("", "JSC is wrong?", Continue);
-            QVERIFY(ret.equals(eng.globalObject()));
+            // SpiderMonkey says setter return value, JSC says RHS.
+            QVERIFY(ret.isString());
+            QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
         }
         {
             QScriptValue ret = eng.evaluate("with (this) x = 'foo'");
-            QEXPECT_FAIL("", "JSC is wrong?", Continue);
-            QVERIFY(ret.equals(eng.globalObject()));
+            // SpiderMonkey says setter return value, JSC says RHS.
+            QVERIFY(ret.isString());
+            QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
         }
         {
             QScriptValue ret = eng.evaluate("with ({}) x = 'foo'");
-            QEXPECT_FAIL("", "JSC is wrong?", Continue);
-            QVERIFY(ret.equals(eng.globalObject()));
+            // SpiderMonkey says setter return value, JSC says RHS.
+            QVERIFY(ret.isString());
+            QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
         }
         {
             QScriptValue ret = eng.evaluate("(function() { with ({}) return x = 'foo'; })()");
-            QEXPECT_FAIL("", "JSC is wrong?", Continue);
-            QVERIFY(ret.equals(eng.globalObject()));
+            // SpiderMonkey says setter return value, JSC says RHS.
+            QVERIFY(ret.isString());
+            QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
         }
     }
 
@@ -3189,12 +3194,10 @@ void tst_QScriptEngine::getterSetterThisObject()
         eng.evaluate("q = {}; with (o) with (q) x").equals(eng.evaluate("o"));
         // write
         eng.evaluate("o.__defineSetter__('x', function() { return this; });");
-        QEXPECT_FAIL("", "JSC is wrong?", Continue);
-        QVERIFY(eng.evaluate("(o.x = 'foo') === o").toBoolean());
-        QEXPECT_FAIL("", "JSC is wrong?", Continue);
-        QVERIFY(eng.evaluate("with (o) x = 'foo'").equals(eng.evaluate("o")));
-        QEXPECT_FAIL("", "JSC is wrong?", Continue);
-        QVERIFY(eng.evaluate("with (o) with (q) x = 'foo'").equals(eng.evaluate("o")));
+        // SpiderMonkey says setter return value, JSC says RHS.
+        QVERIFY(eng.evaluate("(o.x = 'foo') === 'foo'").toBoolean());
+        QVERIFY(eng.evaluate("with (o) x = 'foo'").equals("foo"));
+        QVERIFY(eng.evaluate("with (o) with (q) x = 'foo'").equals("foo"));
     }
 
     // getter+setter in prototype chain
@@ -3210,12 +3213,10 @@ void tst_QScriptEngine::getterSetterThisObject()
         eng.evaluate("with (q) with (o) x").equals(eng.evaluate("o"));
         // write
         eng.evaluate("o.__defineSetter__('x', function() { return this; });");
-        QEXPECT_FAIL("", "JSC is wrong?", Continue);
-        QVERIFY(eng.evaluate("(o.x = 'foo') === o").toBoolean());
-        QEXPECT_FAIL("", "JSC is wrong?", Continue);
-        QVERIFY(eng.evaluate("with (o) x = 'foo'").equals(eng.evaluate("o")));
-        QEXPECT_FAIL("", "JSC is wrong?", Continue);
-        QVERIFY(eng.evaluate("with (o) with (q) x = 'foo'").equals(eng.evaluate("o")));
+        // SpiderMonkey says setter return value, JSC says RHS.
+        QVERIFY(eng.evaluate("(o.x = 'foo') === 'foo'").toBoolean());
+        QVERIFY(eng.evaluate("with (o) x = 'foo'").equals("foo"));
+        QVERIFY(eng.evaluate("with (o) with (q) x = 'foo'").equals("foo"));
     }
 
     // getter+setter in activation
