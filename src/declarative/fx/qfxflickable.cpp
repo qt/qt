@@ -128,16 +128,17 @@ void QFxFlickablePrivate::fixupX()
 
     vTime = _tl.time();
 
-    if (_moveX.value() > q->minXExtent() || q->maxXExtent() > 0) {
+    if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->maxXExtent())) {
         _tl.clear();
-        _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
-        flicked = false;
+        if (_moveX.value() != q->minXExtent())
+            _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
         _tl.clear();
         _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
-        flicked = false;
         //emit flickingChanged();
+    } else {
+        flicked = false;
     }
 }
 
@@ -151,7 +152,8 @@ void QFxFlickablePrivate::fixupY()
 
     if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
         _tl.clear();
-        _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        if (_moveY.value() != q->minYExtent())
+            _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveY.value() < q->maxYExtent()) {
         _tl.clear();

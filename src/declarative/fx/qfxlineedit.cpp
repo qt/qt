@@ -108,6 +108,22 @@ QmlFont *QFxLineEdit::font()
 }
 
 /*!
+This signal is emitted when the font of the item changes.
+*/
+void QFxLineEdit::fontChanged()
+{
+    Q_D(QFxLineEdit);
+    d->control->setFont(d->font->font());
+    if(d->cursorItem){
+        d->cursorItem->setHeight(QFontMetrics(d->font->font()).height());
+        moveCursor();
+    }
+    //updateSize();
+    updateAll();//TODO: Only necessary updates
+    emit update();
+}
+
+/*!
     \qmlproperty color LineEdit::color
 
     The text color.
@@ -478,6 +494,7 @@ void QFxLineEditPrivate::init()
                 q, SLOT(updateAll()));
         if(!font)
             font = new QmlFont();
+        q->connect(font, SIGNAL(updated()), q, SLOT(fontChanged()));
         q->updateSize();
         oldValidity = control->hasAcceptableInput();
         lastSelectionStart = 0;

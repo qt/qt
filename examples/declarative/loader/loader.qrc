@@ -4,5 +4,6 @@
         <file>Browser.qml</file>
         <file>images/fileopen.png</file>
         <file>images/up.png</file>
+        <file>Button.qml</file>
     </qresource>
 </RCC>
