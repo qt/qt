@@ -18,6 +18,8 @@ HEADERS += access/qftp.h \
 	   access/qnetworkaccessftpbackend_p.h \
 	   access/qnetworkcookie.h \
 	   access/qnetworkcookie_p.h \
+           access/qnetworkcookiejar.h \
+           access/qnetworkcookiejar_p.h \
            access/qnetworkrequest.h \
            access/qnetworkrequest_p.h \
            access/qnetworkreply.h \
@@ -44,6 +46,7 @@ SOURCES += access/qftp.cpp \
 	   access/qnetworkaccessftpbackend.cpp \
 	   access/qnetworkaccesshttpbackend.cpp \
 	   access/qnetworkcookie.cpp \
+           access/qnetworkcookiejar.cpp \
            access/qnetworkrequest.cpp \
            access/qnetworkreply.cpp \
            access/qnetworkreplyimpl.cpp \
