@@ -121,16 +121,17 @@ const QStyleOption *QGraphicsEffectSource::styleOption() const
 void QGraphicsEffectSource::draw(QPainter *painter)
 { d_func()->draw(painter); }
 
+void QGraphicsEffectSource::update()
+{ d_func()->update(); }
+
 QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
 { return d_func()->pixmap(system, offset); }
+
 
 QGraphicsEffect::QGraphicsEffect()
     : QObject(*new QGraphicsEffectPrivate, 0)
 {}
 
-/*!
-    \internal
-*/
 QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd)
     : QObject(dd, 0)
 {}
@@ -184,6 +185,13 @@ bool QGraphicsEffect::isEnabled() const
 {
     Q_D(const QGraphicsEffect);
     return d->isEnabled;
+}
+
+void QGraphicsEffect::updateBoundingRect()
+{
+    Q_D(QGraphicsEffect);
+    if (d->source)
+        d->source->update();
 }
 
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
@@ -377,6 +385,7 @@ void QGraphicsBlurEffect::setBlurRadius(int radius)
 {
     Q_D(QGraphicsBlurEffect);
     d->filter->setBlurRadius(radius);
+    updateBoundingRect();
 }
 
 QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
@@ -420,6 +429,7 @@ void QGraphicsBloomEffect::setBlurRadius(int radius)
 {
     Q_D(QGraphicsBloomEffect);
     d->blurRadius = radius;
+    updateBoundingRect();
 }
 
 qreal QGraphicsBloomEffect::opacity() const
@@ -523,6 +533,7 @@ void QGraphicsFrameEffect::setFrameWidth(qreal frameWidth)
 {
     Q_D(QGraphicsFrameEffect);
     d->width = frameWidth;
+    updateBoundingRect();
 }
 
 qreal QGraphicsFrameEffect::frameOpacity() const
@@ -575,6 +586,7 @@ void QGraphicsShadowEffect::setShadowOffset(const QPointF &ofs)
 {
     Q_D(QGraphicsShadowEffect);
     d->offset = ofs;
+    updateBoundingRect();
 }
 
 int QGraphicsShadowEffect::blurRadius() const
@@ -587,6 +599,7 @@ void QGraphicsShadowEffect::setBlurRadius(int blurRadius)
 {
     Q_D(QGraphicsShadowEffect);
     d->radius = blurRadius;
+    updateBoundingRect();
 }
 
 qreal QGraphicsShadowEffect::opacity() const

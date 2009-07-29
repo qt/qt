@@ -543,6 +543,9 @@ public:
     inline const QGraphicsItem *graphicsItem() const
     { return item; }
 
+    inline void update()
+    { item->update(); }
+
     inline const QStyleOption *styleOption() const
     { return info ? info->option : 0; }
 

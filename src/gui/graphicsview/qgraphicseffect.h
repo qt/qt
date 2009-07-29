@@ -74,6 +74,7 @@ public:
     const QGraphicsItem *graphicsItem() const;
     const QStyleOption *styleOption() const;
     void draw(QPainter *painter);
+    void update();
     QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
     QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates, QPoint *offset = 0) const;
 
@@ -111,6 +112,7 @@ public Q_SLOTS:
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);
     virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
+    void updateBoundingRect();
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsEffect)

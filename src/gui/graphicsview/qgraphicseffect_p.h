@@ -72,6 +72,7 @@ public:
     virtual const QGraphicsItem *graphicsItem() const = 0;
     virtual const QStyleOption *styleOption() const = 0;
     virtual void draw(QPainter *p) = 0;
+    virtual void update() = 0;
     virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0) const = 0;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
