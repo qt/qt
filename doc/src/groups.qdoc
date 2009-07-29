@@ -49,12 +49,6 @@
 
     \generatelist{related}
 
-    \omit
-    \row
-    \o \l{Component Model}
-    \o Interfaces and helper classes for the Qt Component Model.
-    \endomit
-
 */
 
 /*!
@@ -147,12 +141,6 @@
 
 */
 
-/* \group componentmodel
-   \title Component Model
-
-    These classes and interfaces form the basis of the \l{Qt Component Model}.
-
-*/
 
 /*!
     \group database
