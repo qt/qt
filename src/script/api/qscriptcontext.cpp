@@ -274,7 +274,7 @@ QScriptValue QScriptContext::throwError(const QString &text)
 */
 QScriptContext::~QScriptContext()
 {
-    // d_ptr is stack-allocated
+    delete d_ptr;
     d_ptr = 0;
 }
 
