@@ -174,26 +174,30 @@ void tst_QScriptEngine::pushPopContext()
     QScriptContext *globalCtx = eng.currentContext();
     QScriptContext *ctx = eng.pushContext();
     QVERIFY(ctx != 0);
-    QEXPECT_FAIL("", "", Abort);
     QCOMPARE(ctx->parentContext(), globalCtx);
     QVERIFY(!ctx->isCalledAsConstructor());
     QVERIFY(!ctx->callee().isValid());
     QVERIFY(ctx->thisObject().strictlyEquals(eng.globalObject()));
     QCOMPARE(ctx->argumentCount(), 0);
+    QEXPECT_FAIL("", "Backtrace not implemented", Continue);
     QCOMPARE(ctx->backtrace().size(), 2);
     QCOMPARE(ctx->engine(), &eng);
     QCOMPARE(ctx->state(), QScriptContext::NormalState);
+    QEXPECT_FAIL("", "activationObject not implemented", Continue);
     QVERIFY(ctx->activationObject().isObject());
     QVERIFY(ctx->argumentsObject().isObject());
 
     QScriptContext *ctx2 = eng.pushContext();
     QVERIFY(ctx2 != 0);
     QCOMPARE(ctx2->parentContext(), ctx);
+    QEXPECT_FAIL("", "activationObject not implemented", Continue);
     QVERIFY(!ctx2->activationObject().strictlyEquals(ctx->activationObject()));
     QVERIFY(!ctx2->argumentsObject().strictlyEquals(ctx->argumentsObject()));
 
     eng.popContext();
     eng.popContext();
+    QEXPECT_FAIL("", "cannot pop more context than it pushes", Abort);
+    QVERIFY(false);
     eng.popContext(); // ignored
     eng.popContext(); // ignored
 }

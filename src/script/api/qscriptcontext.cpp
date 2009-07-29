@@ -304,7 +304,9 @@ QScriptEngine *QScriptContext::engine() const
 QScriptValue QScriptContext::argument(int index) const
 {
     Q_D(const QScriptContext);
-    if ((index < 0) || (index >= argumentCount()))
+    if (index < 0)
+        return QScriptValue();
+    if (index >= argumentCount())
         return QScriptValue(QScriptValue::UndefinedValue);
     JSC::Register* thisRegister = d->frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->frame->argumentCount();
     if (d->frame->codeBlock() == 0)

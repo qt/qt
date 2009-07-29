@@ -78,6 +78,7 @@
 #include "bridge/qscriptclassobject_p.h"
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
+#include "bridge/qscriptactivationobject_p.h"
 
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qcoreapplication.h>
@@ -2285,13 +2286,29 @@ QScriptContext *QScriptEngine::currentContext() const
   will be local to the context; in other words, the script doesn't
   have any effect on the global environment.
 
+  Returns 0 in case of stack overflow
+
   \sa popContext()
 */
 QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
-    qWarning("QScriptEngine::pushContext() not implemented");
-    return d->contextForFrame(d->currentFrame);
+    const int argCount = 1; // for 'this'
+    JSC::RegisterFile &registerFile = d->currentFrame->interpreter()->registerFile();
+    JSC::Register *const newEnd = registerFile.end() + JSC::RegisterFile::CallFrameHeaderSize + argCount;
+    if (!registerFile.grow(newEnd))
+        return 0;
+
+    JSC::CallFrame* previousFrame = d->currentFrame;
+    JSC::JSObject* scope = new (d->currentFrame) QScript::QScriptActivationObject(d->currentFrame);
+
+    d->currentFrame = JSC::CallFrame::create(newEnd);
+    d->currentFrame->init(0, 0, previousFrame->scopeChain()->copy()->push(scope),
+                          previousFrame, 0, argCount, 0);
+    QScriptContext *ctx = d->contextForFrame(d->currentFrame);
+    ctx->setThisObject(globalObject());
+    return ctx;
+
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY
 //    notifyContextPush(); TODO
 #endif
@@ -2306,7 +2323,12 @@ QScriptContext *QScriptEngine::pushContext()
 void QScriptEngine::popContext()
 {
     Q_D(QScriptEngine);
-    qWarning("QScriptEngine::popContext() not implemented");
+    JSC::RegisterFile &registerFile = d->currentFrame->interpreter()->registerFile();
+    JSC::Register *const newEnd = d->currentFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->currentFrame->argumentCount();
+    d->currentFrame->scopeChain()->pop()->deref();
+    d->releaseContextForFrame(d->currentFrame);
+    d->currentFrame = d->currentFrame->callerFrame();
+    registerFile.shrink(newEnd);
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY
 //    notifyContextPop(); TODO
 #endif
