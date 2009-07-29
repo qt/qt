@@ -859,7 +859,7 @@ void QFxItem::qmlLoaded()
             QObject* o = c ? c->create(ctxt):0;
             QFxItem* ret = qobject_cast<QFxItem*>(o);
             if (ret) {
-                ret->setItemParent(this);
+                ret->setParentItem(this);
                 QScriptValue v = QmlEnginePrivate::getScriptEngine(qmlEngine(this))->newQObject(ret);
                 emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
             }
