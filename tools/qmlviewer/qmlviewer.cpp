@@ -130,9 +130,9 @@ void PreviewDeviceSkin::slotPopupMenu()
 
 static struct { const char *name, *args; } ffmpegprofiles[] = {
     {"Maximum Quality", "-sameq"},
-    {"High Quality", "-qcomp 0.75"},
-    {"Medium Quality", "-qcomp 0.5"},
-    {"Low Quality", "-qcomp 0.2"},
+    {"High Quality", "-qmax 2"},
+    {"Medium Quality", "-qmax 6"},
+    {"Low Quality", "-qmax 16"},
     {"Custom ffmpeg arguments", ""},
     {0,0}
 };
