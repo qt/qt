@@ -37,12 +37,21 @@ symbian: {
     #ENDIF      
 
     qtlibraries.path = /sys/bin
-    qtlibraries.depends = "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
+    
+    vendorinfo = \
+        "; Localised Vendor name" \
+        "%{\"Nokia, Qt Software\"}" \
+        "; Unique Vendor name" \
+        ":\"Nokia, Qt Software\""
+        
+    qtlibraries.pkg_prerules = vendorinfo
+    qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
+    qtlibraries.pkg_prerules += "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
     contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
-        qtlibraries.depends += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
+        qtlibraries.pkg_prerules += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
     }
     contains(CONFIG, stl) {
-        qtlibraries.depends += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
+        qtlibraries.pkg_prerules += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
     }
     
     !contains(QT_CONFIG, no-jpeg): imageformats_plugins.sources += qjpeg.dll

@@ -885,14 +885,14 @@ MMP_RULES += myIfdefBlock
 //! [140]
 somelib.sources = somelib.dll
 somelib.path = \sys\bin
-somelib.depends = "(0x12345678), 2, 2, 0, {\"Some Package\"}" \
+somelib.pkg_prerules = "(0x12345678), 2, 2, 0, {\"Some Package\"}" \
                   "(0x87654321), 1, *, * ~ 2, 2, 0, {\"Some Other Package\"}"
-justdep.depends = "(0xAAAABBBB), 0, 2, 0, {\"My Framework\"}"                  
+justdep.pkg_prerules = "(0xAAAABBBB), 0, 2, 0, {\"My Framework\"}"                  
 DEPLOYMENT += somelib justdep
 //! [140]
 
 //! [141]
-default_deployment.depends = "[0x11223344],0,0,0,{\"SomeSpecificDeviceID\"}"
+default_deployment.pkg_prerules = "[0x11223344],0,0,0,{\"SomeSpecificDeviceID\"}"
 //! [141]
 
 //! [142]

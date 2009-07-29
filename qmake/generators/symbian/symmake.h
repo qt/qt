@@ -86,6 +86,7 @@ protected:
 
     virtual bool writeMakefile(QTextStream &t);
     bool generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile);
+    bool containsStartWithItem(const QChar &c, const QStringList& src);
 
     virtual void init();
 
