@@ -80,6 +80,7 @@ public:
     void setTriggeredOnStart(bool triggeredOnStart);
 
 protected:
+    void classBegin();
     void componentComplete();
 
 Q_SIGNALS:

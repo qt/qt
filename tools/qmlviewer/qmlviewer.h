@@ -15,7 +15,7 @@
 #define QMLVIEWER_H
 
 #include <QMenuBar>
-#include <QBasicTimer>
+#include <QmlTimer>
 #include <QTime>
 #include <QList>
 
@@ -24,7 +24,6 @@ QT_BEGIN_NAMESPACE
 class QFxView;
 class PreviewDeviceSkin;
 class QFxTestEngine;
-class QmlPalette;
 class QProcess;
 
 class QmlViewer : public QWidget
@@ -39,7 +38,7 @@ public:
     void setRecordArgs(const QStringList&);
     int recordPeriod() const { return record_period; }
     void setRecording(bool on);
-    bool isRecording() const { return recordTimer.isActive(); }
+    bool isRecording() const { return recordTimer.isRunning(); }
     void setAutoRecord(int from, int to);
     void setDeviceKeys(bool);
     void setNetworkCacheSize(int size);
@@ -60,29 +59,29 @@ public slots:
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
-    virtual void timerEvent(QTimerEvent *);
 
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
 private slots:
     void setScaleSkin();
     void setScaleView();
+    void autoStartRecording();
+    void autoStopRecording();
+    void recordFrame();
 
 private:
     void setupProxy();
-    void setupPalettes();
 
     QString currentFileName;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QFxView *canvas;
-    QmlPalette *palette;
-    QmlPalette *disabledPalette;
-    QBasicTimer recordTimer;
+    QmlTimer recordTimer;
+    QImage frame;
     QList<QImage*> frames;
     QProcess* frame_stream;
-    QBasicTimer autoStartTimer;
-    QTime autoTimer;
+    QmlTimer autoStartTimer;
+    QmlTimer autoStopTimer;
     QString record_dither;
     QString record_file;
     QStringList record_args;

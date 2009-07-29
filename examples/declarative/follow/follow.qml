@@ -25,6 +25,7 @@ Rect {
     Rect {
         color: "#ff0000"
         x: Rect.width; width: Rect.width; height: 20
+        y: 200
         y: Follow { source: Rect.y; velocity: 200 }
     }
     Text { x: Rect.width; y: 220; text: "Velocity" }
@@ -32,8 +33,15 @@ Rect {
     // Spring
     Rect {
         color: "#ff0000"
-        x: Rect.width * 2; width: Rect.width; height: 20
-        y: Follow { source: Rect.y; spring: 1.2; damping: 0.1 }
+        x: Rect.width * 2; width: Rect.width/2; height: 20
+        y: 200
+        y: Follow { source: Rect.y; spring: 1.0; damping: 0.2 }
+    }
+    Rect {
+        color: "#880000"
+        x: Rect.width * 2.5; width: Rect.width/2; height: 20
+        y: 200
+        y: Follow { source: Rect.y; spring: 1.0; damping: 0.2; mass: 3.0 } // "heavier" object
     }
     Text { x: Rect.width * 2; y: 220; text: "Spring" }
 

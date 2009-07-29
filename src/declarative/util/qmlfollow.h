@@ -68,6 +68,7 @@ class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource,
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(qreal followValue READ value NOTIFY valueChanged)
     Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
+    Q_PROPERTY(qreal mass READ mass WRITE setMass NOTIFY massChanged)
     Q_PROPERTY(bool inSync READ inSync NOTIFY syncChanged)
 
 public:
@@ -86,6 +87,8 @@ public:
     void setDamping(qreal damping);
     qreal epsilon() const;
     void setEpsilon(qreal epsilon);
+    qreal mass() const;
+    void setMass(qreal modulus);
     qreal modulus() const;
     void setModulus(qreal modulus);
     bool enabled() const;
@@ -96,6 +99,8 @@ public:
 
 Q_SIGNALS:
     void valueChanged(qreal);
+    void modulusChanged();
+    void massChanged();
     void syncChanged();
 };
 

@@ -56,7 +56,8 @@ class QmlFollowPrivate : public QObjectPrivate
 public:
     QmlFollowPrivate()
         : sourceValue(0), maxVelocity(0), lastTime(0)
-        , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.01), modulus(0.0), enabled(true), mode(Track), clock(this) {}
+        , mass(1.0), useMass(false), spring(0.), damping(0.), velocity(0), epsilon(0.01)
+        , modulus(0.0), haveModulus(false), enabled(true), mode(Track), clock(this) {}
 
     QmlMetaProperty property;
     qreal currentValue;
@@ -70,6 +71,8 @@ public:
     qreal velocity;
     qreal epsilon;
     qreal modulus;
+    bool haveModulus;
+    bool useMass;
     bool enabled;
 
     enum Mode {
@@ -95,7 +98,7 @@ void QmlFollowPrivate::tick(int time)
     if (!elapsed)
         return;
     qreal srcVal = sourceValue;
-    if (modulus != 0.0) {
+    if (haveModulus) {
         currentValue = fmod(currentValue, modulus);
         srcVal = fmod(srcVal, modulus);
     }
@@ -107,15 +110,16 @@ void QmlFollowPrivate::tick(int time)
         int count = elapsed / 16;
         for (int i = 0; i < count; ++i) {
             qreal diff = srcVal - currentValue;
-            if (modulus != 0.0 && qAbs(diff) > modulus / 2) {
+            if (haveModulus && qAbs(diff) > modulus / 2) {
                 if (diff < 0)
                     diff += modulus;
                 else
                     diff -= modulus;
             }
-            velocity = velocity + spring * diff - damping * velocity;
-            // The following line supports mass.  Not sure its worth the extra divisions.
-            // velocity = velocity + spring / mass * diff - damping / mass * velocity;
+            if (useMass)
+                velocity = velocity + (spring * diff - damping * velocity) / mass;
+            else
+                velocity = velocity + spring * diff - damping * velocity;
             if (maxVelocity > 0.) {
                 // limit velocity
                 if (velocity > maxVelocity)
@@ -124,7 +128,7 @@ void QmlFollowPrivate::tick(int time)
                     velocity = -maxVelocity;
             }
             currentValue += velocity * 16.0 / 1000.0;
-            if (modulus != 0.0) {
+            if (haveModulus) {
                 currentValue = fmod(currentValue, modulus);
                 if (currentValue < 0.0)
                     currentValue += modulus;
@@ -139,7 +143,7 @@ void QmlFollowPrivate::tick(int time)
     } else {
         qreal moveBy = elapsed * velocityms;
         qreal diff = srcVal - currentValue;
-        if (modulus != 0.0 && qAbs(diff) > modulus / 2) {
+        if (haveModulus && qAbs(diff) > modulus / 2) {
             if (diff < 0)
                 diff += modulus;
             else
@@ -147,7 +151,7 @@ void QmlFollowPrivate::tick(int time)
         }
         if (diff > 0) {
             currentValue += moveBy;
-            if (modulus != 0.0)
+            if (haveModulus)
                 currentValue = fmod(currentValue, modulus);
             if (currentValue > sourceValue) {
                 currentValue = sourceValue;
@@ -155,7 +159,7 @@ void QmlFollowPrivate::tick(int time)
             }
         } else {
             currentValue -= moveBy;
-            if (modulus != 0.0 && currentValue < 0.0)
+            if (haveModulus && currentValue < 0.0)
                 currentValue = fmod(currentValue, modulus) + modulus;
             if (currentValue < sourceValue) {
                 currentValue = sourceValue;
@@ -375,7 +379,34 @@ qreal QmlFollow::modulus() const
 void QmlFollow::setModulus(qreal modulus)
 {
     Q_D(QmlFollow);
-    d->modulus = modulus;
+    if (d->modulus != modulus) {
+        d->haveModulus = modulus != 0.0;
+        d->modulus = modulus;
+        emit modulusChanged();
+    }
+}
+
+/*!
+    \qmlproperty qreal Follow::mass
+    This property holds the "mass" of the property being moved.
+
+    mass is 1.0 by default.  Setting a different mass changes the dynamics of
+    a \l spring follow.
+*/
+qreal QmlFollow::mass() const
+{
+    Q_D(const QmlFollow);
+    return d->mass;
+}
+
+void QmlFollow::setMass(qreal mass)
+{
+    Q_D(QmlFollow);
+    if (d->mass != mass && mass > 0.0) {
+        d->useMass = mass != 1.0;
+        d->mass = mass;
+        emit massChanged();
+    }
 }
 
 /*!

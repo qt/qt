@@ -37,8 +37,6 @@ void usage()
     qWarning("  -autorecord [from-]<tomilliseconds> ...... set recording to start and stop");
     qWarning("  -devicekeys .............................. use numeric keys (see F1)");
     qWarning("  -netcache <size> ......................... set disk cache to size bytes");
-    qWarning("  -recordtest <directory> .................. record an autotest");
-    qWarning("  -runtest <directory> ..................... run a previously recorded test");
     qWarning("  -translation <translationfile> ........... set the language to run in");
     qWarning("  -L <directory> ........................... prepend to the library search path");
     qWarning(" ");
