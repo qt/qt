@@ -109,8 +109,8 @@ QGraphicsEffectSource::QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, Q
 QGraphicsEffectSource::~QGraphicsEffectSource()
 {}
 
-QRectF QGraphicsEffectSource::boundingRect(bool deviceCoordinates) const
-{ return d_func()->boundingRect(deviceCoordinates); }
+QRectF QGraphicsEffectSource::boundingRect(Qt::CoordinateSystem system) const
+{ return d_func()->boundingRect(system); }
 
 const QGraphicsItem *QGraphicsEffectSource::graphicsItem() const
 { return d_func()->graphicsItem(); }
@@ -121,8 +121,8 @@ const QStyleOption *QGraphicsEffectSource::styleOption() const
 void QGraphicsEffectSource::draw(QPainter *painter)
 { d_func()->draw(painter); }
 
-QPixmap QGraphicsEffectSource::pixmap(bool deviceCoordinates, QPoint *offset) const
-{ return d_func()->pixmap(deviceCoordinates, offset); }
+QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+{ return d_func()->pixmap(system, offset); }
 
 QGraphicsEffect::QGraphicsEffect()
     : QObject(*new QGraphicsEffectPrivate, 0)
@@ -185,7 +185,7 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
 {
     Q_D(QGraphicsGrayscaleEffect);
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(true, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
@@ -218,7 +218,7 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 {
     Q_D(QGraphicsColorizeEffect);
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(true, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
@@ -252,7 +252,7 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 {
     Q_D(QGraphicsPixelizeEffect);
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(true, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
 
     // pixelize routine
     QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
@@ -380,7 +380,7 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBlurEffect);
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(true, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
 
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
@@ -464,7 +464,7 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
 {
     Q_D(QGraphicsBloomEffect);
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(true, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
 
     // bloom routine
     const int radius = d->blurRadius;
@@ -603,7 +603,7 @@ QRectF QGraphicsShadowEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsShadowEffect);
-    const QRectF sourceRect = source->boundingRect(/*deviceCoordinates=*/true);
+    const QRectF sourceRect = source->boundingRect(Qt::DeviceCoordinates);
     const QRectF shadowRect = sourceRect.translated(d->offset);
     QRectF blurRect = shadowRect;
     qreal delta = d->radius * 3;

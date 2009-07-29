@@ -9926,11 +9926,11 @@ int QGraphicsItemGroup::type() const
     return Type;
 }
 
-QRectF QGraphicsItemEffectSourcePrivate::boundingRect(bool deviceCoordinates) const
+QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
     QRectF rect = item->boundingRect();
     rect |= item->childrenBoundingRect();
-    if (deviceCoordinates && info) {
+    if (info && system == Qt::DeviceCoordinates) {
         Q_ASSERT(info->transformPtr);
         return info->transformPtr->mapRect(rect);
     }
@@ -9954,15 +9954,16 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
     }
 }
 
-QPixmap QGraphicsItemEffectSourcePrivate::pixmap(bool deviceCoordinates, QPoint *offset) const
+QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
 {
-    const QRectF sourceRect = boundingRect(deviceCoordinates);
+    const QRectF sourceRect = boundingRect(system);
     const QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
     if (offset)
         *offset = sourceRect.toAlignedRect().topLeft();
 
     const QTransform translateTransform = QTransform::fromTranslate(-effectRect.x(),
                                                                     -effectRect.y());
+    const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     QTransform effectTransform = deviceCoordinates ? translateTransform
                                                    : info->transformPtr->inverted();
     if (!deviceCoordinates)

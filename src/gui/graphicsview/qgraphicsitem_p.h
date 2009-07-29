@@ -546,9 +546,9 @@ public:
     inline const QStyleOption *styleOption() const
     { return info ? info->option : 0; }
 
-    QRectF boundingRect(bool deviceCoordinates) const;
+    QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *);
-    QPixmap pixmap(bool deviceCoordinates, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

@@ -68,11 +68,11 @@ public:
     QGraphicsEffectSourcePrivate() : QObjectPrivate() {}
     virtual ~QGraphicsEffectSourcePrivate() {}
     virtual void detach() = 0;
-    virtual QRectF boundingRect(bool deviceCoordinates = false) const = 0;
+    virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
     virtual const QGraphicsItem *graphicsItem() const = 0;
     virtual const QStyleOption *styleOption() const = 0;
     virtual void draw(QPainter *p) = 0;
-    virtual QPixmap pixmap(bool deviceCoordinates, QPoint *offset = 0) const = 0;
+    virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0) const = 0;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;

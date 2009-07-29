@@ -71,11 +71,11 @@ class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
     Q_OBJECT
 public:
     ~QGraphicsEffectSource();
-    QRectF boundingRect(bool deviceCoordinates = false) const;
+    QRectF boundingRect(Qt::CoordinateSystem s = Qt::LogicalCoordinates) const;
     const QGraphicsItem *graphicsItem() const;
     const QStyleOption *styleOption() const;
     void draw(QPainter *painter);
-    QPixmap pixmap(bool deviceCoordinates, QPoint *offset = 0) const;
+    QPixmap pixmap(Qt::CoordinateSystem coordinateSystem, QPoint *offset = 0) const;
 
 protected:
     QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
