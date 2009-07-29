@@ -63,7 +63,7 @@ void QGraphicsTransformPrivate::setItem(QGraphicsItem *i)
 
         item->prepareGeometryChange();
         Q_ASSERT(d_ptr->transformData);
-        d_ptr->transformData->graphicsTransforms.remove(q);
+        d_ptr->transformData->graphicsTransforms.removeAll(q);
         d_ptr->dirtySceneTransform = 1;
         item = 0;
     }
