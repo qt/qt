@@ -62,7 +62,7 @@ QFxItem *QFxRepeaterPrivate::addItem(QmlContext *ctxt, QFxItem *lastItem)
     QObject *nobj = component->create(ctxt);
     QFxItem *item = qobject_cast<QFxItem *>(nobj);
     if (item) {
-        item->setParent(q->itemParent());
+        item->setParent(q->parentItem());
 //        item->stackUnder(lastItem);
         deletables << nobj;
     } else {
@@ -259,7 +259,7 @@ void QFxRepeater::regenerate()
     
     qDeleteAll(d->deletables); 
     d->deletables.clear();
-    if (!d->component || !itemParent() || !isComponentComplete())
+    if (!d->component || !parentItem() || !isComponentComplete())
         return;
 
     QFxItem *lastItem = this;

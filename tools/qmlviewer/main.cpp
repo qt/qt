@@ -32,7 +32,7 @@ void usage()
     qWarning("                                              - png file for raw frames");
     qWarning("                                              - 'ffmpeg' for other formats");
     qWarning("  -recorddither ordered|threshold|floyd .... set GIF dither recording mode");
-    qWarning("  -recordperiod <milliseconds> ............. set time between recording frames");
+    qWarning("  -recordrate <fps> ........................ set recording frame rate");
     qWarning("  -record arg .............................. add a recording process argument");
     qWarning("  -autorecord [from-]<tomilliseconds> ...... set recording to start and stop");
     qWarning("  -devicekeys .............................. use numeric keys (see F1)");
@@ -63,7 +63,7 @@ int main(int argc, char ** argv)
 
     bool frameless = false;
     QString fileName;
-    int period = 0;
+    double fps = 0;
     int autorecord_from = 0;
     int autorecord_to = 0;
     QString dither = "none";
@@ -83,8 +83,8 @@ int main(int argc, char ** argv)
             skin = QString(argv[++i]);
         } else if (arg == "-netcache") {
             cache = QString(argv[++i]).toInt();
-        } else if (arg == "-recordperiod") {
-            period = QString(argv[++i]).toInt();
+        } else if (arg == "-recordrate") {
+            fps = QString(argv[++i]).toDouble();
         } else if (arg == "-recordfile") {
             recordfile = QString(argv[++i]);
         } else if (arg == "-record") {
@@ -127,8 +127,8 @@ int main(int argc, char ** argv)
         viewer.addLibraryPath(lib);
     viewer.setNetworkCacheSize(cache);
     viewer.setRecordFile(recordfile);
-    if (period>0)
-        viewer.setRecordPeriod(period);
+    if (fps>0)
+        viewer.setRecordRate(fps);
     if (autorecord_to)
         viewer.setAutoRecord(autorecord_from,autorecord_to);
     if (!skin.isEmpty() && QDir(skin).exists())
@@ -136,7 +136,8 @@ int main(int argc, char ** argv)
     if (devkeys)
         viewer.setDeviceKeys(true);
     viewer.setRecordDither(dither);
-    viewer.setRecordArgs(recordargs);
+    if (recordargs.count())
+        viewer.setRecordArgs(recordargs);
     if (!fileName.isEmpty()) {
         viewer.openQml(fileName);
         viewer.show();

@@ -18,7 +18,11 @@ Flipable {
 
     signal closed
 
-    axis: Axis { startX: Container.width / 2; endX: Container.width / 2; endY: 1 }
+    transform: Rotation3D {
+        id: Rotation
+        origin.x: Container.width / 2;
+        axis.y: 1;
+    }
 
     front: Item {
         id: ContainerFront; anchors.fill: Container
@@ -132,7 +136,7 @@ Flipable {
     states: [
         State {
             name: "Back"
-            SetProperties { target: Container; rotation: 180 }
+            SetProperties { target: Rotation; angle: 180 }
         }
     ]
 
@@ -144,7 +148,7 @@ Flipable {
                     property: "smooth"
                     value: false
                 }
-                NumberAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
+                NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 500 }
                 SetPropertyAction {
                     target: BigImage
                     property: "smooth"

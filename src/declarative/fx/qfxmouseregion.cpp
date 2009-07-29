@@ -333,8 +333,7 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     // ### we should skip this if these signals aren't used
     // ### can GV handle this for us?
-    const QRect &bounds = itemBoundingRect();
-    bool contains = bounds.contains(d->lastPos.toPoint());
+    bool contains = boundingRect().contains(d->lastPos);
     if (d->hovered && !contains)
         setHovered(false);
     else if (!d->hovered && contains)

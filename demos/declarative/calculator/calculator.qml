@@ -58,21 +58,21 @@ Rect {
                 GridLayout {
                     id: NumKeypad; y: 32; spacing: 2; columns: 3
 
-                    CalcButton { operation: 7 }
-                    CalcButton { operation: 8 }
-                    CalcButton { operation: 9 }
-                    CalcButton { operation: 4 }
-                    CalcButton { operation: 5 }
-                    CalcButton { operation: 6 }
-                    CalcButton { operation: 1 }
-                    CalcButton { operation: 2 }
-                    CalcButton { operation: 3 }
+                    CalcButton { operation: "7" }
+                    CalcButton { operation: "8" }
+                    CalcButton { operation: "9" }
+                    CalcButton { operation: "4" }
+                    CalcButton { operation: "5" }
+                    CalcButton { operation: "6" }
+                    CalcButton { operation: "1" }
+                    CalcButton { operation: "2" }
+                    CalcButton { operation: "3" }
                 }
 
                 HorizontalLayout {
                     y: 128; spacing: 2
 
-                    CalcButton { operation: 0; width: 50 }
+                    CalcButton { operation: "0"; width: 50 }
                     CalcButton { operation: "."; x: 77; width: 50 }
                     CalcButton { operation: "="; id: Equals; x: 77;  width: 102 }
                 }

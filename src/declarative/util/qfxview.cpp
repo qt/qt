@@ -443,7 +443,7 @@ QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
         if (!parent)
             parent = d->root;
 
-        item->setItemParent(parent);
+        item->setParentItem(parent);
         return item;
     }
     return 0;

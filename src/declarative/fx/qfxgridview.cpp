@@ -1380,9 +1380,9 @@ void QFxGridView::destroyRemoved()
 void QFxGridView::createdItem(int index, QFxItem *item)
 {
     Q_D(QFxGridView);
-    item->setItemParent(this);
+    item->setParentItem(this);
     if (d->requestedIndex != index) {
-        item->setItemParent(this);
+        item->setParentItem(this);
         d->unrequestedItems.insert(item, index);
         if (d->flow == QFxGridView::LeftToRight) {
             item->setPos(QPointF(d->colPosAt(index), d->rowPosAt(index)));

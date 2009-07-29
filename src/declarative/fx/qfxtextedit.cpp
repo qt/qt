@@ -531,7 +531,7 @@ void QFxTextEdit::loadCursorDelegate()
                 this, SLOT(moveCursorDelegate()));
         d->control->setCursorWidth(0);
         dirtyCache(cursorRect());
-        d->cursor->setItemParent(this);
+        d->cursor->setParentItem(this);
         d->cursor->setHeight(QFontMetrics(d->font.font()).height());
         moveCursorDelegate();
     }else{

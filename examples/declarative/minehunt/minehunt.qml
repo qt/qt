@@ -15,11 +15,12 @@ Item {
                 id: flipable
                 width: 40
                 height: 40
-                axis: Axis {
-                    startX: 20
-                    startY: 20
-                    endX: 20
-                    endY: 0
+                property int angle: 0;
+                transform: Rotation3D {
+                    origin.x: 20
+                    origin.y: 20
+                    axis.x: 1
+                    angle: flipable.angle;
                 }
                 front: Image {
                     source: "pics/front.png"
@@ -67,7 +68,7 @@ Item {
                     State {
                         name: "back"
                         when: modelData.flipped
-                        SetProperties { target: flipable; rotation: 180 }
+                        SetProperties { target: flipable; angle: 180 }
                     }
                 ]
                 transitions: [
@@ -90,7 +91,7 @@ Item {
                             }
                             NumberAnimation {
                                 easing: "easeInOutQuad"
-                                properties: "rotation"
+                                properties: "angle"
                             }
                             RunScriptAction{
                                 script: if(modelData.hasMine && modelData.flipped)

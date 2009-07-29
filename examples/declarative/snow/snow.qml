@@ -42,7 +42,7 @@ Rect {
         }
 
         transform: Rotation3D { 
-            axis { startX: 0; startY: 0; endX: 0; endY: 1 }
+            axis.y: 1
             angle: MyLayout.deform * 100
         }
     }

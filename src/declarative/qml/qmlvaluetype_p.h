@@ -80,12 +80,32 @@ public:
     QmlValueType *operator[](int idx) const { return valueTypes[idx]; }
 };
 
+class QmlPointValueType : public QmlValueType
+{
+    Q_PROPERTY(qreal x READ x WRITE setX);
+    Q_PROPERTY(qreal y READ y WRITE setY);
+    Q_OBJECT
+public:
+    QmlPointValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    qreal x() const;
+    qreal y() const;
+    void setX(qreal);
+    void setY(qreal);
+
+private:
+    QPointF point;
+};
+
 class QmlRectValueType : public QmlValueType
 {
-    Q_PROPERTY(int x READ x WRITE setX);
-    Q_PROPERTY(int y READ y WRITE setY);
-    Q_PROPERTY(int width READ width WRITE setWidth);
-    Q_PROPERTY(int height READ height WRITE setHeight);
+    Q_PROPERTY(qreal x READ x WRITE setX);
+    Q_PROPERTY(qreal y READ y WRITE setY);
+    Q_PROPERTY(qreal width READ width WRITE setWidth);
+    Q_PROPERTY(qreal height READ height WRITE setHeight);
     Q_OBJECT
 public:
     QmlRectValueType(QObject *parent = 0);
@@ -93,18 +113,18 @@ public:
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
 
-    int x() const;
-    int y() const;
-    void setX(int);
-    void setY(int);
+    qreal x() const;
+    qreal y() const;
+    void setX(qreal);
+    void setY(qreal);
     
-    int width() const;
-    int height() const;
-    void setWidth(int);
-    void setHeight(int);
+    qreal width() const;
+    qreal height() const;
+    void setWidth(qreal);
+    void setHeight(qreal);
 
 private:
-    QRect rect;
+    QRectF rect;
 };
 
 class QmlVector3DValueType : public QmlValueType

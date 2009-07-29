@@ -26,7 +26,7 @@ Item {
         smooth: true
         transform: Rotation {
             id: HourRotation
-            originX: 4; originY: 45
+            origin.x: 4; origin.y: 45
             angle: 0
             angle: Follow {
                 spring: 2
@@ -42,7 +42,7 @@ Item {
         smooth: true
         transform: Rotation {
             id: MinuteRotation
-            originX: 4; originY: 70
+            origin.x: 4; origin.y: 70
             angle: 0
             angle: Follow {
                 spring: 2
@@ -58,7 +58,7 @@ Item {
         smooth: true
         transform: Rotation {
             id: SecondRotation
-            originX: 2; originY: 60
+            origin.x: 2; origin.y: 60
             angle: 0
             angle: Follow {
                 spring: 5

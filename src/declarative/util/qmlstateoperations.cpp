@@ -63,8 +63,8 @@ public:
 
 void QmlParentChangePrivate::doChange(QFxItem *targetParent)
 {
-    if (targetParent && target && target->itemParent()) {
-        QPointF me = target->itemParent()->mapToScene(QPointF(0,0));
+    if (targetParent && target && target->parentItem()) {
+        QPointF me = target->parentItem()->mapToScene(QPointF(0,0));
         QPointF them = targetParent->mapToScene(QPointF(0,0));
 
         QPointF themx = targetParent->mapToScene(QPointF(1,0));
@@ -73,7 +73,7 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent)
         themx -= them;
         themy -= them;
 
-        target->setItemParent(targetParent);
+        target->setParentItem(targetParent);
 
         // XXX - this is silly and will only work in a few cases
 
@@ -112,7 +112,7 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent)
         target->setX(target->x() - rx);
         target->setY(target->y() - ry);
     } else if (target) {
-        target->setItemParent(targetParent);
+        target->setParentItem(targetParent);
     }
 }
 
@@ -182,7 +182,7 @@ void QmlParentChange::execute()
 {
     Q_D(QmlParentChange);
     if (d->target)
-        d->origParent = d->target->itemParent();
+        d->origParent = d->target->parentItem();
     d->doChange(d->parent);
 }
 

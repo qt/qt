@@ -367,7 +367,7 @@ void QFxLineEdit::createCursor()
         return;
     }
 
-    d->cursorItem->setItemParent(this);
+    d->cursorItem->setParentItem(this);
     d->cursorItem->setX(d->control->cursorToX());
     d->cursorItem->setHeight(d->control->height());
 }
