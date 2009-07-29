@@ -46,11 +46,11 @@
 #include "private/qscriptengine_p.h"
 #include "qscriptcontext.h"
 #include "private/qscriptcontext_p.h"
+#include "qscriptactivationobject_p.h"
 
 #include "JSGlobalObject.h"
 
 
-QT_BEGIN_NAMESPACE
 namespace JSC
 {
 ASSERT_CLASS_FITS_IN_CELL(QScript::FunctionWrapper);
@@ -59,36 +59,6 @@ ASSERT_CLASS_FITS_IN_CELL(QScript::FunctionWithArgWrapper);
 
 namespace QScript
 {
-
-
-class QScriptActivation : public JSC::JSVariableObject {
-public:
-    QScriptActivation(JSC::ExecState *callFrame)
-        : JSC::JSVariableObject(callFrame->globalData().activationStructure, new QScriptActivationData(callFrame->registers()))
-        {}
-    virtual ~QScriptActivation() { delete d; }
-    virtual bool isDynamicScope() const {return true; }
-//            virtual bool isActivationObject() const { return true; }
-
-    virtual void putWithAttributes(JSC::ExecState *exec, const JSC::Identifier &propertyName, JSC::JSValue value, unsigned attributes)
-    {
-        if (symbolTablePutWithAttributes(propertyName, value, attributes))
-            return;
-
-        JSC::PutPropertySlot slot;
-        JSObject::putWithAttributes(exec, propertyName, value, attributes, true, slot); 
-    }
-
-
-private:
-    struct QScriptActivationData : public JSVariableObjectData {
-        QScriptActivationData(JSC::Register* registers)
-            : JSVariableObjectData(&symbolTable, registers)
-            { }
-            JSC::SymbolTable symbolTable;
-        };
-};
-
 
 
 FunctionWrapper::FunctionWrapper(QScriptEngine *engine, int length, const JSC::Identifier &name,
@@ -121,7 +91,7 @@ JSC::JSValue FunctionWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObject *cal
     QScriptContext *ctx = eng_p->contextForFrame(exec);
 
     //We might have nested eval inside our function so we should create another scope
-    JSC::JSObject* scope = new (exec) QScriptActivation(exec);
+    JSC::JSObject* scope = new (exec) QScriptActivationObject(exec);
     exec->setScopeChain(exec->scopeChain()->copy()->push(scope));
 
     QScriptValue result = self->data->function(ctx, self->data->engine);
@@ -147,7 +117,7 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
     eng_p->currentFrame = exec;
 
     //We might have nested eval inside our function so we should create another scope
-    JSC::JSObject* scope = new (exec) QScriptActivation(exec);
+    JSC::JSObject* scope = new (exec) QScriptActivationObject(exec);
     exec->setScopeChain(exec->scopeChain()->copy()->push(scope));
 
     QScriptValue defaultObject = ctx->thisObject();
@@ -194,7 +164,7 @@ JSC::JSValue FunctionWithArgWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObje
     eng_p->currentFrame = exec;
 
     //We might have nested eval inside our function so we should create another scope
-    JSC::JSObject* scope = new (exec) QScriptActivation(exec);
+    JSC::JSObject* scope = new (exec) QScriptActivationObject(exec);
     exec->setScopeChain(exec->scopeChain()->copy()->push(scope));
 
     QScriptValue result = self->data->function(ctx, self->data->engine, self->data->arg);
@@ -218,7 +188,7 @@ JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *exec, JSC:
     eng_p->currentFrame = exec;
 
     //We might have nested eval inside our function so we should create another scope
-    JSC::JSObject* scope = new (exec) QScriptActivation(exec);
+    JSC::JSObject* scope = new (exec) QScriptActivationObject(exec);
     exec->setScopeChain(exec->scopeChain()->copy()->push(scope));
 
     QScriptValue defaultObject = ctx->thisObject();
