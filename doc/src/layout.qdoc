@@ -42,9 +42,8 @@
 /*!
     \page layout.html
 
-    \title Layout Classes
+    \title Layout Management
     \ingroup architecture
-    \ingroup classlists
     \brief A tour of the standard layout managers and an introduction to custom
     layouts.
 

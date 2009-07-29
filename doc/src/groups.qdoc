@@ -241,7 +241,7 @@
 
 /*!
     \group geomanagement
-    \title Layout Management
+    \title Layout Classes
     \ingroup groups
 
     \brief Classes handling automatic resizing and moving of widgets, for
