@@ -174,6 +174,18 @@ QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
     return rect;
 }
 
+void QGraphicsEffect::setEnabled(bool enable)
+{
+    Q_D(QGraphicsEffect);
+    d->isEnabled = enable;
+}
+
+bool QGraphicsEffect::isEnabled() const
+{
+    Q_D(const QGraphicsEffect);
+    return d->isEnabled;
+}
+
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
     : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)
 {}

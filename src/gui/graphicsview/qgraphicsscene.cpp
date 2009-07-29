@@ -4303,7 +4303,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (itemHasChildren && itemClipsChildrenToShape)
         ENSURE_TRANSFORM_PTR;
 
-    if (item->d_ptr->graphicsEffect) {
+    if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
         if (item->type() == 7) {
             item->d_ptr->graphicsEffect->setSourcePixmap(static_cast<QGraphicsPixmapItem*>(item)
                                                          ->pixmap());
@@ -4484,7 +4484,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     QGraphicsItem *p = item->d_ptr->parent;
     while (p) {
         p->d_ptr->dirtyChildren = 1;
-        if (p->d_ptr->graphicsEffect) {
+        if (p->d_ptr->graphicsEffect && p->d_ptr->graphicsEffect->isEnabled()) {
             p->d_ptr->dirty = 1;
             p->d_ptr->fullUpdatePending = 1;
         }

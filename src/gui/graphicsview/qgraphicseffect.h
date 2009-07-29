@@ -71,11 +71,11 @@ class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
     Q_OBJECT
 public:
     ~QGraphicsEffectSource();
-    QRectF boundingRect(Qt::CoordinateSystem s = Qt::LogicalCoordinates) const;
     const QGraphicsItem *graphicsItem() const;
     const QStyleOption *styleOption() const;
     void draw(QPainter *painter);
-    QPixmap pixmap(Qt::CoordinateSystem coordinateSystem, QPoint *offset = 0) const;
+    QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
+    QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates, QPoint *offset = 0) const;
 
 protected:
     QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
@@ -93,6 +93,7 @@ class QGraphicsEffectPrivate;
 class Q_GUI_EXPORT QGraphicsEffect : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
 public:
     QGraphicsEffect();
     virtual ~QGraphicsEffect();
@@ -102,6 +103,10 @@ public:
     QPixmap sourcePixmap() const;
     bool hasSourcePixmap() const;
     virtual QRectF boundingRectFor(const QRectF &rect) const;
+    bool isEnabled() const;
+
+public Q_SLOTS:
+    void setEnabled(bool enable);
 
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);

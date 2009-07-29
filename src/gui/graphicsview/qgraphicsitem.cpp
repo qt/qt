@@ -2252,7 +2252,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 */
 QRectF QGraphicsItem::effectiveBoundingRect() const
 {
-    if (d_ptr->graphicsEffect)
+    if (d_ptr->graphicsEffect && d_ptr->graphicsEffect->isEnabled())
         return d_ptr->graphicsEffect->boundingRect();
     return boundingRect();
 }
