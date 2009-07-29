@@ -117,6 +117,7 @@ public:
 #ifndef QT_NO_OPENSSL
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
+    void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
 
 Q_SIGNALS:
     void sslErrors(const QList<QSslError> &errors);
@@ -241,13 +242,14 @@ public:
         QAuthenticator authenticator;
         QAuthenticator proxyAuthenticator;
 #ifndef QT_NO_OPENSSL
-        bool ignoreSSLErrors;
+        bool ignoreAllSslErrors;
+        QList<QSslError> ignoreSslErrorsList;
 #endif
         Channel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
             lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
             authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
-            , ignoreSSLErrors(false)
+            , ignoreAllSslErrors(false)
 #endif
         {}
     };

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,51 +34,56 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef ANIMATIONDIALOG_H
-#define ANIMATIONDIALOG_H
+#ifndef QGRAPHICSSHADEREFFECT_H
+#define QGRAPHICSSHADEREFFECT_H
 
-#include <QDialog>
-#include <QMessageBox>
+#include <QtGui/qgraphicseffect.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-class QSpinBox;
-class QLineEdit;
-QT_END_NAMESPACE
-class StickMan;
-class Animation;
-class AnimationDialog: public QDialog
+
+QT_MODULE(OpenGL)
+
+#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+
+class QGLShaderProgram;
+class QGLCustomShaderEffectStage;
+class QGraphicsShaderEffectPrivate;
+
+class Q_OPENGL_EXPORT QGraphicsShaderEffect : public QGraphicsEffect
 {
     Q_OBJECT
 public:
-    AnimationDialog(StickMan *stickMan, QWidget *parent = 0);
-    ~AnimationDialog();
+    QGraphicsShaderEffect();
+    virtual ~QGraphicsShaderEffect();
 
-public slots:    
-    void currentFrameChanged(int currentFrame);
-    void totalFramesChanged(int totalFrames);
-    void setCurrentAnimationName(const QString &name);
+    QByteArray pixelShaderFragment() const;
+    void setPixelShaderFragment(const QByteArray& code);
 
-    void newAnimation();
-    void saveAnimation();
-    void loadAnimation();
+protected:
+    void draw(QPainter *painter);
+    void setUniformsDirty();
+    virtual void setUniforms(QGLShaderProgram *program);
 
 private:
-    void saveCurrentFrame();
-    void stickManFromCurrentFrame();
-    void initFromAnimation();
-    void initUi();
-    QMessageBox::StandardButton maybeSave();
+    Q_DECLARE_PRIVATE(QGraphicsShaderEffect)
+    Q_DISABLE_COPY(QGraphicsShaderEffect)
 
-    QSpinBox *m_currentFrame;
-    QSpinBox *m_totalFrames;
-    QLineEdit *m_name;
-    Animation *m_animation;
-    StickMan *m_stickman;
+    friend class QGLCustomShaderEffectStage;
 };
- 
-#endif
+
+Q_DECLARE_METATYPE(QGraphicsShaderEffect *)
+
+#endif // QT_NO_GRAPHICSVIEW
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QGRAPHICSSHADEREFFECT_H

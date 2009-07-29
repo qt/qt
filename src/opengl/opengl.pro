@@ -37,6 +37,7 @@ SOURCES	+= qgl.cpp \
 !contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl) {
     HEADERS +=  qglshaderprogram.h \
                 qglpixmapfilter_p.h  \
+                qgraphicsshadereffect.h \
                 qgraphicssystem_gl_p.h \
                 qwindowsurface_gl_p.h \
                 qpixmapdata_gl_p.h \
@@ -44,17 +45,20 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qglengineshadermanager_p.h \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
                 gl2paintengineex/qpaintengineex_opengl2_p.h \
-                gl2paintengineex/qglengineshadersource_p.h
+                gl2paintengineex/qglengineshadersource_p.h \
+                gl2paintengineex/qglcustomshaderstage_p.h
 
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
+                qgraphicsshadereffect.cpp \
                 qgraphicssystem_gl.cpp \
                 qwindowsurface_gl.cpp \
                 qpixmapdata_gl.cpp \
                 gl2paintengineex/qglgradientcache.cpp \
                 gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \
-                gl2paintengineex/qpaintengineex_opengl2.cpp
+                gl2paintengineex/qpaintengineex_opengl2.cpp \
+                gl2paintengineex/qglcustomshaderstage.cpp
 
 }
 

@@ -62,6 +62,8 @@ private slots:
     void format();
     void setValueRepaint();
     void sizeHint();
+    void formatedText_data();
+    void formatedText();
 
     void task245201_testChangeStyleAndDelete_data();
     void task245201_testChangeStyleAndDelete();
@@ -174,7 +176,7 @@ void tst_QProgressBar::format()
     bar.repainted = false;
     bar.setFormat("%v of %m (%p%)");
     qApp->processEvents();
-#ifndef Q_WS_MAC 
+#ifndef Q_WS_MAC
     // The Mac scroll bar is animated, which means we get paint events all the time.
     QVERIFY(!bar.repainted);
 #endif
@@ -223,6 +225,34 @@ void tst_QProgressBar::sizeHint()
     QSize barSize = bar.sizeHint();
     QVERIFY(barSize.width() >= size.width());
     QCOMPARE(barSize.height(), size.height());
+}
+
+void tst_QProgressBar::formatedText_data()
+{
+    QTest::addColumn<int>("minimum");
+    QTest::addColumn<int>("maximum");
+    QTest::addColumn<int>("value");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<QString>("text");
+
+    QTest::newRow("1") <<  -100 << 100 << 0 << QString::fromLatin1(" %p - %v - %m ") << QString::fromLatin1(" 50 - 0 - 200 ");
+    QTest::newRow("2") <<  -100 << 0 << -25 << QString::fromLatin1(" %p - %v - %m ") << QString::fromLatin1(" 75 - -25 - 100 ");
+    QTest::newRow("3") <<  10 << 10 << 10 << QString::fromLatin1(" %p - %v - %m ") << QString::fromLatin1(" 100 - 10 - 0 ");
+    QTest::newRow("task152227") <<  INT_MIN << INT_MAX << 42 << QString::fromLatin1(" %p - %v - %m ") << QString::fromLatin1(" 50 - 42 - 4294967295 ");
+}
+
+void tst_QProgressBar::formatedText()
+{
+    QFETCH(int, minimum);
+    QFETCH(int, maximum);
+    QFETCH(int, value);
+    QFETCH(QString, format);
+    QFETCH(QString, text);
+    QProgressBar bar;
+    bar.setRange(minimum, maximum);
+    bar.setValue(value);
+    bar.setFormat(format);
+    QCOMPARE(bar.text(), text);
 }
 
 void tst_QProgressBar::task245201_testChangeStyleAndDelete_data()

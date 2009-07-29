@@ -478,6 +478,225 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
     }
 }
 
+/*!
+    \class QPixmapBlurFilter
+    \since 4.6
+    \ingroup multimedia
+
+    \brief The QPixmapBlurFilter class provides blur filtering
+    for pixmaps.
+
+    QPixmapBlurFilter implements a blur pixmap filter,
+    which is applied when \l{QPixmapFilter::}{draw()} is called.
+
+    The filter lets you specialize the radius of the blur as well
+    as the quality.
+
+    By default, the blur effect is produced by applying an exponential
+    filter generated from the specified blurRadius().  Paint engines
+    may override this with a custom blur that is faster on the
+    underlying hardware.
+
+    \sa {Pixmap Filters Example}, QPixmapConvolutionFilter, QPixmapDropShadowFilter
+
+    \internal
+*/
+
+class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
+{
+public:
+    QPixmapBlurFilterPrivate() : radius(5), quality(Qt::FastTransformation) {}
+
+    int radius;
+    Qt::TransformationMode quality;
+};
+
+
+/*!
+    Constructs a pixmap blur filter.
+
+    \internal
+*/
+QPixmapBlurFilter::QPixmapBlurFilter(QObject *parent)
+    : QPixmapFilter(*new QPixmapBlurFilterPrivate, BlurFilter, parent)
+{
+}
+
+/*!
+    Destructor of pixmap blur filter.
+
+    \internal
+*/
+QPixmapBlurFilter::~QPixmapBlurFilter()
+{
+}
+
+/*!
+    Sets the radius of the blur filter. Higher radius produces increased blurriness.
+
+    \internal
+*/
+void QPixmapBlurFilter::setRadius(int radius)
+{
+    Q_D(QPixmapBlurFilter);
+    d->radius = radius;
+}
+
+/*!
+    Gets the radius of the blur filter.
+
+    \internal
+*/
+int QPixmapBlurFilter::radius() const
+{
+    Q_D(const QPixmapBlurFilter);
+    return d->radius;
+}
+
+/*!
+    Setting the quality to FastTransformation causes the implementation
+    to trade off visual quality to blur the image faster.  Setting the
+    quality to SmoothTransformation causes the implementation to improve
+    visual quality at the expense of speed.  The implementation is free
+    to ignore this value if it only has a single blur algorithm.
+
+    \internal
+*/
+void QPixmapBlurFilter::setQuality(Qt::TransformationMode quality)
+{
+    Q_D(QPixmapBlurFilter);
+    d->quality = quality;
+}
+
+/*!
+    Gets the quality of the blur filter.
+
+    \internal
+*/
+Qt::TransformationMode QPixmapBlurFilter::quality() const
+{
+    Q_D(const QPixmapBlurFilter);
+    return d->quality;
+}
+
+/*!
+    \reimp
+
+    \internal
+*/
+QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
+{
+    return rect;
+}
+
+// Blur the image according to the blur radius
+// Based on exponential blur algorithm by Jani Huhtanen
+// (maximum radius is set to 16)
+static QImage blurred(const QImage& image, const QRect& rect, int radius)
+{
+    int tab[] = { 14, 10, 8, 6, 5, 5, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2 };
+    int alpha = (radius < 1)  ? 16 : (radius > 17) ? 1 : tab[radius-1];
+
+    QImage result = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    int r1 = rect.top();
+    int r2 = rect.bottom();
+    int c1 = rect.left();
+    int c2 = rect.right();
+
+    int bpl = result.bytesPerLine();
+    int rgba[4];
+    unsigned char* p;
+
+    for (int col = c1; col <= c2; col++) {
+        p = result.scanLine(r1) + col * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p += bpl;
+        for (int j = r1; j < r2; j++, p += bpl)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int row = r1; row <= r2; row++) {
+        p = result.scanLine(row) + c1 * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p += 4;
+        for (int j = c1; j < c2; j++, p += 4)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int col = c1; col <= c2; col++) {
+        p = result.scanLine(r2) + col * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p -= bpl;
+        for (int j = r1; j < r2; j++, p -= bpl)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int row = r1; row <= r2; row++) {
+        p = result.scanLine(row) + c2 * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p -= 4;
+        for (int j = c1; j < c2; j++, p -= 4)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    return result;
+}
+
+/*!
+    \reimp
+
+    \internal
+*/
+void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap &src, const QRectF &srcRect) const
+{
+    Q_D(const QPixmapBlurFilter);
+    if (!painter->isActive())
+        return;
+
+    if (d->radius == 0) {
+        painter->drawPixmap(srcRect.translated(p), src, srcRect);
+        return;
+    }
+
+    QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+    QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
+    if (blurFilter) {
+        blurFilter->setRadius(d->radius);
+        blurFilter->setQuality(d->quality);
+        blurFilter->draw(painter, p, src, srcRect);
+        delete blurFilter;
+        return;
+    }
+
+    QImage srcImage;
+    QImage destImage;
+
+    if (srcRect.isNull()) {
+        srcImage = src.toImage();
+        destImage = blurred(srcImage, srcImage.rect(), d->radius);
+    } else {
+        QRect rect = srcRect.toAlignedRect().intersected(src.rect());
+
+        srcImage = src.copy(rect).toImage();
+        destImage = blurred(srcImage, srcImage.rect(), d->radius);
+    }
+
+    painter->drawImage(p, destImage);
+}
+
 // grayscales the image to dest (could be same). If rect isn't defined
 // destination image size is used to determine the dimension of grayscaling
 // process.
@@ -839,237 +1058,6 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);
-}
-
-/*!
-    \class QPixmapBlurFilter
-    \since 4.6
-    \ingroup multimedia
-
-    \brief The QPixmapBlurFilter class is a convenience class
-    for drawing pixmaps with blur effects.
-
-    By default, the blur effect is produced by applying an exponential
-    filter generated from the specified blurRadius().  Paint engines
-    may override this with a custom blur that is faster on the
-    underlying hardware.
-
-    \sa QPixmapConvolutionFilter
-
-    \internal
- */
-
-class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
-{
-public:
-    QPixmapBlurFilterPrivate()
-        : quality(QPixmapBlurFilter::High), radius(1) {}
-
-    QPixmapBlurFilter::BlurQuality quality;
-    qreal radius;
-};
-
-/*!
-    Constructs blur filter and attaches it to \a parent.
-
-    \internal
-*/
-QPixmapBlurFilter::QPixmapBlurFilter(QObject *parent)
-    : QPixmapFilter(*new QPixmapBlurFilterPrivate, BlurFilter, parent)
-{
-    Q_D(QPixmapBlurFilter);
-    setBlurRadius(4);
-}
-
-/*!
-    Destroys blur filter.
-
-    \internal
-*/
-QPixmapBlurFilter::~QPixmapBlurFilter()
-{
-}
-
-/*!
-    \enum QPixmapFilter::BlurQuality
-    \since 4.6
-    \ingroup multimedia
-    This enum describes the quality of blur to apply to pixmaps.
-
-    \value Fast Blur faster, potentially losing some quality.
-    \value High Produce the best high-quality blur possible, even if slower.
-
-    \internal
-*/
-
-/*!
-    Returns the quality of the blur.  The default value is High.
-
-    \sa blurRadius()
-    \internal
-*/
-QPixmapBlurFilter::BlurQuality QPixmapBlurFilter::blurQuality() const
-{
-    Q_D(const QPixmapBlurFilter);
-    return d->quality;
-}
-
-/*!
-    Sets the quality of the blur to the \a blurQuality specified.
-
-    Setting the quality to Faster causes the implementation to trade
-    off visual quality to blur the image faster.  Setting the quality
-    to High causes the implementation to improve visual quality
-    at the expense of speed.  The implementation is free to ignore
-    this value if it only has a single blur algorithm.
-
-    \sa setBlurRadius()
-    \internal
-*/
-void QPixmapBlurFilter::setBlurQuality(BlurQuality blurQuality)
-{
-    Q_D(QPixmapBlurFilter);
-    d->quality = blurQuality;
-}
-
-/*!
-    Returns the radius in pixels of the blur.  The default value is 4.
-
-    A smaller radius results in a sharper image.
-
-    \sa blurQuality()
-    \internal
-*/
-qreal QPixmapBlurFilter::blurRadius() const
-{
-    Q_D(const QPixmapBlurFilter);
-    return d->radius;
-}
-
-/*!
-    Sets the radius in pixels of the blur to the \a radius specified.
-
-    Using a smaller radius results in a sharper image.
-
-    \sa setBlurQuality()
-    \internal
-*/
-void QPixmapBlurFilter::setBlurRadius(qreal blurRadius)
-{
-    Q_D(QPixmapBlurFilter);
-    d->radius = blurRadius;
-}
-
-/*!
-    \internal
- */
-QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
-{
-    Q_D(const QPixmapBlurFilter);
-    qreal delta = d->radius * 3;
-    QRectF blurRect(rect);
-    blurRect.adjust(-delta, -delta, delta, delta);
-    return blurRect;
-}
-
-// Blur the image according to the blur radius
-// Based on exponential blur algorithm by Jani Huhtanen
-// (maximum radius is set to 16)
-static QImage blurred(const QImage& image, const QRect& rect, int radius)
-{
-    int tab[] = { 14, 10, 8, 6, 5, 5, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2 };
-    int alpha = (radius < 1)  ? 16 : (radius > 17) ? 1 : tab[radius-1];
-
-    QImage result = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    int r1 = rect.top();
-    int r2 = rect.bottom();
-    int c1 = rect.left();
-    int c2 = rect.right();
-
-    int bpl = result.bytesPerLine();
-    int rgba[4];
-    unsigned char* p;
-
-    for (int col = c1; col <= c2; col++) {
-        p = result.scanLine(r1) + col * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p += bpl;
-        for (int j = r1; j < r2; j++, p += bpl)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int row = r1; row <= r2; row++) {
-        p = result.scanLine(row) + c1 * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p += 4;
-        for (int j = c1; j < c2; j++, p += 4)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int col = c1; col <= c2; col++) {
-        p = result.scanLine(r2) + col * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p -= bpl;
-        for (int j = r1; j < r2; j++, p -= bpl)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int row = r1; row <= r2; row++) {
-        p = result.scanLine(row) + c2 * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p -= 4;
-        for (int j = c1; j < c2; j++, p -= 4)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    return result;
-}
-
-/*!
-    \internal
- */
-void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
-{
-    Q_D(const QPixmapBlurFilter);
-
-    QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
-    QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
-    if (blurFilter) {
-        blurFilter->setBlurQuality(d->quality);
-        blurFilter->setBlurRadius(d->radius);
-        blurFilter->draw(painter, dest, src, srcRect);
-        delete blurFilter;
-        return;
-    }
-
-    QImage srcImage;
-    QImage destImage;
-
-    if (srcRect.isNull()) {
-        srcImage = src.toImage();
-        destImage = blurred(srcImage, srcImage.rect(), int(d->radius + 0.5));
-    } else {
-        QRect rect = srcRect.toAlignedRect().intersected(src.rect());
-
-        srcImage = src.copy(rect).toImage();
-        destImage = blurred(srcImage, srcImage.rect(), int(d->radius + 0.5));
-    }
-
-    qreal delta = d->radius * 3;
-    painter->drawImage(dest - QPointF(delta, delta), destImage);
 }
 
 QT_END_NAMESPACE

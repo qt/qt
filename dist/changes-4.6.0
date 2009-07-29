@@ -72,5 +72,18 @@ information about a particular change.
       QGraphicsWidget and QGraphicsProxyWidget).
 
 - QDesktopWidget on X11 no longer emits the resized(int) signal when screens
-  are added or removed. This was not done on other platforms. Use the 
+  are added or removed. This was not done on other platforms. Use the
   screenCountChanged signal instead
+
+- QUrl's parser is more strict when for hostnames in URLs. QUrl now
+  enforces STD 3 rules:
+
+   * each individual hostname section (between dots) must be at most
+     63 ASCII characters in length;
+
+   * only letters, digits, and the hyphen character are allowed in the
+     ASCII range; letters outside the ASCII range follow the normal
+     IDN rules
+
+  That means QUrl no longer accepts some URLs that were invalid
+  before, but weren't interpreted as such.

@@ -6028,6 +6028,7 @@ QString QString::repeated(int times) const
     return result;
 }
 
+void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from);
 /*!
     \overload
     \fn QString QString::normalized(NormalizationForm mode, QChar::UnicodeVersion version) const
@@ -6037,42 +6038,48 @@ QString QString::repeated(int times) const
 */
 QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersion version) const
 {
+    QString copy = *this;
+    qt_string_normalize(&copy, mode, version, 0);
+    return copy;
+}
+
+void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from)
+{
     bool simple = true;
-    for (int i = 0; i < d->size; ++i) {
-        if (d->data[i] >= 0x80) {
+    const QChar *p = data->constData();
+    int len = data->length();
+    for (int i = from; i < len; ++i) {
+        if (p[i].unicode() >= 0x80) {
             simple = false;
             break;
         }
     }
     if (simple)
-        return *this;
+        return;
 
-    QString s = *this;
+    QString &s = *data;
     if (version != CURRENT_VERSION) {
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
+                int pos = from;
                 if (n.ucs4 > 0xffff) {
                     ushort ucs4High = QChar::highSurrogate(n.ucs4);
                     ushort ucs4Low = QChar::lowSurrogate(n.ucs4);
                     ushort oldHigh = QChar::highSurrogate(n.old_mapping);
                     ushort oldLow = QChar::lowSurrogate(n.old_mapping);
-                    int pos = 0;
-                    while (pos < s.d->size - 1) {
-                        if (s.d->data[pos] == ucs4High && s.d->data[pos + 1] == ucs4Low) {
-                            s.detach();
-                            s.d->data[pos] = oldHigh;
-                            s.d->data[pos + 1] = oldLow;
+                    while (pos < s.length() - 1) {
+                        if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
+                            s[pos] = oldHigh;
+                            s[pos + 1] = oldLow;
                             ++pos;
                         }
                         ++pos;
                     }
                 } else {
-                    int pos = 0;
-                    while (pos < s.d->size) {
-                        if (s.d->data[pos] == n.ucs4) {
-                            s.detach();
-                            s.d->data[pos] = n.old_mapping;
+                    while (pos < s.length()) {
+                        if (s.at(pos).unicode() == n.ucs4) {
+                            s[pos] = n.old_mapping;
                         }
                         ++pos;
                     }
@@ -6080,15 +6087,14 @@ QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersi
             }
         }
     }
-    s = decomposeHelper(s, mode < QString::NormalizationForm_KD, version);
+    decomposeHelper(data, mode < QString::NormalizationForm_KD, version, from);
 
-    s = canonicalOrderHelper(s, version);
+    canonicalOrderHelper(data, version, from);
 
     if (mode == QString::NormalizationForm_D || mode == QString::NormalizationForm_KD)
-        return s;
+        return;
 
-    return composeHelper(s);
-
+    composeHelper(data, from);
 }
 
 

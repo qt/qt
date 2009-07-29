@@ -66,8 +66,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPainter;
-
 class QGraphicsEffectSourcePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffectSource)
@@ -87,7 +85,7 @@ public:
     friend class QGraphicsItemPrivate;
 };
 
-class QGraphicsEffectPrivate : public QObjectPrivate
+class Q_GUI_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:

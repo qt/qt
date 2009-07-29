@@ -418,7 +418,7 @@ static QImage blurred(const QImage& image, const QRect& rect, int radius)
 int QGraphicsBlurEffect::blurRadius() const
 {
     Q_D(const QGraphicsBlurEffect);
-    return int(d->filter->blurRadius());
+    return int(d->filter->radius());
 }
 
 void QGraphicsBlurEffect::setBlurRadius(int radius)

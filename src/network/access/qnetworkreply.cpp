@@ -584,6 +584,38 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
         qt_metacall(QMetaObject::InvokeMetaMethod, id, arr);
     }
 }
+
+/*!
+    \overload
+    \since 4.6
+
+    If this function is called, the SSL errors given in \a errors
+    will be ignored.
+
+    Note that you can set the expected certificate in the SSL error:
+    If, for instance, you want to issue a request to a server that uses
+    a self-signed certificate, consider the following snippet:
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkreply.cpp 0
+
+    Multiple calls to this function will replace the list of errors that
+    were passed in previous calls.
+    You can clear the list of errors you want to ignore by calling this
+    function with an empty list.
+
+    \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors()
+*/
+void QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    // do this cryptic trick, because we could not add a virtual method to this class later on
+    // since that breaks binary compatibility
+    int id = metaObject()->indexOfMethod("ignoreSslErrorsImplementation(QList<QSslError>)");
+    if (id != -1) {
+        QList<QSslError> copy(errors);
+        void *arr[] = { 0, &copy };
+        qt_metacall(QMetaObject::InvokeMetaMethod, id, arr);
+    }
+}
 #endif
 
 /*!
@@ -598,7 +630,7 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
     sslErrors() signal, which indicates which errors were
     found.
 
-    \sa sslConfiguration(), sslErrors()
+    \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors()
 */
 void QNetworkReply::ignoreSslErrors()
 {

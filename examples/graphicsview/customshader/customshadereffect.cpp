@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,43 +34,39 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#include "mainwindow.h"
-#include "animationdialog.h"
-#include "stickman.h"
+#include "customshadereffect.h"
+#include <QGLShaderProgram>
 
-#include <QMenuBar>
-#include <QApplication>
+static char const colorizeShaderCode[] =
+    "varying highp vec2 textureCoords;\n"
+    "uniform sampler2D imageTexture;\n"
+    "uniform lowp vec4 effectColor;\n"
+    "lowp vec4 srcPixel() {\n"
+    "    vec4 src = texture2D(imageTexture, textureCoords);\n"
+    "    float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));\n"
+    "    vec4 colorize = 1.0-((1.0-gray)*(1.0-effectColor));\n"
+    "    return vec4(colorize.rgb, src.a);\n"
+    "}";
 
-MainWindow::MainWindow(StickMan *stickMan)
+CustomShaderEffect::CustomShaderEffect()
+    : QGraphicsShaderEffect(),
+      color(Qt::red)
 {
-    initActions(stickMan);
+    setPixelShaderFragment(colorizeShaderCode);
 }
 
-MainWindow::~MainWindow()
+void CustomShaderEffect::setEffectColor(const QColor& c)
 {
+    color = c;
+    setUniformsDirty();
 }
 
-void MainWindow::initActions(StickMan *stickMan)
+void CustomShaderEffect::setUniforms(QGLShaderProgram *program)
 {
-    AnimationDialog *dialog = new AnimationDialog(stickMan, this);
-    dialog->show();
-
-    QMenu *fileMenu = menuBar()->addMenu("&File");
-    QAction *loadAction = fileMenu->addAction("&Open");
-    QAction *saveAction = fileMenu->addAction("&Save");
-    QAction *exitAction = fileMenu->addAction("E&xit");
-
-    QMenu *animationMenu = menuBar()->addMenu("&Animation");
-    QAction *newAnimationAction = animationMenu->addAction("&New animation");
-
-    connect(loadAction, SIGNAL(triggered()), dialog, SLOT(loadAnimation()));
-    connect(saveAction, SIGNAL(triggered()), dialog, SLOT(saveAnimation()));
-    connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
-    connect(newAnimationAction, SIGNAL(triggered()), dialog, SLOT(newAnimation()));
-
+    program->setUniformValue("effectColor", color);
 }

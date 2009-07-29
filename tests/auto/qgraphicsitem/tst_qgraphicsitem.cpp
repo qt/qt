@@ -76,6 +76,46 @@ Q_DECLARE_METATYPE(QRectF)
 #define Q_CHECK_PAINTEVENTS
 #endif
 
+class EventSpy : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    EventSpy(QObject *watched, QEvent::Type type)
+        : _count(0), spied(type)
+    {
+        watched->installEventFilter(this);
+    }
+
+    EventSpy(QGraphicsScene *scene, QGraphicsItem *watched, QEvent::Type type)
+        : _count(0), spied(type)
+    {
+        scene->addItem(this);
+        watched->installSceneEventFilter(this);
+    }
+
+    int count() const { return _count; }
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event)
+    {
+        Q_UNUSED(watched);
+        if (event->type() == spied)
+            ++_count;
+        return false;
+    }
+
+    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event)
+    {
+        Q_UNUSED(watched);
+        if (event->type() == spied)
+            ++_count;
+        return false;
+    }
+
+    int _count;
+    QEvent::Type spied;
+};
+
 class EventTester : public QGraphicsItem
 {
 public:
@@ -234,6 +274,7 @@ private slots:
     void sorting();
     void itemHasNoContents();
     void hitTestUntransformableItem();
+    void focusProxy();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7342,6 +7383,85 @@ void tst_QGraphicsItem::hitTestUntransformableItem()
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
     QCOMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
+}
+
+void tst_QGraphicsItem::focusProxy()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
+    item->setFlag(QGraphicsItem::ItemIsFocusable);
+    QVERIFY(!item->focusProxy());
+
+    QGraphicsItem *item2 = scene.addRect(0, 0, 10, 10);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+    item->setFocusProxy(item2);
+    QCOMPARE(item->focusProxy(), item2);
+
+    item->setFocus();
+    QVERIFY(item->hasFocus());
+    QVERIFY(item2->hasFocus());
+
+    // Try to make a focus chain loop
+    QString err;
+    QTextStream stream(&err);
+    stream << "QGraphicsItem::setFocusProxy: "
+           << (void*)item << " is already in the focus proxy chain" << flush;
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
+    item2->setFocusProxy(item); // fails
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)item2);
+    QCOMPARE(item2->focusProxy(), (QGraphicsItem *)0);
+
+    // Try to assign self as focus proxy
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsItem::setFocusProxy: cannot assign self as focus proxy");
+    item->setFocusProxy(item); // fails
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)item2);
+    QCOMPARE(item2->focusProxy(), (QGraphicsItem *)0);
+
+    // Reset the focus proxy
+    item->setFocusProxy(0);
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
+    QVERIFY(!item->hasFocus());
+    QVERIFY(item2->hasFocus());
+
+    // Test deletion
+    item->setFocusProxy(item2);
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)item2);
+    delete item2;
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
+
+    // Test event delivery
+    item2 = scene.addRect(0, 0, 10, 10);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+    item->setFocusProxy(item2);
+    item->clearFocus();
+
+    EventSpy focusInSpy(&scene, item, QEvent::FocusIn);
+    EventSpy focusOutSpy(&scene, item, QEvent::FocusOut);
+    EventSpy focusInSpy2(&scene, item2, QEvent::FocusIn);
+    EventSpy focusOutSpy2(&scene, item2, QEvent::FocusOut);
+    QCOMPARE(focusInSpy.count(), 0);
+    QCOMPARE(focusOutSpy.count(), 0);
+    QCOMPARE(focusInSpy2.count(), 0);
+    QCOMPARE(focusOutSpy2.count(), 0);
+
+    item->setFocus();
+    QCOMPARE(focusInSpy.count(), 0);
+    QCOMPARE(focusInSpy2.count(), 1);
+    item->clearFocus();
+    QCOMPARE(focusOutSpy.count(), 0);
+    QCOMPARE(focusOutSpy2.count(), 1);
+
+    // Test two items proxying one item.
+    QGraphicsItem *item3 = scene.addRect(0, 0, 10, 10);
+    item3->setFlag(QGraphicsItem::ItemIsFocusable);
+    item3->setFocusProxy(item2); // item and item3 use item2 as proxy
+
+    QCOMPARE(item->focusProxy(), item2);
+    QCOMPARE(item2->focusProxy(), (QGraphicsItem *)0);
+    QCOMPARE(item3->focusProxy(), item2);
+    delete item2;
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
+    QCOMPARE(item3->focusProxy(), (QGraphicsItem *)0);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

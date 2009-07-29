@@ -201,6 +201,9 @@
       using an untransformed view, one unit on the scene is represented by
       one pixel on the screen.
 
+      \note The inverted Y-axis coordinate system (where \c y grows upwards)
+      is unsupported as Graphics Views uses Qt's coordinate system. 
+
       There are three effective coordinate systems in play in Graphics View:
       Item coordinates, scene coordinates, and view coordinates. To simplify
       your implementation, Graphics View provides convenience functions that

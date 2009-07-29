@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include "qgl_p.h"
 #include "qgl.h"
 
 #include "private/qpixmapdata_p.h"
@@ -61,6 +62,19 @@ QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
 class QGLFramebufferObject;
+class QGLFramebufferObjectFormat;
+
+class QGLFramebufferObjectPool
+{
+public:
+    QGLFramebufferObject *acquire(const QSize &size, const QGLFramebufferObjectFormat &format);
+    void release(QGLFramebufferObject *fbo);
+
+private:
+    QList<QGLFramebufferObject *> m_fbos;
+};
+
+QGLFramebufferObjectPool* qgl_fbo_pool();
 
 class QGLPixmapData : public QPixmapData
 {
@@ -80,10 +94,11 @@ public:
     void fill(const QColor &color);
     bool hasAlphaChannel() const;
     QImage toImage() const;
-    QPaintEngine* paintEngine() const;
+    QPaintEngine *paintEngine() const;
 
     GLuint bind(bool copyBack = true) const;
     GLuint textureId() const;
+    QGLTexture *texture() const;
 
     bool isValidContext(const QGLContext *ctx) const;
 
@@ -116,10 +131,10 @@ private:
     QImage fillImage(const QColor &color) const;
 
     mutable QGLFramebufferObject *m_renderFbo;
-    mutable GLuint m_textureId;
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
     mutable QImage m_source;
+    mutable QGLTexture m_texture;
 
     // the texture is not in sync with the source image
     mutable bool m_dirty;

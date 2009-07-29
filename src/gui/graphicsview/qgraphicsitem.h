@@ -233,6 +233,9 @@ public:
     void setFocus(Qt::FocusReason focusReason = Qt::OtherFocusReason);
     void clearFocus();
 
+    QGraphicsItem *focusProxy() const;
+    void setFocusProxy(QGraphicsItem *item);
+
     void grabMouse();
     void ungrabMouse();
     void grabKeyboard();

@@ -105,6 +105,8 @@
 #include <qpoint.h>
 #include "private/qt_mac_p.h"
 
+struct HIContentBorderMetrics;
+
 #ifdef Q_WS_MAC32
 typedef struct _NSPoint NSPoint; // Just redefine here so I don't have to pull in all of Cocoa.
 #else
@@ -122,7 +124,6 @@ bool macWindowToolbarIsVisible( void * /*OSWindowRef*/ window );
 void macWindowSetHasShadow( void * /*OSWindowRef*/ window, bool hasShadow );
 void macWindowFlush(void * /*OSWindowRef*/ window);
 void macSendToolbarChangeEvent(QWidget *widget);
-struct HIContentBorderMetrics;
 void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::HIContentBorderMetrics &metrics);
 void * /*NSImage */qt_mac_create_nsimage(const QPixmap &pm);
 void qt_mac_update_mouseTracking(QWidget *widget);

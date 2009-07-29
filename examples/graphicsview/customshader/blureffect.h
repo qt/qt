@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,25 +34,34 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef BLUREFFECT_H
+#define BLUREFFECT_H
 
-#include <QMainWindow>
+#include <QGraphicsEffect>
+#include <QGraphicsItem>
 
-class StickMan;
-class MainWindow: public QMainWindow
+class BlurEffect: public QGraphicsBlurEffect
 {
 public:
-    MainWindow(StickMan *stickMan);
-    ~MainWindow();
+    BlurEffect(QGraphicsItem *item);
+
+    void setBaseLine(qreal y) { m_baseLine = y; }
+
+    QRectF boundingRect() const;
+
+    void draw(QPainter *painter);
 
 private:
-    void initActions(StickMan *stickMan);
+    void adjustForItem();
+
+private:
+    qreal m_baseLine;
+    QGraphicsItem *item;
 };
 
-#endif
+#endif // BLUREFFECT_H

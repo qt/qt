@@ -210,6 +210,7 @@ public:
         PageTabList    = 0x0000003C,
         Clock          = 0x0000003D,
         Splitter       = 0x0000003E,
+        // Additional Qt roles where enum value does not map directly to MSAA:
         LayeredPane    = 0x0000003F,
         UserRole       = 0x0000ffff
     };

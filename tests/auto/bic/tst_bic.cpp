@@ -43,6 +43,10 @@
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #include "qbic.h"
 
 #include <stdlib.h>
@@ -367,4 +371,4 @@ void tst_Bic::sizesAndVTables()
 QTEST_APPLESS_MAIN(tst_Bic)
 
 #include "tst_bic.moc"
-
+#endif

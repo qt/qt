@@ -744,7 +744,12 @@ QPixmapData *QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType typ
     return new QDirectFBPixmapData(type);
 }
 
-#ifndef QT_NO_DEBUG
+#ifdef QT_NO_DEBUG
+struct FlagDescription;
+static const FlagDescription *accelerationDescriptions = 0;
+static const FlagDescription *blitDescriptions = 0;
+static const FlagDescription *drawDescriptions = 0;
+#else
 struct FlagDescription {
     const char *name;
     uint flag;
