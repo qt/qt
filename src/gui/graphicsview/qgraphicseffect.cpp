@@ -218,7 +218,7 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
         const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap, pixmap.rect());
+        d->filter->draw(painter, offset, pixmap);
         return;
     }
 
@@ -226,7 +226,7 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, offset, pixmap, pixmap.rect());
+    d->filter->draw(painter, offset, pixmap);
     painter->setWorldTransform(restoreTransform);
 
 }
@@ -257,7 +257,7 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
         const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap, pixmap.rect());
+        d->filter->draw(painter, offset, pixmap);
         return;
     }
 
@@ -265,7 +265,7 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, offset, pixmap, pixmap.rect());
+    d->filter->draw(painter, offset, pixmap);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -418,7 +418,7 @@ static QImage blurred(const QImage& image, const QRect& rect, int radius)
 int QGraphicsBlurEffect::blurRadius() const
 {
     Q_D(const QGraphicsBlurEffect);
-    return int(d->filter->radius());
+    return d->filter->radius();
 }
 
 void QGraphicsBlurEffect::setBlurRadius(int radius)
@@ -437,12 +437,16 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBlurEffect);
+    if (d->filter->radius() <= 0) {
+        source->draw(painter);
+        return;
+    }
 
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
         const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap, pixmap.rect());
+        d->filter->draw(painter, offset, pixmap);
         return;
     }
 
@@ -450,7 +454,7 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, offset, pixmap, pixmap.rect());
+    d->filter->draw(painter, offset, pixmap);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -529,6 +533,10 @@ static QImage composited(const QImage& img1, const QImage& img2, qreal opacity, 
 void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsBloomEffect);
+    if (d->blurRadius <= 0) {
+        source->draw(painter);
+        return;
+    }
 
     QPoint offset;
     const int radius = d->blurRadius;
@@ -690,6 +698,11 @@ QRectF QGraphicsShadowEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsShadowEffect);
+    if (d->radius <= 0 && d->offset.isNull()) {
+        source->draw(painter);
+        return;
+    }
+
     const QRectF sourceRect = source->boundingRect(Qt::DeviceCoordinates);
     const QRectF shadowRect = sourceRect.translated(d->offset);
     QRectF blurRect = shadowRect;
