@@ -40,6 +40,7 @@
 #include "FunctionPrototype.h"
 #include "JSFunction.h"
 #include "Parser.h"
+#include "Operations.h"
 
 #include "utils/qscriptdate_p.h"
 #include "bridge/qscriptfunction_p.h"
