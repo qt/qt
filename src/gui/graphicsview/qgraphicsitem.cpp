@@ -1016,10 +1016,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 */
 void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
 {
-    //    if (!dirtyChildrenBoundingRect) {
-    //        *rect |= x->mapRect(childrenBoundingRect);
-    //        return;
-    //    }
+    if (!dirtyChildrenBoundingRect) {
+        *rect |= x->mapRect(childrenBoundingRect);
+        return;
+    }
 
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
@@ -3845,8 +3845,8 @@ void QGraphicsItem::setZValue(qreal z)
 */
 QRectF QGraphicsItem::childrenBoundingRect() const
 {
-    //    if (!d_ptr->dirtyChildrenBoundingRect)
-    //        return d_ptr->childrenBoundingRect;
+    if (!d_ptr->dirtyChildrenBoundingRect)
+        return d_ptr->childrenBoundingRect;
 
     QRectF childRect;
     QTransform x;

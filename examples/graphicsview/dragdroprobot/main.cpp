@@ -46,100 +46,6 @@
 
 #include <math.h>
 
-Robot *robot = 0;
-
-class MyGraphicsEffect : public QGraphicsEffect
-{
-public:
-    void draw(QPainter *painter, QGraphicsEffectSource *source)
-    {
-        painter->save();
-
-        QPen pen;
-        static int color = Qt::black;
-        pen.setColor(Qt::GlobalColor(color));
-        if (color++ >= Qt::darkYellow)
-            color = Qt::black;
-        pen.setWidth(3);
-        painter->setPen(pen);
-
-        source->draw(painter);
-
-        painter->restore();
-    }
-};
-
-class MyWidget : public QWidget
-{
-    Q_OBJECT
-public:
-    MyWidget(QWidget *parent = 0) : QWidget(parent)
-    {
-        setLayout(new QVBoxLayout);
-        QComboBox *box = new QComboBox;
-        box->addItem("None");
-        box->addItem("Blur");
-        box->addItem("Colorize");
-        box->addItem("Pixelize");
-        box->addItem("Grayscale");
-        box->addItem("Bloom");
-        box->addItem("Shadow");
-        box->addItem("Custom");
-        layout()->addWidget(box);
-        connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(changeEffect(int)));
-    }
-
-public slots:
-    void changeEffect(int index)
-    {
-        switch (index) {
-        case 0:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(0);
-            break;
-        case 1:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(new QGraphicsBlurEffect);
-            break;
-        case 2:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(new QGraphicsColorizeEffect);
-            break;
-        case 3:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(new QGraphicsPixelizeEffect);
-            break;
-        case 4:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(new QGraphicsGrayscaleEffect);
-            break;
-        case 5:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(new QGraphicsBloomEffect);
-            break;
-        case 6:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(new QGraphicsShadowEffect);
-            break;
-        case 7:
-            delete robot->graphicsEffect();
-            robot->setGraphicsEffect(new MyGraphicsEffect);
-            break;
-        default:
-            break;
-        }
-    }
-protected:
-    void paintEvent(QPaintEvent *) {}
-    void mousePressEvent(QMouseEvent *) {}
-    void mouseReleaseEvent(QMouseEvent *) {}
-
-private:
-};
-
-#include "main.moc"
-
-
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -156,21 +62,17 @@ int main(int argc, char **argv)
         scene.addItem(item);
     }
 
-    robot = new Robot;
+    Robot *robot = new Robot;
     robot->scale(1.2, 1.2);
     robot->setPos(0, -20);
     scene.addItem(robot);
 
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing);
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.setBackgroundBrush(QColor(230, 200, 167));
     view.setWindowTitle("Drag and Drop Robot");
-    //    view.rotate(45);
     view.show();
-
-    MyWidget widget;
-    widget.show();
 
     return app.exec();
 }

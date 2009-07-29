@@ -4304,10 +4304,6 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         ENSURE_TRANSFORM_PTR;
 
     if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
-        if (item->type() == 7) {
-            item->d_ptr->graphicsEffect->setSourcePixmap(static_cast<QGraphicsPixmapItem*>(item)
-                                                         ->pixmap());
-        }
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, exposedRegion, widget, &styleOptionTmp,
                                     painter, opacity, wasDirtyParentSceneTransform, drawItem);

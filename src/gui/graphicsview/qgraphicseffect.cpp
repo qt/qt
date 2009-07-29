@@ -44,9 +44,8 @@
 #ifndef QT_NO_GRAPHICSVIEW
 
 #include <QtGui/qimage.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qgraphicsscene.h>
 #include <QtGui/qpainter.h>
+#include <QtCore/qrect.h>
 
 /*
 

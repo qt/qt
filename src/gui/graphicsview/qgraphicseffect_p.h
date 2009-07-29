@@ -54,12 +54,19 @@
 //
 
 #include "qgraphicseffect.h"
-#include <private/qobject_p.h>
-#include <private/qpixmapfilter_p.h>
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include <private/qobject_p.h>
+#include <private/qpixmapfilter_p.h>
+
+#include <QtCore/qrect.h>
+#include <QtCore/qpoint.h>
+#include <QtGui/qcolor.h>
+
 QT_BEGIN_NAMESPACE
+
+class QPainter;
 
 class QGraphicsEffectSourcePrivate : public QObjectPrivate
 {
@@ -85,7 +92,7 @@ class QGraphicsEffectPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:
     QGraphicsEffectPrivate() : source(0), hasSourcePixmap(0), isEnabled(1) {}
-    QGraphicsEffectSource *source;
+
     inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)
     {
         if (source) {
@@ -95,6 +102,8 @@ public:
         source = newSource;
         q_func()->sourceChanged(newSource);
     }
+
+    QGraphicsEffectSource *source;
     QRectF boundingRect;
     QPixmap sourcePixmap;
     quint32 hasSourcePixmap : 1;

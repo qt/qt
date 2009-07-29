@@ -43,18 +43,7 @@
 #define QGRAPHICSEFFECT_H
 
 #include <QtCore/qobject.h>
-#include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
-#include <QtCore/qvariant.h>
-#include <QtGui/qtransform.h>
-#include <QtGui/qcolor.h>
-
-QT_FORWARD_DECLARE_CLASS(QGraphicsItem);
-QT_FORWARD_DECLARE_CLASS(QStyleOptionGraphicsItem);
-QT_FORWARD_DECLARE_CLASS(QPainter);
-QT_FORWARD_DECLARE_CLASS(QPixmap);
-QT_FORWARD_DECLARE_CLASS(QWidget);
-QT_FORWARD_DECLARE_CLASS(QPixmapColorizeFilter);
 
 QT_BEGIN_HEADER
 
@@ -64,8 +53,14 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-class QGraphicsEffectSourcePrivate;
+class QGraphicsItem;
 class QStyleOption;
+class QColor;
+class QPainter;
+class QRectF;
+class QPixmap;
+
+class QGraphicsEffectSourcePrivate;
 class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
 {
     Q_OBJECT
@@ -73,9 +68,11 @@ public:
     ~QGraphicsEffectSource();
     const QGraphicsItem *graphicsItem() const;
     const QStyleOption *styleOption() const;
+
+    bool isPixmap() const;
     void draw(QPainter *painter);
     void update();
-    bool isPixmap() const;
+
     QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
     QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates, QPoint *offset = 0) const;
 
@@ -99,14 +96,17 @@ class Q_GUI_EXPORT QGraphicsEffect : public QObject
 public:
     QGraphicsEffect();
     virtual ~QGraphicsEffect();
+
+    virtual QRectF boundingRectFor(const QRectF &rect) const;
     QRectF boundingRect() const;
 
     void setSourcePixmap(const QPixmap &pixmap);
     QPixmap sourcePixmap() const;
     bool hasSourcePixmap() const;
-    virtual QRectF boundingRectFor(const QRectF &rect) const;
-    bool isEnabled() const;
+
     QGraphicsEffectSource *source() const;
+
+    bool isEnabled() const;
 
 public Q_SLOTS:
     void setEnabled(bool enable);
@@ -187,8 +187,6 @@ public:
     int blurRadius() const;
     void setBlurRadius(int blurRadius);
 
-    //    QRectF boundingRect() const;
-
 protected:
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *painter, QGraphicsEffectSource *source);
@@ -210,8 +208,6 @@ public:
 
     qreal opacity() const;
     void setOpacity(qreal opacity);
-
-    //    QRectF boundingRect() const;
 
 protected:
     QRectF boundingRectFor(const QRectF &rect) const;
@@ -238,8 +234,6 @@ public:
     qreal frameOpacity() const;
     void setFrameOpacity(qreal opacity);
 
-    //    QRectF boundingRect() const;
-
 protected:
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *painter, QGraphicsEffectSource *source);
@@ -258,16 +252,16 @@ public:
 
     QPointF shadowOffset() const;
     void setShadowOffset(const QPointF &ofs);
-    inline void setShadowOffset(qreal dx, qreal dy) { setShadowOffset(QPointF(dx, dy)); }
-    inline void setShadowOffset(qreal d) { setShadowOffset(QPointF(d, d)); }
+    inline void setShadowOffset(qreal dx, qreal dy)
+    { setShadowOffset(QPointF(dx, dy)); }
+    inline void setShadowOffset(qreal d)
+    { setShadowOffset(QPointF(d, d)); }
 
     int blurRadius() const;
     void setBlurRadius(int blurRadius);
 
     qreal opacity() const;
     void setOpacity(qreal opacity);
-
-    //    QRectF boundingRect() const;
 
 protected:
     QRectF boundingRectFor(const QRectF &rect) const;
@@ -277,15 +271,6 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsShadowEffect)
     Q_DISABLE_COPY(QGraphicsShadowEffect)
 };
-
-Q_DECLARE_METATYPE(QGraphicsEffect *)
-Q_DECLARE_METATYPE(QGraphicsGrayscaleEffect *)
-Q_DECLARE_METATYPE(QGraphicsColorizeEffect *)
-Q_DECLARE_METATYPE(QGraphicsPixelizeEffect *)
-Q_DECLARE_METATYPE(QGraphicsBlurEffect *)
-Q_DECLARE_METATYPE(QGraphicsBloomEffect *)
-Q_DECLARE_METATYPE(QGraphicsFrameEffect *)
-Q_DECLARE_METATYPE(QGraphicsShadowEffect *)
 
 #endif // QT_NO_GRAPHICSVIEW
 
