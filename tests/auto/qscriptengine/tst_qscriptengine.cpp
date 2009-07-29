@@ -893,6 +893,35 @@ void tst_QScriptEngine::getSetGlobalObject()
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
+
+    QVERIFY(!obj.property("foo").isValid());
+    eng.evaluate("var foo = 123");
+    {
+        QScriptValue ret = obj.property("foo");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
+    }
+
+    QVERIFY(!obj.property("bar").isValid());
+    eng.evaluate("bar = 456");
+    {
+        QScriptValue ret = obj.property("bar");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 456);
+    }
+
+    QVERIFY(!obj.property("baz").isValid());
+    eng.evaluate("this['baz'] = 789");
+    {
+        QScriptValue ret = obj.property("baz");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 789);
+    }
+
+    {
+        QScriptValue ret = eng.evaluate("(function() { return this; })()");
+        QVERIFY(ret.strictlyEquals(obj));
+    }
 }
 
 void tst_QScriptEngine::checkSyntax_data()
