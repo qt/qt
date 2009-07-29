@@ -118,16 +118,19 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["variable"] = Node::Variable;
     typeHash["target"] = Node::Target;
 
-    QHash<QString, FakeNode::SubType> subTypeHash;
-    subTypeHash["example"] = FakeNode::Example;
-    subTypeHash["headerfile"] = FakeNode::HeaderFile;
-    subTypeHash["file"] = FakeNode::File;
-    subTypeHash["group"] = FakeNode::Group;
-    subTypeHash["module"] = FakeNode::Module;
-    subTypeHash["page"] = FakeNode::Page;
-    subTypeHash["externalpage"] = FakeNode::ExternalPage;
+    QHash<QString, Node::SubType> subTypeHash;
+    subTypeHash["example"] = Node::Example;
+    subTypeHash["headerfile"] = Node::HeaderFile;
+    subTypeHash["file"] = Node::File;
+    subTypeHash["group"] = Node::Group;
+    subTypeHash["module"] = Node::Module;
+    subTypeHash["page"] = Node::Page;
+    subTypeHash["externalpage"] = Node::ExternalPage;
+#ifdef QDOC_QML
+    subTypeHash["qmlclass"] = Node::QmlClass;
+#endif
 
-    QSet<FakeNode::SubType> allSubTypes = QSet<FakeNode::SubType>::fromList(subTypeHash.values());
+    QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
 
     foreach (const QString &selector, selectors) {
         QStringList pieces = selector.split(":");
@@ -139,7 +142,7 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
             QString lower = pieces[0].toLower();
             pieces = pieces[1].split(",");
             if (typeHash.contains(lower)) {
-                QSet<FakeNode::SubType> subTypes;
+                QSet<Node::SubType> subTypes;
                 for (int i = 0; i < pieces.size(); ++i) {
                     QString lower = pieces[i].toLower();
                     if (subTypeHash.contains(lower))
@@ -235,7 +238,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                 // mask.
                 const FakeNode *fakeNode = static_cast<const FakeNode *>(node);
                 if (subproject.selectors[node->type()].contains(fakeNode->subType()) &&
-                    fakeNode->subType() != FakeNode::ExternalPage &&
+                    fakeNode->subType() != Node::ExternalPage &&
                     !fakeNode->fullTitle().isEmpty())
 
                     project.subprojects[name].nodes[objName] = node;
@@ -324,10 +327,10 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         // attributes.
         case Node::Fake: {
             const FakeNode *fakeNode = static_cast<const FakeNode*>(node);
-            if (fakeNode->subType() != FakeNode::ExternalPage &&
+            if (fakeNode->subType() != Node::ExternalPage &&
                 !fakeNode->fullTitle().isEmpty()) {
 
-                if (fakeNode->subType() != FakeNode::File) {
+                if (fakeNode->subType() != Node::File) {
                     if (fakeNode->doc().hasKeywords()) {
                         foreach (const Atom *keyword, fakeNode->doc().keywords()) {
                             if (!keyword->string().isEmpty()) {
@@ -485,7 +488,7 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
             writer.writeAttribute("title", fakeNode->fullTitle());
             //            qDebug() << "Title:" << fakeNode->fullTitle();
             
-            if (fakeNode->subType() == FakeNode::HeaderFile) {
+            if (fakeNode->subType() == Node::HeaderFile) {
 
                 // Write subsections for all members, obsolete members and Qt 3
                 // members.
@@ -609,7 +612,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                     while (nextPage) {
                         writeNode(project, writer, nextPage);
                         nextTitle = nextPage->links().value(Node::NextLink).first;
-                        if (nextTitle.isEmpty())
+                        if(nextTitle.isEmpty())
                             break;
                         nextPage = const_cast<FakeNode *>(tree->findFakeNodeByTitle(nextTitle));
                     }
