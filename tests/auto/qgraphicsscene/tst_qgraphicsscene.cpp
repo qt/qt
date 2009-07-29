@@ -255,6 +255,7 @@ private slots:
     void sendEvent();
     void inputMethod_data();
     void inputMethod();
+    void dispatchHoverOnPress();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -3717,6 +3718,74 @@ void tst_QGraphicsScene::inputMethod()
     item->queryCalls = 0;
     scene.inputMethodQuery((Qt::InputMethodQuery)0);
     QCOMPARE(item->queryCalls, 0);
+}
+
+void tst_QGraphicsScene::dispatchHoverOnPress()
+{
+    QGraphicsScene scene;
+    EventTester *tester1 = new EventTester;
+    tester1->setAcceptHoverEvents(true);
+    EventTester *tester2 = new EventTester;
+    tester2->setAcceptHoverEvents(true);
+    tester2->setPos(30, 30);
+    scene.addItem(tester1);
+    scene.addItem(tester2);
+
+    tester1->eventTypes.clear();
+    tester2->eventTypes.clear();
+
+    {
+        QGraphicsSceneMouseEvent me(QEvent::GraphicsSceneMousePress);
+        me.setButton(Qt::LeftButton);
+        me.setButtons(Qt::LeftButton);
+        QGraphicsSceneMouseEvent me2(QEvent::GraphicsSceneMouseRelease);
+        me2.setButton(Qt::LeftButton);
+        qApp->sendEvent(&scene, &me);
+        qApp->sendEvent(&scene, &me2);
+        QCOMPARE(tester1->eventTypes, QList<QEvent::Type>()
+                 << QEvent::GraphicsSceneHoverEnter
+                 << QEvent::GraphicsSceneHoverMove
+                 << QEvent::GrabMouse
+                 << QEvent::GraphicsSceneMousePress
+                 << QEvent::UngrabMouse);
+        tester1->eventTypes.clear();
+        qApp->sendEvent(&scene, &me);
+        qApp->sendEvent(&scene, &me2);
+        QCOMPARE(tester1->eventTypes, QList<QEvent::Type>()
+                 << QEvent::GraphicsSceneHoverMove
+                 << QEvent::GrabMouse
+                 << QEvent::GraphicsSceneMousePress
+                 << QEvent::UngrabMouse);
+    }
+    {
+        QGraphicsSceneMouseEvent me(QEvent::GraphicsSceneMousePress);
+        me.setScenePos(QPointF(30, 30));
+        me.setButton(Qt::LeftButton);
+        me.setButtons(Qt::LeftButton);
+        QGraphicsSceneMouseEvent me2(QEvent::GraphicsSceneMouseRelease);
+        me2.setScenePos(QPointF(30, 30));
+        me2.setButton(Qt::LeftButton);
+        tester1->eventTypes.clear();
+        qApp->sendEvent(&scene, &me);
+        qApp->sendEvent(&scene, &me2);
+        qDebug() << tester1->eventTypes;
+        QCOMPARE(tester1->eventTypes, QList<QEvent::Type>()
+                 << QEvent::GraphicsSceneHoverLeave);
+        QCOMPARE(tester2->eventTypes, QList<QEvent::Type>()
+                 << QEvent::GraphicsSceneHoverEnter
+                 << QEvent::GraphicsSceneHoverMove
+                 << QEvent::GrabMouse
+                 << QEvent::GraphicsSceneMousePress
+                 << QEvent::UngrabMouse);
+        tester2->eventTypes.clear();
+        qApp->sendEvent(&scene, &me);
+        qApp->sendEvent(&scene, &me2);
+        QCOMPARE(tester2->eventTypes, QList<QEvent::Type>()
+                 << QEvent::GraphicsSceneHoverMove
+                 << QEvent::GrabMouse
+                 << QEvent::GraphicsSceneMousePress
+                 << QEvent::UngrabMouse);
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

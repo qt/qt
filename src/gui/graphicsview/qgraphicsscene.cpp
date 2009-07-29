@@ -3682,6 +3682,13 @@ void QGraphicsScene::keyReleaseEvent(QKeyEvent *keyEvent)
 void QGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     Q_D(QGraphicsScene);
+    if (d->mouseGrabberItems.isEmpty()) {
+        // Dispatch hover events
+        QGraphicsSceneHoverEvent hover;
+        _q_hoverFromMouseEvent(&hover, mouseEvent);
+        d->dispatchHoverEvent(&hover);
+    }
+
     d->mousePressEventHandler(mouseEvent);
 }
 
