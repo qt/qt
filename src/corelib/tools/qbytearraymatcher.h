@@ -81,13 +81,14 @@ private:
 // explicitely allow anonymous unions for RVCT to prevent compiler warnings
 #pragma anon_unions
 #endif
+    struct Data {
+        uchar q_skiptable[256];
+        const uchar *p;
+        int l;
+    }; 
     union {
         uint dummy[256];
-        struct {
-            uchar q_skiptable[256];
-            const uchar *p;
-            int l;
-        } p;
+        Data p;
     };
 };
 

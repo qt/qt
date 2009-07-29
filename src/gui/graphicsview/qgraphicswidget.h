@@ -78,14 +78,6 @@ class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLay
     Q_PROPERTY(Qt::WindowFlags windowFlags READ windowFlags WRITE setWindowFlags)
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
     Q_PROPERTY(QRectF geometry READ geometry WRITE setGeometry)
-    Q_PROPERTY(QPointF transformOrigin READ transformOrigin WRITE setTransformOrigin)
-    Q_PROPERTY(qreal xRotation READ xRotation WRITE setXRotation)
-    Q_PROPERTY(qreal yRotation READ yRotation WRITE setYRotation)
-    Q_PROPERTY(qreal zRotation READ zRotation WRITE setZRotation)
-    Q_PROPERTY(qreal xScale READ xScale WRITE setXScale)
-    Q_PROPERTY(qreal yScale READ yScale WRITE setYScale)
-    Q_PROPERTY(qreal horizontalShear READ horizontalShear WRITE setHorizontalShear)
-    Q_PROPERTY(qreal verticalShear READ verticalShear WRITE setVerticalShear)
 public:
     QGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
     ~QGraphicsWidget();

@@ -144,13 +144,13 @@
     aligned, so for these languages use the version of drawText() that
     takes a QRect since this will align in accordance with the language.
 
-    \o When you write your own text input controls, use \l
-    QFontMetrics::charWidth() to determine the width of a character in a
-    string. In some languages (e.g. Arabic or languages from the Indian
+    \o When you write your own text input controls, use QTextLayout.
+    In some languages (e.g. Arabic or languages from the Indian
     subcontinent), the width and shape of a glyph changes depending on the
-    surrounding characters. Writing input controls usually requires a
-    certain knowledge of the scripts it is going to be used in. Usually
-    the easiest way is to subclass QLineEdit or QTextEdit.
+    surrounding characters, which QTextLayout takes into account.
+    Writing input controls usually requires a certain knowledge of the
+    scripts it is going to be used in. Usually the easiest way is to
+    subclass QLineEdit or QTextEdit.
 
     \endlist
 

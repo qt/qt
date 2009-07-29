@@ -152,9 +152,9 @@ void QFxAnchorsPrivate::fillChanged()
     if (!fill || !isItemComplete())
         return;
 
-    if (fill == item->itemParent()) {                         //child-parent
+    if (fill == item->parentItem()) {                         //child-parent
         setItemPos(QPointF(leftMargin, topMargin));
-    } else if (fill->itemParent() == item->itemParent()) {   //siblings
+    } else if (fill->parentItem() == item->parentItem()) {   //siblings
         setItemPos(QPointF(fill->x()+leftMargin, fill->y()+topMargin));
     }
     setItemWidth(fill->width()-leftMargin-rightMargin);
@@ -166,12 +166,12 @@ void QFxAnchorsPrivate::centeredInChanged()
     if (!centeredIn || fill || !isItemComplete())
         return;
 
-    if (centeredIn == item->itemParent()) {
-        QPointF p((item->itemParent()->width() - item->width()) / 2.,
-                  (item->itemParent()->height() - item->height()) / 2.);
+    if (centeredIn == item->parentItem()) {
+        QPointF p((item->parentItem()->width() - item->width()) / 2.,
+                  (item->parentItem()->height() - item->height()) / 2.);
         setItemPos(p);
 
-    } else if (centeredIn->itemParent() == item->itemParent()) {
+    } else if (centeredIn->parentItem() == item->parentItem()) {
 
         QPointF p(centeredIn->x() + (centeredIn->width() - item->width()) / 2.,
                   centeredIn->y() + (centeredIn->height() - item->height()) / 2.);
@@ -328,7 +328,7 @@ void QFxAnchors::setFill(QFxItem *f)
         d->fill = f;
         return;
     }
-    if (f != d->item->itemParent() && f->itemParent() != d->item->itemParent()){
+    if (f != d->item->parentItem() && f->parentItem() != d->item->parentItem()){
         qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
         return;
     }
@@ -360,7 +360,7 @@ void QFxAnchors::setCenteredIn(QFxItem* c)
         d->centeredIn = c;
         return;
     }
-    if (c != d->item->itemParent() && c->itemParent() != d->item->itemParent()){
+    if (c != d->item->parentItem() && c->parentItem() != d->item->parentItem()){
         qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
         return;
     }
@@ -379,10 +379,10 @@ bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
                                     QFxAnchorLine::AnchorLine line,
                                     int &stretch)
 {
-    bool edge1IsParent = (edge1.item == item->itemParent());
-    bool edge2IsParent = (edge2.item == item->itemParent());
-    bool edge1IsSibling = (edge1.item->itemParent() == item->itemParent());
-    bool edge2IsSibling = (edge2.item->itemParent() == item->itemParent());
+    bool edge1IsParent = (edge1.item == item->parentItem());
+    bool edge2IsParent = (edge2.item == item->parentItem());
+    bool edge1IsSibling = (edge1.item->parentItem() == item->parentItem());
+    bool edge2IsSibling = (edge2.item->parentItem() == item->parentItem());
 
     bool invalid = false;
     if ((edge2IsParent && edge1IsParent) || (edge2IsSibling && edge1IsSibling)) {
@@ -390,10 +390,10 @@ bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
                     - ((int)position(edge1.item, edge1.anchorLine) + offset1);
     } else if (edge2IsParent && edge1IsSibling) {
         stretch = ((int)position(edge2.item, edge2.anchorLine) + offset2)
-                    - ((int)position(item->itemParent(), line)
+                    - ((int)position(item->parentItem(), line)
                     + (int)position(edge1.item, edge1.anchorLine) + offset1);
     } else if (edge2IsSibling && edge1IsParent) {
-        stretch = ((int)position(item->itemParent(), line) + (int)position(edge2.item, edge2.anchorLine) + offset2)
+        stretch = ((int)position(item->parentItem(), line) + (int)position(edge2.item, edge2.anchorLine) + offset2)
                     - ((int)position(edge1.item, edge1.anchorLine) + offset1);
     } else
         invalid = true;
@@ -422,9 +422,9 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
                 setItemHeight(height);
 
             //Handle top
-            if (top.item == item->itemParent()) {
+            if (top.item == item->parentItem()) {
                 setItemY(adjustedPosition(top.item, top.anchorLine) + topMargin);
-            } else if (top.item->itemParent() == item->itemParent()) {
+            } else if (top.item->parentItem() == item->parentItem()) {
                 setItemY(position(top.item, top.anchorLine) + topMargin);
             }
         } else if (usedAnchors & QFxAnchors::HasBottomAnchor) {
@@ -438,24 +438,24 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
             }
 
             //Handle bottom
-            if (bottom.item == item->itemParent()) {
+            if (bottom.item == item->parentItem()) {
                 setItemY(adjustedPosition(bottom.item, bottom.anchorLine) - item->height() - bottomMargin);
-            } else if (bottom.item->itemParent() == item->itemParent()) {
+            } else if (bottom.item->parentItem() == item->parentItem()) {
                 setItemY(position(bottom.item, bottom.anchorLine) - item->height() - bottomMargin);
             }
         } else if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
             //(stetching handled above)
 
             //Handle vCenter
-            if (vCenter.item == item->itemParent()) {
+            if (vCenter.item == item->parentItem()) {
                 setItemY(adjustedPosition(vCenter.item, vCenter.anchorLine)
                               - item->height()/2 + vCenterOffset);
-            } else if (vCenter.item->itemParent() == item->itemParent()) {
+            } else if (vCenter.item->parentItem() == item->parentItem()) {
                 setItemY(position(vCenter.item, vCenter.anchorLine) - item->height()/2 + vCenterOffset);
             }
         } else if (usedAnchors & QFxAnchors::HasBaselineAnchor) {
             //Handle baseline
-            if (baseline.item->itemParent() == item->itemParent()) {
+            if (baseline.item->parentItem() == item->parentItem()) {
                 setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset());
             }
         }
@@ -488,9 +488,9 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
                 setItemWidth(width);
 
             //Handle left
-            if (left.item == item->itemParent()) {
+            if (left.item == item->parentItem()) {
                 setItemX(adjustedPosition(left.item, left.anchorLine) + leftMargin);
-            } else if (left.item->itemParent() == item->itemParent()) {
+            } else if (left.item->parentItem() == item->parentItem()) {
                 setItemX(position(left.item, left.anchorLine) + leftMargin);
             }
         } else if (usedAnchors & QFxAnchors::HasRightAnchor) {
@@ -504,16 +504,16 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
             }
 
             //Handle right
-            if (right.item == item->itemParent()) {
+            if (right.item == item->parentItem()) {
                 setItemX(adjustedPosition(right.item, right.anchorLine) - item->width() - rightMargin);
-            } else if (right.item->itemParent() == item->itemParent()) {
+            } else if (right.item->parentItem() == item->parentItem()) {
                 setItemX(position(right.item, right.anchorLine) - item->width() - rightMargin);
             }
         } else if (usedAnchors & QFxAnchors::HasHCenterAnchor) {
             //Handle hCenter
-            if (hCenter.item == item->itemParent()) {
+            if (hCenter.item == item->parentItem()) {
                 setItemX(adjustedPosition(hCenter.item, hCenter.anchorLine) - item->width()/2 + hCenterOffset);
-            } else if (hCenter.item->itemParent() == item->itemParent()) {
+            } else if (hCenter.item->parentItem() == item->parentItem()) {
                 setItemX(position(hCenter.item, hCenter.anchorLine) - item->width()/2 + hCenterOffset);
             }
         }
@@ -892,7 +892,7 @@ bool QFxAnchorsPrivate::checkHAnchorValid(QFxAnchorLine anchor) const
     } else if (anchor.anchorLine & QFxAnchorLine::Vertical_Mask) {
         qmlInfo(item) << "Can't anchor a horizontal edge to a vertical edge.";
         return false;
-    } else if (anchor.item != item->itemParent() && anchor.item->itemParent() != item->itemParent()){
+    } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
         qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
         return false;
     } else if (anchor.item == item) {
@@ -929,7 +929,7 @@ bool QFxAnchorsPrivate::checkVAnchorValid(QFxAnchorLine anchor) const
     } else if (anchor.anchorLine & QFxAnchorLine::Horizontal_Mask) {
         qmlInfo(item) << "Can't anchor a vertical edge to a horizontal edge.";
         return false;
-    } else if (anchor.item != item->itemParent() && anchor.item->itemParent() != item->itemParent()){
+    } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
         qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
         return false;
     } else if (anchor.item == item){

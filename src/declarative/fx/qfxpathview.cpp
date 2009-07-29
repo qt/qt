@@ -737,7 +737,7 @@ void QFxPathView::createdItem(int index, QFxItem *item)
 {
     Q_D(QFxPathView);
     if (d->requestedIndex != index) {
-        item->setItemParent(this);
+        item->setParentItem(this);
         d->updateItem(item, index < d->firstIndex ? 0.0 : 1.0);
     }
 }

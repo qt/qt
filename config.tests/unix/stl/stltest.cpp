@@ -9,6 +9,53 @@ templates for common STL container classes.
 #include <algorithm>
 #include <iostream>
 
+// something mean to see if the compiler and C++ standard lib are good enough
+template<class K, class T>
+class DummyClass
+{
+    // everything in std namespace ?
+    typedef std::bidirectional_iterator_tag i;
+    typedef std::ptrdiff_t d;
+    // typename implemented ?
+    typedef typename std::map<K,T>::iterator MyIterator;
+};
+
+// extracted from QVector's strict iterator
+template<class T>
+class DummyIterator
+{
+    typedef DummyIterator<int> iterator;
+public:
+        T *i;
+        typedef std::random_access_iterator_tag  iterator_category;
+        typedef ptrdiff_t difference_type;
+        typedef T value_type;
+        typedef T *pointer;
+        typedef T &reference;
+
+        inline DummyIterator() : i(0) {}
+        inline DummyIterator(T *n) : i(n) {}
+        inline DummyIterator(const DummyIterator &o): i(o.i){}
+        inline T &operator*() const { return *i; }
+        inline T *operator->() const { return i; }
+        inline T &operator[](int j) const { return *(i + j); }
+        inline bool operator==(const DummyIterator &o) const { return i == o.i; }
+        inline bool operator!=(const DummyIterator &o) const { return i != o.i; }
+        inline bool operator<(const DummyIterator& other) const { return i < other.i; }
+        inline bool operator<=(const DummyIterator& other) const { return i <= other.i; }
+        inline bool operator>(const DummyIterator& other) const { return i > other.i; }
+        inline bool operator>=(const DummyIterator& other) const { return i >= other.i; }
+        inline DummyIterator &operator++() { ++i; return *this; }
+        inline DummyIterator operator++(int) { T *n = i; ++i; return n; }
+        inline DummyIterator &operator--() { i--; return *this; }
+        inline DummyIterator operator--(int) { T *n = i; i--; return n; }
+        inline DummyIterator &operator+=(int j) { i+=j; return *this; }
+        inline DummyIterator &operator-=(int j) { i-=j; return *this; }
+        inline DummyIterator operator+(int j) const { return DummyIterator(i+j); }
+        inline DummyIterator operator-(int j) const { return DummyIterator(i-j); }
+        inline int operator-(DummyIterator j) const { return i - j.i; }
+};
+
 int main()
 {
     std::vector<int> v1;
@@ -53,16 +100,10 @@ int main()
     int m2size = m2.size();
     m2size = 0;
 
+    DummyIterator<int> it1, it2;
+    int n = std::distance(it1, it2);
+    std::advance(it1, 3);
+
     return 0;
 }
 
-// something mean to see if the compiler and C++ standard lib are good enough
-template<class K, class T>
-class DummyClass
-{
-    // everything in std namespace ?
-    typedef std::bidirectional_iterator_tag i;
-    typedef std::ptrdiff_t d;
-    // typename implemented ?
-    typedef typename std::map<K,T>::iterator MyIterator;
-};

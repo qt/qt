@@ -1352,7 +1352,7 @@
     The \l{QAbstractItemModel::data()}{data()} function is responsible for
     returning the item of data that corresponds to the index argument:
 
-    \snippet doc/src/snippets/stringlistmodel/model.cpp 1
+    \snippet doc/src/snippets/stringlistmodel/model.cpp 1-data-read-only
 
     We only return a valid QVariant if the model index supplied is valid,
     the row number is within the range of items in the string list, and the
@@ -1390,6 +1390,7 @@
     The read-only model shows how simple choices could be presented to the
     user but, for many applications, an editable list model is much more
     useful. We can modify the read-only model to make the items editable
+    by changing the data() function we implemented for read-only, and
     by implementing two extra functions:
     \l{QAbstractItemModel::flags()}{flags()} and
     \l{QAbstractItemModel::setData()}{setData()}.
@@ -1399,7 +1400,7 @@
     \snippet doc/src/snippets/stringlistmodel/model.h 3
 
     \section2 Making the Model Editable
-
+    
     A delegate checks whether an item is editable before creating an
     editor. The model must let the delegate know that its items are
     editable. We do this by returning the correct flags for each item in
@@ -1433,6 +1434,10 @@
     \l{QAbstractItemModel::dataChanged()}{dataChanged()} signal. Since only
     one item of data has changed, the range of items specified in the signal
     is limited to just one model index.
+
+    Also the data() function needs to be changed to add the Qt::EditRole test:
+    
+    \snippet doc/src/snippets/stringlistmodel/model.cpp 1
 
     \section2 Inserting and Removing Rows
 

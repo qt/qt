@@ -261,22 +261,18 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
         return QBic::Info();
     }
 
-    QString resultFileName = QFileInfo(tmpQFile).fileName();
-    static const char *suffixes[] = { ".t01.class", ".class", ".002t.class", 0 };
-    for (const char **p = suffixes; true; ++p) {
-        if (!p) {
-            // we didn't find the file
-            qFatal("GCC didn't produce the expected intermediary files. Please update this test!");
-            return QBic::Info();
-        }
-
-        QString check = resultFileName + *p;
-        if (!QFile::exists(check))
-            continue;
-
-        resultFileName = check;
-        break;
+    // See if we find the gcc output file, which seems to change
+    // from release to release
+    QStringList files = QDir().entryList(QStringList() << "*.class");
+    if (files.isEmpty()) {
+        qFatal("Could not locate the GCC output file, update this test");
+        return QBic::Info();
+    } else if (files.size() > 1) {
+        qFatal("Located more than one output file, please clean up before running this test");
+        return QBic::Info();
     }
+
+    QString resultFileName = files.first();
     QBic::Info inf = bic.parseFile(resultFileName);
 
     QFile::remove(resultFileName);

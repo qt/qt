@@ -116,6 +116,10 @@ public:
         Connection = ConnectedState
 #endif
     };
+    enum SocketOption {
+        LowDelayOption, // TCP_NODELAY
+        KeepAliveOption // SO_KEEPALIVE
+    };
 
     QAbstractSocket(SocketType socketType, QObject *parent);
     virtual ~QAbstractSocket();
@@ -148,6 +152,10 @@ public:
     int socketDescriptor() const;
     bool setSocketDescriptor(int socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
+
+    // ### Qt 5: Make virtual?
+    void setSocketOption(QAbstractSocket::SocketOption o, QVariant v);
+    QVariant socketOption(QAbstractSocket::SocketOption o);
 
     SocketType socketType() const;
     SocketState state() const;

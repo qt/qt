@@ -564,7 +564,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 /*!
     \enum QStyle::PrimitiveElement
 
-    This enum describes that various primitive elements. A
+    This enum describes the various primitive elements. A
     primitive element is a common GUI element, such as a checkbox
     indicator or button bevel.
 
@@ -1108,7 +1108,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value CC_ScrollBar         A scroll bar, like QScrollBar.
     \value CC_Slider            A slider, like QSlider.
     \value CC_ToolButton        A tool button, like QToolButton.
-    \value CC_TitleBar          A Title bar, like those used in QWorkspace.
+    \value CC_TitleBar          A Title bar, like those used in QMdiSubWindow.
     \value CC_Q3ListView        Used for drawing the Q3ListView class.
     \value CC_GroupBox          A group box, like QGroupBox.
     \value CC_Dial              A dial, like QDial.
@@ -1894,7 +1894,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     can follow some existing GUI style or guideline.
 
     \value SP_TitleBarMinButton  Minimize button on title bars (e.g.,
-        in QWorkspace).
+        in QMdiSubWindow).
     \value SP_TitleBarMenuButton Menu button on a title bar.
     \value SP_TitleBarMaxButton  Maximize button on title bars.
     \value SP_TitleBarCloseButton  Close button on title bars.
@@ -1966,22 +1966,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SP_CustomBase  Base value for custom standard pixmaps;
     custom values must be greater than this value.
 
-    \sa standardPixmap() standardIcon()
-*/
-
-/*###
-  \enum QStyle::IconMode
-
-  This enum represents the effects performed on a pixmap to achieve a
-  GUI style's perferred way of representing the image in different
-  states.
-
-  \value IM_Disabled  A disabled pixmap (drawn on disabled widgets)
-  \value IM_Active  An active pixmap (drawn on active tool buttons and menu items)
-  \value IM_CustomBase  Base value for custom PixmapTypes; custom
-  values must be greater than this value
-
-  \sa generatedIconPixmap()
+    \sa standardIcon()
 */
 
 /*!
@@ -2264,7 +2249,7 @@ QPalette QStyle::standardPalette() const
     slot in your subclass instead. The standardIcon() function will
     dynamically detect the slot and call it.
 
-    \sa standardIconImplementation(), standardPixmap()
+    \sa standardIconImplementation()
 */
 QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
                            const QWidget *widget) const
@@ -2289,8 +2274,7 @@ QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opti
     subclass; because of binary compatibility constraints, the
     standardIcon() function (introduced in Qt 4.1) is not
     virtual. Instead, standardIcon() will dynamically detect and call
-    \e this slot.  The default implementation simply calls the
-    standardPixmap() function with the given parameters.
+    \e this slot.
 
     The \a standardIcon is a standard pixmap which can follow some
     existing GUI style or guideline. The \a option argument can be

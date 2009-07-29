@@ -513,7 +513,8 @@ QVector4D QVector3D::toVector4D() const
 /*!
     \fn QPoint QVector3D::toPoint() const
 
-    Returns the QPoint form of this 3D vector.
+    Returns the QPoint form of this 3D vector. The z coordinate
+    is dropped.
 
     \sa toPointF(), toVector2D()
 */
@@ -521,7 +522,8 @@ QVector4D QVector3D::toVector4D() const
 /*!
     \fn QPointF QVector3D::toPointF() const
 
-    Returns the QPointF form of this 3D vector.
+    Returns the QPointF form of this 3D vector. The z coordinate
+    is dropped.
 
     \sa toPoint(), toVector2D()
 */

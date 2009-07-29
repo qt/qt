@@ -49,6 +49,7 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtGui/qgraphicsitem.h>
+#include <QtGui/qgraphicstransform.h>
 #include <QtGui/qfont.h>
 
 QT_BEGIN_HEADER
@@ -56,6 +57,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
+class QGraphicsTransform;
 
 class QFxItem;
 class Q_DECLARATIVE_EXPORT QFxContents : public QObject
@@ -112,7 +115,6 @@ public:
 
 class QmlState;
 class QmlTransition;
-class QFxTransform;
 class QFxKeyEvent;
 class QFxAnchors;
 class QFxItemPrivate;
@@ -121,7 +123,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QFxItem * parent READ itemParent WRITE setItemParent NOTIFY parentChanged DESIGNABLE false FINAL)
+    Q_PROPERTY(QFxItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
     Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
@@ -142,12 +144,10 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine baseline READ baseline CONSTANT FINAL)
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
-    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged) // ## remove me
-    Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged) // ### remove me
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
-    Q_PROPERTY(QList<QFxTransform *>* transform READ transform) // ## QGI/QGO
+    Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL) // ## QGI/QGO
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin) // ### move to QGI
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -176,9 +176,9 @@ public:
     QFxItem(QFxItem *parent = 0);
     virtual ~QFxItem();
 
-    QFxItem *itemParent() const; // ### remove me
     QFxItem *parentItem() const;
-    void setItemParent(QFxItem *parent); // ## setParentItem
+    void setParentItem(QFxItem *parent);
+    void setParent(QFxItem *parent) { setParentItem(parent); }
 
     QmlList<QObject *> *data();
     QmlList<QFxItem *> *children();
@@ -206,18 +206,10 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
-    qreal rotation() const;
-    void setRotation(qreal);
-
-    qreal scale() const;
-    void setScale(qreal);
-
-    QList<QFxTransform *> *transform();
+    QmlList<QGraphicsTransform *> *transform();
 
     bool isClassComplete() const;
     bool isComponentComplete() const;
-
-    void updateTransform(); // ### private!
 
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
@@ -234,22 +226,12 @@ public:
     void setImplicitHeight(qreal);
     bool heightValid() const; // ### better name?
 
-    QPointF scenePos() const; // ### remove me
-
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
-    QPointF transformOriginPoint() const;
-
-    void setParent(QFxItem *);
-
-    QRect itemBoundingRect(); // ### remove me
 
     void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
-
-    QTransform transform() const; // ### remove me
-    void setTransform(const QTransform &); // ### remove me
 
     QFxItem *mouseGrabberItem() const;
 
@@ -293,7 +275,6 @@ protected:
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mouseUngrabEvent();
 
-    virtual void transformChanged(const QTransform &);
     virtual void classBegin();
     virtual void classComplete();
     virtual void componentComplete();
@@ -345,6 +326,10 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxContents)
 QML_DECLARE_TYPE(QFxItem)
+QML_DECLARE_TYPE(QGraphicsTransform)
+QML_DECLARE_TYPE(QGraphicsScale)
+QML_DECLARE_TYPE(QGraphicsRotation)
+QML_DECLARE_TYPE(QGraphicsRotation3D)
 
 QT_END_HEADER
 

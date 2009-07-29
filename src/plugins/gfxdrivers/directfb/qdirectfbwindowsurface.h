@@ -67,7 +67,7 @@ public:
 
     bool isValid() const;
 
-    void setGeometry(const QRect &rect, const QRegion &mask);
+    void setGeometry(const QRect &rect);
 
     QString key() const { return QLatin1String("directfb"); }
     QByteArray permanentState() const;
@@ -76,7 +76,6 @@ public:
     bool scroll(const QRegion &area, int dx, int dy);
 
     bool move(const QPoint &offset);
-    QRegion move(const QPoint &offset, const QRegion &newClip);
 
     QImage image() const { return QImage(); }
     QPaintDevice *paintDevice() { return this; }
@@ -88,7 +87,6 @@ public:
     void endPaint(const QRegion &);
 
     QImage *buffer(const QWidget *widget);
-
 private:
 #ifndef QT_NO_DIRECTFB_WM
     void createWindow();
@@ -96,7 +94,11 @@ private:
 #endif
     QDirectFBPaintEngine *engine;
 
-    bool onscreen;
+    enum Mode {
+        Primary,
+        Offscreen,
+        Window
+    } mode;
 
     QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;

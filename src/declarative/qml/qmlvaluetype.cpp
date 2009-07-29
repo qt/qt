@@ -59,7 +59,11 @@ QmlValueTypeFactory::~QmlValueTypeFactory()
 QmlValueType *QmlValueTypeFactory::valueType(int t)
 {
     switch (t) {
+    case QVariant::Point:
+    case QVariant::PointF:
+        return new QmlPointValueType;
     case QVariant::Rect:
+    case QVariant::RectF:
         return new QmlRectValueType;
     case QVariant::Vector3D:
         return new QmlVector3DValueType;
@@ -71,6 +75,43 @@ QmlValueType *QmlValueTypeFactory::valueType(int t)
 QmlValueType::QmlValueType(QObject *parent)
 : QObject(parent)
 {
+}
+
+QmlPointValueType::QmlPointValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
+
+void QmlPointValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &point, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlPointValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &point, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+qreal QmlPointValueType::x() const
+{
+    return point.x();
+}
+
+qreal QmlPointValueType::y() const
+{
+    return point.y();
+}
+
+void QmlPointValueType::setX(qreal x)
+{
+    point.setX(x);
+}
+
+void QmlPointValueType::setY(qreal y)
+{
+    point.setY(y);
 }
 
 QmlRectValueType::QmlRectValueType(QObject *parent)
@@ -90,42 +131,42 @@ void QmlRectValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
-int QmlRectValueType::x() const
+qreal QmlRectValueType::x() const
 {
     return rect.x();
 }
 
-int QmlRectValueType::y() const
+qreal QmlRectValueType::y() const
 {
     return rect.y();
 }
 
-void QmlRectValueType::setX(int x)
+void QmlRectValueType::setX(qreal x)
 {
     rect.moveLeft(x);
 }
 
-void QmlRectValueType::setY(int y)
+void QmlRectValueType::setY(qreal y)
 {
     rect.moveTop(y);
 }
 
-int QmlRectValueType::width() const
+qreal QmlRectValueType::width() const
 {
     return rect.width();
 }
 
-int QmlRectValueType::height() const
+qreal QmlRectValueType::height() const
 {
     return rect.height();
 }
 
-void QmlRectValueType::setWidth(int w)
+void QmlRectValueType::setWidth(qreal w)
 {
     rect.setWidth(w);
 }
 
-void QmlRectValueType::setHeight(int h)
+void QmlRectValueType::setHeight(qreal h)
 {
     rect.setHeight(h);
 }

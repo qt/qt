@@ -18,6 +18,7 @@
     <example filename="browser" name="Browser" />
     <example filename="mediaplayer" name="Media Player" />
     <example filename="boxes" name="Boxes" />
+    <example filename="sub-attaq" name="Sub-attaq" />
   </demos>
   <category dirname="animation" name="Animation Framework">
     <example filename="animatedtiles" name="Animated Tiles" />
@@ -26,7 +27,6 @@
     <example filename="moveblocks" name="Moving Blocks" />
     <example filename="states" name="UI States" />
     <example filename="stickman" name="Stickman" />
-    <example filename="sub-attaq" name="Sub-attaq" />
   </category>
   <category dirname="qtconcurrent" name="Concurrent Programming">
     <example filename="map" name="Map" executable="false" />

@@ -52,7 +52,9 @@
     Notes}, and the \l{Task Tracker} on the Qt website to see
     if the issue is already known.
 
-    Always include the following information in your bug report:
+    If you have found a new bug, please submit a bug report using
+    the \l{Bug Report Form}. Always include the following information
+    in your bug report:
 
     \list 1
     \o The name and version number of your compiler
@@ -66,6 +68,6 @@
     such a program can be created with some minor changes to one
     of the many example programs in Qt's \c examples directory.
 
-    Please submit the bug report using the \l{Task Tracker} on the Qt
-    website.
+    If you have implemented a bug fix and want to contribute your fix
+    directly, then you can do so through the \l{Public Qt Repository}.
 */

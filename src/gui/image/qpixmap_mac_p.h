@@ -109,11 +109,6 @@ private:
     uint bytesPerRow;
     QRectF cg_mask_rect;
     CGImageRef cg_data, cg_dataBeingReleased, cg_mask;
-#ifndef QT_MAC_NO_QUICKDRAW
-    GWorldPtr qd_data, qd_alpha;
-    void macQDDisposeAlpha();
-    void macQDUpdateAlpha();
-#endif
     static QSet<QMacPixmapData*> validDataPointers;
 
     QPaintEngine *pengine;

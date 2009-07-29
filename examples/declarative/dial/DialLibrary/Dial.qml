@@ -12,7 +12,7 @@ Item {
         y: 35
         source: "needle_shadow.png"
         transform: Rotation {
-            originX: 11; originY: 67
+            origin.x: 11; origin.y: 67
             angle: NeedleRotation.angle
         }
     }
@@ -23,7 +23,7 @@ Item {
         source: "needle.png"
         transform: Rotation {
             id: NeedleRotation
-            originX: 7; originY: 65
+            origin.x: 7; origin.y: 65
             angle: -130
             angle: Follow {
                 spring: 1.4

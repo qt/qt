@@ -657,7 +657,7 @@ QStyleOptionFrameV2 &QStyleOptionFrameV2::operator=(const QStyleOptionFrame &oth
 /*!
     \enum QStyleOptionFrameV2::FrameFeature
 
-    This enum describles the different types of features a frame can have.
+    This enum describes the different types of features a frame can have.
 
     \value None Indicates a normal frame.
     \value Flat Indicates a flat frame.
@@ -899,7 +899,7 @@ QStyleOptionViewItemV2 &QStyleOptionViewItemV2::operator=(const QStyleOptionView
 /*!
     \enum QStyleOptionViewItemV2::ViewItemFeature
 
-    This enum describles the different types of features an item can have.
+    This enum describes the different types of features an item can have.
 
     \value None      Indicates a normal item.
     \value WrapText  Indicates an item with wrapped text.
@@ -4258,8 +4258,7 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
     parameters for drawing a title bar.
 
     QStyleOptionTitleBar contains all the information that QStyle
-    functions need to draw the title bars of QWorkspace's MDI
-    children.
+    functions need to draw the title bar of a QMdiSubWindow.
 
     For performance reasons, the access to the member variables is
     direct (i.e., using the \c . or \c -> operator). This low-level feel
@@ -4269,7 +4268,7 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
     For an example demonstrating how style options can be used, see
     the \l {widgets/styles}{Styles} example.
 
-    \sa QStyleOption, QStyleOptionComplex, QWorkspace
+    \sa QStyleOption, QStyleOptionComplex, QMdiSubWindow
 */
 
 /*!
@@ -4983,8 +4982,7 @@ QStyleOptionSizeGrip::QStyleOptionSizeGrip(int version)
 */
 
 /*!
-    Constructs a QStyleOptionGraphicsItem. The levelOfDetail parameter is
-    initialized to 1.
+    Constructs a QStyleOptionGraphicsItem.
 */
 QStyleOptionGraphicsItem::QStyleOptionGraphicsItem()
     : QStyleOption(Version, Type), levelOfDetail(1)
@@ -5009,11 +5007,6 @@ QStyleOptionGraphicsItem::QStyleOptionGraphicsItem(int version)
     of the painter used to draw the item. By default, if no
     transformations are applied, its value is 1. If zoomed out 1:2, the level
     of detail will be 0.5, and if zoomed in 2:1, its value is 2.
-
-    For more advanced level-of-detail metrics, use
-    QStyleOptionGraphicsItem::matrix directly.
-
-    \sa QStyleOptionGraphicsItem::matrix
 */
 qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &worldTransform)
 {
@@ -5040,28 +5033,40 @@ qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &wor
     Make use of this rectangle to speed up item drawing when only parts of the
     item are exposed. If the whole item is exposed, this rectangle will be the
     same as QGraphicsItem::boundingRect().
+
+    This member is only initialized for items that have the
+    QGraphicsItem::ItemUsesExtendedStyleOption flag set.
 */
 
 /*!
      \variable QStyleOptionGraphicsItem::matrix
      \brief the complete transformation matrix for the item
+     \obsolete
 
-     This matrix is the sum of the item's scene matrix and the matrix of the
-     painter used for drawing the item. It is provided for convenience,
+     The QMatrix provided through this member does include information about
+     any perspective transformations applied to the view or item. To get the
+     correct transformation matrix, use QPainter::transform() on the painter
+     passed into the QGraphicsItem::paint() implementation.
+
+     This matrix is the combination of the item's scene matrix and the matrix
+     of the painter used for drawing the item. It is provided for convenience,
      allowing anvanced level-of-detail metrics that can be used to speed up
      item drawing.
 
-     To find the dimentions of an item in screen coordinates (i.e., pixels),
+     To find the dimensions of an item in screen coordinates (i.e., pixels),
      you can use the mapping functions of QMatrix, such as QMatrix::map().
 
-     \sa QStyleOptionGraphicsItem::levelOfDetail
+     This member is only initialized for items that have the
+     QGraphicsItem::ItemUsesExtendedStyleOption flag set.
+
+     \sa QStyleOptionGraphicsItem::levelOfDetailFromTransform()
 */
 
 /*!
     \variable QStyleOptionGraphicsItem::levelOfDetail
     \obsolete
 
-    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform
+    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform()
     together with QPainter::worldTransform() instead.
 */
 

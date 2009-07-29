@@ -319,10 +319,6 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#ifdef QT_MAC_USE_COCOA
-#define QT_MAC_NO_QUICKDRAW 1
-#endif
-
 #ifdef __LSB_VERSION__
 #  if __LSB_VERSION__ < 40
 #    error "This version of the Linux Standard Base is unsupported"
@@ -657,9 +653,7 @@ namespace QT_NAMESPACE {}
     in which case _BOOL is not defined
         this is the default in 4.2 compatibility mode triggered by -compat=4 */
 #  if __SUNPRO_CC >= 0x500
-#    if __SUNPRO_CC < 0x570
-#      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
-#    endif
+#    define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
    /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
 #    if __SUNPRO_CC >= 0x590
 #      define Q_ALIGNOF(type)   __alignof__(type)
@@ -667,6 +661,9 @@ namespace QT_NAMESPACE {}
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 // using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
 //#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
+#    if __SUNPRO_CC < 0x5a0
+#      define Q_NO_TEMPLATE_FRIENDS
 #    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE

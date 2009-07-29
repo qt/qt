@@ -378,17 +378,19 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
     files_changed = true;
     file->dep_checked = true;
 
+    const QMakeLocalFileName sourceFile = fixPathForFile(file->file, true);
+
     struct stat fst;
     char *buffer = 0;
     int buffer_len = 0;
     {
         int fd;
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-        if (_sopen_s(&fd, fixPathForFile(file->file, true).local().toLatin1().constData(),
+        if (_sopen_s(&fd, sourceFile.local().toLatin1().constData(),
             _O_RDONLY, _SH_DENYNO, _S_IREAD) != 0)
             fd = -1;
 #else
-        fd = open(fixPathForFile(file->file, true).local().toLatin1().constData(), O_RDONLY);
+        fd = open(sourceFile.local().toLatin1().constData(), O_RDONLY);
 #endif
         if(fd == -1 || fstat(fd, &fst) || S_ISDIR(fst.st_mode))
             return false;
@@ -623,12 +625,8 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 QMakeLocalFileName lfn(inc);
                 if(QDir::isRelativePath(lfn.real())) {
                     if(try_local) {
-                        QString dir = findFileInfo(file->file).path();
-                        if(QDir::isRelativePath(dir))
-                            dir.prepend(qmake_getpwd() + "/");
-                        if(!dir.endsWith("/"))
-                            dir += "/";
-                        QMakeLocalFileName f(dir + lfn.local());
+                        QDir sourceDir = findFileInfo(sourceFile).dir();
+                        QMakeLocalFileName f(sourceDir.absoluteFilePath(lfn.local()));
                         if(findFileInfo(f).exists()) {
                             lfn = fixPathForFile(f);
                             exists = true;

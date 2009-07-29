@@ -341,7 +341,7 @@ void tst_QSettings::init()
 #if defined(Q_OS_WINCE)
         removePath(settingsPath());
 #else
-	if (qWinVersion() & Qt::WV_NT_based)
+        if (QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
 	    system(QString("rmdir /Q /S %1").arg(settingsPath()).toLatin1());
 	else
 	    system(QString("deltree /Y %1").arg(settingsPath()).toLatin1());

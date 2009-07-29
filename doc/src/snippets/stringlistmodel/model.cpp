@@ -59,6 +59,36 @@ int StringListModel::rowCount(const QModelIndex &parent) const
 }
 //! [0]
 
+
+#ifdef 0
+// This represents a read-only version of data(), an early stage in the 
+// development of the example leading to an editable StringListModel.
+
+/*!
+    Returns an appropriate value for the requested data.
+    If the view requests an invalid index, an invalid variant is returned.
+    Any valid index that corresponds to a string in the list causes that
+    string to be returned.
+*/
+
+//! [1-data-read-only]
+QVariant StringListModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
+
+    if (index.row() >= stringList.size())
+        return QVariant();
+
+    if (role == Qt::DisplayRole)
+        return stringList.at(index.row());
+    else
+        return QVariant();
+}
+//! [1-data-read-only]
+#endif
+
+
 /*!
     Returns an appropriate value for the requested data.
     If the view requests an invalid index, an invalid variant is returned.
@@ -74,8 +104,8 @@ QVariant StringListModel::data(const QModelIndex &index, int role) const
 
     if (index.row() >= stringList.size())
         return QVariant();
-
-    if (role == Qt::DisplayRole)
+        
+    if (role == Qt::DisplayRole || role == Qt::EditRole)
         return stringList.at(index.row());
     else
         return QVariant();

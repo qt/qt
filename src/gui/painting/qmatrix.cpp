@@ -55,11 +55,15 @@ QT_BEGIN_NAMESPACE
     \class QMatrix
     \brief The QMatrix class specifies 2D transformations of a
     coordinate system.
+    \obsolete
 
     \ingroup multimedia
 
     A matrix specifies how to translate, scale, shear or rotate the
     coordinate system, and is typically used when rendering graphics.
+    QMatrix, in contrast to QTransform, does not allow perspective
+    transformations. QTransform is the recommended transformation
+    class in Qt.
 
     A QMatrix object can be built using the setMatrix(), scale(),
     rotate(), translate() and shear() functions.  Alternatively, it
@@ -172,8 +176,8 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/matrix/matrix.cpp 2
     \endtable
 
-    \sa QPainter, {The Coordinate System}, {demos/affine}{Affine
-    Transformations Demo}, {Transformations Example}
+    \sa QPainter, QTransform, {The Coordinate System}, 
+    {demos/affine}{Affine Transformations Demo}, {Transformations Example}
 */
 
 

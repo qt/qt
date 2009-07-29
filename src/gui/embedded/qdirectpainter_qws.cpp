@@ -150,14 +150,14 @@ QT_BEGIN_NAMESPACE
     \value ReservedSynchronous The allocated region will never change and
     each function that changes the allocated region will be blocking.
 
-    \sa reservedRegion(), allocatedRegion()
+    \sa allocatedRegion()
 */
 
 /*!
     \fn QRegion QDirectPainter::region()
     \obsolete
 
-    Use QDirectPainter::reservedRegion() instead.
+    Use QDirectPainter::allocatedRegion() instead.
 */
 
 static inline QScreen *getPrimaryScreen()
@@ -346,7 +346,7 @@ void QDirectPainter::setRegion(const QRegion &region)
     returned by the allocatedRegion() function. Otherwise they might
     differ (see \l {Dynamic Allocation} for details).
 
-    \sa geometry(), setRegion()
+    \sa geometry(), setRegion(), allocatedRegion()
 */
 QRegion QDirectPainter::requestedRegion() const
 {
@@ -540,7 +540,7 @@ void QDirectPainter::lower()
     any. If not released explicitly, the region will be released on
     application exit.
 
-    \sa reservedRegion(), {Static Allocation}
+    \sa allocatedRegion(), {Static Allocation}
 
     \obsolete
 

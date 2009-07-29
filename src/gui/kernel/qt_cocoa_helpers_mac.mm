@@ -74,6 +74,7 @@
 ****************************************************************************/
 
 #include <private/qcore_mac_p.h>
+#include <qaction.h>
 #include <qwidget.h>
 #include <qdesktopwidget.h>
 #include <qevent.h>
@@ -1068,6 +1069,17 @@ void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::H
 #endif
 }
 
+void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show)
+{
+#if QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    OSWindowRef theWindow = static_cast<OSWindowRef>(window);
+    NSToolbar *macToolbar = [theWindow toolbar];
+    if (macToolbar)
+        [macToolbar setShowsBaselineSeparator: show];
+#endif
+}
+
 QStringList qt_mac_NSArrayToQStringList(void *nsarray)
 {
     QStringList result;
@@ -1190,6 +1202,34 @@ void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayI
 
         retIcon->addPixmap(mainIcon);
         size += size;  // 16 -> 32 -> 64 -> 128
+    }
+}
+
+void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
+{
+    OSMenuRef menu = static_cast<OSMenuRef>(theMenu);
+    if (collapse) {
+        bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
+        NSMenuItem *previousItem = nil;
+        for (NSMenuItem *item in [menu itemArray]) {
+            if ([item isSeparatorItem]) {
+                [item setHidden:previousIsSeparator];
+            }
+
+            if (![item isHidden]) {
+                previousItem = item;
+                previousIsSeparator = ([previousItem isSeparatorItem]);
+            }
+        }
+
+        // We now need to check the final item since we don't want any separators at the end of the list.
+        if (previousItem && previousIsSeparator)
+            [previousItem setHidden:YES];
+    } else {
+        for (NSMenuItem *item in [menu itemArray]) {
+            if (QAction *action = reinterpret_cast<QAction *>([item tag]))
+                [item setHidden:!action->isVisible()];
+        }
     }
 }
 

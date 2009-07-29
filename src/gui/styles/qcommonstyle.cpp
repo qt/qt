@@ -2960,6 +2960,9 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 horizontalShift *= -1;
                 verticalShift *= -1;
             }
+            if (tab->shape == QTabBar::RoundedWest || tab->shape == QTabBar::TriangularWest)
+                horizontalShift = -horizontalShift;
+
             tr.adjust(0, 0, horizontalShift, verticalShift);
             if (selected)
             {

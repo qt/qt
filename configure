@@ -615,9 +615,9 @@ CFG_GFX_ON="linuxfb multiscreen"
 CFG_GFX_PLUGIN_AVAILABLE=
 CFG_GFX_PLUGIN=
 CFG_GFX_OFF=
-CFG_KBD_AVAILABLE="tty linuxinput sl5000 yopy vr41xx qvfb"
+CFG_KBD_AVAILABLE="tty linuxinput qvfb"
 CFG_KBD_ON="tty"    #default, see QMakeVar above
-CFG_MOUSE_AVAILABLE="pc bus linuxtp yopy vr41xx tslib qvfb"
+CFG_MOUSE_AVAILABLE="pc linuxtp linuxinput tslib qvfb"
 CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
 
 CFG_ARCH=
@@ -6131,6 +6131,7 @@ case "$XPLATFORM" in
                 ;;
             5.9)
                 canBuildWebKit="no"
+                canBuildQtConcurrent="no"
                 ;;
         esac
         ;;
@@ -6173,6 +6174,7 @@ EOF
                 ;;
             *)
                 canBuildWebKit="no"
+                canBuildQtConcurrent="no"
                 ;;
         esac
         ;;

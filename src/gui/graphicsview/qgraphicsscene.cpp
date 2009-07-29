@@ -484,12 +484,21 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         index->removeItem(item);
     }
 
+    item->d_ptr->clearSubFocus();
+
     if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
         widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
     }
 
     item->d_func()->scene = 0;
+
+    // Unregister focus proxy.
+    QMultiHash<QGraphicsItem *, QGraphicsItem *>::iterator it = focusProxyReverseMap.find(item);
+    while (it != focusProxyReverseMap.end() && it.key() == item) {
+        it.value()->d_ptr->focusProxy = 0;
+        it = focusProxyReverseMap.erase(it);
+    }
 
     // Remove from parent, or unregister from toplevels.
     if (QGraphicsItem *parentItem = item->parentItem()) {
@@ -554,6 +563,70 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
         emit q->selectionChanged();
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
+                                               Qt::FocusReason focusReason)
+{
+    Q_Q(QGraphicsScene);
+    if (item == focusItem)
+        return;
+
+    // Clear focus if asked to set focus on something that can't
+    // accept input focus.
+    if (item && (!(item->flags() & QGraphicsItem::ItemIsFocusable)
+                 || !item->isVisible() || !item->isEnabled())) {
+        item = 0;
+    }
+
+    // Set focus on the scene if an item requests focus.
+    if (item) {
+        q->setFocus(focusReason);
+        if (item == focusItem)
+            return;
+    }
+
+    // Auto-update focus proxy. The closest parent that detects
+    // focus proxies is updated as the proxy gains or loses focus.
+    if (item) {
+        QGraphicsItem *p = item->d_ptr->parent;
+        while (p) {
+            if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
+                p->setFocusProxy(item);
+                break;
+            }
+            p = p->d_ptr->parent;
+        }
+    }
+
+    if (focusItem) {
+        QFocusEvent event(QEvent::FocusOut, focusReason);
+        lastFocusItem = focusItem;
+        focusItem = 0;
+        sendEvent(lastFocusItem, &event);
+
+        if (lastFocusItem
+            && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+            // Reset any visible preedit text
+            QInputMethodEvent imEvent;
+            sendEvent(lastFocusItem, &imEvent);
+
+            // Close any external input method panel
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->inputContext()->reset();
+        }
+    }
+
+    if (item) {
+        focusItem = item;
+        QFocusEvent event(QEvent::FocusIn, focusReason);
+        sendEvent(item, &event);
+    }
+
+    updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -2283,6 +2356,11 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
+    // Ensure that newly added items that have subfocus set, gain
+    // focus automatically if there isn't a focus item already.
+    if (!d->focusItem && item->focusItem())
+        item->focusItem()->setFocus();
+
     d->updateInputMethodSensitivityInViews();
 }
 
@@ -2612,116 +2690,10 @@ QGraphicsItem *QGraphicsScene::focusItem(QGraphicsItem *item) const
 void QGraphicsScene::setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReason)
 {
     Q_D(QGraphicsScene);
-    if (item == d->focusItem)
-        return;
-    if (item && (!(item->flags() & QGraphicsItem::ItemIsFocusable)
-                 || !item->isVisible() || !item->isEnabled())) {
-        item = 0;
-    }
-
-    QGraphicsItem *oldFocus = d->focusItem;
-    bool isActive = true;
-    if (item) {
-        setFocus(focusReason);
-        if (item == d->focusItem)
-            return;
-
-        //focus area handling
-        {
-            //determine the focus area the item belongs to
-            QGraphicsItem *scope = 0;
-            QGraphicsItem *citem = item;
-            while(citem && !scope) {
-                if (citem != item && citem->d_ptr->isFocusRealm)
-                    scope = citem;
-                citem = citem->parentItem();
-            }
-
-            //if it has a focus area, set the item as the focusitem for that area
-            if (scope) {
-                QGraphicsItem *oldFFA = d->focusItemForFocusArea.value(scope);
-                if (!scope->d_ptr->hasActiveFocus && oldFFA) {    //active case is handled by d->focusItem below???
-                    oldFFA->d_ptr->setFocusItemForArea(false);
-                }
-                if (oldFFA)
-                    oldFocus = oldFFA;
-                isActive = scope->d_ptr->hasActiveFocus ? true : false;
-                d->focusItemForFocusArea.insert(scope, item);
-            }
-        }
-    }
-
-    if (oldFocus) {
-        QFocusEvent event(QEvent::FocusOut, focusReason);
-        if (isActive) {
-            d->lastFocusItem = oldFocus;
-            d->focusItem = 0;
-        }
-
-        //focus area handling
-        if (!oldFocus->d_ptr->inDestructor)
-            oldFocus->d_ptr->setFocusItemForArea(false);
-
-        if (isActive) {
-            //focus area handling
-            while(true) {
-                if (!oldFocus->d_ptr->inDestructor)
-                    oldFocus->d_ptr->setActiveFocus(false);
-                if (oldFocus->d_ptr->isFocusRealm) {
-                    QGraphicsItem *citem = d->focusItemForFocusArea.value(oldFocus);
-                    if (citem)
-                        oldFocus = citem;
-                    else
-                        break;
-                } else
-                    break;
-            }
-
-            d->sendEvent(oldFocus, &event);
-
-            if (oldFocus
-                && (oldFocus->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
-                // Reset any visible preedit text
-                QInputMethodEvent imEvent;
-                d->sendEvent(oldFocus, &imEvent);
-
-                // Close any external input method panel
-                for (int i = 0; i < d->views.size(); ++i)
-                    d->views.at(i)->inputContext()->reset();
-            }
-        }
-    }
-
-    if (item) {
-        if (item->isWidget()) {
-            // Update focus child chain.
-            static_cast<QGraphicsWidget *>(item)->d_func()->setFocusWidget();
-        }
-
-        //focus area handling
-        item->d_ptr->setFocusItemForArea(true);
-
-        if (isActive) {
-            //focus area handling
-            while(true) {
-                item->d_ptr->setActiveFocus(true);
-                if (item->d_ptr->isFocusRealm) {
-                    QGraphicsItem *citem = d->focusItemForFocusArea.value(item);
-                    if (citem)
-                        item = citem;
-                    else
-                        break;
-                } else
-                    break;
-            }
-
-            d->focusItem = item;
-            QFocusEvent event(QEvent::FocusIn, focusReason);
-            d->sendEvent(item, &event);
-        }
-    }
-
-    d->updateInputMethodSensitivityInViews();
+    if (item)
+        item->setFocus(focusReason);
+    else
+        d->setFocusItemHelper(item, focusReason);
 }
 
 /*!
@@ -3519,7 +3491,7 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
         text = toolTipItem->toolTip();
         point = helpEvent->screenPos();
     }
-    QToolTip::showText(point, text);
+    QToolTip::showText(point, text, helpEvent->widget());
     helpEvent->setAccepted(!text.isEmpty());
 #endif
 }
@@ -3618,8 +3590,7 @@ void QGraphicsScenePrivate::leaveScene()
 {
     Q_Q(QGraphicsScene);
 #ifndef QT_NO_TOOLTIP
-    // Remove any tooltips
-    QToolTip::showText(QPoint(), QString());
+    QToolTip::hideText();
 #endif
     // Send HoverLeave events to all existing hover items, topmost first.
     QGraphicsView *senderWidget = qobject_cast<QGraphicsView *>(q->sender());
@@ -4761,7 +4732,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     background has been drawn, and before the foreground has been
     drawn.  All painting is done in \e scene coordinates. Before
     drawing each item, the painter must be transformed using
-    QGraphicsItem::sceneMatrix().
+    QGraphicsItem::sceneTransform().
 
     The \a options parameter is the list of style option objects for
     each item in \a items. The \a numItems parameter is the number of

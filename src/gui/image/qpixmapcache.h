@@ -54,7 +54,7 @@ class Q_GUI_EXPORT QPixmapCache
 {
 public:
     class KeyData;
-    class Key
+    class Q_GUI_EXPORT Key
     {
     public:
         Key();

@@ -803,29 +803,19 @@
 #    endif
 #  endif
 
-#  if !defined(BACKTRACE_SUPPORTED)
-// Dummy implementation of the functions.
-// Using QHashDummyValue also means that the QHash below is actually a QSet
-typedef QT_PREPEND_NAMESPACE(QHashDummyValue) Backtrace;
-
-static inline Backtrace saveBacktrace() { return Backtrace(); }
-static inline void printBacktrace(Backtrace) { }
-
-#  else
+#  if defined(BACKTRACE_SUPPORTED)
 #    include <sys/types.h>
 #    include <execinfo.h>
 #    include <stdio.h>
 #    include <unistd.h>
 #    include <sys/wait.h>
 
-typedef QT_PREPEND_NAMESPACE(QByteArray) Backtrace;
-
-static inline Backtrace saveBacktrace() __attribute__((always_inline));
-static inline Backtrace saveBacktrace()
+static inline QByteArray saveBacktrace() __attribute__((always_inline));
+static inline QByteArray saveBacktrace()
 {
     static const int maxFrames = 32;
 
-    Backtrace stacktrace;
+    QByteArray stacktrace;
     stacktrace.resize(sizeof(void*) * maxFrames);
     int stack_size = backtrace((void**)stacktrace.data(), maxFrames);
     stacktrace.resize(sizeof(void*) * stack_size);
@@ -833,7 +823,7 @@ static inline Backtrace saveBacktrace()
     return stacktrace;
 }
 
-static void printBacktrace(Backtrace stacktrace)
+static void printBacktrace(QByteArray stacktrace)
 {
     void *const *stack = (void *const *)stacktrace.constData();
     int stack_size = stacktrace.size() / sizeof(void*);
@@ -884,11 +874,19 @@ static void printBacktrace(Backtrace stacktrace)
 
 namespace {
     QT_USE_NAMESPACE
+    struct Data {
+        const volatile void *pointer;
+#  ifdef BACKTRACE_SUPPORTED
+        QByteArray backtrace;
+#  endif
+    };
+
     class KnownPointers
     {
     public:
         QMutex mutex;
-        QHash<void *, Backtrace> values;
+        QHash<const void *, Data> dPointers;
+        QHash<const volatile void *, const void *> dataPointers;
     };
 }
 
@@ -896,38 +894,101 @@ Q_GLOBAL_STATIC(KnownPointers, knownPointers)
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \internal
-*/
-void QtSharedPointer::internalSafetyCheckAdd(const volatile void *ptr)
-{
-    KnownPointers *const kp = knownPointers();
-    if (!kp)
-        return;                 // end-game: the application is being destroyed already
-
-    QMutexLocker lock(&kp->mutex);
-    void *actual = const_cast<void*>(ptr);
-    if (kp->values.contains(actual)) {
-        printBacktrace(knownPointers()->values.value(actual));
-        qFatal("QSharedPointerData: internal self-check failed: pointer %p was already tracked "
-               "by another QSharedPointerData object", actual);
-    }
-
-    kp->values.insert(actual, saveBacktrace());
+namespace QtSharedPointer {
+    Q_CORE_EXPORT void internalSafetyCheckAdd(const volatile void *);
+    Q_CORE_EXPORT void internalSafetyCheckRemove(const volatile void *);
 }
 
 /*!
     \internal
 */
-void QtSharedPointer::internalSafetyCheckRemove(const volatile void *ptr)
+void QtSharedPointer::internalSafetyCheckAdd(const volatile void *)
+{
+    // Qt 4.5 compatibility
+    // this function is broken by design, so it was replaced with internalSafetyCheckAdd2
+    //
+    // it's broken because we tracked the pointers added and
+    // removed from QSharedPointer, converted to void*.
+    // That is, this is supposed to track the "top-of-object" pointer in
+    // case of multiple inheritance.
+    //
+    // However, it doesn't work well in some compilers:
+    // if you create an object with a class of type A and the last reference
+    // is dropped of type B, then the value passed to internalSafetyCheckRemove could
+    // be different than was added. That would leave dangling addresses.
+    //
+    // So instead, we track the pointer by the d-pointer instead.
+}
+
+/*!
+    \internal
+*/
+void QtSharedPointer::internalSafetyCheckRemove(const volatile void *)
+{
+    // Qt 4.5 compatibility
+    // see comments above
+}
+
+/*!
+    \internal
+*/
+void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile void *ptr)
+{
+    // see comments above for the rationale for this function
+    KnownPointers *const kp = knownPointers();
+    if (!kp)
+        return;                 // end-game: the application is being destroyed already
+
+    QMutexLocker lock(&kp->mutex);
+    Q_ASSERT(!kp->dPointers.contains(d_ptr));
+
+    //qDebug("Adding d=%p value=%p", d_ptr, ptr);
+    
+    const void *other_d_ptr = kp->dataPointers.value(ptr, 0);
+    if (other_d_ptr) {
+#  ifdef BACKTRACE_SUPPORTED
+        printBacktrace(knownPointers()->dPointers.value(other_d_ptr).backtrace);
+#  endif
+        qFatal("QSharedPointer: internal self-check failed: pointer %p was already tracked "
+               "by another QSharedPointer object %p", ptr, other_d_ptr);
+    }
+
+    Data data;
+    data.pointer = ptr;
+#  ifdef BACKTRACE_SUPPORTED
+    data.backtrace = saveBacktrace();
+#  endif
+
+    kp->dPointers.insert(d_ptr, data);
+    kp->dataPointers.insert(ptr, d_ptr);
+}
+
+/*!
+    \internal
+*/
+void QtSharedPointer::internalSafetyCheckRemove2(const void *d_ptr)
 {
     KnownPointers *const kp = knownPointers();
     if (!kp)
         return;                 // end-game: the application is being destroyed already
 
     QMutexLocker lock(&kp->mutex);
-    void *actual = const_cast<void*>(ptr);
-    kp->values.remove(actual);
+
+    QHash<const void *, Data>::iterator it = kp->dPointers.find(d_ptr);
+    if (it == kp->dPointers.end()) {
+        qFatal("QSharedPointer: internal self-check inconsistency: pointer %p was not tracked. "
+               "To use QT_SHAREDPOINTER_TRACK_POINTERS, you have to enable it throughout "
+               "in your code.", d_ptr);
+    }
+
+    QHash<const volatile void *, const void *>::iterator it2 = kp->dataPointers.find(it->pointer);
+    Q_ASSERT(it2 != kp->dataPointers.end());
+
+    //qDebug("Removing d=%p value=%p", d_ptr, it->pointer);
+    
+    // remove entries
+    kp->dataPointers.erase(it2);
+    kp->dPointers.erase(it);
 }
 
 QT_END_NAMESPACE

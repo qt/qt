@@ -48,6 +48,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
 #include <private/qfxperf_p.h>
+#include <QtGui/qgraphicstransform.h>
 
 #include <QtDeclarative/qmlengine.h>
 #include <private/qmlengine_p.h>
@@ -55,7 +56,6 @@
 #include "qlistmodelinterface.h"
 #include "qfxanchors_p.h"
 
-#include "qfxtransform.h"
 #include "qfxscalegrid.h"
 #include "qfxview.h"
 #include "qmlstategroup.h"
@@ -73,6 +73,11 @@ QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QFxContents)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QFxItem)
+
+QML_DEFINE_NOCREATE_TYPE(QGraphicsTransform);
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QGraphicsScale)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation3D,QGraphicsRotation3D)
 
 /*!
     \group group_animation
@@ -308,12 +313,6 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::scaleChanged()
-
-    This signal is emitted when the scale of the item changes.
-*/
-
-/*!
     \fn void QFxItem::stateChanged(const QString &state)
 
     This signal is emitted when the \a state of the item changes.
@@ -354,7 +353,7 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the parent of the item changes.
 
-    \sa setItemParent()
+    \sa setParentItem()
 */
 
 /*!
@@ -440,22 +439,23 @@ QFxItem::~QFxItem()
     \property QFxItem::parent
     This property holds the parent of the item.
 */
-void QFxItem::setItemParent(QFxItem *parent)
+void QFxItem::setParentItem(QFxItem *parent)
 {
-    setParent(parent);
+    QFxItem *oldParent = parentItem();
+    if (parent == oldParent || !parent) return;
+
+    QObject::setParent(parent);
+    QGraphicsObject::setParentItem(parent);
+
+    parentChanged(parent, oldParent);
 }
 
 /*!
     Returns the QFxItem parent of this item.
 */
-QFxItem *QFxItem::itemParent() const
-{
-    return qobject_cast<QFxItem *>(QGraphicsItem::parentItem());
-}
-
 QFxItem *QFxItem::parentItem() const
 {
-    return itemParent();
+    return qobject_cast<QFxItem *>(QGraphicsObject::parentItem());
 }
 
 /*!
@@ -636,6 +636,45 @@ QFxItem *QFxItemPrivate::children_at(int) const
 void QFxItemPrivate::children_clear()
 {
     // ###
+}
+
+
+void QFxItemPrivate::transform_removeAt(int i)
+{
+    if (!transformData)
+        return;
+    transformData->graphicsTransforms.removeAt(i);
+    dirtySceneTransform = 1;
+}
+
+int QFxItemPrivate::transform_count() const
+{
+    return transformData ? transformData->graphicsTransforms.size() : 0;
+}
+
+void QFxItemPrivate::transform_append(QGraphicsTransform *item)
+{
+    appendGraphicsTransform(item);
+}
+
+void QFxItemPrivate::transform_insert(int, QGraphicsTransform *)
+{
+    // ###
+}
+
+QGraphicsTransform *QFxItemPrivate::transform_at(int idx) const
+{
+    if (!transformData)
+        return 0;
+    return transformData->graphicsTransforms.at(idx);
+}
+
+void QFxItemPrivate::transform_clear()
+{
+    if (!transformData)
+        return;
+    Q_Q(QFxItem);
+    q->setTransformations(QList<QGraphicsTransform *>());
 }
 
 /*!
@@ -820,7 +859,7 @@ void QFxItem::qmlLoaded()
             QObject* o = c ? c->create(ctxt):0;
             QFxItem* ret = qobject_cast<QFxItem*>(o);
             if (ret) {
-                ret->setItemParent(this);
+                ret->setParentItem(this);
                 QScriptValue v = QmlEnginePrivate::getScriptEngine(qmlEngine(this))->newQObject(ret);
                 emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
             }
@@ -849,7 +888,7 @@ void QFxItem::qmlLoaded()
             qWarning() << d->_qmlcomp->errors();
         QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
         if (qmlChild) {
-            qmlChild->setItemParent(this);
+            qmlChild->setParentItem(this);
             d->_qmlChildren.insert(d->_qml.toString(), qmlChild);
             d->qmlItem = qmlChild;
         } else {
@@ -999,12 +1038,8 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     if (d->_anchors)
         d->_anchors->d_func()->updateMe();
 
-    if (newGeometry.size() != oldGeometry.size()) {
-        if (rotation() && transformOrigin() != QFxItem::TopLeft)
-            setRotation(rotation());
-        if (scale() && transformOrigin() != QFxItem::TopLeft)
-            setScale(scale());
-    }
+    if (transformOrigin() != QFxItem::TopLeft)
+        setTransformOriginPoint(d->computeTransformOrigin());
 
     if (newGeometry.x() != oldGeometry.x()) 
         emit xChanged();
@@ -1037,8 +1072,8 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyPress(&ke);
     event->setAccepted(ke.isAccepted());
-    if (itemParent() && !ke.isAccepted())
-        itemParent()->keyPressEvent(event);
+    if (parentItem() && !ke.isAccepted())
+        parentItem()->keyPressEvent(event);
 }
 
 /*!
@@ -1049,8 +1084,8 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyRelease(&ke);
     event->setAccepted(ke.isAccepted());
-    if (itemParent() && !ke.isAccepted())
-        itemParent()->keyReleaseEvent(event);
+    if (parentItem() && !ke.isAccepted())
+        parentItem()->keyReleaseEvent(event);
 }
 
 /*!
@@ -1333,29 +1368,6 @@ void QFxItem::setBaselineOffset(qreal offset)
  */
 
 /*!
-  \property QFxItem::rotation
-  This property holds the rotation of the item in degrees.
-
-  This specifies how many degrees to rotate the item around its transformOrigin.
-  The default rotation is 0 degrees (i.e. not rotated at all).
-*/
-qreal QFxItem::rotation() const
-{
-    Q_D(const QFxItem);
-    return d->_rotation;
-}
-
-void QFxItem::setRotation(qreal rotation)
-{
-    Q_D(QFxItem);
-    if (d->_rotation == rotation)
-        return;
-    d->_rotation = rotation;
-    setTransform(d->transform);
-    emit rotationChanged();
-}
-
-/*!
   \qmlproperty real Item::scale
   This property holds the scale of the item.
 
@@ -1389,21 +1401,6 @@ void QFxItem::setRotation(qreal rotation)
   }
   \endqml
   \endtable
-*/
-
-/*!
-  \property QFxItem::scale
-  This property holds the scale of the item.
-
-  A scale of less than 1 means the item will be displayed smaller than
-  normal, and a scale of greater than 1 means the item will be
-  displayed larger than normal.  A negative scale means the item will
-  be mirrored.
-
-  By default, items are displayed at a scale of 1 (i.e. at their
-  normal size).
-
-  Scaling is from the item's transformOrigin.
 */
 
 /*!
@@ -1695,16 +1692,13 @@ void QFxItem::setState(const QString &state)
 
 /*!
   \property QFxItem::transform
-  This property holds the list of transformations to apply.
-
-  For more information see \l Transform.
+  This property holds a list of transformations set on the item.
 */
-QList<QFxTransform *> *QFxItem::transform()
+QmlList<QGraphicsTransform *>* QFxItem::transform()
 {
     Q_D(QFxItem);
-    return &(d->_transform);
+    return &(d->transform);
 }
-
 
 /*!
   Creates a new child of the given component \a type.  The
@@ -1776,32 +1770,6 @@ void QFxItem::componentComplete()
         d->_stateGroup->componentComplete();
     if (d->_anchors) 
         d->anchors()->d_func()->updateOnComplete();
-    if (!d->_transform.isEmpty())
-        updateTransform();
-}
-
-/*!
-    \internal
-*/
-void QFxItem::updateTransform()
-{
-    Q_D(QFxItem);
-    QTransform trans;
-    for (int ii = d->_transform.count() - 1; ii >= 0; --ii) {
-        QFxTransform *a = d->_transform.at(ii);
-        if (!a->isIdentity()) 
-            trans = a->transform() * trans;
-    }
-
-    setTransform(trans);
-    transformChanged(trans);
-}
-
-/*!
-    \internal
-*/
-void QFxItem::transformChanged(const QTransform &)
-{
 }
 
 QmlStateGroup *QFxItemPrivate::states()
@@ -1836,7 +1804,7 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     baseline.anchorLine = QFxAnchorLine::Baseline;
 }
 
-QPointF QFxItemPrivate::transformOrigin() const
+QPointF QFxItemPrivate::computeTransformOrigin() const
 {
     Q_Q(const QFxItem);
 
@@ -1897,8 +1865,6 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
         if (options() & QFxItem::MouseFilter)
             d->gvAddMouseFilter();
 
-        if (d->canvas && d->isFocusItemForArea)
-            d->canvas->setFocusItem(this);
     } else if (change == ItemChildAddedChange ||
                change == ItemChildRemovedChange) {
         childrenChanged();
@@ -1941,14 +1907,6 @@ void QFxItem::parentChanged(QFxItem *, QFxItem *)
 }
 
 /*!
-    Returns the item's (0, 0) point mapped to scene coordinates.
- */
-QPointF QFxItem::scenePos() const
-{
-    return mapToScene(QPointF(0, 0));
-}
-
-/*!
     \enum QFxItem::TransformOrigin
 
     Controls the point about which simple transforms like scale apply.
@@ -1981,14 +1939,8 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
     Q_D(QFxItem);
     if (origin != d->origin) {
         d->origin = origin;
-        update();
+        QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
     }
-}
-
-QPointF QFxItem::transformOriginPoint() const
-{
-    Q_D(const QFxItem);
-    return d->transformOrigin();
 }
 
 qreal QFxItem::width() const
@@ -2081,61 +2033,6 @@ bool QFxItem::heightValid() const
     return d->heightValid;
 }
 
-qreal QFxItem::scale() const
-{
-    Q_D(const QFxItem);
-    return d->scale;
-}
-
-void QFxItem::setScale(qreal s)
-{
-    Q_D(QFxItem);
-    if (d->scale == s)
-        return;
-
-    d->scale = s;
-    setTransform(d->transform);
-
-    emit scaleChanged();
-}
-
-QRect QFxItem::itemBoundingRect()
-{
-    return boundingRect().toAlignedRect();
-}
-
-QTransform QFxItem::transform() const
-{
-    Q_D(const QFxItem);
-    return d->transform;
-}
-
-//### optimize (perhaps cache scale and rot transforms, and have dirty flags)
-//### we rely on there not being an "if (d->transform == m) return;" check
-void QFxItem::setTransform(const QTransform &m)
-{
-    Q_D(QFxItem);
-    d->transform = m;
-    QTransform scaleTransform, rotTransform;
-    if (d->scale != 1) {
-        QPointF to = transformOriginPoint();
-        if (to.x() != 0. || to.y() != 0.)
-            scaleTransform.translate(to.x(), to.y());
-        scaleTransform.scale(d->scale, d->scale);
-        if (to.x() != 0. || to.y() != 0.)
-            scaleTransform.translate(-to.x(), -to.y());
-    }
-    if (d->_rotation != 0) {
-        QPointF to = d->transformOrigin();
-        if (to.x() != 0. || to.y() != 0.)
-            rotTransform.translate(to.x(), to.y());
-        rotTransform.rotate(d->_rotation);
-        if (to.x() != 0. || to.y() != 0.)
-            rotTransform.translate(-to.x(), -to.y());
-    }
-    QGraphicsItem::setTransform(scaleTransform * rotTransform * d->transform);
-}
-
 QFxItem *QFxItem::mouseGrabberItem() const
 {
     QGraphicsScene *s = scene();
@@ -2154,28 +2051,49 @@ QFxItem *QFxItem::mouseGrabberItem() const
 
 bool QFxItem::hasFocus() const
 {
-    Q_D(const QFxItem);
-    return d->isFocusItemForArea;
+    const QGraphicsItem *current = this->parentItem();
+    while (current && !(current->flags() & ItemAutoDetectsFocusProxy))
+        current = current->parentItem();
+
+    if (current)
+        return current->focusProxy() == this;
+    else
+        return QGraphicsItem::hasFocus();
 }
 
 void QFxItem::setFocus(bool focus)
 {
-    Q_D(QFxItem);
     QGraphicsScene *s = scene();
-    if (s) {
-        if (d->hasActiveFocus)
-            s->setFocusItem(focus ? this : 0);
-        else if (focus)
-            s->setFocusItem(this);
-        else {
-            d->isFocusItemForArea = false;
-            focusChanged(false);
-        }
-
-    } else {
-        d->isFocusItemForArea = focus;
+    if (!s) {
+        if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
+        else QGraphicsItem::clearFocus();
         focusChanged(focus);
+        return;
     }
+
+    QGraphicsItem *current = this->parentItem();
+    while (current && !(current->flags() & ItemAutoDetectsFocusProxy))
+        current = current->parentItem();
+
+    if (!current) {
+        if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
+        else QGraphicsItem::clearFocus();
+        focusChanged(focus);
+        return;
+    }
+
+    if (current->focusProxy() && current->focusProxy() != this) {
+        QFxItem *currentItem = qobject_cast<QFxItem *>(current->focusProxy());
+        if (currentItem) 
+            currentItem->setFocus(false);
+    }
+
+    if (current->focusProxy() == this && !focus)
+        current->setFocusProxy(0);
+    else if (focus)
+        current->setFocusProxy(this);
+
+    focusChanged(focus);
 }
 
 /*!
@@ -2185,8 +2103,7 @@ void QFxItem::setFocus(bool focus)
 
 bool QFxItem::hasActiveFocus() const
 {
-    Q_D(const QFxItem);
-    return d->hasActiveFocus;
+    return QGraphicsItem::hasFocus();
 }
 
 bool QFxItem::activeFocusPanel() const
@@ -2242,7 +2159,8 @@ void QFxItem::setOptions(Options options, bool set)
     setFiltersChildEvents(d->options & ChildMouseFilter);
     setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
     setAcceptHoverEvents(d->options & HoverEvents);
-    d->isFocusRealm = static_cast<bool>(d->options & IsFocusRealm);
+
+    setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->options & MouseFilter)
@@ -2250,22 +2168,6 @@ void QFxItem::setOptions(Options options, bool set)
         else
             d->gvRemoveMouseFilter();
     }
-}
-
-/*!
-    \fn void QFxItem::setParent(QFxItem *parent)
-
-    Sets the parent of the item to \a parent.
- */
-void QFxItem::setParent(QFxItem *p)
-{
-    if (p == parent() || !p) return;
-
-    QObject::setParent(p);
-
-    QFxItem *oldParent = itemParent();
-    setParentItem(p);
-    parentChanged(p, oldParent);
 }
 
 void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)

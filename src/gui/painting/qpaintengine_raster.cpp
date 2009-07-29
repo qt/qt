@@ -1101,6 +1101,9 @@ void QRasterPaintEnginePrivate::systemStateChanged()
 #ifdef QT_DEBUG_DRAW
     qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
 #endif
+
+    exDeviceRect = deviceRect;
+
     Q_Q(QRasterPaintEngine);
     q->state()->strokeFlags |= QPaintEngine::DirtyClipRegion;
     q->state()->fillFlags |= QPaintEngine::DirtyClipRegion;
@@ -1708,11 +1711,30 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint && s->lastPen.brush().isOpaque()) {
-        strokePolygonCosmetic((QPointF *) path.points(), path.elementCount(),
-                              path.hasImplicitClose()
-                              ? WindingMode
-                              : PolylineMode);
+    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+        && s->lastPen.brush().isOpaque()) {
+        int count = path.elementCount();
+        QPointF *points = (QPointF *) path.points();
+        const QPainterPath::ElementType *types = path.elements();
+        if (types) {
+            int first = 0;
+            int last;
+            while (first < count) {
+                while (first < count && types[first] != QPainterPath::MoveToElement) ++first;
+                last = first + 1;
+                while (last < count && types[last] == QPainterPath::LineToElement) ++last;
+                strokePolygonCosmetic(points + first, last - first,
+                                      path.hasImplicitClose() && last == count // only close last one..
+                                      ? WindingMode
+                                      : PolylineMode);
+                first = last;
+            }
+        } else {
+            strokePolygonCosmetic(points, count,
+                                  path.hasImplicitClose()
+                                  ? WindingMode
+                                  : PolylineMode);
+        }
 
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
         qreal width = s->lastPen.isCosmetic()

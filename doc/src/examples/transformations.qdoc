@@ -85,10 +85,10 @@
 
     All the tranformation operations operate on QPainter's
     tranformation matrix that you can retrieve using the
-    QPainter::matrix() function. A matrix transforms a point in the
+    QPainter::worldTransform() function. A matrix transforms a point in the
     plane to another point. For more information about the
     transformation matrix, see the \l {The Coordinate System} and
-    QMatrix documentation.
+    QTransform documentation.
 
     \snippet examples/painting/transformations/renderarea.h 0
 
@@ -375,7 +375,7 @@
     All the tranformation operations operate on QPainter's
     tranformation matrix. For more information about the
     transformation matrix, see the \l {The Coordinate System} and
-    QMatrix documentation.
+    QTransform documentation.
 
     The Qt reference documentation provides several painting
     demos. Among these is the \l {demos/affine}{Affine

@@ -153,9 +153,7 @@ private slots:
     void brokenShortcut();
 #endif
 
-#ifdef Q_OS_UNIX
     void isWritable();
-#endif
     void isExecutable();
     void testDecomposedUnicodeNames_data();
     void testDecomposedUnicodeNames();
@@ -249,6 +247,7 @@ void tst_QFileInfo::isFile_data()
     QTest::newRow("data1") << "tst_qfileinfo.cpp" << true;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << false;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << true;
+    QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
 }
 
 void tst_QFileInfo::isFile()
@@ -280,6 +279,7 @@ void tst_QFileInfo::isDir_data()
     QTest::newRow("data1") << "tst_qfileinfo.cpp" << false;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << true;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << false;
+    QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
 
     QTest::newRow("simple dir") << "resources" << true;
     QTest::newRow("simple dir with slash") << "resources/" << true;
@@ -316,8 +316,10 @@ void tst_QFileInfo::isRoot_data()
 
     QTest::newRow("data0") << QDir::currentPath() << false;
     QTest::newRow("data1") << "/" << true;
-    QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << false;
-    QTest::newRow("data3") << ":/" << true;
+    QTest::newRow("data2") << "*" << false;
+    QTest::newRow("data3") << "/*" << false;
+    QTest::newRow("data4") << ":/tst_qfileinfo/resources/" << false;
+    QTest::newRow("data5") << ":/" << true;
 
     QTest::newRow("simple dir") << "resources" << false;
     QTest::newRow("simple dir with slash") << "resources/" << false;
@@ -325,6 +327,7 @@ void tst_QFileInfo::isRoot_data()
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
+    QTest::newRow("drive 3") << "p:/" << false;
     QTest::newRow("unc 1") << "//"  + QtNetworkSettings::winServerName() << true;
     QTest::newRow("unc 2") << "//"  + QtNetworkSettings::winServerName() + "/" << true;
     QTest::newRow("unc 3") << "//"  + QtNetworkSettings::winServerName() + "/testshare" << false;
@@ -916,18 +919,27 @@ void tst_QFileInfo::fileTimes_oldFile()
         NULL);
 
     // Set file times back to 1601.
+    SYSTEMTIME stime;
+    stime.wYear = 1601;
+    stime.wMonth = 1;
+    stime.wDayOfWeek = 1;
+    stime.wDay = 1;
+    stime.wHour = 1;
+    stime.wMinute = 0;
+    stime.wSecond = 0;
+    stime.wMilliseconds = 0;
+
     FILETIME ctime;
-    ctime.dwLowDateTime = 1;
-    ctime.dwHighDateTime = 0;
+    QVERIFY(SystemTimeToFileTime(&stime, &ctime));
     FILETIME atime = ctime;
     FILETIME mtime = atime;
     QVERIFY(fileHandle);
     QVERIFY(SetFileTime(fileHandle, &ctime, &atime, &mtime) != 0);
 
-    QFileInfo info("oldfile.txt");
-    QCOMPARE(info.lastModified(), QDateTime(QDate(1601, 1, 1), QTime(1, 0)));
-
     CloseHandle(fileHandle);
+
+    QFileInfo info("oldfile.txt");
+    QCOMPARE(info.lastModified(), QDateTime(QDate(1601, 1, 1), QTime(1, 0), Qt::UTC).toLocalTime());
 #endif
 }
 
@@ -959,8 +971,8 @@ void tst_QFileInfo::isHidden_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("isHidden");
-    foreach (QFileInfo info, QDir::drives()) {
-	QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
+    foreach (const QFileInfo& info, QDir::drives()) {
+        QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
     }
 #ifdef Q_OS_MAC
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
@@ -1061,15 +1073,19 @@ void tst_QFileInfo::brokenShortcut()
 }
 #endif
 
-#ifdef Q_OS_UNIX
 void tst_QFileInfo::isWritable()
 {
+    QVERIFY(QFileInfo("tst_qfileinfo.cpp").isWritable());
+#ifdef Q_OS_WIN
+    QVERIFY(!QFileInfo("c:\\pagefile.sys").isWritable());
+#endif
+#ifdef Q_OS_UNIX
     if (::getuid() == 0)
         QVERIFY(QFileInfo("/etc/passwd").isWritable());
     else
         QVERIFY(!QFileInfo("/etc/passwd").isWritable());
-}
 #endif
+}
 
 void tst_QFileInfo::isExecutable()
 {
