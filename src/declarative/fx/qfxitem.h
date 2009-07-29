@@ -239,6 +239,8 @@ public:
 
     bool hasActiveFocus() const;
 
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;    //### for KeyProxy
+
 public Q_SLOTS:
     void newChild(const QString &url);
 

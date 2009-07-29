@@ -2168,4 +2168,9 @@ void QFxItemPrivate::gvAddMouseFilter()
         q->installSceneEventFilter(q);
 }
 
+QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    return QGraphicsItem::inputMethodQuery(query);
+}
+
 QT_END_NAMESPACE
