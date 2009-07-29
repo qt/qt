@@ -147,8 +147,9 @@ protected:
 
     void focusChanged(bool hasFocus);
 
-private slots:
+private Q_SLOTS:
     void updateSize();
+    void fontChanged();
     void q_textChanged();
     void selectionChanged();
     void updateAll();
