@@ -104,6 +104,6 @@ Item {
     }
     KeyActions {
         id: ReturnKey
-        return: "Container.state = ''"
+        keyReturn: "Container.state = ''"
     }
 }
