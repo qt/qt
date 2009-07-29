@@ -3437,13 +3437,13 @@ void tst_QScriptEngine::reservedWords_data()
 
 void tst_QScriptEngine::reservedWords()
 {
-    QSKIP("Fails", SkipAll);
     QFETCH(QString, word);
     {
         QScriptEngine eng;
         QScriptValue ret = eng.evaluate(word + " = 123");
         QVERIFY(ret.isError());
-        QVERIFY(ret.toString().startsWith("SyntaxError"));
+        QString str = ret.toString();
+        QVERIFY(str.startsWith("SyntaxError") || str.startsWith("ReferenceError"));
     }
     {
         QScriptEngine eng;
@@ -3454,14 +3454,16 @@ void tst_QScriptEngine::reservedWords()
     {
         QScriptEngine eng;
         QScriptValue ret = eng.evaluate("o = {}; o." + word + " = 123");
-        QVERIFY(!ret.isError());
-        QVERIFY(ret.strictlyEquals(eng.evaluate("o." + word)));
+        // in the old back-end and in SpiderMonkey this is allowed, but not in JSC
+        QVERIFY(ret.isError());
+        QVERIFY(ret.toString().startsWith("SyntaxError"));
     }
     {
         QScriptEngine eng;
         QScriptValue ret = eng.evaluate("o = { " + word + ": 123 }");
-        QVERIFY(!ret.isError());
-        QVERIFY(ret.property(word).isNumber());
+        // in the old back-end and in SpiderMonkey this is allowed, but not in JSC
+        QVERIFY(ret.isError());
+        QVERIFY(ret.toString().startsWith("SyntaxError"));
     }
     {
         // SpiderMonkey allows this, but we don't
@@ -3475,67 +3477,66 @@ void tst_QScriptEngine::reservedWords()
 void tst_QScriptEngine::futureReservedWords_data()
 {
     QTest::addColumn<QString>("word");
-    QTest::newRow("abstract") << QString("abstract");
-    QTest::newRow("boolean") << QString("boolean");
-    QTest::newRow("byte") << QString("byte");
-    QTest::newRow("char") << QString("char");
-    QTest::newRow("class") << QString("class");
-    QTest::newRow("const") << QString("const");
-    QTest::newRow("debugger") << QString("debugger");
-    QTest::newRow("double") << QString("double");
-    QTest::newRow("enum") << QString("enum");
-    QTest::newRow("export") << QString("export");
-    QTest::newRow("extends") << QString("extends");
-    QTest::newRow("final") << QString("final");
-    QTest::newRow("float") << QString("float");
-    QTest::newRow("goto") << QString("goto");
-    QTest::newRow("implements") << QString("implements");
-    QTest::newRow("import") << QString("import");
-    QTest::newRow("int") << QString("int");
-    QTest::newRow("interface") << QString("interface");
-    QTest::newRow("long") << QString("long");
-    QTest::newRow("native") << QString("native");
-    QTest::newRow("package") << QString("package");
-    QTest::newRow("private") << QString("private");
-    QTest::newRow("protected") << QString("protected");
-    QTest::newRow("public") << QString("public");
-    QTest::newRow("short") << QString("short");
-    QTest::newRow("static") << QString("static");
-    QTest::newRow("super") << QString("super");
-    QTest::newRow("synchronized") << QString("synchronized");
-    QTest::newRow("throws") << QString("throws");
-    QTest::newRow("transient") << QString("transient");
-    QTest::newRow("volatile") << QString("volatile");
+    QTest::addColumn<bool>("allowed");
+    QTest::newRow("abstract") << QString("abstract") << true;
+    QTest::newRow("boolean") << QString("boolean") << true;
+    QTest::newRow("byte") << QString("byte") << true;
+    QTest::newRow("char") << QString("char") << true;
+    QTest::newRow("class") << QString("class") << false;
+    QTest::newRow("const") << QString("const") << false;
+    QTest::newRow("debugger") << QString("debugger") << false;
+    QTest::newRow("double") << QString("double") << true;
+    QTest::newRow("enum") << QString("enum") << false;
+    QTest::newRow("export") << QString("export") << false;
+    QTest::newRow("extends") << QString("extends") << false;
+    QTest::newRow("final") << QString("final") << true;
+    QTest::newRow("float") << QString("float") << true;
+    QTest::newRow("goto") << QString("goto") << true;
+    QTest::newRow("implements") << QString("implements") << true;
+    QTest::newRow("import") << QString("import") << false;
+    QTest::newRow("int") << QString("int") << true;
+    QTest::newRow("interface") << QString("interface") << true;
+    QTest::newRow("long") << QString("long") << true;
+    QTest::newRow("native") << QString("native") << true;
+    QTest::newRow("package") << QString("package") << true;
+    QTest::newRow("private") << QString("private") << true;
+    QTest::newRow("protected") << QString("protected") << true;
+    QTest::newRow("public") << QString("public") << true;
+    QTest::newRow("short") << QString("short") << true;
+    QTest::newRow("static") << QString("static") << true;
+    QTest::newRow("super") << QString("super") << false;
+    QTest::newRow("synchronized") << QString("synchronized") << true;
+    QTest::newRow("throws") << QString("throws") << true;
+    QTest::newRow("transient") << QString("transient") << true;
+    QTest::newRow("volatile") << QString("volatile") << true;
 }
 
 void tst_QScriptEngine::futureReservedWords()
 {
-    QSKIP("Fails", SkipAll);
     QFETCH(QString, word);
+    QFETCH(bool, allowed);
     {
         QScriptEngine eng;
         QScriptValue ret = eng.evaluate(word + " = 123");
-        QVERIFY(ret.isError());
-        QVERIFY(ret.toString().startsWith("SyntaxError"));
+        QCOMPARE(!ret.isError(), allowed);
     }
     {
         QScriptEngine eng;
         QScriptValue ret = eng.evaluate("var " + word + " = 123");
-        QVERIFY(ret.isError());
-        QVERIFY(ret.toString().startsWith("SyntaxError"));
+        QCOMPARE(!ret.isError(), allowed);
     }
     {
         // this should probably be allowed (see task 162567)
         QScriptEngine eng;
         QScriptValue ret = eng.evaluate("o = {}; o." + word + " = 123");
-        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.isNumber(), allowed);
+        QCOMPARE(!ret.isError(), allowed);
     }
     {
         // this should probably be allowed (see task 162567)
         QScriptEngine eng;
         QScriptValue ret = eng.evaluate("o = { " + word + ": 123 }");
-        QVERIFY(!ret.isError());
-        QVERIFY(ret.isObject());
+        QCOMPARE(!ret.isError(), allowed);
     }
 }
 
