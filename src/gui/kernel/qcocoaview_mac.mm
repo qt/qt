@@ -200,6 +200,7 @@ extern "C" {
     composingText = new QString();
     composing = false;
     sendKeyEvents = true;
+    inKeyDown = false;
     currentCustomTypes = 0;
     [self setHidden:YES];
     return self;
@@ -983,6 +984,7 @@ extern "C" {
 
 - (void)keyDown:(NSEvent *)theEvent
 {
+    inKeyDown = true;
     sendKeyEvents = true;
 
     QWidget *widgetToGetKey = qwidget;
@@ -1002,6 +1004,7 @@ extern "C" {
         if (!keyOK && !sendToPopup)
             [super keyDown:theEvent];
     }
+    inKeyDown = false;
 }
 
 
@@ -1039,20 +1042,36 @@ extern "C" {
 
 - (void) insertText:(id)aString
 {
+    QString commitText;
     if ([aString length]) {
-        // Send the commit string to the widget.
-        QString commitText;
         if ([aString isKindOfClass:[NSAttributedString class]]) {
-           commitText = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
+            commitText = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
         } else {
             commitText = QCFString::toQString(reinterpret_cast<CFStringRef>(aString));
         };
+    }
+
+    if ([aString length] && !inKeyDown) {
+        // Handle the case where insertText is called from somewhere else than the keyDown
+        // implementation, for example when inserting text from the character palette.
+        QInputMethodEvent e;
+        e.setCommitString(commitText);
+        qt_sendSpontaneousEvent(qwidget, &e);
+    } else if ([aString length] && composing) {
+        // Send the commit string to the widget.
         composing = false;
         sendKeyEvents = false;
         QInputMethodEvent e;
         e.setCommitString(commitText);
         qt_sendSpontaneousEvent(qwidget, &e);
+    } else {
+        // The key sequence "`q" on a French Keyboard will generate two calls to insertText before
+        // it returns from interpretKeyEvents. The first call will turn off 'composing' and accept
+        // the "`" key. The last keyDown event needs to be processed by the widget to get the
+        // character "q". The string parameter is ignored for the second call.
+        sendKeyEvents = true;
     }
+
     composingText->clear();
 }
 

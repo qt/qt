@@ -395,7 +395,9 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
 #endif
     executeTransitionContent(event, enabledTransitions);
     QList<QAbstractState*> enteredStates = enterStates(event, enabledTransitions);
+#ifndef QT_NO_PROPERTIES
     applyProperties(enabledTransitions, exitedStates, enteredStates);
+#endif
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after entering states:" << configuration;
     qDebug() << q_func() << ": end microstep";
@@ -666,6 +668,8 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 	}
 }
 
+#ifndef QT_NO_PROPERTIES
+
 void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &transitionList,
                                            const QList<QAbstractState*> &exitedStates,
                                            const QList<QAbstractState*> &enteredStates)
@@ -853,6 +857,8 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     }
 }
 
+#endif // QT_NO_PROPERTIES
+
 bool QStateMachinePrivate::isFinal(const QAbstractState *s)
 {
     return qobject_cast<const QFinalState*>(s) != 0;
@@ -932,6 +938,8 @@ bool QStateMachinePrivate::isInFinalState(QAbstractState* s) const
         return false;
 }
 
+#ifndef QT_NO_PROPERTIES
+
 void QStateMachinePrivate::registerRestorable(QObject *object, const QByteArray &propertyName)
 {
     RestorableId id(object, propertyName);
@@ -975,6 +983,8 @@ void QStateMachinePrivate::unregisterRestorable(QObject *object, const QByteArra
     RestorableId id(object, propertyName);
     registeredRestorables.remove(id);
 }
+
+#endif // QT_NO_PROPERTIES
 
 QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
 {
@@ -1088,12 +1098,14 @@ void QStateMachinePrivate::_q_animationFinished()
         resetAnimationEndValues.remove(anim);
     }
 
+#ifndef QT_NO_PROPERTIES
     // Set the final property value.
     QPropertyAssignment assn = propertyForAnimation.take(anim);
     Q_ASSERT(assn.object != 0);
     assn.object->setProperty(assn.propertyName, assn.value);
     if (!assn.explicitlySet)
         unregisterRestorable(assn.object, assn.propertyName);
+#endif
 
     QAbstractState *state = stateForAnimation.take(anim);
     Q_ASSERT(state != 0);
@@ -1161,8 +1173,10 @@ void QStateMachinePrivate::_q_start()
     QEvent nullEvent(QEvent::None);
     executeTransitionContent(&nullEvent, transitions);
     QList<QAbstractState*> enteredStates = enterStates(&nullEvent, transitions);
+#ifndef QT_NO_PROPERTIES
     applyProperties(transitions, QList<QAbstractState*>() << start,
                     enteredStates);
+#endif
     delete start;
 
 #ifdef QSTATEMACHINE_DEBUG

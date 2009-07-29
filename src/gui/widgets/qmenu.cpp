@@ -3013,12 +3013,19 @@ bool QMenu::separatorsCollapsible() const
 void QMenu::setSeparatorsCollapsible(bool collapse)
 {
     Q_D(QMenu);
+    if (d->collapsibleSeparators == collapse)
+        return;
+
     d->collapsibleSeparators = collapse;
     d->itemsDirty = 1;
     if (isVisible()) {
         d->updateActionRects();
         update();
     }
+#ifdef Q_WS_MAC
+    if (d->mac_menu)
+        d->syncSeparatorsCollapsible(collapse);
+#endif
 }
 
 #ifdef QT3_SUPPORT

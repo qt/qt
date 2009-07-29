@@ -3025,11 +3025,11 @@ void tst_QLineEdit::charWithAltOrCtrlModifier()
     QTest::keyPress(testWidget, Qt::Key_Plus);
     QCOMPARE(testWidget->text(), QString("+"));
     QTest::keyPress(testWidget, Qt::Key_Plus, Qt::ControlModifier);
-    QCOMPARE(testWidget->text(), QString("+"));
+    QCOMPARE(testWidget->text(), QString("++"));
     QTest::keyPress(testWidget, Qt::Key_Plus, Qt::AltModifier);
-    QCOMPARE(testWidget->text(), QString("+"));
+    QCOMPARE(testWidget->text(), QString("+++"));
     QTest::keyPress(testWidget, Qt::Key_Plus, Qt::AltModifier | Qt::ControlModifier);
-    QCOMPARE(testWidget->text(), QString("+"));
+    QCOMPARE(testWidget->text(), QString("++++"));
 }
 
 void tst_QLineEdit::leftKeyOnSelectedText()

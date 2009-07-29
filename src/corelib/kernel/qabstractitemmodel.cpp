@@ -2320,7 +2320,8 @@ void QAbstractItemModel::endRemoveColumns()
     \note The view to which the model is attached to will be reset as well.
 
     When a model is reset it means that any previous data reported from the
-    model is now invalid and has to be queried for again.
+    model is now invalid and has to be queried for again. This also means 
+    that the current item and any selected items will become invalid.
 
     When a model radically changes its data it can sometimes be easier to just
     call this function rather than emit dataChanged() to inform other

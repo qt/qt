@@ -246,7 +246,7 @@
     defined by the \l{QStyle::}{State} enum. Some of the state flags have
     different meanings depending on the widget, but others are common
     for all widgets like State_Disabled. It is QStyleOption that sets
-    the common states with QStyleOption::init(); the rest of the
+    the common states with QStyleOption::initFrom(); the rest of the
     states are set by the individual widgets.
 
     Most notably, the style options contain the palette and bounding
@@ -502,7 +502,7 @@
     \snippet doc/src/snippets/code/doc_src_styles.qdoc 0
 
     First we let QStyleOption set up the option with the information
-    that is common for all widgets with \c init().  We will look at
+    that is common for all widgets with \c initFrom().  We will look at
     this shortly.
 
     The down boolean is true when the user press the box down; this is
@@ -514,7 +514,7 @@
     set - you set this in QStyle::polish(). In addition, the style
     option also contains the text, icon, and icon size of the button.
 
-    \l{QStyleOption::}{init()} sets up the style option with the
+    \l{QStyleOption::}{initFrom()} sets up the style option with the
     attributes that are common for all widgets. We print its
     implementation here:
 
@@ -726,9 +726,9 @@
     \section2 Common Widget Properties
 
     Some states and variables are common for all widgets. These are
-    set with QStyleOption::init(). Not all elements use this function;
+    set with QStyleOption::initFrom(). Not all elements use this function;
     it is the widgets that create the style options, and for some
-    elements the information from \l{QStyleOption::}{init()} is not
+    elements the information from \l{QStyleOption::}{initFrom()} is not
     necessary.
 
     A table with the common states follows:
@@ -1451,7 +1451,7 @@
             \o Set if it is a horizontal splitter
     \endtable
 
-    QSplitter does not use \l{QStyleOption::}{init()} to set up its
+    QSplitter does not use \l{QStyleOption::}{initFrom()} to set up its
     option; it sets the State_MouseOver and State_Disabled flags
     itself.
 
@@ -1625,7 +1625,7 @@
 
     QToolBarSaparator uses QStyleOption for their style option. It
     sets the State_horizontal flag if the toolbar they live in is
-    horizontal. Other than that, they use \l{QStyleOption::}{init()}.
+    horizontal. Other than that, they use \l{QStyleOption::}{initFrom()}.
 
     The style option for QToolBar is QStyleOptionToolBar. The only
     state flag set (besides the common flags) is State_Horizontal
@@ -1757,7 +1757,7 @@
     The setup of the style option for CE_MenuTearOff and
     CE_MenuScroller also uses QStyleOptionMenuItem; they only set the
     \c menuRect variable in addition to the common settings with
-    QStyleOption's \l{QStyleOption::}{init()}. 
+    QStyleOption's \l{QStyleOption::}{initFrom()}. 
 
     \section3 Menu Bar
 

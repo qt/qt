@@ -1381,6 +1381,24 @@ bool QDesignerPropertySheet::isFakeLayoutProperty(int index) const
     return false;
 }
 
+// Determine the "designable" state of a property. Properties, which have
+// a per-object boolean test function that returns false are shown in
+// disabled state ("checked" depending on "checkable", etc.)
+// Properties, which are generally not designable independent
+// of the object are not shown at all.
+enum DesignableState { PropertyIsDesignable,
+                       // Object has a Designable test function that returns false.
+                       PropertyOfObjectNotDesignable,
+                       PropertyNotDesignable };
+
+static inline DesignableState designableState(const QDesignerMetaPropertyInterface *p, const QObject *object)
+{   
+    if (p->attributes(object) & QDesignerMetaPropertyInterface::DesignableAttribute)
+        return PropertyIsDesignable;
+    return (p->attributes() & QDesignerMetaPropertyInterface::DesignableAttribute) ?
+            PropertyOfObjectNotDesignable : PropertyNotDesignable;
+}
+
 bool QDesignerPropertySheet::isVisible(int index) const
 {
     if (d->invalidIndex(Q_FUNC_INFO, index))
@@ -1450,9 +1468,8 @@ bool QDesignerPropertySheet::isVisible(int index) const
     if  (!(p->accessFlags() & QDesignerMetaPropertyInterface::WriteAccess))
          return false;
 
-    // Enabled handling
-    return (p->attributes(d->m_object) & QDesignerMetaPropertyInterface::DesignableAttribute) ||
-           (p->attributes() & QDesignerMetaPropertyInterface::DesignableAttribute);
+    // Enabled handling: Hide only statically not designable properties
+    return designableState(p, d->m_object) != PropertyNotDesignable;
 }
 
 void QDesignerPropertySheet::setVisible(int index, bool visible)
@@ -1482,9 +1499,12 @@ bool QDesignerPropertySheet::isEnabled(int index) const
     if (d->m_info.value(index).visible == true) // Sun CC 5.5 oddity, wants true
         return true;
 
+    // Enable setting of properties for statically non-designable properties
+    // as this might be done via TaskMenu/Cursor::setProperty. Note that those
+    // properties are not visible.
     const QDesignerMetaPropertyInterface *p = d->m_meta->property(index);
     return (p->accessFlags() & QDesignerMetaPropertyInterface::WriteAccess) &&
-           (p->attributes(d->m_object) & QDesignerMetaPropertyInterface::DesignableAttribute);
+           designableState(p, d->m_object) != PropertyOfObjectNotDesignable;
 }
 
 bool QDesignerPropertySheet::isAttribute(int index) const

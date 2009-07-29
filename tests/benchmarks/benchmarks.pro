@@ -11,6 +11,7 @@ SUBDIRS = containers-associative \
     qstring \
     qstringlist \
         qmatrix4x4 \
+        qnetworkreply \
 	qobject \
         qrect \
 	qregexp	\

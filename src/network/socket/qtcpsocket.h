@@ -43,6 +43,7 @@
 #define QTCPSOCKET_H
 
 #include <QtNetwork/qabstractsocket.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 

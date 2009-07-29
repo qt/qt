@@ -1718,48 +1718,17 @@ void QGraphicsWidget::setFocusPolicy(Qt::FocusPolicy policy)
 /*!
     If this widget, a child or descendant of this widget currently has input
     focus, this function will return a pointer to that widget. If
-    no descendant has input focus, 0 is returned.
+    no descendant widget has input focus, 0 is returned.
 
-    \sa QWidget::focusWidget()
+    \sa QGraphicsItem::focusItem(), QWidget::focusWidget()
 */
 QGraphicsWidget *QGraphicsWidget::focusWidget() const
 {
     Q_D(const QGraphicsWidget);
-    return d->focusChild;
+    if (d->subFocusItem && d->subFocusItem->d_ptr->isWidget)
+        return static_cast<QGraphicsWidget *>(d->subFocusItem);
+    return 0;
 }
-
-/*! \property QGraphicsWidget::horizontalShear
-  \brief This property holds the horizontal shear value for the item.
- */
-
-/*! \property QGraphicsWidget::transformOrigin
-    \brief This property holds the origin point used for transformations
-    in item coordinates.
- */
-
-/*! \property QGraphicsWidget::verticalShear
-  \brief This property holds the vertical shear value for the item.
- */
-
-/*! \property QGraphicsWidget::xRotation
-  \brief This property holds the value for rotation around the x axis.
- */
-
-/*! \property QGraphicsWidget::xScale
-  \brief This property holds the scale factor for the x axis.
- */
-
-/*! \property QGraphicsWidget::yRotation
-  \brief This property holds the value for rotation around the y axis.
- */
-
-/*! \property QGraphicsWidget::yScale
-  \brief This property holds the scale factor for the y axis.
- */
-
-/*! \property QGraphicsWidget::zRotation
-  \brief This property holds the value for rotation around the z axis.
- */
 
 #ifndef QT_NO_SHORTCUT
 /*!
@@ -2286,6 +2255,7 @@ bool QGraphicsWidget::close()
 #ifdef Q_NO_USING_KEYWORD
 /*!
     \fn const QObjectList &QGraphicsWidget::children() const
+    \internal
 
     This function returns the same value as QObject::children(). It's
     provided to differentiate between the obsolete member

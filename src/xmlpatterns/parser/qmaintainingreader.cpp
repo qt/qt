@@ -147,7 +147,8 @@ void MaintainingReader<TokenLookupClass, LookupKey>::validateElement(const Looku
 
     if(m_elementDescriptions.contains(elementName))
     {
-        const ElementDescription<TokenLookupClass, LookupKey> &desc = m_elementDescriptions.value(elementName);
+        // QHash::value breaks in Metrowerks Compiler
+        const ElementDescription<TokenLookupClass, LookupKey> &desc = *m_elementDescriptions.find(elementName);
         const int attCount = m_currentAttributes.count();
 
         QSet<typename TokenLookupClass::NodeName> encounteredXSLTAtts;
@@ -172,7 +173,7 @@ void MaintainingReader<TokenLookupClass, LookupKey>::validateElement(const Looku
                     QStringList allowed;
 
                     for(int i = 0; i < totalCount; ++i)
-                        allowed.append(formatKeyword(toString(all.at(i))));
+                        allowed.append(QPatternist::formatKeyword(TokenLookupClass::toString(all.at(i))));
 
                     /* Note, we can't run toString() on attrName, because we're in this branch,
                      * the token lookup doesn't have the string(!).*/
@@ -229,7 +230,7 @@ void MaintainingReader<TokenLookupClass, LookupKey>::validateElement(const Looku
         if(!requiredButMissing.isEmpty())
         {
             error(QtXmlPatterns::tr("The attribute %1 must appear on element %2.")
-                             .arg(formatKeyword(toString(*requiredButMissing.constBegin())),
+                             .arg(QPatternist::formatKeyword(TokenLookupClass::toString(*requiredButMissing.constBegin())),
                                   formatKeyword(name())),
                   ReportContext::XTSE0010);
         }

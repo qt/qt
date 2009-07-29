@@ -151,6 +151,7 @@ public:
                                 void **args);    
     void scheduleProcess();
     
+#ifndef QT_NO_PROPERTIES
     typedef QPair<QObject *, QByteArray> RestorableId;
     QHash<RestorableId, QVariant> registeredRestorables;
     void registerRestorable(QObject *object, const QByteArray &propertyName);
@@ -158,6 +159,7 @@ public:
     bool hasRestorable(QObject *object, const QByteArray &propertyName) const;
     QVariant restorableValue(QObject *object, const QByteArray &propertyName) const;
     QList<QPropertyAssignment> restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const;
+#endif
 
     State state;
     bool processing;

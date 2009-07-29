@@ -409,6 +409,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
             channels[i].bytesTotal = channels[i].request.contentLength();
         } else {
+            socket->flush(); // ### Remove this when pipelining is implemented. We want less TCP packets!
             channels[i].state = WaitingState;
             break;
         }
@@ -570,9 +571,6 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
                         return true;
-                        // emit dataReadProgress signal (signal is currently not connected
-                        // to the rest of QNAM) since readProgress of the
-                        // QNonContiguousByteDevice is used
                     emit reply->dataReadProgress(reply->d_func()->totalProgress, 0);
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
@@ -699,9 +697,6 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                             // make sure that the reply is valid
                             if (channels[i].reply != reply)
                                 return;
-                            // emit dataReadProgress signal (signal is currently not connected
-                            // to the rest of QNAM) since readProgress of the
-                            // QNonContiguousByteDevice is used
                             emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
                             // make sure that the reply is valid
                             if (channels[i].reply != reply)
@@ -1198,6 +1193,10 @@ void QHttpNetworkConnectionPrivate::_q_connected()
     QAbstractSocket *socket = qobject_cast<QAbstractSocket*>(q->sender());
     if (!socket)
         return; // ### error
+
+    // improve performance since we get the request sent by the kernel ASAP
+    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
     int i = indexOf(socket);
     // ### FIXME: if the server closes the connection unexpectedly, we shouldn't send the same broken request again!
     //channels[i].reconnectAttempts = 2;
