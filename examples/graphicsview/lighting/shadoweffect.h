@@ -50,9 +50,9 @@ class ShadowEffect: public QGraphicsShadowEffect
 public:
     ShadowEffect(QGraphicsItem *item, QGraphicsItem *source);
 
-    QRectF boundingRect() const;
+    QRectF boundingRectFor(const QRectF &rect) const;
 
-    void draw(QPainter *painter);
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     void adjustForItem();

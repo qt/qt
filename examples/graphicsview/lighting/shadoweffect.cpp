@@ -61,14 +61,14 @@ void ShadowEffect::adjustForItem()
     setOpacity(qBound(0.4, 1 - dd / 200.0, 0.7));
 }
 
-QRectF ShadowEffect::boundingRect() const
+QRectF ShadowEffect::boundingRectFor(const QRectF &rect) const
 {
     const_cast<ShadowEffect *>(this)->adjustForItem();
-    return QGraphicsShadowEffect::boundingRect();
+    return QGraphicsShadowEffect::boundingRectFor(rect);
 }
 
-void ShadowEffect::draw(QPainter *painter)
+void ShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     adjustForItem();
-    QGraphicsShadowEffect::draw(painter);
+    QGraphicsShadowEffect::draw(painter, source);
 }
