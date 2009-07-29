@@ -77,7 +77,7 @@ public:
     QFxItemPrivate()
     : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
       _baselineOffset(0),
-      _classComplete(true), _componentComplete(true), _keepMouse(false), 
+      _componentComplete(true), _keepMouse(false),
       _anchorLines(0),
       _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
       options(QFxItem::NoOption),
@@ -158,7 +158,6 @@ public:
 
     QmlNullableValue<qreal> _baselineOffset;
 
-    bool _classComplete:1;
     bool _componentComplete:1;
     bool _keepMouse:1;
 

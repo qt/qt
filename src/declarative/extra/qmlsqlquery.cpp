@@ -185,13 +185,6 @@ void QmlSqlBind::setValue(const QVariant &value)
     }
 }
 
-/*!
-    \reimp
-*/
-void QmlSqlBind::classComplete()
-{
-}
-
 class QmlSqlQueryPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlSqlQuery)
@@ -510,7 +503,7 @@ QString QmlSqlQuery::lastError() const
 /*!
     \reimp
 */
-void QmlSqlQuery::classComplete()
+void QmlSqlQuery::componentComplete()
 {
     Q_D(QmlSqlQuery);
     if (!d->query)

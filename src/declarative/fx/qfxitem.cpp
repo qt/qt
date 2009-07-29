@@ -499,18 +499,6 @@ QFxItem *QFxItem::parentItem() const
 */
 
 /*!
-    Returns true if all of the attributes set via QML have been set;
-    otherwise returns false.
-
-    \sa classComplete()
-*/
-bool QFxItem::isClassComplete() const
-{
-    Q_D(const QFxItem);
-    return d->_classComplete;
-}
-
-/*!
     Returns true if construction of the QML component is complete; otherwise
     returns false.
     
@@ -1729,31 +1717,14 @@ void QFxItem::newChild(const QString &type)
   classBegin() is called when the item is constructed, but its
   properties have not yet been set.
 
-  \sa classComplete(), componentComplete(), isClassComplete(), isComponentComplete()
+  \sa componentComplete(), isComponentComplete()
 */
 void QFxItem::classBegin()
 {
     Q_D(QFxItem);
-    d->_classComplete = false;
     d->_componentComplete = false;
     if (d->_stateGroup)
         d->_stateGroup->classBegin();
-}
-
-/*!
-  classComplete() is called when all properties specified in QML
-  have been assigned.  It is sometimes desireable to delay some
-  processing until all property assignments are complete.
-*/
-void QFxItem::classComplete()
-{
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ItemComponentComplete> cc;
-#endif
-    Q_D(QFxItem);
-    d->_classComplete = true;
-    if (d->_stateGroup)
-        d->_stateGroup->classComplete();
 }
 
 /*!
@@ -1764,6 +1735,10 @@ void QFxItem::classComplete()
 */
 void QFxItem::componentComplete()
 {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::ItemComponentComplete> cc;
+#endif
+
     Q_D(QFxItem);
     d->_componentComplete = true;
     if (d->_stateGroup)
@@ -1777,7 +1752,7 @@ QmlStateGroup *QFxItemPrivate::states()
     Q_Q(QFxItem);
     if (!_stateGroup) {
         _stateGroup = new QmlStateGroup(q);
-        if (!_classComplete)
+        if (!_componentComplete)
             _stateGroup->classBegin();
         QObject::connect(_stateGroup, SIGNAL(stateChanged(QString)),
                          q, SIGNAL(stateChanged(QString)));

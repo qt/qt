@@ -52,7 +52,7 @@ class QmlDateTimeFormatterPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlDateTimeFormatter)
 public:
-    QmlDateTimeFormatterPrivate() : locale(QLocale::system()), longStyle(false), classComplete(true) {}
+    QmlDateTimeFormatterPrivate() : locale(QLocale::system()), longStyle(false), componentComplete(true) {}
 
     void updateText();
 
@@ -67,7 +67,7 @@ public:
     QString dateFormat;
     QString timeFormat;
     bool longStyle;
-    bool classComplete;
+    bool componentComplete;
 };
 
 /*!
@@ -316,7 +316,7 @@ void QmlDateTimeFormatter::setLongStyle(bool longStyle)
 void QmlDateTimeFormatterPrivate::updateText()
 {
     Q_Q(QmlDateTimeFormatter);
-    if (!classComplete)
+    if (!componentComplete)
         return;
 
     QString str;
@@ -355,13 +355,13 @@ void QmlDateTimeFormatterPrivate::updateText()
 void QmlDateTimeFormatter::classBegin()
 {
     Q_D(QmlDateTimeFormatter);
-    d->classComplete = false;
+    d->componentComplete = false;
 }
 
-void QmlDateTimeFormatter::classComplete()
+void QmlDateTimeFormatter::componentComplete()
 {
     Q_D(QmlDateTimeFormatter);
-    d->classComplete = true;
+    d->componentComplete = true;
     d->updateText();
 }
 

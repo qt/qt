@@ -80,7 +80,7 @@ public:
     QStringList nameFilters() const;
     void setNameFilters(const QStringList &filters);
 
-    virtual void classComplete();
+    virtual void componentComplete();
 
     Q_INVOKABLE bool isFolder(int index) const;
 

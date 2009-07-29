@@ -222,7 +222,7 @@ void QmlFolderListModel::setNameFilters(const QStringList &filters)
     d->model.setNameFilters(d->nameFilters);
 }
 
-void QmlFolderListModel::classComplete()
+void QmlFolderListModel::componentComplete()
 {
     Q_D(QmlFolderListModel);
     if (!d->folderIndex.isValid())

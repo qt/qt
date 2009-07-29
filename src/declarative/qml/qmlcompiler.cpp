@@ -787,15 +787,6 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     }
 
     genObjectBody(obj);
-
-    // Complete the the class
-    if (obj->parserStatusCast != -1) {
-        QmlInstruction complete;
-        complete.type = QmlInstruction::CompleteObject;
-        complete.complete.castValue = obj->parserStatusCast;
-        complete.line = obj->location.start.line;
-        output->bytecode << complete;
-    } 
 }
 
 void QmlCompiler::genObjectBody(QmlParser::Object *obj)

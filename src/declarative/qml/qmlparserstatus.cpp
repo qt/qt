@@ -69,14 +69,6 @@ void QmlParserStatus::classBegin()
 }
 
 /*!
-    Invoked after all properties have been set to their static values.  At this
-    point bindings are still to be evaluated.
-*/
-void QmlParserStatus::classComplete()
-{
-}
-
-/*!
     Invoked after the root component that caused this instantiation has 
     completed construction.  At this point all static values and binding values
     have been assigned to the class.

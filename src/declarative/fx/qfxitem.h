@@ -208,7 +208,6 @@ public:
 
     QmlList<QGraphicsTransform *> *transform();
 
-    bool isClassComplete() const;
     bool isComponentComplete() const;
 
     bool keepMouseGrab() const;
@@ -276,7 +275,6 @@ protected:
     virtual void mouseUngrabEvent();
 
     virtual void classBegin();
-    virtual void classComplete();
     virtual void componentComplete();
     virtual void parentChanged(QFxItem *, QFxItem *);
     virtual void focusChanged(bool);
