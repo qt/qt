@@ -127,11 +127,11 @@ QT_BEGIN_NAMESPACE
          \o Qt::SizeAllCursor \o \c size_all
     \row \o \inlineimage      cursor-busy.png
          \o Qt::BusyCursor    \o \c left_ptr_watch
-         \o \inlineimage      cursor-hsplit.png
+         \o \inlineimage      cursor-vsplit.png
          \o Qt::SplitVCursor  \o \c split_v
     \row \o \inlineimage      cursor-forbidden.png
          \o Qt::ForbiddenCursor \o \c forbidden
-         \o \inlineimage      cursor-vsplit.png
+         \o \inlineimage      cursor-hsplit.png
          \o Qt::SplitHCursor  \o \c split_h
     \row \o \inlineimage      cursor-hand.png
          \o Qt::PointingHandCursor \o \c pointing_hand
