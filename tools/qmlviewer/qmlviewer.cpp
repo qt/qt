@@ -17,7 +17,6 @@
 #include "qmlviewer.h"
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
-#include "qmlpalette.h"
 #include "qml.h"
 #include <private/qperformancelog_p.h>
 #include <QAbstractAnimation>
@@ -209,8 +208,6 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     devicemode = false;
     skin = 0;
     canvas = 0;
-    palette = 0;
-    disabledPalette = 0;
     record_autotime = 0;
     record_rate = 50;
     record_args += QLatin1String("-sameq");
@@ -534,7 +531,6 @@ void QmlViewer::openQml(const QString& fileName)
         }
     }
 
-    setupPalettes();
     canvas->setUrl(url);
 
     QTime t;
@@ -557,19 +553,6 @@ void QmlViewer::openQml(const QString& fileName)
 #ifdef QTOPIA
     show();
 #endif
-}
-
-void QmlViewer:: setupPalettes()
-{
-    delete palette;
-    palette = new QmlPalette;
-    QmlContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("activePalette", palette);
-
-    delete disabledPalette;
-    disabledPalette = new QmlPalette;
-    disabledPalette->setColorGroup(QPalette::Disabled);
-    ctxt->setContextProperty("disabledPalette", disabledPalette);
 }
 
 void QmlViewer::setSkin(const QString& skinDirectory)

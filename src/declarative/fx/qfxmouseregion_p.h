@@ -95,8 +95,8 @@ public:
     QFxDrag drag;
     QPointF start;
     QPointF startScene;
-    int startX;
-    int startY;
+    qreal startX;
+    qreal startY;
     QPointF lastPos;
     Qt::MouseButton lastButton;
     Qt::MouseButtons lastButtons;

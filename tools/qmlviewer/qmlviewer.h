@@ -24,7 +24,6 @@ QT_BEGIN_NAMESPACE
 class QFxView;
 class PreviewDeviceSkin;
 class QFxTestEngine;
-class QmlPalette;
 class QProcess;
 class RecordingDialog;
 
@@ -74,15 +73,12 @@ private slots:
 
 private:
     void setupProxy();
-    void setupPalettes();
     QString getVideoFileName();
 
     QString currentFileName;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QFxView *canvas;
-    QmlPalette *palette;
-    QmlPalette *disabledPalette;
     QmlTimer recordTimer;
     QString frame_fmt;
     QImage frame;
