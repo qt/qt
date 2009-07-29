@@ -9995,7 +9995,8 @@ int QGraphicsItemGroup::type() const
 QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
     QRectF rect = item->boundingRect();
-    rect |= item->childrenBoundingRect();
+    if (!item->d_ptr->children.isEmpty())
+        rect |= item->childrenBoundingRect();
     if (info && system == Qt::DeviceCoordinates) {
         Q_ASSERT(info->transformPtr);
         return info->transformPtr->mapRect(rect);
