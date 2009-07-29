@@ -134,6 +134,18 @@ void QmlStateGroup::classBegin()
     d->componentComplete = false;
 }
 
+void QmlStateGroup::componentComplete()
+{
+    Q_D(QmlStateGroup);
+    d->componentComplete = true;
+    d->updateAutoState();
+    if (!d->currentState.isEmpty()) {
+        QString cs = d->currentState;
+        d->currentState = QString();
+        d->setCurrentStateInternal(cs, true);
+    }
+}
+
 void QmlStateGroup::updateAutoState()
 {
     Q_D(QmlStateGroup);
@@ -268,18 +280,6 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     }
 
     newState->apply(q, transition, oldState);
-}
-
-void QmlStateGroup::componentComplete()
-{
-    Q_D(QmlStateGroup);
-    d->updateAutoState();
-    d->componentComplete = true;
-    if (!d->currentState.isEmpty()) {
-        QString cs = d->currentState;
-        d->currentState = QString();
-        d->setCurrentStateInternal(cs, true);
-    }
 }
 
 QmlState *QmlStateGroup::findState(const QString &name) const
