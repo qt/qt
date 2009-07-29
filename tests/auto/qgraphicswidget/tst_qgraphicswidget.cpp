@@ -1315,6 +1315,12 @@ void tst_QGraphicsWidget::focusNextPrevChild()
 void tst_QGraphicsWidget::verifyFocusChain()
 {
     QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
     {
         // parent/child focus
         SubQGraphicsWidget *w = new SubQGraphicsWidget(0, Qt::Window);
@@ -1448,6 +1454,11 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
     // delete item in focus chain with no focus and verify chain
     SubQGraphicsWidget *parent = new SubQGraphicsWidget(0, Qt::Window);
     SubQGraphicsWidget *w = new SubQGraphicsWidget(0, Qt::Window);

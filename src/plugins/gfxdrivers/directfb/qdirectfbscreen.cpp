@@ -745,6 +745,7 @@ QPixmapData *QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType typ
     return new QDirectFBPixmapData(type);
 }
 
+#if (Q_DIRECTFB_VERSION >= 0x000923)
 #ifdef QT_NO_DEBUG
 struct FlagDescription;
 static const FlagDescription *accelerationDescriptions = 0;
@@ -802,9 +803,6 @@ static const FlagDescription drawDescriptions[] = {
 };
 #endif
 
-
-
-#if (Q_DIRECTFB_VERSION >= 0x000923)
 static const QByteArray flagDescriptions(uint mask, const FlagDescription *flags)
 {
 #ifdef QT_NO_DEBUG

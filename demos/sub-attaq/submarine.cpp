@@ -109,7 +109,14 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     setZValue(5);
     setFlags(QGraphicsItem::ItemIsMovable);
     resize(pixmapItem->boundingRect().width(),pixmapItem->boundingRect().height());
-    setTransformOrigin(boundingRect().center());
+    setTransformOriginPoint(boundingRect().center());
+
+    graphicsRotation = new QGraphicsRotation3D(this);
+    graphicsRotation->setAxis(QVector3D(0, 1, 0));
+    graphicsRotation->setOrigin(QPointF(size().width()/2, size().height()/2));
+    QList<QGraphicsTransform *> r;
+    r.append(graphicsRotation);
+    setTransformations(r);
 
     //We setup the state machine of the submarine
     QStateMachine *machine = new QStateMachine(this);
@@ -166,7 +173,7 @@ void SubMarine::setCurrentDirection(SubMarine::Movement direction)
     if (this->direction == direction)
         return;
     if (direction == SubMarine::Right && this->direction == SubMarine::None) {
-          setYRotation(180);
+          graphicsRotation->setAngle(180);
     }
     this->direction = direction;
 }

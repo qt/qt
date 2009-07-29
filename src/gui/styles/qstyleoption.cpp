@@ -5007,11 +5007,6 @@ QStyleOptionGraphicsItem::QStyleOptionGraphicsItem(int version)
     of the painter used to draw the item. By default, if no
     transformations are applied, its value is 1. If zoomed out 1:2, the level
     of detail will be 0.5, and if zoomed in 2:1, its value is 2.
-
-    For more advanced level-of-detail metrics, use
-    QStyleOptionGraphicsItem::matrix directly.
-
-    \sa QStyleOptionGraphicsItem::matrix
 */
 qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &worldTransform)
 {
@@ -5038,19 +5033,31 @@ qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &wor
     Make use of this rectangle to speed up item drawing when only parts of the
     item are exposed. If the whole item is exposed, this rectangle will be the
     same as QGraphicsItem::boundingRect().
+
+    This member is only initialized for items that have the
+    QGraphicsItem::ItemUsesExtendedStyleOption flag set.
 */
 
 /*!
      \variable QStyleOptionGraphicsItem::matrix
      \brief the complete transformation matrix for the item
+     \obsolete
 
-     This matrix is the sum of the item's scene matrix and the matrix of the
-     painter used for drawing the item. It is provided for convenience,
+     The QMatrix provided through this member does include information about
+     any perspective transformations applied to the view or item. To get the
+     correct transformation matrix, use QPainter::transform() on the painter
+     passed into the QGraphicsItem::paint() implementation.
+
+     This matrix is the combination of the item's scene matrix and the matrix
+     of the painter used for drawing the item. It is provided for convenience,
      allowing anvanced level-of-detail metrics that can be used to speed up
      item drawing.
 
-     To find the dimentions of an item in screen coordinates (i.e., pixels),
+     To find the dimensions of an item in screen coordinates (i.e., pixels),
      you can use the mapping functions of QMatrix, such as QMatrix::map().
+
+     This member is only initialized for items that have the
+     QGraphicsItem::ItemUsesExtendedStyleOption flag set.
 
      \sa QStyleOptionGraphicsItem::levelOfDetailFromTransform()
 */
@@ -5059,7 +5066,7 @@ qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &wor
     \variable QStyleOptionGraphicsItem::levelOfDetail
     \obsolete
 
-    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform
+    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform()
     together with QPainter::worldTransform() instead.
 */
 

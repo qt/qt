@@ -53,6 +53,7 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qvariant.h>
 #include <QtCore/qurl.h>
 
 #include <QtCore/qpoint.h>
@@ -144,6 +145,30 @@ template<> inline char *toString(const QRectF &s)
 template<> inline char *toString(const QUrl &uri)
 {
     return qstrdup(uri.toEncoded().constData());
+}
+
+template<> inline char *toString(const QVariant &v)
+{
+    QByteArray vstring("QVariant(");
+    if (v.isValid()) {
+        QByteArray type(v.typeName());
+        if (type.isEmpty()) {
+            type = QByteArray::number(v.userType());
+        }
+        vstring.append(type);
+        if (!v.isNull()) {
+            vstring.append(',');
+            if (v.canConvert(QVariant::String)) {
+                vstring.append(qVariantValue<QString>(v).toLatin1());
+            }
+            else {
+                vstring.append("<value not representable as string>");
+            }
+        }
+    }
+    vstring.append(')');
+
+    return qstrdup(vstring.constData());
 }
 
 #ifndef QTEST_NO_SPECIALIZATIONS
