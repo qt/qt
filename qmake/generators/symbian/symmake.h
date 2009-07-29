@@ -80,7 +80,6 @@ protected:
     QHash<QString, QString> qt2S60LangMapTable;
 
     void removeSpecialCharacters(QString& str);
-    QString getWithoutSpecialCharacters(QString& str);
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
     QString canonizePath(const QString& origPath);
 

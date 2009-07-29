@@ -1697,19 +1697,6 @@ void SymbianMakefileGenerator::generateCleanCommands(QTextStream& t,
     }
 }
 
-QString SymbianMakefileGenerator::getWithoutSpecialCharacters(QString& str)
-{
-    QString tmp = str;
-
-    tmp.replace(QString("/"), QString("_"));
-    tmp.replace(QString("\\"), QString("_"));
-    tmp.replace(QString("-"), QString("_"));
-    tmp.replace(QString(":"), QString("_"));
-    tmp.replace(QString("."), QString("_"));
-
-    return tmp;
-}
-
 void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
 {
     str.replace(QString("/"), QString("_"));
