@@ -167,6 +167,7 @@ JSC::UString qtStringToJSCUString(const QString &);
 }
 
 QScriptContextPrivate::QScriptContextPrivate()
+    : calledAsConstructor(false)
 {
 }
 
