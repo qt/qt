@@ -205,10 +205,10 @@ void Generator::generateCode()
     QByteArray qualifiedClassNameIdentifier = cdef->qualified;
     qualifiedClassNameIdentifier.replace(':', '_');
 
-    int index = 12;
+    int index = 13;
     fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
-    fprintf(out, "    %4d,       // revision\n", 2);
+    fprintf(out, "    %4d,       // revision\n", 3);
     fprintf(out, "    %4d,       // classname\n", strreg(cdef->qualified));
     fprintf(out, "    %4d, %4d, // classinfo\n", cdef->classInfoList.count(), cdef->classInfoList.count() ? index : 0);
     index += cdef->classInfoList.count() * 2;
@@ -227,6 +227,9 @@ void Generator::generateCode()
         index += 4 + (cdef->enumList.at(i).values.count() * 2);
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? cdef->constructorList.count() : 0,
             isConstructible ? index : 0);
+
+    fprintf(out, "    %4d,       // flags\n", 0);
+
 
 //
 // Build classinfo array
@@ -382,7 +385,7 @@ void Generator::generateCode()
     if (isQt || !cdef->hasQObject)
         return;
 
-    fprintf(out, "\nconst QMetaObject *%s::metaObject() const\n{\n    return &staticMetaObject;\n}\n",
+    fprintf(out, "\nconst QMetaObject *%s::metaObject() const\n{\n    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;\n}\n",
             cdef->qualified.constData());
 //
 // Generate smart cast function

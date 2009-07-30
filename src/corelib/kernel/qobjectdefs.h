@@ -431,6 +431,7 @@ struct Q_CORE_EXPORT QMetaObject
     };
 
     int static_metacall(Call, int, void **) const;
+    static int metacall(QObject *, Call, int, void **);
 
 #ifdef QT3_SUPPORT
     QT3_SUPPORT const char *superClassName() const;
@@ -442,6 +443,7 @@ struct Q_CORE_EXPORT QMetaObject
         const uint *data;
         const void *extradata;
     } d;
+
 };
 
 struct QMetaObjectExtraData

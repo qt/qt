@@ -109,6 +109,7 @@ public:
     uint hasGuards : 1; //true iff there is one or more QPointer attached to this object
     uint unused : 22;
     int postedEvents;
+    QMetaObject *metaObject; // assert dynamic
 };
 
 

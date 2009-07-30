@@ -145,11 +145,13 @@ QObjectPrivate::QObjectPrivate(int version)
     inThreadChangeEvent = false;
     deleteWatch = 0;
     objectGuards = 0;
+    metaObject = 0;
     hasGuards = false;
 }
 
 QObjectPrivate::~QObjectPrivate()
 {
+    delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
     if (deleteWatch)
         *deleteWatch = 1;
 #ifndef QT_NO_USERDATA
@@ -484,7 +486,7 @@ QMetaCallEvent::~QMetaCallEvent()
  */
 int QMetaCallEvent::placeMetaCall(QObject *object)
 {
-    return object->qt_metacall(QMetaObject::InvokeMetaMethod, id_, args_);
+    return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, id_, args_);
 }
 
 /*!
@@ -3171,10 +3173,10 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
             }
 
 #if defined(QT_NO_EXCEPTIONS)
-            receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
+            metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
 #else
             try {
-                receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
+                metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
             } catch (...) {
                 locker.relock();
 
@@ -3916,6 +3918,7 @@ void qDeleteInEventHandler(QObject *o)
 #endif
     delete o;
 }
+
 
 QT_END_NAMESPACE
 
