@@ -795,7 +795,7 @@ void QFxItem::setQml(const QUrl &qml)
         return;
 
     if (!d->_qml.isEmpty()) {
-        QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
+        QHash<QString, QFxItem *>::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
         if (iter != d->_qmlChildren.end())
             (*iter)->setOpacity(0.);
     }
@@ -808,7 +808,7 @@ void QFxItem::setQml(const QUrl &qml)
         return;
     }
 
-    QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
+    QHash<QString, QFxItem *>::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
     if (iter != d->_qmlChildren.end()) {
         (*iter)->setOpacity(1.);
         d->qmlItem = (*iter);
@@ -1689,31 +1689,6 @@ QmlList<QGraphicsTransform *>* QFxItem::transform()
 }
 
 /*!
-  Creates a new child of the given component \a type.  The
-  newChildCreated() signal will be emitted when and if the child is
-  successfully created.
-
-  \preliminary
-*/
-void QFxItem::newChild(const QString &type)
-{
-    Q_D(QFxItem);
-
-    QUrl url = qmlContext(this)->resolvedUrl(QUrl(type));
-    if (url.isEmpty())
-        return;
-
-    d->_qmlnewloading.append(url);
-    d->_qmlnewcomp.append(new QmlComponent(qmlEngine(this), url, this));
-
-    if (!d->_qmlnewcomp.last()->isLoading())
-        qmlLoaded();
-    else
-        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(QmlComponent::Status)), 
-                this, SLOT(qmlLoaded()));
-}
-
-/*!
   classBegin() is called when the item is constructed, but its
   properties have not yet been set.
 
@@ -1793,19 +1768,19 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
     default:
     case QFxItem::TopLeft:
         return QPointF(0, 0);
-    case QFxItem::TopCenter:
+    case QFxItem::Top:
         return QPointF(br.width() / 2., 0);
     case QFxItem::TopRight:
         return QPointF(br.width(), 0);
-    case QFxItem::MiddleLeft:
+    case QFxItem::Left:
         return QPointF(0, br.height() / 2.);
     case QFxItem::Center:
         return QPointF(br.width() / 2., br.height() / 2.);
-    case QFxItem::MiddleRight:
+    case QFxItem::Right:
         return QPointF(br.width(), br.height() / 2.);
     case QFxItem::BottomLeft:
         return QPointF(0, br.height());
-    case QFxItem::BottomCenter:
+    case QFxItem::Bottom:
         return QPointF(br.width() / 2., br.height());
     case QFxItem::BottomRight:
         return QPointF(br.width(), br.height());
@@ -1861,19 +1836,10 @@ void QFxItem::childrenChanged()
 {
 }
 
-void QFxItem::setPaintMargin(qreal margin)
-{
-    Q_D(QFxItem);
-    if (margin == d->paintmargin)
-        return;
-    prepareGeometryChange();
-    d->paintmargin = margin;
-}
-
 QRectF QFxItem::boundingRect() const
 {
     Q_D(const QFxItem);
-    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
+    return QRectF(0, 0, d->width, d->height);
 }
 
 void QFxItem::paintContents(QPainter &)
@@ -1891,13 +1857,13 @@ void QFxItem::parentChanged(QFxItem *, QFxItem *)
     Controls the point about which simple transforms like scale apply.
 
     \value TopLeft The top-left corner of the item.
-    \value TopCenter The center point of the top of the item.
+    \value Top The center point of the top of the item.
     \value TopRight The top-right corner of the item.
-    \value MiddleLeft The left most point of the vertical middle.
+    \value Left The left most point of the vertical middle.
     \value Center The center of the item.
-    \value MiddleRight The right most point of the vertical middle.
+    \value Right The right most point of the vertical middle.
     \value BottomLeft The bottom-left corner of the item.
-    \value BottomCenter The center point of the bottom of the item. 
+    \value Bottom The center point of the bottom of the item.
     \value BottomRight The bottom-right corner of the item.
 */
 
@@ -2085,16 +2051,6 @@ bool QFxItem::hasActiveFocus() const
     return QGraphicsItem::hasFocus();
 }
 
-bool QFxItem::activeFocusPanel() const
-{
-    return false;
-}
-
-void QFxItem::setActiveFocusPanel(bool b)
-{
-    Q_UNUSED(b)
-}
-
 bool QFxItem::sceneEventFilter(QGraphicsItem *w, QEvent *e)
 {
     switch(e->type()) {
@@ -2129,16 +2085,7 @@ void QFxItem::setOptions(Options options, bool set)
     else
         d->options &= ~options;
 
-    if ((d->options & IsFocusPanel) && (d->options & IsFocusRealm)) {
-        qWarning("QFxItem::setOptions: Cannot set both IsFocusPanel and IsFocusRealm.  IsFocusRealm will be unset.");
-        d->options &= ~IsFocusRealm;
-    }
-
-    setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
     setFiltersChildEvents(d->options & ChildMouseFilter);
-    setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
-    setAcceptHoverEvents(d->options & HoverEvents);
-
     setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {

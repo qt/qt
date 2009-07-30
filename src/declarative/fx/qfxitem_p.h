@@ -71,8 +71,6 @@ class QFxItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxItem)
 
-    typedef QHash<QString, QFxItem *> QmlChildren;
-
 public:
     QFxItemPrivate()
     : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
@@ -81,8 +79,7 @@ public:
       _anchorLines(0),
       _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
       options(QFxItem::NoOption),
-      widthValid(false), heightValid(false), width(0), height(0), 
-      paintmargin(0)
+      widthValid(false), heightValid(false), width(0), height(0)
     {}
     ~QFxItemPrivate() 
     { delete _anchors; }
@@ -163,7 +160,7 @@ public:
     bool _componentComplete:1;
     bool _keepMouse:1;
 
-    QmlChildren _qmlChildren;
+    QHash<QString, QFxItem *> _qmlChildren;
 
     struct AnchorLines {
         AnchorLines(QFxItem *);
@@ -196,7 +193,6 @@ public:
 
     qreal width;
     qreal height;
-    qreal paintmargin;
 
     QPointF computeTransformOrigin() const;
 

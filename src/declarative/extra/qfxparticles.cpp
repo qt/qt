@@ -343,7 +343,7 @@ public:
     QFxParticlesPainter(QFxParticlesPrivate *p, QFxItem* parent)
         : QFxItem(parent), d(p)
     {
-        setOptions(HasContents);
+        setFlag(QGraphicsItem::ItemHasNoContents, false);
         maxX = minX = maxY = minY = 0;
     }
 
@@ -600,7 +600,7 @@ QFxParticles::QFxParticles(QFxItem *parent)
 {
     Q_D(QFxParticles);
     d->init();
-    setOptions(HasContents);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxParticles::QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent)
@@ -608,7 +608,7 @@ QFxParticles::QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent)
 {
     Q_D(QFxParticles);
     d->init();
-    setOptions(HasContents);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxParticles::~QFxParticles()

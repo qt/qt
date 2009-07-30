@@ -111,7 +111,7 @@ void QFxFlickablePrivate::init()
     QObject::connect(&_tl, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&_tl, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
-    q->setOptions(QFxItem::ChildMouseFilter | QFxItem::MouseEvents);
+    q->setOptions(QFxItem::ChildMouseFilter);
     QObject::connect(_flick, SIGNAL(xChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(_flick, SIGNAL(yChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
