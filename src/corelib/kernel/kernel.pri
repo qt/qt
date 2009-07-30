@@ -55,8 +55,7 @@ SOURCES += \
         kernel/qcoreglobaldata.cpp \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
-        kernel/qpointer.cpp \
-        kernel/qguard.cpp
+        kernel/qpointer.cpp 
 
 win32 {
 	SOURCES += \
