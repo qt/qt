@@ -130,7 +130,11 @@ namespace JSC {
      */
 
     class JSImmediate {
-    public: // ### we need it!
+#ifdef QT_BUILD_SCRIPT_LIB
+    public: // QtScript needs isImmediate() and from() functions
+#else
+    private:
+#endif
         friend class JIT;
         friend class JSValue;
         friend class JSFastMath;
