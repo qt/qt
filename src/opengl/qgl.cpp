@@ -526,7 +526,7 @@ void QGLFormat::setAccum(bool enable)
     \fn bool QGLFormat::stencil() const
 
     Returns true if the stencil buffer is enabled; otherwise returns
-    false. The stencil buffer is disabled by default.
+    false. The stencil buffer is enabled by default.
 
     \sa setStencil(), setStencilBufferSize()
 */
@@ -535,7 +535,7 @@ void QGLFormat::setAccum(bool enable)
     If \a enable is true enables the stencil buffer; otherwise
     disables the stencil buffer.
 
-    The stencil buffer is disabled by default.
+    The stencil buffer is enabled by default.
 
     The stencil buffer masks certain parts of the drawing area so that
     masked parts are not drawn on.
