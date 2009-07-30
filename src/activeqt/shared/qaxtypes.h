@@ -89,6 +89,9 @@ extern QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName
 extern bool QVariantToVoidStar(const QVariant &var, void *data, const QByteArray &typeName, uint type = 0);
 extern void clearVARIANT(VARIANT *var);
 
+#define QAX_INPROC_SERVER  (0x51540001)
+#define QAX_OUTPROC_SERVER (0x51540002)
+
 QT_END_NAMESPACE
 #endif // QT_NO_WIN_ACTIVEQT
 

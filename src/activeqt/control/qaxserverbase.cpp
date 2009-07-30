@@ -3502,24 +3502,24 @@ Q_GUI_EXPORT int qt_translateKeyCode(int);
 HRESULT WINAPI QAxServerBase::TranslateAcceleratorW(MSG *pMsg)
 {
     if (pMsg->message != WM_KEYDOWN || !isWidget)
-	return S_FALSE;
+        return S_FALSE;
 
     DWORD dwKeyMod = 0;
     if (::GetKeyState(VK_SHIFT) < 0)
-	dwKeyMod |= 1;	// KEYMOD_SHIFT
+        dwKeyMod |= 1;	// KEYMOD_SHIFT
     if (::GetKeyState(VK_CONTROL) < 0)
-	dwKeyMod |= 2;	// KEYMOD_CONTROL
+        dwKeyMod |= 2;	// KEYMOD_CONTROL
     if (::GetKeyState(VK_MENU) < 0)
-	dwKeyMod |= 4;	// KEYMOD_ALT
+        dwKeyMod |= 4;	// KEYMOD_ALT
 
     switch (LOWORD(pMsg->wParam)) {
     case VK_TAB:
-	if (isUIActive) {
-	    bool shift = ::GetKeyState(VK_SHIFT) < 0;
-	    bool giveUp = true;
+        if (isUIActive) {
+            bool shift = ::GetKeyState(VK_SHIFT) < 0;
+            bool giveUp = true;
             QWidget *curFocus = qt.widget->focusWidget();
             if (curFocus) {
-	        if (shift) {
+                if (shift) {
                     if (!curFocus->isWindow()) {
                         QWidget *nextFocus = curFocus->nextInFocusChain();
                         QWidget *prevFocus = 0;
@@ -3537,9 +3537,10 @@ HRESULT WINAPI QAxServerBase::TranslateAcceleratorW(MSG *pMsg)
                         if (!topLevel) {
                             giveUp = false;
                             ((HackWidget*)curFocus)->focusNextPrevChild(false);
+                            curFocus->window()->setAttribute(Qt::WA_KeyboardFocusChange);
                         }
                     }
-	        } else {
+                } else {
                     QWidget *nextFocus = curFocus;
                     while (1) {
                         nextFocus = nextFocus->nextInFocusChain();
@@ -3548,63 +3549,70 @@ HRESULT WINAPI QAxServerBase::TranslateAcceleratorW(MSG *pMsg)
                         if (nextFocus->focusPolicy() & Qt::TabFocus) {
                             giveUp = false;
                             ((HackWidget*)curFocus)->focusNextPrevChild(true);
+                            curFocus->window()->setAttribute(Qt::WA_KeyboardFocusChange);
                             break;
                         }
                     }
-	        }
+                }
             }
-	    if (giveUp) {
-		HWND hwnd = ::GetParent(m_hWnd);
-		::SetFocus(hwnd);
-	    } else {
-		return S_OK;
-	    }
+            if (giveUp) {
+                HWND hwnd = ::GetParent(m_hWnd);
+                ::SetFocus(hwnd);
+            } else {
+                return S_OK;
+            }
 
-	}
-	break;
+        }
+        break;
 
     case VK_LEFT:
     case VK_RIGHT:
     case VK_UP:
     case VK_DOWN:
-	if (isUIActive)
-	    return S_FALSE;
-	break;
+        if (isUIActive)
+            return S_FALSE;
+        break;
 
     default:
-	if (isUIActive && qt.widget->focusWidget()) {
+        if (isUIActive && qt.widget->focusWidget()) {
             int state = Qt::NoButton;
-	    if (dwKeyMod & 1)
-		state |= Qt::ShiftModifier;
-	    if (dwKeyMod & 2)
-		state |= Qt::ControlModifier;
-	    if (dwKeyMod & 4)
-		state |= Qt::AltModifier;
+            if (dwKeyMod & 1)
+                state |= Qt::ShiftModifier;
+            if (dwKeyMod & 2)
+                state |= Qt::ControlModifier;
+            if (dwKeyMod & 4)
+                state |= Qt::AltModifier;
 
-	    int key = pMsg->wParam;
+            int key = pMsg->wParam;
             if (!(key >= 'A' && key <= 'Z') && !(key >= '0' && key <= '9'))
                 key = qt_translateKeyCode(pMsg->wParam);
 
-	    QKeyEvent override(QEvent::ShortcutOverride, key, (Qt::KeyboardModifiers)state);
-	    override.ignore();
-	    QApplication::sendEvent(qt.widget->focusWidget(), &override);
-	    if (override.isAccepted())
-		return S_FALSE;
-	}
-	break;
+            QKeyEvent override(QEvent::ShortcutOverride, key, (Qt::KeyboardModifiers)state);
+            override.ignore();
+            QApplication::sendEvent(qt.widget->focusWidget(), &override);
+            if (override.isAccepted())
+                return S_FALSE;
+        }
+        break;
     }
 
     if (!m_spClientSite)
-	return S_FALSE;
+        return S_FALSE;
 
     IOleControlSite *controlSite = 0;
     m_spClientSite->QueryInterface(IID_IOleControlSite, (void**)&controlSite);
     if (!controlSite)
-	return S_FALSE;
-
+        return S_FALSE;
+    bool resetUserData = false;
+    // set server type in the user-data of the window.
+    LONG_PTR serverType = QAX_INPROC_SERVER;
+    if (qAxOutProcServer)
+        serverType = QAX_OUTPROC_SERVER;
+    LONG_PTR oldData = SetWindowLongPtr(pMsg->hwnd, GWLP_USERDATA, serverType);
     HRESULT hres = controlSite->TranslateAcceleratorW(pMsg, dwKeyMod);
-
     controlSite->Release();
+    // reset the user-data for the window.
+    SetWindowLongPtr(pMsg->hwnd, GWLP_USERDATA, oldData);
 
     return hres;
 }
