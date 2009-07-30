@@ -294,29 +294,30 @@ void QXmlTestLogger::addMessage(MessageTypes type, const char *message,
     XML characters as necessary so that dest is suitable for use in an XML
     quoted attribute string.
 */
-void QXmlTestLogger::xmlQuote(char* dest, char const* src, size_t n)
+int QXmlTestLogger::xmlQuote(char* dest, char const* src, size_t n)
 {
-    if (n == 0) return;
+    if (n == 0) return 0;
 
     *dest = 0;
-    if (!src) return;
+    if (!src) return 0;
 
+    char* begin = dest;
     char* end = dest + n;
 
     while (dest < end) {
         switch (*src) {
 
 #define MAP_ENTITY(chr, ent) \
-            case chr:                           \
-                if (dest + sizeof(ent) < end) { \
-                    strcpy(dest, ent);          \
-                    dest += sizeof(ent) - 1;    \
-                }                               \
-                else {                          \
-                    *dest = 0;                  \
-                    return;                     \
-                }                               \
-                ++src;                          \
+            case chr:                                   \
+                if (dest + sizeof(ent) < end) {         \
+                    strcpy(dest, ent);                  \
+                    dest += sizeof(ent) - 1;            \
+                }                                       \
+                else {                                  \
+                    *dest = 0;                          \
+                    return (dest+sizeof(ent)-begin);    \
+                }                                       \
+                ++src;                                  \
                 break;
 
             MAP_ENTITY('>', "&gt;");
@@ -333,7 +334,7 @@ void QXmlTestLogger::xmlQuote(char* dest, char const* src, size_t n)
 
             case 0:
                 *dest = 0;
-                return;
+                return (dest-begin);
 
             default:
                 *dest = *src;
@@ -345,29 +346,31 @@ void QXmlTestLogger::xmlQuote(char* dest, char const* src, size_t n)
 
     // If we get here, dest was completely filled (dest == end)
     *(dest-1) = 0;
+    return (dest-begin);
 }
 
 /*
     Copy up to n characters from the src string into dest, escaping any
     special strings such that dest is suitable for use in an XML CDATA section.
 */
-void QXmlTestLogger::xmlCdata(char* dest, char const* src, size_t n)
+int QXmlTestLogger::xmlCdata(char* dest, char const* src, size_t n)
 {
-    if (!n) return;
+    if (!n) return 0;
 
     if (!src || n == 1) {
         *dest = 0;
-        return;
+        return 0;
     }
 
-    char const CDATA_END[] = "]]>";
-    char const CDATA_END_ESCAPED[] = "]]]><![CDATA[]>";
+    static char const CDATA_END[] = "]]>";
+    static char const CDATA_END_ESCAPED[] = "]]]><![CDATA[]>";
 
+    char* begin = dest;
     char* end = dest + n;
     while (dest < end) {
         if (!*src) {
             *dest = 0;
-            return;
+            return (dest-begin);
         }
 
         if (!strncmp(src, CDATA_END, sizeof(CDATA_END)-1)) {
@@ -378,7 +381,7 @@ void QXmlTestLogger::xmlCdata(char* dest, char const* src, size_t n)
             }
             else {
                 *dest = 0;
-                return;
+                return (dest+sizeof(CDATA_END_ESCAPED)-begin);
             }
             continue;
         }
@@ -390,6 +393,52 @@ void QXmlTestLogger::xmlCdata(char* dest, char const* src, size_t n)
 
     // If we get here, dest was completely filled (dest == end)
     *(dest-1) = 0;
+    return (dest-begin);
+}
+
+typedef int (*StringFormatFunction)(char*,char const*,size_t);
+
+/*
+    A wrapper for string functions written to work with a fixed size buffer so they can be called
+    with a dynamically allocated buffer.
+*/
+int allocateStringFn(char** str, char const* src, StringFormatFunction func)
+{
+    static const int MAXSIZE = 1024*1024*2;
+
+    int size = 32;
+    delete[] *str;
+    *str = new char[size];
+
+    int res = 0;
+
+    for (;;) {
+        res = func(*str, src, size);
+        (*str)[size - 1] = '\0';
+        if (res < size) {
+            // We succeeded or fatally failed
+            break;
+        }
+        // buffer wasn't big enough, try again
+        size *= 2;
+        if (size > MAXSIZE) {
+            break;
+        }
+        delete[] *str;
+        *str = new char[size];
+    }
+
+    return res;
+}
+
+int QXmlTestLogger::xmlQuote(char** str, char const* src)
+{
+    return allocateStringFn(str, src, QXmlTestLogger::xmlQuote);
+}
+
+int QXmlTestLogger::xmlCdata(char** str, char const* src)
+{
+    return allocateStringFn(str, src, QXmlTestLogger::xmlCdata);
 }
 
 QT_END_NAMESPACE

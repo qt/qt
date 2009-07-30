@@ -73,7 +73,7 @@ void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf
     }
 }
 
-void QTestXunitStreamer::formatStart(const QTestElement *element, char *formatted) const
+void QTestXunitStreamer::formatStart(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted )
         return;
@@ -84,34 +84,34 @@ void QTestXunitStreamer::formatStart(const QTestElement *element, char *formatte
     // Errors are written as CDATA within system-err, comments elsewhere
     if (element->elementType() == QTest::LET_Error) {
         if (element->parentElement()->elementType() == QTest::LET_SystemError) {
-            QTest::qt_snprintf(formatted, 1024, "<![CDATA[");
+            QTest::qt_asprintf(formatted, "<![CDATA[");
         }
         else {
-            QTest::qt_snprintf(formatted, 1024, "%s<!--", indent);
+            QTest::qt_asprintf(formatted, "%s<!--", indent);
         }
         return;
     }
 
-    QTest::qt_snprintf(formatted, 1024, "%s<%s", indent, element->elementName());
+    QTest::qt_asprintf(formatted, "%s<%s", indent, element->elementName());
 }
 
-void QTestXunitStreamer::formatEnd(const QTestElement *element, char *formatted) const
+void QTestXunitStreamer::formatEnd(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted )
         return;
 
     if(!element->childElements()){
-        QTest::qt_snprintf(formatted, 10, "");
+        QTest::qt_asprintf(formatted, "");
         return;
     }
 
     char indent[20];
     indentForElement(element, indent, sizeof(indent));
 
-    QTest::qt_snprintf(formatted, 1024, "%s</%s>\n", indent, element->elementName());
+    QTest::qt_asprintf(formatted, "%s</%s>\n", indent, element->elementName());
 }
 
-void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, char *formatted) const
+void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, char **formatted) const
 {
     if(!attribute || !formatted )
         return;
@@ -124,7 +124,7 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
 
         if (attrindex != QTest::AI_Description) return;
 
-        QXmlTestLogger::xmlCdata(formatted, attribute->value(), 1024);
+        QXmlTestLogger::xmlCdata(formatted, attribute->value());
         return;
     }
 
@@ -137,14 +137,14 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
     if (key) {
         char quotedValue[900];
         QXmlTestLogger::xmlQuote(quotedValue, attribute->value(), sizeof(quotedValue));
-        QTest::qt_snprintf(formatted, 1024, " %s=\"%s\"", key, quotedValue);
+        QTest::qt_asprintf(formatted, " %s=\"%s\"", key, quotedValue);
     }
     else {
-        QTest::qt_snprintf(formatted, 10, "");
+        QTest::qt_asprintf(formatted, "");
     }
 }
 
-void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, char *formatted) const
+void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted )
         return;
@@ -152,18 +152,18 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, char
     // Errors are written as CDATA within system-err, comments elsewhere
     if (element->elementType() == QTest::LET_Error) {
         if (element->parentElement()->elementType() == QTest::LET_SystemError) {
-            QTest::qt_snprintf(formatted, 1024, "]]>\n");
+            QTest::qt_asprintf(formatted, "]]>\n");
         }
         else {
-            QTest::qt_snprintf(formatted, 1024, " -->\n");
+            QTest::qt_asprintf(formatted, " -->\n");
         }
         return;
     }
 
     if(!element->childElements())
-        QTest::qt_snprintf(formatted, 10, "/>\n");
+        QTest::qt_asprintf(formatted, "/>\n");
     else
-        QTest::qt_snprintf(formatted, 10, ">\n");
+        QTest::qt_asprintf(formatted, ">\n");
 }
 
 void QTestXunitStreamer::output(QTestElement *element) const
@@ -176,7 +176,7 @@ void QTestXunitStreamer::output(QTestElement *element) const
 
 void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
 {
-    char buf[1024];
+    QTestCharBuffer buf;
     bool hasChildren;
     /*
         Elements are in reverse order of occurrence, so start from the end and work

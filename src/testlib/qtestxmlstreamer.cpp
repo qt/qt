@@ -60,7 +60,7 @@ QTestXmlStreamer::QTestXmlStreamer()
 QTestXmlStreamer::~QTestXmlStreamer()
 {}
 
-void QTestXmlStreamer::formatStart(const QTestElement *element, char *formatted) const
+void QTestXmlStreamer::formatStart(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted)
         return;
@@ -71,7 +71,7 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, char *formatted)
         QXmlTestLogger::xmlQuote(quotedTf, element->attributeValue(QTest::AI_Name),
             sizeof(quotedTf));
 
-        QTest::qt_snprintf(formatted, 1024, "<TestFunction name=\"%s\">\n", quotedTf);
+        QTest::qt_asprintf(formatted, "<TestFunction name=\"%s\">\n", quotedTf);
         break;
     }
     case QTest::LET_Failure: {
@@ -94,14 +94,14 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, char *formatted)
             char cdataTag[100];
             QXmlTestLogger::xmlCdata(cdataTag, element->attributeValue(QTest::AI_Tag),
                 sizeof(cdataTag));
-            QTest::qt_snprintf(formatted, 1024, "<Incident type=\"%s\" %s>\n"
+            QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s>\n"
                 "    <DataTag><![CDATA[%s]]></DataTag>\n"
                 "    <Description><![CDATA[%s]]></Description>\n"
                 "</Incident>\n", element->attributeValue(QTest::AI_Result),
                 location, cdataTag, cdataDesc);
         }
         else {
-            QTest::qt_snprintf(formatted, 1024, "<Incident type=\"%s\" %s>\n"
+            QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s>\n"
                 "    <Description><![CDATA[%s]]></Description>\n"
                 "</Incident>\n", element->attributeValue(QTest::AI_Result),
                 location, cdataDesc);
@@ -117,7 +117,7 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, char *formatted)
         QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description),
             sizeof(cdataDesc));
 
-        QTest::qt_snprintf(formatted, 1024, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <Description><![CDATA[%s]]></Description>\n</Message>\n",
+        QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <Description><![CDATA[%s]]></Description>\n</Message>\n",
                            element->attributeValue(QTest::AI_Type),
                            element->attributeName(QTest::AI_File),
                            quotedFile,
@@ -135,7 +135,7 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, char *formatted)
         QXmlTestLogger::xmlQuote(quotedTag, element->attributeValue(QTest::AI_Tag),
             sizeof(quotedTag));
 
-        QTest::qt_snprintf(formatted, 1024, "<BenchmarkResult %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" />\n",
+        QTest::qt_asprintf(formatted, "<BenchmarkResult %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" />\n",
                            element->attributeName(QTest::AI_Metric),
                            quotedMetric,
                            element->attributeName(QTest::AI_Tag),
@@ -147,23 +147,23 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, char *formatted)
         break;
     }
     default:
-        QTest::qt_snprintf(formatted, 10, "");
+        QTest::qt_asprintf(formatted, "");
     }
 }
 
-void QTestXmlStreamer::formatEnd(const QTestElement *element, char *formatted) const
+void QTestXmlStreamer::formatEnd(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted)
         return;
 
     if (element->elementType() == QTest::LET_TestCase) {
-        QTest::qt_snprintf(formatted, 1024, "</TestFunction>\n");
+        QTest::qt_asprintf(formatted, "</TestFunction>\n");
     }
     else
-        QTest::qt_snprintf(formatted, 10, "");
+        QTest::qt_asprintf(formatted, "");
 }
 
-void QTestXmlStreamer::formatBeforeAttributes(const QTestElement *element, char *formatted) const
+void QTestXmlStreamer::formatBeforeAttributes(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted)
         return;
@@ -181,14 +181,14 @@ void QTestXmlStreamer::formatBeforeAttributes(const QTestElement *element, char 
                            element->attributeValue(QTest::AI_Line));
 
         if( !element->childElements() ) {
-            QTest::qt_snprintf(formatted, 1024, "<Incident type=\"%s\" %s/>\n",
+            QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s/>\n",
                                element->attributeValue(QTest::AI_Result), buf);
         }
         else {
-            QTest::qt_snprintf(formatted, 10, "");
+            QTest::qt_asprintf(formatted, "");
         }
     }else{
-        QTest::qt_snprintf(formatted, 10, "");
+        QTest::qt_asprintf(formatted, "");
     }
 }
 

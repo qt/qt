@@ -58,10 +58,10 @@ class QTestXunitStreamer: public QTestBasicStreamer
         QTestXunitStreamer();
         ~QTestXunitStreamer();
 
-        void formatStart(const QTestElement *element = 0, char *formatted = 0) const;
-        void formatEnd(const QTestElement *element = 0, char *formatted = 0) const;
-        void formatAfterAttributes(const QTestElement *element = 0, char *formatted = 0) const;
-        void formatAttributes(const QTestElement *element = 0, const QTestElementAttribute *attribute = 0, char *formatted = 0) const;
+        void formatStart(const QTestElement *element, char **formatted) const;
+        void formatEnd(const QTestElement *element, char **formatted) const;
+        void formatAfterAttributes(const QTestElement *element, char **formatted) const;
+        void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, char **formatted) const;
         void output(QTestElement *element) const;
         void outputElements(QTestElement *element, bool isChildElement = false) const;
 
