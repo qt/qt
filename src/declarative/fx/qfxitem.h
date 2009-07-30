@@ -156,12 +156,7 @@ public:
     enum Option { NoOption = 0x00000000,
                   MouseFilter = 0x00000001,
                   ChildMouseFilter = 0x00000002,
-                  HoverEvents = 0x00000004,
-                  MouseEvents = 0x00000008,
-                  HasContents = 0x00000010,
-                  SimpleItem = 0x00000020,
-                  IsFocusRealm = 0x00000080,
-                  AcceptsInputMethods = 0x00000100 };
+                  IsFocusRealm = 0x00000080 };
     Q_DECLARE_FLAGS(Options, Option)
 
     enum TransformOrigin {
@@ -233,9 +228,6 @@ public:
     bool hasActiveFocus() const;
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;    //### for KeyProxy
-
-public Q_SLOTS:
-    void newChild(const QString &url);
 
 Q_SIGNALS:
     void xChanged();

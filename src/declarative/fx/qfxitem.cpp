@@ -1689,31 +1689,6 @@ QmlList<QGraphicsTransform *>* QFxItem::transform()
 }
 
 /*!
-  Creates a new child of the given component \a type.  The
-  newChildCreated() signal will be emitted when and if the child is
-  successfully created.
-
-  \preliminary
-*/
-void QFxItem::newChild(const QString &type)
-{
-    Q_D(QFxItem);
-
-    QUrl url = qmlContext(this)->resolvedUrl(QUrl(type));
-    if (url.isEmpty())
-        return;
-
-    d->_qmlnewloading.append(url);
-    d->_qmlnewcomp.append(new QmlComponent(qmlEngine(this), url, this));
-
-    if (!d->_qmlnewcomp.last()->isLoading())
-        qmlLoaded();
-    else
-        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(QmlComponent::Status)), 
-                this, SLOT(qmlLoaded()));
-}
-
-/*!
   classBegin() is called when the item is constructed, but its
   properties have not yet been set.
 
@@ -2119,11 +2094,7 @@ void QFxItem::setOptions(Options options, bool set)
     else
         d->options &= ~options;
 
-    setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
     setFiltersChildEvents(d->options & ChildMouseFilter);
-    setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
-    setAcceptHoverEvents(d->options & HoverEvents);
-
     setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {

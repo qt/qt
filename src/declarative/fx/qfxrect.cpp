@@ -239,7 +239,7 @@ QFxRect::QFxRect(QFxItem *parent)
 {
     Q_D(QFxRect);
     d->init();
-    setOptions(HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
@@ -247,7 +247,7 @@ QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
 {
     Q_D(QFxRect);
     d->init();
-    setOptions(HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 void QFxRect::doUpdate()

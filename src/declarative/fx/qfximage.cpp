@@ -113,13 +113,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
 QFxImage::QFxImage(QFxItem *parent)
   : QFxItem(*(new QFxImagePrivate), parent)
 {
-    setOptions(SimpleItem | HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxImage::QFxImage(QFxImagePrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
 {
-    setOptions(SimpleItem | HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxImage::~QFxImage()
@@ -561,7 +561,6 @@ void QFxImage::requestFinished()
                 d->status = Error;
         }
         d->pix = QFxPixmap(d->url);
-        setOptions(QFxImage::SimpleItem, true);
     }
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
@@ -612,7 +611,6 @@ void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
         sg->setBottom(sci.gridBottom());
         sg->setLeft(sci.gridLeft());
         sg->setRight(sci.gridRight());
-        setOptions(QFxImage::SimpleItem, false);
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
         d->reply = QFxPixmap::get(qmlEngine(this), d->sciurl, this, SLOT(requestFinished()));
