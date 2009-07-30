@@ -324,6 +324,7 @@ namespace QTest {
         sourceCode.reserve(8192);
 
         sourceCode += programHeader;
+        sourceCode += '\n';
 
         // Add Qt header includes
         if (qtModules & QExternalTest::QtCore)
