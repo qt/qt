@@ -520,7 +520,7 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
         } else {
             if (!exception->hasProperty(callFrame, Identifier(callFrame, JSC_ERROR_LINENUMBER_PROPERTYNAME)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, "sourceId")) && 
-                !exception->hasProperty(callFrame, Identifier(callFrame, "sourceURL")) && 
+                !exception->hasProperty(callFrame, Identifier(callFrame, JSC_ERROR_FILENAME_PROPERTYNAME)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, expressionBeginOffsetPropertyName)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, expressionCaretOffsetPropertyName)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, expressionEndOffsetPropertyName))) {
@@ -538,7 +538,7 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
                 } else
                     exception->putWithAttributes(callFrame, Identifier(callFrame, JSC_ERROR_LINENUMBER_PROPERTYNAME), jsNumber(callFrame, codeBlock->lineNumberForBytecodeOffset(callFrame, bytecodeOffset)), ReadOnly | DontDelete);
                 exception->putWithAttributes(callFrame, Identifier(callFrame, "sourceId"), jsNumber(callFrame, codeBlock->ownerNode()->sourceID()), ReadOnly | DontDelete);
-                exception->putWithAttributes(callFrame, Identifier(callFrame, "sourceURL"), jsOwnedString(callFrame, codeBlock->ownerNode()->sourceURL()), ReadOnly | DontDelete);
+                exception->putWithAttributes(callFrame, Identifier(callFrame, JSC_ERROR_FILENAME_PROPERTYNAME), jsOwnedString(callFrame, codeBlock->ownerNode()->sourceURL()), ReadOnly | DontDelete);
             }
             
             if (exception->isWatchdogException()) {
