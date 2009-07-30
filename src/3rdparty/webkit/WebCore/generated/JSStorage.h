@@ -50,7 +50,7 @@ public:
     }
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     Storage* impl() const { return m_impl.get(); }
 

@@ -49,7 +49,7 @@ public:
     }
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
     virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
 
     // Custom attributes

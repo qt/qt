@@ -186,11 +186,11 @@ JSValue jsHTMLCollectionConstructor(ExecState* exec, const Identifier&, const Pr
     JSHTMLCollection* domObject = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
     return JSHTMLCollection::getConstructor(exec, domObject->globalObject());
 }
-void JSHTMLCollection::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSHTMLCollection::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     for (unsigned i = 0; i < static_cast<HTMLCollection*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 JSValue JSHTMLCollection::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

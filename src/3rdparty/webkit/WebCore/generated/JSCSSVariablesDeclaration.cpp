@@ -206,11 +206,11 @@ void setJSCSSVariablesDeclarationCssText(ExecState* exec, JSObject* thisObject, 
     imp->setCssText(value.toString(exec));
 }
 
-void JSCSSVariablesDeclaration::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCSSVariablesDeclaration::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     for (unsigned i = 0; i < static_cast<CSSVariablesDeclaration*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 JSValue JSCSSVariablesDeclaration::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -203,11 +203,11 @@ JSValue jsDataGridColumnListConstructor(ExecState* exec, const Identifier&, cons
     JSDataGridColumnList* domObject = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     return JSDataGridColumnList::getConstructor(exec, domObject->globalObject());
 }
-void JSDataGridColumnList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSDataGridColumnList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     for (unsigned i = 0; i < static_cast<DataGridColumnList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 JSValue JSDataGridColumnList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

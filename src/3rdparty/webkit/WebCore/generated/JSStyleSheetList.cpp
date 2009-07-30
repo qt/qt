@@ -177,11 +177,11 @@ JSValue jsStyleSheetListConstructor(ExecState* exec, const Identifier&, const Pr
     JSStyleSheetList* domObject = static_cast<JSStyleSheetList*>(asObject(slot.slotBase()));
     return JSStyleSheetList::getConstructor(exec, domObject->globalObject());
 }
-void JSStyleSheetList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSStyleSheetList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     for (unsigned i = 0; i < static_cast<StyleSheetList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 JSValue JSStyleSheetList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

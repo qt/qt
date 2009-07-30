@@ -221,11 +221,11 @@ void setJSCSSStyleDeclarationCssText(ExecState* exec, JSObject* thisObject, JSVa
     setDOMException(exec, ec);
 }
 
-void JSCSSStyleDeclaration::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCSSStyleDeclaration::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     for (unsigned i = 0; i < static_cast<CSSStyleDeclaration*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 JSValue JSCSSStyleDeclaration::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

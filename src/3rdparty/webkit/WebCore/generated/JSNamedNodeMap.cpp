@@ -187,11 +187,11 @@ JSValue jsNamedNodeMapConstructor(ExecState* exec, const Identifier&, const Prop
     JSNamedNodeMap* domObject = static_cast<JSNamedNodeMap*>(asObject(slot.slotBase()));
     return JSNamedNodeMap::getConstructor(exec, domObject->globalObject());
 }
-void JSNamedNodeMap::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSNamedNodeMap::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     for (unsigned i = 0; i < static_cast<NamedNodeMap*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 JSValue JSNamedNodeMap::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
