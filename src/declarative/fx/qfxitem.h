@@ -127,15 +127,13 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
-    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
-    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged) // ### name? Move to own class?
-    Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)  // ### see above
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
+    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
+    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine right READ right CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter CONSTANT FINAL)
@@ -187,10 +185,6 @@ public:
     QString state() const;
     void setState(const QString &);
 
-    QFxItem *qmlItem() const;
-    QUrl qml() const;
-    void setQml(const QUrl &);
-
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
@@ -238,7 +232,6 @@ Q_SIGNALS:
     void rotationChanged();
     void scaleChanged();
     void qmlChanged();
-    void newChildCreated(const QString &url, QScriptValue);
 
 protected:
     bool isComponentComplete() const;
@@ -261,7 +254,6 @@ protected:
 
 private Q_SLOTS:
     void doUpdate();
-    void qmlLoaded();
 
 protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);

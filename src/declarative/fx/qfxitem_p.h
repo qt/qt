@@ -73,7 +73,7 @@ class QFxItemPrivate : public QGraphicsItemPrivate
 
 public:
     QFxItemPrivate()
-    : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
+    : _anchors(0), _contents(0),
       _baselineOffset(0),
       _componentComplete(true), _keepMouse(false),
       _anchorLines(0),
@@ -149,18 +149,11 @@ public:
     QList<QFxAnchors *> dependantAnchors;
     QFxAnchors *_anchors;
     QFxContents *_contents;
-    QFxItem *qmlItem;
-    QmlComponent *_qmlcomp;
-    QUrl _qml;
-    QList<QUrl> _qmlnewloading;
-    QList<QmlComponent*> _qmlnewcomp;
 
     QmlNullableValue<qreal> _baselineOffset;
 
     bool _componentComplete:1;
     bool _keepMouse:1;
-
-    QHash<QString, QFxItem *> _qmlChildren;
 
     struct AnchorLines {
         AnchorLines(QFxItem *);

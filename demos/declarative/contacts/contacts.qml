@@ -42,7 +42,7 @@ Rect {
                         MouseRegion {
                             anchors.fill: parent
                             onClicked: {
-                                Details.qml = 'Contact.qml';
+                                Details.source = 'Contact.qml';
                                 wrapper.state ='opened';
                                 contacts.mode = 'edit';
                             }
@@ -67,27 +67,27 @@ Rect {
                         }
                     ]
                 }
-                Item {
+                Loader {
                     id: Details
                     anchors.fill: wrapper
                     opacity: 0
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "contactId"
                         value: model.recid
                     }
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "label"
                         value: model.label
                     }
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "phone"
                         value: model.phone
                     }
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "email"
                         value: model.email
                     }
@@ -130,7 +130,7 @@ Rect {
                     signal: "clicked()"
                     script: {
                     if (wrapper.state == 'opened' && !contacts.mouseGrabbed) {
-                            Details.qmlItem.update();
+                            Details.item.update();
                             wrapper.state = '';
                             contacts.mode = 'list';
                             contactList.exec();
@@ -154,7 +154,7 @@ Rect {
                     signal: "confirmed()"
                     script: {
                         if (wrapper.state == 'opened' && !contacts.mouseGrabbed) {
-                            Details.qmlItem.remove();
+                            Details.item.remove();
                             wrapper.state = '';
                             contacts.mode = 'list';
                             contactList.exec();

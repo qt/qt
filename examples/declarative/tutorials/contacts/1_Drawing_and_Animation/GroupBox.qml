@@ -17,15 +17,15 @@ FocusRealm {
         height: groupBox.height-20
         color: "white"
         pen.color: "black"
-        Item {
+        Loader {
             id: subItem
-            qml: groupBox.contents
+            source: groupBox.contents
             anchors.top: parent.top
             anchors.topMargin: 10
             anchors.right: parent.right
             anchors.rightMargin: 10
-            width: qmlItem.width
-            height: qmlItem.height
+            width: item.width
+            height: item.height
         }
     }
     Rect {

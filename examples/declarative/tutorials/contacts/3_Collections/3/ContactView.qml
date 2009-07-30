@@ -56,33 +56,33 @@ Item {
                 MouseRegion {
                     anchors.fill: label
                     onClicked: {
-                        Details.qml = 'Contact.qml';
+                        Details.source = 'Contact.qml';
                         wrapper.state='opened';
                     }
                 }
-                Item {
+                Loader {
                     id: Details
                     anchors.fill: parent
                     opacity: 0
 //! [setting qml]
 //! [binding]
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "contactId"
                         value: model.recid
                     }
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "label"
                         value: model.label
                     }
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "phone"
                         value: model.phone
                     }
                     Bind {
-                        target: Details.qmlItem
+                        target: Details.item
                         property: "email"
                         value: model.email
                     }
