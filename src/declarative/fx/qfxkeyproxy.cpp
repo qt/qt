@@ -179,12 +179,20 @@ void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
     }
 }
 
-QVariant QFxKeyProxy::inputMethodQuery(Qt::InputMethodQuery query) const
+class QFxItemAccessor : public QFxItem
 {
+public:
+    QVariant doInputMethodQuery(Qt::InputMethodQuery query) const {
+        return QFxItem::inputMethodQuery(query);
+    }
+};
+
+QVariant QFxKeyProxy::inputMethodQuery(Qt::InputMethodQuery query) const
+{   
     for (int ii = 0; ii < d->targets.count(); ++ii) {
         QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
         if (i && (i->flags() & ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
-            QVariant v = i->inputMethodQuery(query);
+            QVariant v = static_cast<QFxItemAccessor*>(i)->doInputMethodQuery(query);
             if (v.type() == QVariant::RectF)
                 v = mapRectFromItem(i, v.toRectF());  //### cost?
             return v;

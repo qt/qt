@@ -6,120 +6,167 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>290</width>
-    <height>297</height>
+    <width>316</width>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Recording options</string>
+   <string>Video options</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>File:</string>
-     </property>
-    </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>File:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="file"/>
+     </item>
+     <item>
+      <widget class="QToolButton" name="pickfile">
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QLineEdit" name="file"/>
-   </item>
-   <item row="6" column="2" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Size</string>
      </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="3">
-    <widget class="QToolButton" name="pickfile">
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="4">
-    <widget class="QWidget" name="ffmpegOptions" native="true">
      <layout class="QGridLayout" name="gridLayout_2">
-      <property name="margin">
-       <number>0</number>
-      </property>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Profile:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QComboBox" name="profile"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="args"/>
-      </item>
-      <item row="2" column="2">
-       <widget class="QToolButton" name="ffmpegHelp">
-        <property name="text">
-         <string>Help</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="4">
-    <widget class="QWidget" name="rateOptions" native="true">
-     <layout class="QGridLayout" name="gridLayout_3">
-      <property name="margin">
-       <number>0</number>
-      </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QRadioButton" name="sizeOriginal">
         <property name="text">
-         <string>Rate:</string>
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QRadioButton" name="hz24">
+       <widget class="QRadioButton" name="sizeVGA">
         <property name="text">
-         <string>24Hz</string>
+         <string>VGA</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QRadioButton" name="hz50">
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="size720p">
         <property name="text">
-         <string>50Hz</string>
+         <string>720p</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QRadioButton" name="hz25">
+       <widget class="QRadioButton" name="sizeQVGA">
         <property name="text">
-         <string>25Hz</string>
+         <string>QVGA</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
+      <item row="2" column="0" colspan="3">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QRadioButton" name="sizeCustom">
+          <property name="text">
+           <string>Width:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="sizeWidth">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Height:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="sizeHeight">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::MinimumExpanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="2">
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::MinimumExpanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="rateOptions">
+     <property name="title">
+      <string>Rate</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
        <widget class="QRadioButton" name="hz60">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -132,7 +179,21 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1" colspan="2">
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="hz50">
+        <property name="text">
+         <string>50Hz</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QRadioButton" name="hz25">
+        <property name="text">
+         <string>25Hz</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="4">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <property name="spacing">
          <number>0</number>
@@ -178,6 +239,9 @@
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::MinimumExpanding</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>40</width>
@@ -188,31 +252,110 @@
         </item>
        </layout>
       </item>
+      <item row="1" column="2">
+       <widget class="QRadioButton" name="hz24">
+        <property name="text">
+         <string>24Hz</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::MinimumExpanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="1">
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
      </layout>
     </widget>
    </item>
-   <item row="4" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item>
+    <widget class="QGroupBox" name="ffmpegOptions">
+     <property name="title">
+      <string>Profile</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0" colspan="3">
+       <widget class="QComboBox" name="profile"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QLineEdit" name="args"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QToolButton" name="ffmpegHelp">
+        <property name="text">
+         <string>Help</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
-   <item row="3" column="0" colspan="4">
+   <item>
     <widget class="QLabel" name="warning">
      <property name="text">
       <string/>
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>file</tabstop>
+  <tabstop>pickfile</tabstop>
+  <tabstop>sizeOriginal</tabstop>
+  <tabstop>sizeVGA</tabstop>
+  <tabstop>size720p</tabstop>
+  <tabstop>sizeQVGA</tabstop>
+  <tabstop>sizeCustom</tabstop>
+  <tabstop>sizeWidth</tabstop>
+  <tabstop>sizeHeight</tabstop>
+  <tabstop>hz60</tabstop>
+  <tabstop>hz25</tabstop>
+  <tabstop>hz50</tabstop>
+  <tabstop>hz24</tabstop>
+  <tabstop>hzCustom</tabstop>
+  <tabstop>hz</tabstop>
+  <tabstop>profile</tabstop>
+  <tabstop>args</tabstop>
+  <tabstop>ffmpegHelp</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -222,12 +365,12 @@
    <slot>setFocus()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>54</x>
-     <y>104</y>
+     <x>43</x>
+     <y>257</y>
     </hint>
     <hint type="destinationlabel">
-     <x>85</x>
-     <y>107</y>
+     <x>129</x>
+     <y>262</y>
     </hint>
    </hints>
   </connection>
@@ -238,12 +381,12 @@
    <slot>toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>138</x>
-     <y>102</y>
+     <x>143</x>
+     <y>262</y>
     </hint>
     <hint type="destinationlabel">
-     <x>49</x>
-     <y>104</y>
+     <x>43</x>
+     <y>257</y>
     </hint>
    </hints>
   </connection>
@@ -254,12 +397,12 @@
    <slot>toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>110</x>
-     <y>105</y>
+     <x>143</x>
+     <y>262</y>
     </hint>
     <hint type="destinationlabel">
-     <x>51</x>
-     <y>103</y>
+     <x>43</x>
+     <y>257</y>
     </hint>
    </hints>
   </connection>
@@ -270,8 +413,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>280</x>
-     <y>287</y>
+     <x>258</x>
+     <y>424</y>
     </hint>
     <hint type="destinationlabel">
      <x>60</x>
@@ -286,8 +429,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>280</x>
-     <y>287</y>
+     <x>258</x>
+     <y>424</y>
     </hint>
     <hint type="destinationlabel">
      <x>92</x>
@@ -302,8 +445,8 @@
    <slot>pickProfile(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>72</x>
-     <y>132</y>
+     <x>92</x>
+     <y>329</y>
     </hint>
     <hint type="destinationlabel">
      <x>48</x>
@@ -318,12 +461,44 @@
    <slot>storeCustomArgs(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>161</y>
+     <x>128</x>
+     <y>357</y>
     </hint>
     <hint type="destinationlabel">
      <x>102</x>
      <y>189</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sizeWidth</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sizeCustom</receiver>
+   <slot>toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>108</x>
+     <y>133</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>48</x>
+     <y>133</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sizeHeight</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sizeCustom</receiver>
+   <slot>toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>212</x>
+     <y>133</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>64</x>
+     <y>129</y>
     </hint>
    </hints>
   </connection>

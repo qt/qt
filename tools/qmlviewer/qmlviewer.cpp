@@ -298,7 +298,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
 
-    QAction *recordOptions = new QAction(tr("Recording &Options..."), parent);
+    QAction *recordOptions = new QAction(tr("Video &Options..."), parent);
     connect(recordOptions, SIGNAL(triggered()), this, SLOT(chooseRecordingOptions()));
     recordMenu->addAction(recordOptions);
 
@@ -416,7 +416,17 @@ void QmlViewer::pickRecordingFile()
 
 void QmlViewer::chooseRecordingOptions()
 {
+    // File
     recdlg->file->setText(record_file);
+
+    // Size
+    recdlg->sizeOriginal->setText(tr("Original (%1x%2)").arg(canvas->width()).arg(canvas->height()));
+    if (recdlg->sizeWidth->value()<=1) {
+        recdlg->sizeWidth->setValue(canvas->width());
+        recdlg->sizeHeight->setValue(canvas->height());
+    }
+
+    // Rate
     if (record_rate == 24)
         recdlg->hz24->setChecked(true);
     else if (record_rate == 25)
@@ -429,9 +439,24 @@ void QmlViewer::chooseRecordingOptions()
         recdlg->hzCustom->setChecked(true);
         recdlg->hz->setText(QString::number(record_rate));
     }
+
+    // Profile
     recdlg->setArguments(record_args.join(" "));
     if (recdlg->exec()) {
+        // File
         record_file = recdlg->file->text();
+        // Size
+        if (recdlg->sizeOriginal->isChecked())
+            record_outsize = QSize();
+        else if (recdlg->size720p->isChecked())
+            record_outsize = QSize(1280,720);
+        else if (recdlg->sizeVGA->isChecked())
+            record_outsize = QSize(640,480);
+        else if (recdlg->sizeQVGA->isChecked())
+            record_outsize = QSize(320,240);
+        else
+            record_outsize = QSize(recdlg->sizeWidth->value(),recdlg->sizeHeight->value());
+        // Rate
         if (recdlg->hz24->isChecked())
             record_rate = 24;
         else if (recdlg->hz25->isChecked())
@@ -443,6 +468,7 @@ void QmlViewer::chooseRecordingOptions()
         else {
             record_rate = recdlg->hz->text().toDouble();
         }
+        // Profile
         record_args = recdlg->arguments().split(" ",QString::SkipEmptyParts);
     }
 }
@@ -686,7 +712,7 @@ void QmlViewer::senseFfmpeg()
     proc.waitForFinished(2000);
     QString ffmpegHelp = proc.readAllStandardOutput();
     ffmpegAvailable = ffmpegHelp.contains("-s ");
-    ffmpegHelp = tr("Video recording use ffmpeg:")+"\n\n"+ffmpegHelp;
+    ffmpegHelp = tr("Video recording uses ffmpeg:")+"\n\n"+ffmpegHelp;
 
     QDialog *d = new QDialog(recdlg);
     QVBoxLayout *l = new QVBoxLayout(d);
@@ -729,6 +755,10 @@ void QmlViewer::setRecording(bool on)
             args << "-pix_fmt" << (frame_fmt == ".gif" ? "rgb24" : "rgb32");
             args << "-s" << QString("%1x%2").arg(canvas->width()).arg(canvas->height());
             args << "-i" << "-";
+            if (record_outsize.isValid()) {
+                args << "-s" << QString("%1x%2").arg(record_outsize.width()).arg(record_outsize.height());
+                args << "-aspect" << QString::number(double(canvas->width())/canvas->height());
+            }
             args += record_args;
             args << record_file;
             proc->start("ffmpeg",args);
@@ -770,6 +800,8 @@ void QmlViewer::setRecording(bool on)
                     break;
                 QString name;
                 name.sprintf(framename.toLocal8Bit(),frame++);
+                if (record_outsize.isValid())
+                    *img = img->scaled(record_outsize,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
                 if (record_dither=="ordered")
                     img->convertToFormat(QImage::Format_Indexed8,Qt::PreferDither|Qt::OrderedDither).save(name);
                 else if (record_dither=="threshold")
