@@ -1386,19 +1386,6 @@ void QFxListView::trackedPositionChanged()
             d->setPosition(d->trackedItem->position() - d->snapPos);
             break;
         }
-    } else if (d->fixCurrentVisibility && d->currentItem && !d->pressed) {
-        /*
-        if (d->trackedItem->position() < d->position()
-                && d->currentItem->position() < d->position()) {
-            d->setPosition(d->trackedItem->position());
-        } else if (d->size() && d->trackedItem->size() <= d->size()
-                && d->trackedItem->endPosition() > d->position() + d->size()
-                && d->currentItem->endPosition() > d->position() + d->size()) {
-            d->setPosition(d->trackedItem->endPosition() - d->size());
-        }
-        if (d->trackedItem->position() == d->currentItem->position())
-            d->fixCurrentVisibility = false;
-            */
     }
 }
 
