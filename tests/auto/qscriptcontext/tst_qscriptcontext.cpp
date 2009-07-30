@@ -302,10 +302,10 @@ void tst_QScriptContext::returnValue()
 {
     QScriptEngine eng;
     eng.evaluate("123");
-    QEXPECT_FAIL("", "Doesn't work", Continue);
+    QEXPECT_FAIL("", "", Continue);
     QCOMPARE(eng.currentContext()->returnValue().toNumber(), 123.0);
     eng.evaluate("\"ciao\"");
-    QEXPECT_FAIL("", "Doesn't work", Continue);
+    QEXPECT_FAIL("", "", Continue);
     QCOMPARE(eng.currentContext()->returnValue().toString(), QString("ciao"));
 }
 
@@ -473,7 +473,6 @@ void tst_QScriptContext::pushAndPopContext()
     QCOMPARE(ctx->argument(0).isUndefined(), true);
     QVERIFY(!ctx->argument(-1).isValid());
     QCOMPARE(ctx->argumentsObject().isObject(), true);
-    QEXPECT_FAIL("", "activationObject not yet implemented", Continue);
     QCOMPARE(ctx->activationObject().isObject(), true);
     QCOMPARE(ctx->callee().isValid(), false);
     QCOMPARE(ctx->thisObject().strictlyEquals(eng.globalObject()), true);
@@ -499,10 +498,8 @@ void tst_QScriptContext::pushAndPopContext()
     {
         QScriptContext *ctx3 = eng.pushContext();
         ctx3->activationObject().setProperty("foo", QScriptValue(&eng, 123));
-        QEXPECT_FAIL("", "activationObject not yet implemented", Continue);
         QVERIFY(eng.evaluate("foo").strictlyEquals(QScriptValue(&eng, 123)));
         eng.evaluate("var bar = 'ciao'");
-        QEXPECT_FAIL("", "activationObject not yet implemented", Continue);
         QVERIFY(ctx3->activationObject().property("bar", QScriptValue::ResolveLocal).strictlyEquals(QScriptValue(&eng, "ciao")));
         eng.popContext();
     }
@@ -704,7 +701,6 @@ void tst_QScriptContext::getSetActivationObject()
 {
     QScriptEngine eng;
     QScriptContext *ctx = eng.currentContext();
-    QEXPECT_FAIL("", "", Abort);
     QVERIFY(ctx->activationObject().equals(eng.globalObject()));
 
     ctx->setActivationObject(QScriptValue());
@@ -713,6 +709,7 @@ void tst_QScriptContext::getSetActivationObject()
 
     QScriptValue obj = eng.newObject();
     ctx->setActivationObject(obj);
+    QEXPECT_FAIL("", "", Abort);
     QVERIFY(ctx->activationObject().equals(obj));
 
     {
@@ -729,8 +726,12 @@ void tst_QScriptContext::getSetActivationObject()
     {
         QScriptValue ret = eng.evaluate("get_activationObject(1, 2, 3)");
         QVERIFY(ret.isObject());
-        QVERIFY(ret.property("arguments").isObject());
-        QCOMPARE(ret.property("arguments").property("length").toInt32(), 3);
+        QScriptValue arguments = ret.property("arguments");
+        QVERIFY(arguments.isObject());
+        QCOMPARE(arguments.property("length").toInt32(), 3);
+        QCOMPARE(arguments.property("0").toInt32(), 1);
+        QCOMPARE(arguments.property("1").toInt32(), 1);
+        QCOMPARE(arguments.property("2").toInt32(), 1);
     }
 }
 

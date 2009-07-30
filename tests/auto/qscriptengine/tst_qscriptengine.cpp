@@ -163,7 +163,6 @@ void tst_QScriptEngine::currentContext()
     QVERIFY(!globalCtx->callee().isValid());
     QCOMPARE(globalCtx->state(), QScriptContext::NormalState);
     QVERIFY(globalCtx->thisObject().strictlyEquals(eng.globalObject()));
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(globalCtx->activationObject().strictlyEquals(eng.globalObject()));
     QVERIFY(globalCtx->argumentsObject().isObject());
 }
@@ -183,14 +182,12 @@ void tst_QScriptEngine::pushPopContext()
     QCOMPARE(ctx->backtrace().size(), 2);
     QCOMPARE(ctx->engine(), &eng);
     QCOMPARE(ctx->state(), QScriptContext::NormalState);
-    QEXPECT_FAIL("", "activationObject not implemented", Continue);
     QVERIFY(ctx->activationObject().isObject());
     QVERIFY(ctx->argumentsObject().isObject());
 
     QScriptContext *ctx2 = eng.pushContext();
     QVERIFY(ctx2 != 0);
     QCOMPARE(ctx2->parentContext(), ctx);
-    QEXPECT_FAIL("", "activationObject not implemented", Continue);
     QVERIFY(!ctx2->activationObject().strictlyEquals(ctx->activationObject()));
     QVERIFY(!ctx2->argumentsObject().strictlyEquals(ctx->argumentsObject()));
 
@@ -890,7 +887,6 @@ void tst_QScriptEngine::getSetGlobalObject()
     QCOMPARE(glob.isObject(), true);
     QVERIFY(!glob.isFunction());
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(glob));
-    QEXPECT_FAIL("", "Activation object for global context", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(glob));
     QCOMPARE(glob.toString(), QString::fromLatin1("[object global]"));
     // prototype should be Object.prototype
@@ -902,7 +898,6 @@ void tst_QScriptEngine::getSetGlobalObject()
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "this-object for global context", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
     QVERIFY(eng.evaluate("this").strictlyEquals(obj));
     QCOMPARE(eng.globalObject().toString(), QString::fromLatin1("[object Object]"));
@@ -913,13 +908,11 @@ void tst_QScriptEngine::getSetGlobalObject()
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
     eng.collectGarbage();
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 }
 

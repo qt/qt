@@ -47,6 +47,7 @@
 #include "qscriptcontextinfo.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
+#include "../bridge/qscriptactivationobject_p.h"
 
 #include "Arguments.h"
 #include "CodeBlock.h"
@@ -432,14 +433,34 @@ void QScriptContext::setReturnValue(const QScriptValue &result)
 QScriptValue QScriptContext::activationObject() const
 {
     Q_D(const QScriptContext);
-    JSC::CodeBlock *codeBlock = d->frame->codeBlock();
-    if (!codeBlock) {
-        qWarning("QScriptContext::activationObject() not implemented for native functions");
-        return QScriptValue();
-    }
     // ### this is still a bit shaky
-    JSC::FunctionBodyNode *body = static_cast<JSC::FunctionBodyNode*>(codeBlock->ownerNode());
-    return d->engine->scriptValueFromJSCValue(new (&d->frame->globalData())JSC::JSActivation(d->frame, body));
+    // if properties of the activation are accessed after this context is
+    // popped, we CRASH.
+    // Ideally we should be able to store the activation object in the callframe
+    // and JSC would clean it up for us.
+    JSC::JSObject *result = 0;
+    // look in scope chain
+    {
+        JSC::ScopeChainNode *node = d->frame->scopeChain();
+        JSC::ScopeChainIterator it(node);
+        for (it = node->begin(); it != node->end(); ++it) {
+            if ((*it)->isVariableObject()) {
+                result = *it;
+                break;
+            }
+        }
+    }
+    if (!result) {
+        JSC::CodeBlock *codeBlock = d->frame->codeBlock();
+        if (!codeBlock) {
+            // native function
+            result = new (d->frame)QScript::QScriptActivationObject(d->frame);
+        } else {
+            JSC::FunctionBodyNode *body = static_cast<JSC::FunctionBodyNode*>(codeBlock->ownerNode());
+            result = new (d->frame)JSC::JSActivation(d->frame, body);
+        }
+    }
+    return d->engine->scriptValueFromJSCValue(result);
 }
 
 /*!
@@ -450,8 +471,16 @@ QScriptValue QScriptContext::activationObject() const
 */
 void QScriptContext::setActivationObject(const QScriptValue &activation)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    Q_UNUSED(activation);
+    Q_D(QScriptContext);
+    if (!activation.isObject())
+        return;
+    JSC::JSObject *object = JSC::asObject(d->engine->scriptValueToJSCValue(activation));
+    if (!object->isVariableObject()) {
+        qWarning("QScriptContext::setActivationObject(): not an activation object");
+        return;
+    }
+// ### look for variableObject in d->frame->scopeChain, replace by object
+    qWarning("QScriptContext::setActivationObject() not implemented");
 }
 
 /*!
