@@ -332,7 +332,7 @@ protected:
         tty.c_oflag     = 0;
         tty.c_lflag     = 0;
         tty.c_cflag     = f | CREAD | CLOCAL | HUPCL;
-#if !defined(Q_OS_DARWIN) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_INTEGRITY)
+#ifdef Q_OS_LINUX
         tty.c_line      = 0;
 #endif
         tty.c_cc[VTIME] = 0;

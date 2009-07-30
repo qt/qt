@@ -62,6 +62,10 @@
 #  endif
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#  include <envLib.h>
+#endif
+
 #ifdef Q_CC_MWERKS
 #include <CoreServices/CoreServices.h>
 #endif
@@ -1344,14 +1348,7 @@ bool qSharedBuild()
     \macro Q_OS_QNX
     \relates <QtGlobal>
 
-    Defined on QNX.
-*/
-
-/*!
-    \macro Q_OS_QNX6
-    \relates <QtGlobal>
-
-    Defined on QNX RTP 6.1.
+    Defined on QNX Neutrino.
 */
 
 /*!
@@ -1914,7 +1911,7 @@ QString qt_error_string(int errorCode)
         if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
             ret = QString::fromLatin1("The specified module could not be found.");
 
-#elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L && !defined(Q_OS_INTEGRITY)
+#elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX)
 
         QByteArray buf(1024, '\0');
         strerror_r(errorCode, buf.data(), buf.size());

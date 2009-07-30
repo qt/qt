@@ -688,6 +688,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
         {tools/regexp}{Regular Expression Example}
 */
 
+#if defined(Q_OS_VXWORKS) && defined(EOS)
+#  undef EOS
+#endif
+
 const int NumBadChars = 64;
 #define BadChar(ch) ((ch).unicode() % NumBadChars)
 

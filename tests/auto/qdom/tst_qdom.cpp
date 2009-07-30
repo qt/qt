@@ -290,17 +290,17 @@ void tst_QDom::toString_01_data()
 {
     QTest::addColumn<QString>("fileName");
 
-    QTest::newRow( "01" ) << QString("testdata/toString_01/doc01.xml");
-    QTest::newRow( "02" ) << QString("testdata/toString_01/doc02.xml");
-    QTest::newRow( "03" ) << QString("testdata/toString_01/doc03.xml");
-    QTest::newRow( "04" ) << QString("testdata/toString_01/doc04.xml");
-    QTest::newRow( "05" ) << QString("testdata/toString_01/doc05.xml");
+    QTest::newRow( "01" ) << QString(SRCDIR "testdata/toString_01/doc01.xml");
+    QTest::newRow( "02" ) << QString(SRCDIR "testdata/toString_01/doc02.xml");
+    QTest::newRow( "03" ) << QString(SRCDIR "testdata/toString_01/doc03.xml");
+    QTest::newRow( "04" ) << QString(SRCDIR "testdata/toString_01/doc04.xml");
+    QTest::newRow( "05" ) << QString(SRCDIR "testdata/toString_01/doc05.xml");
 
-    QTest::newRow( "euc-jp" ) << QString("testdata/toString_01/doc_euc-jp.xml");
-    QTest::newRow( "iso-2022-jp" ) << QString("testdata/toString_01/doc_iso-2022-jp.xml");
-    QTest::newRow( "little-endian" ) << QString("testdata/toString_01/doc_little-endian.xml");
-    QTest::newRow( "utf-16" ) << QString("testdata/toString_01/doc_utf-16.xml");
-    QTest::newRow( "utf-8" ) << QString("testdata/toString_01/doc_utf-8.xml");
+    QTest::newRow( "euc-jp" ) << QString(SRCDIR "testdata/toString_01/doc_euc-jp.xml");
+    QTest::newRow( "iso-2022-jp" ) << QString(SRCDIR "testdata/toString_01/doc_iso-2022-jp.xml");
+    QTest::newRow( "little-endian" ) << QString(SRCDIR "testdata/toString_01/doc_little-endian.xml");
+    QTest::newRow( "utf-16" ) << QString(SRCDIR "testdata/toString_01/doc_utf-16.xml");
+    QTest::newRow( "utf-8" ) << QString(SRCDIR "testdata/toString_01/doc_utf-8.xml");
 
 }
 
@@ -474,7 +474,7 @@ void tst_QDom::initTestCase()
     QSKIP("Our current test machine, arsia, is too slow for this auto test.", SkipAll);
 #endif
 
-    QFile file("testdata/excludedCodecs.txt");
+    QFile file(SRCDIR "testdata/excludedCodecs.txt");
     QVERIFY(file.open(QIODevice::ReadOnly|QIODevice::Text));
 
     QByteArray codecName;
@@ -550,18 +550,18 @@ void tst_QDom::saveWithSerialization_data() const
 {
     QTest::addColumn<QString>("fileName");
 
-    QTest::newRow("doc01.xml") << QString("testdata/toString_01/doc01.xml");
-    QTest::newRow("doc01.xml") << QString("testdata/toString_01/doc01.xml");
-    QTest::newRow("doc02.xml") << QString("testdata/toString_01/doc02.xml");
-    QTest::newRow("doc03.xml") << QString("testdata/toString_01/doc03.xml");
-    QTest::newRow("doc04.xml") << QString("testdata/toString_01/doc04.xml");
-    QTest::newRow("doc05.xml") << QString("testdata/toString_01/doc05.xml");
+    QTest::newRow("doc01.xml") << QString(SRCDIR "testdata/toString_01/doc01.xml");
+    QTest::newRow("doc01.xml") << QString(SRCDIR "testdata/toString_01/doc01.xml");
+    QTest::newRow("doc02.xml") << QString(SRCDIR "testdata/toString_01/doc02.xml");
+    QTest::newRow("doc03.xml") << QString(SRCDIR "testdata/toString_01/doc03.xml");
+    QTest::newRow("doc04.xml") << QString(SRCDIR "testdata/toString_01/doc04.xml");
+    QTest::newRow("doc05.xml") << QString(SRCDIR "testdata/toString_01/doc05.xml");
 
-    QTest::newRow("doc_euc-jp.xml") << QString("testdata/toString_01/doc_euc-jp.xml");
-    QTest::newRow("doc_iso-2022-jp.xml") << QString("testdata/toString_01/doc_iso-2022-jp.xml");
-    QTest::newRow("doc_little-endian.xml") << QString("testdata/toString_01/doc_little-endian.xml");
-    QTest::newRow("doc_utf-16.xml") << QString("testdata/toString_01/doc_utf-16.xml");
-    QTest::newRow("doc_utf-8.xml") << QString("testdata/toString_01/doc_utf-8.xml");
+    QTest::newRow("doc_euc-jp.xml") << QString(SRCDIR "testdata/toString_01/doc_euc-jp.xml");
+    QTest::newRow("doc_iso-2022-jp.xml") << QString(SRCDIR "testdata/toString_01/doc_iso-2022-jp.xml");
+    QTest::newRow("doc_little-endian.xml") << QString(SRCDIR "testdata/toString_01/doc_little-endian.xml");
+    QTest::newRow("doc_utf-16.xml") << QString(SRCDIR "testdata/toString_01/doc_utf-16.xml");
+    QTest::newRow("doc_utf-8.xml") << QString(SRCDIR "testdata/toString_01/doc_utf-8.xml");
 }
 
 void tst_QDom::cloneNode_data()
@@ -1780,7 +1780,7 @@ void tst_QDom::doubleNamespaceDeclarations() const
 {
     QDomDocument doc; 
 
-    QFile file("doubleNamespaces.xml" ); 
+    QFile file(SRCDIR "doubleNamespaces.xml" );
     QVERIFY(file.open(QIODevice::ReadOnly));
 
     QXmlSimpleReader reader; 

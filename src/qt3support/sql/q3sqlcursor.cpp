@@ -879,7 +879,7 @@ QString Q3SqlCursor::toString(const QString& prefix, QSqlField* field, const QSt
 {
     QString f;
     if (field && driver()) {
-        f = (prefix.length() > 0 ? prefix + QLatin1Char('.') : QString()) + field->name();
+        f = (prefix.length() > 0 ? prefix + QLatin1Char('.') : QString()) + driver()->escapeIdentifier(field->name(), QSqlDriver::FieldName);
         f += QLatin1Char(' ') + fieldSep + QLatin1Char(' ');
         if (field->isNull()) {
             f += QLatin1String("NULL");

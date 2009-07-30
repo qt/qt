@@ -130,7 +130,7 @@ private slots:
             screenNumber->setBrush(fillBrush);
             screenNumber->setFont(QFont("Arial Black", 18));
             screenNumber->setTransform(QTransform().scale(10, 10));
-            screenNumber->setTransformOrigin(screenNumber->boundingRect().center());
+            screenNumber->setTransformOriginPoint(screenNumber->boundingRect().center());
             QSizeF center = (workRect.size() - screenNumber->boundingRect().size()) / 2;
             screenNumber->setPos(center.width(), center.height());
 

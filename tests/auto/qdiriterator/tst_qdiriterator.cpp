@@ -48,6 +48,10 @@
 #include <qfileinfo.h>
 #include <qstringlist.h>
 
+#if defined(Q_OS_VXWORKS)
+#define Q_NO_SYMLINKS
+#endif
+
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)
 Q_DECLARE_METATYPE(QDir::Filters)
 
@@ -87,6 +91,7 @@ tst_QDirIterator::tst_QDirIterator()
     QFile::remove("entrylist/directory/entrylist3.lnk");
     QFile::remove("entrylist/directory/entrylist4.lnk");
 
+#ifndef Q_NO_SYMLINKS
 #ifdef Q_OS_WIN
     // ### Sadly, this is a platform difference right now.
     QFile::link("entrylist/file", "entrylist/linktofile.lnk");
@@ -96,6 +101,7 @@ tst_QDirIterator::tst_QDirIterator()
     QFile::link("file", "entrylist/linktofile.lnk");
     QFile::link("directory", "entrylist/linktodirectory.lnk");
     QFile::link("nothing", "entrylist/brokenlink.lnk");
+#endif
 #endif
     QFile("entrylist/writable").open(QIODevice::ReadWrite);
 }
@@ -135,9 +141,13 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/..,"
 #endif
                    "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/directory,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
+#endif
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories | QDir::FollowSymlinks")
@@ -151,10 +161,14 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/directory/..,"
 #endif
                    "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/directory,"
                    "entrylist/directory/dummy,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
+#endif
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories / QDir::Files")
@@ -162,14 +176,18 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QDir::Filters(QDir::Files) << QStringList("*")
         << QString("entrylist/directory/dummy,"
                    "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories | QDir::FollowSymlinks / QDir::Files")
         << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
         << QDir::Filters(QDir::Files) << QStringList("*")
         << QString("entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/directory/dummy,"
                    "entrylist/writable").split(',');
 }

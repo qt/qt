@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,54 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef __SUBMARINE__H__
-#define __SUBMARINE__H__
+#ifndef QGRAPHICSTRANSFORM_P_H
+#define QGRAPHICSTRANSFORM_P_H
 
-//Qt
-#include <QtCore/QVariantAnimation>
-#include <QtGui/QGraphicsWidget>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
+// file may change from version to version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class PixmapItem;
+#include "private/qobject_p.h"
 
-class Torpedo;
+class QGraphicsItem;
 
-class SubMarine : public QGraphicsWidget
-{
-Q_OBJECT
+class QGraphicsTransformPrivate : public QObjectPrivate {
 public:
-    enum Movement {
-       None = 0,
-       Left,
-       Right
-    };
-    enum { Type = UserType + 1 };
-    SubMarine(int type, const QString &name, int points, QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0);
+    Q_DECLARE_PUBLIC(QGraphicsTransform)
 
-    int points();
+    QGraphicsTransformPrivate()
+        : QObjectPrivate(), item(0) {}
 
-    void setCurrentDirection(Movement direction);
-    enum Movement currentDirection() const;
+    QGraphicsItem *item;
 
-    void setCurrentSpeed(int speed);
-    int currentSpeed() const;
-
-    void launchTorpedo(int speed);
-    void destroy();
-
-    virtual int type() const;
-
-signals:
-    void subMarineDestroyed();
-    void subMarineExecutionFinished();
-    void subMarineStateChanged();
-
-private:
-    int subType;
-    QString subName;
-    int subPoints;
-    int speed;
-    Movement direction;
-    PixmapItem *pixmapItem;
+    void setItem(QGraphicsItem *item);
+    static void updateItem(QGraphicsItem *item);
 };
 
-#endif //__SUBMARINE__H__
+#endif // QGRAPHICSTRANSFORM_P_H

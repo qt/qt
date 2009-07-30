@@ -114,10 +114,17 @@ embedded {
 		SOURCES += embedded/qscreenlinuxfb_qws.cpp
 	}
 
+        contains( gfx-drivers, qnx ) {
+                HEADERS += embedded/qscreenqnx_qws.h
+                SOURCES += embedded/qscreenqnx_qws.cpp
+                LIBS += -lgf
+        }
+
 	contains( gfx-drivers, qvfb ) {
 		HEADERS += embedded/qscreenvfb_qws.h
 		SOURCES += embedded/qscreenvfb_qws.cpp
 	}
+
 
 	contains( gfx-drivers, vnc ) {
 		VNCDIR = $$QT_SOURCE_TREE/src/plugins/gfxdrivers/vnc
@@ -158,6 +165,11 @@ embedded {
 		SOURCES +=embedded/qkbdum_qws.cpp
 	}
 
+        contains( kbd-drivers, qnx ) {
+                HEADERS += embedded/qkbdqnx_qws.h
+                SOURCES += embedded/qkbdqnx_qws.cpp
+        }
+
 #
 # Mouse drivers
 #
@@ -185,5 +197,10 @@ embedded {
 	contains( mouse-drivers, linuxinput ) {
 		HEADERS +=embedded/qmouselinuxinput_qws.h
 		SOURCES +=embedded/qmouselinuxinput_qws.cpp
-	}
+        }
+
+        contains( mouse-drivers, qnx ) {
+                HEADERS += embedded/qmouseqnx_qws.h
+                SOURCES += embedded/qmouseqnx_qws.cpp
+        }
 }

@@ -123,6 +123,8 @@ private slots:
     void reentrancy();
     void incDecNonObjectProperty();
     void installTranslatorFunctions();
+    void functionScopes();
+    void nativeFunctionScopes();
 
     void qRegExpInport_data();
     void qRegExpInport();
@@ -3806,6 +3808,109 @@ void tst_QScriptEngine::installTranslatorFunctions()
     }
 }
 
+void tst_QScriptEngine::functionScopes()
+{
+    QScriptEngine eng;
+    {
+        // top-level functions have only the global object in their scope
+        QScriptValue fun = eng.evaluate("(function() {})");
+        QVERIFY(fun.isFunction());
+        QVERIFY(fun.scope().isObject());
+        QVERIFY(fun.scope().strictlyEquals(eng.globalObject()));
+        QVERIFY(!eng.globalObject().scope().isValid());
+    }
+    {
+        QScriptValue fun = eng.globalObject().property("Object");
+        QVERIFY(fun.isFunction());
+        // native built-in functions don't have scope
+        QVERIFY(!fun.scope().isValid());
+    }
+    {
+        // closure
+        QScriptValue fun = eng.evaluate("(function(arg) { var foo = arg; return function() { return foo; }; })(123)");
+        QVERIFY(fun.isFunction());
+        {
+            QScriptValue ret = fun.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
+        QScriptValue scope = fun.scope();
+        QVERIFY(scope.isObject());
+        {
+            QScriptValue ret = scope.property("foo");
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+            QCOMPARE(scope.propertyFlags("foo"), QScriptValue::Undeletable);
+        }
+        {
+            QScriptValue ret = scope.property("arg");
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+            QCOMPARE(scope.propertyFlags("arg"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        }
+
+        scope.setProperty("foo", 456);
+        {
+            QScriptValue ret = fun.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 456);
+        }
+
+        scope = scope.scope();
+        QVERIFY(scope.isObject());
+        QVERIFY(scope.strictlyEquals(eng.globalObject()));
+    }
+}
+
+static QScriptValue counter_inner(QScriptContext *ctx, QScriptEngine *)
+{
+     QScriptValue outerAct = ctx->callee().scope();
+     double count = outerAct.property("count").toNumber();
+     outerAct.setProperty("count", count+1);
+     return count;
+}
+
+static QScriptValue counter(QScriptContext *ctx, QScriptEngine *eng)
+{
+     QScriptValue act = ctx->activationObject();
+     act.setProperty("count", ctx->argument(0).toInt32());
+     QScriptValue result = eng->newFunction(counter_inner);
+     result.setScope(act);
+     return result;
+}
+
+static QScriptValue counter_hybrid(QScriptContext *ctx, QScriptEngine *eng)
+{
+     QScriptValue act = ctx->activationObject();
+     act.setProperty("count", ctx->argument(0).toInt32());
+     return eng->evaluate("function() { return count++; }");
+}
+
+void tst_QScriptEngine::nativeFunctionScopes()
+{
+    QScriptEngine eng;
+    {
+        QScriptValue fun = eng.newFunction(counter);
+        QScriptValue cnt = fun.call(QScriptValue(), QScriptValueList() << 123);
+        QVERIFY(cnt.isFunction());
+        {
+            QScriptValue ret = cnt.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
+    }
+    {
+        QScriptValue fun = eng.newFunction(counter_hybrid);
+        QScriptValue cnt = fun.call(QScriptValue(), QScriptValueList() << 123);
+        QVERIFY(cnt.isFunction());
+        {
+            QScriptValue ret = cnt.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
+    }
+}
+
 static QRegExp minimal(QRegExp r) { r.setMinimal(true); return r; }
 
 void tst_QScriptEngine::qRegExpInport_data()
@@ -3857,7 +3962,6 @@ void tst_QScriptEngine::qRegExpInport()
         QCOMPARE(result.property(i).toString(), rx.cap(i));
     }
 }
-
 
 QTEST_MAIN(tst_QScriptEngine)
 #include "tst_qscriptengine.moc"
