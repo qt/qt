@@ -1194,21 +1194,22 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.4
     \brief defines a threshold for auto maximizing widgets
 
-    The auto maximize threshold is only available as part of Qt for Windows CE.
+    \bold{The auto maximize threshold is only available as part of Qt for
+    Windows CE.}
 
     This property defines a threshold for the size of a window as a percentage
     of the screen size. If the minimum size hint of a window exceeds the
-    threshold, calling show() will then cause the window to be maximized
+    threshold, calling show() will cause the window to be maximized
     automatically.
 
-    Setting the threshold to be 100 or greater means that it will cause it to
-    always be maximized. Setting it to be 50 means that the widget is maximized
-    if the vertical minimum size hint is at least 50% of the vertical screen
-    size.
+    Setting the threshold to 100 or greater means that the widget will always
+    be maximized. Alternatively, setting the threshold to 50 means that the
+    widget will be maximized only if the vertical minimum size hint is at least
+    50% of the vertical screen size.
 
-    If -1 is specified then this will disable the feature.
+    Setting the threshold to -1 disables the feature.
 
-    On Windows CE the default is -1 (i.e. it is disabled).
+    On Windows CE the default is -1 (i.e., it is disabled).
     On Windows Mobile the default is 40.
 */
 
