@@ -65,12 +65,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLParamElementConstructorTable =
     { 1, 0, JSHTMLParamElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLParamElementConstructor : public DOMObject {
+class JSHTMLParamElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLParamElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLParamElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLParamElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLParamElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLParamElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLParamElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,8 +112,8 @@ JSObject* JSHTMLParamElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLParamElement::s_info = { "HTMLParamElement", &JSHTMLElement::s_info, &JSHTMLParamElementTable, 0 };
 
-JSHTMLParamElement::JSHTMLParamElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLParamElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLParamElement::JSHTMLParamElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLParamElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -129,35 +129,40 @@ bool JSHTMLParamElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLParamElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()))->impl());
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsHTMLParamElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()))->impl());
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLParamElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()))->impl());
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
     return jsString(exec, imp->value());
 }
 
 JSValue jsHTMLParamElementValueType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()))->impl());
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
     return jsString(exec, imp->valueType());
 }
 
 JSValue jsHTMLParamElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLParamElement* domObject = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
+    return JSHTMLParamElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLParamElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -188,9 +193,9 @@ void setJSHTMLParamElementValueType(ExecState* exec, JSObject* thisObject, JSVal
     imp->setValueType(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLParamElement::getConstructor(ExecState* exec)
+JSValue JSHTMLParamElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLParamElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLParamElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

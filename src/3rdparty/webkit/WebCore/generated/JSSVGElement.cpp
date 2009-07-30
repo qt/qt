@@ -79,8 +79,8 @@ JSObject* JSSVGElementPrototype::self(ExecState* exec, JSGlobalObject* globalObj
 
 const ClassInfo JSSVGElement::s_info = { "SVGElement", &JSElement::s_info, &JSSVGElementTable, 0 };
 
-JSSVGElement::JSSVGElement(PassRefPtr<Structure> structure, PassRefPtr<SVGElement> impl)
-    : JSElement(structure, impl)
+JSSVGElement::JSSVGElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> impl)
+    : JSElement(structure, globalObject, impl)
 {
 }
 
@@ -96,30 +96,34 @@ bool JSSVGElement::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsSVGElementId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
+    SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
     return jsString(exec, imp->id());
 }
 
 JSValue jsSVGElementXmlbase(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
+    SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
     return jsString(exec, imp->xmlbase());
 }
 
 JSValue jsSVGElementOwnerSVGElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->ownerSVGElement()));
+    SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerSVGElement()));
 }
 
 JSValue jsSVGElementViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->viewportElement()));
+    SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->viewportElement()));
 }
 
 void JSSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)

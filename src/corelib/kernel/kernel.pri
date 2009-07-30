@@ -115,3 +115,10 @@ unix {
    contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
 }
 
+vxworks {
+	SOURCES += \
+		kernel/qfunctions_vxworks.cpp
+	HEADERS += \
+		kernel/qfunctions_vxworks.h
+}
+

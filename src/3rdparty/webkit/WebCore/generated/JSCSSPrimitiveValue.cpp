@@ -27,6 +27,7 @@
 #include "JSRGBColor.h"
 #include "JSRect.h"
 #include "KURL.h"
+#include "RGBColor.h"
 #include "Rect.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
@@ -95,12 +96,12 @@ static JSC_CONST_HASHTABLE HashTable JSCSSPrimitiveValueConstructorTable =
     { 69, 63, JSCSSPrimitiveValueConstructorTableValues, 0 };
 #endif
 
-class JSCSSPrimitiveValueConstructor : public DOMObject {
+class JSCSSPrimitiveValueConstructor : public DOMConstructorObject {
 public:
-    JSCSSPrimitiveValueConstructor(ExecState* exec)
-        : DOMObject(JSCSSPrimitiveValueConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSPrimitiveValueConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSPrimitiveValueConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSPrimitiveValuePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSPrimitiveValuePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -180,8 +181,8 @@ bool JSCSSPrimitiveValuePrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSCSSPrimitiveValue::s_info = { "CSSPrimitiveValue", &JSCSSValue::s_info, &JSCSSPrimitiveValueTable, 0 };
 
-JSCSSPrimitiveValue::JSCSSPrimitiveValue(PassRefPtr<Structure> structure, PassRefPtr<CSSPrimitiveValue> impl)
-    : JSCSSValue(structure, impl)
+JSCSSPrimitiveValue::JSCSSPrimitiveValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSPrimitiveValue> impl)
+    : JSCSSValue(structure, globalObject, impl)
 {
 }
 
@@ -197,18 +198,20 @@ bool JSCSSPrimitiveValue::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsCSSPrimitiveValuePrimitiveType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSPrimitiveValue* castedThis = static_cast<JSCSSPrimitiveValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSPrimitiveValue* imp = static_cast<CSSPrimitiveValue*>(static_cast<JSCSSPrimitiveValue*>(asObject(slot.slotBase()))->impl());
+    CSSPrimitiveValue* imp = static_cast<CSSPrimitiveValue*>(castedThis->impl());
     return jsNumber(exec, imp->primitiveType());
 }
 
 JSValue jsCSSPrimitiveValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSPrimitiveValue*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSPrimitiveValue* domObject = static_cast<JSCSSPrimitiveValue*>(asObject(slot.slotBase()));
+    return JSCSSPrimitiveValue::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSCSSPrimitiveValue::getConstructor(ExecState* exec)
+JSValue JSCSSPrimitiveValue::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSPrimitiveValueConstructor>(exec);
+    return getDOMConstructor<JSCSSPrimitiveValueConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsCSSPrimitiveValuePrototypeFunctionSetFloatValue(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -284,7 +287,7 @@ JSValue JSC_HOST_CALL jsCSSPrimitiveValuePrototypeFunctionGetCounterValue(ExecSt
     ExceptionCode ec = 0;
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getCounterValue(ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getCounterValue(ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -299,7 +302,7 @@ JSValue JSC_HOST_CALL jsCSSPrimitiveValuePrototypeFunctionGetRectValue(ExecState
     ExceptionCode ec = 0;
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getRectValue(ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getRectValue(ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -314,7 +317,7 @@ JSValue JSC_HOST_CALL jsCSSPrimitiveValuePrototypeFunctionGetRGBColorValue(ExecS
     ExceptionCode ec = 0;
 
 
-    JSC::JSValue result = getJSRGBColor(exec, imp->getRGBColorValue(ec));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getRGBColorValue(ec)));
     setDOMException(exec, ec);
     return result;
 }

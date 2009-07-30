@@ -76,8 +76,8 @@ JSObject* JSSQLResultSetPrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSSQLResultSet::s_info = { "SQLResultSet", 0, &JSSQLResultSetTable, 0 };
 
-JSSQLResultSet::JSSQLResultSet(PassRefPtr<Structure> structure, PassRefPtr<SQLResultSet> impl)
-    : DOMObject(structure)
+JSSQLResultSet::JSSQLResultSet(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLResultSet> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -99,15 +99,17 @@ bool JSSQLResultSet::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsSQLResultSetRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SQLResultSet* imp = static_cast<SQLResultSet*>(static_cast<JSSQLResultSet*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->rows()));
+    SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
 }
 
 JSValue jsSQLResultSetInsertId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    SQLResultSet* imp = static_cast<SQLResultSet*>(static_cast<JSSQLResultSet*>(asObject(slot.slotBase()))->impl());
+    SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->insertId(ec));
     setDOMException(exec, ec);
     return result;
@@ -115,14 +117,15 @@ JSValue jsSQLResultSetInsertId(ExecState* exec, const Identifier&, const Propert
 
 JSValue jsSQLResultSetRowsAffected(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SQLResultSet* imp = static_cast<SQLResultSet*>(static_cast<JSSQLResultSet*>(asObject(slot.slotBase()))->impl());
+    SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
     return jsNumber(exec, imp->rowsAffected());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SQLResultSet* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLResultSet* object)
 {
-    return getDOMObjectWrapper<JSSQLResultSet>(exec, object);
+    return getDOMObjectWrapper<JSSQLResultSet>(exec, globalObject, object);
 }
 SQLResultSet* toSQLResultSet(JSC::JSValue value)
 {

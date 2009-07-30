@@ -31,7 +31,7 @@ class HTMLEmbedElement;
 class JSHTMLEmbedElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLEmbedElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLEmbedElement>);
+    JSHTMLEmbedElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLEmbedElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
@@ -47,7 +47,7 @@ public:
 
     virtual JSC::CallType getCallData(JSC::CallData&);
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 private:
     static bool canGetItemsForName(JSC::ExecState*, HTMLEmbedElement*, const JSC::Identifier&);
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

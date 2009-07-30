@@ -87,3 +87,17 @@ information about a particular change.
 
   That means QUrl no longer accepts some URLs that were invalid
   before, but weren't interpreted as such.
+
+- The Unix configure-time check for STL is stricter now in Qt
+  4.6.0. This means some legacy STL implementations may fail to pass
+  the test and, therefore, Qt will automatically disable STL support.
+
+  This is a binary-compatible change: existing code will continue to
+  work without being recompiled. However, it affects the source code,
+  since some STL-compatibility API will not be enabled.
+
+  Platforms affected by this change:
+    * solaris-cc-* with the default (Cstd) C++ STL library
+      recommendation: use -library=stlport4
+      See Sun Studio's documentation for the effects of this option
+

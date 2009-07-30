@@ -41,9 +41,46 @@
 
 #include "qlock_p.h"
 
-#ifndef QT_NO_QWS_MULTIPROCESS
+QT_BEGIN_NAMESPACE
+
+#ifdef QT_NO_QWS_MULTIPROCESS
+
+/* no multiprocess - use a dummy */
+
+QLock::QLock(const QString & /*filename*/, char /*id*/, bool /*create*/)
+    : type(Read), data(0)
+{
+}
+
+QLock::~QLock()
+{
+}
+
+bool QLock::isValid() const
+{
+    return true;
+}
+
+void QLock::lock(Type t)
+{
+    data = (QLockData *)-1;
+    type = t;
+}
+
+void QLock::unlock()
+{
+    data = 0;
+}
+
+bool QLock::locked() const
+{
+    return data;
+}
+
+#else // QT_NO_QWS_MULTIPROCESS
 
 #include "qwssignalhandler_p.h"
+
 #include <unistd.h>
 #include <sys/types.h>
 #if defined(Q_OS_DARWIN)
@@ -71,16 +108,10 @@ union semun {
 #include <qdebug.h>
 #include <signal.h>
 
-#endif // QT_NO_QWS_MULTIPROCESS
-
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #define MAX_LOCKS   200            // maximum simultaneous read locks
 
-QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_QWS_MULTIPROCESS
 class QLockData
 {
 public:
@@ -91,7 +122,6 @@ public:
     int count;
     bool owned;
 };
-#endif // QT_NO_QWS_MULTIPROCESS
 
 /*!
     \class QLock
@@ -126,11 +156,6 @@ public:
 
 QLock::QLock(const QString &filename, char id, bool create)
 {
-#ifdef QT_NO_QWS_MULTIPROCESS
-    Q_UNUSED(filename);
-    Q_UNUSED(id);
-    Q_UNUSED(create);
-#else
     data = new QLockData;
     data->count = 0;
 #ifdef Q_NO_SEMAPHORE
@@ -163,7 +188,6 @@ QLock::QLock(const QString &filename, char id, bool create)
                  qPrintable(filename), id);
         qDebug() << "Error" << eno << strerror(eno);
     }
-#endif
 }
 
 /*!
@@ -174,7 +198,6 @@ QLock::QLock(const QString &filename, char id, bool create)
 
 QLock::~QLock()
 {
-#ifndef QT_NO_QWS_MULTIPROCESS
     if (locked())
         unlock();
 #ifdef Q_NO_SEMAPHORE
@@ -188,7 +211,6 @@ QLock::~QLock()
         QWSSignalHandler::instance()->removeSemaphore(data->id);
 #endif
     delete data;
-#endif
 }
 
 /*!
@@ -200,11 +222,7 @@ QLock::~QLock()
 
 bool QLock::isValid() const
 {
-#ifndef QT_NO_QWS_MULTIPROCESS
     return (data->id != -1);
-#else
-    return true;
-#endif
 }
 
 /*!
@@ -221,9 +239,6 @@ bool QLock::isValid() const
 
 void QLock::lock(Type t)
 {
-#ifdef QT_NO_QWS_MULTIPROCESS
-    Q_UNUSED(t);
-#else
     if (!data->count) {
 #ifdef Q_NO_SEMAPHORE
         int op = LOCK_SH;
@@ -256,7 +271,6 @@ void QLock::lock(Type t)
 #endif
     }
     data->count++;
-#endif
 }
 
 /*!
@@ -269,7 +283,6 @@ void QLock::lock(Type t)
 
 void QLock::unlock()
 {
-#ifndef QT_NO_QWS_MULTIPROCESS
     if(data->count) {
         data->count--;
         if(!data->count) {
@@ -298,7 +311,6 @@ void QLock::unlock()
     } else {
         qDebug("Unlock without corresponding lock");
     }
-#endif
 }
 
 /*!
@@ -310,11 +322,9 @@ void QLock::unlock()
 
 bool QLock::locked() const
 {
-#ifndef QT_NO_QWS_MULTIPROCESS
     return (data->count > 0);
-#else
-    return false;
-#endif
 }
+
+#endif // QT_NO_QWS_MULTIPROCESS
 
 QT_END_NAMESPACE

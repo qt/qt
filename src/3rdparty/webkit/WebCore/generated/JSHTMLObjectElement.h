@@ -31,7 +31,7 @@ class HTMLObjectElement;
 class JSHTMLObjectElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLObjectElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLObjectElement>);
+    JSHTMLObjectElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLObjectElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
@@ -47,7 +47,7 @@ public:
 
     virtual JSC::CallType getCallData(JSC::CallData&);
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 private:
     static bool canGetItemsForName(JSC::ExecState*, HTMLObjectElement*, const JSC::Identifier&);
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

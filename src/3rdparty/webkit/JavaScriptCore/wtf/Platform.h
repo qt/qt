@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc.  All rights reserved.
+ * Copyright (C) 2007-2009 Torch Mobile, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -93,12 +94,10 @@
 #define WTF_PLATFORM_SOLARIS 1
 #endif
 
-#if defined (__S60__) || defined (__SYMBIAN32__)
+#if defined (__SYMBIAN32__)
 /* we are cross-compiling, it is not really windows */
 #undef WTF_PLATFORM_WIN_OS
 #undef WTF_PLATFORM_WIN
-#undef WTF_PLATFORM_CAIRO
-#define WTF_PLATFORM_S60 1
 #define WTF_PLATFORM_SYMBIAN 1
 #endif
 
@@ -110,17 +109,25 @@
 #define WTF_PLATFORM_NETBSD 1
 #endif
 
+/* PLATFORM(QNX) */
+/* Operating system level dependencies for QNX that should be used */
+/* regardless of operating environment */
+#if defined(__QNXNTO__)
+#define WTF_PLATFORM_QNX 1
+#endif
+
 /* PLATFORM(UNIX) */
 /* Operating system level dependencies for Unix-like systems that */
 /* should be used regardless of operating environment */
 #if   PLATFORM(DARWIN)     \
    || PLATFORM(FREEBSD)    \
-   || PLATFORM(S60)        \
+   || PLATFORM(SYMBIAN)    \
    || PLATFORM(NETBSD)     \
    || defined(unix)        \
    || defined(__unix)      \
    || defined(__unix__)    \
-   || defined(_AIX)
+   || defined(_AIX)        \
+   || defined(__QNXNTO__)
 #define WTF_PLATFORM_UNIX 1
 #endif
 
@@ -191,7 +198,7 @@
 
 /* Makes PLATFORM(WIN) default to PLATFORM(CAIRO) */
 /* FIXME: This should be changed from a blacklist to a whitelist */
-#if !PLATFORM(MAC) && !PLATFORM(QT) && !PLATFORM(WX) && !PLATFORM(CHROMIUM)
+#if !PLATFORM(MAC) && !PLATFORM(QT) && !PLATFORM(WX) && !PLATFORM(CHROMIUM) && !PLATFORM(WINCE)
 #define WTF_PLATFORM_CAIRO 1
 #endif
 
@@ -311,6 +318,7 @@
 /* --gnu option of the RVCT compiler also defines __GNUC__ */
 #if defined(__GNUC__) && !COMPILER(RVCT)
 #define WTF_COMPILER_GCC 1
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
 /* COMPILER(MINGW) */
@@ -339,11 +347,36 @@
 #define ENABLE_JSC_MULTIPLE_THREADS 1
 #endif
 
+#if PLATFORM(WINCE) && !PLATFORM(QT)
+#undef ENABLE_JSC_MULTIPLE_THREADS
+#define ENABLE_JSC_MULTIPLE_THREADS        0
+#define USE_SYSTEM_MALLOC                  0
+#define ENABLE_ICONDATABASE                0
+#define ENABLE_JAVASCRIPT_DEBUGGER         0
+#define ENABLE_FTPDIR                      0
+#define ENABLE_PAN_SCROLLING               0
+#define ENABLE_WML                         1
+#define HAVE_ACCESSIBILITY                 0
+
+#define NOMINMAX       // Windows min and max conflict with standard macros
+#define NOSHLWAPI      // shlwapi.h not available on WinCe
+
+// MSDN documentation says these functions are provided with uspce.lib.  But we cannot find this file.
+#define __usp10__      // disable "usp10.h"
+
+#define _INC_ASSERT    // disable "assert.h"
+#define assert(x)
+
+// _countof is only included in CE6; for CE5 we need to define it ourself
+#ifndef _countof
+#define _countof(x) (sizeof(x) / sizeof((x)[0]))
+#endif
+
+#endif  /* PLATFORM(WINCE) && !PLATFORM(QT) */
+
 /* for Unicode, KDE uses Qt */
 #if PLATFORM(KDE) || PLATFORM(QT)
 #define WTF_USE_QT4_UNICODE 1
-#elif PLATFORM(SYMBIAN)
-#define WTF_USE_SYMBIAN_UNICODE 1
 #elif PLATFORM(GTK)
 /* The GTK+ Unicode backend is configurable */
 #else
@@ -406,6 +439,13 @@
 #define HAVE_SIGNAL_H 1
 #endif
 
+#if !PLATFORM(WIN_OS) && !PLATFORM(SOLARIS) && !PLATFORM(QNX) \
+    && !PLATFORM(SYMBIAN) && !COMPILER(RVCT)
+#define HAVE_TM_GMTOFF 1
+#define HAVE_TM_ZONE 1
+#define HAVE_TIMEGM 1
+#endif     
+
 #if PLATFORM(DARWIN)
 
 #define HAVE_ERRNO_H 1
@@ -449,6 +489,15 @@
 #if !COMPILER(RVCT)
 #define HAVE_SYS_PARAM_H 1
 #endif
+
+#elif PLATFORM(QNX)
+
+#define HAVE_ERRNO_H 1
+#define HAVE_MMAP 1
+#define HAVE_SBRK 1
+#define HAVE_STRINGS_H 1
+#define HAVE_SYS_PARAM_H 1
+#define HAVE_SYS_TIME_H 1
 
 #else
 
@@ -536,6 +585,7 @@
 #endif
 
 #if !defined(ENABLE_JIT)
+
 /* The JIT is tested & working on x86_64 Mac */
 #if PLATFORM(X86_64) && PLATFORM(MAC)
     #define ENABLE_JIT 1
@@ -551,7 +601,21 @@
 #elif PLATFORM(X86) && PLATFORM(WIN)
     #define ENABLE_JIT 1
 #endif
+
+#if PLATFORM(X86) && PLATFORM(QT)
+#if PLATFORM(WIN_OS) && COMPILER(MINGW) && GCC_VERSION >= 40100
+    #define ENABLE_JIT 1
+    #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
+#elif PLATFORM(WIN_OS) && COMPILER(MSVC)
+    #define ENABLE_JIT 1
+    #define WTF_USE_JIT_STUB_ARGUMENT_REGISTER 1
+#elif PLATFORM(LINUX) && GCC_VERSION >= 40100
+    #define ENABLE_JIT 1
+    #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
 #endif
+#endif /* PLATFORM(QT) && PLATFORM(X86) */
+
+#endif /* !defined(ENABLE_JIT) */
 
 #if ENABLE(JIT)
 #ifndef ENABLE_JIT_OPTIMIZE_CALL
@@ -590,15 +654,29 @@
 #endif
 
 /* Yet Another Regex Runtime. */
+#if !defined(ENABLE_YARR_JIT)
+
 /* YARR supports x86 & x86-64, and has been tested on Mac and Windows. */
-#if (!defined(ENABLE_YARR_JIT) && PLATFORM(X86) && PLATFORM(MAC)) \
- || (!defined(ENABLE_YARR_JIT) && PLATFORM(X86_64) && PLATFORM(MAC)) \
+#if (PLATFORM(X86) && PLATFORM(MAC)) \
+ || (PLATFORM(X86_64) && PLATFORM(MAC)) \
  /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */ \
- || (!defined(ENABLE_YARR_JIT) && PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE) && 0) \
- || (!defined(ENABLE_YARR_JIT) && PLATFORM(X86) && PLATFORM(WIN))
+ || (PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE) && 0) \
+ || (PLATFORM(X86) && PLATFORM(WIN))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1
 #endif
+
+#if PLATFORM(X86) && PLATFORM(QT)
+#if (PLATFORM(WIN_OS) && COMPILER(MINGW) && GCC_VERSION >= 40100) \
+ || (PLATFORM(WIN_OS) && COMPILER(MSVC)) \
+ || (PLATFORM(LINUX) && GCC_VERSION >= 40100)
+#define ENABLE_YARR 1
+#define ENABLE_YARR_JIT 1
+#endif
+#endif
+
+#endif /* !defined(ENABLE_YARR_JIT) */
+
 /* Sanity Check */
 #if ENABLE(YARR_JIT) && !ENABLE(YARR)
 #error "YARR_JIT requires YARR"
@@ -609,7 +687,7 @@
 #endif
 /* Setting this flag prevents the assembler from using RWX memory; this may improve
    security but currectly comes at a significant performance cost. */
-#if PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE)
+#if PLATFORM(ARM)
 #define ENABLE_ASSEMBLER_WX_EXCLUSIVE 1
 #else
 #define ENABLE_ASSEMBLER_WX_EXCLUSIVE 0

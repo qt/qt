@@ -68,39 +68,39 @@ QTestBasicStreamer::QTestBasicStreamer()
 QTestBasicStreamer::~QTestBasicStreamer()
 {}
 
-void QTestBasicStreamer::formatStart(const QTestElement *element, char *formatted) const
+void QTestBasicStreamer::formatStart(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_snprintf(formatted, 10, "");
+    QTest::qt_asprintf(formatted, "");
 }
 
-void QTestBasicStreamer::formatEnd(const QTestElement *element, char *formatted) const
+void QTestBasicStreamer::formatEnd(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_snprintf(formatted, 10, "");
+    QTest::qt_asprintf(formatted, "");
 }
 
-void QTestBasicStreamer::formatBeforeAttributes(const QTestElement *element, char *formatted) const
+void QTestBasicStreamer::formatBeforeAttributes(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_snprintf(formatted, 10, "");
+    QTest::qt_asprintf(formatted, "");
 }
 
-void QTestBasicStreamer::formatAfterAttributes(const QTestElement *element, char *formatted) const
+void QTestBasicStreamer::formatAfterAttributes(const QTestElement *element, char **formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_snprintf(formatted, 10, "");
+    QTest::qt_asprintf(formatted, "");
 }
 
-void QTestBasicStreamer::formatAttributes(const QTestElement *, const QTestElementAttribute *attribute, char *formatted) const
+void QTestBasicStreamer::formatAttributes(const QTestElement *, const QTestElementAttribute *attribute, char **formatted) const
 {
     if(!attribute || !formatted )
         return;
-    QTest::qt_snprintf(formatted, 10, "");
+    QTest::qt_asprintf(formatted, "");
 }
 
 void QTestBasicStreamer::output(QTestElement *element) const
@@ -113,7 +113,7 @@ void QTestBasicStreamer::output(QTestElement *element) const
 
 void QTestBasicStreamer::outputElements(QTestElement *element, bool) const
 {
-    char buf[1024];
+    QTestCharBuffer buf;
     bool hasChildren;
     /*
         Elements are in reverse order of occurrence, so start from the end and work
@@ -148,7 +148,7 @@ void QTestBasicStreamer::outputElements(QTestElement *element, bool) const
 
 void QTestBasicStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
 {
-    char buf[1024];
+    QTestCharBuffer buf;
     while(attribute){
         formatAttributes(element, attribute, buf);
         outputString(buf);

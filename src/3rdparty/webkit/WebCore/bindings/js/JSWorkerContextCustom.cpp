@@ -58,7 +58,7 @@ void JSWorkerContext::mark()
     markDOMObjectWrapper(globalData, impl()->optionalLocation());
     markDOMObjectWrapper(globalData, impl()->optionalNavigator());
 
-    markIfNotNull(impl()->onmessage());
+    markIfNotNull(impl()->onerror());
 
     typedef WorkerContext::EventListenersMap EventListenersMap;
     typedef WorkerContext::ListenerVector ListenerVector;

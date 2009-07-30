@@ -30,8 +30,7 @@
 #include "qdir.h"
 #include "qfile.h"
 
-class QWebViewPrivate
-{
+class QWebViewPrivate {
 public:
     QWebViewPrivate(QWebView *view)
         : view(view)
@@ -87,7 +86,7 @@ public:
     \image qwebview-url.png
 
     A web site can be loaded onto QWebView with the load() function. Like all
-    Qt Widgets, the show() function must be invoked in order to display
+    Qt widgets, the show() function must be invoked in order to display
     QWebView. The snippet below illustrates this:
 
     \snippet webkitsnippets/simple/main.cpp Using QWebView
@@ -147,7 +146,8 @@ public:
     if you do not require QWidget attributes. Nevertheless, QtWebKit depends
     on QtGui, so you should use a QApplication instead of QCoreApplication.
 
-    \sa {Previewer Example}, {Browser}
+    \sa {Previewer Example}, {Web Browser}, {Form Extractor Example},
+    {Google Chat Example}, {Fancy Browser Example}
 */
 
 /*!
@@ -206,16 +206,15 @@ QWebPage *QWebView::page() const
 
     \sa page()
 */
-void QWebView::setPage(QWebPage *page)
+void QWebView::setPage(QWebPage* page)
 {
     if (d->page == page)
         return;
     if (d->page) {
-        if (d->page->parent() == this) {
+        if (d->page->parent() == this)
             delete d->page;
-        } else {
+        else
             d->page->disconnect(this);
-        }
     }
     d->page = page;
     if (d->page) {
@@ -710,9 +709,8 @@ bool QWebView::event(QEvent *e)
             }
 #endif
 #endif
-        } else if (e->type() == QEvent::Leave) {
+        } else if (e->type() == QEvent::Leave)
             d->page->event(e);
-        }
     }
 
     return QWidget::event(e);
@@ -815,7 +813,7 @@ void QWebView::paintEvent(QPaintEvent *ev)
 
 #ifdef    QWEBKIT_TIME_RENDERING
     int elapsed = time.elapsed();
-    qDebug()<<"paint event on "<<ev->region()<<", took to render =  "<<elapsed;
+    qDebug() << "paint event on " << ev->region() << ", took to render =  " << elapsed;
 #endif
 }
 
@@ -1011,9 +1009,8 @@ void QWebView::inputMethodEvent(QInputMethodEvent *e)
 */
 void QWebView::changeEvent(QEvent *e)
 {
-    if (d->page && e->type() == QEvent::PaletteChange) {
+    if (d->page && e->type() == QEvent::PaletteChange)
         d->page->setPalette(palette());
-    }
     QWidget::changeEvent(e);
 }
 

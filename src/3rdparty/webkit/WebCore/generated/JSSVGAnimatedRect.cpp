@@ -73,9 +73,8 @@ JSObject* JSSVGAnimatedRectPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGAnimatedRect::s_info = { "SVGAnimatedRect", 0, &JSSVGAnimatedRectTable, 0 };
 
-JSSVGAnimatedRect::JSSVGAnimatedRect(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimatedRect> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGAnimatedRect::JSSVGAnimatedRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedRect> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -97,21 +96,23 @@ bool JSSVGAnimatedRect::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsSVGAnimatedRectBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedRect* castedThis = static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedRect* imp = static_cast<SVGAnimatedRect*>(static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::lookupOrCreateWrapper(imp, &SVGAnimatedRect::baseVal, &SVGAnimatedRect::setBaseVal).get(), static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedRect* imp = static_cast<SVGAnimatedRect*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::lookupOrCreateWrapper(imp, &SVGAnimatedRect::baseVal, &SVGAnimatedRect::setBaseVal).get(), castedThis->context());
 }
 
 JSValue jsSVGAnimatedRectAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedRect* castedThis = static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedRect* imp = static_cast<SVGAnimatedRect*>(static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::lookupOrCreateWrapper(imp, &SVGAnimatedRect::animVal, &SVGAnimatedRect::setAnimVal).get(), static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedRect* imp = static_cast<SVGAnimatedRect*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::lookupOrCreateWrapper(imp, &SVGAnimatedRect::animVal, &SVGAnimatedRect::setAnimVal).get(), castedThis->context());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedRect* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedRect* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGAnimatedRect>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGAnimatedRect>(exec, globalObject, object, context);
 }
 SVGAnimatedRect* toSVGAnimatedRect(JSC::JSValue value)
 {

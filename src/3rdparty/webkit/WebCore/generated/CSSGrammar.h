@@ -78,32 +78,33 @@
      MEDIA_ONLY = 291,
      MEDIA_NOT = 292,
      MEDIA_AND = 293,
-     QEMS = 294,
-     EMS = 295,
-     EXS = 296,
-     PXS = 297,
-     CMS = 298,
-     MMS = 299,
-     INS = 300,
-     PTS = 301,
-     PCS = 302,
-     DEGS = 303,
-     RADS = 304,
-     GRADS = 305,
-     TURNS = 306,
-     MSECS = 307,
-     SECS = 308,
-     HERZ = 309,
-     KHERZ = 310,
-     DIMEN = 311,
-     PERCENTAGE = 312,
-     FLOATTOKEN = 313,
-     INTEGER = 314,
-     URI = 315,
-     FUNCTION = 316,
-     NOTFUNCTION = 317,
-     UNICODERANGE = 318,
-     VARCALL = 319
+     REMS = 294,
+     QEMS = 295,
+     EMS = 296,
+     EXS = 297,
+     PXS = 298,
+     CMS = 299,
+     MMS = 300,
+     INS = 301,
+     PTS = 302,
+     PCS = 303,
+     DEGS = 304,
+     RADS = 305,
+     GRADS = 306,
+     TURNS = 307,
+     MSECS = 308,
+     SECS = 309,
+     HERZ = 310,
+     KHERZ = 311,
+     DIMEN = 312,
+     PERCENTAGE = 313,
+     FLOATTOKEN = 314,
+     INTEGER = 315,
+     URI = 316,
+     FUNCTION = 317,
+     NOTFUNCTION = 318,
+     UNICODERANGE = 319,
+     VARCALL = 320
    };
 #endif
 
@@ -114,7 +115,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 58 "../css/CSSGrammar.y"
+#line 62 "../css/CSSGrammar.y"
 
     bool boolean;
     char character;
@@ -141,7 +142,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 143 "WebCore/tmp/../generated/CSSGrammar.tab.h"
+#line 144 "WebCore/tmp/../generated/CSSGrammar.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

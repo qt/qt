@@ -30,7 +30,7 @@ class MutationEvent;
 class JSMutationEvent : public JSEvent {
     typedef JSEvent Base;
 public:
-    JSMutationEvent(PassRefPtr<JSC::Structure>, PassRefPtr<MutationEvent>);
+    JSMutationEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MutationEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -41,7 +41,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 };
 
 

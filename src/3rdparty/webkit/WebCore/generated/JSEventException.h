@@ -21,6 +21,7 @@
 #ifndef JSEventException_h
 #define JSEventException_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class EventException;
 
-class JSEventException : public DOMObject {
-    typedef DOMObject Base;
+class JSEventException : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSEventException(PassRefPtr<JSC::Structure>, PassRefPtr<EventException>);
+    JSEventException(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<EventException>);
     virtual ~JSEventException();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     EventException* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<EventException> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, EventException*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, EventException*);
 EventException* toEventException(JSC::JSValue);
 
 class JSEventExceptionPrototype : public JSC::JSObject {

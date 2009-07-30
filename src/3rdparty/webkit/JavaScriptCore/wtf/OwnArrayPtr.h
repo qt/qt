@@ -27,7 +27,7 @@
 
 namespace WTF {
 
-    template <typename T> class OwnArrayPtr : Noncopyable {
+    template <typename T> class OwnArrayPtr : public Noncopyable {
     public:
         explicit OwnArrayPtr(T* ptr = 0) : m_ptr(ptr) { }
         ~OwnArrayPtr() { safeDelete(); }
@@ -46,8 +46,12 @@ namespace WTF {
         bool operator!() const { return !m_ptr; }
 
         // This conversion operator allows implicit conversion to bool but not to other integer types.
+#if COMPILER(WINSCW)
+        operator bool() const { return m_ptr; }
+#else
         typedef T* OwnArrayPtr::*UnspecifiedBoolType;
         operator UnspecifiedBoolType() const { return m_ptr ? &OwnArrayPtr::m_ptr : 0; }
+#endif
 
         void swap(OwnArrayPtr& o) { std::swap(m_ptr, o.m_ptr); }
 

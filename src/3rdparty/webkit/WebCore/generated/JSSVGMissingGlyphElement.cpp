@@ -56,8 +56,8 @@ JSObject* JSSVGMissingGlyphElementPrototype::self(ExecState* exec, JSGlobalObjec
 
 const ClassInfo JSSVGMissingGlyphElement::s_info = { "SVGMissingGlyphElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGMissingGlyphElement::JSSVGMissingGlyphElement(PassRefPtr<Structure> structure, PassRefPtr<SVGMissingGlyphElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGMissingGlyphElement::JSSVGMissingGlyphElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMissingGlyphElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 

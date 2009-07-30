@@ -48,6 +48,11 @@
 #include <mach/thread_act.h>
 #include <mach/vm_map.h>
 
+#elif PLATFORM(SYMBIAN)
+#include <e32std.h>
+#include <e32cmn.h>
+#include <unistd.h>
+
 #elif PLATFORM(WIN_OS)
 
 #include <windows.h>
@@ -84,6 +89,13 @@ extern int *__libc_stack_end;
 #include <pthread_np.h>
 #endif
 
+#if PLATFORM(QNX)
+#include <fcntl.h>
+#include <sys/procfs.h>
+#include <stdio.h>
+#include <errno.h>
+#endif
+
 #endif
 
 #define DEBUG_COLLECTOR 0
@@ -102,6 +114,11 @@ const size_t ALLOCATIONS_PER_COLLECTION = 4000;
 // This value has to be a macro to be used in max() without introducing
 // a PIC branch in Mach-O binaries, see <rdar://problem/5971391>.
 #define MIN_ARRAY_SIZE (static_cast<size_t>(14))
+
+#if PLATFORM(SYMBIAN)
+const size_t MAX_NUM_BLOCKS = 256; // Max size of collector heap set to 16 MB
+static RHeap* userChunk = 0;
+#endif
 
 static void freeHeap(CollectorHeap*);
 
@@ -144,6 +161,26 @@ Heap::Heap(JSGlobalData* globalData)
 {
     ASSERT(globalData);
 
+#if PLATFORM(SYMBIAN)
+    // Symbian OpenC supports mmap but currently not the MAP_ANON flag.
+    // Using fastMalloc() does not properly align blocks on 64k boundaries
+    // and previous implementation was flawed/incomplete.
+    // UserHeap::ChunkHeap allows allocation of continuous memory and specification
+    // of alignment value for (symbian) cells within that heap.
+    //
+    // Clarification and mapping of terminology:
+    // RHeap (created by UserHeap::ChunkHeap below) is continuos memory chunk,
+    // which can dynamically grow up to 8 MB,
+    // that holds all CollectorBlocks of this session (static).
+    // Each symbian cell within RHeap maps to a 64kb aligned CollectorBlock.
+    // JSCell objects are maintained as usual within CollectorBlocks.
+    if (!userChunk) {
+        userChunk = UserHeap::ChunkHeap(0, 0, MAX_NUM_BLOCKS * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        if (!userChunk)
+            CRASH();
+    }
+#endif // PLATFORM(SYMBIAN)
+    
     memset(&primaryHeap, 0, sizeof(CollectorHeap));
     memset(&numberHeap, 0, sizeof(CollectorHeap));
 }
@@ -156,7 +193,7 @@ Heap::~Heap()
 
 void Heap::destroy()
 {
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     if (!m_globalData)
         return;
@@ -201,8 +238,12 @@ static NEVER_INLINE CollectorBlock* allocateBlock()
     // FIXME: tag the region as a JavaScriptCore heap when we get a registered VM tag: <rdar://problem/6054788>.
     vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE | VM_TAG_FOR_COLLECTOR_MEMORY, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
 #elif PLATFORM(SYMBIAN)
-    // no memory map in symbian, need to hack with fastMalloc
-    void* address = fastMalloc(BLOCK_SIZE);
+    // Allocate a 64 kb aligned CollectorBlock
+    unsigned char* mask = reinterpret_cast<unsigned char*>(userChunk->Alloc(BLOCK_SIZE));
+    if (!mask)
+        CRASH();
+    uintptr_t address = reinterpret_cast<uintptr_t>(mask);
+
     memset(reinterpret_cast<void*>(address), 0, BLOCK_SIZE);
 #elif PLATFORM(WIN_OS)
      // windows virtual address granularity is naturally 64k
@@ -247,7 +288,7 @@ static void freeBlock(CollectorBlock* block)
 #if PLATFORM(DARWIN)    
     vm_deallocate(current_task(), reinterpret_cast<vm_address_t>(block), BLOCK_SIZE);
 #elif PLATFORM(SYMBIAN)
-    fastFree(block);
+    userChunk->Free(reinterpret_cast<TAny*>(block));
 #elif PLATFORM(WIN_OS)
     VirtualFree(block, 0, MEM_RELEASE);
 #elif HAVE(POSIX_MEMALIGN)
@@ -546,6 +587,24 @@ static inline void* currentThreadStackBase()
     static pthread_t stackThread;
     pthread_t thread = pthread_self();
     if (stackBase == 0 || thread != stackThread) {
+#if PLATFORM(QNX)
+        int fd;
+        struct _debug_thread_info tinfo;
+        memset(&tinfo, 0, sizeof(tinfo));
+        tinfo.tid = pthread_self();
+        fd = open("/proc/self", O_RDONLY);
+        if (fd == -1) {
+#ifndef NDEBUG
+            perror("Unable to open /proc/self:");
+#endif
+            return 0;
+        }
+        devctl(fd, DCMD_PROC_TIDSTATUS, &tinfo, sizeof(tinfo), NULL);
+        close(fd);
+        stackBase = (void*)tinfo.stkbase;
+        stackSize = tinfo.stksize;
+        ASSERT(stackBase);
+#else
 #if defined(QT_LINUXBASE)
         // LinuxBase is missing pthread_getattr_np - resolve it once at runtime instead
         // see http://bugs.linuxbase.org/show_bug.cgi?id=2364
@@ -570,6 +629,7 @@ static inline void* currentThreadStackBase()
         (void)rc; // FIXME: Deal with error code somehow? Seems fatal.
         ASSERT(stackBase);
         pthread_attr_destroy(&sattr);
+#endif
         stackThread = thread;
     }
     return static_cast<char*>(stackBase) + stackSize;

@@ -161,9 +161,9 @@ SUBDIRS += _networkselftest \
            qhash \
            qheaderview \
            qhelpcontentmodel \
-           qhelpenginecore \
+#           qhelpenginecore \
            qhelpgenerator \
-           qhelpindexmodel \
+#           qhelpindexmodel \
            qhelpprojectdata \
            qhostaddress \
            qhostinfo \

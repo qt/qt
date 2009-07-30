@@ -99,6 +99,42 @@ public:
     static bool isTtyOutput();
 };
 
+struct QTestCharBuffer
+{
+    inline QTestCharBuffer()
+            : buf(0)
+    {}
+
+    inline ~QTestCharBuffer()
+    {
+        delete[] buf;
+        buf = 0;
+    }
+
+    inline operator void*()
+    {
+        return buf;
+    }
+
+    inline operator char*()
+    {
+        return buf;
+    }
+
+    inline operator char**()
+    {
+        return &buf;
+    }
+
+    inline const char* constData() const
+    {
+        return buf;
+    }
+
+private:
+    char* buf;
+};
+
 QT_END_NAMESPACE
 
 #endif

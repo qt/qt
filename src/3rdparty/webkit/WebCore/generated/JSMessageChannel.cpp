@@ -79,8 +79,8 @@ static const HashTable* getJSMessageChannelTable(ExecState* exec)
 }
 const ClassInfo JSMessageChannel::s_info = { "MessageChannel", 0, 0, getJSMessageChannelTable };
 
-JSMessageChannel::JSMessageChannel(PassRefPtr<Structure> structure, PassRefPtr<MessageChannel> impl)
-    : DOMObject(structure)
+JSMessageChannel::JSMessageChannel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessageChannel> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -102,21 +102,23 @@ bool JSMessageChannel::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsMessageChannelPort1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessageChannel* imp = static_cast<MessageChannel*>(static_cast<JSMessageChannel*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->port1()));
+    MessageChannel* imp = static_cast<MessageChannel*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port1()));
 }
 
 JSValue jsMessageChannelPort2(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessageChannel* imp = static_cast<MessageChannel*>(static_cast<JSMessageChannel*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->port2()));
+    MessageChannel* imp = static_cast<MessageChannel*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port2()));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, MessageChannel* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MessageChannel* object)
 {
-    return getDOMObjectWrapper<JSMessageChannel>(exec, object);
+    return getDOMObjectWrapper<JSMessageChannel>(exec, globalObject, object);
 }
 MessageChannel* toMessageChannel(JSC::JSValue value)
 {

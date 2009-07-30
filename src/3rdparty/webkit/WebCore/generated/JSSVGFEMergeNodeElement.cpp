@@ -72,8 +72,8 @@ JSObject* JSSVGFEMergeNodeElementPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGFEMergeNodeElement::s_info = { "SVGFEMergeNodeElement", &JSSVGElement::s_info, &JSSVGFEMergeNodeElementTable, 0 };
 
-JSSVGFEMergeNodeElement::JSSVGFEMergeNodeElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFEMergeNodeElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFEMergeNodeElement::JSSVGFEMergeNodeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEMergeNodeElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -89,10 +89,11 @@ bool JSSVGFEMergeNodeElement::getOwnPropertySlot(ExecState* exec, const Identifi
 
 JSValue jsSVGFEMergeNodeElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEMergeNodeElement* castedThis = static_cast<JSSVGFEMergeNodeElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEMergeNodeElement* imp = static_cast<SVGFEMergeNodeElement*>(static_cast<JSSVGFEMergeNodeElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEMergeNodeElement* imp = static_cast<SVGFEMergeNodeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 

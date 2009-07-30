@@ -64,12 +64,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLFontElementConstructorTable =
     { 1, 0, JSHTMLFontElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLFontElementConstructor : public DOMObject {
+class JSHTMLFontElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLFontElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLFontElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLFontElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLFontElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFontElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFontElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,8 +111,8 @@ JSObject* JSHTMLFontElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLFontElement::s_info = { "HTMLFontElement", &JSHTMLElement::s_info, &JSHTMLFontElementTable, 0 };
 
-JSHTMLFontElement::JSHTMLFontElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLFontElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLFontElement::JSHTMLFontElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFontElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -128,28 +128,32 @@ bool JSHTMLFontElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsHTMLFontElementColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFontElement* castedThis = static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFontElement* imp = static_cast<HTMLFontElement*>(castedThis->impl());
     return jsString(exec, imp->color());
 }
 
 JSValue jsHTMLFontElementFace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFontElement* castedThis = static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFontElement* imp = static_cast<HTMLFontElement*>(castedThis->impl());
     return jsString(exec, imp->face());
 }
 
 JSValue jsHTMLFontElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFontElement* castedThis = static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFontElement* imp = static_cast<HTMLFontElement*>(static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFontElement* imp = static_cast<HTMLFontElement*>(castedThis->impl());
     return jsString(exec, imp->size());
 }
 
 JSValue jsHTMLFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLFontElement* domObject = static_cast<JSHTMLFontElement*>(asObject(slot.slotBase()));
+    return JSHTMLFontElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLFontElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -174,9 +178,9 @@ void setJSHTMLFontElementSize(ExecState* exec, JSObject* thisObject, JSValue val
     imp->setSize(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLFontElement::getConstructor(ExecState* exec)
+JSValue JSHTMLFontElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLFontElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLFontElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

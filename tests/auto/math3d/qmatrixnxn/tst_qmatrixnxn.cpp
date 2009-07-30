@@ -170,6 +170,9 @@ private slots:
     void mapRect_data();
     void mapRect();
 
+    void properties();
+    void metaTypes();
+
 private:
     static void setMatrix(QMatrix2x2& m, const qreal *values);
     static void setMatrixDirect(QMatrix2x2& m, const qreal *values);
@@ -3329,6 +3332,50 @@ void tst_QMatrix::mapRect()
     QRect mri = m4.mapRect(recti);
     QRect tri = t4.mapRect(recti);
     QVERIFY(mri == tri);
+}
+
+class tst_QMatrix4x4Properties : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QMatrix4x4 matrix READ matrix WRITE setMatrix)
+public:
+    tst_QMatrix4x4Properties(QObject *parent = 0) : QObject(parent) {}
+
+    QMatrix4x4 matrix() const { return m; }
+    void setMatrix(const QMatrix4x4& value) { m = value; }
+
+private:
+    QMatrix4x4 m;
+};
+
+// Test getting and setting matrix properties via the metaobject system.
+void tst_QMatrix::properties()
+{
+    tst_QMatrix4x4Properties obj;
+
+    QMatrix4x4 m1(uniqueValues4);
+    obj.setMatrix(m1);
+
+    QMatrix4x4 m2 = qVariantValue<QMatrix4x4>(obj.property("matrix"));
+    QVERIFY(isSame(m2, uniqueValues4));
+
+    QMatrix4x4 m3(transposedValues4);
+    obj.setProperty("matrix", qVariantFromValue(m3));
+
+    m2 = qVariantValue<QMatrix4x4>(obj.property("matrix"));
+    QVERIFY(isSame(m2, transposedValues4));
+}
+
+void tst_QMatrix::metaTypes()
+{
+    QVERIFY(QMetaType::type("QMatrix4x4") == QMetaType::QMatrix4x4);
+
+    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QMatrix4x4)),
+             QByteArray("QMatrix4x4"));
+
+    QVERIFY(QMetaType::isRegistered(QMetaType::QMatrix4x4));
+
+    QVERIFY(qMetaTypeId<QMatrix4x4>() == QMetaType::QMatrix4x4);
 }
 
 QTEST_APPLESS_MAIN(tst_QMatrix)

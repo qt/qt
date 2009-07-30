@@ -66,6 +66,14 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
+#ifdef Q_OS_VXWORS
+#  ifdef open
+#    undef open
+#  endif
+#  ifdef getpid
+#    undef getpid
+#  endif
+#endif // Q_OS_VXWORKS
 #include <X11/Xatom.h>
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
@@ -823,10 +831,12 @@ void QGLContext::swapBuffers() const
                     if (!glXGetVideoSyncSGI)
 #endif
                     {
+#if !defined(QT_NO_LIBRARY)
                         extern const QString qt_gl_library_name();
                         QLibrary lib(qt_gl_library_name());
                         glXGetVideoSyncSGI = (qt_glXGetVideoSyncSGI) lib.resolve("glXGetVideoSyncSGI");
                         glXWaitVideoSyncSGI = (qt_glXWaitVideoSyncSGI) lib.resolve("glXWaitVideoSyncSGI");
+#endif
                     }
                 }
                 resolved = true;
@@ -1067,9 +1077,11 @@ void *QGLContext::getProcAddress(const QString &proc) const
             if (!glXGetProcAddressARB)
 #endif
             {
+#if !defined(QT_NO_LIBRARY)
                 extern const QString qt_gl_library_name();
                 QLibrary lib(qt_gl_library_name());
                 glXGetProcAddressARB = (qt_glXGetProcAddressARB) lib.resolve("glXGetProcAddressARB");
+#endif
             }
         }
         resolved = true;

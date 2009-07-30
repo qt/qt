@@ -89,6 +89,10 @@
 #include "XPathPath.h"
 #include "XPathPredicate.h"
 #include "XPathVariableReference.h"
+#include <wtf/FastMalloc.h>
+
+#define YYMALLOC fastMalloc
+#define YYFREE fastFree
 
 #define YYENABLE_NLS 0
 #define YYLTYPE_IS_TRIVIAL 1
@@ -103,7 +107,7 @@ using namespace XPath;
 
 
 /* Line 189 of yacc.c  */
-#line 107 "WebCore/tmp/../generated/XPathGrammar.tab.c"
+#line 111 "WebCore/tmp/../generated/XPathGrammar.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -158,7 +162,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 56 "../xml/XPathGrammar.y"
+#line 60 "../xml/XPathGrammar.y"
 
     Step::Axis axis;
     Step::NodeTest* nodeTest;
@@ -174,7 +178,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 178 "WebCore/tmp/../generated/XPathGrammar.tab.c"
+#line 182 "WebCore/tmp/../generated/XPathGrammar.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -185,7 +189,7 @@ typedef union YYSTYPE
 /* Copy the second part of user declarations.  */
 
 /* Line 264 of yacc.c  */
-#line 69 "../xml/XPathGrammar.y"
+#line 73 "../xml/XPathGrammar.y"
 
 
 static int xpathyylex(YYSTYPE* yylval) { return Parser::current()->lex(yylval); }
@@ -194,7 +198,7 @@ static void xpathyyerror(const char*) { }
 
 
 /* Line 264 of yacc.c  */
-#line 198 "WebCore/tmp/../generated/XPathGrammar.tab.c"
+#line 202 "WebCore/tmp/../generated/XPathGrammar.tab.c"
 
 #ifdef short
 # undef short
@@ -500,13 +504,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   117,   117,   124,   129,   136,   142,   147,   156,   164,
-     170,   180,   191,   209,   220,   238,   242,   244,   251,   264,
-     271,   282,   286,   290,   298,   306,   313,   321,   327,   335,
-     342,   347,   354,   361,   365,   374,   386,   394,   402,   406,
-     408,   420,   425,   427,   436,   449,   451,   461,   463,   473,
-     475,   485,   487,   497,   499,   509,   511,   519,   529,   531,
-     541,   543
+       0,   121,   121,   128,   133,   140,   146,   151,   160,   168,
+     174,   184,   195,   213,   224,   242,   246,   248,   255,   268,
+     275,   286,   290,   294,   302,   310,   317,   325,   331,   339,
+     346,   351,   358,   365,   369,   378,   390,   398,   406,   410,
+     412,   424,   429,   431,   440,   453,   455,   465,   467,   477,
+     479,   489,   491,   501,   503,   513,   515,   523,   533,   535,
+     545,   547
 };
 #endif
 
@@ -1479,7 +1483,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 118 "../xml/XPathGrammar.y"
+#line 122 "../xml/XPathGrammar.y"
     {
         PARSER->m_topExpr = (yyvsp[(1) - (1)].expr);
     ;}
@@ -1488,7 +1492,7 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 125 "../xml/XPathGrammar.y"
+#line 129 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->setAbsolute(false);
     ;}
@@ -1497,7 +1501,7 @@ yyreduce:
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 130 "../xml/XPathGrammar.y"
+#line 134 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->setAbsolute(true);
     ;}
@@ -1506,7 +1510,7 @@ yyreduce:
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 137 "../xml/XPathGrammar.y"
+#line 141 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = new LocationPath;
         PARSER->registerParseNode((yyval.locationPath));
@@ -1516,7 +1520,7 @@ yyreduce:
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 143 "../xml/XPathGrammar.y"
+#line 147 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = (yyvsp[(2) - (2)].locationPath);
     ;}
@@ -1525,7 +1529,7 @@ yyreduce:
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 148 "../xml/XPathGrammar.y"
+#line 152 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = (yyvsp[(2) - (2)].locationPath);
         (yyval.locationPath)->insertFirstStep((yyvsp[(1) - (2)].step));
@@ -1536,7 +1540,7 @@ yyreduce:
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 157 "../xml/XPathGrammar.y"
+#line 161 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = new LocationPath;
         (yyval.locationPath)->appendStep((yyvsp[(1) - (1)].step));
@@ -1548,7 +1552,7 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 165 "../xml/XPathGrammar.y"
+#line 169 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->appendStep((yyvsp[(3) - (3)].step));
         PARSER->unregisterParseNode((yyvsp[(3) - (3)].step));
@@ -1558,7 +1562,7 @@ yyreduce:
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 171 "../xml/XPathGrammar.y"
+#line 175 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->appendStep((yyvsp[(2) - (3)].step));
         (yyval.locationPath)->appendStep((yyvsp[(3) - (3)].step));
@@ -1570,7 +1574,7 @@ yyreduce:
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 181 "../xml/XPathGrammar.y"
+#line 185 "../xml/XPathGrammar.y"
     {
         if ((yyvsp[(2) - (2)].predList)) {
             (yyval.step) = new Step(Step::ChildAxis, *(yyvsp[(1) - (2)].nodeTest), *(yyvsp[(2) - (2)].predList));
@@ -1585,7 +1589,7 @@ yyreduce:
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 192 "../xml/XPathGrammar.y"
+#line 196 "../xml/XPathGrammar.y"
     {
         String localName;
         String namespaceURI;
@@ -1607,7 +1611,7 @@ yyreduce:
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 210 "../xml/XPathGrammar.y"
+#line 214 "../xml/XPathGrammar.y"
     {
         if ((yyvsp[(3) - (3)].predList)) {
             (yyval.step) = new Step((yyvsp[(1) - (3)].axis), *(yyvsp[(2) - (3)].nodeTest), *(yyvsp[(3) - (3)].predList));
@@ -1622,7 +1626,7 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 221 "../xml/XPathGrammar.y"
+#line 225 "../xml/XPathGrammar.y"
     {
         String localName;
         String namespaceURI;
@@ -1644,7 +1648,7 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 245 "../xml/XPathGrammar.y"
+#line 249 "../xml/XPathGrammar.y"
     {
         (yyval.axis) = Step::AttributeAxis;
     ;}
@@ -1653,7 +1657,7 @@ yyreduce:
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 252 "../xml/XPathGrammar.y"
+#line 256 "../xml/XPathGrammar.y"
     {
         if (*(yyvsp[(1) - (3)].str) == "node")
             (yyval.nodeTest) = new Step::NodeTest(Step::NodeTest::AnyNodeTest);
@@ -1670,7 +1674,7 @@ yyreduce:
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 265 "../xml/XPathGrammar.y"
+#line 269 "../xml/XPathGrammar.y"
     {
         (yyval.nodeTest) = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest);
         PARSER->deleteString((yyvsp[(1) - (3)].str));        
@@ -1681,7 +1685,7 @@ yyreduce:
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 272 "../xml/XPathGrammar.y"
+#line 276 "../xml/XPathGrammar.y"
     {
         (yyval.nodeTest) = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest, (yyvsp[(3) - (4)].str)->stripWhiteSpace());
         PARSER->deleteString((yyvsp[(1) - (4)].str));        
@@ -1693,7 +1697,7 @@ yyreduce:
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 282 "../xml/XPathGrammar.y"
+#line 286 "../xml/XPathGrammar.y"
     {
         (yyval.predList) = 0;
     ;}
@@ -1702,7 +1706,7 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 291 "../xml/XPathGrammar.y"
+#line 295 "../xml/XPathGrammar.y"
     {
         (yyval.predList) = new Vector<Predicate*>;
         (yyval.predList)->append(new Predicate((yyvsp[(1) - (1)].expr)));
@@ -1714,7 +1718,7 @@ yyreduce:
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 299 "../xml/XPathGrammar.y"
+#line 303 "../xml/XPathGrammar.y"
     {
         (yyval.predList)->append(new Predicate((yyvsp[(2) - (2)].expr)));
         PARSER->unregisterParseNode((yyvsp[(2) - (2)].expr));
@@ -1724,7 +1728,7 @@ yyreduce:
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 307 "../xml/XPathGrammar.y"
+#line 311 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = (yyvsp[(2) - (3)].expr);
     ;}
@@ -1733,7 +1737,7 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 314 "../xml/XPathGrammar.y"
+#line 318 "../xml/XPathGrammar.y"
     {
         (yyval.step) = new Step(Step::DescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
         PARSER->registerParseNode((yyval.step));
@@ -1743,7 +1747,7 @@ yyreduce:
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 322 "../xml/XPathGrammar.y"
+#line 326 "../xml/XPathGrammar.y"
     {
         (yyval.step) = new Step(Step::SelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
         PARSER->registerParseNode((yyval.step));
@@ -1753,7 +1757,7 @@ yyreduce:
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 328 "../xml/XPathGrammar.y"
+#line 332 "../xml/XPathGrammar.y"
     {
         (yyval.step) = new Step(Step::ParentAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
         PARSER->registerParseNode((yyval.step));
@@ -1763,7 +1767,7 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 336 "../xml/XPathGrammar.y"
+#line 340 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new VariableReference(*(yyvsp[(1) - (1)].str));
         PARSER->deleteString((yyvsp[(1) - (1)].str));
@@ -1774,7 +1778,7 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 343 "../xml/XPathGrammar.y"
+#line 347 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = (yyvsp[(2) - (3)].expr);
     ;}
@@ -1783,7 +1787,7 @@ yyreduce:
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 348 "../xml/XPathGrammar.y"
+#line 352 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new StringExpression(*(yyvsp[(1) - (1)].str));
         PARSER->deleteString((yyvsp[(1) - (1)].str));
@@ -1794,7 +1798,7 @@ yyreduce:
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 355 "../xml/XPathGrammar.y"
+#line 359 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Number((yyvsp[(1) - (1)].str)->toDouble());
         PARSER->deleteString((yyvsp[(1) - (1)].str));
@@ -1805,7 +1809,7 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 366 "../xml/XPathGrammar.y"
+#line 370 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = createFunction(*(yyvsp[(1) - (3)].str));
         if (!(yyval.expr))
@@ -1818,7 +1822,7 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 375 "../xml/XPathGrammar.y"
+#line 379 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = createFunction(*(yyvsp[(1) - (4)].str), *(yyvsp[(3) - (4)].argList));
         if (!(yyval.expr))
@@ -1832,7 +1836,7 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 387 "../xml/XPathGrammar.y"
+#line 391 "../xml/XPathGrammar.y"
     {
         (yyval.argList) = new Vector<Expression*>;
         (yyval.argList)->append((yyvsp[(1) - (1)].expr));
@@ -1844,7 +1848,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 395 "../xml/XPathGrammar.y"
+#line 399 "../xml/XPathGrammar.y"
     {
         (yyval.argList)->append((yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(3) - (3)].expr));
@@ -1854,7 +1858,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 409 "../xml/XPathGrammar.y"
+#line 413 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Union;
         (yyval.expr)->addSubExpression((yyvsp[(1) - (3)].expr));
@@ -1868,7 +1872,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 421 "../xml/XPathGrammar.y"
+#line 425 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = (yyvsp[(1) - (1)].locationPath);
     ;}
@@ -1877,7 +1881,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 428 "../xml/XPathGrammar.y"
+#line 432 "../xml/XPathGrammar.y"
     {
         (yyvsp[(3) - (3)].locationPath)->setAbsolute(true);
         (yyval.expr) = new Path(static_cast<Filter*>((yyvsp[(1) - (3)].expr)), (yyvsp[(3) - (3)].locationPath));
@@ -1890,7 +1894,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 437 "../xml/XPathGrammar.y"
+#line 441 "../xml/XPathGrammar.y"
     {
         (yyvsp[(3) - (3)].locationPath)->insertFirstStep((yyvsp[(2) - (3)].step));
         (yyvsp[(3) - (3)].locationPath)->setAbsolute(true);
@@ -1905,7 +1909,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 452 "../xml/XPathGrammar.y"
+#line 456 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Filter((yyvsp[(1) - (2)].expr), *(yyvsp[(2) - (2)].predList));
         PARSER->unregisterParseNode((yyvsp[(1) - (2)].expr));
@@ -1917,7 +1921,7 @@ yyreduce:
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 464 "../xml/XPathGrammar.y"
+#line 468 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new LogicalOp(LogicalOp::OP_Or, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1929,7 +1933,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 476 "../xml/XPathGrammar.y"
+#line 480 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new LogicalOp(LogicalOp::OP_And, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1941,7 +1945,7 @@ yyreduce:
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 488 "../xml/XPathGrammar.y"
+#line 492 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new EqTestOp((yyvsp[(2) - (3)].eqop), (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1953,7 +1957,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 500 "../xml/XPathGrammar.y"
+#line 504 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new EqTestOp((yyvsp[(2) - (3)].eqop), (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1965,7 +1969,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 512 "../xml/XPathGrammar.y"
+#line 516 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new NumericOp(NumericOp::OP_Add, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1977,7 +1981,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 520 "../xml/XPathGrammar.y"
+#line 524 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new NumericOp(NumericOp::OP_Sub, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1989,7 +1993,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 532 "../xml/XPathGrammar.y"
+#line 536 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new NumericOp((yyvsp[(2) - (3)].numop), (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -2001,7 +2005,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 544 "../xml/XPathGrammar.y"
+#line 548 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Negative;
         (yyval.expr)->addSubExpression((yyvsp[(2) - (2)].expr));
@@ -2013,7 +2017,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2017 "WebCore/tmp/../generated/XPathGrammar.tab.c"
+#line 2021 "WebCore/tmp/../generated/XPathGrammar.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2225,7 +2229,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 552 "../xml/XPathGrammar.y"
+#line 556 "../xml/XPathGrammar.y"
 
 
 #endif

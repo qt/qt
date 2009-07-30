@@ -30,7 +30,7 @@ class CSSValueList;
 class JSCSSValueList : public JSCSSValue {
     typedef JSCSSValue Base;
 public:
-    JSCSSValueList(PassRefPtr<JSC::Structure>, PassRefPtr<CSSValueList>);
+    JSCSSValueList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSValueList>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertySlot(JSC::ExecState*, unsigned propertyName, JSC::PropertySlot&);
@@ -43,7 +43,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 

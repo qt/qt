@@ -23,6 +23,7 @@
 
 #if ENABLE(DOM_STORAGE)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class Storage;
 
-class JSStorage : public DOMObject {
-    typedef DOMObject Base;
+class JSStorage : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSStorage(PassRefPtr<JSC::Structure>, PassRefPtr<Storage>);
+    JSStorage(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Storage>);
     virtual ~JSStorage();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -50,7 +51,7 @@ public:
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     Storage* impl() const { return m_impl.get(); }
 
 private:
@@ -60,7 +61,7 @@ private:
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Storage*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Storage*);
 Storage* toStorage(JSC::JSValue);
 
 class JSStoragePrototype : public JSC::JSObject {

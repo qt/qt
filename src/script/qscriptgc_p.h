@@ -53,6 +53,10 @@
 // We mean it.
 //
 
+#if defined(Q_OS_VXWORKS) && defined(m_free)
+#  undef m_free
+#endif
+
 #include <QtCore/qglobal.h>
 
 #ifndef QT_NO_SCRIPT

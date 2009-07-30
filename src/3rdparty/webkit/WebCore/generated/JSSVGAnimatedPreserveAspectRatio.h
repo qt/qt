@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedPreserveAspectRatio : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedPreserveAspectRatio : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedPreserveAspectRatio(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedPreserveAspectRatio>, SVGElement* context);
+    JSSVGAnimatedPreserveAspectRatio(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedPreserveAspectRatio>, SVGElement* context);
     virtual ~JSSVGAnimatedPreserveAspectRatio();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,12 @@ public:
     }
 
     SVGAnimatedPreserveAspectRatio* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedPreserveAspectRatio > m_impl;
+    RefPtr<SVGAnimatedPreserveAspectRatio> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedPreserveAspectRatio*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedPreserveAspectRatio*, SVGElement* context);
 SVGAnimatedPreserveAspectRatio* toSVGAnimatedPreserveAspectRatio(JSC::JSValue);
 
 class JSSVGAnimatedPreserveAspectRatioPrototype : public JSC::JSObject {

@@ -33,7 +33,7 @@ class SVGPathSegCurvetoQuadraticAbs;
 class JSSVGPathSegCurvetoQuadraticAbs : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegCurvetoQuadraticAbs(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegCurvetoQuadraticAbs>, SVGElement* context);
+    JSSVGPathSegCurvetoQuadraticAbs(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegCurvetoQuadraticAbs>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
