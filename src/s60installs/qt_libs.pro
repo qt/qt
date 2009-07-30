@@ -41,8 +41,11 @@ symbian: {
     vendorinfo = \
         "; Localised Vendor name" \
         "%{\"Nokia, Qt Software\"}" \
+        " " \
         "; Unique Vendor name" \
-        ":\"Nokia, Qt Software\""
+        ":\"Nokia, Qt Software\"" \
+        " "
+        
         
     qtlibraries.pkg_prerules = vendorinfo
     qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
