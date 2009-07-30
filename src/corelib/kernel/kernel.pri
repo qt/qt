@@ -57,7 +57,7 @@ SOURCES += \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
         kernel/qmetaobjectbuilder.cpp \
-        kernel/qpointer.cpp \
+        kernel/qpointer.cpp 
 
 win32 {
 	SOURCES += \

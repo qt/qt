@@ -118,6 +118,7 @@ private slots:
     void connectToSender();
     void qobjectConstCast();
     void uniqConnection();
+    void interfaceIid();
 protected:
 };
 
@@ -2885,6 +2886,16 @@ void tst_QObject::uniqConnection()
     delete s;
     delete r1;
     delete r2;
+}
+
+void tst_QObject::interfaceIid()
+{
+    QCOMPARE(QByteArray(qobject_interface_iid<Foo::Bleh *>()), 
+             QByteArray(Bleh_iid));
+    QCOMPARE(QByteArray(qobject_interface_iid<Foo::Bar *>()), 
+             QByteArray("com.qtest.foobar"));
+    QCOMPARE(QByteArray(qobject_interface_iid<FooObject *>()), 
+             QByteArray());
 }
 
 QTEST_MAIN(tst_QObject)
