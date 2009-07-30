@@ -3267,7 +3267,7 @@ void tst_QNetworkReply::uploadPerformance()
 
 void tst_QNetworkReply::httpUploadPerformance()
 {
-      enum {UploadSize = 1000*1024*1024}; // 1000 MB
+      enum {UploadSize = 128*1024*1024}; // 128 MB
       ThreadedDataReaderHttpServer reader;
       FixedSizeDataGenerator generator(UploadSize);
 
@@ -3289,7 +3289,7 @@ void tst_QNetworkReply::httpUploadPerformance()
               << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
 
       reader.exit();
-      reader.wait(3000);
+      reader.wait();
 }
 
 
@@ -3333,7 +3333,7 @@ void tst_QNetworkReply::httpDownloadPerformance()
     QFETCH(bool, serverSendsContentLength);
     QFETCH(bool, chunkedEncoding);
 
-    enum {UploadSize = 1000*1024*1024}; // 1000 MB
+    enum {UploadSize = 128*1024*1024}; // 128 MB
     HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
 
     QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
