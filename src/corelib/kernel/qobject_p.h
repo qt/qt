@@ -86,6 +86,13 @@ inline QObjectData::~QObjectData() {}
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
+class QDeclarativeData 
+{
+public:
+    virtual ~QDeclarativeData() {}
+    virtual void destroyed(QObject *) {}
+};
+
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
     Q_DECLARE_PUBLIC(QObject)
@@ -118,7 +125,10 @@ public:
     // object currently activating the object
     Sender *currentSender;
 
-    QObject *currentChildBeingDeleted;
+    union {
+        QObject *currentChildBeingDeleted;
+        QDeclarativeData *declarativeData;
+    };
 
     bool isSender(const QObject *receiver, const char *signal) const;
     QObjectList receiverList(const char *signal) const;
