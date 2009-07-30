@@ -66,54 +66,48 @@ void QTestLightXmlStreamer::formatStart(const QTestElement *element, char **form
 
     switch(element->elementType()){
     case QTest::LET_TestCase: {
-        char quotedTf[950];
-        QXmlTestLogger::xmlQuote(quotedTf, element->attributeValue(QTest::AI_Name),
-            sizeof(quotedTf));
+        QTestCharBuffer quotedTf;
+        QXmlTestLogger::xmlQuote(quotedTf, element->attributeValue(QTest::AI_Name));
 
-        QTest::qt_asprintf(formatted, "<TestFunction name=\"%s\">\n", quotedTf);
+        QTest::qt_asprintf(formatted, "<TestFunction name=\"%s\">\n", quotedTf.constData());
         break;
     }
     case QTest::LET_Failure: {
-        char cdataDesc[900];
-        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description),
-            sizeof(cdataDesc));
+        QTestCharBuffer cdataDesc;
+        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description));
 
         QTest::qt_asprintf(formatted, "    <Description><![CDATA[%s]]></Description>\n",
-                           cdataDesc);
+                           cdataDesc.constData());
          break;
     }
     case QTest::LET_Error: {
         // assuming type and attribute names don't need quoting
-        char quotedFile[128];
-        char cdataDesc[700];
-        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File),
-            sizeof(quotedFile));
-        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description),
-            sizeof(cdataDesc));
+        QTestCharBuffer quotedFile;
+        QTestCharBuffer cdataDesc;
+        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File));
+        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description));
 
         QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <Description><![CDATA[%s]]></Description>\n</Message>\n",
                            element->attributeValue(QTest::AI_Type),
                            element->attributeName(QTest::AI_File),
-                           quotedFile,
+                           quotedFile.constData(),
                            element->attributeName(QTest::AI_Line),
                            element->attributeValue(QTest::AI_Line),
-                           cdataDesc);
+                           cdataDesc.constData());
         break;
     }
     case QTest::LET_Benchmark: {
         // assuming value and iterations don't need quoting
-        char quotedMetric[256];
-        char quotedTag[256];
-        QXmlTestLogger::xmlQuote(quotedMetric, element->attributeValue(QTest::AI_Metric),
-            sizeof(quotedMetric));
-        QXmlTestLogger::xmlQuote(quotedTag, element->attributeValue(QTest::AI_Tag),
-            sizeof(quotedTag));
+        QTestCharBuffer quotedMetric;
+        QTestCharBuffer quotedTag;
+        QXmlTestLogger::xmlQuote(quotedMetric, element->attributeValue(QTest::AI_Metric));
+        QXmlTestLogger::xmlQuote(quotedTag, element->attributeValue(QTest::AI_Tag));
 
         QTest::qt_asprintf(formatted, "<BenchmarkResult %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" />\n",
                            element->attributeName(QTest::AI_Metric),
-                           quotedMetric,
+                           quotedMetric.constData(),
                            element->attributeName(QTest::AI_Tag),
-                           quotedTag,
+                           quotedTag.constData(),
                            element->attributeName(QTest::AI_Value),
                            element->attributeValue(QTest::AI_Value),
                            element->attributeName(QTest::AI_Iterations),
@@ -147,13 +141,12 @@ void QTestLightXmlStreamer::formatBeforeAttributes(const QTestElement *element, 
 
     if (element->elementType() == QTest::LET_TestCase && element->attribute(QTest::AI_Result)){
     QTestCharBuffer buf;
-    char quotedFile[700];
-    QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File),
-        sizeof(quotedFile));
+    QTestCharBuffer quotedFile;
+    QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File));
 
     QTest::qt_asprintf(buf, "%s=\"%s\" %s=\"%s\"",
                        element->attributeName(QTest::AI_File),
-                       quotedFile,
+                       quotedFile.constData(),
                        element->attributeName(QTest::AI_Line),
                        element->attributeValue(QTest::AI_Line));
 

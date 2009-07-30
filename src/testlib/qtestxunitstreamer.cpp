@@ -135,9 +135,9 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
         key = attribute->name();
 
     if (key) {
-        char quotedValue[900];
-        QXmlTestLogger::xmlQuote(quotedValue, attribute->value(), sizeof(quotedValue));
-        QTest::qt_asprintf(formatted, " %s=\"%s\"", key, quotedValue);
+        QTestCharBuffer quotedValue;
+        QXmlTestLogger::xmlQuote(quotedValue, attribute->value());
+        QTest::qt_asprintf(formatted, " %s=\"%s\"", key, quotedValue.constData());
     }
     else {
         QTest::qt_asprintf(formatted, "");
@@ -168,9 +168,7 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, char
 
 void QTestXunitStreamer::output(QTestElement *element) const
 {
-    char buf[1024];
-    QTest::qt_snprintf(buf, sizeof(buf), "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-    outputString(buf);
+    outputString("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
     QTestBasicStreamer::output(element);
 }
 

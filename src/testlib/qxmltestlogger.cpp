@@ -104,18 +104,18 @@ QXmlTestLogger::~QXmlTestLogger()
 void QXmlTestLogger::startLogging()
 {
     QAbstractTestLogger::startLogging();
-    char buf[1024];
+    QTestCharBuffer buf;
 
     if (xmlmode == QXmlTestLogger::Complete) {
-        char quotedTc[900];
-        xmlQuote(quotedTc, QTestResult::currentTestObjectName(), sizeof(quotedTc));
-        QTest::qt_snprintf(buf, sizeof(buf),
+        QTestCharBuffer quotedTc;
+        xmlQuote(quotedTc, QTestResult::currentTestObjectName());
+        QTest::qt_asprintf(buf,
                 "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-                "<TestCase name=\"%s\">\n", quotedTc);
+                "<TestCase name=\"%s\">\n", quotedTc.constData());
         outputString(buf);
     }
 
-    QTest::qt_snprintf(buf, sizeof(buf),
+    QTest::qt_asprintf(buf,
             "<Environment>\n"
             "    <QtVersion>%s</QtVersion>\n"
             "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
@@ -134,10 +134,10 @@ void QXmlTestLogger::stopLogging()
 
 void QXmlTestLogger::enterTestFunction(const char *function)
 {
-    char buf[1024];
-    char quotedFunction[950];
-    xmlQuote(quotedFunction, function, sizeof(quotedFunction));
-    QTest::qt_snprintf(buf, sizeof(buf), "<TestFunction name=\"%s\">\n", quotedFunction);
+    QTestCharBuffer buf;
+    QTestCharBuffer quotedFunction;
+    xmlQuote(quotedFunction, function);
+    QTest::qt_asprintf(buf, "<TestFunction name=\"%s\">\n", quotedFunction.constData());
     outputString(buf);
 }
 
@@ -208,51 +208,49 @@ static const char *messageFormatString(bool noDescription, bool noTag)
 void QXmlTestLogger::addIncident(IncidentTypes type, const char *description,
                                 const char *file, int line)
 {
-    // buffer must be large enough to hold all quoted/cdata buffers plus the format string itself
-    char buf[5000];
+    QTestCharBuffer buf;
     const char *tag = QTestResult::currentDataTag();
     const char *gtag = QTestResult::currentGlobalDataTag();
     const char *filler = (tag && gtag) ? ":" : "";
     const bool notag = QTest::isEmpty(tag) && QTest::isEmpty(gtag);
 
-    char quotedFile[1024];
-    char cdataGtag[1024];
-    char cdataTag[1024];
-    char cdataDescription[1024];
+    QTestCharBuffer quotedFile;
+    QTestCharBuffer cdataGtag;
+    QTestCharBuffer cdataTag;
+    QTestCharBuffer cdataDescription;
 
-    xmlQuote(quotedFile, file, sizeof(quotedFile));
-    xmlCdata(cdataGtag, gtag, sizeof(cdataGtag));
-    xmlCdata(cdataTag, tag, sizeof(cdataTag));
-    xmlCdata(cdataDescription, description, sizeof(cdataDescription));
+    xmlQuote(quotedFile, file);
+    xmlCdata(cdataGtag, gtag);
+    xmlCdata(cdataTag, tag);
+    xmlCdata(cdataDescription, description);
 
-    QTest::qt_snprintf(buf, sizeof(buf),
+    QTest::qt_asprintf(buf,
             QTest::incidentFormatString(QTest::isEmpty(description), notag),
             QTest::xmlIncidentType2String(type),
-            quotedFile, line,
-            cdataGtag,
+            quotedFile.constData(), line,
+            cdataGtag.constData(),
             filler,
-            cdataTag,
-            cdataDescription);
+            cdataTag.constData(),
+            cdataDescription.constData());
 
     outputString(buf);
 }
 
 void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
-    char buf[1536];
-    char quotedMetric[64];
-    char quotedTag[1024];
+    QTestCharBuffer buf;
+    QTestCharBuffer quotedMetric;
+    QTestCharBuffer quotedTag;
 
     xmlQuote(quotedMetric,
-        QBenchmarkGlobalData::current->measurer->metricText().toAscii().constData(),
-        sizeof(quotedMetric));
-    xmlQuote(quotedTag, result.context.tag.toAscii().constData(), sizeof(quotedTag));
+        QBenchmarkGlobalData::current->measurer->metricText().toAscii().constData());
+    xmlQuote(quotedTag, result.context.tag.toAscii().constData());
 
-    QTest::qt_snprintf(
-        buf, sizeof(buf),
+    QTest::qt_asprintf(
+        buf,
         QTest::benchmarkResultFormatString(),
-        quotedMetric,
-        quotedTag,
+        quotedMetric.constData(),
+        quotedTag.constData(),
         QByteArray::number(result.value).constData(),  //no 64-bit qt_snprintf support
         result.iterations);
     outputString(buf);
@@ -261,30 +259,30 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 void QXmlTestLogger::addMessage(MessageTypes type, const char *message,
                                 const char *file, int line)
 {
-    char buf[5000];
+    QTestCharBuffer buf;
     const char *tag = QTestResult::currentDataTag();
     const char *gtag = QTestResult::currentGlobalDataTag();
     const char *filler = (tag && gtag) ? ":" : "";
     const bool notag = QTest::isEmpty(tag) && QTest::isEmpty(gtag);
 
-    char quotedFile[1024];
-    char cdataGtag[1024];
-    char cdataTag[1024];
-    char cdataDescription[1024];
+    QTestCharBuffer quotedFile;
+    QTestCharBuffer cdataGtag;
+    QTestCharBuffer cdataTag;
+    QTestCharBuffer cdataDescription;
 
-    xmlQuote(quotedFile, file, sizeof(quotedFile));
-    xmlCdata(cdataGtag, gtag, sizeof(cdataGtag));
-    xmlCdata(cdataTag, tag, sizeof(cdataTag));
-    xmlCdata(cdataDescription, message, sizeof(cdataDescription));
+    xmlQuote(quotedFile, file);
+    xmlCdata(cdataGtag, gtag);
+    xmlCdata(cdataTag, tag);
+    xmlCdata(cdataDescription, message);
 
-    QTest::qt_snprintf(buf, sizeof(buf),
+    QTest::qt_asprintf(buf,
             QTest::messageFormatString(QTest::isEmpty(message), notag),
             QTest::xmlMessageType2String(type),
-            quotedFile, line,
-            cdataGtag,
+            quotedFile.constData(), line,
+            cdataGtag.constData(),
             filler,
-            cdataTag,
-            cdataDescription);
+            cdataTag.constData(),
+            cdataDescription.constData());
 
     outputString(buf);
 }

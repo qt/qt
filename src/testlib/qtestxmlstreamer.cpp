@@ -67,79 +67,71 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, char **formatted
 
     switch(element->elementType()){
     case QTest::LET_TestCase: {
-        char quotedTf[950];
-        QXmlTestLogger::xmlQuote(quotedTf, element->attributeValue(QTest::AI_Name),
-            sizeof(quotedTf));
+        QTestCharBuffer quotedTf;
+        QXmlTestLogger::xmlQuote(quotedTf, element->attributeValue(QTest::AI_Name));
 
-        QTest::qt_asprintf(formatted, "<TestFunction name=\"%s\">\n", quotedTf);
+        QTest::qt_asprintf(formatted, "<TestFunction name=\"%s\">\n", quotedTf.constData());
         break;
     }
     case QTest::LET_Failure: {
-        char cdataDesc[800];
-        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description),
-            sizeof(cdataDesc));
+        QTestCharBuffer cdataDesc;
+        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description));
 
-        char location[100];
-        char quotedFile[70];
-        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File),
-            sizeof(quotedFile));
+        QTestCharBuffer location;
+        QTestCharBuffer quotedFile;
+        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File));
 
-        QTest::qt_snprintf(location, sizeof(location), "%s=\"%s\" %s=\"%s\"",
+        QTest::qt_asprintf(location, "%s=\"%s\" %s=\"%s\"",
                            element->attributeName(QTest::AI_File),
-                           quotedFile,
+                           quotedFile.constData(),
                            element->attributeName(QTest::AI_Line),
                            element->attributeValue(QTest::AI_Line));
 
         if (element->attribute(QTest::AI_Tag)) {
-            char cdataTag[100];
-            QXmlTestLogger::xmlCdata(cdataTag, element->attributeValue(QTest::AI_Tag),
-                sizeof(cdataTag));
+            QTestCharBuffer cdataTag;
+            QXmlTestLogger::xmlCdata(cdataTag, element->attributeValue(QTest::AI_Tag));
             QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s>\n"
                 "    <DataTag><![CDATA[%s]]></DataTag>\n"
                 "    <Description><![CDATA[%s]]></Description>\n"
                 "</Incident>\n", element->attributeValue(QTest::AI_Result),
-                location, cdataTag, cdataDesc);
+                location.constData(), cdataTag.constData(), cdataDesc.constData());
         }
         else {
             QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s>\n"
                 "    <Description><![CDATA[%s]]></Description>\n"
                 "</Incident>\n", element->attributeValue(QTest::AI_Result),
-                location, cdataDesc);
+                location.constData(), cdataDesc.constData());
         }
         break;
     }
     case QTest::LET_Error: {
         // assuming type and attribute names don't need quoting
-        char quotedFile[128];
-        char cdataDesc[700];
-        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File),
-            sizeof(quotedFile));
-        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description),
-            sizeof(cdataDesc));
+        QTestCharBuffer quotedFile;
+        QTestCharBuffer cdataDesc;
+        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File));
+        QXmlTestLogger::xmlCdata(cdataDesc, element->attributeValue(QTest::AI_Description));
 
         QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <Description><![CDATA[%s]]></Description>\n</Message>\n",
                            element->attributeValue(QTest::AI_Type),
                            element->attributeName(QTest::AI_File),
-                           quotedFile,
+                           quotedFile.constData(),
                            element->attributeName(QTest::AI_Line),
                            element->attributeValue(QTest::AI_Line),
-                           cdataDesc);
+                           cdataDesc.constData());
         break;
     }
     case QTest::LET_Benchmark: {
         // assuming value and iterations don't need quoting
-        char quotedMetric[256];
-        char quotedTag[256];
-        QXmlTestLogger::xmlQuote(quotedMetric, element->attributeValue(QTest::AI_Metric),
-            sizeof(quotedMetric));
-        QXmlTestLogger::xmlQuote(quotedTag, element->attributeValue(QTest::AI_Tag),
-            sizeof(quotedTag));
+        QTestCharBuffer quotedMetric;
+        QTestCharBuffer quotedTag;
+        QXmlTestLogger::xmlQuote(quotedMetric, element->attributeValue(QTest::AI_Metric));
+        QXmlTestLogger::xmlQuote(quotedTag, element->attributeValue(QTest::AI_Tag));
 
         QTest::qt_asprintf(formatted, "<BenchmarkResult %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" />\n",
                            element->attributeName(QTest::AI_Metric),
-                           quotedMetric,
+                           quotedMetric.constData(),
                            element->attributeName(QTest::AI_Tag),
-                           quotedTag,
+                           quotedTag.constData(),
                            element->attributeName(QTest::AI_Value),
                            element->attributeValue(QTest::AI_Value),
                            element->attributeName(QTest::AI_Iterations),
@@ -169,20 +161,19 @@ void QTestXmlStreamer::formatBeforeAttributes(const QTestElement *element, char 
         return;
 
     if (element->elementType() == QTest::LET_TestCase && element->attribute(QTest::AI_Result)){
-        char buf[900];
-        char quotedFile[700];
-        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File),
-            sizeof(quotedFile));
+        QTestCharBuffer buf;
+        QTestCharBuffer quotedFile;
+        QXmlTestLogger::xmlQuote(quotedFile, element->attributeValue(QTest::AI_File));
 
-        QTest::qt_snprintf(buf, sizeof(buf), "%s=\"%s\" %s=\"%s\"",
+        QTest::qt_asprintf(buf, "%s=\"%s\" %s=\"%s\"",
                            element->attributeName(QTest::AI_File),
-                           quotedFile,
+                           quotedFile.constData(),
                            element->attributeName(QTest::AI_Line),
                            element->attributeValue(QTest::AI_Line));
 
         if( !element->childElements() ) {
             QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s/>\n",
-                               element->attributeValue(QTest::AI_Result), buf);
+                               element->attributeValue(QTest::AI_Result), buf.constData());
         }
         else {
             QTest::qt_asprintf(formatted, "");
@@ -194,24 +185,24 @@ void QTestXmlStreamer::formatBeforeAttributes(const QTestElement *element, char 
 
 void QTestXmlStreamer::output(QTestElement *element) const
 {
-    char buf[1024];
-    char quotedTc[800];
-    QXmlTestLogger::xmlQuote(quotedTc, QTestResult::currentTestObjectName(), sizeof(quotedTc));
+    QTestCharBuffer buf;
+    QTestCharBuffer quotedTc;
+    QXmlTestLogger::xmlQuote(quotedTc, QTestResult::currentTestObjectName());
 
-    QTest::qt_snprintf(buf, sizeof(buf), "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<TestCase name=\"%s\">\n",
-                       quotedTc);
+    QTest::qt_asprintf(buf, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<TestCase name=\"%s\">\n",
+                       quotedTc.constData());
     outputString(buf);
 
-    QTest::qt_snprintf(buf, sizeof(buf), "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n",
+    QTest::qt_asprintf(buf, "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n",
                        qVersion(), QTEST_VERSION_STR );
     outputString(buf);
 
-    QTest::qt_snprintf(buf, sizeof(buf), "</Environment>\n");
+    QTest::qt_asprintf(buf, "</Environment>\n");
     outputString(buf);
 
     QTestBasicStreamer::output(element);
 
-    QTest::qt_snprintf(buf, sizeof(buf), "</TestCase>\n");
+    QTest::qt_asprintf(buf, "</TestCase>\n");
     outputString(buf);
 }
 
