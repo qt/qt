@@ -108,6 +108,9 @@ QGraphicsEffectSource::QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, Q
 QGraphicsEffectSource::~QGraphicsEffectSource()
 {}
 
+QRect QGraphicsEffectSource::deviceRect() const
+{ return d_func()->deviceRect(); }
+
 QRectF QGraphicsEffectSource::boundingRect(Qt::CoordinateSystem system) const
 { return d_func()->boundingRect(system); }
 
@@ -709,7 +712,8 @@ void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
     qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
     blurRect |= sourceRect;
-    const QRect effectRect = blurRect.toAlignedRect();
+    QRect effectRect = blurRect.toAlignedRect();
+    effectRect &= source->deviceRect();
 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);

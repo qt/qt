@@ -557,6 +557,15 @@ public:
     inline const QStyleOption *styleOption() const
     { return info ? info->option : 0; }
 
+    inline QRect deviceRect() const
+    {
+        if (!info || !info->widget) {
+            qWarning("QGraphicsEffectSource::deviceRect: Not yet implemented, lacking device context");
+            return QRect();
+        }
+        return info->widget->rect();
+    }
+
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *);
     QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;

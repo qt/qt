@@ -10048,9 +10048,33 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
 
     const QRectF sourceRect = boundingRect(system);
-    const QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+    QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
     if (offset)
         *offset = sourceRect.toAlignedRect().topLeft();
+
+    if (deviceCoordinates) {
+        // Clip to viewport rect.
+        int left, top, right, bottom;
+        effectRect.getCoords(&left, &top, &right, &bottom);
+        if (left < 0) {
+            if (offset)
+                offset->rx() += -left;
+            effectRect.setX(0);
+        }
+        if (top < 0) {
+            if (offset)
+                offset->ry() += -top;
+            effectRect.setY(0);
+        }
+        // NB! We use +-1 for historical reasons (see QRect documentation).
+        if (right + 1 > info->widget->width())
+            effectRect.setRight(info->widget->width() - 1);
+        if (bottom + 1 > info->widget->height())
+            effectRect.setBottom(info->widget->height() -1);
+    }
+
+    if (effectRect.isEmpty())
+        return QPixmap();
 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);

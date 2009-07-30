@@ -74,6 +74,7 @@ public:
     virtual ~QGraphicsEffectSourcePrivate() {}
     virtual void detach() = 0;
     virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
+    virtual QRect deviceRect() const = 0;
     virtual const QGraphicsItem *graphicsItem() const = 0;
     virtual const QStyleOption *styleOption() const = 0;
     virtual void draw(QPainter *p) = 0;

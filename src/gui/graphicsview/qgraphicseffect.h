@@ -74,6 +74,7 @@ public:
     void update();
 
     QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
+    QRect deviceRect() const;
     QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates, QPoint *offset = 0) const;
 
 protected:
