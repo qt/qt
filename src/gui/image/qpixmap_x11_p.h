@@ -99,6 +99,7 @@ private:
     friend class QX11PaintEngine;
     friend class QX11WindowSurface;
     friend class QRasterWindowSurface;
+    friend class QGLContextPrivate; // Needs to access xinfo, gl_surface & flags
 
     void release();
 
@@ -108,14 +109,21 @@ private:
 
     Qt::HANDLE hd;
 
-    uint uninit : 1;
-    uint read_only : 1;
+    enum Flag {
+         NoFlags = 0x0,
+         Uninitialized = 0x1,
+         Readonly = 0x2,
+         InvertedWhenBoundToTexture = 0x4,
+         GlSurfaceCreatedWithAlpha = 0x8
+    };
+    uint flags;
 
     QX11Info xinfo;
     Qt::HANDLE x11_mask;
     Qt::HANDLE picture;
     Qt::HANDLE mask_picture;
     Qt::HANDLE hd2; // sorted in the default display depth
+    Qt::HANDLE gl_surface;
 #ifndef QT_NO_XRENDER
     void convertToARGB32(bool preserveContents = true);
 #endif
