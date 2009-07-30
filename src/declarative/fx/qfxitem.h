@@ -226,8 +226,6 @@ public:
     void setFocus(bool);
     bool hasActiveFocus() const;
 
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;    //### for KeyProxy
-
 Q_SIGNALS:
     void xChanged();
     void yChanged();
@@ -257,7 +255,6 @@ protected:
 
     virtual void classBegin();
     virtual void componentComplete();
-    virtual void parentChanged(QFxItem *, QFxItem *);
     virtual void focusChanged(bool);
     virtual void activeFocusChanged(bool);
     virtual void keyPressEvent(QKeyEvent *event);

@@ -446,8 +446,6 @@ void QFxItem::setParentItem(QFxItem *parent)
 
     QObject::setParent(parent);
     QGraphicsObject::setParentItem(parent);
-
-    parentChanged(parent, oldParent);
 }
 
 /*!
@@ -1822,6 +1820,8 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
     } else if (change == ItemChildAddedChange ||
                change == ItemChildRemovedChange) {
         childrenChanged();
+    } else if (change == ItemParentHasChanged) {
+        emit parentChanged();
     }
 
     return QGraphicsItem::itemChange(change, value);
@@ -1844,11 +1844,6 @@ QRectF QFxItem::boundingRect() const
 
 void QFxItem::paintContents(QPainter &)
 {
-}
-
-void QFxItem::parentChanged(QFxItem *, QFxItem *)
-{
-    emit parentChanged();
 }
 
 /*!
@@ -2113,11 +2108,6 @@ void QFxItemPrivate::gvAddMouseFilter()
     Q_Q(QFxItem);
     if (q->scene())
         q->installSceneEventFilter(q);
-}
-
-QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
-{
-    return QGraphicsItem::inputMethodQuery(query);
 }
 
 QT_END_NAMESPACE
