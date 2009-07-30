@@ -156,7 +156,7 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
     if (!kerning) {
         float zero = 0.0;
         QCFType<CFNumberRef> noKern = CFNumberCreate(kCFAllocatorDefault, kCFNumberFloatType, &zero);
-        CFDictionaryAddValue(attributeDict, kCTKernAttributeName, &noKern);
+        CFDictionaryAddValue(attributeDict, kCTKernAttributeName, noKern);
     }
 
     QCoreTextFontEngine *fe = new QCoreTextFontEngine(ctfont, fontDef, this);
