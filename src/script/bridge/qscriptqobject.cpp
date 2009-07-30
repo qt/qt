@@ -1490,7 +1490,8 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
 }
 
 void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *exec,
-                                       JSC::PropertyNameArray &propertyNames)
+                                       JSC::PropertyNameArray &propertyNames,
+                                       bool includeNonEnumerable)
 {
     QObject *qobject = data->value;
     if (!qobject) {
@@ -1506,7 +1507,7 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
                     ? meta->propertyOffset() : 0;
         for ( ; i < meta->propertyCount(); ++i) {
             QMetaProperty prop = meta->property(i);
-            if (isEnumerableMetaProperty(prop, meta, i)) {
+            if (includeNonEnumerable || isEnumerableMetaProperty(prop, meta, i)) {
                 QString name = QString::fromLatin1(prop.name());
                 propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(name)));
             }
@@ -1534,7 +1535,7 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
         }
     }
 
-    QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames);
+    QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames, includeNonEnumerable);
 }
 
 void QObjectDelegate::mark(QScriptObject *object)
@@ -1768,7 +1769,7 @@ bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
     return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void QMetaObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyNameArray &propertyNames)
+void QMetaObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyNameArray &propertyNames, bool includeNonEnumerable)
 {
     const QMetaObject *meta = data->value;
     if (!meta)
@@ -1778,7 +1779,7 @@ void QMetaObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::Prope
         for (int j = 0; j < e.keyCount(); ++j)
             propertyNames.add(JSC::Identifier(exec, e.key(j)));
     }
-    JSC::JSObject::getPropertyNames(exec, propertyNames);
+    JSC::JSObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 void QMetaObjectWrapperObject::mark()

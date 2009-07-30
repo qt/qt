@@ -44,7 +44,7 @@ public:
     virtual CallType getCallData(CallData&);
     virtual ConstructType getConstructData(ConstructData&);
     
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
 
     virtual void invalidate();
     Bindings::Instance* getInternalInstance() const { return instance.get(); }

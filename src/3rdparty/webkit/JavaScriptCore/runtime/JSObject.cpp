@@ -447,9 +447,9 @@ bool JSObject::getPropertySpecificValue(ExecState*, const Identifier& propertyNa
     return false;
 }
 
-void JSObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
-    m_structure->getEnumerablePropertyNames(exec, propertyNames, this);
+    m_structure->getPropertyNames(exec, propertyNames, this, includeNonEnumerable);
 }
 
 bool JSObject::toBoolean(ExecState*) const

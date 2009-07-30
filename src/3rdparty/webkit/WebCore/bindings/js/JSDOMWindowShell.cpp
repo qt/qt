@@ -103,9 +103,9 @@ bool JSDOMWindowShell::deleteProperty(ExecState* exec, const Identifier& propert
     return m_window->deleteProperty(exec, propertyName);
 }
 
-void JSDOMWindowShell::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSDOMWindowShell::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
-    m_window->getPropertyNames(exec, propertyNames);
+    m_window->getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 bool JSDOMWindowShell::getPropertyAttributes(JSC::ExecState* exec, const Identifier& propertyName, unsigned& attributes) const

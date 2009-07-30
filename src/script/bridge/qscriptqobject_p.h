@@ -106,7 +106,8 @@ public:
     virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
                                        const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
+                                  bool includeNonEnumerable = false);
     virtual void mark(QScriptObject*);
 
     inline QObject *value() const { return data->value; }
@@ -293,7 +294,8 @@ public:
                                 const JSC::Identifier& propertyName);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
+                                  bool includeNonEnumerable = false);
     virtual void mark();
 
     virtual JSC::CallType getCallData(JSC::CallData&);

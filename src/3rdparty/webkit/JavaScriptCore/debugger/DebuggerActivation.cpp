@@ -70,9 +70,9 @@ bool DebuggerActivation::deleteProperty(ExecState* exec, const Identifier& prope
     return m_activation->deleteProperty(exec, propertyName);
 }
 
-void DebuggerActivation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void DebuggerActivation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
-    m_activation->getPropertyNames(exec, propertyNames);
+    m_activation->getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 bool DebuggerActivation::getPropertyAttributes(JSC::ExecState* exec, const Identifier& propertyName, unsigned& attributes) const

@@ -100,7 +100,7 @@ public:
     virtual bool supportsConstruct() const { return false; }
     virtual JSValue invokeConstruct(ExecState*, const ArgList&) { return JSValue(); }
     
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&) { }
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false) { }
 
     virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const = 0;
     

@@ -66,7 +66,7 @@ private:
 
     virtual bool hasInstance(ExecState* exec, JSValue value, JSValue proto);
 
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
 
     virtual double toNumber(ExecState*) const;
     virtual UString toString(ExecState*) const;

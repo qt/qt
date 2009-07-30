@@ -116,7 +116,7 @@ public:
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(object.engine());
         JSC::ExecState *exec = eng_p->globalExec();
         propertyNames = new JSC::PropertyNameArray(exec);
-        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getPropertyNames(exec, *propertyNames);
+        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getPropertyNames(exec, *propertyNames, true);
         it = propertyNames->begin();
     }
 

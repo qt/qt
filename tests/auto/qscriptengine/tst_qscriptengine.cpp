@@ -1046,17 +1046,17 @@ void tst_QScriptEngine::globalObjectProperties()
             actualNames.insert(it.name());
         }
     }
+
     QSet<QString> remainingNames = actualNames;
     {
         QSet<QString>::const_iterator it;
         for (it = expectedNames.constBegin(); it != expectedNames.constEnd(); ++it) {
             QString name = *it;
-            if (!actualNames.contains(name))
-                QEXPECT_FAIL("", "JSC getPropertyNames() doesn't include DontEnum properties", Abort);
             QVERIFY(actualNames.contains(name));
             remainingNames.remove(name);
         }
     }
+    QEXPECT_FAIL("", "JSC global object has extra properties (JSON and jscprint)", Abort);
     QVERIFY(remainingNames.isEmpty());
 }
 

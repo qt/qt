@@ -106,7 +106,7 @@ namespace JSC {
             return get(propertyName._ustring.rep(), attributes, specificValue);
         }
 
-        void getEnumerablePropertyNames(ExecState*, PropertyNameArray&, JSObject*);
+        void getPropertyNames(ExecState*, PropertyNameArray&, JSObject*, bool includeNonEnumerable = false);
 
         bool hasGetterSetterProperties() const { return m_hasGetterSetterProperties; }
         void setHasGetterSetterProperties(bool hasGetterSetterProperties) { m_hasGetterSetterProperties = hasGetterSetterProperties; }
@@ -121,8 +121,8 @@ namespace JSC {
 
         size_t put(const Identifier& propertyName, unsigned attributes, JSCell* specificValue);
         size_t remove(const Identifier& propertyName);
-        void getEnumerableNamesFromPropertyTable(PropertyNameArray&);
-        void getEnumerableNamesFromClassInfoTable(ExecState*, const ClassInfo*, PropertyNameArray&);
+        void getNamesFromPropertyTable(PropertyNameArray&, bool includeNonEnumerable = false);
+        void getNamesFromClassInfoTable(ExecState*, const ClassInfo*, PropertyNameArray&, bool includeNonEnumerable = false);
 
         void expandPropertyMapHashTable();
         void rehashPropertyMapHashTable();

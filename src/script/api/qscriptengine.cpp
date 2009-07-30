@@ -367,7 +367,7 @@ public:
                                 const JSC::Identifier& propertyName);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
 
 public:
     JSC::JSObject *customGlobalObject;
@@ -404,8 +404,8 @@ public:
     virtual bool getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                        unsigned& attributes) const
     { return originalGlobalObject->JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes); }
-    virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames)
-    { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames); }
+    virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable = false)
+    { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, includeNonEnumerable); }
 private:
     JSC::JSGlobalObject *originalGlobalObject;
 };
@@ -712,12 +712,12 @@ bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identi
     return JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames)
+void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     if (customGlobalObject)
-        customGlobalObject->getPropertyNames(exec, propertyNames);
+        customGlobalObject->getPropertyNames(exec, propertyNames, includeNonEnumerable);
     else
-        JSC::JSGlobalObject::getPropertyNames(exec, propertyNames);
+        JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 static JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);

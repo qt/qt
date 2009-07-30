@@ -87,7 +87,7 @@ namespace JSC {
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
         virtual bool deleteProperty(ExecState*, unsigned propertyName);
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+        virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
         virtual void mark();
 
         void* lazyCreationData();

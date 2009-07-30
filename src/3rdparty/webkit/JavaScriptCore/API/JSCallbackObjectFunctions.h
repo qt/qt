@@ -372,7 +372,7 @@ JSValue JSCallbackObject<Base>::call(ExecState* exec, JSObject* functionObject, 
 }
 
 template <class Base>
-void JSCallbackObject<Base>::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCallbackObject<Base>::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     JSContextRef execRef = toRef(exec);
     JSObjectRef thisRef = toRef(this);
@@ -380,7 +380,7 @@ void JSCallbackObject<Base>::getPropertyNames(ExecState* exec, PropertyNameArray
     for (JSClassRef jsClass = classRef(); jsClass; jsClass = jsClass->parentClass) {
         if (JSObjectGetPropertyNamesCallback getPropertyNames = jsClass->getPropertyNames) {
             JSLock::DropAllLocks dropAllLocks(exec);
-            getPropertyNames(execRef, thisRef, toRef(&propertyNames));
+            getPropertyNames(execRef, thisRef, toRef(&propertyNames), includeNonEnumerable);
         }
         
         if (OpaqueJSClassStaticValuesTable* staticValues = jsClass->staticValues(exec)) {
@@ -406,7 +406,7 @@ void JSCallbackObject<Base>::getPropertyNames(ExecState* exec, PropertyNameArray
         }
     }
     
-    Base::getPropertyNames(exec, propertyNames);
+    Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 template <class Base>

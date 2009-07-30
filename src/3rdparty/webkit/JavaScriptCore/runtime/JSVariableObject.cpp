@@ -41,15 +41,15 @@ bool JSVariableObject::deleteProperty(ExecState* exec, const Identifier& propert
     return JSObject::deleteProperty(exec, propertyName);
 }
 
-void JSVariableObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSVariableObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     SymbolTable::const_iterator end = symbolTable().end();
     for (SymbolTable::const_iterator it = symbolTable().begin(); it != end; ++it) {
-        if (!(it->second.getAttributes() & DontEnum))
+        if (includeNonEnumerable || !(it->second.getAttributes() & DontEnum))
             propertyNames.add(Identifier(exec, it->first.get()));
     }
     
-    JSObject::getPropertyNames(exec, propertyNames);
+    JSObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 bool JSVariableObject::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
