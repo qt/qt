@@ -468,7 +468,8 @@ public:
     QGraphicsItem *q_ptr;
 };
 
-struct QGraphicsItemPrivate::TransformData {
+struct QGraphicsItemPrivate::TransformData
+{
     QTransform transform;
     qreal scale;
     qreal rotation;
@@ -481,7 +482,7 @@ struct QGraphicsItemPrivate::TransformData {
         scale(1.0), rotation(0.0),
         xOrigin(0.0), yOrigin(0.0),
         onlyTransform(true)
-    {}
+    { }
 
     QTransform computedFullTransform(QTransform *postmultiplyTransform = 0) const
     {
