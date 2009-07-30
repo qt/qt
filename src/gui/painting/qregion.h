@@ -148,6 +148,7 @@ public:
 #elif defined(Q_WS_MAC)
 #if defined Q_WS_MAC32
     RgnHandle toQDRgn() const;
+    RgnHandle toQDRgnForUpdate_sys() const;
     static QRegion fromQDRgn(RgnHandle shape);
 #endif
 #ifdef QT_MAC_USE_COCOA
