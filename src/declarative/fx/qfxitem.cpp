@@ -1592,18 +1592,6 @@ QmlList<QmlTransition *>* QFxItem::transitions()
 */
 
 /*!
-  Returns the state with \a name.  Returns 0 if no matching state is found.
-*/
-QmlState *QFxItem::findState(const QString &name) const
-{
-    Q_D(const QFxItem);
-    if (!d->_stateGroup)
-        return 0;
-    else
-        return d->_stateGroup->findState(name);
-}
-
-/*!
   \qmlproperty string Item::state
 
   This property holds the name of the current state of the item.
@@ -1809,14 +1797,7 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
 {
     Q_D(QFxItem);
     if (change == ItemSceneHasChanged) {
-        if (options() & QFxItem::MouseFilter)
-            d->gvRemoveMouseFilter();
-
         d->canvas = qvariant_cast<QGraphicsScene *>(value);
-            
-        if (options() & QFxItem::MouseFilter)
-            d->gvAddMouseFilter();
-
     } else if (change == ItemChildAddedChange ||
                change == ItemChildRemovedChange) {
         childrenChanged();
@@ -2082,32 +2063,11 @@ void QFxItem::setOptions(Options options, bool set)
 
     setFiltersChildEvents(d->options & ChildMouseFilter);
     setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
-
-    if ((old & MouseFilter) != (d->options & MouseFilter)) {
-        if (d->options & MouseFilter)
-            d->gvAddMouseFilter();
-        else
-            d->gvRemoveMouseFilter();
-    }
 }
 
 void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     paintContents(*p);
-}
-
-void QFxItemPrivate::gvRemoveMouseFilter()
-{
-    Q_Q(QFxItem);
-    if (q->scene())
-        q->removeSceneEventFilter(q);
-}
-
-void QFxItemPrivate::gvAddMouseFilter()
-{
-    Q_Q(QFxItem);
-    if (q->scene())
-        q->installSceneEventFilter(q);
 }
 
 QT_END_NAMESPACE

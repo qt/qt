@@ -154,7 +154,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
 
 public:
     enum Option { NoOption = 0x00000000,
-                  MouseFilter = 0x00000001,
                   ChildMouseFilter = 0x00000002,
                   IsFocusRealm = 0x00000080 };
     Q_DECLARE_FLAGS(Options, Option)
@@ -183,8 +182,6 @@ public:
     void setClip(bool);
 
     QmlList<QmlState *>* states();
-    QmlState *findState(const QString &name) const;
-
     QmlList<QmlTransition *>* transitions();
 
     QString state() const;

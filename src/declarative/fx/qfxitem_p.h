@@ -196,9 +196,6 @@ public:
 
     QPointF computeTransformOrigin() const;
 
-    void gvRemoveMouseFilter();
-    void gvAddMouseFilter();
-
     virtual void setPosHelper(const QPointF &pos)
     {
         Q_Q(QFxItem);
