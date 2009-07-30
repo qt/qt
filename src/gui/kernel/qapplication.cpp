@@ -179,11 +179,11 @@ QApplicationPrivate::~QApplicationPrivate()
 
     QApplication contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also handles the
-    application's initialization and finalization, and provides session
-    management. In addition, it handles most system-wide and application-wide
-    settings.
+    application's initialization, finalization, and provides session
+    management. In addition, QApplication handles most of the system-wide and
+    application-wide settings.
 
-    For any GUI application using Qt, there is precisely one QApplication
+    For any GUI application using Qt, there is precisely \bold one QApplication
     object, no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-GUI Qt applications, use QCoreApplication instead,
     as it does not depend on the \l QtGui library.
@@ -239,9 +239,9 @@ QApplicationPrivate::~QApplicationPrivate()
                 saveState() for details.
         \endlist
 
-    The QApplication object does so much initialization. Hence, it \e{must} be
+    Since the QApplication object does so much initialization, it \e{must} be
     created before any other objects related to the user interface are created.
-    Since QApplication also deals with common command line arguments, it is
+    QApplication also deals with common command line arguments. Hence, it is
     usually a good idea to create it \e before any interpretation or
     modification of \c argv is done in the application itself.
 
