@@ -32,7 +32,8 @@ HEADERS += \
         kernel/qsharedmemory_p.h \
         kernel/qsystemsemaphore.h \
         kernel/qsystemsemaphore_p.h \
-        kernel/qfunctions_p.h
+        kernel/qfunctions_p.h \
+        kernel/qguard_p.h
 
 SOURCES += \
 	kernel/qabstracteventdispatcher.cpp \
@@ -54,7 +55,8 @@ SOURCES += \
         kernel/qcoreglobaldata.cpp \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
-        kernel/qpointer.cpp
+        kernel/qpointer.cpp \
+        kernel/qguard.cpp
 
 win32 {
 	SOURCES += \
