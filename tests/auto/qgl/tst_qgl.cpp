@@ -45,6 +45,7 @@
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qgl.h>
+#include <qglcolormap.h>
 
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
@@ -66,6 +67,7 @@ private slots:
     void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
+    void colormap();
 };
 
 tst_QGL::tst_QGL()
@@ -621,6 +623,125 @@ void tst_QGL::partialGLWidgetUpdates()
         QCOMPARE(widget.paintEventRegion, QRegion(50, 50, 50, 50));
     else
         QCOMPARE(widget.paintEventRegion, QRegion(widget.rect()));
+}
+
+class ColormapExtended : public QGLColormap
+{
+public:
+    ColormapExtended() {}
+
+    Qt::HANDLE handle() { return QGLColormap::handle(); }
+    void setHandle(Qt::HANDLE handle) { QGLColormap::setHandle(handle); }
+};
+
+void tst_QGL::colormap()
+{
+    // Check the properties of the default empty colormap.
+    QGLColormap cmap1;
+    QVERIFY(cmap1.isEmpty());
+    QCOMPARE(cmap1.size(), 0);
+    QVERIFY(cmap1.entryRgb(0) == 0);
+    QVERIFY(cmap1.entryRgb(-1) == 0);
+    QVERIFY(cmap1.entryRgb(100) == 0);
+    QVERIFY(!cmap1.entryColor(0).isValid());
+    QVERIFY(!cmap1.entryColor(-1).isValid());
+    QVERIFY(!cmap1.entryColor(100).isValid());
+    QCOMPARE(cmap1.find(qRgb(255, 0, 0)), -1);
+    QCOMPARE(cmap1.findNearest(qRgb(255, 0, 0)), -1);
+
+    // Set an entry and re-test.
+    cmap1.setEntry(56, qRgb(255, 0, 0));
+    // The colormap is still considered "empty" even though it
+    // has entries in it now.  The isEmpty() method is used to
+    // detect when the colormap is in use by a GL widget,
+    // not to detect when it is empty!
+    QVERIFY(cmap1.isEmpty());
+    QCOMPARE(cmap1.size(), 256);
+    QVERIFY(cmap1.entryRgb(0) == 0);
+    QVERIFY(cmap1.entryColor(0) == QColor(0, 0, 0, 255));
+    QVERIFY(cmap1.entryRgb(56) == qRgb(255, 0, 0));
+    QVERIFY(cmap1.entryColor(56) == QColor(255, 0, 0, 255));
+    QCOMPARE(cmap1.find(qRgb(255, 0, 0)), 56);
+    QCOMPARE(cmap1.findNearest(qRgb(255, 0, 0)), 56);
+
+    // Set some more entries.
+    static QRgb const colors[] = {
+        qRgb(255, 0, 0),
+        qRgb(0, 255, 0),
+        qRgb(255, 255, 255),
+        qRgb(0, 0, 255),
+        qRgb(0, 0, 0)
+    };
+    cmap1.setEntry(57, QColor(0, 255, 0));
+    cmap1.setEntries(3, colors + 2, 58);
+    cmap1.setEntries(5, colors, 251);
+    int idx;
+    for (idx = 0; idx < 5; ++idx) {
+        QVERIFY(cmap1.entryRgb(56 + idx) == colors[idx]);
+        QVERIFY(cmap1.entryColor(56 + idx) == QColor(colors[idx]));
+        QVERIFY(cmap1.entryRgb(251 + idx) == colors[idx]);
+        QVERIFY(cmap1.entryColor(251 + idx) == QColor(colors[idx]));
+    }
+    QCOMPARE(cmap1.size(), 256);
+
+    // Perform color lookups.
+    QCOMPARE(cmap1.find(qRgb(255, 0, 0)), 56);
+    QCOMPARE(cmap1.find(qRgb(0, 0, 0)), 60); // Actually finds 0, 0, 0, 255.
+    QCOMPARE(cmap1.find(qRgba(0, 0, 0, 0)), 0);
+    QCOMPARE(cmap1.find(qRgb(0, 255, 0)), 57);
+    QCOMPARE(cmap1.find(qRgb(255, 255, 255)), 58);
+    QCOMPARE(cmap1.find(qRgb(0, 0, 255)), 59);
+    QCOMPARE(cmap1.find(qRgb(140, 0, 0)), -1);
+    QCOMPARE(cmap1.find(qRgb(0, 140, 0)), -1);
+    QCOMPARE(cmap1.find(qRgb(0, 0, 140)), -1);
+    QCOMPARE(cmap1.find(qRgb(64, 0, 0)), -1);
+    QCOMPARE(cmap1.find(qRgb(0, 64, 0)), -1);
+    QCOMPARE(cmap1.find(qRgb(0, 0, 64)), -1);
+    QCOMPARE(cmap1.findNearest(qRgb(255, 0, 0)), 56);
+    QCOMPARE(cmap1.findNearest(qRgb(0, 0, 0)), 60);
+    QCOMPARE(cmap1.findNearest(qRgba(0, 0, 0, 0)), 0);
+    QCOMPARE(cmap1.findNearest(qRgb(0, 255, 0)), 57);
+    QCOMPARE(cmap1.findNearest(qRgb(255, 255, 255)), 58);
+    QCOMPARE(cmap1.findNearest(qRgb(0, 0, 255)), 59);
+    QCOMPARE(cmap1.findNearest(qRgb(140, 0, 0)), 56);
+    QCOMPARE(cmap1.findNearest(qRgb(0, 140, 0)), 57);
+    QCOMPARE(cmap1.findNearest(qRgb(0, 0, 140)), 59);
+    QCOMPARE(cmap1.findNearest(qRgb(64, 0, 0)), 0);
+    QCOMPARE(cmap1.findNearest(qRgb(0, 64, 0)), 0);
+    QCOMPARE(cmap1.findNearest(qRgb(0, 0, 64)), 0);
+
+    // Make some copies of the colormap and check that they are the same.
+    QGLColormap cmap2(cmap1);
+    QGLColormap cmap3;
+    cmap3 = cmap1;
+    QVERIFY(cmap2.isEmpty());
+    QVERIFY(cmap3.isEmpty());
+    QCOMPARE(cmap2.size(), 256);
+    QCOMPARE(cmap3.size(), 256);
+    for (idx = 0; idx < 256; ++idx) {
+        QCOMPARE(cmap1.entryRgb(idx), cmap2.entryRgb(idx));
+        QCOMPARE(cmap1.entryRgb(idx), cmap3.entryRgb(idx));
+    }
+
+    // Modify an entry in one of the copies and recheck the original.
+    cmap2.setEntry(45, qRgb(255, 0, 0));
+    for (idx = 0; idx < 256; ++idx) {
+        if (idx != 45)
+            QCOMPARE(cmap1.entryRgb(idx), cmap2.entryRgb(idx));
+        else
+            QCOMPARE(cmap2.entryRgb(45), qRgb(255, 0, 0));
+        QCOMPARE(cmap1.entryRgb(idx), cmap3.entryRgb(idx));
+    }
+
+    // Check that setting the handle will cause isEmpty() to work right.
+    ColormapExtended cmap4;
+    cmap4.setEntry(56, qRgb(255, 0, 0));
+    QVERIFY(cmap4.isEmpty());
+    QCOMPARE(cmap4.size(), 256);
+    cmap4.setHandle(Qt::HANDLE(42));
+    QVERIFY(cmap4.handle() == Qt::HANDLE(42));
+    QVERIFY(!cmap4.isEmpty());
+    QCOMPARE(cmap4.size(), 256);
 }
 
 QTEST_MAIN(tst_QGL)
