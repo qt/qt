@@ -1676,7 +1676,9 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         case Tok_trid:
             if (!results->tor)
                 goto case_default;
-            if (!sourcetext.isEmpty()) {
+            if (sourcetext.isEmpty()) {
+                yyTok = getToken();
+            } else {
                 if (!msgid.isEmpty())
                     qWarning("%s:%d: //= cannot be used with qtTrId() / QT_TRID_NOOP(). Ignoring\n",
                              qPrintable(yyFileName), yyLineNo);
