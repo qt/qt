@@ -553,7 +553,7 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     //qDebug() << "NUMITEMS: " << numItems;
 
     QTextCodec *codec = QTextCodec::codecForName(
-            cd.m_codecForSource.isEmpty() ? "Latin1" : cd.m_codecForSource);
+        cd.m_codecForSource.isEmpty() ? QByteArray("Latin1") : cd.m_codecForSource);
     QTextCodec *utf8Codec = 0;
     if (codec->name() != "UTF-8")
         utf8Codec = QTextCodec::codecForName("UTF-8");
