@@ -2394,10 +2394,16 @@ QStringList QScriptEngine::uncaughtExceptionBacktrace() const
 {
     if (!hasUncaughtException())
         return QStringList();
-    qWarning("QScriptEngine::uncaughtExceptionBacktrace() not implemented");
-// ### implement me
-    // how do we get a bt with JSC?
-    return QStringList() << QLatin1String("<backtrace should go here>");
+// ### currently no way to get a full backtrace from JSC without installing a
+// debugger that reimplements exception() and store the backtrace there.
+    QScriptValue value = uncaughtException();
+    if (!value.isError())
+        return QStringList();
+    QStringList result;
+    result.append(QString::fromLatin1("<anonymous>()@%0:%1")
+                  .arg(value.property(QLatin1String("fileName")).toString())
+                  .arg(value.property(QLatin1String("lineNumber")).toInt32()));
+    return result;
 }
 
 /*!
