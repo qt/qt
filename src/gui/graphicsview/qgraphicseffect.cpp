@@ -706,21 +706,36 @@ void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
         return;
     }
 
+    const QTransform &transform = painter->worldTransform();
+    const QPointF offset(d->offset.x() * transform.m11(), d->offset.y() * transform.m22());
+    const QPoint shadowOffset = offset.toPoint();
     const QRectF sourceRect = source->boundingRect(Qt::DeviceCoordinates);
-    const QRectF shadowRect = sourceRect.translated(d->offset);
+    const QRectF shadowRect = sourceRect.translated(offset);
+
     QRectF blurRect = shadowRect;
     qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
     blurRect |= sourceRect;
+
     QRect effectRect = blurRect.toAlignedRect();
-    effectRect &= source->deviceRect();
+    const QRect deviceRect = source->deviceRect();
+    const bool fullyInsideDeviceRect = effectRect.x() >= deviceRect.x()
+                                    && effectRect.right() <= deviceRect.right()
+                                    && effectRect.y() >= deviceRect.y()
+                                    && effectRect.bottom() <= deviceRect.bottom();
+    if (!fullyInsideDeviceRect) {
+        // Clip to device rect to avoid huge pixmaps.
+        effectRect &= source->deviceRect();
+        effectRect |= effectRect.translated(-shadowOffset);
+    }
 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);
     QPainter pixmapPainter(&pixmap);
     pixmapPainter.setRenderHints(painter->renderHints());
     pixmapPainter.setWorldTransform(painter->worldTransform());
-    pixmapPainter.translate(-effectRect.topLeft());
+    if (effectRect.x() != 0 || effectRect.y() != 0)
+        pixmapPainter.translate(-effectRect.topLeft());
     source->draw(&pixmapPainter);
     pixmapPainter.end();
 
@@ -733,7 +748,7 @@ void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(effectRect.topLeft() + d->offset, shadowImage);
+    painter->drawImage(effectRect.topLeft() + shadowOffset, shadowImage);
     painter->drawPixmap(effectRect.topLeft(), pixmap);
     painter->setWorldTransform(restoreTransform);
 }
