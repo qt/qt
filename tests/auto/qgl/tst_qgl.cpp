@@ -94,6 +94,11 @@ public:
     void setAutoBufferSwap(bool on) { QGLWidget::setAutoBufferSwap(on); }
 };
 
+// Using INT_MIN and INT_MAX will cause failures on systems
+// where "int" is 64-bit, so use the explicit values instead.
+#define TEST_INT_MIN    (-2147483647 - 1)
+#define TEST_INT_MAX    2147483647
+
 // Testing get/set functions
 void tst_QGL::getSetCheck()
 {
@@ -103,120 +108,286 @@ void tst_QGL::getSetCheck()
     QGLFormat obj1;
     // int QGLFormat::depthBufferSize()
     // void QGLFormat::setDepthBufferSize(int)
+    QCOMPARE(-1, obj1.depthBufferSize());
     obj1.setDepthBufferSize(0);
     QCOMPARE(0, obj1.depthBufferSize());
-    obj1.setDepthBufferSize(INT_MIN);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setDepthBufferSize: Cannot set negative depth buffer size -2147483648");
+    obj1.setDepthBufferSize(TEST_INT_MIN);
     QCOMPARE(0, obj1.depthBufferSize()); // Makes no sense with a negative buffer size
-    obj1.setDepthBufferSize(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.depthBufferSize());
+    obj1.setDepthBufferSize(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setDepthBufferSize: Cannot set negative depth buffer size -1");
+    obj1.setDepthBufferSize(-1);
+    QCOMPARE(3, obj1.depthBufferSize());
+    obj1.setDepthBufferSize(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.depthBufferSize());
 
     // int QGLFormat::accumBufferSize()
     // void QGLFormat::setAccumBufferSize(int)
+    QCOMPARE(-1, obj1.accumBufferSize());
     obj1.setAccumBufferSize(0);
     QCOMPARE(0, obj1.accumBufferSize());
-    obj1.setAccumBufferSize(INT_MIN);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAccumBufferSize: Cannot set negative accumulate buffer size -2147483648");
+    obj1.setAccumBufferSize(TEST_INT_MIN);
     QCOMPARE(0, obj1.accumBufferSize()); // Makes no sense with a negative buffer size
-    obj1.setAccumBufferSize(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.accumBufferSize());
+    obj1.setAccumBufferSize(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAccumBufferSize: Cannot set negative accumulate buffer size -1");
+    obj1.setAccumBufferSize(-1);
+    QCOMPARE(3, obj1.accumBufferSize());
+    obj1.setAccumBufferSize(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.accumBufferSize());
+
+    // int QGLFormat::redBufferSize()
+    // void QGLFormat::setRedBufferSize(int)
+    QCOMPARE(-1, obj1.redBufferSize());
+    obj1.setRedBufferSize(0);
+    QCOMPARE(0, obj1.redBufferSize());
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setRedBufferSize: Cannot set negative red buffer size -2147483648");
+    obj1.setRedBufferSize(TEST_INT_MIN);
+    QCOMPARE(0, obj1.redBufferSize()); // Makes no sense with a negative buffer size
+    obj1.setRedBufferSize(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setRedBufferSize: Cannot set negative red buffer size -1");
+    obj1.setRedBufferSize(-1);
+    QCOMPARE(3, obj1.redBufferSize());
+    obj1.setRedBufferSize(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.redBufferSize());
+
+    // int QGLFormat::greenBufferSize()
+    // void QGLFormat::setGreenBufferSize(int)
+    QCOMPARE(-1, obj1.greenBufferSize());
+    obj1.setGreenBufferSize(0);
+    QCOMPARE(0, obj1.greenBufferSize());
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setGreenBufferSize: Cannot set negative green buffer size -2147483648");
+    obj1.setGreenBufferSize(TEST_INT_MIN);
+    QCOMPARE(0, obj1.greenBufferSize()); // Makes no sense with a negative buffer size
+    obj1.setGreenBufferSize(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setGreenBufferSize: Cannot set negative green buffer size -1");
+    obj1.setGreenBufferSize(-1);
+    QCOMPARE(3, obj1.greenBufferSize());
+    obj1.setGreenBufferSize(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.greenBufferSize());
+
+    // int QGLFormat::blueBufferSize()
+    // void QGLFormat::setBlueBufferSize(int)
+    QCOMPARE(-1, obj1.blueBufferSize());
+    obj1.setBlueBufferSize(0);
+    QCOMPARE(0, obj1.blueBufferSize());
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setBlueBufferSize: Cannot set negative blue buffer size -2147483648");
+    obj1.setBlueBufferSize(TEST_INT_MIN);
+    QCOMPARE(0, obj1.blueBufferSize()); // Makes no sense with a negative buffer size
+    obj1.setBlueBufferSize(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setBlueBufferSize: Cannot set negative blue buffer size -1");
+    obj1.setBlueBufferSize(-1);
+    QCOMPARE(3, obj1.blueBufferSize());
+    obj1.setBlueBufferSize(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.blueBufferSize());
 
     // int QGLFormat::alphaBufferSize()
     // void QGLFormat::setAlphaBufferSize(int)
+    QCOMPARE(-1, obj1.alphaBufferSize());
+    QCOMPARE(false, obj1.alpha());
+    QVERIFY(!obj1.testOption(QGL::AlphaChannel));
+    QVERIFY(obj1.testOption(QGL::NoAlphaChannel));
     obj1.setAlphaBufferSize(0);
+    QCOMPARE(true, obj1.alpha());   // setAlphaBufferSize() enables alpha.
     QCOMPARE(0, obj1.alphaBufferSize());
-    obj1.setAlphaBufferSize(INT_MIN);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -2147483648");
+    obj1.setAlphaBufferSize(TEST_INT_MIN);
     QCOMPARE(0, obj1.alphaBufferSize()); // Makes no sense with a negative buffer size
-    obj1.setAlphaBufferSize(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.alphaBufferSize());
+    obj1.setAlphaBufferSize(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -1");
+    obj1.setAlphaBufferSize(-1);
+    QCOMPARE(3, obj1.alphaBufferSize());
+    obj1.setAlphaBufferSize(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.alphaBufferSize());
 
     // int QGLFormat::stencilBufferSize()
     // void QGLFormat::setStencilBufferSize(int)
+    QCOMPARE(-1, obj1.stencilBufferSize());
     obj1.setStencilBufferSize(0);
     QCOMPARE(0, obj1.stencilBufferSize());
-    obj1.setStencilBufferSize(INT_MIN);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -2147483648");
+    obj1.setStencilBufferSize(TEST_INT_MIN);
     QCOMPARE(0, obj1.stencilBufferSize()); // Makes no sense with a negative buffer size
-    obj1.setStencilBufferSize(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.stencilBufferSize());
+    obj1.setStencilBufferSize(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -1");
+    obj1.setStencilBufferSize(-1);
+    QCOMPARE(3, obj1.stencilBufferSize());
+    obj1.setStencilBufferSize(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.stencilBufferSize());
 
     // bool QGLFormat::sampleBuffers()
     // void QGLFormat::setSampleBuffers(bool)
+    QCOMPARE(false, obj1.sampleBuffers());
+    QVERIFY(!obj1.testOption(QGL::SampleBuffers));
+    QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
     obj1.setSampleBuffers(false);
     QCOMPARE(false, obj1.sampleBuffers());
+    QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
     obj1.setSampleBuffers(true);
     QCOMPARE(true, obj1.sampleBuffers());
+    QVERIFY(obj1.testOption(QGL::SampleBuffers));
 
     // int QGLFormat::samples()
     // void QGLFormat::setSamples(int)
+    QCOMPARE(-1, obj1.samples());
     obj1.setSamples(0);
     QCOMPARE(0, obj1.samples());
-    obj1.setSamples(INT_MIN);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setSamples: Cannot have negative number of samples per pixel -2147483648");
+    obj1.setSamples(TEST_INT_MIN);
     QCOMPARE(0, obj1.samples());  // Makes no sense with a negative sample size
-    obj1.setSamples(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.samples());
+    obj1.setSamples(3);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setSamples: Cannot have negative number of samples per pixel -1");
+    obj1.setSamples(-1);
+    QCOMPARE(3, obj1.samples());
+    obj1.setSamples(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.samples());
+
+    // int QGLFormat::swapInterval()
+    // void QGLFormat::setSwapInterval(int)
+    QCOMPARE(-1, obj1.swapInterval());
+    obj1.setSwapInterval(0);
+    QCOMPARE(0, obj1.swapInterval());
+    obj1.setSwapInterval(TEST_INT_MIN);
+    QCOMPARE(TEST_INT_MIN, obj1.swapInterval());
+    obj1.setSwapInterval(-1);
+    QCOMPARE(-1, obj1.swapInterval());
+    obj1.setSwapInterval(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.swapInterval());
 
     // bool QGLFormat::doubleBuffer()
     // void QGLFormat::setDoubleBuffer(bool)
+    QCOMPARE(true, obj1.doubleBuffer());
+    QVERIFY(obj1.testOption(QGL::DoubleBuffer));
+    QVERIFY(!obj1.testOption(QGL::SingleBuffer));
     obj1.setDoubleBuffer(false);
     QCOMPARE(false, obj1.doubleBuffer());
+    QVERIFY(!obj1.testOption(QGL::DoubleBuffer));
+    QVERIFY(obj1.testOption(QGL::SingleBuffer));
     obj1.setDoubleBuffer(true);
     QCOMPARE(true, obj1.doubleBuffer());
+    QVERIFY(obj1.testOption(QGL::DoubleBuffer));
+    QVERIFY(!obj1.testOption(QGL::SingleBuffer));
 
     // bool QGLFormat::depth()
     // void QGLFormat::setDepth(bool)
+    QCOMPARE(true, obj1.depth());
+    QVERIFY(obj1.testOption(QGL::DepthBuffer));
+    QVERIFY(!obj1.testOption(QGL::NoDepthBuffer));
     obj1.setDepth(false);
     QCOMPARE(false, obj1.depth());
+    QVERIFY(!obj1.testOption(QGL::DepthBuffer));
+    QVERIFY(obj1.testOption(QGL::NoDepthBuffer));
     obj1.setDepth(true);
     QCOMPARE(true, obj1.depth());
+    QVERIFY(obj1.testOption(QGL::DepthBuffer));
+    QVERIFY(!obj1.testOption(QGL::NoDepthBuffer));
 
     // bool QGLFormat::rgba()
     // void QGLFormat::setRgba(bool)
+    QCOMPARE(true, obj1.rgba());
+    QVERIFY(obj1.testOption(QGL::Rgba));
+    QVERIFY(!obj1.testOption(QGL::ColorIndex));
     obj1.setRgba(false);
     QCOMPARE(false, obj1.rgba());
+    QVERIFY(!obj1.testOption(QGL::Rgba));
+    QVERIFY(obj1.testOption(QGL::ColorIndex));
     obj1.setRgba(true);
     QCOMPARE(true, obj1.rgba());
+    QVERIFY(obj1.testOption(QGL::Rgba));
+    QVERIFY(!obj1.testOption(QGL::ColorIndex));
 
     // bool QGLFormat::alpha()
     // void QGLFormat::setAlpha(bool)
+    QVERIFY(obj1.testOption(QGL::AlphaChannel));
+    QVERIFY(!obj1.testOption(QGL::NoAlphaChannel));
     obj1.setAlpha(false);
     QCOMPARE(false, obj1.alpha());
+    QVERIFY(!obj1.testOption(QGL::AlphaChannel));
+    QVERIFY(obj1.testOption(QGL::NoAlphaChannel));
     obj1.setAlpha(true);
     QCOMPARE(true, obj1.alpha());
+    QVERIFY(obj1.testOption(QGL::AlphaChannel));
+    QVERIFY(!obj1.testOption(QGL::NoAlphaChannel));
 
     // bool QGLFormat::accum()
     // void QGLFormat::setAccum(bool)
+    QCOMPARE(false, obj1.accum());
+    QVERIFY(!obj1.testOption(QGL::AccumBuffer));
+    QVERIFY(obj1.testOption(QGL::NoAccumBuffer));
     obj1.setAccum(false);
     QCOMPARE(false, obj1.accum());
+    QVERIFY(!obj1.testOption(QGL::AccumBuffer));
+    QVERIFY(obj1.testOption(QGL::NoAccumBuffer));
     obj1.setAccum(true);
     QCOMPARE(true, obj1.accum());
+    QVERIFY(obj1.testOption(QGL::AccumBuffer));
+    QVERIFY(!obj1.testOption(QGL::NoAccumBuffer));
 
     // bool QGLFormat::stencil()
     // void QGLFormat::setStencil(bool)
+    QCOMPARE(true, obj1.stencil());
+    QVERIFY(obj1.testOption(QGL::StencilBuffer));
+    QVERIFY(!obj1.testOption(QGL::NoStencilBuffer));
     obj1.setStencil(false);
     QCOMPARE(false, obj1.stencil());
+    QVERIFY(!obj1.testOption(QGL::StencilBuffer));
+    QVERIFY(obj1.testOption(QGL::NoStencilBuffer));
     obj1.setStencil(true);
     QCOMPARE(true, obj1.stencil());
+    QVERIFY(obj1.testOption(QGL::StencilBuffer));
+    QVERIFY(!obj1.testOption(QGL::NoStencilBuffer));
 
     // bool QGLFormat::stereo()
     // void QGLFormat::setStereo(bool)
+    QCOMPARE(false, obj1.stereo());
+    QVERIFY(!obj1.testOption(QGL::StereoBuffers));
+    QVERIFY(obj1.testOption(QGL::NoStereoBuffers));
     obj1.setStereo(false);
     QCOMPARE(false, obj1.stereo());
+    QVERIFY(!obj1.testOption(QGL::StereoBuffers));
+    QVERIFY(obj1.testOption(QGL::NoStereoBuffers));
     obj1.setStereo(true);
     QCOMPARE(true, obj1.stereo());
+    QVERIFY(obj1.testOption(QGL::StereoBuffers));
+    QVERIFY(!obj1.testOption(QGL::NoStereoBuffers));
 
     // bool QGLFormat::directRendering()
     // void QGLFormat::setDirectRendering(bool)
+    QCOMPARE(true, obj1.directRendering());
+    QVERIFY(obj1.testOption(QGL::DirectRendering));
+    QVERIFY(!obj1.testOption(QGL::IndirectRendering));
     obj1.setDirectRendering(false);
     QCOMPARE(false, obj1.directRendering());
+    QVERIFY(!obj1.testOption(QGL::DirectRendering));
+    QVERIFY(obj1.testOption(QGL::IndirectRendering));
     obj1.setDirectRendering(true);
     QCOMPARE(true, obj1.directRendering());
+    QVERIFY(obj1.testOption(QGL::DirectRendering));
+    QVERIFY(!obj1.testOption(QGL::IndirectRendering));
+
+    // bool QGLFormat::overlay()
+    // void QGLFormat::setOverlay(bool)
+    QCOMPARE(false, obj1.hasOverlay());
+    QVERIFY(!obj1.testOption(QGL::HasOverlay));
+    QVERIFY(obj1.testOption(QGL::NoOverlay));
+    obj1.setOverlay(false);
+    QCOMPARE(false, obj1.hasOverlay());
+    QVERIFY(!obj1.testOption(QGL::HasOverlay));
+    QVERIFY(obj1.testOption(QGL::NoOverlay));
+    obj1.setOverlay(true);
+    QCOMPARE(true, obj1.hasOverlay());
+    QVERIFY(obj1.testOption(QGL::HasOverlay));
+    QVERIFY(!obj1.testOption(QGL::NoOverlay));
 
     // int QGLFormat::plane()
     // void QGLFormat::setPlane(int)
+    QCOMPARE(0, obj1.plane());
     obj1.setPlane(0);
     QCOMPARE(0, obj1.plane());
-    obj1.setPlane(INT_MIN);
-    QCOMPARE(INT_MIN, obj1.plane());
-    obj1.setPlane(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.plane());
+    obj1.setPlane(TEST_INT_MIN);
+    QCOMPARE(TEST_INT_MIN, obj1.plane());
+    obj1.setPlane(TEST_INT_MAX);
+    QCOMPARE(TEST_INT_MAX, obj1.plane());
 
     MyGLContext obj2(obj1);
     // bool QGLContext::windowCreated()
