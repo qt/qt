@@ -439,10 +439,6 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     Q_Q(QFxListView);
     if (!item)
         return;
-    if (orient == Qt::Vertical)
-        QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
-    else
-        QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
     if (trackedItem == item) {
         const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
         const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
@@ -453,6 +449,10 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
+        if (orient == Qt::Vertical)
+            QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
+        else
+            QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
     }
     delete item;
 }
@@ -1386,19 +1386,6 @@ void QFxListView::trackedPositionChanged()
             d->setPosition(d->trackedItem->position() - d->snapPos);
             break;
         }
-    } else if (d->fixCurrentVisibility && d->currentItem && !d->pressed) {
-        /*
-        if (d->trackedItem->position() < d->position()
-                && d->currentItem->position() < d->position()) {
-            d->setPosition(d->trackedItem->position());
-        } else if (d->size() && d->trackedItem->size() <= d->size()
-                && d->trackedItem->endPosition() > d->position() + d->size()
-                && d->currentItem->endPosition() > d->position() + d->size()) {
-            d->setPosition(d->trackedItem->endPosition() - d->size());
-        }
-        if (d->trackedItem->position() == d->currentItem->position())
-            d->fixCurrentVisibility = false;
-            */
     }
 }
 

@@ -228,19 +228,11 @@ public:
     virtual BinaryExpression *binaryExpressionCast();
     virtual Statement *statementCast();
 
-    inline void accept(Visitor *visitor)
-    {
-        if (visitor->preVisit(this)) {
-            accept0(visitor);
-            visitor->postVisit(this);
-        }
-    }
+    void accept(Visitor *visitor);
+    static void accept(Node *node, Visitor *visitor);
 
-    static void acceptChild(Node *node, Visitor *visitor)
-    {
-        if (node)
-            node->accept(visitor);
-    }
+    inline static void acceptChild(Node *node, Visitor *visitor)
+    { return accept(node, visitor); } // ### remove
 
     virtual void accept0(Visitor *visitor) = 0;
 
