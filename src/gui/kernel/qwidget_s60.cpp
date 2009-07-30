@@ -312,7 +312,17 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
         QSymbianControl *control= new QSymbianControl(q);
         control->ConstructL(true,desktop);
+        
+       
         if (!desktop) {
+			TInt stackingFlags;
+			if ((q->windowType() & Qt::Popup) == Qt::Popup) {
+				stackingFlags = ECoeStackFlagRefusesAllKeys | ECoeStackFlagRefusesFocus;
+			} else {
+				stackingFlags = ECoeStackFlagStandard;
+			}
+			control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags);
+			
             QTLWExtra *topExtra = topData();
             topExtra->rwindow = control->DrawableWindow();
             // Request mouse move events.
@@ -341,6 +351,15 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create native child widget
         QSymbianControl *control = new QSymbianControl(q);
         control->ConstructL(!parentWidget);
+        
+        TInt stackingFlags;
+        if ((q->windowType() & Qt::Popup) == Qt::Popup) {
+            stackingFlags = ECoeStackFlagRefusesAllKeys | ECoeStackFlagRefusesFocus;
+        } else {
+            stackingFlags = ECoeStackFlagStandard;
+        }
+        control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags);
+        
         setWinId(control);
         WId parentw = parentWidget->effectiveWinId();
         control->SetContainerWindowL(*parentw);
@@ -381,15 +400,9 @@ void QWidgetPrivate::show_sys()
             id->ActivateL();
             extra->topextra->activated = 1;
         }
-        TInt stackingFlags;
-        if ((q->windowType() & Qt::Popup) == Qt::Popup) {
-            stackingFlags = ECoeStackFlagRefusesAllKeys | ECoeStackFlagRefusesFocus;
-        } else {
-            stackingFlags = ECoeStackFlagStandard;
-        }
-        id->ControlEnv()->AppUi()->AddToStackL(id, ECoeStackPriorityDefault, stackingFlags);
         id->MakeVisible(true);
-
+        id->SetFocus(true);
+        
         // Force setting of the icon after window is made visible,
         // this is needed even WA_SetWindowIcon is not set, as in that case we need
         // to reset to the application level window icon
@@ -406,10 +419,9 @@ void QWidgetPrivate::hide_sys()
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
     if (q->isWindow() && id) {
-        if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+        if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
             id->SetFocus(false);
         id->MakeVisible(false);
-        id->ControlEnv()->AppUi()->RemoveFromStack(id);
         if (QWidgetBackingStore *bs = maybeBackingStore())
             bs->releaseBuffer();
     } else {
@@ -544,7 +556,8 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // destroyed when emitting the child remove event below. See QWorkspace.
     if (wasCreated && old_winid) {
         old_winid->MakeVisible(false);
-        old_winid->ControlEnv()->AppUi()->RemoveFromStack(old_winid);
+        if(old_winid->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+        	old_winid->SetFocus(false);            
         old_winid->SetParent(0);
     }
 
@@ -1028,14 +1041,16 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowMinimized) {
                 if (isVisible()) {
                     WId id = effectiveWinId();
+                    if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+                        id->SetFocus(false);                    
                     id->MakeVisible(false);
-                    id->ControlEnv()->AppUi()->RemoveFromStack(id);
                 }
             } else {
                 if (isVisible()) {
                     WId id = effectiveWinId();
                     id->MakeVisible(true);
-                    id->ControlEnv()->AppUi()->AddToStackL(id);
+                    if(!id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+                        id->SetFocus(true);                    
                 }
                 const QRect normalGeometry = geometry();
                 const QRect r = top->normalGeometry;
