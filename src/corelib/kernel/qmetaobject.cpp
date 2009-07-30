@@ -1329,6 +1329,16 @@ int QMetaMethod::attributes() const
 }
 
 /*!
+  Returns this method's index.
+*/
+int QMetaMethod::methodIndex() const
+{
+    if (!mobj)
+        return -1;
+    return ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
+}
+
+/*!
     Returns the access specification of this method (private,
     protected, or public).
 
@@ -2040,6 +2050,16 @@ int QMetaProperty::userType() const
         return enumMetaTypeId;
     }
     return QMetaType::type(typeName());
+}
+
+/*!
+  Returns this property's index.
+*/
+int QMetaProperty::propertyIndex() const
+{
+    if (!mobj)
+        return -1;
+    return idx + mobj->propertyOffset();
 }
 
 /*!
