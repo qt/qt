@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     setStartValue() and setEndValue(), and finally call start() to
     start the animation. QVariantAnimation will interpolate the
     property of the target object and emit valueChanged(). To react to
-    a change in the current value you have to implement the
+    a change in the current value you have to reimplement the
     updateCurrentValue() virtual function.
 
     It is also possible to set values at specified steps situated
