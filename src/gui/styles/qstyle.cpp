@@ -564,7 +564,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 /*!
     \enum QStyle::PrimitiveElement
 
-    This enum describes that various primitive elements. A
+    This enum describes the various primitive elements. A
     primitive element is a common GUI element, such as a checkbox
     indicator or button bevel.
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,52 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef ADPREADER_H
-#define ADPREADER_H
+#ifndef __SUBMARINE__H__
+#define __SUBMARINE__H__
 
-#include <QtCore/QMap>
-#include <QtCore/QSet>
-#include <QtXml/QXmlStreamReader>
+//Qt
+#include <QtCore/QVariantAnimation>
+#include <QtGui/QGraphicsWidget>
+#include <QtGui/QGraphicsTransform>
 
-QT_BEGIN_NAMESPACE
+class PixmapItem;
 
-struct ContentItem {
-    ContentItem(const QString &t, const QString &r, int d)
-       : title(t), reference(r), depth(d) {}
-    QString title;
-    QString reference;
-    int depth;
-};
+class Torpedo;
 
-struct KeywordItem {
-    KeywordItem(const QString &k, const QString &r)
-       : keyword(k), reference(r) {}
-    QString keyword;
-    QString reference;
-};
-
-class AdpReader : public QXmlStreamReader
+class SubMarine : public QGraphicsWidget
 {
+Q_OBJECT
 public:
-    void readData(const QByteArray &contents);
-    QList<ContentItem> contents() const;
-    QList<KeywordItem> keywords() const;
-    QSet<QString> files() const;
+    enum Movement {
+       None = 0,
+       Left,
+       Right
+    };
+    enum { Type = UserType + 1 };
+    SubMarine(int type, const QString &name, int points, QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0);
 
-    QMap<QString, QString> properties() const;
+    int points();
+
+    void setCurrentDirection(Movement direction);
+    enum Movement currentDirection() const;
+
+    void setCurrentSpeed(int speed);
+    int currentSpeed() const;
+
+    void launchTorpedo(int speed);
+    void destroy();
+
+    virtual int type() const;
+
+    QGraphicsRotation3D *rotation3d() const { return graphicsRotation; }
+
+signals:
+    void subMarineDestroyed();
+    void subMarineExecutionFinished();
+    void subMarineStateChanged();
 
 private:
-    void readProject();
-    void readProfile();
-    void readDCF();
-    void addFile(const QString &file);
-
-    QMap<QString, QString> m_properties;
-    QList<ContentItem> m_contents;
-    QList<KeywordItem> m_keywords;
-    QSet<QString> m_files;
+    int subType;
+    QString subName;
+    int subPoints;
+    int speed;
+    Movement direction;
+    PixmapItem *pixmapItem;
+    QGraphicsRotation3D *graphicsRotation;
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif //__SUBMARINE__H__

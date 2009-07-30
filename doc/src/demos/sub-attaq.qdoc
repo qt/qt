@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,52 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef ADPREADER_H
-#define ADPREADER_H
+/*!
+    \example demos/sub-attaq
+    \title Sub-Attaq
 
-#include <QtCore/QMap>
-#include <QtCore/QSet>
-#include <QtXml/QXmlStreamReader>
+    This demo shows Qt's ability to combine \l{The Animation Framework}{the animation framework} 
+    and \l{The State Machine Framework}{the state machine framework} to create a game.
+    
+    \image sub-attaq-demo.png
 
-QT_BEGIN_NAMESPACE
-
-struct ContentItem {
-    ContentItem(const QString &t, const QString &r, int d)
-       : title(t), reference(r), depth(d) {}
-    QString title;
-    QString reference;
-    int depth;
-};
-
-struct KeywordItem {
-    KeywordItem(const QString &k, const QString &r)
-       : keyword(k), reference(r) {}
-    QString keyword;
-    QString reference;
-};
-
-class AdpReader : public QXmlStreamReader
-{
-public:
-    void readData(const QByteArray &contents);
-    QList<ContentItem> contents() const;
-    QList<KeywordItem> keywords() const;
-    QSet<QString> files() const;
-
-    QMap<QString, QString> properties() const;
-
-private:
-    void readProject();
-    void readProfile();
-    void readDCF();
-    void addFile(const QString &file);
-
-    QMap<QString, QString> m_properties;
-    QList<ContentItem> m_contents;
-    QList<KeywordItem> m_keywords;
-    QSet<QString> m_files;
-};
-
-QT_END_NAMESPACE
-
-#endif
+    The purpose of the game is to destroy all submarines to win the current level.
+    The boat can be controlled using left and right keys. To fire a bomb you can press
+    up and down keys.
+*/

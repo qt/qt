@@ -446,13 +446,12 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
             continue; //we don't really position these!
         } else {
             const QString s = action->text();
-            if(!s.isEmpty()) {
-                sz = fm.size(Qt::TextShowMnemonic, s);
-            }
-
             QIcon is = action->icon();
+            // If an icon is set, only the icon is visible
             if (!is.isNull())
                 sz = sz.expandedTo(QSize(icone, icone));
+            else if (!s.isEmpty())
+                sz = fm.size(Qt::TextShowMnemonic, s);
         }
 
         //let the style modify the above size..

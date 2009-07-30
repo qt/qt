@@ -4639,12 +4639,19 @@ bool QImage::loadFromData(const uchar *data, int len, const char *format)
     binary \a data. The loader attempts to read the image using the
     specified \a format. If \a format is not specified (which is the default),
     the loader probes the file for a header to guess the file format.
+    binary \a data. The loader attempts to read the image, either using the
+    optional image \a format specified or by determining the image format from
+    the data.
 
-    If the loading of the image failed, this object is a null image.
+    If \a format is not specified (which is the default), the loader probes the
+    file for a header to determine the file format. If \a format is specified,
+    it must be one of the values returned by QImageReader::supportedImageFormats().
 
-    \sa load(), save(), {QImage#Reading and Writing Image
-    Files}{Reading and Writing Image Files}
-*/
+    If the loading of the image fails, the image returned will be a null image.
+
+    \sa load(), save(), {QImage#Reading and Writing Image Files}{Reading and Writing Image Files}
+ */
+
 QImage QImage::fromData(const uchar *data, int size, const char *format)
 {
     QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(data), size);

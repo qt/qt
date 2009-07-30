@@ -244,6 +244,16 @@ public:
 class QXmlParseExceptionPrivate
 {
 public:
+    QXmlParseExceptionPrivate()
+        : column(-1), line(-1)
+    {
+    }
+    QXmlParseExceptionPrivate(const QXmlParseExceptionPrivate &other)
+        : msg(other.msg), column(other.column), line(other.line),
+          pub(other.pub), sys(other.sys)
+    {
+    }
+
     QString msg;
     int column;
     int line;
@@ -553,6 +563,14 @@ QXmlParseException::QXmlParseException(const QString& name, int c, int l,
     d->line = l;
     d->pub = p;
     d->sys = s;
+}
+
+/*!
+    Creates a copy of \a other.
+*/
+QXmlParseException::QXmlParseException(const QXmlParseException& other)
+{
+    d = new QXmlParseExceptionPrivate(*other.d);
 }
 
 /*!

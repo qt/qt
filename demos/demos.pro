@@ -13,7 +13,8 @@ SUBDIRS     = \
             demos_textedit \
             demos_chip \
             demos_embeddeddialogs \
-            demos_undo
+            demos_undo \
+            demos_sub-attaq
 
 symbian: SUBDIRS = \
             demos_shared \
@@ -68,6 +69,7 @@ demos_mediaplayer.subdir = mediaplayer
 demos_browser.subdir = browser
 
 demos_boxes.subdir = boxes
+demos_sub-attaq.subdir = sub-attaq
 
 #CONFIG += ordered
 !ordered {

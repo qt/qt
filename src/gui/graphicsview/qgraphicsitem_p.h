@@ -57,6 +57,8 @@
 #include "qset.h"
 #include "qpixmapcache.h"
 #include <private/qgraphicsview_p.h>
+#include "qgraphicstransform.h"
+#include <private/qgraphicstransform_p.h>
 
 #include <QtCore/qpoint.h>
 
@@ -192,7 +194,7 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
-    void updateSceneTransformFromParent();
+    virtual void updateSceneTransformFromParent();
 
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
@@ -200,6 +202,7 @@ public:
 
     void setPosHelper(const QPointF &pos);
     void setTransformHelper(const QTransform &transform);
+    void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
@@ -467,45 +470,35 @@ public:
 
 struct QGraphicsItemPrivate::TransformData {
     QTransform transform;
-    qreal xScale;
-    qreal yScale;
-    qreal xRotation;
-    qreal yRotation;
-    qreal zRotation;
-    qreal horizontalShear;
-    qreal verticalShear;
+    qreal scale;
+    qreal rotation;
     qreal xOrigin;
     qreal yOrigin;
+    QList<QGraphicsTransform *> graphicsTransforms;
     bool onlyTransform;
 
     TransformData() :
-        xScale(1.0), yScale(1.0), xRotation(0.0), yRotation(0.0), zRotation(0.0),
-        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0),
+        scale(1.0), rotation(0.0),
+        xOrigin(0.0), yOrigin(0.0),
         onlyTransform(true)
     {}
 
     QTransform computedFullTransform(QTransform *postmultiplyTransform = 0) const
     {
         if (onlyTransform) {
-            if (!postmultiplyTransform)
-                return transform;
-            if (postmultiplyTransform->isIdentity())
+            if (!postmultiplyTransform || postmultiplyTransform->isIdentity())
                 return transform;
             if (transform.isIdentity())
                 return *postmultiplyTransform;
-            QTransform x(transform);
-            x *= *postmultiplyTransform;
-            return x;
+            return transform * *postmultiplyTransform;
         }
 
         QTransform x(transform);
-        if (xOrigin != 0 || yOrigin != 0)
-            x *= QTransform::fromTranslate(xOrigin, yOrigin);
-        x.rotate(xRotation, Qt::XAxis);
-        x.rotate(yRotation, Qt::YAxis);
-        x.rotate(zRotation, Qt::ZAxis);
-        x.shear(horizontalShear, verticalShear);
-        x.scale(xScale, yScale);
+        for (int i = 0; i < graphicsTransforms.size(); ++i)
+            graphicsTransforms.at(i)->applyTo(&x);
+        x.translate(xOrigin, yOrigin);
+        x.rotate(rotation, Qt::ZAxis);
+        x.scale(scale, scale);
         x.translate(-xOrigin, -yOrigin);
         if (postmultiplyTransform)
             x *= *postmultiplyTransform;

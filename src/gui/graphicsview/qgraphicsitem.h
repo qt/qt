@@ -72,6 +72,7 @@ class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
 class QGraphicsScene;
+class QGraphicsTransform;
 class QGraphicsWidget;
 class QInputMethodEvent;
 class QKeyEvent;
@@ -269,34 +270,19 @@ public:
     void shear(qreal sh, qreal sv);     // ### obsolete
     void translate(qreal dx, qreal dy); // ### obsolete
 
-    qreal xRotation() const;
-    void setXRotation(qreal angle);
+    void setRotation(qreal angle);
+    qreal rotation() const;
 
-    qreal yRotation() const;
-    void setYRotation(qreal angle);
+    void setScale(qreal scale);
+    qreal scale() const;
 
-    qreal zRotation() const;
-    void setZRotation(qreal angle);
-    void setRotation(qreal x, qreal y, qreal z);
+    QList<QGraphicsTransform *> transformations() const;
+    void setTransformations(const QList<QGraphicsTransform *> &transformations);
 
-    qreal xScale() const;
-    void setXScale(qreal factor);
-
-    qreal yScale() const;
-    void setYScale(qreal factor);
-    void setScale(qreal sx, qreal sy);
-
-    qreal horizontalShear() const;
-    void setHorizontalShear(qreal shear);
-
-    qreal verticalShear() const;
-    void setVerticalShear(qreal shear);
-    void setShear(qreal sh, qreal sv);
-
-    QPointF transformOrigin() const;
-    void setTransformOrigin(const QPointF &origin);
-    inline void setTransformOrigin(qreal x, qreal y)
-    { setTransformOrigin(QPointF(x,y)); }
+    QPointF transformOriginPoint() const;
+    void setTransformOriginPoint(const QPointF &origin);
+    inline void setTransformOriginPoint(qreal x, qreal y)
+    { setTransformOriginPoint(QPointF(x,y)); }
 
     virtual void advance(int phase);
 
@@ -457,6 +443,7 @@ private:
     friend class QGraphicsSceneIndexPrivate;
     friend class QGraphicsSceneBspTreeIndex;
     friend class QGraphicsSceneBspTreeIndexPrivate;
+    friend class QGraphicsTransformPrivate;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);
     friend bool qt_closestItemFirst(const QGraphicsItem *, const QGraphicsItem *);
@@ -522,8 +509,18 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(qreal z READ zValue WRITE setZValue NOTIFY zChanged)
+    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
+    Q_PROPERTY(QPointF transformOriginPoint READ transformOriginPoint WRITE setTransformOriginPoint)
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
+
+    // ### Qt 5: Disambiguate
+#ifdef Q_NO_USING_KEYWORD
+    const QObjectList &children() const { return QObject::children(); }
+#else
+    using QObject::children;
+#endif
 
 Q_SIGNALS:
     void parentChanged();
@@ -533,6 +530,8 @@ Q_SIGNALS:
     void xChanged();
     void yChanged();
     void zChanged();
+    void rotationChanged();
+    void scaleChanged();
 
 protected:
     QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
