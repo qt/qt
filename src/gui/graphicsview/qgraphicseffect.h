@@ -58,6 +58,7 @@ class QStyleOption;
 class QColor;
 class QPainter;
 class QRectF;
+class QRect;
 class QPixmap;
 
 class QGraphicsEffectSourcePrivate;
