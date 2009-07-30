@@ -2233,8 +2233,8 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QGraphicsItemEffectSourcePrivate(this);
         QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
-        effect->d_func()->setGraphicsEffectSource(source);
         d_ptr->graphicsEffect = effect;
+        effect->d_func()->setGraphicsEffectSource(source);
     }
 
     if (d_ptr->scene)
@@ -9994,12 +9994,20 @@ int QGraphicsItemGroup::type() const
 
 QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
+    const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
+    if (!info && deviceCoordinates) {
+        // Device coordinates without info not yet supported.
+        qWarning("QGraphicsEffectSource::boundingRect: Not yet implemented, lacking device context");
+        return QRectF();
+    }
+
     QRectF rect = item->boundingRect();
     if (!item->d_ptr->children.isEmpty())
         rect |= item->childrenBoundingRect();
-    if (info && system == Qt::DeviceCoordinates) {
+
+    if (info && deviceCoordinates) {
         Q_ASSERT(info->transformPtr);
-        return info->transformPtr->mapRect(rect);
+        rect = info->transformPtr->mapRect(rect);
     }
     return rect;
 }
@@ -10011,15 +10019,15 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
         return;
     }
 
+    Q_ASSERT(item->d_ptr->scene);
+    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
     if (painter == info->painter) {
-        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
         scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
                      info->widget, info->opacity, 0, info->wasDirtySceneTransform,
                      info->drawItem);
     } else {
         QTransform effectTransform = painter->worldTransform();
         effectTransform *= info->transformPtr->inverted();
-        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
         scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
                      info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
@@ -10034,6 +10042,10 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
         return QPixmap();
     }
+
+    if (!item->d_ptr->scene)
+        return QPixmap();
+    QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
 
     const QRectF sourceRect = boundingRect(system);
     const QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
@@ -10052,13 +10064,10 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         QTransform sceneTransform = item->sceneTransform();
         QTransform effectTransform = sceneTransform.inverted();
         effectTransform *= translateTransform;
-
-        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
         scened->draw(item, &pixmapPainter, 0, &sceneTransform, 0, 0, qreal(1.0),
                      &effectTransform, false, true);
     } else if (deviceCoordinates) {
         // Device coordinates with info.
-        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
         scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
                      info->widget, info->opacity, &translateTransform, info->wasDirtySceneTransform,
                      info->drawItem);
@@ -10066,8 +10075,6 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         // Item coordinates with info.
         QTransform effectTransform = info->transformPtr->inverted();
         effectTransform *= translateTransform;
-
-        QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
         scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
                      info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
