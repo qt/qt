@@ -213,15 +213,15 @@ JSC::JSValue JSC_HOST_CALL ClassObjectDelegate::call(JSC::ExecState *exec, JSC::
     QScriptObjectDelegate *delegate = obj->delegate();
     if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject))
         return JSC::throwError(exec, JSC::TypeError, "callee is not a ClassObject object");
+
+    //We might have nested eval inside our function so we should create another scope
+    QScriptPushScopeHelper scope(exec, true);
+
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
-    JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
-    eng_p->currentFrame = exec;
     QScriptValue scriptObject = eng_p->scriptValueFromJSCValue(obj);
     QVariant result = scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx));
-    eng_p->currentFrame = previousFrame;
-    eng_p->releaseContextForFrame(exec);
     return eng_p->jscValueFromVariant(result);
 }
 
@@ -240,17 +240,16 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptObject *obj = static_cast<QScriptObject*>(callee);
     QScriptObjectDelegate *delegate = obj->delegate();
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
+
+    //We might have nested eval inside our function so we should create another scope
+    QScriptPushScopeHelper scope(exec, true);
+
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
-    JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
-    QScriptContextPrivate::get(ctx)->calledAsConstructor = true;
-    eng_p->currentFrame = exec;
     QScriptValue defaultObject = ctx->thisObject();
     QScriptValue result = qvariant_cast<QScriptValue>(scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx)));
     if (!result.isObject())
         result = defaultObject;
-    eng_p->currentFrame = previousFrame;
-    eng_p->releaseContextForFrame(exec);
     return JSC::asObject(eng_p->scriptValueToJSCValue(result));
 }
 

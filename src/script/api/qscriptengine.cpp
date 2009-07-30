@@ -871,6 +871,26 @@ JSC::JSValue stringProtoFuncArg(JSC::ExecState *exec, JSC::JSObject*, JSC::JSVal
     return JSC::jsString(exec, qtStringToJSCUString(result));
 }
 
+
+QScriptPushScopeHelper::QScriptPushScopeHelper(JSC::CallFrame *exec, bool calledAsConstructor)
+{
+    engine = scriptEngineFromExec(exec);
+    previousFrame = engine->currentFrame;
+    engine->currentFrame = exec;
+    QScriptActivationObject *scope = new (exec) QScriptActivationObject(exec);
+    scope->d_ptr()->calledAsConstructor = calledAsConstructor;
+    exec->setScopeChain(exec->scopeChain()->copy()->push(scope));
+}
+
+QScriptPushScopeHelper::~QScriptPushScopeHelper()
+{
+    JSC::CallFrame *exec = engine->currentFrame;
+    exec->setScopeChain(exec->scopeChain()->pop());
+    exec->scopeChain()->deref();
+    engine->currentFrame = previousFrame;
+    engine->releaseContextForFrame(exec);
+}
+
 } // namespace QScript
 
 namespace JSC {

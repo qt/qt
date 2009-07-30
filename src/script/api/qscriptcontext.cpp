@@ -168,7 +168,6 @@ JSC::UString qtStringToJSCUString(const QString &);
 }
 
 QScriptContextPrivate::QScriptContextPrivate()
-    : calledAsConstructor(false)
 {
 }
 
@@ -281,8 +280,6 @@ QScriptValue QScriptContext::throwError(const QString &text)
 */
 QScriptContext::~QScriptContext()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!
@@ -366,7 +363,20 @@ QScriptValue QScriptContext::argumentsObject() const
 bool QScriptContext::isCalledAsConstructor() const
 {
     Q_D(const QScriptContext);
-    return d->calledAsConstructor;
+    //look up for the QScriptActivationObject and its calledAsConstructor flag.
+    JSC::ScopeChainNode *node = d->frame->scopeChain();
+    JSC::ScopeChainIterator it(node);
+    for (it = node->begin(); it != node->end(); ++it) {
+        if (!(*it)->isVariableObject()) {
+            if ((*it)->inherits(&QScript::QScriptActivationObject::info)) {
+                return static_cast<QScript::QScriptActivationObject *>(*it)->d_ptr()->calledAsConstructor;
+            }
+            //not a native function
+            //### we have no way to know if is is or not a constructor
+            return false; 
+        }
+    }
+    return false;
 }
 
 /*!

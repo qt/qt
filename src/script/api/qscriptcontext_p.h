@@ -84,7 +84,6 @@ public:
     static QScriptContextPrivate *get(QScriptContext *q);
 
     JSC::ExecState *frame;
-    bool calledAsConstructor;
     QScriptEnginePrivate *engine;
 };
 

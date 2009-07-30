@@ -61,8 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QScriptClass;
-
 namespace QScript
 {
 
@@ -72,15 +70,22 @@ public:
     virtual ~QScriptActivationObject();
     virtual bool isDynamicScope() const { return true; }
     virtual void putWithAttributes(JSC::ExecState *exec, const JSC::Identifier &propertyName, JSC::JSValue value, unsigned attributes);
-private:
+
+    virtual const JSC::ClassInfo* classInfo() const { return &info; }
+    static const JSC::ClassInfo info;
+
     struct QScriptActivationObjectData : public JSVariableObjectData {
         QScriptActivationObjectData(JSC::Register* registers)
-            : JSVariableObjectData(&symbolTable, registers)
+            : JSVariableObjectData(&symbolTable, registers), calledAsConstructor(false)
         { }
         JSC::SymbolTable symbolTable;
-    };
-};
 
+        //specifies if the context of this activation object is called as constructor
+        bool calledAsConstructor;
+    };
+
+    QScriptActivationObjectData *d_ptr() const { return static_cast<QScriptActivationObjectData *>(d); }
+};
 
 } // namespace QScript
 

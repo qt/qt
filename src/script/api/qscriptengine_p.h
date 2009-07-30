@@ -234,6 +234,24 @@ public:
 #endif
 };
 
+namespace QScript
+{
+/*! \internal
+  Helper class to create QScriptActivationObject.
+  To be used on the stack
+*/
+class QScriptPushScopeHelper
+{
+    public:
+        QScriptPushScopeHelper(JSC::CallFrame *newFrame, bool calledAsConstructor = false);
+        ~QScriptPushScopeHelper();
+    private:
+        QScriptEnginePrivate *engine;
+        JSC::CallFrame *previousFrame;
+};
+} // namespace QScript
+
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_SCRIPT
