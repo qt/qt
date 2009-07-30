@@ -6958,11 +6958,11 @@ void qt_build_pow_tables() {
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    const qreal gray_gamma = qreal(2.31);
+    const qreal gray_gamma = 2.31;
     for (int i=0; i<256; ++i)
         qt_pow_gamma[i] = uint(qRound(pow(i / qreal(255.), gray_gamma) * 2047));
     for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(pow(i / qreal(2047.), 1 / gray_gamma) * 255));
+        qt_pow_invgamma[i] = uchar(qRound(pow(i / 2047.0, 1 / gray_gamma) * 255));
 #endif
 }
 
