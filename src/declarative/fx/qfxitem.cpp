@@ -1836,19 +1836,10 @@ void QFxItem::childrenChanged()
 {
 }
 
-void QFxItem::setPaintMargin(qreal margin)
-{
-    Q_D(QFxItem);
-    if (margin == d->paintmargin)
-        return;
-    prepareGeometryChange();
-    d->paintmargin = margin;
-}
-
 QRectF QFxItem::boundingRect() const
 {
     Q_D(const QFxItem);
-    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
+    return QRectF(0, 0, d->width, d->height);
 }
 
 void QFxItem::paintContents(QPainter &)

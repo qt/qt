@@ -157,6 +157,8 @@ public:
     qreal radius() const;
     void setRadius(qreal radius);
 
+    QRectF boundingRect() const;
+
     void paintContents(QPainter &painter);
 
 private Q_SLOTS:
@@ -165,9 +167,8 @@ private Q_SLOTS:
 private:
     void generateRoundedRect();
     void generateBorderedRect();
-#if defined(QFX_RENDER_QPAINTER)
     void drawRect(QPainter &painter);
-#endif
+
 protected:
     QFxRect(QFxRectPrivate &dd, QFxItem *parent);
 

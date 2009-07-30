@@ -79,8 +79,7 @@ public:
       _anchorLines(0),
       _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
       options(QFxItem::NoOption),
-      widthValid(false), heightValid(false), width(0), height(0), 
-      paintmargin(0)
+      widthValid(false), heightValid(false), width(0), height(0)
     {}
     ~QFxItemPrivate() 
     { delete _anchors; }
@@ -194,7 +193,6 @@ public:
 
     qreal width;
     qreal height;
-    qreal paintmargin;
 
     QPointF computeTransformOrigin() const;
 
