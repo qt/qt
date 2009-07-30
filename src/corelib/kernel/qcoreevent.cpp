@@ -294,7 +294,7 @@ QEvent::~QEvent()
 
 /*!
     \property  QEvent::accepted
-    \brief The accept flag of the event object
+    the accept flag of the event object
 
     Setting the accept parameter indicates that the event receiver
     wants the event. Unwanted events might be propagated to the parent
