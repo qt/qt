@@ -513,10 +513,10 @@ public:
 
         QTcpSocket *active = new QTcpSocket(this);
         active->connectToHost("127.0.0.1", server.serverPort());
-        if (!active->waitForConnected(10))
+        if (!active->waitForConnected(100))
             return false;
 
-        if (!server.waitForNewConnection(10))
+        if (!server.waitForNewConnection(100))
             return false;
         QTcpSocket *passive = server.nextPendingConnection();
         passive->setParent(this);
@@ -2642,8 +2642,6 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QCOMPARE(file.size(), qint64(data.size()));
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
-
-    delete reply;
 #endif
 }
 
@@ -3827,7 +3825,7 @@ void tst_QNetworkReply::httpDownloadPerformance()
     HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
 
     QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
-    QNetworkReply* reply = manager.get(request);
+    QNetworkReplyPtr reply = manager.get(request);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
     HttpDownloadPerformanceClient client(reply);
@@ -3840,8 +3838,6 @@ void tst_QNetworkReply::httpDownloadPerformance()
     qint64 elapsed = time.elapsed();
     qDebug() << "tst_QNetworkReply::httpDownloadPerformance" << elapsed << "msec, "
             << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
-
-    delete reply;
 }
 
 #ifndef QT_NO_OPENSSL
@@ -3872,7 +3868,7 @@ void tst_QNetworkReply::ignoreSslErrorsList()
 {
     QFETCH(QString, url);
     QNetworkRequest request(url);
-    QNetworkReply *reply = manager.get(request);
+    QNetworkReplyPtr reply = manager.get(request);
 
     QFETCH(QList<QSslError>, expectedSslErrors);
     reply->ignoreSslErrors(expectedSslErrors);
@@ -3901,7 +3897,7 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
 {
     QFETCH(QString, url);
     QNetworkRequest request(url);
-    QNetworkReply *reply = manager.get(request);
+    QNetworkReplyPtr reply = manager.get(request);
 
     QFETCH(QList<QSslError>, expectedSslErrors);
     // store the errors to ignore them later in the slot connected below
