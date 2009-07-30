@@ -834,11 +834,12 @@ int qt_asprintf(char **str, const char *format, ...)
         res = qvsnprintf(*str, size, format, ap);
         va_end(ap);
         (*str)[size - 1] = '\0';
-        if (res < size) {
-            // We succeeded or fatally failed
+        if (res >= 0 && res < size) {
+            // We succeeded
             break;
         }
-        // buffer wasn't big enough, try again
+        // buffer wasn't big enough, try again.
+        // Note, we're assuming that a result of -1 is always due to running out of space.
         size *= 2;
         if (size > MAXSIZE) {
             break;
