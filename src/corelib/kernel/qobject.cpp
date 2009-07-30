@@ -144,6 +144,7 @@ QObjectPrivate::QObjectPrivate(int version)
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
+    objectGuards = 0;
     hasGuards = false;
 }
 
@@ -426,7 +427,22 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
  */
 void QObjectPrivate::clearGuards(QObject *object)
 {
-    if (!QObjectPrivate::get(object)->hasGuards)
+    QObjectPrivate *priv = QObjectPrivate::get(object);
+    QGuard<QObject> *guard = priv->objectGuards;
+    while (guard) {
+        guard->o = 0;
+        guard = guard->next;
+    }
+    while (priv->objectGuards) {
+        guard = priv->objectGuards;
+        guard->prev = 0;
+        if (guard->next) guard->next->prev = &priv->objectGuards;
+        priv->objectGuards = guard->next;
+        guard->next = 0;
+        guard->objectDestroyed(object);
+    }
+
+    if (!priv->hasGuards)
         return;
     GuardHash *hash = guardHash();
     if (hash) {
