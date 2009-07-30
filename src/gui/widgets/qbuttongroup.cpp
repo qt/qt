@@ -178,11 +178,10 @@
 /*!
     \fn void QButtonGroup::addButton(QAbstractButton *button);
 
-    Adds the given \a button to the end of the group's internal list
-    of buttons.  An id will be assigned to the button by this
-    QButtonGroup. Automatically assigned ids are guaranteed to be
-    negative, starting with -2. If you are also assigning your own
-    ids, use positive values to avoid conflicts.
+    Adds the given \a button to the end of the group's internal list of buttons.
+    An \a id will be assigned to the button by this QButtonGroup. Automatically
+    assigned ids are guaranteed to be negative, starting with -2. If you are also
+    assigning your own ids, use positive values to avoid conflicts.
 
     \sa removeButton() buttons()
 */
@@ -190,8 +189,8 @@
 /*!
     \fn void QButtonGroup::addButton(QAbstractButton *button, int id);
 
-    Adds the given \a button to the button group, with the given
-    \a id. It is recommended to assign only positive ids.
+    Adds the given \a button to the button group, with the given \a
+    id. It is recommended to assign only positive ids.
 
     \sa removeButton() buttons()
 */
