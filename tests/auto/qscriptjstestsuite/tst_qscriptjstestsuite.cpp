@@ -691,6 +691,38 @@ tst_Suite::tst_Suite()
     addFileExclusion("regress-322135-04.js", "takes forever");
     addFileExclusion("ecma_3/RegExp/regress-375715-04.js", "bug");
 
+    // Failures due to switch to JSC as back-end
+    addExpectedFailure("ecma/Array/15.4.3.1-2.js", "var props = ''; for ( p in Array  ) { props += p } props", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Boolean/15.6.3.1-1.js", "var str='';for ( p in Boolean ) { str += p } str;", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.4.1.js", "var abc; delete(abc)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/FunctionObjects/15.3.3.1-2.js", "var str='';for (prop in Function ) str += prop; str;", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/ObjectObjects/15.2.3.1-1.js", "var str = '';for ( p in Object ) { str += p; }; str", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Statements/12.6.3-11.js", "result = \"\"; for ( p in Number ) { result += String(p) };", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Statements/12.6.3-2.js", "Boolean.prototype.foo = 34; for ( j in Boolean ) Boolean[j]", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "-\"\\u20001234\\u2001\"", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_2/RegExp/properties-001.js", "//.toString()", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Date/15.9.4.3.js", "15.9.4.3 - Date.UTC edge-case arguments.: date Infinity", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Date/15.9.4.3.js", "15.9.4.3 - Date.UTC edge-case arguments.: hours Infinity", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Date/15.9.4.3.js", "15.9.4.3 - Date.UTC edge-case arguments.: minutes Infinity", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Date/15.9.4.3.js", "15.9.4.3 - Date.UTC edge-case arguments.: seconds Infinity", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Function/regress-131964.js", "Section 1 of test - ", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Function/regress-313570.js", "length of objects whose prototype chain includes a function: immutable", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/FunExpr/fe-001.js", "Both functions were defined.", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/15.10.2-1.js", "Section 7 of test - \nregexp = /(z)((a+)?(b+)?(c))*/\nstring = 'zaacbbbcac'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"zaacbbbcac\", \"z\", \"ac\", \"a\", , \"c\"]\nActual: [\"zaacbbbcac\", \"z\", \"ac\", \"a\", \"bbb\", \"c\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/15.10.2-1.js", "Section 12 of test - \nregexp = /(.*?)a(?!(a+)b\\2c)\\2(.*)/\nstring = 'baaabaac'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"baaabaac\", \"ba\", , \"abaac\"]\nActual: [\"baaabaac\", \"ba\", \"aa\", \"abaac\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 218 of test - \nregexp = /((foo)|(bar))*/\nstring = 'foobar'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"foobar\", \"bar\", , \"bar\"]\nActual: [\"foobar\", \"bar\", \"foo\", \"bar\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 234 of test - \nregexp = /(?:(f)(o)(o)|(b)(a)(r))*/\nstring = 'foobar'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"foobar\", , , , \"b\", \"a\", \"r\"]\nActual: [\"foobar\", \"f\", \"o\", \"o\", \"b\", \"a\", \"r\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 241 of test - \nregexp = /^(?:b|a(?=(.)))*\\1/\nstring = 'abc'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"ab\", , ]\nActual: [\"ab\", \"b\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 412 of test - \nregexp = /^(a(b)?)+$/\nstring = 'aba'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"aba\", \"a\", , ]\nActual: [\"aba\", \"a\", \"b\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 413 of test - \nregexp = /^(aa(bb)?)+$/\nstring = 'aabbaa'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"aabbaa\", \"aa\", , ]\nActual: [\"aabbaa\", \"aa\", \"bb\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/regress-209919.js", "Section 1 of test - \nregexp = /(a|b*)*/\nstring = 'a'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"a\", \"a\"]\nActual: [\"a\", \"\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/regress-209919.js", "Section 5 of test - \nregexp = /^\\-?(\\d{1,}|\\.{0,})*(\\,\\d{1,})?$/\nstring = '100.00'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"100.00\", \"00\", , ]\nActual: [\"100.00\", \"\", , ]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/regress-209919.js", "Section 6 of test - \nregexp = /^\\-?(\\d{1,}|\\.{0,})*(\\,\\d{1,})?$/\nstring = '100,00'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"100,00\", \"100\", \",00\"]\nActual: [\"100,00\", \"\", \",00\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/regress-209919.js", "Section 7 of test - \nregexp = /^\\-?(\\d{1,}|\\.{0,})*(\\,\\d{1,})?$/\nstring = '1.000,00'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"1.000,00\", \"000\", \",00\"]\nActual: [\"1.000,00\", \"\", \",00\"]\n", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/RegExp/regress-311414.js", "RegExp captured tail match should be O(N) BigO 2 < 2", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 7", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 26", willFixInNextReleaseMessage);
+
     QVector<uint> *data = qt_meta_data_tst_Suite();
     // content:
     *data << 1 // revision

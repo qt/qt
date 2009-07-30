@@ -48,6 +48,15 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+// Uncomment the following define to have the autotest generate
+// addExpectedFailure() code for all the tests that fail.
+// This is useful when a whole new test (sub)suite is added.
+// The code is stored in addexpectedfailures.cpp.
+// Paste the contents into this file after the existing
+// addExpectedFailure() calls.
+
+//#define GENERATE_ADDEXPECTEDFAILURE_CODE
+
 static QString readFile(const QString &filename)
 {
     QFile file(filename);
@@ -106,6 +115,9 @@ private:
     QList<ExpectedFailure> expectedFailures;
     QList<QPair<QRegExp, QString> > testExclusions;
     QString mjsunitContents;
+#ifdef GENERATE_ADDEXPECTEDFAILURE_CODE
+    QString generatedAddExpectedFailureCode;
+#endif
 };
 
 QMetaObject tst_Suite::staticMetaObject;
@@ -175,6 +187,14 @@ int tst_Suite::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
                                                QTest::Continue, path.toLatin1(),
                                                lineNumber);
                         }
+#ifdef GENERATE_ADDEXPECTEDFAILURE_CODE
+                        else {
+                            generatedAddExpectedFailureCode.append(
+                                "    addExpectedFailure(\"" + name
+                                + "\", \"" + actual + "\", \"" + expected
+                                + "\", willFixInNextReleaseMessage);\n");
+                        }
+#endif
                         QTest::qCompare(actual, expected, "actual", "expect",
                                         path.toLatin1(), lineNumber);
                     } else {
@@ -258,6 +278,20 @@ tst_Suite::tst_Suite()
     addTestExclusion("mul-exhaustive", "Demands too much memory on WinCE");
 #endif
 
+    // Failures due to switch to JSC as back-end
+    addExpectedFailure("date-parse", "NaN", "946713600000", willFixInNextReleaseMessage);
+    addExpectedFailure("delete-global-properties", "true", "false", willFixInNextReleaseMessage);
+    addExpectedFailure("delete", "false", "true", willFixInNextReleaseMessage);
+    addExpectedFailure("function-arguments-null", "false", "true", willFixInNextReleaseMessage);
+    addExpectedFailure("function-caller", "null", "function eval() {\n    [native code]\n}", willFixInNextReleaseMessage);
+    addExpectedFailure("function-prototype", "prototype", "disconnectconnect", willFixInNextReleaseMessage);
+    addExpectedFailure("number-tostring", "0", "0.0000a7c5ac471b4788", willFixInNextReleaseMessage);
+    addExpectedFailure("parse-int-float", "1e+21", "1", willFixInNextReleaseMessage);
+    addExpectedFailure("regexp", "false", "true", willFixInNextReleaseMessage);
+    addExpectedFailure("smi-negative-zero", "-Infinity", "Infinity", willFixInNextReleaseMessage);
+    addExpectedFailure("string-split", "4", "3", willFixInNextReleaseMessage);
+    addExpectedFailure("substr", "abcdefghijklmn", "", willFixInNextReleaseMessage);
+
     QVector<uint> *data = qt_meta_data_tst_Suite();
     // content:
     *data << 1 // revision
@@ -297,6 +331,14 @@ tst_Suite::tst_Suite()
 
 tst_Suite::~tst_Suite()
 {
+#ifdef GENERATE_ADDEXPECTEDFAILURE_CODE
+    if (!generatedAddExpectedFailureCode.isEmpty()) {
+        QFile file("addexpectedfailures.cpp");
+        file.open(QFile::WriteOnly);
+        QTextStream ts(&file);
+        ts << generatedAddExpectedFailureCode;
+    }
+#endif
 }
 
 void tst_Suite::addExpectedFailure(const QString &testName, const QString &actual,
