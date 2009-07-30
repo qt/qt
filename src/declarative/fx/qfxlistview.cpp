@@ -548,7 +548,6 @@ void QFxListViewPrivate::layout()
     if (!isValid())
         return;
     q->refill();
-    q->trackedPositionChanged();
     updateHighlight();
     if (orient == Qt::Vertical) {
         fixupY();
@@ -588,6 +587,8 @@ void QFxListViewPrivate::updateTrackedItem()
     if (highlight)
         item = highlight;
 
+    FxListItem *oldTracked = trackedItem;
+
     const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
     const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
@@ -601,9 +602,8 @@ void QFxListViewPrivate::updateTrackedItem()
         trackedItem = item;
         QObject::connect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::connect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
-        q->trackedPositionChanged();
     }
-    if (trackedItem)
+    if (trackedItem && trackedItem != oldTracked)
         q->trackedPositionChanged();
 }
 
@@ -1274,8 +1274,9 @@ qreal QFxListView::maxYExtent() const
         extent = -(d->positionAt(count()-1) - d->snapPos);
     else
         extent = -(d->endPosition() - height());
-    if (extent > 0)
-        extent = 0;
+    qreal minY = minYExtent();
+    if (extent > minY)
+        extent = minY;
     return extent;
 }
 
@@ -1307,8 +1308,9 @@ qreal QFxListView::maxXExtent() const
         extent = -(d->positionAt(count()-1) - d->snapPos);
     else
         extent = -(d->endPosition() - width());
-    if (extent > 0)
-        extent = 0;
+    qreal minX = minXExtent();
+    if (extent > minX)
+        extent = minX;
     return extent;
 }
 
