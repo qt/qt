@@ -124,10 +124,10 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(QFxItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
+    Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
     Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
-    Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
     Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
@@ -147,30 +147,22 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
-    Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL) // ## QGI/QGO
-    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin) // ### move to QGI
+    Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
+    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
-
-    typedef QHash<QString, QFxItem *> QmlChildren; // ###
 
 public:
     enum Option { NoOption = 0x00000000,
                   MouseFilter = 0x00000001,
                   ChildMouseFilter = 0x00000002,
-                  HoverEvents = 0x00000004,
-                  MouseEvents = 0x00000008,
-                  HasContents = 0x00000010,
-                  SimpleItem = 0x00000020,
-                  IsFocusPanel = 0x00000040,
-                  IsFocusRealm = 0x00000080,
-                  AcceptsInputMethods = 0x00000100 };
+                  IsFocusRealm = 0x00000080 };
     Q_DECLARE_FLAGS(Options, Option)
 
     enum TransformOrigin {
-        TopLeft, TopCenter, TopRight,
-        MiddleLeft, Center, MiddleRight,
-        BottomLeft, BottomCenter, BottomRight 
+        TopLeft, Top, TopRight,
+        Left, Center, Right,
+        BottomLeft, Bottom, BottomRight
     };
 
     QFxItem(QFxItem *parent = 0);
@@ -185,7 +177,6 @@ public:
     QmlList<QObject *> *resources();
 
     QFxAnchors *anchors();
-
     QFxContents *contents();
 
     bool clip() const;
@@ -226,7 +217,6 @@ public:
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
-    void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
 
@@ -234,15 +224,7 @@ public:
 
     virtual bool hasFocus() const;
     void setFocus(bool);
-    bool activeFocusPanel() const;
-    void setActiveFocusPanel(bool);
-
     bool hasActiveFocus() const;
-
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;    //### for KeyProxy
-
-public Q_SLOTS:
-    void newChild(const QString &url);
 
 Q_SIGNALS:
     void xChanged();
@@ -273,7 +255,6 @@ protected:
 
     virtual void classBegin();
     virtual void componentComplete();
-    virtual void parentChanged(QFxItem *, QFxItem *);
     virtual void focusChanged(bool);
     virtual void activeFocusChanged(bool);
     virtual void keyPressEvent(QKeyEvent *event);

@@ -239,7 +239,7 @@ QFxRect::QFxRect(QFxItem *parent)
 {
     Q_D(QFxRect);
     d->init();
-    setOptions(HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
@@ -247,7 +247,7 @@ QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
 {
     Q_D(QFxRect);
     d->init();
-    setOptions(HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 void QFxRect::doUpdate()
@@ -255,7 +255,7 @@ void QFxRect::doUpdate()
     Q_D(QFxRect);
     d->rectImage = QPixmap();
     const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-    setPaintMargin((pw+1)/2);
+    d->setPaintMargin((pw+1)/2);
     update();
 }
 
@@ -603,6 +603,12 @@ void QFxRect::drawRect(QPainter &p)
         p.drawPixmap(QPoint(width()-xOffset+pw/2, height() - yOffset+pw/2), d->rectImage,
                         QRect(d->rectImage.width()-xOffset, d->rectImage.height() - yOffset, xOffset, yOffset));
     }
+}
+
+QRectF QFxRect::boundingRect() const
+{
+    Q_D(const QFxRect);
+    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
 }
 
 QT_END_NAMESPACE

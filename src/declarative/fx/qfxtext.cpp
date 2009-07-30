@@ -110,7 +110,7 @@ QFxText::QFxText(QFxItem *parent)
     Q_D(QFxText);
     d->init();
     setAcceptedMouseButtons(Qt::LeftButton);
-    setOptions(SimpleItem | HasContents | QFxText::MouseEvents);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxText::QFxText(QFxTextPrivate &dd, QFxItem *parent)
@@ -119,7 +119,7 @@ QFxText::QFxText(QFxTextPrivate &dd, QFxItem *parent)
     Q_D(QFxText);
     d->init();
     setAcceptedMouseButtons(Qt::LeftButton);
-    setOptions(SimpleItem | HasContents | QFxText::MouseEvents);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxText::~QFxText()

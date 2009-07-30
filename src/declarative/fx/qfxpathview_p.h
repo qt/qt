@@ -87,7 +87,7 @@ public:
         Q_Q(QFxPathView);
         _offset = 0;
         q->setAcceptedMouseButtons(Qt::NoButton);
-        q->setOptions(QFxItem::ChildMouseFilter | QFxItem::MouseEvents | QFxItem::IsFocusRealm);
+        q->setOptions(QFxItem::ChildMouseFilter | QFxItem::IsFocusRealm);
         q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
     }
 

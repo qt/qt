@@ -475,8 +475,8 @@ void QFxLineEditPrivate::init()
         control->setLayoutDirection(Qt::LeftToRight);
         q->setSmooth(true);
         q->setAcceptedMouseButtons(Qt::LeftButton);
-        q->setOptions(QFxLineEdit::AcceptsInputMethods | QFxLineEdit::SimpleItem
-            | QFxLineEdit::HasContents | QFxLineEdit::MouseEvents);
+        q->setFlag(QGraphicsItem::ItemHasNoContents, false);
+        q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
         q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
                 q, SLOT(cursorPosChanged()));
         q->connect(control, SIGNAL(selectionChanged()),

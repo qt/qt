@@ -73,7 +73,7 @@ private:
 
 protected:
     virtual void componentComplete();
-    virtual void parentChanged(QFxItem *, QFxItem *);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent);
 
 private:

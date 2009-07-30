@@ -244,10 +244,15 @@ void QFxRepeater::componentComplete()
 /*!
     \internal
  */
-void QFxRepeater::parentChanged(QFxItem *o, QFxItem *n)
+QVariant QFxRepeater::itemChange(GraphicsItemChange change,
+                                       const QVariant &value)
 {
-    QFxItem::parentChanged(o, n);
-    regenerate();
+    QVariant rv = QFxItem::itemChange(change, value);
+    if (change == ItemParentHasChanged) {
+        regenerate();
+    }
+
+    return rv;
 }
 
 /*!

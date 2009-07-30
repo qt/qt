@@ -58,14 +58,14 @@
 QT_BEGIN_NAMESPACE
 
 class QFxGradient;
-
+class QFxRect;
 class QFxRectPrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxRect)
 
 public:
     QFxRectPrivate() :
-    color(Qt::white), gradient(0), pen(0), radius(0)
+    color(Qt::white), gradient(0), pen(0), radius(0), paintmargin(0)
     {
     }
 
@@ -92,9 +92,17 @@ public:
     }
     QFxPen *pen;
     qreal radius;
-#if defined(QFX_RENDER_QPAINTER)
+    qreal paintmargin;
     QPixmap rectImage;
-#endif
+
+    void setPaintMargin(qreal margin)
+    {
+        Q_Q(QFxRect);
+        if (margin == paintmargin)
+            return;
+        q->prepareGeometryChange();
+        paintmargin = margin;
+    }
 };
 
 QT_END_NAMESPACE
