@@ -78,7 +78,7 @@ class Q_CORE_EXPORT QAbstractItemModelPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QAbstractItemModel)
 
 public:
-    QAbstractItemModelPrivate() : QObjectPrivate(), supportedDragActions(-1) {}
+    QAbstractItemModelPrivate() : QObjectPrivate(), supportedDragActions(-1), roleNames(defaultRoleNames()) {}
     void removePersistentIndexData(QPersistentModelIndexData *data);
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
     void rowsInserted(const QModelIndex &parent, int first, int last);
@@ -144,6 +144,9 @@ public:
     } persistent;
 
     Qt::DropActions supportedDragActions;
+
+    QHash<int,QByteArray> roleNames;
+    static const QHash<int,QByteArray> &defaultRoleNames();
 };
 
 QT_END_NAMESPACE

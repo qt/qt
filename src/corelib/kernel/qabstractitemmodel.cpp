@@ -467,6 +467,21 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
     return qEmptyModel();
 }
 
+const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
+{
+    static QHash<int,QByteArray> roleNames;
+    if (roleNames.isEmpty()) {
+        roleNames[Qt::DisplayRole] = "display";
+        roleNames[Qt::DecorationRole] = "decoration";
+        roleNames[Qt::EditRole] = "edit";
+        roleNames[Qt::ToolTipRole] = "toolTip";
+        roleNames[Qt::StatusTipRole] = "statusTip";
+        roleNames[Qt::WhatsThisRole] = "whatsThis";
+    }
+
+    return roleNames;
+}
+
 /*!
     \internal
     return true if \a value contains a numerical type
@@ -1860,6 +1875,33 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
 QSize QAbstractItemModel::span(const QModelIndex &) const
 {
     return QSize(1, 1);
+}
+
+/*!
+  Sets the model's role names to \a roleNames.
+
+  This function is provided to allow mapping of role identifiers to
+  role property names in Declarative UI.  This function must be called
+  before the model is used.  Modifying the role names after the model
+  has been set may result in undefined behaviour.
+
+  \sa roleNames()
+*/
+void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
+{
+    Q_D(QAbstractItemModel);
+    d->roleNames = roleNames;
+}
+
+/*!
+  Returns the model's role names.
+
+  \sa setRoleNames
+*/
+const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
+{
+    Q_D(const QAbstractItemModel);
+    return d->roleNames;
 }
 
 /*!
