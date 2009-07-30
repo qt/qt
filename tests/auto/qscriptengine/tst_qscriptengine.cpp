@@ -3232,18 +3232,16 @@ void tst_QScriptEngine::getterSetterThisObject()
         // read
         eng.evaluate("act.__defineGetter__('x', function() { return this; })");
         QVERIFY(eng.evaluate("x === act").toBoolean());
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("with (act) x").equals(eng.evaluate("act")));
+        QEXPECT_FAIL("", "Exotic overload (don't care for now)", Continue);
+        QVERIFY(eng.evaluate("with (act) x").equals("foo"));
         QVERIFY(eng.evaluate("(function() { with (act) return x; })() === act").toBoolean());
         eng.evaluate("q = {}; with (act) with (q) x").equals(eng.evaluate("act"));
         eng.evaluate("with (q) with (act) x").equals(eng.evaluate("act"));
         // write
         eng.evaluate("act.__defineSetter__('x', function() { return this; });");
-        QVERIFY(eng.evaluate("(x = 'foo') === act").toBoolean());
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("with (act) x = 'foo'").equals(eng.evaluate("act")));
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("with (act) with (q) x = 'foo'").equals(eng.evaluate("act")));
+        QVERIFY(eng.evaluate("(x = 'foo') === 'foo'").toBoolean());
+        QVERIFY(eng.evaluate("with (act) x = 'foo'").equals("foo"));
+        QVERIFY(eng.evaluate("with (act) with (q) x = 'foo'").equals("foo"));
         eng.popContext();
     }
 }
