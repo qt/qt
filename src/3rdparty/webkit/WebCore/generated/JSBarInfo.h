@@ -21,6 +21,7 @@
 #ifndef JSBarInfo_h
 #define JSBarInfo_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class BarInfo;
 
-class JSBarInfo : public DOMObject {
-    typedef DOMObject Base;
+class JSBarInfo : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSBarInfo(PassRefPtr<JSC::Structure>, PassRefPtr<BarInfo>);
+    JSBarInfo(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<BarInfo>);
     virtual ~JSBarInfo();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -50,7 +51,7 @@ private:
     RefPtr<BarInfo> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, BarInfo*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, BarInfo*);
 BarInfo* toBarInfo(JSC::JSValue);
 
 class JSBarInfoPrototype : public JSC::JSObject {

@@ -33,7 +33,7 @@ class SVGFEOffsetElement;
 class JSSVGFEOffsetElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFEOffsetElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEOffsetElement>);
+    JSSVGFEOffsetElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFEOffsetElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

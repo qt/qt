@@ -99,8 +99,6 @@ QStringList Option::shellPath;
 Option::TARG_MODE Option::target_mode = Option::TARG_WIN_MODE;
 #elif defined(Q_OS_MAC)
 Option::TARG_MODE Option::target_mode = Option::TARG_MACX_MODE;
-#elif defined(Q_OS_QNX6)
-Option::TARG_MODE Option::target_mode = Option::TARG_QNX6_MODE;
 #else
 Option::TARG_MODE Option::target_mode = Option::TARG_UNIX_MODE;
 #endif

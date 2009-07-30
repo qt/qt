@@ -31,7 +31,7 @@ class HTMLElement;
 class JSHTMLElement : public JSElement {
     typedef JSElement Base;
 public:
-    JSHTMLElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLElement>);
+    JSHTMLElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -45,7 +45,7 @@ public:
 
     virtual void pushEventHandlerScope(JSC::ExecState*, JSC::ScopeChain&) const;
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     HTMLElement* impl() const
     {
         return static_cast<HTMLElement*>(Base::impl());
@@ -87,6 +87,8 @@ JSC::JSValue jsHTMLElementClassName(JSC::ExecState*, const JSC::Identifier&, con
 void setJSHTMLElementClassName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLElementTabIndex(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLElementTabIndex(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLElementDraggable(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLElementDraggable(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLElementInnerHTML(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLElementInnerHTML(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLElementInnerText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

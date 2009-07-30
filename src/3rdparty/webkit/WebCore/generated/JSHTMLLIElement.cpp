@@ -64,12 +64,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLLIElementConstructorTable =
     { 1, 0, JSHTMLLIElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLLIElementConstructor : public DOMObject {
+class JSHTMLLIElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLLIElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLLIElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLLIElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLLIElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLLIElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLLIElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,8 +111,8 @@ JSObject* JSHTMLLIElementPrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSHTMLLIElement::s_info = { "HTMLLIElement", &JSHTMLElement::s_info, &JSHTMLLIElementTable, 0 };
 
-JSHTMLLIElement::JSHTMLLIElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLLIElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLLIElement::JSHTMLLIElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLIElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -128,21 +128,24 @@ bool JSHTMLLIElement::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsHTMLLIElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLIElement* imp = static_cast<HTMLLIElement*>(static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()))->impl());
+    HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLLIElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLIElement* imp = static_cast<HTMLLIElement*>(static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()))->impl());
+    HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThis->impl());
     return jsNumber(exec, imp->value());
 }
 
 JSValue jsHTMLLIElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLLIElement* domObject = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
+    return JSHTMLLIElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLLIElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -161,9 +164,9 @@ void setJSHTMLLIElementValue(ExecState* exec, JSObject* thisObject, JSValue valu
     imp->setValue(value.toInt32(exec));
 }
 
-JSValue JSHTMLLIElement::getConstructor(ExecState* exec)
+JSValue JSHTMLLIElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLLIElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLLIElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

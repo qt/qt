@@ -134,7 +134,7 @@ void tst_QThreadOnce::sameThread()
 
 void tst_QThreadOnce::multipleThreads()
 {
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
     const int NumberOfThreads = 20;
 #else
     const int NumberOfThreads = 100;

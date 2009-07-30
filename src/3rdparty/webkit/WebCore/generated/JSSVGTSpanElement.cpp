@@ -56,8 +56,8 @@ JSObject* JSSVGTSpanElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGTSpanElement::s_info = { "SVGTSpanElement", &JSSVGTextPositioningElement::s_info, 0, 0 };
 
-JSSVGTSpanElement::JSSVGTSpanElement(PassRefPtr<Structure> structure, PassRefPtr<SVGTSpanElement> impl)
-    : JSSVGTextPositioningElement(structure, impl)
+JSSVGTSpanElement::JSSVGTSpanElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTSpanElement> impl)
+    : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }
 

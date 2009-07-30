@@ -73,9 +73,8 @@ JSObject* JSSVGAnimatedPreserveAspectRatioPrototype::self(ExecState* exec, JSGlo
 
 const ClassInfo JSSVGAnimatedPreserveAspectRatio::s_info = { "SVGAnimatedPreserveAspectRatio", 0, &JSSVGAnimatedPreserveAspectRatioTable, 0 };
 
-JSSVGAnimatedPreserveAspectRatio::JSSVGAnimatedPreserveAspectRatio(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimatedPreserveAspectRatio> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGAnimatedPreserveAspectRatio::JSSVGAnimatedPreserveAspectRatio(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedPreserveAspectRatio> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -97,21 +96,23 @@ bool JSSVGAnimatedPreserveAspectRatio::getOwnPropertySlot(ExecState* exec, const
 
 JSValue jsSVGAnimatedPreserveAspectRatioBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedPreserveAspectRatio* castedThis = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedPreserveAspectRatio* imp = static_cast<SVGAnimatedPreserveAspectRatio*>(static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->baseVal()), static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedPreserveAspectRatio* imp = static_cast<SVGAnimatedPreserveAspectRatio*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), WTF::getPtr(imp->baseVal()), castedThis->context());
 }
 
 JSValue jsSVGAnimatedPreserveAspectRatioAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedPreserveAspectRatio* castedThis = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedPreserveAspectRatio* imp = static_cast<SVGAnimatedPreserveAspectRatio*>(static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->animVal()), static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedPreserveAspectRatio* imp = static_cast<SVGAnimatedPreserveAspectRatio*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), WTF::getPtr(imp->animVal()), castedThis->context());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedPreserveAspectRatio* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedPreserveAspectRatio* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGAnimatedPreserveAspectRatio>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGAnimatedPreserveAspectRatio>(exec, globalObject, object, context);
 }
 SVGAnimatedPreserveAspectRatio* toSVGAnimatedPreserveAspectRatio(JSC::JSValue value)
 {

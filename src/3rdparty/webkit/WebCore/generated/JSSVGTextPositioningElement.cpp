@@ -77,8 +77,8 @@ JSObject* JSSVGTextPositioningElementPrototype::self(ExecState* exec, JSGlobalOb
 
 const ClassInfo JSSVGTextPositioningElement::s_info = { "SVGTextPositioningElement", &JSSVGTextContentElement::s_info, &JSSVGTextPositioningElementTable, 0 };
 
-JSSVGTextPositioningElement::JSSVGTextPositioningElement(PassRefPtr<Structure> structure, PassRefPtr<SVGTextPositioningElement> impl)
-    : JSSVGTextContentElement(structure, impl)
+JSSVGTextPositioningElement::JSSVGTextPositioningElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextPositioningElement> impl)
+    : JSSVGTextContentElement(structure, globalObject, impl)
 {
 }
 
@@ -94,42 +94,47 @@ bool JSSVGTextPositioningElement::getOwnPropertySlot(ExecState* exec, const Iden
 
 JSValue jsSVGTextPositioningElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPositioningElement* castedThis = static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPositioningElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPositioningElement* castedThis = static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPositioningElementDx(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPositioningElement* castedThis = static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->dxAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPositioningElementDy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPositioningElement* castedThis = static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->dyAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPositioningElementRotate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextPositioningElement* castedThis = static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumberList> obj = imp->rotateAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 

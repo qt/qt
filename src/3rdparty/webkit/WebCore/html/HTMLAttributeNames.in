@@ -69,6 +69,7 @@ defer
 dir
 direction
 disabled
+draggable
 enctype
 end
 expanded
@@ -184,6 +185,7 @@ onwebkitanimationstart
 onwebkitanimationiteration
 onwebkitanimationend
 onwebkittransitionend
+pattern
 placeholder
 pluginurl
 poster
@@ -194,6 +196,7 @@ progress
 prompt
 readonly
 rel
+required
 results
 rev
 role

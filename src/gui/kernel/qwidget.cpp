@@ -505,7 +505,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     been outlined to indicate their full sizes.
 
     If you want to use a QWidget to hold child widgets you will usually want to
-    add a layout to the parent QWidget. See \l{Layout Classes} for more
+    add a layout to the parent QWidget. See \l{Layout Management} for more
     information.
 
 
@@ -8854,7 +8854,7 @@ QRegion QWidget::mask() const
     The layout manager sets the geometry of the widget's children
     that have been added to the layout.
 
-    \sa setLayout(), sizePolicy(), {Layout Classes}
+    \sa setLayout(), sizePolicy(), {Layout Management}
 */
 QLayout *QWidget::layout() const
 {
@@ -8884,7 +8884,7 @@ QLayout *QWidget::layout() const
 
     The QWidget will take ownership of \a layout.
 
-    \sa layout(), {Layout Classes}
+    \sa layout(), {Layout Management}
 */
 
 void QWidget::setLayout(QLayout *l)

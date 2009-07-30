@@ -61,7 +61,7 @@ void JSEventListener::markJSFunction()
 
 void JSEventListener::handleEvent(Event* event, bool isWindowEvent)
 {
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     JSObject* jsFunction = this->jsFunction();
     if (!jsFunction)
@@ -71,6 +71,7 @@ void JSEventListener::handleEvent(Event* event, bool isWindowEvent)
     // Null check as clearGlobalObject() can clear this and we still get called back by
     // xmlhttprequest objects. See http://bugs.webkit.org/show_bug.cgi?id=13275
     // FIXME: Is this check still necessary? Requests are supposed to be stopped before clearGlobalObject() is called.
+    ASSERT(globalObject);
     if (!globalObject)
         return;
 
@@ -107,7 +108,7 @@ void JSEventListener::handleEvent(Event* event, bool isWindowEvent)
         ref();
 
         MarkedArgumentBuffer args;
-        args.append(toJS(exec, event));
+        args.append(toJS(exec, globalObject, event));
 
         Event* savedEvent = globalObject->currentEvent();
         globalObject->setCurrentEvent(event);
@@ -127,7 +128,7 @@ void JSEventListener::handleEvent(Event* event, bool isWindowEvent)
             if (isWindowEvent)
                 thisValue = globalObject->toThisObject(exec);
             else
-                thisValue = toJS(exec, event->currentTarget());
+                thisValue = toJS(exec, globalObject, event->currentTarget());
             globalObject->globalData()->timeoutChecker.start();
             retval = call(exec, jsFunction, callType, callData, thisValue, args);
         }
@@ -151,6 +152,53 @@ void JSEventListener::handleEvent(Event* event, bool isWindowEvent)
             Document::updateStyleForAllDocuments();
         deref();
     }
+}
+
+bool JSEventListener::reportError(const String& message, const String& url, int lineNumber)
+{
+    JSLock lock(SilenceAssertionsOnly);
+
+    JSObject* jsFunction = this->jsFunction();
+    if (!jsFunction)
+        return false;
+
+    JSDOMGlobalObject* globalObject = m_globalObject;
+    if (!globalObject)
+        return false;
+
+    ExecState* exec = globalObject->globalExec();
+
+    CallData callData;
+    CallType callType = jsFunction->getCallData(callData);
+
+    if (callType == CallTypeNone)
+        return false;
+
+    MarkedArgumentBuffer args;
+    args.append(jsString(exec, message));
+    args.append(jsString(exec, url));
+    args.append(jsNumber(exec, lineNumber));
+
+    // If this event handler is the first JavaScript to execute, then the
+    // dynamic global object should be set to the global object of the
+    // window in which the event occurred.
+    JSGlobalData* globalData = globalObject->globalData();
+    DynamicGlobalObjectScope globalObjectScope(exec, globalData->dynamicGlobalObject ? globalData->dynamicGlobalObject : globalObject);    
+
+    JSValue thisValue = globalObject->toThisObject(exec);
+
+    globalObject->globalData()->timeoutChecker.start();
+    JSValue returnValue = call(exec, jsFunction, callType, callData, thisValue, args);
+    globalObject->globalData()->timeoutChecker.stop();
+
+    // If an error occurs while handling the script error, it should be bubbled up.
+    if (exec->hadException()) {
+        exec->clearException();
+        return false;
+    }
+    
+    bool bubbleEvent;
+    return returnValue.getBoolean(bubbleEvent) && !bubbleEvent;
 }
 
 bool JSEventListener::virtualisAttribute() const

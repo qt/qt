@@ -65,12 +65,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLMapElementConstructorTable =
     { 1, 0, JSHTMLMapElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLMapElementConstructor : public DOMObject {
+class JSHTMLMapElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLMapElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLMapElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLMapElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLMapElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLMapElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLMapElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,8 +112,8 @@ JSObject* JSHTMLMapElementPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSHTMLMapElement::s_info = { "HTMLMapElement", &JSHTMLElement::s_info, &JSHTMLMapElementTable, 0 };
 
-JSHTMLMapElement::JSHTMLMapElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLMapElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLMapElement::JSHTMLMapElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMapElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -129,21 +129,24 @@ bool JSHTMLMapElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsHTMLMapElementAreas(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLMapElement* castedThis = static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLMapElement* imp = static_cast<HTMLMapElement*>(static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->areas()));
+    HTMLMapElement* imp = static_cast<HTMLMapElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->areas()));
 }
 
 JSValue jsHTMLMapElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLMapElement* castedThis = static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLMapElement* imp = static_cast<HTMLMapElement*>(static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()))->impl());
+    HTMLMapElement* imp = static_cast<HTMLMapElement*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsHTMLMapElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLMapElement* domObject = static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()));
+    return JSHTMLMapElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLMapElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -156,9 +159,9 @@ void setJSHTMLMapElementName(ExecState* exec, JSObject* thisObject, JSValue valu
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLMapElement::getConstructor(ExecState* exec)
+JSValue JSHTMLMapElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLMapElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLMapElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

@@ -222,8 +222,8 @@
 
     Notice that \c addressLabel is positioned using Qt::AlignTop as an
     additional argument. This is to make sure it is not vertically centered in
-    cell (1,0). For a basic overview on Qt Layouts, refer to the \l{Layout Classes}
-    document.
+    cell (1,0). For a basic overview on Qt Layouts, refer to the 
+    \l{Layout Management} documentation.
 
     In order to install the layout object onto the widget, we have to invoke
     the widget's \l{QWidget::setLayout()}{setLayout()} function:

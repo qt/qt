@@ -21,6 +21,7 @@
 #ifndef JSFileList_h
 #define JSFileList_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class FileList;
 
-class JSFileList : public DOMObject {
-    typedef DOMObject Base;
+class JSFileList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSFileList(PassRefPtr<JSC::Structure>, PassRefPtr<FileList>);
+    JSFileList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<FileList>);
     virtual ~JSFileList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,7 +47,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     FileList* impl() const { return m_impl.get(); }
 
 private:
@@ -54,7 +55,7 @@ private:
     static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, FileList*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, FileList*);
 FileList* toFileList(JSC::JSValue);
 
 class JSFileListPrototype : public JSC::JSObject {

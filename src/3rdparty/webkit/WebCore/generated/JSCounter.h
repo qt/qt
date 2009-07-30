@@ -21,6 +21,7 @@
 #ifndef JSCounter_h
 #define JSCounter_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Counter;
 
-class JSCounter : public DOMObject {
-    typedef DOMObject Base;
+class JSCounter : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCounter(PassRefPtr<JSC::Structure>, PassRefPtr<Counter>);
+    JSCounter(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Counter>);
     virtual ~JSCounter();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     Counter* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<Counter> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Counter*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Counter*);
 Counter* toCounter(JSC::JSValue);
 
 class JSCounterPrototype : public JSC::JSObject {

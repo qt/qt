@@ -79,8 +79,8 @@ bool JSGeolocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
 
 const ClassInfo JSGeolocation::s_info = { "Geolocation", 0, &JSGeolocationTable, 0 };
 
-JSGeolocation::JSGeolocation(PassRefPtr<Structure> structure, PassRefPtr<Geolocation> impl)
-    : DOMObject(structure)
+JSGeolocation::JSGeolocation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geolocation> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -102,9 +102,10 @@ bool JSGeolocation::getOwnPropertySlot(ExecState* exec, const Identifier& proper
 
 JSValue jsGeolocationLastPosition(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSGeolocation* castedThis = static_cast<JSGeolocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Geolocation* imp = static_cast<Geolocation*>(static_cast<JSGeolocation*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->lastPosition()));
+    Geolocation* imp = static_cast<Geolocation*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->lastPosition()));
 }
 
 JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -138,9 +139,9 @@ JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionClearWatch(ExecState* exec, 
     return jsUndefined();
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Geolocation* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Geolocation* object)
 {
-    return getDOMObjectWrapper<JSGeolocation>(exec, object);
+    return getDOMObjectWrapper<JSGeolocation>(exec, globalObject, object);
 }
 Geolocation* toGeolocation(JSC::JSValue value)
 {

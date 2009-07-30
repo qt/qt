@@ -33,7 +33,7 @@ class SVGPathSegLinetoHorizontalRel;
 class JSSVGPathSegLinetoHorizontalRel : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegLinetoHorizontalRel(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegLinetoHorizontalRel>, SVGElement* context);
+    JSSVGPathSegLinetoHorizontalRel(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegLinetoHorizontalRel>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

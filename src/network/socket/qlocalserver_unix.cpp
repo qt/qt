@@ -54,6 +54,10 @@
 #include <qdir.h>
 #include <qdatetime.h>
 
+#ifdef Q_OS_VXWORKS
+#  include <selectLib.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 void QLocalServerPrivate::init()

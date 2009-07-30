@@ -69,12 +69,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLDataGridElementConstructorTable =
     { 1, 0, JSHTMLDataGridElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLDataGridElementConstructor : public DOMObject {
+class JSHTMLDataGridElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLDataGridElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLDataGridElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLDataGridElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLDataGridElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDataGridElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDataGridElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -116,8 +116,8 @@ JSObject* JSHTMLDataGridElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLDataGridElement::s_info = { "HTMLDataGridElement", &JSHTMLElement::s_info, &JSHTMLDataGridElementTable, 0 };
 
-JSHTMLDataGridElement::JSHTMLDataGridElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLDataGridElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLDataGridElement::JSHTMLDataGridElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDataGridElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -133,40 +133,46 @@ bool JSHTMLDataGridElement::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsHTMLDataGridElementDataSource(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->dataSource(exec);
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    return castedThis->dataSource(exec);
 }
 
 JSValue jsHTMLDataGridElementColumns(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->columns()));
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->columns()));
 }
 
 JSValue jsHTMLDataGridElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
     return jsBoolean(imp->autofocus());
 }
 
 JSValue jsHTMLDataGridElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
     return jsBoolean(imp->disabled());
 }
 
 JSValue jsHTMLDataGridElementMultiple(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
     return jsBoolean(imp->multiple());
 }
 
 JSValue jsHTMLDataGridElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLDataGridElement* domObject = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    return JSHTMLDataGridElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDataGridElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -196,9 +202,9 @@ void setJSHTMLDataGridElementMultiple(ExecState* exec, JSObject* thisObject, JSV
     imp->setMultiple(value.toBoolean(exec));
 }
 
-JSValue JSHTMLDataGridElement::getConstructor(ExecState* exec)
+JSValue JSHTMLDataGridElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLDataGridElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLDataGridElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

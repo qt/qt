@@ -21,6 +21,7 @@
 #ifndef JSDOMParser_h
 #define JSDOMParser_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class DOMParser;
 
-class JSDOMParser : public DOMObject {
-    typedef DOMObject Base;
+class JSDOMParser : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDOMParser(PassRefPtr<JSC::Structure>, PassRefPtr<DOMParser>);
+    JSDOMParser(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMParser>);
     virtual ~JSDOMParser();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     DOMParser* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<DOMParser> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, DOMParser*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, DOMParser*);
 DOMParser* toDOMParser(JSC::JSValue);
 
 class JSDOMParserPrototype : public JSC::JSObject {

@@ -23,6 +23,7 @@
 
 #if ENABLE(XPATH)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class XPathExpression;
 
-class JSXPathExpression : public DOMObject {
-    typedef DOMObject Base;
+class JSXPathExpression : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathExpression(PassRefPtr<JSC::Structure>, PassRefPtr<XPathExpression>);
+    JSXPathExpression(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathExpression>);
     virtual ~JSXPathExpression();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     XPathExpression* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<XPathExpression> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, XPathExpression*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, XPathExpression*);
 XPathExpression* toXPathExpression(JSC::JSValue);
 
 class JSXPathExpressionPrototype : public JSC::JSObject {

@@ -21,6 +21,7 @@
 #ifndef JSXMLHttpRequest_h
 #define JSXMLHttpRequest_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class XMLHttpRequest;
 
-class JSXMLHttpRequest : public DOMObject {
-    typedef DOMObject Base;
+class JSXMLHttpRequest : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXMLHttpRequest(PassRefPtr<JSC::Structure>, PassRefPtr<XMLHttpRequest>);
+    JSXMLHttpRequest(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XMLHttpRequest>);
     virtual ~JSXMLHttpRequest();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -65,7 +66,7 @@ private:
     RefPtr<XMLHttpRequest> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, XMLHttpRequest*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, XMLHttpRequest*);
 XMLHttpRequest* toXMLHttpRequest(JSC::JSValue);
 
 class JSXMLHttpRequestPrototype : public JSC::JSObject {

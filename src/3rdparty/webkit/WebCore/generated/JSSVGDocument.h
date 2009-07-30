@@ -33,7 +33,7 @@ class SVGDocument;
 class JSSVGDocument : public JSDocument {
     typedef JSDocument Base;
 public:
-    JSSVGDocument(PassRefPtr<JSC::Structure>, PassRefPtr<SVGDocument>);
+    JSSVGDocument(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGDocument>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

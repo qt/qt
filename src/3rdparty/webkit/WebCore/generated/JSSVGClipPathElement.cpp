@@ -111,8 +111,8 @@ bool JSSVGClipPathElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
 
 const ClassInfo JSSVGClipPathElement::s_info = { "SVGClipPathElement", &JSSVGElement::s_info, &JSSVGClipPathElementTable, 0 };
 
-JSSVGClipPathElement::JSSVGClipPathElement(PassRefPtr<Structure> structure, PassRefPtr<SVGClipPathElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGClipPathElement::JSSVGClipPathElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGClipPathElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -128,90 +128,102 @@ bool JSSVGClipPathElement::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsSVGClipPathElementClipPathUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->clipPathUnitsAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGClipPathElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
 JSValue jsSVGClipPathElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
 JSValue jsSVGClipPathElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
 }
 
 JSValue jsSVGClipPathElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
     return jsString(exec, imp->xmllang());
 }
 
 JSValue jsSVGClipPathElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
     return jsString(exec, imp->xmlspace());
 }
 
 JSValue jsSVGClipPathElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGClipPathElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGClipPathElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsSVGClipPathElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGClipPathElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->nearestViewportElement()));
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
 }
 
 JSValue jsSVGClipPathElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGClipPathElement* castedThis = static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(static_cast<JSSVGClipPathElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->farthestViewportElement()));
+    SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
 }
 
 void JSSVGClipPathElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -255,7 +267,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetPresentationAttrib
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
@@ -268,7 +280,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetBBox(ExecState* ex
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
     return result;
 }
 
@@ -281,7 +293,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetCTM(ExecState* exe
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
     return result;
 }
 
@@ -294,7 +306,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetScreenCTM(ExecStat
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
     return result;
 }
 
@@ -309,7 +321,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetTransformToElement
     SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }

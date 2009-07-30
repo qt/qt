@@ -70,12 +70,12 @@ static JSC_CONST_HASHTABLE HashTable JSAttrConstructorTable =
     { 1, 0, JSAttrConstructorTableValues, 0 };
 #endif
 
-class JSAttrConstructor : public DOMObject {
+class JSAttrConstructor : public DOMConstructorObject {
 public:
-    JSAttrConstructor(ExecState* exec)
-        : DOMObject(JSAttrConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSAttrConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSAttrConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSAttrPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSAttrPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -117,8 +117,8 @@ JSObject* JSAttrPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSAttr::s_info = { "Attr", &JSNode::s_info, &JSAttrTable, 0 };
 
-JSAttr::JSAttr(PassRefPtr<Structure> structure, PassRefPtr<Attr> impl)
-    : JSNode(structure, impl)
+JSAttr::JSAttr(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Attr> impl)
+    : JSNode(structure, globalObject, impl)
 {
 }
 
@@ -134,42 +134,48 @@ bool JSAttr::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
 
 JSValue jsAttrName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Attr* imp = static_cast<Attr*>(static_cast<JSAttr*>(asObject(slot.slotBase()))->impl());
+    Attr* imp = static_cast<Attr*>(castedThis->impl());
     return jsStringOrNull(exec, imp->name());
 }
 
 JSValue jsAttrSpecified(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Attr* imp = static_cast<Attr*>(static_cast<JSAttr*>(asObject(slot.slotBase()))->impl());
+    Attr* imp = static_cast<Attr*>(castedThis->impl());
     return jsBoolean(imp->specified());
 }
 
 JSValue jsAttrValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Attr* imp = static_cast<Attr*>(static_cast<JSAttr*>(asObject(slot.slotBase()))->impl());
+    Attr* imp = static_cast<Attr*>(castedThis->impl());
     return jsStringOrNull(exec, imp->value());
 }
 
 JSValue jsAttrOwnerElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Attr* imp = static_cast<Attr*>(static_cast<JSAttr*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->ownerElement()));
+    Attr* imp = static_cast<Attr*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerElement()));
 }
 
 JSValue jsAttrStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Attr* imp = static_cast<Attr*>(static_cast<JSAttr*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    Attr* imp = static_cast<Attr*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsAttrConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSAttr*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSAttr* domObject = static_cast<JSAttr*>(asObject(slot.slotBase()));
+    return JSAttr::getConstructor(exec, domObject->globalObject());
 }
 void JSAttr::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -181,9 +187,9 @@ void setJSAttrValue(ExecState* exec, JSObject* thisObject, JSValue value)
     static_cast<JSAttr*>(thisObject)->setValue(exec, value);
 }
 
-JSValue JSAttr::getConstructor(ExecState* exec)
+JSValue JSAttr::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSAttrConstructor>(exec);
+    return getDOMConstructor<JSAttrConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 Attr* toAttr(JSC::JSValue value)

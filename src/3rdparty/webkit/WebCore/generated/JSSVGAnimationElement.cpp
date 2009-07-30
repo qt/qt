@@ -95,8 +95,8 @@ bool JSSVGAnimationElementPrototype::getOwnPropertySlot(ExecState* exec, const I
 
 const ClassInfo JSSVGAnimationElement::s_info = { "SVGAnimationElement", &JSSVGElement::s_info, &JSSVGAnimationElementTable, 0 };
 
-JSSVGAnimationElement::JSSVGAnimationElement(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimationElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGAnimationElement::JSSVGAnimationElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimationElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -112,38 +112,43 @@ bool JSSVGAnimationElement::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsSVGAnimationElementTargetElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimationElement* castedThis = static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->targetElement()));
+    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->targetElement()));
 }
 
 JSValue jsSVGAnimationElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimationElement* castedThis = static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
+    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
 JSValue jsSVGAnimationElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimationElement* castedThis = static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
+    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
 JSValue jsSVGAnimationElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimationElement* castedThis = static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
+    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
 }
 
 JSValue jsSVGAnimationElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimationElement* castedThis = static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(static_cast<JSSVGAnimationElement*>(asObject(slot.slotBase()))->impl());
+    SVGAnimationElement* imp = static_cast<SVGAnimationElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue JSC_HOST_CALL jsSVGAnimationElementPrototypeFunctionGetStartTime(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

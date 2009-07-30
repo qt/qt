@@ -56,8 +56,8 @@ JSObject* JSSVGFontFaceUriElementPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGFontFaceUriElement::s_info = { "SVGFontFaceUriElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGFontFaceUriElement::JSSVGFontFaceUriElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFontFaceUriElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFontFaceUriElement::JSSVGFontFaceUriElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFontFaceUriElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 

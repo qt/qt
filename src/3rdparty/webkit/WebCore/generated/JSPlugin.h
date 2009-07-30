@@ -21,6 +21,7 @@
 #ifndef JSPlugin_h
 #define JSPlugin_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Plugin;
 
-class JSPlugin : public DOMObject {
-    typedef DOMObject Base;
+class JSPlugin : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSPlugin(PassRefPtr<JSC::Structure>, PassRefPtr<Plugin>);
+    JSPlugin(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Plugin>);
     virtual ~JSPlugin();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,7 +47,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     Plugin* impl() const { return m_impl.get(); }
 
 private:
@@ -57,7 +58,7 @@ private:
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Plugin*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Plugin*);
 Plugin* toPlugin(JSC::JSValue);
 
 class JSPluginPrototype : public JSC::JSObject {
