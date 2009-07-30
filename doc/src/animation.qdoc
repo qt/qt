@@ -43,7 +43,7 @@
     \page animation-overview.html
     \title The Animation Framework
     \ingroup architecture
-    \ingroup group_animation
+    \ingroup animation
     \brief An overview of the Animation Framework
 
     \keyword Animation
