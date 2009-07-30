@@ -795,7 +795,7 @@ void QFxItem::setQml(const QUrl &qml)
         return;
 
     if (!d->_qml.isEmpty()) {
-        QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
+        QHash<QString, QFxItem *>::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
         if (iter != d->_qmlChildren.end())
             (*iter)->setOpacity(0.);
     }
@@ -808,7 +808,7 @@ void QFxItem::setQml(const QUrl &qml)
         return;
     }
 
-    QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
+    QHash<QString, QFxItem *>::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
     if (iter != d->_qmlChildren.end()) {
         (*iter)->setOpacity(1.);
         d->qmlItem = (*iter);
@@ -1793,19 +1793,19 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
     default:
     case QFxItem::TopLeft:
         return QPointF(0, 0);
-    case QFxItem::TopCenter:
+    case QFxItem::Top:
         return QPointF(br.width() / 2., 0);
     case QFxItem::TopRight:
         return QPointF(br.width(), 0);
-    case QFxItem::MiddleLeft:
+    case QFxItem::Left:
         return QPointF(0, br.height() / 2.);
     case QFxItem::Center:
         return QPointF(br.width() / 2., br.height() / 2.);
-    case QFxItem::MiddleRight:
+    case QFxItem::Right:
         return QPointF(br.width(), br.height() / 2.);
     case QFxItem::BottomLeft:
         return QPointF(0, br.height());
-    case QFxItem::BottomCenter:
+    case QFxItem::Bottom:
         return QPointF(br.width() / 2., br.height());
     case QFxItem::BottomRight:
         return QPointF(br.width(), br.height());
@@ -1891,13 +1891,13 @@ void QFxItem::parentChanged(QFxItem *, QFxItem *)
     Controls the point about which simple transforms like scale apply.
 
     \value TopLeft The top-left corner of the item.
-    \value TopCenter The center point of the top of the item.
+    \value Top The center point of the top of the item.
     \value TopRight The top-right corner of the item.
-    \value MiddleLeft The left most point of the vertical middle.
+    \value Left The left most point of the vertical middle.
     \value Center The center of the item.
-    \value MiddleRight The right most point of the vertical middle.
+    \value Right The right most point of the vertical middle.
     \value BottomLeft The bottom-left corner of the item.
-    \value BottomCenter The center point of the bottom of the item. 
+    \value Bottom The center point of the bottom of the item.
     \value BottomRight The bottom-right corner of the item.
 */
 
@@ -2085,16 +2085,6 @@ bool QFxItem::hasActiveFocus() const
     return QGraphicsItem::hasFocus();
 }
 
-bool QFxItem::activeFocusPanel() const
-{
-    return false;
-}
-
-void QFxItem::setActiveFocusPanel(bool b)
-{
-    Q_UNUSED(b)
-}
-
 bool QFxItem::sceneEventFilter(QGraphicsItem *w, QEvent *e)
 {
     switch(e->type()) {
@@ -2128,11 +2118,6 @@ void QFxItem::setOptions(Options options, bool set)
         d->options |= options;
     else
         d->options &= ~options;
-
-    if ((d->options & IsFocusPanel) && (d->options & IsFocusRealm)) {
-        qWarning("QFxItem::setOptions: Cannot set both IsFocusPanel and IsFocusRealm.  IsFocusRealm will be unset.");
-        d->options &= ~IsFocusRealm;
-    }
 
     setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
     setFiltersChildEvents(d->options & ChildMouseFilter);

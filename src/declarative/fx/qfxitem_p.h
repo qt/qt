@@ -71,8 +71,6 @@ class QFxItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxItem)
 
-    typedef QHash<QString, QFxItem *> QmlChildren;
-
 public:
     QFxItemPrivate()
     : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
@@ -163,7 +161,7 @@ public:
     bool _componentComplete:1;
     bool _keepMouse:1;
 
-    QmlChildren _qmlChildren;
+    QHash<QString, QFxItem *> _qmlChildren;
 
     struct AnchorLines {
         AnchorLines(QFxItem *);
