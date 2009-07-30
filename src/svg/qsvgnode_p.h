@@ -86,6 +86,7 @@ public:
         RECT,
         TEXT,
         TEXTAREA,
+        TSPAN,
         USE,
         VIDEO
     };
