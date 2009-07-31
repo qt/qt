@@ -299,6 +299,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         int matchingCount = 0;
         chosenVisualInfo = XGetVisualInfo(x11Info().display(), VisualIDMask, &vi, &matchingCount);
         if (chosenVisualInfo) {
+#if !defined(QT_NO_XRENDER)
             if (useArgbVisual) {
                 // Check to make sure the visual provided by EGL is ARGB
                 XRenderPictFormat *format;
@@ -312,8 +313,9 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
                              nativeVisualId, (int)qeglCtx->config());
                     vi.visualid = 0;
                 }
-            }
-            else {
+            } else
+#endif
+            {
                 qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
                 vi = *chosenVisualInfo;
             }
