@@ -111,7 +111,7 @@ void QFxFlickablePrivate::init()
     QObject::connect(&_tl, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&_tl, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
-    q->setOptions(QFxItem::ChildMouseFilter);
+    q->setFiltersChildEvents(true);
     QObject::connect(_flick, SIGNAL(xChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(_flick, SIGNAL(yChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
@@ -1062,20 +1062,20 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
     return false;
 }
 
-bool QFxFlickable::mouseFilter(QGraphicsSceneMouseEvent *e)
+bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 {
     if (!isVisible())
-        return false;
+        return QFxItem::sceneEventFilter(i, e);
     switch (e->type()) {
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMouseRelease: 
-        return sendMouseEvent(e);
+        return sendMouseEvent(static_cast<QGraphicsSceneMouseEvent *>(e));
     default:
         break;
     }
 
-    return false;
+    return QFxItem::sceneEventFilter(i, e);
 }
 
 /*!

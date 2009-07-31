@@ -392,7 +392,7 @@ public:
 void QFxListViewPrivate::init()
 {
     Q_Q(QFxListView);
-    q->setOptions(QFxListView::IsFocusRealm);
+    q->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
 }

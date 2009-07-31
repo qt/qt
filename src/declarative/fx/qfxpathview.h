@@ -108,7 +108,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *);
     bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
-    bool mouseFilter(QGraphicsSceneMouseEvent *e);
+    bool sceneEventFilter(QGraphicsItem *, QEvent *);
 
 private Q_SLOTS:
     void refill();

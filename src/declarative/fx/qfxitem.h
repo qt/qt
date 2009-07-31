@@ -151,11 +151,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
-    enum Option { NoOption = 0x00000000,
-                  ChildMouseFilter = 0x00000002,
-                  IsFocusRealm = 0x00000080 };
-    Q_DECLARE_FLAGS(Options, Option)
-
     enum TransformOrigin {
         TopLeft, Top, TopRight,
         Left, Center, Right,
@@ -193,9 +188,6 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
-    Options options() const;
-    void setOptions(Options, bool set = true);
-
     qreal width() const;
     void setWidth(qreal);
 
@@ -227,11 +219,9 @@ Q_SIGNALS:
 
 protected:
     bool isComponentComplete() const;
-    virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
     virtual bool sceneEvent(QEvent *);
     virtual bool event(QEvent *);
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
-    virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mouseUngrabEvent();
 
     void setImplicitWidth(qreal);
@@ -271,8 +261,6 @@ private:
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxItem)
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QFxItem::Options)
 
 // ### move to QGO
 template<typename T>
