@@ -285,6 +285,8 @@ QFxPen *QFxRect::border()
     \endqml
     \endtable
 
+    If both a gradient and a color are specified, the gradient will be used.
+
     \sa Gradient, color
 */
 QFxGradient *QFxRect::gradient() const
@@ -345,6 +347,8 @@ void QFxRect::setRadius(qreal radius)
     \endqml
 
     The default color is white.
+
+    If both a gradient and a color are specified, the gradient will be used.
 */
 QColor QFxRect::color() const
 {
