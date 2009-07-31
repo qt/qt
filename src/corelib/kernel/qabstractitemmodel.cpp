@@ -1339,7 +1339,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \endlist
 
 
-    \sa layoutAboutToBeChanged(), dataChanged(), headerDataChanged(), reset(),
+    \sa layoutAboutToBeChanged(), dataChanged(), headerDataChanged(), modelReset(),
         changePersistentIndex()
 */
 
@@ -2769,7 +2769,25 @@ void QAbstractItemModel::endMoveColumns()
 /*!
     Resets the model to its original state in any attached views.
 
-    The view to which the model is attached to will be reset as well.
+    Use beginResetModel() and endResetModel() instead whenever possible. If usng this method, the modelAboutToBeReset signal will
+    not function as expected through proxy models.
+
+    Use this method only if there is no way to call beginResetModel() before invalidating the model.
+*/
+void QAbstractItemModel::reset()
+{
+    Q_D(QAbstractItemModel);
+    emit modelAboutToBeReset();
+    d->invalidatePersistentIndexes();
+    emit modelReset();
+}
+
+/*!
+    Begins a model reset operation.
+
+    A reset operation resets the model to its current state in any attached views.
+
+    \note Any views attached to this model will be reset as well.
 
     When a model is reset it means that any previous data reported from the
     model is now invalid and has to be queried for again. This also means that
@@ -2779,12 +2797,29 @@ void QAbstractItemModel::endMoveColumns()
     call this function rather than emit dataChanged() to inform other
     components when the underlying data source, or its structure, has changed.
 
-    \sa modelAboutToBeReset(), modelReset()
+    You must call this function before resetting any internal data structures in your model
+    or proxy model.
+
+    \sa modelAboutToBeReset(), modelReset(), endResetModel()
+    \since 4.6
 */
-void QAbstractItemModel::reset()
+void QAbstractItemModel::beginResetModel()
+{
+    emit modelAboutToBeReset();
+}
+
+/*!
+    Completes a model reset operation.
+
+    You must call this function after resetting any internal data structure in your model
+    or proxy model.
+
+    \sa beginResetModel()
+    \since 4.6
+*/
+void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
-    emit modelAboutToBeReset();
     d->invalidatePersistentIndexes();
     emit modelReset();
 }
@@ -3256,7 +3291,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     This signal is emitted when reset() is called, before the model's internal
     state (e.g. persistent model indexes) has been invalidated.
 
-    \sa reset(), modelReset()
+    \sa beginResetModel(), modelReset()
 */
 
 /*!
@@ -3266,7 +3301,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     This signal is emitted when reset() is called, after the model's internal
     state (e.g. persistent model indexes) has been invalidated.
 
-    \sa reset(), modelAboutToBeReset()
+    \sa endResetModel(), modelAboutToBeReset()
 */
 
 /*!
