@@ -79,7 +79,7 @@ class QAbstractAnimation;
 #endif
 
 class QStateMachine;
-class QStateMachinePrivate : public QStatePrivate
+class Q_AUTOTEST_EXPORT QStateMachinePrivate : public QStatePrivate
 {
     Q_DECLARE_PUBLIC(QStateMachine)
 public:
@@ -116,6 +116,9 @@ public:
 
     QState *rootState() const;
 
+    QState *startState();
+    void removeStartState();
+
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
     QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
@@ -137,6 +140,8 @@ public:
     bool isAtomic(const QAbstractState *s) const;
     static bool isDescendantOf(const QAbstractState *s, const QAbstractState *other);
     static QList<QState*> properAncestors(const QAbstractState *s, const QState *upperBound);
+
+    void goToState(QAbstractState *targetState);
 
     void registerTransitions(QAbstractState *state);
     void registerSignalTransition(QSignalTransition *transition);
@@ -162,6 +167,7 @@ public:
 #endif
 
     State state;
+    QState *_startState;
     bool processing;
     bool processingScheduled;
     bool stop;

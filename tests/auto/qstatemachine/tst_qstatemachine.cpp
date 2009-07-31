@@ -192,6 +192,7 @@ private slots:
 //    void overrideDefaultTargetAnimationWithSource();
 
     void nestedStateMachines();
+    void goToState();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -3898,6 +3899,46 @@ void tst_QStateMachine::nestedStateMachines()
         subMachines[i]->postEvent(new QEvent(QEvent::User));
 
     QTRY_COMPARE(finishedSpy.count(), 1);
+}
+
+void tst_QStateMachine::goToState()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QState *s2 = new QState(&machine);
+    machine.setInitialState(s1);
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+
+    QStateMachinePrivate::get(&machine)->goToState(s2);
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+
+    QStateMachinePrivate::get(&machine)->goToState(s2);
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+
+    QStateMachinePrivate::get(&machine)->goToState(s1);
+    QStateMachinePrivate::get(&machine)->goToState(s2);
+    QStateMachinePrivate::get(&machine)->goToState(s1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    // go to state in group
+    QState *s2_1 = new QState(s2);
+    s2->setInitialState(s2_1);
+    QStateMachinePrivate::get(&machine)->goToState(s2_1);
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 2);
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s2_1));
 }
 
 QTEST_MAIN(tst_QStateMachine)
