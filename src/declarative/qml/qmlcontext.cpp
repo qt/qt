@@ -344,10 +344,10 @@ QmlContext *QmlContext::parentContext() const
     Add a default \a object to this context.  The object will be added after
     any existing default objects.
 */
-void QmlContext::addDefaultObject(QObject *object)
+void QmlContext::addDefaultObject(QObject *defaultObject)
 {
     Q_D(QmlContext);
-    d->addDefaultObject(object, QmlContextPrivate::NormalPriority);
+    d->addDefaultObject(defaultObject, QmlContextPrivate::NormalPriority);
 }
 
 /*!
@@ -406,9 +406,7 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
 
 /*!
     Resolves the URL \a src relative to the URL of the
-    containing component. If \a src is absolute, it is
-    simply returned. If there is no containing component,
-    an empty URL is returned.
+    containing component.
 
     \sa QmlEngine::componentUrl(), setBaseUrl()
 */

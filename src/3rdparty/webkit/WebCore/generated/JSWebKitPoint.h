@@ -21,6 +21,7 @@
 #ifndef JSWebKitPoint_h
 #define JSWebKitPoint_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class WebKitPoint;
 
-class JSWebKitPoint : public DOMObject {
-    typedef DOMObject Base;
+class JSWebKitPoint : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSWebKitPoint(PassRefPtr<JSC::Structure>, PassRefPtr<WebKitPoint>);
+    JSWebKitPoint(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebKitPoint>);
     virtual ~JSWebKitPoint();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -51,7 +52,7 @@ private:
     RefPtr<WebKitPoint> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, WebKitPoint*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, WebKitPoint*);
 WebKitPoint* toWebKitPoint(JSC::JSValue);
 
 class JSWebKitPointPrototype : public JSC::JSObject {

@@ -8,7 +8,7 @@ Rect {
     Rect {
         id: MyPhone
         transformOrigin: "Center"
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
         width: 800
         height: 480
         clip: true
@@ -45,7 +45,7 @@ Rect {
             delegate: Package {
                 Item { id: List; Package.name: "list"; width:120; height: 400; }
                 Item { id: Grid; Package.name: "grid"; width:400; height: 120; }
-                Item { id: MyContent; width:400; height: 120; qml: weblet }
+                Loader { id: MyContent; width:400; height: 120; source: weblet }
 
                 StateGroup {
                     states: [

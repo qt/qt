@@ -23,6 +23,7 @@
 
 #if ENABLE(XPATH)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class XPathException;
 
-class JSXPathException : public DOMObject {
-    typedef DOMObject Base;
+class JSXPathException : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathException(PassRefPtr<JSC::Structure>, PassRefPtr<XPathException>);
+    JSXPathException(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathException>);
     virtual ~JSXPathException();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     XPathException* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<XPathException> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, XPathException*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, XPathException*);
 XPathException* toXPathException(JSC::JSValue);
 
 class JSXPathExceptionPrototype : public JSC::JSObject {

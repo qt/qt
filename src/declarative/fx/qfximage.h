@@ -91,7 +91,7 @@ public:
     QUrl source() const;
     virtual void setSource(const QUrl &url);
 
-    void paintContents(QPainter &painter);
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:
     void sourceChanged(const QUrl &);

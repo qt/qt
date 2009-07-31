@@ -413,7 +413,7 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
                 if (QT_STAT(chunk, &st) != -1) {
                     if ((st.st_mode & S_IFMT) != S_IFDIR)
                         return false;
-                } else if (::mkdir(chunk, 0777) != 0) {
+                } else if (QT_MKDIR(chunk, 0777) != 0) {
                         return false;
                 }
             }
@@ -424,7 +424,7 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
     if (dirName[dirName.length() - 1] == QLatin1Char('/'))
         dirName = dirName.left(dirName.length() - 1);
 #endif
-    return (::mkdir(QFile::encodeName(dirName), 0777) == 0);
+    return (QT_MKDIR(QFile::encodeName(dirName), 0777) == 0);
 }
 
 bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const

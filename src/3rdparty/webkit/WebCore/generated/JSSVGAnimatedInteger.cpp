@@ -72,9 +72,8 @@ JSObject* JSSVGAnimatedIntegerPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGAnimatedInteger::s_info = { "SVGAnimatedInteger", 0, &JSSVGAnimatedIntegerTable, 0 };
 
-JSSVGAnimatedInteger::JSSVGAnimatedInteger(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimatedInteger> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGAnimatedInteger::JSSVGAnimatedInteger(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedInteger> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -96,15 +95,17 @@ bool JSSVGAnimatedInteger::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsSVGAnimatedIntegerBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedInteger* castedThis = static_cast<JSSVGAnimatedInteger*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedInteger* imp = static_cast<SVGAnimatedInteger*>(static_cast<JSSVGAnimatedInteger*>(asObject(slot.slotBase()))->impl());
+    SVGAnimatedInteger* imp = static_cast<SVGAnimatedInteger*>(castedThis->impl());
     return jsNumber(exec, imp->baseVal());
 }
 
 JSValue jsSVGAnimatedIntegerAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedInteger* castedThis = static_cast<JSSVGAnimatedInteger*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedInteger* imp = static_cast<SVGAnimatedInteger*>(static_cast<JSSVGAnimatedInteger*>(asObject(slot.slotBase()))->impl());
+    SVGAnimatedInteger* imp = static_cast<SVGAnimatedInteger*>(castedThis->impl());
     return jsNumber(exec, imp->animVal());
 }
 
@@ -121,9 +122,9 @@ void setJSSVGAnimatedIntegerBaseVal(ExecState* exec, JSObject* thisObject, JSVal
         static_cast<JSSVGAnimatedInteger*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAnimatedInteger*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedInteger* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedInteger* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGAnimatedInteger>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGAnimatedInteger>(exec, globalObject, object, context);
 }
 SVGAnimatedInteger* toSVGAnimatedInteger(JSC::JSValue value)
 {

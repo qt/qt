@@ -30,7 +30,6 @@
 #include "JSEventListener.h"
 #include "JSMessageChannel.h"
 #include "JSMessageEvent.h"
-#include "JSMessagePort.h"
 #include "JSWorkerContext.h"
 #include "JSWorkerLocation.h"
 #include "JSWorkerNavigator.h"
@@ -53,8 +52,8 @@ static const HashTableValue JSWorkerContextTableValues[9] =
 {
     { "self", DontDelete, (intptr_t)jsWorkerContextSelf, (intptr_t)setJSWorkerContextSelf },
     { "location", DontDelete, (intptr_t)jsWorkerContextLocation, (intptr_t)setJSWorkerContextLocation },
+    { "onerror", DontDelete, (intptr_t)jsWorkerContextOnerror, (intptr_t)setJSWorkerContextOnerror },
     { "navigator", DontDelete, (intptr_t)jsWorkerContextNavigator, (intptr_t)setJSWorkerContextNavigator },
-    { "onmessage", DontDelete, (intptr_t)jsWorkerContextOnmessage, (intptr_t)setJSWorkerContextOnmessage },
     { "MessageEvent", DontDelete, (intptr_t)jsWorkerContextMessageEventConstructor, (intptr_t)setJSWorkerContextMessageEventConstructor },
     { "WorkerLocation", DontDelete, (intptr_t)jsWorkerContextWorkerLocationConstructor, (intptr_t)setJSWorkerContextWorkerLocationConstructor },
     { "MessageChannel", DontDelete, (intptr_t)jsWorkerContextMessageChannelConstructor, (intptr_t)setJSWorkerContextMessageChannelConstructor },
@@ -71,11 +70,10 @@ static JSC_CONST_HASHTABLE HashTable JSWorkerContextTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSWorkerContextPrototypeTableValues[11] =
+static const HashTableValue JSWorkerContextPrototypeTableValues[10] =
 {
     { "close", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionClose, (intptr_t)0 },
     { "importScripts", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionImportScripts, (intptr_t)0 },
-    { "postMessage", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionPostMessage, (intptr_t)2 },
     { "setTimeout", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionSetTimeout, (intptr_t)2 },
     { "clearTimeout", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionClearTimeout, (intptr_t)1 },
     { "setInterval", DontDelete|Function, (intptr_t)jsWorkerContextPrototypeFunctionSetInterval, (intptr_t)2 },
@@ -129,56 +127,62 @@ bool JSWorkerContext::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsWorkerContextSelf(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerContext* imp = static_cast<WorkerContext*>(static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->self()));
+    WorkerContext* imp = static_cast<WorkerContext*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->self()));
 }
 
 JSValue jsWorkerContextLocation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerContext* imp = static_cast<WorkerContext*>(static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->location()));
+    WorkerContext* imp = static_cast<WorkerContext*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->location()));
 }
 
-JSValue jsWorkerContextNavigator(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerContextOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerContext* imp = static_cast<WorkerContext*>(static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->navigator()));
-}
-
-JSValue jsWorkerContextOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    UNUSED_PARAM(exec);
-    WorkerContext* imp = static_cast<WorkerContext*>(static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->impl());
-    if (EventListener* listener = imp->onmessage()) {
+    WorkerContext* imp = static_cast<WorkerContext*>(castedThis->impl());
+    if (EventListener* listener = imp->onerror()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
     }
     return jsNull();
 }
 
+JSValue jsWorkerContextNavigator(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    WorkerContext* imp = static_cast<WorkerContext*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->navigator()));
+}
+
 JSValue jsWorkerContextMessageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    UNUSED_PARAM(slot);
-    return JSMessageEvent::getConstructor(exec);
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
+    return JSMessageEvent::getConstructor(exec, castedThis);
 }
 
 JSValue jsWorkerContextWorkerLocationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    UNUSED_PARAM(slot);
-    return JSWorkerLocation::getConstructor(exec);
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
+    return JSWorkerLocation::getConstructor(exec, castedThis);
 }
 
 JSValue jsWorkerContextMessageChannelConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->messageChannel(exec);
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
+    return castedThis->messageChannel(exec);
 }
 
 JSValue jsWorkerContextXMLHttpRequestConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSWorkerContext*>(asObject(slot.slotBase()))->xmlHttpRequest(exec);
+    JSWorkerContext* castedThis = static_cast<JSWorkerContext*>(asObject(slot.slotBase()));
+    return castedThis->xmlHttpRequest(exec);
 }
 
 void JSWorkerContext::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -198,18 +202,18 @@ void setJSWorkerContextLocation(ExecState* exec, JSObject* thisObject, JSValue v
     static_cast<JSWorkerContext*>(thisObject)->putDirect(Identifier(exec, "location"), value);
 }
 
-void setJSWorkerContextNavigator(ExecState* exec, JSObject* thisObject, JSValue value)
-{
-    // Shadowing a built-in object
-    static_cast<JSWorkerContext*>(thisObject)->putDirect(Identifier(exec, "navigator"), value);
-}
-
-void setJSWorkerContextOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
+void setJSWorkerContextOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     WorkerContext* imp = static_cast<WorkerContext*>(static_cast<JSWorkerContext*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSWorkerContext*>(thisObject);
-    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
+    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSWorkerContextNavigator(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    // Shadowing a built-in object
+    static_cast<JSWorkerContext*>(thisObject)->putDirect(Identifier(exec, "navigator"), value);
 }
 
 void setJSWorkerContextMessageEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -239,9 +243,9 @@ void setJSWorkerContextXMLHttpRequestConstructor(ExecState* exec, JSObject* this
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClose(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     WorkerContext* imp = static_cast<WorkerContext*>(castedThisObj->impl());
 
     imp->close();
@@ -251,51 +255,27 @@ JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClose(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionImportScripts(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     return castedThisObj->importScripts(exec, args);
-}
-
-JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
-        return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
-    WorkerContext* imp = static_cast<WorkerContext*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    const UString& message = args.at(0).toString(exec);
-
-    int argsCount = args.size();
-    if (argsCount < 2) {
-        imp->postMessage(message, ec);
-        setDOMException(exec, ec);
-        return jsUndefined();
-    }
-
-    MessagePort* messagePort = toMessagePort(args.at(1));
-
-    imp->postMessage(message, messagePort, ec);
-    setDOMException(exec, ec);
-    return jsUndefined();
 }
 
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionSetTimeout(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     return castedThisObj->setTimeout(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClearTimeout(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     WorkerContext* imp = static_cast<WorkerContext*>(castedThisObj->impl());
     int handle = args.at(0).toInt32(exec);
 
@@ -306,18 +286,18 @@ JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClearTimeout(ExecState* ex
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionSetInterval(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     return castedThisObj->setInterval(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClearInterval(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     WorkerContext* imp = static_cast<WorkerContext*>(castedThisObj->impl());
     int handle = args.at(0).toInt32(exec);
 
@@ -328,27 +308,27 @@ JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClearInterval(ExecState* e
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorkerContext::s_info))
+    JSWorkerContext* castedThisObj = toJSWorkerContext(thisValue.toThisObject(exec));
+    if (!castedThisObj)
         return throwError(exec, TypeError);
-    JSWorkerContext* castedThisObj = static_cast<JSWorkerContext*>(asObject(thisValue));
     WorkerContext* imp = static_cast<WorkerContext*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     Event* evt = toEvent(args.at(0));

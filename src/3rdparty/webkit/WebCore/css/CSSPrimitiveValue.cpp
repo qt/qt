@@ -30,6 +30,7 @@
 #include "ExceptionCode.h"
 #include "Node.h"
 #include "Pair.h"
+#include "RGBColor.h"
 #include "Rect.h"
 #include "RenderStyle.h"
 #include <wtf/ASCIICType.h>
@@ -318,9 +319,9 @@ void CSSPrimitiveValue::cleanup()
     m_type = 0;
 }
 
-int CSSPrimitiveValue::computeLengthInt(RenderStyle* style)
+int CSSPrimitiveValue::computeLengthInt(RenderStyle* style, RenderStyle* rootStyle)
 {
-    double result = computeLengthDouble(style);
+    double result = computeLengthDouble(style, rootStyle);
 
     // This conversion is imprecise, often resulting in values of, e.g., 44.99998.  We
     // need to go ahead and round if we're really close to the next integer value.
@@ -331,9 +332,9 @@ int CSSPrimitiveValue::computeLengthInt(RenderStyle* style)
     return static_cast<int>(result);
 }
 
-int CSSPrimitiveValue::computeLengthInt(RenderStyle* style, double multiplier)
+int CSSPrimitiveValue::computeLengthInt(RenderStyle* style, RenderStyle* rootStyle, double multiplier)
 {
-    double result = computeLengthDouble(style, multiplier);
+    double result = computeLengthDouble(style, rootStyle, multiplier);
 
     // This conversion is imprecise, often resulting in values of, e.g., 44.99998.  We
     // need to go ahead and round if we're really close to the next integer value.
@@ -348,9 +349,9 @@ const int intMaxForLength = 0x7ffffff; // max value for a 28-bit int
 const int intMinForLength = (-0x7ffffff - 1); // min value for a 28-bit int
 
 // Lengths expect an int that is only 28-bits, so we have to check for a different overflow.
-int CSSPrimitiveValue::computeLengthIntForLength(RenderStyle* style)
+int CSSPrimitiveValue::computeLengthIntForLength(RenderStyle* style, RenderStyle* rootStyle)
 {
-    double result = computeLengthDouble(style);
+    double result = computeLengthDouble(style, rootStyle);
 
     // This conversion is imprecise, often resulting in values of, e.g., 44.99998.  We
     // need to go ahead and round if we're really close to the next integer value.
@@ -362,9 +363,9 @@ int CSSPrimitiveValue::computeLengthIntForLength(RenderStyle* style)
 }
 
 // Lengths expect an int that is only 28-bits, so we have to check for a different overflow.
-int CSSPrimitiveValue::computeLengthIntForLength(RenderStyle* style, double multiplier)
+int CSSPrimitiveValue::computeLengthIntForLength(RenderStyle* style, RenderStyle* rootStyle, double multiplier)
 {
-    double result = computeLengthDouble(style, multiplier);
+    double result = computeLengthDouble(style, rootStyle, multiplier);
 
     // This conversion is imprecise, often resulting in values of, e.g., 44.99998.  We
     // need to go ahead and round if we're really close to the next integer value.
@@ -375,9 +376,9 @@ int CSSPrimitiveValue::computeLengthIntForLength(RenderStyle* style, double mult
     return static_cast<int>(result);
 }
 
-short CSSPrimitiveValue::computeLengthShort(RenderStyle* style)
+short CSSPrimitiveValue::computeLengthShort(RenderStyle* style, RenderStyle* rootStyle)
 {
-    double result = computeLengthDouble(style);
+    double result = computeLengthDouble(style, rootStyle);
 
     // This conversion is imprecise, often resulting in values of, e.g., 44.99998.  We
     // need to go ahead and round if we're really close to the next integer value.
@@ -388,9 +389,9 @@ short CSSPrimitiveValue::computeLengthShort(RenderStyle* style)
     return static_cast<short>(result);
 }
 
-short CSSPrimitiveValue::computeLengthShort(RenderStyle* style, double multiplier)
+short CSSPrimitiveValue::computeLengthShort(RenderStyle* style, RenderStyle* rootStyle, double multiplier)
 {
-    double result = computeLengthDouble(style, multiplier);
+    double result = computeLengthDouble(style, rootStyle, multiplier);
 
     // This conversion is imprecise, often resulting in values of, e.g., 44.99998.  We
     // need to go ahead and round if we're really close to the next integer value.
@@ -401,17 +402,17 @@ short CSSPrimitiveValue::computeLengthShort(RenderStyle* style, double multiplie
     return static_cast<short>(result);
 }
 
-float CSSPrimitiveValue::computeLengthFloat(RenderStyle* style, bool computingFontSize)
+float CSSPrimitiveValue::computeLengthFloat(RenderStyle* style, RenderStyle* rootStyle, bool computingFontSize)
 {
-    return static_cast<float>(computeLengthDouble(style, 1.0, computingFontSize));
+    return static_cast<float>(computeLengthDouble(style, rootStyle, 1.0, computingFontSize));
 }
 
-float CSSPrimitiveValue::computeLengthFloat(RenderStyle* style, double multiplier, bool computingFontSize)
+float CSSPrimitiveValue::computeLengthFloat(RenderStyle* style, RenderStyle* rootStyle, double multiplier, bool computingFontSize)
 {
-    return static_cast<float>(computeLengthDouble(style, multiplier, computingFontSize));
+    return static_cast<float>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize));
 }
 
-double CSSPrimitiveValue::computeLengthDouble(RenderStyle* style, double multiplier, bool computingFontSize)
+double CSSPrimitiveValue::computeLengthDouble(RenderStyle* style, RenderStyle* rootStyle, double multiplier, bool computingFontSize)
 {
     unsigned short type = primitiveType();
 
@@ -433,6 +434,10 @@ double CSSPrimitiveValue::computeLengthDouble(RenderStyle* style, double multipl
             // our actual constructed rendering font.
             applyZoomMultiplier = false;
             factor = style->font().xHeight();
+            break;
+        case CSS_REMS:
+            applyZoomMultiplier = false;
+            factor = computingFontSize ? rootStyle->fontDescription().specifiedSize() : rootStyle->fontDescription().computedSize();
             break;
         case CSS_PX:
             break;
@@ -638,7 +643,7 @@ Rect* CSSPrimitiveValue::getRectValue(ExceptionCode& ec) const
     return m_value.rect;
 }
 
-unsigned CSSPrimitiveValue::getRGBColorValue(ExceptionCode& ec) const
+RGBColor* CSSPrimitiveValue::getRGBColorValue(ExceptionCode& ec) const
 {
     ec = 0;
     if (m_type != CSS_RGBCOLOR) {
@@ -646,7 +651,8 @@ unsigned CSSPrimitiveValue::getRGBColorValue(ExceptionCode& ec) const
         return 0;
     }
 
-    return m_value.rgbcolor;
+    // FIMXE: This should not return a new object for each invocation.
+    return RGBColor::create(m_value.rgbcolor).releaseRef();
 }
 
 Pair* CSSPrimitiveValue::getPairValue(ExceptionCode& ec) const
@@ -699,6 +705,9 @@ String CSSPrimitiveValue::cssText() const
             break;
         case CSS_EXS:
             text = String::format("%.6lgex", m_value.num);
+            break;
+        case CSS_REMS:
+            text = String::format("%.6lgrem", m_value.num);
             break;
         case CSS_PX:
             text = String::format("%.6lgpx", m_value.num);
@@ -892,6 +901,7 @@ CSSParserValue CSSPrimitiveValue::parserValue() const
         case CSS_PERCENTAGE:
         case CSS_EMS:
         case CSS_EXS:
+        case CSS_REMS:
         case CSS_PX:
         case CSS_CM:
         case CSS_MM:

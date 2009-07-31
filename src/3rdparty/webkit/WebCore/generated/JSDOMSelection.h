@@ -21,6 +21,7 @@
 #ifndef JSDOMSelection_h
 #define JSDOMSelection_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class DOMSelection;
 
-class JSDOMSelection : public DOMObject {
-    typedef DOMObject Base;
+class JSDOMSelection : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDOMSelection(PassRefPtr<JSC::Structure>, PassRefPtr<DOMSelection>);
+    JSDOMSelection(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMSelection>);
     virtual ~JSDOMSelection();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -50,7 +51,7 @@ private:
     RefPtr<DOMSelection> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, DOMSelection*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, DOMSelection*);
 DOMSelection* toDOMSelection(JSC::JSValue);
 
 class JSDOMSelectionPrototype : public JSC::JSObject {

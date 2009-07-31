@@ -40,24 +40,6 @@
 ****************************************************************************/
 
 /*!
-    \group groups
-    \title Grouped Classes
-    \ingroup classlists
-
-    This page provides a way of navigating Qt's classes by grouping
-    related classes together. Some classes may appear in more than one group.
-
-    \generatelist{related}
-
-    \omit
-    \row
-    \o \l{Component Model}
-    \o Interfaces and helper classes for the Qt Component Model.
-    \endomit
-
-*/
-
-/*!
     \group advanced
     \title Advanced Widgets
     \ingroup groups
@@ -147,12 +129,6 @@
 
 */
 
-/* \group componentmodel
-   \title Component Model
-
-    These classes and interfaces form the basis of the \l{Qt Component Model}.
-
-*/
 
 /*!
     \group database
@@ -226,22 +202,8 @@
 */
 
 /*!
-    \group explicitly-shared
-    \ingroup groups
-
-    \title Explicitly Shared Classes
-    \brief Classes that use explicit sharing to manage internal data.
-
-    \keyword explicit sharing
-    \keyword explicitly shared
-
-    Unlike many of Qt's data types, which use \l{implicit sharing}, these
-    classes use explicit sharing to manage internal data.
-*/
-
-/*!
     \group geomanagement
-    \title Layout Management
+    \title Layout Classes
     \ingroup groups
 
     \brief Classes handling automatic resizing and moving of widgets, for
@@ -398,103 +360,6 @@
     \brief Classes that are specific to Qt for Embedded Linux.
 
     These classes are relevant to \l{Qt for Embedded Linux} users.
-*/
-
-/*!
-    \group shared
-    \title Implicitly Shared Classes
-    \ingroup architecture
-    \ingroup groups
-
-    \brief Classes that use reference counting for fast copying.
-
-    \keyword implicit data sharing
-    \keyword implicit sharing
-    \keyword implicitly shared
-    \keyword reference counting
-    \keyword shared implicitly
-    \keyword shared classes
-
-    Many C++ classes in Qt use implicit data sharing to maximize
-    resource usage and minimize copying. Implicitly shared classes are
-    both safe and efficient when passed as arguments, because only a
-    pointer to the data is passed around, and the data is copied only
-    if and when a function writes to it, i.e., \e {copy-on-write}.
-
-    \tableofcontents
-
-    \section1 Overview
-
-    A shared class consists of a pointer to a shared data block that
-    contains a reference count and the data.
-
-    When a shared object is created, it sets the reference count to 1. The
-    reference count is incremented whenever a new object references the
-    shared data, and decremented when the object dereferences the shared
-    data. The shared data is deleted when the reference count becomes
-    zero.
-
-    \keyword deep copy
-    \keyword shallow copy
-
-    When dealing with shared objects, there are two ways of copying an
-    object. We usually speak about \e deep and \e shallow copies. A deep
-    copy implies duplicating an object. A shallow copy is a reference
-    copy, i.e. just a pointer to a shared data block. Making a deep copy
-    can be expensive in terms of memory and CPU. Making a shallow copy is
-    very fast, because it only involves setting a pointer and incrementing
-    the reference count.
-
-    Object assignment (with operator=()) for implicitly shared objects is
-    implemented using shallow copies.
-
-    The benefit of sharing is that a program does not need to duplicate
-    data unnecessarily, which results in lower memory use and less copying
-    of data. Objects can easily be assigned, sent as function arguments,
-    and returned from functions.
-
-    Implicit sharing takes place behind the scenes; the programmer
-    does not need to worry about it. Even in multithreaded
-    applications, implicit sharing takes place, as explained in
-    \l{Threads and Implicit Sharing}.
-
-    \section1 Implicit Sharing in Detail
-
-    Implicit sharing automatically detaches the object from a shared
-    block if the object is about to change and the reference count is
-    greater than one. (This is often called \e {copy-on-write} or
-    \e {value semantics}.)
-
-    An implicitly shared class has total control of its internal data. In
-    any member functions that modify its data, it automatically detaches
-    before modifying the data.
-
-    The QPen class, which uses implicit sharing, detaches from the shared
-    data in all member functions that change the internal data.
-
-    Code fragment:
-    \snippet doc/src/snippets/code/doc_src_groups.qdoc 0
-
-    \section1 List of Classes
-
-    The classes listed below automatically detach from common data if
-    an object is about to be changed. The programmer will not even
-    notice that the objects are shared. Thus you should treat
-    separate instances of them as separate objects. They will always
-    behave as separate objects but with the added benefit of sharing
-    data whenever possible. For this reason, you can pass instances
-    of these classes as arguments to functions by value without
-    concern for the copying overhead.
-
-    Example:
-    \snippet doc/src/snippets/code/doc_src_groups.qdoc 1
-
-    In this example, \c p1 and \c p2 share data until QPainter::begin()
-    is called for \c p2, because painting a pixmap will modify it.
-
-    \warning Do not copy an implicitly shared container (QMap,
-    QVector, etc.) while you are iterating over it using an non-const
-    \l{STL-style iterator}.
 */
 
 /*!

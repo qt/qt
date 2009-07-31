@@ -66,8 +66,6 @@ public:
     QFxPaintedItem(QFxItem *parent=0);
     ~QFxPaintedItem();
 
-    void paintContents(QPainter &painter);
-
     bool isSmooth() const;
     QSize contentsSize() const;
 
@@ -79,6 +77,8 @@ public:
 
     QColor fillColor() const;
     void setFillColor(const QColor&);
+
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 protected:
     QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent);

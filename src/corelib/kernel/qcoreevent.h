@@ -58,7 +58,6 @@ class Q_CORE_EXPORT QEvent           // event base class
     Q_GADGET
     QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
     Q_ENUMS(Type)
-
 public:
     enum Type {
         /*

@@ -21,6 +21,7 @@
 #ifndef JSCanvasGradient_h
 #define JSCanvasGradient_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class CanvasGradient;
 
-class JSCanvasGradient : public DOMObject {
-    typedef DOMObject Base;
+class JSCanvasGradient : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCanvasGradient(PassRefPtr<JSC::Structure>, PassRefPtr<CanvasGradient>);
+    JSCanvasGradient(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasGradient>);
     virtual ~JSCanvasGradient();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -44,7 +45,7 @@ private:
     RefPtr<CanvasGradient> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, CanvasGradient*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CanvasGradient*);
 CanvasGradient* toCanvasGradient(JSC::JSValue);
 
 class JSCanvasGradientPrototype : public JSC::JSObject {

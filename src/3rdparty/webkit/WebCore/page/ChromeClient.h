@@ -131,12 +131,21 @@ namespace WebCore {
 
         virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags) = 0;
 
-        virtual void setToolTip(const String&) = 0;
+        virtual void setToolTip(const String&, TextDirection) = 0;
 
         virtual void print(Frame*) = 0;
 
 #if ENABLE(DATABASE)
         virtual void exceededDatabaseQuota(Frame*, const String& databaseName) = 0;
+#endif
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+        // Callback invoked when the application cache fails to save a cache object
+        // because storing it would grow the database file past its defined maximum
+        // size or past the amount of free space on the device. 
+        // The chrome client would need to take some action such as evicting some
+        // old caches.
+        virtual void reachedMaxAppCacheSize(int64_t spaceNeeded) = 0;
 #endif
 
 #if ENABLE(DASHBOARD_SUPPORT)

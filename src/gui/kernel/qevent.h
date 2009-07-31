@@ -97,13 +97,8 @@ public:
     static QMouseEvent *createExtendedMouseEvent(Type type, const QPointF &pos,
                                                  const QPoint &globalPos, Qt::MouseButton button,
                                                  Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    static QMouseEvent *createExtendedMouseEvent(Type type, const QPointF &pos,
-                                                 const QPoint &globalPos, Qt::MouseButton button,
-                                                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
-                                                 const QDateTime &eventTime);
     inline bool hasExtendedInfo() const { return reinterpret_cast<const QMouseEvent *>(d) == this; }
     QPointF posF() const;
-    QDateTime eventDateTime() const;
 
 #ifdef QT3_SUPPORT
     QT3_SUPPORT_CONSTRUCTOR QMouseEvent(Type type, const QPoint &pos, Qt::ButtonState button, int state);

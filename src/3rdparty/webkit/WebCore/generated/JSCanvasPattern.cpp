@@ -53,8 +53,8 @@ JSObject* JSCanvasPatternPrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSCanvasPattern::s_info = { "CanvasPattern", 0, 0, 0 };
 
-JSCanvasPattern::JSCanvasPattern(PassRefPtr<Structure> structure, PassRefPtr<CanvasPattern> impl)
-    : DOMObject(structure)
+JSCanvasPattern::JSCanvasPattern(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasPattern> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -69,9 +69,9 @@ JSObject* JSCanvasPattern::createPrototype(ExecState* exec, JSGlobalObject* glob
     return new (exec) JSCanvasPatternPrototype(JSCanvasPatternPrototype::createStructure(globalObject->objectPrototype()));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, CanvasPattern* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CanvasPattern* object)
 {
-    return getDOMObjectWrapper<JSCanvasPattern>(exec, object);
+    return getDOMObjectWrapper<JSCanvasPattern>(exec, globalObject, object);
 }
 CanvasPattern* toCanvasPattern(JSC::JSValue value)
 {

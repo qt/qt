@@ -400,4 +400,15 @@ void QEglContext::dumpAllConfigs()
     delete [] configs;
 }
 
+QString QEglContext::extensions()
+{
+    const char* exts = eglQueryString(dpy, EGL_EXTENSIONS);
+    return QString(QLatin1String(exts));
+}
+
+bool QEglContext::hasExtension(const char* extensionName)
+{
+    return extensions().contains(QLatin1String(extensionName));
+}
+
 QT_END_NAMESPACE

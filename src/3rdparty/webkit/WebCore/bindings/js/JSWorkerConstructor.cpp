@@ -41,15 +41,17 @@ namespace WebCore {
 
 const ClassInfo JSWorkerConstructor::s_info = { "WorkerConstructor", 0, 0, 0 };
 
-JSWorkerConstructor::JSWorkerConstructor(ExecState* exec)
-    : DOMObject(JSWorkerConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+JSWorkerConstructor::JSWorkerConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+    : DOMConstructorObject(JSWorkerConstructor::createStructure(globalObject->objectPrototype()), globalObject)
 {
-    putDirect(exec->propertyNames().prototype, JSWorkerPrototype::self(exec, exec->lexicalGlobalObject()), None);
+    putDirect(exec->propertyNames().prototype, JSWorkerPrototype::self(exec, globalObject), None);
     putDirect(exec->propertyNames().length, jsNumber(exec, 1), ReadOnly|DontDelete|DontEnum);
 }
 
-static JSObject* constructWorker(ExecState* exec, JSObject*, const ArgList& args)
+static JSObject* constructWorker(ExecState* exec, JSObject* constructor, const ArgList& args)
 {
+    JSWorkerConstructor* jsConstructor = static_cast<JSWorkerConstructor*>(constructor);
+
     if (args.size() == 0)
         return throwError(exec, SyntaxError, "Not enough arguments");
 
@@ -57,13 +59,12 @@ static JSObject* constructWorker(ExecState* exec, JSObject*, const ArgList& args
     if (exec->hadException())
         return 0;
 
+    // See section 4.8.2 step 14 of WebWorkers for why this is the lexicalGlobalObject. 
     DOMWindow* window = asJSDOMWindow(exec->lexicalGlobalObject())->impl();
-    
-    ExceptionCode ec = 0;
-    RefPtr<Worker> worker = Worker::create(scriptURL, window->document(), ec);
-    setDOMException(exec, ec);
 
-    return asObject(toJS(exec, worker.release()));
+    RefPtr<Worker> worker = Worker::create(scriptURL, window->document());
+
+    return asObject(toJS(exec, jsConstructor->globalObject(), worker.release()));
 }
 
 ConstructType JSWorkerConstructor::getConstructData(ConstructData& constructData)

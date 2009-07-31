@@ -48,7 +48,6 @@
 #include <QtCore/qrect.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpixmap.h>
-#include <QtGui/qstyleoption.h>
 
 class tst_QGraphicsItem;
 

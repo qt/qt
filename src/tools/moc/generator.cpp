@@ -56,6 +56,8 @@ enum PropertyFlags  {
     EnumOrFlag = 0x00000008,
     StdCppSet = 0x00000100,
 //     Override = 0x00000200,
+    Constant = 0x00000400,
+    Final = 0x00000800,
     Designable = 0x00001000,
     ResolveDesignable = 0x00002000,
     Scriptable = 0x00004000,
@@ -66,11 +68,9 @@ enum PropertyFlags  {
     ResolveEditable = 0x00080000,
     User = 0x00100000,
     ResolveUser = 0x00200000,
-    Notify = 0x00400000,
-    Dynamic = 0x00800000,
-    Constant = 0x00000400,
-    Final = 0x00000800
+    Notify = 0x00400000
 };
+
 enum MethodFlags {
     AccessPrivate = 0x00,
     AccessProtected = 0x01,
@@ -408,8 +408,8 @@ void Generator::generateCode()
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
             for (int k = j; k >= 0; --k)
                 fprintf(out, "static_cast< %s*>(", iface.at(k).className.constData());
-            fprintf(out, "%sconst_cast< %s*>(this)%s;\n",
-                    (iface.at(j).isCast?"*":""), cdef->classname.constData(), QByteArray(j+1, ')').constData());
+            fprintf(out, "const_cast< %s*>(this)%s;\n",
+                    cdef->classname.constData(), QByteArray(j+1, ')').constData());
         }
     }
     if (!purestSuperClass.isEmpty() && !isQObject) {

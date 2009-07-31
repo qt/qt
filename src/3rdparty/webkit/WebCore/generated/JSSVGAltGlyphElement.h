@@ -33,7 +33,7 @@ class SVGAltGlyphElement;
 class JSSVGAltGlyphElement : public JSSVGTextPositioningElement {
     typedef JSSVGTextPositioningElement Base;
 public:
-    JSSVGAltGlyphElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAltGlyphElement>);
+    JSSVGAltGlyphElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAltGlyphElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

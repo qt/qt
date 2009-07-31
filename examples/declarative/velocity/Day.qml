@@ -7,7 +7,7 @@ Rect {
     width: 400
     height: 500
     radius: 7
-    pen.color: "black"
+    border.color: "black"
     id: Page
     Image {
         x: 10

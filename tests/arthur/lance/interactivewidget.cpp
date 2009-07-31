@@ -43,7 +43,7 @@
 
 InteractiveWidget::InteractiveWidget()
 {
-    m_onScreenWidget = new OnScreenWidget<QWidget>();
+    m_onScreenWidget = new OnScreenWidget<QWidget>("");
     m_onScreenWidget->setMinimumSize(320, 240);
 
     setCentralWidget(m_onScreenWidget);

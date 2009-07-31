@@ -33,7 +33,7 @@ class SVGPolygonElement;
 class JSSVGPolygonElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGPolygonElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPolygonElement>);
+    JSSVGPolygonElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPolygonElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

@@ -26,7 +26,7 @@ Item { id:block
     }
 
     Particles { id: particles
-        width:1; height:1; anchors.centeredIn: parent; opacity: 0
+        width:1; height:1; anchors.centerIn: parent; opacity: 0
         lifeSpan: 700; lifeSpanDeviation: 600; count:0; streamIn: false
         angle: 0; angleDeviation: 360; velocity: 100; velocityDeviation:30
         source: {

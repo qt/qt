@@ -21,6 +21,7 @@
 #ifndef JSNavigator_h
 #define JSNavigator_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Navigator;
 
-class JSNavigator : public DOMObject {
-    typedef DOMObject Base;
+class JSNavigator : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNavigator(PassRefPtr<JSC::Structure>, PassRefPtr<Navigator>);
+    JSNavigator(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Navigator>);
     virtual ~JSNavigator();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -52,7 +53,7 @@ private:
     RefPtr<Navigator> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Navigator*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Navigator*);
 Navigator* toNavigator(JSC::JSValue);
 
 class JSNavigatorPrototype : public JSC::JSObject {

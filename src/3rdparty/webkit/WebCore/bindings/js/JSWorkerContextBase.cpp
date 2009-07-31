@@ -31,6 +31,7 @@
 
 #include "JSWorkerContextBase.h"
 
+#include "JSDedicatedWorkerContext.h"
 #include "JSWorkerContext.h"
 #include "WorkerContext.h"
 
@@ -57,6 +58,11 @@ ScriptExecutionContext* JSWorkerContextBase::scriptExecutionContext() const
     return m_impl.get();
 }
 
+JSValue toJS(ExecState* exec, JSDOMGlobalObject*, WorkerContext* workerContext)
+{
+    return toJS(exec, workerContext);
+}
+
 JSValue toJS(ExecState*, WorkerContext* workerContext)
 {
     if (!workerContext)
@@ -65,6 +71,22 @@ JSValue toJS(ExecState*, WorkerContext* workerContext)
     if (!script)
         return jsNull();
     return script->workerContextWrapper();
+}
+
+JSDedicatedWorkerContext* toJSDedicatedWorkerContext(JSValue value)
+{
+    if (!value.isObject())
+        return 0;
+    const ClassInfo* classInfo = asObject(value)->classInfo();
+    if (classInfo == &JSDedicatedWorkerContext::s_info)
+        return static_cast<JSDedicatedWorkerContext*>(asObject(value));
+    return 0;
+}
+
+JSWorkerContext* toJSWorkerContext(JSValue value)
+{
+    // When we support shared workers, we'll add code to test for SharedWorkerContext too.
+    return toJSDedicatedWorkerContext(value);
 }
 
 } // namespace WebCore

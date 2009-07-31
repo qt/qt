@@ -78,12 +78,12 @@ static JSC_CONST_HASHTABLE HashTable JSSVGComponentTransferFunctionElementConstr
     { 17, 15, JSSVGComponentTransferFunctionElementConstructorTableValues, 0 };
 #endif
 
-class JSSVGComponentTransferFunctionElementConstructor : public DOMObject {
+class JSSVGComponentTransferFunctionElementConstructor : public DOMConstructorObject {
 public:
-    JSSVGComponentTransferFunctionElementConstructor(ExecState* exec)
-        : DOMObject(JSSVGComponentTransferFunctionElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGComponentTransferFunctionElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGComponentTransferFunctionElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGComponentTransferFunctionElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGComponentTransferFunctionElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -136,8 +136,8 @@ bool JSSVGComponentTransferFunctionElementPrototype::getOwnPropertySlot(ExecStat
 
 const ClassInfo JSSVGComponentTransferFunctionElement::s_info = { "SVGComponentTransferFunctionElement", &JSSVGElement::s_info, &JSSVGComponentTransferFunctionElementTable, 0 };
 
-JSSVGComponentTransferFunctionElement::JSSVGComponentTransferFunctionElement(PassRefPtr<Structure> structure, PassRefPtr<SVGComponentTransferFunctionElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGComponentTransferFunctionElement::JSSVGComponentTransferFunctionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGComponentTransferFunctionElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -153,67 +153,75 @@ bool JSSVGComponentTransferFunctionElement::getOwnPropertySlot(ExecState* exec, 
 
 JSValue jsSVGComponentTransferFunctionElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGComponentTransferFunctionElement* castedThis = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->impl());
+    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->typeAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGComponentTransferFunctionElementTableValues(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGComponentTransferFunctionElement* castedThis = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->impl());
+    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumberList> obj = imp->tableValuesAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGComponentTransferFunctionElementSlope(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGComponentTransferFunctionElement* castedThis = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->impl());
+    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->slopeAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGComponentTransferFunctionElementIntercept(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGComponentTransferFunctionElement* castedThis = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->impl());
+    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->interceptAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGComponentTransferFunctionElementAmplitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGComponentTransferFunctionElement* castedThis = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->impl());
+    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->amplitudeAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGComponentTransferFunctionElementExponent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGComponentTransferFunctionElement* castedThis = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->impl());
+    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->exponentAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGComponentTransferFunctionElementOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGComponentTransferFunctionElement* castedThis = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->impl());
+    SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->offsetAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGComponentTransferFunctionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSSVGComponentTransferFunctionElement* domObject = static_cast<JSSVGComponentTransferFunctionElement*>(asObject(slot.slotBase()));
+    return JSSVGComponentTransferFunctionElement::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSSVGComponentTransferFunctionElement::getConstructor(ExecState* exec)
+JSValue JSSVGComponentTransferFunctionElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGComponentTransferFunctionElementConstructor>(exec);
+    return getDOMConstructor<JSSVGComponentTransferFunctionElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters

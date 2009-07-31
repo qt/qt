@@ -137,7 +137,7 @@ QFxAnchors::~QFxAnchors()
 {
     Q_D(QFxAnchors);
     d->remDepend(d->fill);
-    d->remDepend(d->centeredIn);
+    d->remDepend(d->centerIn);
     d->remDepend(d->left.item);
     d->remDepend(d->right.item);
     d->remDepend(d->top.item);
@@ -161,20 +161,20 @@ void QFxAnchorsPrivate::fillChanged()
     setItemHeight(fill->height()-topMargin-bottomMargin);
 }
 
-void QFxAnchorsPrivate::centeredInChanged()
+void QFxAnchorsPrivate::centerInChanged()
 {
-    if (!centeredIn || fill || !isItemComplete())
+    if (!centerIn || fill || !isItemComplete())
         return;
 
-    if (centeredIn == item->parentItem()) {
+    if (centerIn == item->parentItem()) {
         QPointF p((item->parentItem()->width() - item->width()) / 2.,
                   (item->parentItem()->height() - item->height()) / 2.);
         setItemPos(p);
 
-    } else if (centeredIn->parentItem() == item->parentItem()) {
+    } else if (centerIn->parentItem() == item->parentItem()) {
 
-        QPointF p(centeredIn->x() + (centeredIn->width() - item->width()) / 2.,
-                  centeredIn->y() + (centeredIn->height() - item->height()) / 2.);
+        QPointF p(centerIn->x() + (centerIn->width() - item->width()) / 2.,
+                  centerIn->y() + (centerIn->height() - item->height()) / 2.);
         setItemPos(p);
     }
 }
@@ -183,8 +183,8 @@ void QFxAnchorsPrivate::clearItem(QFxItem *item)
 {
     if (fill == item) 
         fill = 0;
-    if (centeredIn == item)
-        centeredIn = 0;
+    if (centerIn == item)
+        centerIn = 0;
     if (left.item == item) {
         left.item = 0;
         usedAnchors &= ~QFxAnchors::HasLeftAnchor;
@@ -295,7 +295,7 @@ void QFxAnchorsPrivate::updateMe()
     }
 
     fillChanged();
-    centeredInChanged();
+    centerInChanged();
     updateHorizontalAnchors();
     updateVerticalAnchors();
 }
@@ -303,7 +303,7 @@ void QFxAnchorsPrivate::updateMe()
 void QFxAnchorsPrivate::updateOnComplete()
 {
     fillChanged();
-    centeredInChanged();
+    centerInChanged();
     updateHorizontalAnchors();
     updateVerticalAnchors();
 }
@@ -311,7 +311,7 @@ void QFxAnchorsPrivate::updateOnComplete()
 void QFxAnchorsPrivate::update(QFxItem *, const QRectF &newG, const QRectF &oldG)
 {
     fillChanged();
-    centeredInChanged();
+    centerInChanged();
 
     if (newG.x() != oldG.x() || newG.width() != oldG.width())
         updateHorizontalAnchors();
@@ -352,24 +352,24 @@ void QFxAnchors::setFill(QFxItem *f)
 }
 
 /*!
-    \property QFxAnchors::centeredIn
+    \property QFxAnchors::centerIn
     \brief which item the item should stay centered in.
 
     This is a convenience property. It is the same as anchoring the horizontalCenter
     and verticalCenter to another item's horizontalCenter and verticalCenter.
 */
-QFxItem *QFxAnchors::centeredIn() const
+QFxItem *QFxAnchors::centerIn() const
 {
     Q_D(const QFxAnchors);
-    return d->centeredIn;
+    return d->centerIn;
 }
 
-void QFxAnchors::setCenteredIn(QFxItem* c)
+void QFxAnchors::setCenterIn(QFxItem* c)
 {
     Q_D(QFxAnchors);
     if (!c) {
-        d->remDepend(d->centeredIn);
-        d->centeredIn = c;
+        d->remDepend(d->centerIn);
+        d->centerIn = c;
         return;
     }
     if (c != d->item->parentItem() && c->parentItem() != d->item->parentItem()){
@@ -377,11 +377,11 @@ void QFxAnchors::setCenteredIn(QFxItem* c)
         return;
     }
 
-    d->remDepend(d->centeredIn);
-    d->centeredIn = c;
-    d->addDepend(d->centeredIn);
+    d->remDepend(d->centerIn);
+    d->centerIn = c;
+    d->addDepend(d->centerIn);
 
-    d->centeredInChanged();
+    d->centerInChanged();
 }
 
 bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
@@ -415,7 +415,7 @@ bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
 
 void QFxAnchorsPrivate::updateVerticalAnchors()
 {
-    if (fill || centeredIn || !isItemComplete())
+    if (fill || centerIn || !isItemComplete())
         return;
 
     if (updatingVerticalAnchor < 2) {
@@ -468,7 +468,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
         } else if (usedAnchors & QFxAnchors::HasBaselineAnchor) {
             //Handle baseline
             if (baseline.item->parentItem() == item->parentItem()) {
-                setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset());
+                setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset() + baselineOffset);
             }
         }
         --updatingVerticalAnchor;
@@ -480,7 +480,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
 
 void QFxAnchorsPrivate::updateHorizontalAnchors()
 {
-    if (fill || centeredIn || !isItemComplete())
+    if (fill || centerIn || !isItemComplete())
         return;
 
     if (updatingHorizontalAnchor < 2) {
@@ -870,6 +870,22 @@ void QFxAnchors::setVerticalCenterOffset(qreal offset)
     d->vCenterOffset = offset;
     d->updateVerticalAnchors();
     emit verticalCenterOffsetChanged();
+}
+
+qreal QFxAnchors::baselineOffset() const
+{
+    Q_D(const QFxAnchors);
+    return d->baselineOffset;
+}
+
+void QFxAnchors::setBaselineOffset(qreal offset)
+{
+    Q_D(QFxAnchors);
+    if (d->baselineOffset == offset)
+        return;
+    d->baselineOffset = offset;
+    d->updateVerticalAnchors();
+    emit baselineOffsetChanged();
 }
 
 QFxAnchors::UsedAnchors QFxAnchors::usedAnchors() const

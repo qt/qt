@@ -36,8 +36,7 @@ namespace WebCore {
 class RenderStyle;
 class HTMLMediaElement;
 
-class RenderThemeQt : public RenderTheme
-{
+class RenderThemeQt : public RenderTheme {
 private:
     RenderThemeQt(Page* page);
     virtual ~RenderThemeQt();
@@ -57,9 +56,6 @@ public:
     virtual bool supportsControlTints() const;
 
     virtual void adjustRepaintRect(const RenderObject* o, IntRect& r);
-
-    virtual bool isControlStyled(const RenderStyle*, const BorderData&,
-                                 const FillLayer&, const Color&) const;
 
     // The platform selection color.
     virtual Color platformActiveSelectionBackgroundColor() const;
@@ -154,8 +150,7 @@ private:
     QStyle* m_fallbackStyle;
 };
 
-class StylePainter
-{
+class StylePainter {
 public:
     explicit StylePainter(const RenderObject::PaintInfo& paintInfo);
     explicit StylePainter(GraphicsContext* context);

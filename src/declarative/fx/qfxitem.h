@@ -127,15 +127,13 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
-    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
-    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged) // ### name? Move to own class?
-    Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)  // ### see above
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
+    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
+    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine right READ right CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter CONSTANT FINAL)
@@ -154,7 +152,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
 
 public:
     enum Option { NoOption = 0x00000000,
-                  MouseFilter = 0x00000001,
                   ChildMouseFilter = 0x00000002,
                   IsFocusRealm = 0x00000080 };
     Q_DECLARE_FLAGS(Options, Option)
@@ -183,16 +180,10 @@ public:
     void setClip(bool);
 
     QmlList<QmlState *>* states();
-    QmlState *findState(const QString &name) const;
-
     QmlList<QmlTransition *>* transitions();
 
     QString state() const;
     void setState(const QString &);
-
-    QFxItem *qmlItem() const;
-    QUrl qml() const;
-    void setQml(const QUrl &);
 
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
@@ -207,20 +198,15 @@ public:
 
     qreal width() const;
     void setWidth(qreal);
-    void setImplicitWidth(qreal);
-    bool widthValid() const; // ### better name?
+
     qreal height() const;
     void setHeight(qreal);
-    void setImplicitHeight(qreal);
-    bool heightValid() const; // ### better name?
 
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
     QRectF boundingRect() const;
-    virtual void paintContents(QPainter &);
-
-    QFxItem *mouseGrabberItem() const;
+    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
     virtual bool hasFocus() const;
     void setFocus(bool);
@@ -238,20 +224,20 @@ Q_SIGNALS:
     void parentChanged();
     void keyPress(QFxKeyEvent *event);
     void keyRelease(QFxKeyEvent *event);
-    void rotationChanged();
-    void scaleChanged();
-    void qmlChanged();
-    void newChildCreated(const QString &url, QScriptValue);
 
 protected:
     bool isComponentComplete() const;
-    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     virtual void childrenChanged();
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
     virtual bool sceneEvent(QEvent *);
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mouseUngrabEvent();
+
+    void setImplicitWidth(qreal);
+    bool widthValid() const; // ### better name?
+    void setImplicitHeight(qreal);
+    bool heightValid() const; // ### better name?
 
     virtual void classBegin();
     virtual void componentComplete();
@@ -264,7 +250,6 @@ protected:
 
 private Q_SLOTS:
     void doUpdate();
-    void qmlLoaded();
 
 protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);

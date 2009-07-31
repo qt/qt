@@ -765,17 +765,17 @@ void QFxText::setSmoothTransform(bool s)
     update();
 }
 
-void QFxText::paintContents(QPainter &p)
+void QFxText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QFxText);
     d->checkImgCache();
     if (d->imgCache.isNull())
         return;
 
-    bool oldAA = p.testRenderHint(QPainter::Antialiasing);
-    bool oldSmooth = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    bool oldAA = p->testRenderHint(QPainter::Antialiasing);
+    bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
     if (d->smooth)
-        p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+        p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
     int w = width();
     int h = height();
@@ -811,16 +811,16 @@ void QFxText::paintContents(QPainter &p)
                                 d->imgCache.height() > height());
 
     if (needClip) {
-        p.save();
-        p.setClipRect(boundingRect());
+        p->save();
+        p->setClipRect(boundingRect());
     }
-    p.drawPixmap(x, y, d->imgCache);
+    p->drawPixmap(x, y, d->imgCache);
     if (needClip)
-        p.restore();
+        p->restore();
 
     if (d->smooth) {
-        p.setRenderHint(QPainter::Antialiasing, oldAA);
-        p.setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
+        p->setRenderHint(QPainter::Antialiasing, oldAA);
+        p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
 }
 

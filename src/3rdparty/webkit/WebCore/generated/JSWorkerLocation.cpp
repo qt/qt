@@ -73,12 +73,12 @@ static JSC_CONST_HASHTABLE HashTable JSWorkerLocationConstructorTable =
     { 1, 0, JSWorkerLocationConstructorTableValues, 0 };
 #endif
 
-class JSWorkerLocationConstructor : public DOMObject {
+class JSWorkerLocationConstructor : public DOMConstructorObject {
 public:
-    JSWorkerLocationConstructor(ExecState* exec)
-        : DOMObject(JSWorkerLocationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSWorkerLocationConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSWorkerLocationConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSWorkerLocationPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSWorkerLocationPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -134,8 +134,8 @@ static const HashTable* getJSWorkerLocationTable(ExecState* exec)
 }
 const ClassInfo JSWorkerLocation::s_info = { "WorkerLocation", 0, 0, getJSWorkerLocationTable };
 
-JSWorkerLocation::JSWorkerLocation(PassRefPtr<Structure> structure, PassRefPtr<WorkerLocation> impl)
-    : DOMObject(structure)
+JSWorkerLocation::JSWorkerLocation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WorkerLocation> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -157,67 +157,76 @@ bool JSWorkerLocation::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsWorkerLocationHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->href());
 }
 
 JSValue jsWorkerLocationProtocol(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->protocol());
 }
 
 JSValue jsWorkerLocationHost(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->host());
 }
 
 JSValue jsWorkerLocationHostname(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->hostname());
 }
 
 JSValue jsWorkerLocationPort(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->port());
 }
 
 JSValue jsWorkerLocationPathname(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->pathname());
 }
 
 JSValue jsWorkerLocationSearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->search());
 }
 
 JSValue jsWorkerLocationHash(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WorkerLocation* imp = static_cast<WorkerLocation*>(static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->impl());
+    WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
     return jsString(exec, imp->hash());
 }
 
 JSValue jsWorkerLocationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSWorkerLocation*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSWorkerLocation* domObject = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
+    return JSWorkerLocation::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSWorkerLocation::getConstructor(ExecState* exec)
+JSValue JSWorkerLocation::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSWorkerLocationConstructor>(exec);
+    return getDOMConstructor<JSWorkerLocationConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsWorkerLocationPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -233,9 +242,9 @@ JSValue JSC_HOST_CALL jsWorkerLocationPrototypeFunctionToString(ExecState* exec,
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, WorkerLocation* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WorkerLocation* object)
 {
-    return getDOMObjectWrapper<JSWorkerLocation>(exec, object);
+    return getDOMObjectWrapper<JSWorkerLocation>(exec, globalObject, object);
 }
 WorkerLocation* toWorkerLocation(JSC::JSValue value)
 {

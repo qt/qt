@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGPointList;
 
-class JSSVGPointList : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGPointList : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGPointList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPointList>, SVGElement* context);
+    JSSVGPointList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPointList>, SVGElement* context);
     virtual ~JSSVGPointList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -57,14 +58,12 @@ public:
     JSC::JSValue removeItem(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue appendItem(JSC::ExecState*, const JSC::ArgList&);
     SVGPointList* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGPointList > m_impl;
+    RefPtr<SVGPointList> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGPointList*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGPointList*, SVGElement* context);
 SVGPointList* toSVGPointList(JSC::JSValue);
 
 class JSSVGPointListPrototype : public JSC::JSObject {

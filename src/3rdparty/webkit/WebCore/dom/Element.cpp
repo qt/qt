@@ -33,7 +33,6 @@
 #include "ClientRect.h"
 #include "ClientRectList.h"
 #include "Document.h"
-#include "Editor.h"
 #include "ElementRareData.h"
 #include "ExceptionCode.h"
 #include "FocusController.h"
@@ -45,9 +44,7 @@
 #include "NodeList.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
-#include "PlatformString.h"
-#include "RenderBlock.h"
-#include "SelectionController.h"
+#include "RenderView.h"
 #include "TextIterator.h"
 #include "XMLNames.h"
 
@@ -382,8 +379,10 @@ int Element::clientWidth()
     bool inCompatMode = document()->inCompatMode();
     if ((!inCompatMode && document()->documentElement() == this) ||
         (inCompatMode && isHTMLElement() && document()->body() == this)) {
-        if (FrameView* view = document()->view())
-            return adjustForAbsoluteZoom(view->layoutWidth(), document()->renderer());
+        if (FrameView* view = document()->view()) {
+            if (RenderView* renderView = document()->renderView())
+                return adjustForAbsoluteZoom(view->layoutWidth(), renderView);
+        }
     }
     
     if (RenderBox* rend = renderBox())
@@ -401,8 +400,10 @@ int Element::clientHeight()
 
     if ((!inCompatMode && document()->documentElement() == this) ||
         (inCompatMode && isHTMLElement() && document()->body() == this)) {
-        if (FrameView* view = document()->view())
-            return adjustForAbsoluteZoom(view->layoutHeight(), document()->renderer());
+        if (FrameView* view = document()->view()) {
+            if (RenderView* renderView = document()->renderView())
+                return adjustForAbsoluteZoom(view->layoutHeight(), renderView);
+        }
     }
     
     if (RenderBox* rend = renderBox())
@@ -590,6 +591,12 @@ PassRefPtr<Attribute> Element::createAttribute(const QualifiedName& name, const 
 
 void Element::attributeChanged(Attribute* attr, bool)
 {
+    recalcStyleIfNeededAfterAttributeChanged(attr);
+    updateAfterAttributeChanged(attr);
+}
+
+void Element::updateAfterAttributeChanged(Attribute* attr)
+{
     if (!document()->axObjectCache()->accessibilityEnabled())
         return;
 
@@ -602,7 +609,13 @@ void Element::attributeChanged(Attribute* attr, bool)
         document()->axObjectCache()->handleAriaRoleChanged(renderer());
     }
 }
-
+    
+void Element::recalcStyleIfNeededAfterAttributeChanged(Attribute* attr)
+{
+    if (document()->attached() && document()->styleSelector()->hasSelectorForAttribute(attr->name().localName()))
+        setNeedsStyleRecalc();
+}
+        
 void Element::setAttributeMap(PassRefPtr<NamedNodeMap> list)
 {
     document()->incDOMTreeVersion();
@@ -854,7 +867,11 @@ void Element::recalcStyle(StyleChange change)
              setRenderStyle(newStyle);
 
         if (change != Force) {
-            if ((document()->usesDescendantRules() || hasPositionalRules) && styleChangeType() >= FullStyleChange)
+            // If "rem" units are used anywhere in the document, and if the document element's font size changes, then go ahead and force font updating
+            // all the way down the tree.  This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
+            if (document()->usesRemUnits() && ch != NoChange && currentStyle && newStyle && currentStyle->fontSize() != newStyle->fontSize() && document()->documentElement() == this)
+                change = Force;
+            else if ((document()->usesDescendantRules() || hasPositionalRules) && styleChangeType() >= FullStyleChange)
                 change = Force;
             else
                 change = ch;

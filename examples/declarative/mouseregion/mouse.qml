@@ -6,7 +6,7 @@ Rect {
     Rect {
         width: 50; height: 50
         color: "red"
-        Text { text: "Click"; anchors.centeredIn: parent }
+        Text { text: "Click"; anchors.centerIn: parent }
         MouseRegion {
             onPressed: { print('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') }
             onReleased: { print('release (x: ' + mouse.x + ' y: ' + mouse.y + ' isClick: ' + mouse.isClick + ' wasHeld: ' + mouse.wasHeld + ')') }
@@ -21,7 +21,7 @@ Rect {
     Rect {
         y: 100; width: 50; height: 50
         color: "blue"
-        Text { text: "Drag"; anchors.centeredIn: parent }
+        Text { text: "Drag"; anchors.centerIn: parent }
         MouseRegion {
             drag.target: parent
             drag.axis: "x"

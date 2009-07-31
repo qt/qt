@@ -1,5 +1,7 @@
 TEMPLATE      = subdirs
-SUBDIRS       = framebuffer mousecalibration simpledecoration
+# no /dev/fbX
+!qnx:!vxworks:SUBDIRS = framebuffer
+SUBDIRS      += mousecalibration simpledecoration
 
 # install
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS README *.pro

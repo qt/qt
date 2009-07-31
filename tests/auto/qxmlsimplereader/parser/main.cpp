@@ -42,6 +42,7 @@
 
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include <qfile.h>
 #include <qstring.h>

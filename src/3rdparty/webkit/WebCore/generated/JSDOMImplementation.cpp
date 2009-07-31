@@ -69,12 +69,12 @@ static JSC_CONST_HASHTABLE HashTable JSDOMImplementationConstructorTable =
     { 1, 0, JSDOMImplementationConstructorTableValues, 0 };
 #endif
 
-class JSDOMImplementationConstructor : public DOMObject {
+class JSDOMImplementationConstructor : public DOMConstructorObject {
 public:
-    JSDOMImplementationConstructor(ExecState* exec)
-        : DOMObject(JSDOMImplementationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSDOMImplementationConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSDOMImplementationConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSDOMImplementationPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSDOMImplementationPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -126,8 +126,8 @@ bool JSDOMImplementationPrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSDOMImplementation::s_info = { "DOMImplementation", 0, &JSDOMImplementationTable, 0 };
 
-JSDOMImplementation::JSDOMImplementation(PassRefPtr<Structure> structure, PassRefPtr<DOMImplementation> impl)
-    : DOMObject(structure)
+JSDOMImplementation::JSDOMImplementation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMImplementation> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -149,11 +149,12 @@ bool JSDOMImplementation::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsDOMImplementationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDOMImplementation*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSDOMImplementation* domObject = static_cast<JSDOMImplementation*>(asObject(slot.slotBase()));
+    return JSDOMImplementation::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSDOMImplementation::getConstructor(ExecState* exec)
+JSValue JSDOMImplementation::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSDOMImplementationConstructor>(exec);
+    return getDOMConstructor<JSDOMImplementationConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionHasFeature(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -184,7 +185,7 @@ JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateDocumentType(Exe
     const UString& systemId = valueToStringWithUndefinedOrNullCheck(exec, args.at(2));
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createDocumentType(qualifiedName, publicId, systemId, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createDocumentType(qualifiedName, publicId, systemId, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -202,7 +203,7 @@ JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateDocument(ExecSta
     DocumentType* doctype = toDocumentType(args.at(2));
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createDocument(namespaceURI, qualifiedName, doctype, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createDocument(namespaceURI, qualifiedName, doctype, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -219,7 +220,7 @@ JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateCSSStyleSheet(Ex
     const UString& media = args.at(1).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createCSSStyleSheet(title, media, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createCSSStyleSheet(title, media, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -234,13 +235,13 @@ JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateHTMLDocument(Exe
     const UString& title = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createHTMLDocument(title)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createHTMLDocument(title)));
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, DOMImplementation* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DOMImplementation* object)
 {
-    return getDOMObjectWrapper<JSDOMImplementation>(exec, object);
+    return getDOMObjectWrapper<JSDOMImplementation>(exec, globalObject, object);
 }
 DOMImplementation* toDOMImplementation(JSC::JSValue value)
 {

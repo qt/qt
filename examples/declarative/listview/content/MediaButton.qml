@@ -22,7 +22,7 @@ Item {
     Text {
         font.bold: true
         color: "white"
-        anchors.centeredIn: Image
+        anchors.centerIn: Image
         text: Container.text
     }
     width: Image.width

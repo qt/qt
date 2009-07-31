@@ -9,8 +9,8 @@ Item {
         radius: 5
         color: "black"
         opacity: 0.3
-        pen.color: "white"
-        pen.width: 2
+        border.color: "white"
+        border.width: 2
         x: 0
         y: flickableArea.pageYPosition * Container.height
         width: parent.width

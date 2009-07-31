@@ -21,6 +21,7 @@
 #ifndef JSCanvasPattern_h
 #define JSCanvasPattern_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class CanvasPattern;
 
-class JSCanvasPattern : public DOMObject {
-    typedef DOMObject Base;
+class JSCanvasPattern : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCanvasPattern(PassRefPtr<JSC::Structure>, PassRefPtr<CanvasPattern>);
+    JSCanvasPattern(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasPattern>);
     virtual ~JSCanvasPattern();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -44,7 +45,7 @@ private:
     RefPtr<CanvasPattern> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, CanvasPattern*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CanvasPattern*);
 CanvasPattern* toCanvasPattern(JSC::JSValue);
 
 class JSCanvasPatternPrototype : public JSC::JSObject {

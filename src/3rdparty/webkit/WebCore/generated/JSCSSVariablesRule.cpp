@@ -65,12 +65,12 @@ static JSC_CONST_HASHTABLE HashTable JSCSSVariablesRuleConstructorTable =
     { 1, 0, JSCSSVariablesRuleConstructorTableValues, 0 };
 #endif
 
-class JSCSSVariablesRuleConstructor : public DOMObject {
+class JSCSSVariablesRuleConstructor : public DOMConstructorObject {
 public:
-    JSCSSVariablesRuleConstructor(ExecState* exec)
-        : DOMObject(JSCSSVariablesRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSVariablesRuleConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSVariablesRuleConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSVariablesRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSVariablesRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,8 +112,8 @@ JSObject* JSCSSVariablesRulePrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSCSSVariablesRule::s_info = { "CSSVariablesRule", &JSCSSRule::s_info, &JSCSSVariablesRuleTable, 0 };
 
-JSCSSVariablesRule::JSCSSVariablesRule(PassRefPtr<Structure> structure, PassRefPtr<CSSVariablesRule> impl)
-    : JSCSSRule(structure, impl)
+JSCSSVariablesRule::JSCSSVariablesRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSVariablesRule> impl)
+    : JSCSSRule(structure, globalObject, impl)
 {
 }
 
@@ -129,25 +129,28 @@ bool JSCSSVariablesRule::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsCSSVariablesRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->media()));
+    CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
 }
 
 JSValue jsCSSVariablesRuleVariables(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->variables()));
+    CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->variables()));
 }
 
 JSValue jsCSSVariablesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSVariablesRule* domObject = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
+    return JSCSSVariablesRule::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSCSSVariablesRule::getConstructor(ExecState* exec)
+JSValue JSCSSVariablesRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSVariablesRuleConstructor>(exec);
+    return getDOMConstructor<JSCSSVariablesRuleConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

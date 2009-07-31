@@ -30,7 +30,7 @@ class HTMLSelectElement;
 class JSHTMLSelectElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLSelectElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLSelectElement>);
+    JSHTMLSelectElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLSelectElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertySlot(JSC::ExecState*, unsigned propertyName, JSC::PropertySlot&);
@@ -45,7 +45,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue remove(JSC::ExecState*, const JSC::ArgList&);

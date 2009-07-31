@@ -33,7 +33,7 @@ class SVGFEDiffuseLightingElement;
 class JSSVGFEDiffuseLightingElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFEDiffuseLightingElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEDiffuseLightingElement>);
+    JSSVGFEDiffuseLightingElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFEDiffuseLightingElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

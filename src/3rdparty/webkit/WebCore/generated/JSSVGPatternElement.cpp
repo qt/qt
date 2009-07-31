@@ -112,8 +112,8 @@ bool JSSVGPatternElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSSVGPatternElement::s_info = { "SVGPatternElement", &JSSVGElement::s_info, &JSSVGPatternElementTable, 0 };
 
-JSSVGPatternElement::JSSVGPatternElement(PassRefPtr<Structure> structure, PassRefPtr<SVGPatternElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGPatternElement::JSSVGPatternElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPatternElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -129,140 +129,158 @@ bool JSSVGPatternElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsSVGPatternElementPatternUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->patternUnitsAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementPatternContentUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->patternContentUnitsAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementPatternTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->patternTransformAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
 JSValue jsSVGPatternElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
 JSValue jsSVGPatternElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
 }
 
 JSValue jsSVGPatternElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     return jsString(exec, imp->xmllang());
 }
 
 JSValue jsSVGPatternElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     return jsString(exec, imp->xmlspace());
 }
 
 JSValue jsSVGPatternElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsSVGPatternElementViewBox(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedRect> obj = imp->viewBoxAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGPatternElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()))->impl());
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedPreserveAspectRatio> obj = imp->preserveAspectRatioAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 void JSSVGPatternElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -306,7 +324,7 @@ JSValue JSC_HOST_CALL jsSVGPatternElementPrototypeFunctionGetPresentationAttribu
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

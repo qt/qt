@@ -33,7 +33,7 @@ class SVGPathSegMovetoAbs;
 class JSSVGPathSegMovetoAbs : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegMovetoAbs(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegMovetoAbs>, SVGElement* context);
+    JSSVGPathSegMovetoAbs(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegMovetoAbs>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

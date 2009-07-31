@@ -71,8 +71,9 @@ class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
     Q_PROPERTY(qreal topMargin READ topMargin WRITE setTopMargin NOTIFY topMarginChanged)
     Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
     Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
+    Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged())
     Q_PROPERTY(QFxItem *fill READ fill WRITE setFill)
-    Q_PROPERTY(QFxItem *centeredIn READ centeredIn WRITE setCenteredIn)
+    Q_PROPERTY(QFxItem *centerIn READ centerIn WRITE setCenterIn)
 
 public:
     QFxAnchors(QObject *parent=0);
@@ -137,11 +138,14 @@ public:
     qreal verticalCenterOffset() const;
     void setVerticalCenterOffset(qreal);
 
+    qreal baselineOffset() const;
+    void setBaselineOffset(qreal);
+
     QFxItem *fill() const;
     void setFill(QFxItem *);
 
-    QFxItem *centeredIn() const;
-    void setCenteredIn(QFxItem *);
+    QFxItem *centerIn() const;
+    void setCenterIn(QFxItem *);
 
     UsedAnchors usedAnchors() const;
 
@@ -157,6 +161,7 @@ Q_SIGNALS:
     void bottomMarginChanged();
     void verticalCenterOffsetChanged();
     void horizontalCenterOffsetChanged();
+    void baselineOffsetChanged();
 
 private:
     friend class QFxItem;

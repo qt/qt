@@ -74,6 +74,10 @@
 #endif // Q_OS_WIN
 #endif // QT_NO_QOBJECT
 
+#ifdef Q_OS_VXWORKS
+#  include <ioLib.h>
+#endif
+
 #include <stdlib.h>
 
 #ifndef CSIDL_COMMON_APPDATA
@@ -167,7 +171,7 @@ static bool isLikelyToBeNfs(int handle)
 }
 
 #elif defined(Q_OS_SOLARIS) || defined(Q_OS_IRIX) || defined(Q_OS_AIX) || defined(Q_OS_HPUX) \
-      || defined(Q_OS_OSF) || defined(Q_OS_QNX) || defined(Q_OS_QNX6) || defined(Q_OS_SCO) \
+      || defined(Q_OS_OSF) || defined(Q_OS_QNX) || defined(Q_OS_SCO) \
       || defined(Q_OS_UNIXWARE) || defined(Q_OS_RELIANT) || defined(Q_OS_NETBSD)
 QT_BEGIN_INCLUDE_NAMESPACE
 # include <sys/statvfs.h>

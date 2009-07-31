@@ -29,7 +29,7 @@ Rect {
     color: "white"
     Image {
         source: "pics/logo.png"
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
     }
 }
 \endcode

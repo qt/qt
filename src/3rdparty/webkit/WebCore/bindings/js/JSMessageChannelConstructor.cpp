@@ -38,19 +38,13 @@ namespace WebCore {
 const ClassInfo JSMessageChannelConstructor::s_info = { "MessageChannelConstructor", 0, 0, 0 };
 
 JSMessageChannelConstructor::JSMessageChannelConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-    : DOMObject(JSMessageChannelConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
-    , m_globalObject(globalObject)
+    : DOMConstructorObject(JSMessageChannelConstructor::createStructure(globalObject->objectPrototype()), globalObject)
 {
-    putDirect(exec->propertyNames().prototype, JSMessageChannelPrototype::self(exec, exec->lexicalGlobalObject()), None);
+    putDirect(exec->propertyNames().prototype, JSMessageChannelPrototype::self(exec, globalObject), None);
 }
 
 JSMessageChannelConstructor::~JSMessageChannelConstructor()
 {
-}
-
-ScriptExecutionContext* JSMessageChannelConstructor::scriptExecutionContext() const
-{
-    return m_globalObject->scriptExecutionContext();
 }
 
 ConstructType JSMessageChannelConstructor::getConstructData(ConstructData& constructData)
@@ -61,18 +55,12 @@ ConstructType JSMessageChannelConstructor::getConstructData(ConstructData& const
 
 JSObject* JSMessageChannelConstructor::construct(ExecState* exec, JSObject* constructor, const ArgList&)
 {
-    ScriptExecutionContext* context = static_cast<JSMessageChannelConstructor*>(constructor)->scriptExecutionContext();
+    JSMessageChannelConstructor* jsConstructor = static_cast<JSMessageChannelConstructor*>(constructor);
+    ScriptExecutionContext* context = jsConstructor->scriptExecutionContext();
     if (!context)
         return throwError(exec, ReferenceError, "MessageChannel constructor associated document is unavailable");
 
-    return asObject(toJS(exec, MessageChannel::create(context)));
-}
-
-void JSMessageChannelConstructor::mark()
-{
-    DOMObject::mark();
-    if (!m_globalObject->marked())
-        m_globalObject->mark();
+    return asObject(toJS(exec, jsConstructor->globalObject(), MessageChannel::create(context)));
 }
 
 } // namespace WebCore

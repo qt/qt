@@ -21,6 +21,7 @@
 #ifndef JSCSSValue_h
 #define JSCSSValue_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class CSSValue;
 
-class JSCSSValue : public DOMObject {
-    typedef DOMObject Base;
+class JSCSSValue : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCSSValue(PassRefPtr<JSC::Structure>, PassRefPtr<CSSValue>);
+    JSCSSValue(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSValue>);
     virtual ~JSCSSValue();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -45,14 +46,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     CSSValue* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<CSSValue> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, CSSValue*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CSSValue*);
 CSSValue* toCSSValue(JSC::JSValue);
 
 class JSCSSValuePrototype : public JSC::JSObject {

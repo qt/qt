@@ -84,8 +84,8 @@ bool JSCoordinatesPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
 
 const ClassInfo JSCoordinates::s_info = { "Coordinates", 0, &JSCoordinatesTable, 0 };
 
-JSCoordinates::JSCoordinates(PassRefPtr<Structure> structure, PassRefPtr<Coordinates> impl)
-    : DOMObject(structure)
+JSCoordinates::JSCoordinates(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Coordinates> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -107,43 +107,50 @@ bool JSCoordinates::getOwnPropertySlot(ExecState* exec, const Identifier& proper
 
 JSValue jsCoordinatesLatitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Coordinates* imp = static_cast<Coordinates*>(static_cast<JSCoordinates*>(asObject(slot.slotBase()))->impl());
+    Coordinates* imp = static_cast<Coordinates*>(castedThis->impl());
     return jsNumber(exec, imp->latitude());
 }
 
 JSValue jsCoordinatesLongitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Coordinates* imp = static_cast<Coordinates*>(static_cast<JSCoordinates*>(asObject(slot.slotBase()))->impl());
+    Coordinates* imp = static_cast<Coordinates*>(castedThis->impl());
     return jsNumber(exec, imp->longitude());
 }
 
 JSValue jsCoordinatesAltitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCoordinates*>(asObject(slot.slotBase()))->altitude(exec);
+    JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
+    return castedThis->altitude(exec);
 }
 
 JSValue jsCoordinatesAccuracy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Coordinates* imp = static_cast<Coordinates*>(static_cast<JSCoordinates*>(asObject(slot.slotBase()))->impl());
+    Coordinates* imp = static_cast<Coordinates*>(castedThis->impl());
     return jsNumber(exec, imp->accuracy());
 }
 
 JSValue jsCoordinatesAltitudeAccuracy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCoordinates*>(asObject(slot.slotBase()))->altitudeAccuracy(exec);
+    JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
+    return castedThis->altitudeAccuracy(exec);
 }
 
 JSValue jsCoordinatesHeading(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCoordinates*>(asObject(slot.slotBase()))->heading(exec);
+    JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
+    return castedThis->heading(exec);
 }
 
 JSValue jsCoordinatesSpeed(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCoordinates*>(asObject(slot.slotBase()))->speed(exec);
+    JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
+    return castedThis->speed(exec);
 }
 
 JSValue JSC_HOST_CALL jsCoordinatesPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -159,9 +166,9 @@ JSValue JSC_HOST_CALL jsCoordinatesPrototypeFunctionToString(ExecState* exec, JS
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Coordinates* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Coordinates* object)
 {
-    return getDOMObjectWrapper<JSCoordinates>(exec, object);
+    return getDOMObjectWrapper<JSCoordinates>(exec, globalObject, object);
 }
 Coordinates* toCoordinates(JSC::JSValue value)
 {

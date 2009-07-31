@@ -310,24 +310,24 @@ void QFxImage::setSmoothTransform(bool s)
     update();
 }
 
-void QFxImage::paintContents(QPainter &p)
+void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QFxImage);
     if (d->pix.isNull())
         return;
 
-    bool oldAA = p.testRenderHint(QPainter::Antialiasing);
-    bool oldSmooth = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    bool oldAA = p->testRenderHint(QPainter::Antialiasing);
+    bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
     if (d->smooth)
-        p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+        p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
     QPixmap pix = d->pix;
 
     if (!d->scaleGrid || d->scaleGrid->isNull()) {
         if (width() != pix.width() || height() != pix.height()) {
             if (d->fillMode >= Tile) {
-                p.save();
-                p.setClipRect(0, 0, width(), height(), Qt::IntersectClip);
+                p->save();
+                p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
 
                 if (d->fillMode == Tile) {
                     const int pw = pix.width();
@@ -337,7 +337,7 @@ void QFxImage::paintContents(QPainter &p)
                     while(yy < height()) {
                         int xx = 0;
                         while(xx < width()) {
-                            p.drawPixmap(xx, yy, pix);
+                            p->drawPixmap(xx, yy, pix);
                             xx += pw;
                         }
                         yy += ph;
@@ -347,7 +347,7 @@ void QFxImage::paintContents(QPainter &p)
                     int yy = 0;
 
                     while(yy < height()) {
-                        p.drawPixmap(QRect(0, yy, width(), ph), pix);
+                        p->drawPixmap(QRect(0, yy, width(), ph), pix);
                         yy += ph;
                     }
                 } else {
@@ -355,12 +355,12 @@ void QFxImage::paintContents(QPainter &p)
                     int xx = 0;
 
                     while(xx < width()) {
-                        p.drawPixmap(QRect(xx, 0, pw, height()), pix);
+                        p->drawPixmap(QRect(xx, 0, pw, height()), pix);
                         xx += pw;
                     }
                 }
 
-                p.restore();
+                p->restore();
             } else {
                 qreal widthScale = width() / qreal(pix.width());
                 qreal heightScale = height() / qreal(pix.height());
@@ -378,13 +378,13 @@ void QFxImage::paintContents(QPainter &p)
                 }
 
                 scale.scale(widthScale, heightScale);
-                QTransform old = p.transform();
-                p.setWorldTransform(scale * old);
-                p.drawPixmap(0, 0, pix);
-                p.setWorldTransform(old);
+                QTransform old = p->transform();
+                p->setWorldTransform(scale * old);
+                p->drawPixmap(0, 0, pix);
+                p->setWorldTransform(old);
             }
         } else {
-            p.drawPixmap(0, 0, pix);
+            p->drawPixmap(0, 0, pix);
         }
     } else {
         if (d->fillMode != Stretch)
@@ -406,46 +406,46 @@ void QFxImage::paintContents(QPainter &p)
 
         // Upper left
         if (sgt && sgl)
-            p.drawPixmap(QRect(0, 0, sgl, sgt), pix, QRect(0, 0, sgl, sgt));
+            p->drawPixmap(QRect(0, 0, sgl, sgt), pix, QRect(0, 0, sgl, sgt));
         // Upper middle
         if (pix.width() - xSide && sgt)
-            p.drawPixmap(QRect(sgl, 0, w - xSide, sgt), pix,
+            p->drawPixmap(QRect(sgl, 0, w - xSide, sgt), pix,
                         QRect(sgl, 0, pix.width() - xSide, sgt));
         // Upper right
         if (sgt && pix.width() - sgr)
-            p.drawPixmap(QPoint(w-sgr, 0), pix,
+            p->drawPixmap(QPoint(w-sgr, 0), pix,
                         QRect(pix.width()-sgr, 0, sgr, sgt));
         // Middle left
         if (sgl && pix.height() - ySide)
-            p.drawPixmap(QRect(0, sgt, sgl, h - ySide), pix,
+            p->drawPixmap(QRect(0, sgt, sgl, h - ySide), pix,
                         QRect(0, sgt, sgl, pix.height() - ySide));
 
         // Middle
         if (pix.width() - xSide && pix.height() - ySide)
-            p.drawPixmap(QRect(sgl, sgt, w - xSide, h - ySide),
+            p->drawPixmap(QRect(sgl, sgt, w - xSide, h - ySide),
                         pix,
                         QRect(sgl, sgt, pix.width() - xSide, pix.height() - ySide));
         // Middle right
         if (sgr && pix.height() - ySide)
-            p.drawPixmap(QRect(w-sgr, sgt, sgr, h - ySide), pix,
+            p->drawPixmap(QRect(w-sgr, sgt, sgr, h - ySide), pix,
                         QRect(pix.width()-sgr, sgt, sgr, pix.height() - ySide));
         // Lower left
         if (sgl && sgr)
-            p.drawPixmap(QPoint(0, h - sgb), pix,
+            p->drawPixmap(QPoint(0, h - sgb), pix,
                         QRect(0, pix.height() - sgb, sgl, sgb));
         // Lower Middle
         if (pix.width() - xSide && sgb)
-            p.drawPixmap(QRect(sgl, h - sgb, w - xSide, sgb), pix,
+            p->drawPixmap(QRect(sgl, h - sgb, w - xSide, sgb), pix,
                         QRect(sgl, pix.height() - sgb, pix.width() - xSide, sgb));
         // Lower Right
         if (sgr && sgb)
-            p.drawPixmap(QPoint(w-sgr, h - sgb), pix,
+            p->drawPixmap(QPoint(w-sgr, h - sgb), pix,
                         QRect(pix.width()-sgr, pix.height() - sgb, sgr, sgb));
     }
 
     if (d->smooth) {
-        p.setRenderHint(QPainter::Antialiasing, oldAA);
-        p.setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
+        p->setRenderHint(QPainter::Antialiasing, oldAA);
+        p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
 }
 

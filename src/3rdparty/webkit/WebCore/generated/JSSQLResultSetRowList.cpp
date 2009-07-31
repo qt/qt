@@ -79,8 +79,8 @@ bool JSSQLResultSetRowListPrototype::getOwnPropertySlot(ExecState* exec, const I
 
 const ClassInfo JSSQLResultSetRowList::s_info = { "SQLResultSetRowList", 0, &JSSQLResultSetRowListTable, 0 };
 
-JSSQLResultSetRowList::JSSQLResultSetRowList(PassRefPtr<Structure> structure, PassRefPtr<SQLResultSetRowList> impl)
-    : DOMObject(structure)
+JSSQLResultSetRowList::JSSQLResultSetRowList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLResultSetRowList> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -102,8 +102,9 @@ bool JSSQLResultSetRowList::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsSQLResultSetRowListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSQLResultSetRowList* castedThis = static_cast<JSSQLResultSetRowList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SQLResultSetRowList* imp = static_cast<SQLResultSetRowList*>(static_cast<JSSQLResultSetRowList*>(asObject(slot.slotBase()))->impl());
+    SQLResultSetRowList* imp = static_cast<SQLResultSetRowList*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
@@ -116,9 +117,9 @@ JSValue JSC_HOST_CALL jsSQLResultSetRowListPrototypeFunctionItem(ExecState* exec
     return castedThisObj->item(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SQLResultSetRowList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLResultSetRowList* object)
 {
-    return getDOMObjectWrapper<JSSQLResultSetRowList>(exec, object);
+    return getDOMObjectWrapper<JSSQLResultSetRowList>(exec, globalObject, object);
 }
 SQLResultSetRowList* toSQLResultSetRowList(JSC::JSValue value)
 {

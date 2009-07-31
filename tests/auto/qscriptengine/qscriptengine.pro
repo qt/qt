@@ -1,5 +1,5 @@
 load(qttest_p4)
-QT += script
+QT = core gui script
 SOURCES += tst_qscriptengine.cpp 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 

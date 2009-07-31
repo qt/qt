@@ -36,6 +36,7 @@
 #include "InspectorController.h"
 #include "Page.h"
 #include "PageGroupLoadDeferrer.h"
+#include "RenderObject.h"
 #include "ResourceHandle.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
@@ -115,12 +116,12 @@ FloatRect Chrome::pageRect() const
 {
     return m_client->pageRect();
 }
-        
+
 float Chrome::scaleFactor()
 {
     return m_client->scaleFactor();
 }
-    
+
 void Chrome::focus() const
 {
     m_client->focus();
@@ -140,7 +141,7 @@ void Chrome::takeFocus(FocusDirection direction) const
 {
     m_client->takeFocus(direction);
 }
-    
+
 Page* Chrome::createWindow(Frame* frame, const FrameLoadRequest& request, const WindowFeatures& features) const
 {
     Page* newPage = m_client->createWindow(frame, request, features);
@@ -234,7 +235,7 @@ bool Chrome::canRunBeforeUnloadConfirmPanel()
 
 bool Chrome::runBeforeUnloadConfirmPanel(const String& message, Frame* frame)
 {
-    // Defer loads in case the client method runs a new event loop that would 
+    // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     PageGroupLoadDeferrer deferrer(m_page, true);
 
@@ -248,7 +249,7 @@ void Chrome::closeWindowSoon()
 
 void Chrome::runJavaScriptAlert(Frame* frame, const String& message)
 {
-    // Defer loads in case the client method runs a new event loop that would 
+    // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     PageGroupLoadDeferrer deferrer(m_page, true);
 
@@ -258,7 +259,7 @@ void Chrome::runJavaScriptAlert(Frame* frame, const String& message)
 
 bool Chrome::runJavaScriptConfirm(Frame* frame, const String& message)
 {
-    // Defer loads in case the client method runs a new event loop that would 
+    // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     PageGroupLoadDeferrer deferrer(m_page, true);
 
@@ -268,16 +269,16 @@ bool Chrome::runJavaScriptConfirm(Frame* frame, const String& message)
 
 bool Chrome::runJavaScriptPrompt(Frame* frame, const String& prompt, const String& defaultValue, String& result)
 {
-    // Defer loads in case the client method runs a new event loop that would 
+    // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     PageGroupLoadDeferrer deferrer(m_page, true);
 
     ASSERT(frame);
     bool ok = m_client->runJavaScriptPrompt(frame, frame->displayStringModifiedByEncoding(prompt), frame->displayStringModifiedByEncoding(defaultValue), result);
-    
+
     if (ok)
         result = frame->displayStringModifiedByEncoding(result);
-    
+
     return ok;
 }
 
@@ -289,7 +290,7 @@ void Chrome::setStatusbarText(Frame* frame, const String& status)
 
 bool Chrome::shouldInterruptJavaScript()
 {
-    // Defer loads in case the client method runs a new event loop that would 
+    // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     PageGroupLoadDeferrer deferrer(m_page, true);
 
@@ -317,7 +318,8 @@ void Chrome::mouseDidMoveOverElement(const HitTestResult& result, unsigned modif
 void Chrome::setToolTip(const HitTestResult& result)
 {
     // First priority is a potential toolTip representing a spelling or grammar error
-    String toolTip = result.spellingToolTip();
+    TextDirection toolTipDirection;
+    String toolTip = result.spellingToolTip(toolTipDirection);
 
     // Next priority is a toolTip from a URL beneath the mouse (if preference is set to show those).
     if (toolTip.isEmpty() && m_page->settings()->showsURLsInToolTips()) {
@@ -326,20 +328,28 @@ void Chrome::setToolTip(const HitTestResult& result)
             if (node->hasTagName(inputTag)) {
                 HTMLInputElement* input = static_cast<HTMLInputElement*>(node);
                 if (input->inputType() == HTMLInputElement::SUBMIT)
-                    if (HTMLFormElement* form = input->form())
+                    if (HTMLFormElement* form = input->form()) {
                         toolTip = form->action();
+                        if (form->renderer())
+                            toolTipDirection = form->renderer()->style()->direction();
+                        else
+                            toolTipDirection = LTR;
+                    }
             }
         }
 
         // Get tooltip representing link's URL
-        if (toolTip.isEmpty())
+        if (toolTip.isEmpty()) {
             // FIXME: Need to pass this URL through userVisibleString once that's in WebCore
             toolTip = result.absoluteLinkURL().string();
+            // URL always display as LTR.
+            toolTipDirection = LTR;
+        }
     }
 
     // Next we'll consider a tooltip for element with "title" attribute
     if (toolTip.isEmpty())
-        toolTip = result.title();
+        toolTip = result.title(toolTipDirection);
 
     // Lastly, for <input type="file"> that allow multiple files, we'll consider a tooltip for the selected filenames
     if (toolTip.isEmpty()) {
@@ -357,13 +367,15 @@ void Chrome::setToolTip(const HitTestResult& result)
                                 names.append('\n');
                         }
                         toolTip = String::adopt(names);
+                        // filename always display as LTR.
+                        toolTipDirection = LTR;
                     }
                 }
             }
         }
     }
-    
-    m_client->setToolTip(toolTip);
+
+    m_client->setToolTip(toolTip, toolTipDirection);
 }
 
 void Chrome::print(Frame* frame)
@@ -373,7 +385,7 @@ void Chrome::print(Frame* frame)
 
 void Chrome::requestGeolocationPermissionForFrame(Frame* frame, Geolocation* geolocation)
 {
-    // Defer loads in case the client method runs a new event loop that would 
+    // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     PageGroupLoadDeferrer deferrer(m_page, true);
 
@@ -420,10 +432,10 @@ bool ChromeClient::shouldReplaceWithGeneratedFileForUpload(const String&, String
 String ChromeClient::generateReplacementFile(const String&)
 {
     ASSERT_NOT_REACHED();
-    return String(); 
+    return String();
 }
 
-bool ChromeClient::paintCustomScrollbar(GraphicsContext*, const FloatRect&, ScrollbarControlSize, 
+bool ChromeClient::paintCustomScrollbar(GraphicsContext*, const FloatRect&, ScrollbarControlSize,
                                         ScrollbarControlState, ScrollbarPart, bool,
                                         float, float, ScrollbarControlPartMask)
 {

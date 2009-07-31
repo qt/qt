@@ -4794,30 +4794,60 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTiled(int count, const QSpan *spans, void *
         if (sy < 0)
             sy += image_height;
 
-        while (length) {
-            int l = qMin(image_width - sx, length);
-            if (buffer_size < l)
-                l = buffer_size;
-
-            DST *dest = ((DST*)data->rasterBuffer->scanLine(spans->y)) + x;
-            const SRC *src = (SRC*)data->texture.scanLine(sy) + sx;
-            if (modeSource && coverage == 255) {
+        if (modeSource && coverage == 255) {
+            // Copy the first texture block
+            length = image_width;
+            while (length) {
+                int l = qMin(image_width - sx, length);
+                if (buffer_size < l)
+                    l = buffer_size;
+                DST *dest = ((DST*)data->rasterBuffer->scanLine(spans->y)) + x;
+                const SRC *src = (SRC*)data->texture.scanLine(sy) + sx;
                 qt_memconvert<DST, SRC>(dest, src, l);
-            } else if (sizeof(DST) == 3 && sizeof(SRC) == 3 && l >= 4 &&
-                       (quintptr(dest) & 3) == (quintptr(src) & 3))
-            {
-                blendUntransformed_dest24(dest, src, coverage, l);
-            } else if (sizeof(DST) == 2 && sizeof(SRC) == 2 && l >= 2 &&
-                       (quintptr(dest) & 3) == (quintptr(src) & 3))
-            {
-                blendUntransformed_dest16(dest, src, coverage, l);
-            } else {
-                blendUntransformed_unaligned(dest, src, coverage, l);
+                length -= l;
+                sx = 0;
             }
 
-            x += l;
-            length -= l;
-            sx = 0;
+            // Now use the rasterBuffer as the source of the texture,
+            // We can now progressively copy larger blocks
+            // - Less cpu time in code figuring out what to copy
+            // We are dealing with one block of data
+            // - More likely to fit in the cache
+            // - can use memcpy
+            int copy_image_width = image_width;
+            length = spans->len - image_width;
+            DST *src = ((DST*)data->rasterBuffer->scanLine(spans->y)) + x;
+            DST *dest = src + copy_image_width;
+            while (copy_image_width < length) {
+                qt_memconvert(dest, src, copy_image_width);
+                dest += copy_image_width;
+                length -= copy_image_width;
+                copy_image_width *= 2;
+            }
+            qt_memconvert(dest, src, length);
+        } else {
+            while (length) {
+                int l = qMin(image_width - sx, length);
+                if (buffer_size < l)
+                    l = buffer_size;
+                DST *dest = ((DST*)data->rasterBuffer->scanLine(spans->y)) + x;
+                const SRC *src = (SRC*)data->texture.scanLine(sy) + sx;
+                if (sizeof(DST) == 3 && sizeof(SRC) == 3 && l >= 4 &&
+                           (quintptr(dest) & 3) == (quintptr(src) & 3))
+                {
+                    blendUntransformed_dest24(dest, src, coverage, l);
+                } else if (sizeof(DST) == 2 && sizeof(SRC) == 2 && l >= 2 &&
+                           (quintptr(dest) & 3) == (quintptr(src) & 3))
+                {
+                    blendUntransformed_dest16(dest, src, coverage, l);
+                } else {
+                    blendUntransformed_unaligned(dest, src, coverage, l);
+                }
+
+                x += l;
+                length -= l;
+                sx = 0;
+            }
         }
         ++spans;
     }
@@ -6958,11 +6988,11 @@ void qt_build_pow_tables() {
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    const qreal gray_gamma = qreal(2.31);
+    const qreal gray_gamma = 2.31;
     for (int i=0; i<256; ++i)
         qt_pow_gamma[i] = uint(qRound(pow(i / qreal(255.), gray_gamma) * 2047));
     for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(pow(i / qreal(2047.), 1 / gray_gamma) * 255));
+        qt_pow_invgamma[i] = uchar(qRound(pow(i / 2047.0, 1 / gray_gamma) * 255));
 #endif
 }
 

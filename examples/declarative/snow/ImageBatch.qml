@@ -43,7 +43,7 @@ GridView {
 
         Image { id: Image; source: url; fillMode: "PreserveAspect"; smooth: true; anchors.fill: parent;
                 opacity: (status == 0)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } } 
-        Loading { anchors.centeredIn: parent; visible: Image.status }
+        Loading { anchors.centerIn: parent; visible: Image.status }
 
         states: State {
             name: "selected"

@@ -33,7 +33,7 @@ class SVGFETileElement;
 class JSSVGFETileElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFETileElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFETileElement>);
+    JSSVGFETileElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFETileElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

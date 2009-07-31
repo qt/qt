@@ -33,7 +33,7 @@ class SVGPolylineElement;
 class JSSVGPolylineElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGPolylineElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPolylineElement>);
+    JSSVGPolylineElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPolylineElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
