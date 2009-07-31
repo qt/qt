@@ -227,10 +227,14 @@ public:
         item->d_ptr->fullUpdatePending = 0;
         item->d_ptr->ignoreVisible = 0;
         item->d_ptr->ignoreOpacity = 0;
+        const bool notifyEffect = item->d_ptr->notifyBoundingRectChanged;
+        item->d_ptr->notifyBoundingRectChanged = 0;
         if (recursive) {
             for (int i = 0; i < item->d_ptr->children.size(); ++i)
                 resetDirtyItem(item->d_ptr->children.at(i), recursive);
         }
+        if (notifyEffect && item->d_ptr->graphicsEffect)
+            item->d_ptr->graphicsEffect->sourceBoundingRectChanged();
     }
 
     inline void ensureSortedTopLevelItems()

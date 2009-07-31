@@ -204,8 +204,8 @@ void QGraphicsEffect::updateBoundingRect()
         d->source->update();
 }
 
-void QGraphicsEffect::sourceChanged(QGraphicsEffectSource *)
-{}
+void QGraphicsEffect::sourceChanged(QGraphicsEffectSource *) {}
+void QGraphicsEffect::sourceBoundingRectChanged() {}
 
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
     : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)

@@ -117,6 +117,7 @@ protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);
     virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
     virtual void sourceChanged(QGraphicsEffectSource *newSource);
+    virtual void sourceBoundingRectChanged();
     void updateBoundingRect();
 
 private:

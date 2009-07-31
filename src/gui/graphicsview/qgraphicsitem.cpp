@@ -6661,6 +6661,7 @@ void QGraphicsItem::prepareGeometryChange()
         d_ptr->scene->d_func()->dirtyGrowingItemsBoundingRect = true;
         d_ptr->geometryChanged = 1;
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+        d_ptr->notifyBoundingRectChanged = !d_ptr->inSetPosHelper;
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->index->prepareBoundingRectChange(this);
@@ -6684,8 +6685,11 @@ void QGraphicsItem::prepareGeometryChange()
     }
 
     QGraphicsItem *parent = this;
-    while ((parent = parent->d_ptr->parent))
+    while ((parent = parent->d_ptr->parent)) {
         parent->d_ptr->dirtyChildrenBoundingRect = 1;
+        // ### Only do this if the parent's effect applies to the entire subtree.
+        parent->d_ptr->notifyBoundingRectChanged = 1;
+    }
 
     if (d_ptr->inSetPosHelper)
         return;
