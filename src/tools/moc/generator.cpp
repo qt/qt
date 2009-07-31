@@ -68,8 +68,7 @@ enum PropertyFlags  {
     ResolveEditable = 0x00080000,
     User = 0x00100000,
     ResolveUser = 0x00200000,
-    Notify = 0x00400000,
-    Dynamic = 0x00800000
+    Notify = 0x00400000
 };
 
 enum MethodFlags {
