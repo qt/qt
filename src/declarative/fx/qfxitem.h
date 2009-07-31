@@ -198,20 +198,15 @@ public:
 
     qreal width() const;
     void setWidth(qreal);
-    void setImplicitWidth(qreal);
-    bool widthValid() const; // ### better name?
+
     qreal height() const;
     void setHeight(qreal);
-    void setImplicitHeight(qreal);
-    bool heightValid() const; // ### better name?
 
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
-
-    QFxItem *mouseGrabberItem() const;
 
     virtual bool hasFocus() const;
     void setFocus(bool);
@@ -229,9 +224,6 @@ Q_SIGNALS:
     void parentChanged();
     void keyPress(QFxKeyEvent *event);
     void keyRelease(QFxKeyEvent *event);
-    void rotationChanged();
-    void scaleChanged();
-    void qmlChanged();
 
 protected:
     bool isComponentComplete() const;
@@ -242,6 +234,11 @@ protected:
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mouseUngrabEvent();
+
+    void setImplicitWidth(qreal);
+    bool widthValid() const; // ### better name?
+    void setImplicitHeight(qreal);
+    bool heightValid() const; // ### better name?
 
     virtual void classBegin();
     virtual void componentComplete();

@@ -1201,12 +1201,6 @@ void QFxItem::setBaselineOffset(qreal offset)
   \endtable
 */
 
-/*! \fn void QFxItem::rotationChanged()
-  This signal is emitted when the rotation property is changed.
-
-  \sa setRotation()
- */
-
 /*!
   \qmlproperty real Item::scale
   This property holds the scale of the item.
@@ -1806,16 +1800,6 @@ bool QFxItem::heightValid() const
 {
     Q_D(const QFxItem);
     return d->heightValid;
-}
-
-QFxItem *QFxItem::mouseGrabberItem() const
-{
-    QGraphicsScene *s = scene();
-    if (s) {
-        QGraphicsItem *item = s->mouseGrabberItem();
-        return static_cast<QFxItem*>(item); // ###
-    }
-    return 0;
 }
 
 /*!
