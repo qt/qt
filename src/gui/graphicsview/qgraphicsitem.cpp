@@ -10033,6 +10033,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
     case QGraphicsItem::ItemAcceptsInputMethod:
         str = "ItemAcceptsInputMethod";
         break;
+    case QGraphicsItem::ItemNegativeZStacksBehindParent:
+        str = "ItemNegativeZStacksBehindParent";
+        break;
     case QGraphicsItem::ItemAutoDetectsFocusProxy:
         str = "ItemAutoDetectsFocusProxy";
         break;
