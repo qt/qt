@@ -143,249 +143,249 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-typedef JSNode* (*CreateSVGElementWrapperFunction)(ExecState*, PassRefPtr<SVGElement>);
+typedef JSNode* (*CreateSVGElementWrapperFunction)(ExecState*, JSDOMGlobalObject*, PassRefPtr<SVGElement>);
 
-static JSNode* createSVGAElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGAElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGAElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGAElement, element.get());
 }
 
-static JSNode* createSVGAltGlyphElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGAltGlyphElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGAltGlyphElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGAltGlyphElement, element.get());
 }
 
-static JSNode* createSVGAnimateElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGAnimateElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGAnimateElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGAnimateElement, element.get());
 }
 
-static JSNode* createSVGAnimateColorElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGAnimateColorElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGAnimateColorElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGAnimateColorElement, element.get());
 }
 
-static JSNode* createSVGAnimateTransformElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGAnimateTransformElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGAnimateTransformElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGAnimateTransformElement, element.get());
 }
 
-static JSNode* createSVGCircleElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGCircleElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGCircleElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGCircleElement, element.get());
 }
 
-static JSNode* createSVGClipPathElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGClipPathElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGClipPathElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGClipPathElement, element.get());
 }
 
-static JSNode* createSVGCursorElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGCursorElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGCursorElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGCursorElement, element.get());
 }
 
-static JSNode* createSVGDefinitionSrcElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGDefinitionSrcElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGDefinitionSrcElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGDefinitionSrcElement, element.get());
 }
 
-static JSNode* createSVGDefsElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGDefsElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGDefsElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGDefsElement, element.get());
 }
 
-static JSNode* createSVGDescElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGDescElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGDescElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGDescElement, element.get());
 }
 
-static JSNode* createSVGEllipseElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGEllipseElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGEllipseElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGEllipseElement, element.get());
 }
 
-static JSNode* createSVGFontElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGFontElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFontElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGFontElement, element.get());
 }
 
-static JSNode* createSVGFontFaceElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGFontFaceElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFontFaceElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGFontFaceElement, element.get());
 }
 
-static JSNode* createSVGFontFaceFormatElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGFontFaceFormatElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFontFaceFormatElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGFontFaceFormatElement, element.get());
 }
 
-static JSNode* createSVGFontFaceNameElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGFontFaceNameElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFontFaceNameElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGFontFaceNameElement, element.get());
 }
 
-static JSNode* createSVGFontFaceSrcElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGFontFaceSrcElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFontFaceSrcElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGFontFaceSrcElement, element.get());
 }
 
-static JSNode* createSVGFontFaceUriElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGFontFaceUriElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFontFaceUriElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGFontFaceUriElement, element.get());
 }
 
-static JSNode* createSVGForeignObjectElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGForeignObjectElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGForeignObjectElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGForeignObjectElement, element.get());
 }
 
-static JSNode* createSVGGElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGGElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGGElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGGElement, element.get());
 }
 
-static JSNode* createSVGGlyphElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGGlyphElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGGlyphElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGGlyphElement, element.get());
 }
 
-static JSNode* createSVGImageElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGImageElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGImageElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGImageElement, element.get());
 }
 
-static JSNode* createSVGLineElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGLineElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGLineElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGLineElement, element.get());
 }
 
-static JSNode* createSVGLinearGradientElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGLinearGradientElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGLinearGradientElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGLinearGradientElement, element.get());
 }
 
-static JSNode* createSVGMarkerElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGMarkerElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGMarkerElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGMarkerElement, element.get());
 }
 
-static JSNode* createSVGMaskElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGMaskElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGMaskElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGMaskElement, element.get());
 }
 
-static JSNode* createSVGMetadataElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGMetadataElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGMetadataElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGMetadataElement, element.get());
 }
 
-static JSNode* createSVGMissingGlyphElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGMissingGlyphElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGMissingGlyphElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGMissingGlyphElement, element.get());
 }
 
-static JSNode* createSVGPathElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGPathElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGPathElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGPathElement, element.get());
 }
 
-static JSNode* createSVGPatternElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGPatternElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGPatternElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGPatternElement, element.get());
 }
 
-static JSNode* createSVGPolygonElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGPolygonElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGPolygonElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGPolygonElement, element.get());
 }
 
-static JSNode* createSVGPolylineElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGPolylineElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGPolylineElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGPolylineElement, element.get());
 }
 
-static JSNode* createSVGRadialGradientElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGRadialGradientElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGRadialGradientElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGRadialGradientElement, element.get());
 }
 
-static JSNode* createSVGRectElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGRectElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGRectElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGRectElement, element.get());
 }
 
-static JSNode* createSVGScriptElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGScriptElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGScriptElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGScriptElement, element.get());
 }
 
-static JSNode* createSVGSetElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGSetElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGSetElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGSetElement, element.get());
 }
 
-static JSNode* createSVGStopElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGStopElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGStopElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGStopElement, element.get());
 }
 
-static JSNode* createSVGStyleElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGStyleElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGStyleElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGStyleElement, element.get());
 }
 
-static JSNode* createSVGSVGElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGSVGElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGSVGElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGSVGElement, element.get());
 }
 
-static JSNode* createSVGSwitchElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGSwitchElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGSwitchElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGSwitchElement, element.get());
 }
 
-static JSNode* createSVGSymbolElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGSymbolElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGSymbolElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGSymbolElement, element.get());
 }
 
-static JSNode* createSVGTextElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGTextElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGTextElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGTextElement, element.get());
 }
 
-static JSNode* createSVGTextPathElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGTextPathElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGTextPathElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGTextPathElement, element.get());
 }
 
-static JSNode* createSVGTitleElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGTitleElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGTitleElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGTitleElement, element.get());
 }
 
-static JSNode* createSVGTRefElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGTRefElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGTRefElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGTRefElement, element.get());
 }
 
-static JSNode* createSVGTSpanElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGTSpanElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGTSpanElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGTSpanElement, element.get());
 }
 
-static JSNode* createSVGUseElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGUseElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGUseElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGUseElement, element.get());
 }
 
-static JSNode* createSVGViewElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+static JSNode* createSVGViewElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGViewElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGViewElement, element.get());
 }
 
-JSNode* createJSSVGWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
+JSNode* createJSSVGWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> element)
 {   
     typedef HashMap<WebCore::AtomicStringImpl*, CreateSVGElementWrapperFunction> FunctionMap;
     DEFINE_STATIC_LOCAL(FunctionMap, map, ());
@@ -441,8 +441,8 @@ JSNode* createJSSVGWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
     }
     CreateSVGElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
     if (createWrapperFunction)
-        return createWrapperFunction(exec, element);
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGElement, element.get());
+        return createWrapperFunction(exec, globalObject, element);
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGElement, element.get());
 }
 
 }

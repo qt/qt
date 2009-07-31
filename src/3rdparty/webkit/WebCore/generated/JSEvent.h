@@ -21,6 +21,7 @@
 #ifndef JSEvent_h
 #define JSEvent_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Event;
 
-class JSEvent : public DOMObject {
-    typedef DOMObject Base;
+class JSEvent : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSEvent(PassRefPtr<JSC::Structure>, PassRefPtr<Event>);
+    JSEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Event>);
     virtual ~JSEvent();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -45,7 +46,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom attributes
     JSC::JSValue clipboardData(JSC::ExecState*) const;
@@ -55,7 +56,7 @@ private:
     RefPtr<Event> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Event*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Event*);
 Event* toEvent(JSC::JSValue);
 
 class JSEventPrototype : public JSC::JSObject {

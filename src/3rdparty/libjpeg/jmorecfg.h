@@ -157,7 +157,7 @@ typedef short INT16;
 
 /* INT32 must hold at least signed 32-bit values. */
 
-#ifndef XMD_H			/* X11/xmd.h correctly defines INT32 */
+#if !defined(XMD_H) && !defined(VXWORKS)			/* X11/xmd.h correctly defines INT32 */
 typedef long INT32;
 #endif
 
@@ -183,6 +183,9 @@ typedef unsigned int JDIMENSION;
 /* a function called through method pointers: */
 #define METHODDEF(type)		static type
 /* a function used only in its module: */
+#if defined(VXWORKS) && defined(LOCAL)
+# undef LOCAL
+#endif
 #define LOCAL(type)		static type
 /* a function referenced thru EXTERNs: */
 #define GLOBAL(type)		type

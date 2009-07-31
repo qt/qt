@@ -99,19 +99,19 @@ public:
     QColor highlight() const;
     QColor highlightedText() const;
 
-    QPalette palette() const;
-
     ColorGroup colorGroup() const;
     void setColorGroup(ColorGroup);
-
-    bool virtual eventFilter(QObject *watched, QEvent *event);
-    bool virtual event(QEvent *event);
 
     Q_INVOKABLE QColor lighter(const QColor&) const;
     Q_INVOKABLE QColor darker(const QColor&) const;
 
 Q_SIGNALS:
     void paletteChanged();
+
+private:
+    bool eventFilter(QObject *watched, QEvent *event);
+    bool event(QEvent *event);
+
 };
 
 QT_END_NAMESPACE

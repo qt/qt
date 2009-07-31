@@ -33,7 +33,7 @@ class SVGRadialGradientElement;
 class JSSVGRadialGradientElement : public JSSVGGradientElement {
     typedef JSSVGGradientElement Base;
 public:
-    JSSVGRadialGradientElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGRadialGradientElement>);
+    JSSVGRadialGradientElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGRadialGradientElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

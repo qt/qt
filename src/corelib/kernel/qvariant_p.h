@@ -134,7 +134,7 @@ inline void v_construct(QVariant::Private *x, const T &t)
 template <class T>
 inline void v_clear(QVariant::Private *d, T* = 0)
 {
-
+    
     if (sizeof(T) > sizeof(QVariant::Private::Data)) {
         //now we need to cast
         //because QVariant::PrivateShared doesn't have a virtual destructor

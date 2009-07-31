@@ -153,7 +153,7 @@ QGesture::QGesture(QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
     if (parent)
-        installEventFilter(parent);
+        parent->installEventFilter(this);
 }
 
 /*! \internal
@@ -162,7 +162,7 @@ QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
     if (parent)
-        installEventFilter(parent);
+        parent->installEventFilter(this);
 }
 
 /*!

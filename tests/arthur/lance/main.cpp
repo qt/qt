@@ -66,7 +66,7 @@ extern bool qt_show_painter_debug_output = false;
 
 //#define CONSOLE_APPLICATION
 
-static const struct { 
+static const struct {
     const char *name;
     QImage::Format format;
 } imageFormats[] = {
@@ -282,7 +282,7 @@ int main(int argc, char **argv)
 
                 if (imageFormat == QImage::Format_Invalid) {
                     printf("Invalid image format.  Available formats are:\n");
-                    for (int ff = 0; ff < formatCount; ++ff) 
+                    for (int ff = 0; ff < formatCount; ++ff)
                         printf("\t%s\n", imageFormats[ff].name);
                     return -1;
                 }
@@ -403,12 +403,10 @@ int main(int argc, char **argv)
             case WidgetType:
             {
                 OnScreenWidget<QWidget> *qWidget =
-                    new OnScreenWidget<QWidget>;
+                    new OnScreenWidget<QWidget>(files.at(j));
                 qWidget->setVerboseMode(verboseMode);
                 qWidget->setType(type);
                 qWidget->setCheckersBackground(checkers_background);
-                qWidget->m_filename = files.at(j);
-                qWidget->setWindowTitle(fileinfo.filePath());
                 qWidget->m_commands = content;
                 qWidget->resize(width, height);
                 qWidget->show();
@@ -418,12 +416,10 @@ int main(int argc, char **argv)
 
             case ImageWidgetType:
             {
-                OnScreenWidget<QWidget> *qWidget = new OnScreenWidget<QWidget>;
+                OnScreenWidget<QWidget> *qWidget = new OnScreenWidget<QWidget>(files.at(j));
                 qWidget->setVerboseMode(verboseMode);
                 qWidget->setType(type);
                 qWidget->setCheckersBackground(checkers_background);
-                qWidget->m_filename = files.at(j);
-                qWidget->setWindowTitle(fileinfo.filePath());
                 qWidget->m_commands = content;
                 qWidget->resize(width, height);
                 qWidget->show();
@@ -452,12 +448,10 @@ int main(int argc, char **argv)
             }
             case OpenGLType:
             {
-                OnScreenWidget<QGLWidget> *qGLWidget = new OnScreenWidget<QGLWidget>;
+                OnScreenWidget<QGLWidget> *qGLWidget = new OnScreenWidget<QGLWidget>(files.at(j));
                 qGLWidget->setVerboseMode(verboseMode);
                 qGLWidget->setType(type);
                 qGLWidget->setCheckersBackground(checkers_background);
-                qGLWidget->m_filename = files.at(j);
-                qGLWidget->setWindowTitle(fileinfo.filePath());
                 qGLWidget->m_commands = content;
                 qGLWidget->resize(width, height);
                 qGLWidget->show();

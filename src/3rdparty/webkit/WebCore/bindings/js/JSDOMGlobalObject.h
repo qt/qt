@@ -67,6 +67,9 @@ namespace WebCore {
 
         JSListenersMap& jsEventListeners();
 
+        // Make binding code generation easier.
+        JSDOMGlobalObject* globalObject() { return this; }
+
         void setCurrentEvent(Event*);
         Event* currentEvent() const;
 
@@ -87,16 +90,6 @@ namespace WebCore {
     private:
         JSDOMGlobalObjectData* d() const { return static_cast<JSDOMGlobalObjectData*>(JSC::JSVariableObject::d); }
     };
-
-    template<class ConstructorClass>
-    inline JSC::JSObject* getDOMConstructor(JSC::ExecState* exec)
-    {
-        if (JSC::JSObject* constructor = getCachedDOMConstructor(exec, &ConstructorClass::s_info))
-            return constructor;
-        JSC::JSObject* constructor = new (exec) ConstructorClass(exec);
-        cacheDOMConstructor(exec, &ConstructorClass::s_info, constructor);
-        return constructor;
-    }
 
     template<class ConstructorClass>
     inline JSC::JSObject* getDOMConstructor(JSC::ExecState* exec, const JSDOMGlobalObject* globalObject)

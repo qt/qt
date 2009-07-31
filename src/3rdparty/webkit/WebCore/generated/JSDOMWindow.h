@@ -384,6 +384,8 @@ JSC::JSValue jsDOMWindowCSSRuleListConstructor(JSC::ExecState*, const JSC::Ident
 void setJSDOMWindowCSSRuleListConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowRectConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowRectConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowRGBColorConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowRGBColorConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowStyleSheetListConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowStyleSheetListConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowDOMExceptionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

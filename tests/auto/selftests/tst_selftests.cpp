@@ -191,6 +191,7 @@ void tst_Selftests::runSubTest_data()
 #endif
 
     QTest::newRow("xunit") << "xunit" << QStringList("-xunitxml");
+    QTest::newRow("longstring") << "longstring" << QStringList();
 
 }
 

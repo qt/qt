@@ -841,6 +841,12 @@
 
     \section2 XML Schema 1.0
 
+    There are two ways QtXmlPatterns can be used to validate schemas:
+    You can use the C++ API in your Qt application using the classes
+    QXmlSchema and QXmlSchemaValidator, or you can use the command line
+    utility named xmlpatternsvalidator (located in the "bin" directory
+    of your Qt build).
+
     The QtXmlPatterns implementation of XML Schema validation supports
     the schema specification version 1.0 in large parts. Known problems
     of the implementation and areas where conformancy may be questionable

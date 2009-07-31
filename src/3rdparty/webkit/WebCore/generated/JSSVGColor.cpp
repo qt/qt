@@ -25,6 +25,7 @@
 #include "JSSVGColor.h"
 
 #include "JSRGBColor.h"
+#include "RGBColor.h"
 #include "SVGColor.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
@@ -71,12 +72,12 @@ static JSC_CONST_HASHTABLE HashTable JSSVGColorConstructorTable =
     { 8, 7, JSSVGColorConstructorTableValues, 0 };
 #endif
 
-class JSSVGColorConstructor : public DOMObject {
+class JSSVGColorConstructor : public DOMConstructorObject {
 public:
-    JSSVGColorConstructor(ExecState* exec)
-        : DOMObject(JSSVGColorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGColorConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGColorConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGColorPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGColorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -130,8 +131,8 @@ bool JSSVGColorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 const ClassInfo JSSVGColor::s_info = { "SVGColor", &JSCSSValue::s_info, &JSSVGColorTable, 0 };
 
-JSSVGColor::JSSVGColor(PassRefPtr<Structure> structure, PassRefPtr<SVGColor> impl)
-    : JSCSSValue(structure, impl)
+JSSVGColor::JSSVGColor(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGColor> impl)
+    : JSCSSValue(structure, globalObject, impl)
 {
 }
 
@@ -147,25 +148,28 @@ bool JSSVGColor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
 
 JSValue jsSVGColorColorType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGColor* castedThis = static_cast<JSSVGColor*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGColor* imp = static_cast<SVGColor*>(static_cast<JSSVGColor*>(asObject(slot.slotBase()))->impl());
+    SVGColor* imp = static_cast<SVGColor*>(castedThis->impl());
     return jsNumber(exec, imp->colorType());
 }
 
 JSValue jsSVGColorRgbColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGColor* castedThis = static_cast<JSSVGColor*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGColor* imp = static_cast<SVGColor*>(static_cast<JSSVGColor*>(asObject(slot.slotBase()))->impl());
-    return getJSRGBColor(exec, imp->rgbColor());
+    SVGColor* imp = static_cast<SVGColor*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rgbColor()));
 }
 
 JSValue jsSVGColorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGColor*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSSVGColor* domObject = static_cast<JSSVGColor*>(asObject(slot.slotBase()));
+    return JSSVGColor::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSSVGColor::getConstructor(ExecState* exec)
+JSValue JSSVGColor::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGColorConstructor>(exec);
+    return getDOMConstructor<JSSVGColorConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGColorPrototypeFunctionSetRGBColor(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

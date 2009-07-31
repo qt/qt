@@ -6,19 +6,19 @@ Rect {
     // A target region.  Clicking in here sets the state to '' - the default state
     Rect {
         x: 0; y: 0; width: 50; height: 50
-        color: "transparent"; pen.color: "black"
+        color: "transparent"; border.color: "black"
         MouseRegion { anchors.fill: parent; onClicked: { Page.state='' } }
     }
     // Another target region.  Clicking in here sets the state to 'Position1'
     Rect {
         x: 150; y: 50; width: 50; height: 50
-        color: "transparent"; pen.color: "black"
+        color: "transparent"; border.color: "black"
         MouseRegion { anchors.fill: parent; onClicked: { Page.state='Position1' } }
     }
     // Another target region.  Clicking in here sets the state to 'Position2'
     Rect {
         x: 0; y: 200; width: 50; height: 50
-        color: "transparent"; pen.color: "black"
+        color: "transparent"; border.color: "black"
         MouseRegion { anchors.fill: parent; onClicked: { Page.state='Position2' } }
     }
     // Rect which will be moved when my state changes

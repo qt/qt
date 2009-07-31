@@ -47,6 +47,7 @@
 #include "GraphicsContext.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HitTestResult.h"
+#include "InspectorBackend.h"
 #include "InspectorClient.h"
 #include "InspectorFrontend.h"
 #include "InspectorDatabaseResource.h"
@@ -99,65 +100,12 @@ static const char* const UserInitiatedProfileName = "org.webkit.profiles.user-in
 static const char* const resourceTrackingEnabledSettingName = "resourceTrackingEnabled";
 static const char* const debuggerEnabledSettingName = "debuggerEnabled";
 static const char* const profilerEnabledSettingName = "profilerEnabled";
+static const char* const inspectorAttachedHeightName = "inspectorAttachedHeight";
+static const char* const lastActivePanelSettingName = "lastActivePanel";
 
-bool InspectorController::addSourceToFrame(const String& mimeType, const String& source, Node* frameNode)
-{
-    ASSERT_ARG(frameNode, frameNode);
-
-    if (!frameNode)
-        return false;
-
-    if (!frameNode->attached()) {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-
-    ASSERT(frameNode->isElementNode());
-    if (!frameNode->isElementNode())
-        return false;
-
-    Element* element = static_cast<Element*>(frameNode);
-    ASSERT(element->isFrameOwnerElement());
-    if (!element->isFrameOwnerElement())
-        return false;
-
-    HTMLFrameOwnerElement* frameOwner = static_cast<HTMLFrameOwnerElement*>(element);
-    ASSERT(frameOwner->contentFrame());
-    if (!frameOwner->contentFrame())
-        return false;
-
-    FrameLoader* loader = frameOwner->contentFrame()->loader();
-
-    loader->setResponseMIMEType(mimeType);
-    loader->begin();
-    loader->write(source);
-    loader->end();
-
-    return true;
-}
-
-const String& InspectorController::platform() const
-{
-#if PLATFORM(MAC)
-#ifdef BUILDING_ON_TIGER
-    DEFINE_STATIC_LOCAL(const String, platform, ("mac-tiger"));
-#else
-    DEFINE_STATIC_LOCAL(const String, platform, ("mac-leopard"));
-#endif
-#elif PLATFORM(WIN_OS)
-    DEFINE_STATIC_LOCAL(const String, platform, ("windows"));
-#elif PLATFORM(QT)
-    DEFINE_STATIC_LOCAL(const String, platform, ("qt"));
-#elif PLATFORM(GTK)
-    DEFINE_STATIC_LOCAL(const String, platform, ("gtk"));
-#elif PLATFORM(WX)
-    DEFINE_STATIC_LOCAL(const String, platform, ("wx"));
-#else
-    DEFINE_STATIC_LOCAL(const String, platform, ("unknown"));
-#endif
-
-    return platform;
-}
+static const unsigned defaultAttachedHeight = 300;
+static const float minimumAttachedHeight = 250.0f;
+static const float maximumAttachedHeightRatio = 0.75f;
 
 static unsigned s_inspectorControllerCount;
 static HashMap<String, InspectorController::Setting*>* s_settingCache;
@@ -168,13 +116,14 @@ InspectorController::InspectorController(Page* page, InspectorClient* client)
     , m_page(0)
     , m_scriptState(0)
     , m_windowVisible(false)
-    , m_showAfterVisible(ElementsPanel)
+    , m_showAfterVisible(CurrentPanel)
     , m_nextIdentifier(-2)
     , m_groupLevel(0)
     , m_searchingForNode(false)
     , m_previousMessage(0)
     , m_resourceTrackingEnabled(false)
     , m_resourceTrackingSettingsLoaded(false)
+    , m_inspectorBackend(InspectorBackend::create(this, client))
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     , m_debuggerEnabled(false)
     , m_attachDebuggerWhenShown(false)
@@ -209,6 +158,8 @@ InspectorController::~InspectorController()
         delete s_settingCache;
         s_settingCache = 0;
     }
+    
+    m_inspectorBackend->disconnectController();
 }
 
 void InspectorController::inspectedPageDestroyed()
@@ -277,20 +228,6 @@ void InspectorController::setSetting(const String& key, const Setting& setting)
         s_settingCache->set(key, new Setting(setting));
 
     m_client->storeSetting(key, setting);
-}
-
-String InspectorController::localizedStringsURL()
-{
-    if (!enabled())
-        return String();
-    return m_client->localizedStringsURL();
-}
-
-String InspectorController::hiddenPanels()
-{
-    if (!enabled())
-        return String();
-    return m_client->hiddenPanels();
 }
 
 // Trying to inspect something in a frame with JavaScript disabled would later lead to
@@ -371,14 +308,27 @@ void InspectorController::setWindowVisible(bool visible, bool attached)
     if (m_windowVisible) {
         setAttachedWindow(attached);
         populateScriptObjects();
+
+        // Console panel is implemented as a 'fast view', so there should be
+        // real panel opened along with it.
+        bool showConsole = m_showAfterVisible == ConsolePanel;
+        if (m_showAfterVisible == CurrentPanel || showConsole) {
+          Setting lastActivePanelSetting = setting(lastActivePanelSettingName);
+          if (lastActivePanelSetting.type() == Setting::StringType)
+              m_showAfterVisible = specialPanelForJSName(lastActivePanelSetting.string());
+          else
+              m_showAfterVisible = ElementsPanel;
+        }
+
         if (m_nodeToFocus)
             focusNode();
 #if ENABLE(JAVASCRIPT_DEBUGGER)
         if (m_attachDebuggerWhenShown)
             enableDebugger();
 #endif
-        if (m_showAfterVisible != CurrentPanel)
-            showPanel(m_showAfterVisible);
+        showPanel(m_showAfterVisible);
+        if (showConsole)
+            showPanel(ConsolePanel);
     } else {
 #if ENABLE(JAVASCRIPT_DEBUGGER)
         // If the window is being closed with the debugger enabled,
@@ -391,7 +341,6 @@ void InspectorController::setWindowVisible(bool visible, bool attached)
 #endif
         resetScriptObjects();
     }
-
     m_showAfterVisible = CurrentPanel;
 }
 
@@ -453,11 +402,26 @@ void InspectorController::endGroup(MessageSource source, unsigned lineNumber, co
     addConsoleMessage(0, new ConsoleMessage(source, EndGroupMessageType, LogMessageLevel, String(), lineNumber, sourceURL, m_groupLevel));
 }
 
+static unsigned constrainedAttachedWindowHeight(unsigned preferredHeight, unsigned totalWindowHeight)
+{
+    return roundf(max(minimumAttachedHeight, min<float>(preferredHeight, totalWindowHeight * maximumAttachedHeightRatio)));
+}
+
 void InspectorController::attachWindow()
 {
     if (!enabled())
         return;
+
+    unsigned inspectedPageHeight = m_inspectedPage->mainFrame()->view()->visibleHeight();
+
     m_client->attachWindow();
+
+    Setting attachedHeight = setting(inspectorAttachedHeightName);
+    unsigned preferredHeight = attachedHeight.type() == Setting::IntegerType ? attachedHeight.integerValue() : defaultAttachedHeight;
+
+    // We need to constrain the window height here in case the user has resized the inspected page's window so that
+    // the user's preferred height would be too big to display.
+    m_client->setAttachedWindowHeight(constrainedAttachedWindowHeight(preferredHeight, inspectedPageHeight));
 }
 
 void InspectorController::detachWindow()
@@ -479,7 +443,18 @@ void InspectorController::setAttachedWindowHeight(unsigned height)
 {
     if (!enabled())
         return;
-    m_client->setAttachedWindowHeight(height);
+    
+    unsigned totalHeight = m_page->mainFrame()->view()->visibleHeight() + m_inspectedPage->mainFrame()->view()->visibleHeight();
+    unsigned attachedHeight = constrainedAttachedWindowHeight(height, totalHeight);
+    
+    setSetting(inspectorAttachedHeightName, Setting(attachedHeight));
+    
+    m_client->setAttachedWindowHeight(attachedHeight);
+}
+
+void InspectorController::storeLastActivePanel(const String& panelName)
+{
+    setSetting(lastActivePanelSettingName, Setting(panelName));
 }
 
 void InspectorController::toggleSearchForNodeInPage()
@@ -490,19 +465,6 @@ void InspectorController::toggleSearchForNodeInPage()
     m_searchingForNode = !m_searchingForNode;
     if (!m_searchingForNode)
         hideHighlight();
-}
-
-void InspectorController::addResourceSourceToFrame(long identifier, Node* frame)
-{
-    if (!enabled() || !m_frontend)
-        return;
-
-    RefPtr<InspectorResource> resource = resources().get(identifier);
-    if (resource) {
-        String sourceString = resource->sourceString();
-        if (!sourceString.isEmpty())
-            addSourceToFrame(resource->mimeType(), sourceString, frame);
-    }
 }
 
 void InspectorController::mouseDidMoveOverElement(const HitTestResult& result, unsigned)
@@ -546,7 +508,7 @@ void InspectorController::windowScriptObjectAvailable()
     m_page->mainFrame()->document()->securityOrigin()->grantUniversalAccess();
 
     m_scriptState = scriptStateFromPage(m_page);
-    ScriptGlobalObject::set(m_scriptState, "InspectorController", this);
+    ScriptGlobalObject::set(m_scriptState, "InspectorController", m_inspectorBackend.get());
 }
 
 void InspectorController::scriptObjectReady()
@@ -635,7 +597,18 @@ void InspectorController::close()
 void InspectorController::showWindow()
 {
     ASSERT(enabled());
+
+    unsigned inspectedPageHeight = m_inspectedPage->mainFrame()->view()->visibleHeight();
+
     m_client->showWindow();
+
+    Setting attachedHeight = setting(inspectorAttachedHeightName);
+    unsigned preferredHeight = attachedHeight.type() == Setting::IntegerType ? attachedHeight.integerValue() : defaultAttachedHeight;
+
+    // This call might not go through (if the window starts out detached), but if the window is initially created attached,
+    // InspectorController::attachWindow is never called, so we need to make sure to set the attachedWindowHeight.
+    // FIXME: Clean up code so we only have to call setAttachedWindowHeight in InspectorController::attachWindow
+    m_client->setAttachedWindowHeight(constrainedAttachedWindowHeight(preferredHeight, inspectedPageHeight));
 }
 
 void InspectorController::closeWindow()
@@ -790,7 +763,9 @@ void InspectorController::addResource(InspectorResource* resource)
 void InspectorController::removeResource(InspectorResource* resource)
 {
     m_resources.remove(resource->identifier());
-    m_knownResources.remove(resource->requestURL());
+    String requestURL = resource->requestURL();
+    if (!requestURL.isNull())
+        m_knownResources.remove(requestURL);
 
     Frame* frame = resource->frame();
     ResourcesMap* resourceMap = m_frameResources.get(frame);
@@ -1116,7 +1091,7 @@ void InspectorController::addScriptProfile(Profile* profile)
     if (!m_frontend)
         return;
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
     m_frontend->addProfile(toJS(m_scriptState, profile));
 }
 
@@ -1265,66 +1240,11 @@ void InspectorController::disableDebugger(bool always)
         m_frontend->debuggerWasDisabled();
 }
 
-JavaScriptCallFrame* InspectorController::currentCallFrame() const
-{
-    return JavaScriptDebugServer::shared().currentCallFrame();
-}
-
-bool InspectorController::pauseOnExceptions()
-{
-    return JavaScriptDebugServer::shared().pauseOnExceptions();
-}
-
-void InspectorController::setPauseOnExceptions(bool pause)
-{
-    JavaScriptDebugServer::shared().setPauseOnExceptions(pause);
-}
-
-void InspectorController::pauseInDebugger()
-{
-    if (!m_debuggerEnabled)
-        return;
-    JavaScriptDebugServer::shared().pauseProgram();
-}
-
 void InspectorController::resumeDebugger()
 {
     if (!m_debuggerEnabled)
         return;
     JavaScriptDebugServer::shared().continueProgram();
-}
-
-void InspectorController::stepOverStatementInDebugger()
-{
-    if (!m_debuggerEnabled)
-        return;
-    JavaScriptDebugServer::shared().stepOverStatement();
-}
-
-void InspectorController::stepIntoStatementInDebugger()
-{
-    if (!m_debuggerEnabled)
-        return;
-    JavaScriptDebugServer::shared().stepIntoStatement();
-}
-
-void InspectorController::stepOutOfFunctionInDebugger()
-{
-    if (!m_debuggerEnabled)
-        return;
-    JavaScriptDebugServer::shared().stepOutOfFunction();
-}
-
-void InspectorController::addBreakpoint(const String& sourceID, unsigned lineNumber)
-{
-    intptr_t sourceIDValue = sourceID.toIntPtr();
-    JavaScriptDebugServer::shared().addBreakpoint(sourceIDValue, lineNumber);
-}
-
-void InspectorController::removeBreakpoint(const String& sourceID, unsigned lineNumber)
-{
-    intptr_t sourceIDValue = sourceID.toIntPtr();
-    JavaScriptDebugServer::shared().removeBreakpoint(sourceIDValue, lineNumber);
 }
 
 // JavaScriptDebugListener functions
@@ -1527,6 +1447,22 @@ bool InspectorController::stopTiming(const String& title, double& elapsed)
     
     elapsed = currentTime() * 1000 - startTime;
     return true;
+}
+
+InspectorController::SpecialPanels InspectorController::specialPanelForJSName(const String& panelName)
+{
+    if (panelName == "elements")
+        return ElementsPanel;
+    else if (panelName == "resources")
+        return ResourcesPanel;
+    else if (panelName == "scripts")
+        return ScriptsPanel;
+    else if (panelName == "profiles")
+        return ProfilesPanel;
+    else if (panelName == "databases")
+        return DatabasesPanel;
+    else
+        return ElementsPanel;
 }
 
 } // namespace WebCore

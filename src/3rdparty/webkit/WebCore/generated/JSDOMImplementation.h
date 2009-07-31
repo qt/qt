@@ -21,6 +21,7 @@
 #ifndef JSDOMImplementation_h
 #define JSDOMImplementation_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class DOMImplementation;
 
-class JSDOMImplementation : public DOMObject {
-    typedef DOMObject Base;
+class JSDOMImplementation : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDOMImplementation(PassRefPtr<JSC::Structure>, PassRefPtr<DOMImplementation>);
+    JSDOMImplementation(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMImplementation>);
     virtual ~JSDOMImplementation();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     DOMImplementation* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<DOMImplementation> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, DOMImplementation*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, DOMImplementation*);
 DOMImplementation* toDOMImplementation(JSC::JSValue);
 
 class JSDOMImplementationPrototype : public JSC::JSObject {

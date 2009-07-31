@@ -467,19 +467,25 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
     return qEmptyModel();
 }
 
+namespace {
+    struct DefaultRoleNames : public QHash<int, QByteArray>
+    {
+        DefaultRoleNames() {
+            (*this)[Qt::DisplayRole] = "display";
+            (*this)[Qt::DecorationRole] = "decoration";
+            (*this)[Qt::EditRole] = "edit";
+            (*this)[Qt::ToolTipRole] = "toolTip";
+            (*this)[Qt::StatusTipRole] = "statusTip";
+            (*this)[Qt::WhatsThisRole] = "whatsThis";
+        }
+    };
+}
+
+Q_GLOBAL_STATIC(DefaultRoleNames, qDefaultRoleNames)
+
 const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 {
-    static QHash<int,QByteArray> roleNames;
-    if (roleNames.isEmpty()) {
-        roleNames[Qt::DisplayRole] = "display";
-        roleNames[Qt::DecorationRole] = "decoration";
-        roleNames[Qt::EditRole] = "edit";
-        roleNames[Qt::ToolTipRole] = "toolTip";
-        roleNames[Qt::StatusTipRole] = "statusTip";
-        roleNames[Qt::WhatsThisRole] = "whatsThis";
-    }
-
-    return roleNames;
+    return *qDefaultRoleNames();
 }
 
 /*!

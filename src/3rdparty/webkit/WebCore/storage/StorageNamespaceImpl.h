@@ -28,9 +28,17 @@
 
 #if ENABLE(DOM_STORAGE)
 
+#include "PlatformString.h"
+#include "SecurityOriginHash.h"
+#include "StorageArea.h"
 #include "StorageNamespace.h"
 
+#include <wtf/HashMap.h>
+#include <wtf/RefPtr.h>
+
 namespace WebCore {
+
+    class StorageAreaImpl;
 
     class StorageNamespaceImpl : public StorageNamespace {
     public:
@@ -45,7 +53,7 @@ namespace WebCore {
     private:
         StorageNamespaceImpl(StorageType, const String& path);
 
-        typedef HashMap<RefPtr<SecurityOrigin>, RefPtr<StorageArea>, SecurityOriginHash> StorageAreaMap;
+        typedef HashMap<RefPtr<SecurityOrigin>, RefPtr<StorageAreaImpl>, SecurityOriginHash> StorageAreaMap;
         StorageAreaMap m_storageAreaMap;
 
         StorageType m_storageType;

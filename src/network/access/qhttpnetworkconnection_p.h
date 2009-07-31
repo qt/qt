@@ -65,6 +65,7 @@
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qhttpnetworkreply_p.h>
 
+#include "qhttpnetworkconnectionchannel_p.h"
 
 #ifndef QT_NO_HTTP
 
@@ -157,8 +158,6 @@ private:
 };
 
 
-
-
 // private classes
 typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 
@@ -171,16 +170,6 @@ public:
     ~QHttpNetworkConnectionPrivate();
     void init();
     void connectSignals(QAbstractSocket *socket);
-
-    enum SocketState {
-        IdleState = 0,          // ready to send request
-        ConnectingState = 1,    // connecting to host
-        WritingState = 2,       // writing the data
-        WaitingState = 4,       // waiting for reply
-        ReadingState = 8,       // reading the reply
-        Wait4AuthState = 0x10,  // blocked for send till the current authentication slot is done
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|Wait4AuthState)
-    };
 
     enum { ChunkSize = 4096 };
 
@@ -226,35 +215,9 @@ public:
     quint16 port;
     bool encrypt;
 
-    struct Channel {
-        QAbstractSocket *socket;
-        SocketState state;
-        QHttpNetworkRequest request; // current request
-        QHttpNetworkReply *reply; // current reply for this request
-        qint64 written;
-        qint64 bytesTotal;
-        bool resendCurrent;
-        int lastStatus; // last status received on this channel
-        bool pendingEncrypt; // for https (send after encrypted)
-        int reconnectAttempts; // maximum 2 reconnection attempts
-        QAuthenticatorPrivate::Method authMehtod;
-        QAuthenticatorPrivate::Method proxyAuthMehtod;
-        QAuthenticator authenticator;
-        QAuthenticator proxyAuthenticator;
-#ifndef QT_NO_OPENSSL
-        bool ignoreAllSslErrors;
-        QList<QSslError> ignoreSslErrorsList;
-#endif
-        Channel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
-            lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
-            authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
-#ifndef QT_NO_OPENSSL
-            , ignoreAllSslErrors(false)
-#endif
-        {}
-    };
     static const int channelCount;
-    Channel *channels; // parallel connections to the server
+    QHttpNetworkConnectionChannel *channels; // parallel connections to the server
+
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 

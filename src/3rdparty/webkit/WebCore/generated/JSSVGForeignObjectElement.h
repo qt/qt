@@ -33,7 +33,7 @@ class SVGForeignObjectElement;
 class JSSVGForeignObjectElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGForeignObjectElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGForeignObjectElement>);
+    JSSVGForeignObjectElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGForeignObjectElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

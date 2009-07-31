@@ -190,8 +190,8 @@
 /*!
     \fn void QButtonGroup::addButton(QAbstractButton *button, int id);
 
-    Adds the given \a button to the button group, with the given
-    \a id. It is recommended to assign only positive ids.
+    Adds the given \a button to the button group, with the given \a
+    id. It is recommended to assign only positive ids.
 
     \sa removeButton() buttons()
 */

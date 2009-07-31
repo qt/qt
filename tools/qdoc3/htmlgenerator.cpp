@@ -186,7 +186,7 @@ HtmlGenerator::HtmlGenerator()
     : helpProjectWriter(0), inLink(false), inContents(false),
       inSectionHeading(false), inTableHeader(false), numTableRows(0),
       threeColumnEnumValueTable(true), funcLeftParen("\\S(\\()"),
-      tre(0), slow(false)
+      tre(0), slow(false), obsoleteLinks(false)
 {
 }
 
@@ -215,6 +215,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     };
 
     Generator::initializeGenerator(config);
+    obsoleteLinks = config.getBool(QLatin1String(CONFIG_OBSOLETELINKS));
     setImageFileExtensions(QStringList() << "png" << "jpg" << "jpeg" << "gif");
     int i = 0;
     while (defaults[i].key) {
@@ -3686,9 +3687,11 @@ QString HtmlGenerator::getLink(const Atom *atom,
                             }
                             QString name = marker->plainFullName(relative);
                             if (!porting && !name.startsWith("Q3")) {
-                                relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
-                                                                   .arg(atom->string())
-                                                                   .arg(name));
+                                if (obsoleteLinks) {
+                                    relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
+                                                                       .arg(atom->string())
+                                                                       .arg(name));
+                                }
                                 inObsoleteLink = true;
                             }
 #if 0                            

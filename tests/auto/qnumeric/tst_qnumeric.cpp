@@ -41,6 +41,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtGlobal>
 
 #include <math.h>
 
@@ -97,8 +98,12 @@ void tst_QNumeric::qNan()
     if (0 > nan)
         QFAIL("compiler thinks 0 > nan");
 
+#  if defined(Q_CC_DIAB)
+    QWARN("!(0 < nan) would fail due to a bug in dcc");
+#  else
     if (0 < nan)
         QFAIL("compiler thinks 0 < nan");
+#  endif
 #endif
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + 1));

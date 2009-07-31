@@ -54,7 +54,7 @@
     Qt is supported on a variety of 32-bit and 64-bit platforms, and can
     usually be built on each platform with GCC, a vendor-supplied compiler, or
     a third party compiler. Although Qt may be built on a range of platform-compiler
-    combinations, only a subset of these are actively supported by Qt.
+    combinations, only a subset of these are actively supported by Nokia.
 
     \tableofcontents
 

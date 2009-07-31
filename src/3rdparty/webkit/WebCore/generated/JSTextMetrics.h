@@ -21,6 +21,7 @@
 #ifndef JSTextMetrics_h
 #define JSTextMetrics_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class TextMetrics;
 
-class JSTextMetrics : public DOMObject {
-    typedef DOMObject Base;
+class JSTextMetrics : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSTextMetrics(PassRefPtr<JSC::Structure>, PassRefPtr<TextMetrics>);
+    JSTextMetrics(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<TextMetrics>);
     virtual ~JSTextMetrics();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     TextMetrics* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<TextMetrics> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, TextMetrics*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, TextMetrics*);
 TextMetrics* toTextMetrics(JSC::JSValue);
 
 class JSTextMetricsPrototype : public JSC::JSObject {

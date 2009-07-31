@@ -43,6 +43,7 @@
 
 #include "qpixmap.h"
 #include "qpixmapdata_p.h"
+#include "qimagepixmapcleanuphooks_p.h"
 
 #include "qbitmap.h"
 #include "qcolormap.h"
@@ -79,14 +80,6 @@
 #include "qpixmap_raster_p.h"
 
 QT_BEGIN_NAMESPACE
-
-// ### Qt 5: remove
-typedef void (*_qt_pixmap_cleanup_hook)(int);
-Q_GUI_EXPORT _qt_pixmap_cleanup_hook qt_pixmap_cleanup_hook = 0;
-
-// ### Qt 5: rename
-typedef void (*_qt_pixmap_cleanup_hook_64)(qint64);
-Q_GUI_EXPORT _qt_pixmap_cleanup_hook_64 qt_pixmap_cleanup_hook_64 = 0;
 
 // ### Qt 5: remove
 Q_GUI_EXPORT qint64 qt_pixmap_id(const QPixmap &pixmap)
@@ -656,7 +649,7 @@ void QPixmap::resize_helper(const QSize &s)
     QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
-        uninit = x11Data->uninit;
+        uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
     QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
@@ -1357,8 +1350,8 @@ bool QPixmap::isDetached() const
 void QPixmap::deref()
 {
     if (data && !data->ref.deref()) { // Destroy image if last ref
-        if (data->is_cached && qt_pixmap_cleanup_hook_64)
-            qt_pixmap_cleanup_hook_64(cacheKey());
+        if (data->is_cached)
+            QImagePixmapCleanupHooks::executePixmapHooks(this);
         delete data;
         data = 0;
     }
@@ -1897,9 +1890,6 @@ int QPixmap::defaultDepth()
 #endif
 }
 
-typedef void (*_qt_pixmap_cleanup_hook_64)(qint64);
-extern _qt_pixmap_cleanup_hook_64 qt_pixmap_cleanup_hook_64;
-
 /*!
     Detaches the pixmap from shared pixmap data.
 
@@ -1925,8 +1915,8 @@ void QPixmap::detach()
         rasterData->image.detach();
     }
 
-    if (data->is_cached && qt_pixmap_cleanup_hook_64 && data->ref == 1)
-        qt_pixmap_cleanup_hook_64(cacheKey());
+    if (data->is_cached && data->ref == 1)
+        QImagePixmapCleanupHooks::executePixmapHooks(this);
 
 #if defined(Q_WS_MAC)
     QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
@@ -1946,7 +1936,7 @@ void QPixmap::detach()
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class) {
         QX11PixmapData *d = static_cast<QX11PixmapData*>(data);
-        d->uninit = false;
+        d->flags &= ~QX11PixmapData::Uninitialized;
 
         // reset the cache data
         if (d->hd2) {

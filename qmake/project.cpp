@@ -623,10 +623,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             concat << base_concat + QDir::separator() + "mac";
             concat << base_concat + QDir::separator() + "mac9";
             break;
-        case Option::TARG_QNX6_MODE: //also a unix
-            concat << base_concat + QDir::separator() + "qnx6";
-            concat << base_concat + QDir::separator() + "unix";
-            break;
         }
         concat << base_concat;
     }
@@ -1610,12 +1606,10 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
         return false;
 
     //mkspecs
-    if((Option::target_mode == Option::TARG_MACX_MODE || Option::target_mode == Option::TARG_QNX6_MODE ||
+    if((Option::target_mode == Option::TARG_MACX_MODE ||
         Option::target_mode == Option::TARG_UNIX_MODE) && x == "unix")
         return true;
     else if(Option::target_mode == Option::TARG_MACX_MODE && x == "macx")
-        return true;
-    else if(Option::target_mode == Option::TARG_QNX6_MODE && x == "qnx6")
         return true;
     else if(Option::target_mode == Option::TARG_MAC9_MODE && x == "mac9")
         return true;

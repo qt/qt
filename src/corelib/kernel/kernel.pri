@@ -57,7 +57,7 @@ SOURCES += \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
         kernel/qmetaobjectbuilder.cpp \
-        kernel/qpointer.cpp \
+        kernel/qpointer.cpp 
 
 win32 {
 	SOURCES += \
@@ -113,5 +113,12 @@ unix {
                 kernel/qeventdispatcher_unix_p.h
 
    contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
+}
+
+vxworks {
+	SOURCES += \
+		kernel/qfunctions_vxworks.cpp
+	HEADERS += \
+		kernel/qfunctions_vxworks.h
 }
 

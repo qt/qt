@@ -48,6 +48,7 @@
 #include "qkbdlinuxinput_qws.h"
 #include "qkbdum_qws.h"
 #include "qkbdvfb_qws.h"
+#include "qkbdqnx_qws.h"
 #include <stdlib.h>
 #include "private/qfactoryloader_p.h"
 #include "qkbddriverplugin_qws.h"
@@ -101,6 +102,10 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 QWSKeyboardHandler *QKbdDriverFactory::create(const QString& key, const QString& device)
 {
     QString driver = key.toLower();
+#if defined(Q_OS_QNX) && !defined(QT_NO_QWS_KBD_QNX)
+    if (driver == QLatin1String("qnx") || driver.isEmpty())
+        return new QWSQnxKeyboardHandler(device);
+#endif
 #ifndef QT_NO_QWS_KEYBOARD
 # ifndef QT_NO_QWS_KBD_TTY
     if (driver == QLatin1String("tty") || driver.isEmpty())
@@ -143,6 +148,9 @@ QStringList QKbdDriverFactory::keys()
 {
     QStringList list;
 
+#if defined(Q_OS_QNX) && !defined(QT_NO_QWS_KBD_QNX)
+    list << QLatin1String("QNX");
+#endif
 #ifndef QT_NO_QWS_KBD_TTY
     list << QLatin1String("TTY");
 #endif

@@ -122,6 +122,8 @@ private slots:
     void reentrancy();
     void incDecNonObjectProperty();
     void installTranslatorFunctions();
+    void functionScopes();
+    void nativeFunctionScopes();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -891,6 +893,35 @@ void tst_QScriptEngine::getSetGlobalObject()
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
+
+    QVERIFY(!obj.property("foo").isValid());
+    eng.evaluate("var foo = 123");
+    {
+        QScriptValue ret = obj.property("foo");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
+    }
+
+    QVERIFY(!obj.property("bar").isValid());
+    eng.evaluate("bar = 456");
+    {
+        QScriptValue ret = obj.property("bar");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 456);
+    }
+
+    QVERIFY(!obj.property("baz").isValid());
+    eng.evaluate("this['baz'] = 789");
+    {
+        QScriptValue ret = obj.property("baz");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 789);
+    }
+
+    {
+        QScriptValue ret = eng.evaluate("(function() { return this; })()");
+        QVERIFY(ret.strictlyEquals(obj));
+    }
 }
 
 void tst_QScriptEngine::checkSyntax_data()
@@ -3575,6 +3606,109 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QScriptValue ret = eng.evaluate("'foo%0'.arg('bar')");
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
+    }
+}
+
+void tst_QScriptEngine::functionScopes()
+{
+    QScriptEngine eng;
+    {
+        // top-level functions have only the global object in their scope
+        QScriptValue fun = eng.evaluate("(function() {})");
+        QVERIFY(fun.isFunction());
+        QVERIFY(fun.scope().isObject());
+        QVERIFY(fun.scope().strictlyEquals(eng.globalObject()));
+        QVERIFY(!eng.globalObject().scope().isValid());
+    }
+    {
+        QScriptValue fun = eng.globalObject().property("Object");
+        QVERIFY(fun.isFunction());
+        // native built-in functions don't have scope
+        QVERIFY(!fun.scope().isValid());
+    }
+    {
+        // closure
+        QScriptValue fun = eng.evaluate("(function(arg) { var foo = arg; return function() { return foo; }; })(123)");
+        QVERIFY(fun.isFunction());
+        {
+            QScriptValue ret = fun.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
+        QScriptValue scope = fun.scope();
+        QVERIFY(scope.isObject());
+        {
+            QScriptValue ret = scope.property("foo");
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+            QCOMPARE(scope.propertyFlags("foo"), QScriptValue::Undeletable);
+        }
+        {
+            QScriptValue ret = scope.property("arg");
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+            QCOMPARE(scope.propertyFlags("arg"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        }
+
+        scope.setProperty("foo", 456);
+        {
+            QScriptValue ret = fun.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 456);
+        }
+
+        scope = scope.scope();
+        QVERIFY(scope.isObject());
+        QVERIFY(scope.strictlyEquals(eng.globalObject()));
+    }
+}
+
+static QScriptValue counter_inner(QScriptContext *ctx, QScriptEngine *)
+{
+     QScriptValue outerAct = ctx->callee().scope();
+     double count = outerAct.property("count").toNumber();
+     outerAct.setProperty("count", count+1);
+     return count;
+}
+
+static QScriptValue counter(QScriptContext *ctx, QScriptEngine *eng)
+{
+     QScriptValue act = ctx->activationObject();
+     act.setProperty("count", ctx->argument(0).toInt32());
+     QScriptValue result = eng->newFunction(counter_inner);
+     result.setScope(act);
+     return result;
+}
+
+static QScriptValue counter_hybrid(QScriptContext *ctx, QScriptEngine *eng)
+{
+     QScriptValue act = ctx->activationObject();
+     act.setProperty("count", ctx->argument(0).toInt32());
+     return eng->evaluate("function() { return count++; }");
+}
+
+void tst_QScriptEngine::nativeFunctionScopes()
+{
+    QScriptEngine eng;
+    {
+        QScriptValue fun = eng.newFunction(counter);
+        QScriptValue cnt = fun.call(QScriptValue(), QScriptValueList() << 123);
+        QVERIFY(cnt.isFunction());
+        {
+            QScriptValue ret = cnt.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
+    }
+    {
+        QScriptValue fun = eng.newFunction(counter_hybrid);
+        QScriptValue cnt = fun.call(QScriptValue(), QScriptValueList() << 123);
+        QVERIFY(cnt.isFunction());
+        {
+            QScriptValue ret = cnt.call();
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
     }
 }
 

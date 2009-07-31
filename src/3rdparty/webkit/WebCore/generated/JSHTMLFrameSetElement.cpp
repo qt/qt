@@ -75,12 +75,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLFrameSetElementConstructorTable =
     { 1, 0, JSHTMLFrameSetElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLFrameSetElementConstructor : public DOMObject {
+class JSHTMLFrameSetElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLFrameSetElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLFrameSetElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLFrameSetElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLFrameSetElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFrameSetElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFrameSetElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -122,8 +122,8 @@ JSObject* JSHTMLFrameSetElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLFrameSetElement::s_info = { "HTMLFrameSetElement", &JSHTMLElement::s_info, &JSHTMLFrameSetElementTable, 0 };
 
-JSHTMLFrameSetElement::JSHTMLFrameSetElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLFrameSetElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLFrameSetElement::JSHTMLFrameSetElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFrameSetElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -143,22 +143,25 @@ bool JSHTMLFrameSetElement::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsHTMLFrameSetElementCols(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     return jsString(exec, imp->cols());
 }
 
 JSValue jsHTMLFrameSetElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     return jsString(exec, imp->rows());
 }
 
 JSValue jsHTMLFrameSetElementOnbeforeunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforeunload()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -168,8 +171,9 @@ JSValue jsHTMLFrameSetElementOnbeforeunload(ExecState* exec, const Identifier&, 
 
 JSValue jsHTMLFrameSetElementOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -179,8 +183,9 @@ JSValue jsHTMLFrameSetElementOnmessage(ExecState* exec, const Identifier&, const
 
 JSValue jsHTMLFrameSetElementOnoffline(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     if (EventListener* listener = imp->onoffline()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -190,8 +195,9 @@ JSValue jsHTMLFrameSetElementOnoffline(ExecState* exec, const Identifier&, const
 
 JSValue jsHTMLFrameSetElementOnonline(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     if (EventListener* listener = imp->ononline()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -201,8 +207,9 @@ JSValue jsHTMLFrameSetElementOnonline(ExecState* exec, const Identifier&, const 
 
 JSValue jsHTMLFrameSetElementOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     if (EventListener* listener = imp->onresize()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -212,8 +219,9 @@ JSValue jsHTMLFrameSetElementOnresize(ExecState* exec, const Identifier&, const 
 
 JSValue jsHTMLFrameSetElementOnstorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     if (EventListener* listener = imp->onstorage()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -223,8 +231,9 @@ JSValue jsHTMLFrameSetElementOnstorage(ExecState* exec, const Identifier&, const
 
 JSValue jsHTMLFrameSetElementOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFrameSetElement* castedThis = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(castedThis->impl());
     if (EventListener* listener = imp->onunload()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -234,7 +243,8 @@ JSValue jsHTMLFrameSetElementOnunload(ExecState* exec, const Identifier&, const 
 
 JSValue jsHTMLFrameSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLFrameSetElement* domObject = static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()));
+    return JSHTMLFrameSetElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLFrameSetElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -323,9 +333,9 @@ void setJSHTMLFrameSetElementOnunload(ExecState* exec, JSObject* thisObject, JSV
     imp->setOnunload(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValue JSHTMLFrameSetElement::getConstructor(ExecState* exec)
+JSValue JSHTMLFrameSetElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLFrameSetElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLFrameSetElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

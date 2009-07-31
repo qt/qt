@@ -6,11 +6,9 @@ TEMPLATE = subdirs
 
 SUBDIRS += _networkselftest \
            bic \
-           dynamicobject \
            collections \
            compile \
            compilerwarnings \
-           dynamicobject \
            exceptionsafety \
            linguist \
            macgui \

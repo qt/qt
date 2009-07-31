@@ -442,6 +442,7 @@ public:
         {
         }
 
+        void enableLatePatch() { }
     private:
         JmpSrc(int offset)
             : m_offset(offset)
@@ -1528,51 +1529,51 @@ public:
         ASSERT(from.m_offset != -1);
         ASSERT(reinterpret_cast<intptr_t>(to) & 1);
 
-        patchPointer(reinterpret_cast<uint16_t*>(reinterpret_cast<intptr_t>(code) + from.m_offset) - 1, to);
+        setPointer(reinterpret_cast<uint16_t*>(reinterpret_cast<intptr_t>(code) + from.m_offset) - 1, to);
     }
 
-    static void patchPointer(void* code, JmpDst where, void* value)
+    static void linkPointer(void* code, JmpDst where, void* value)
     {
-        patchPointer(reinterpret_cast<char*>(code) + where.m_offset, value);
+        setPointer(reinterpret_cast<char*>(code) + where.m_offset, value);
     }
 
     static void relinkJump(void* from, void* to)
     {
-        ExecutableAllocator::MakeWritable unprotect(reinterpret_cast<uint16_t*>(from) - 2, 2 * sizeof(uint16_t));
-
         ASSERT(!(reinterpret_cast<intptr_t>(from) & 1));
         ASSERT(!(reinterpret_cast<intptr_t>(to) & 1));
 
         intptr_t relative = reinterpret_cast<intptr_t>(to) - reinterpret_cast<intptr_t>(from);
         linkWithOffset(reinterpret_cast<uint16_t*>(from), relative);
+
+        ExecutableAllocator::cacheFlush(reinterpret_cast<uint16_t*>(from) - 2, 2 * sizeof(uint16_t));
     }
     
     static void relinkCall(void* from, void* to)
     {
-        ExecutableAllocator::MakeWritable unprotect(reinterpret_cast<uint16_t*>(from) - 5, 4 * sizeof(uint16_t));
-
         ASSERT(!(reinterpret_cast<intptr_t>(from) & 1));
         ASSERT(reinterpret_cast<intptr_t>(to) & 1);
 
-        patchPointer(reinterpret_cast<uint16_t*>(from) - 1, to);
+        setPointer(reinterpret_cast<uint16_t*>(from) - 1, to);
+
+        ExecutableAllocator::cacheFlush(reinterpret_cast<uint16_t*>(from) - 5, 4 * sizeof(uint16_t));
     }
 
     static void repatchInt32(void* where, int32_t value)
     {
-        ExecutableAllocator::MakeWritable unprotect(reinterpret_cast<uint16_t*>(where) - 4, 4 * sizeof(uint16_t));
-
         ASSERT(!(reinterpret_cast<intptr_t>(where) & 1));
         
-        patchInt32(where, value);
+        setInt32(where, value);
+
+        ExecutableAllocator::cacheFlush(reinterpret_cast<uint16_t*>(where) - 4, 4 * sizeof(uint16_t));
     }
 
     static void repatchPointer(void* where, void* value)
     {
-        ExecutableAllocator::MakeWritable unprotect(reinterpret_cast<uint16_t*>(where) - 4, 4 * sizeof(uint16_t));
-
         ASSERT(!(reinterpret_cast<intptr_t>(where) & 1));
         
-        patchPointer(where, value);
+        setPointer(where, value);
+
+        ExecutableAllocator::cacheFlush(reinterpret_cast<uint16_t*>(where) - 4, 4 * sizeof(uint16_t));
     }
 
     static void repatchLoadPtrToLEA(void* where)
@@ -1582,8 +1583,8 @@ public:
         uint16_t* loadOp = reinterpret_cast<uint16_t*>(where) + 4;
         ASSERT((*loadOp & 0xfff0) == OP_LDR_reg_T2);
 
-        ExecutableAllocator::MakeWritable unprotect(loadOp, sizeof(uint16_t));
         *loadOp = OP_ADD_reg_T3 | (*loadOp & 0xf);
+        ExecutableAllocator::cacheFlush(loadOp, sizeof(uint16_t));
     }
 
 private:
@@ -1610,11 +1611,9 @@ private:
         m_formatter.vfpOp(0x0b00ed00 | offset | (up << 7) | (isLoad << 4) | doubleRegisterMask(rd, 6, 28) | rn);
     }
 
-    static void patchInt32(void* code, uint32_t value)
+    static void setInt32(void* code, uint32_t value)
     {
         uint16_t* location = reinterpret_cast<uint16_t*>(code);
-
-        ExecutableAllocator::MakeWritable unprotect(location - 4, 4 * sizeof(uint16_t));
 
         uint16_t lo16 = value;
         uint16_t hi16 = value >> 16;
@@ -1623,11 +1622,13 @@ private:
         spliceLo11(location - 3, lo16);
         spliceHi5(location - 2, hi16);
         spliceLo11(location - 1, hi16);
+
+        ExecutableAllocator::cacheFlush(location - 4, 4 * sizeof(uint16_t));
     }
 
-    static void patchPointer(void* code, void* value)
+    static void setPointer(void* code, void* value)
     {
-        patchInt32(code, reinterpret_cast<uint32_t>(value));
+        setInt32(code, reinterpret_cast<uint32_t>(value));
     }
 
     // Linking & patching:

@@ -21,6 +21,7 @@
 #ifndef JSLocation_h
 #define JSLocation_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Location;
 
-class JSLocation : public DOMObject {
-    typedef DOMObject Base;
+class JSLocation : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSLocation(PassRefPtr<JSC::Structure>, PassRefPtr<Location>);
+    JSLocation(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Location>);
     virtual ~JSLocation();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -72,7 +73,7 @@ private:
     RefPtr<Location> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Location*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Location*);
 Location* toLocation(JSC::JSValue);
 
 class JSLocationPrototype : public JSC::JSObject {

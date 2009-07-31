@@ -9,6 +9,7 @@ wince*: {
 }
 }
 QT += network
+vxworks:QT -= gui
 
 DEFINES += TEST_QNETWORK_PROXY
 

@@ -43,7 +43,6 @@
 #define QEVENT_P_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qdatetime.h>
 #include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
@@ -84,15 +83,10 @@ public:
     QMouseEventEx(Type type, const QPointF &pos, const QPoint &globalPos,
                   Qt::MouseButton button, Qt::MouseButtons buttons,
                   Qt::KeyboardModifiers modifiers);
-    QMouseEventEx(Type type, const QPointF &pos, const QPoint &globalPos,
-                  Qt::MouseButton button, Qt::MouseButtons buttons,
-                  Qt::KeyboardModifiers modifiers, const QDateTime &eventTime);
     ~QMouseEventEx();
 
 protected:
     QPointF posF;
-    bool timeSet:1;
-    QDateTime time;
     friend class QMouseEvent;
 };
 

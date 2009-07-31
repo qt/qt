@@ -1079,6 +1079,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
  */
 
 /*!
+    \fn void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
     \since 4.6
     \relates QMargins
 
@@ -1175,7 +1176,6 @@ static inline void qDrawHorizontallyRoundedPixmap(QPainter *painter, const QRect
 
 /*!
     \since 4.6
-    \relates QMargins
 
     Draws the indicated \a sourceRect rectangle from the given \a pixmap into
     the given \a targetRect rectangle, using the given \a painter. The pixmap

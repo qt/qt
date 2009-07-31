@@ -57,15 +57,47 @@
 #include <QTextStream>
 #include <QPaintEngine>
 
+#include <private/qwindowsurface_p.h>
+
 #include <qmath.h>
 
 const int CP_RADIUS = 10;
+
+class StupidWorkaround : public QObject
+{
+    Q_OBJECT
+public:
+    StupidWorkaround(QWidget *widget, int *value)
+        : QObject(widget), w(widget), mode(value)
+    {
+    }
+
+public slots:
+    void setViewMode(int m) {
+        *mode = m;
+        w->update();
+    }
+
+private:
+    QWidget *w;
+    int *mode;
+};
 
 template <class T>
 class OnScreenWidget : public T
 {
 public:
-    OnScreenWidget(QWidget *parent = 0) : T(parent)
+
+    enum ViewMode {
+        RenderView,
+        BaselineView,
+        DifferenceView
+    };
+
+    OnScreenWidget(const QString &file, QWidget *parent = 0)
+        : T(parent),
+          m_view_mode(RenderView),
+          m_filename(file)
     {
         QSettings settings("Trolltech", "lance");
         for (int i=0; i<10; ++i) {
@@ -78,11 +110,47 @@ public:
         m_deviceType = WidgetType;
         m_checkersBackground = true;
         m_verboseMode = false;
-    }
 
-    void setVerboseMode(bool v) { m_verboseMode = v; }
-    void setCheckersBackground(bool b) { m_checkersBackground = b; }
-    void setType(DeviceType t) { m_deviceType = t; }
+        m_baseline_name = QString(m_filename).replace(".qps", "_qps") + ".png";
+        if (QFileInfo(m_baseline_name).exists()) {
+            m_baseline = QPixmap(m_baseline_name);
+        }
+
+        if (m_baseline.isNull()) {
+            setWindowTitle("Rendering: '" + file + "'. No baseline available");
+        } else {
+            setWindowTitle("Rendering: '" + file + "'. Shortcuts: 1=render, 2=baseline, 3=difference");
+
+            StupidWorkaround *workaround = new StupidWorkaround(this, &m_view_mode);
+
+            QSignalMapper *mapper = new QSignalMapper(this);
+            connect(mapper, SIGNAL(mapped(int)), workaround, SLOT(setViewMode(int)));
+            connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setWindowTitle(QString)));
+
+            QAction *renderViewAction = new QAction("Render View", this);
+            renderViewAction->setShortcut(Qt::Key_1);
+            connect(renderViewAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            mapper->setMapping(renderViewAction, RenderView);
+            mapper->setMapping(renderViewAction, "Render View: " + file);
+            addAction(renderViewAction);
+
+            QAction *baselineAction = new QAction("Baseline", this);
+            baselineAction->setShortcut(Qt::Key_2);
+            connect(baselineAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            mapper->setMapping(baselineAction, BaselineView);
+            mapper->setMapping(baselineAction, "Baseline View: " + file);
+            addAction(baselineAction);
+
+            QAction *differenceAction = new QAction("Differenfe View", this);
+            differenceAction->setShortcut(Qt::Key_3);
+            connect(differenceAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            mapper->setMapping(differenceAction, DifferenceView);
+            mapper->setMapping(differenceAction, "Difference View" + file);
+            addAction(differenceAction);
+
+        }
+
+    }
 
     ~OnScreenWidget()
     {
@@ -93,12 +161,24 @@ public:
         settings.sync();
     }
 
+    void setVerboseMode(bool v) { m_verboseMode = v; }
+    void setCheckersBackground(bool b) { m_checkersBackground = b; }
+    void setType(DeviceType t) { m_deviceType = t; }
+
     void resizeEvent(QResizeEvent *e) {
         m_image = QImage();
         T::resizeEvent(e);
     }
 
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) {
+        switch (m_view_mode) {
+        case RenderView: paintRenderView(); break;
+        case BaselineView: paintBaselineView(); break;
+        case DifferenceView: paintDifferenceView(); break;
+        }
+    }
+
+    void OnScreenWidget<T>::paintRenderView()
     {
         QPainter pt;
         QPaintDevice *dev = this;
@@ -152,6 +232,57 @@ public:
             }
         }
 
+        if (m_render_view.isNull()) {
+            m_render_view = window()->windowSurface()->grabWidget(this);
+            m_render_view.save("renderView.png");
+        }
+    }
+
+    void paintBaselineView() {
+        QPainter p(this);
+
+        if (m_baseline.isNull()) {
+            p.drawText(rect(), Qt::AlignCenter,
+                       "No baseline found\n"
+                       "file '" + m_baseline_name + "' does not exist...");
+            return;
+        }
+
+        p.drawPixmap(0, 0, m_baseline);
+
+        p.setPen(QColor::fromRgb(0, 0, 0, 0.1));
+        p.setFont(QFont("Arial", 128));
+        p.rotate(45);
+        p.drawText(100, 0, "BASELINE");
+    }
+
+    QPixmap generateDifference()
+    {
+        QImage img(size(), QImage::Format_RGB32);
+        img.fill(0);
+
+        QPainter p(&img);
+        p.drawPixmap(0, 0, m_render_view);
+
+        p.setCompositionMode(QPainter::RasterOp_SourceXorDestination);
+        p.drawPixmap(0, 0, m_baseline);
+
+        p.end();
+
+        return QPixmap::fromImage(img);
+    }
+
+    void paintDifferenceView() {
+        QPainter p(this);
+        if (m_baseline.isNull()) {
+            p.drawText(rect(), Qt::AlignCenter,
+                       "No baseline found\n"
+                       "file '" + m_baseline_name + "' does not exist...");
+            return;
+        }
+
+        p.fillRect(rect(), Qt::black);
+        p.drawPixmap(0, 0, generateDifference());
     }
 
 
@@ -190,8 +321,6 @@ public:
         T::update();
     }
 
-
-
     QSize sizeHint() const { return QSize(800, 800); }
 
     QVector<QPointF> m_controlPoints;
@@ -200,12 +329,18 @@ public:
 
     QStringList m_commands;
     QString m_filename;
+    QString m_baseline_name;
 
     bool m_verboseMode;
     bool m_checkersBackground;
     DeviceType m_deviceType;
 
+    int m_view_mode;
+
     QImage m_image;
+
+    QPixmap m_baseline;
+    QPixmap m_render_view;
 };
 
 #endif

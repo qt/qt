@@ -54,7 +54,6 @@
 #include "FrameLoaderClient.h"
 #include "FrameTree.h"
 #include "FrameView.h"
-#include "HTMLAnchorElement.h"
 #include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameElement.h"
@@ -71,6 +70,7 @@
 #include "Page.h"
 #include "PageCache.h"
 #include "PageGroup.h"
+#include "PlaceholderDocument.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
 #include "ProgressTracker.h"
@@ -270,9 +270,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_didPerformFirstNavigation(false)
 #ifndef NDEBUG
     , m_didDispatchDidCommitLoad(false)
-#endif
-#if ENABLE(WML)
-    , m_forceReloadWmlDeck(false)
 #endif
 {
 }
@@ -728,15 +725,16 @@ bool FrameLoader::executeIfJavaScriptURL(const KURL& url, bool userGesture, bool
     if (m_frame->page() && !m_frame->page()->javaScriptURLsAreAllowed())
         return true;
 
-    String script = decodeURLEscapeSequences(url.string().substring(strlen("javascript:")));
+    const int javascriptSchemeLength = sizeof("javascript:") - 1;
+
+    String script = decodeURLEscapeSequences(url.string().substring(javascriptSchemeLength));
     ScriptValue result = executeScript(script, userGesture);
 
     String scriptResult;
     if (!result.getString(scriptResult))
         return true;
 
-    SecurityOrigin* currentSecurityOrigin = 0;
-    currentSecurityOrigin = m_frame->document()->securityOrigin();
+    SecurityOrigin* currentSecurityOrigin = m_frame->document()->securityOrigin();
 
     // FIXME: We should always replace the document, but doing so
     //        synchronously can cause crashes:
@@ -897,6 +895,8 @@ void FrameLoader::begin(const KURL& url, bool dispatch, SecurityOrigin* origin)
     // Create a new document before clearing the frame, because it may need to inherit an aliased security context.
     if (!m_isDisplayingInitialEmptyDocument && m_client->shouldUsePluginDocument(m_responseMIMEType))
         document = PluginDocument::create(m_frame);
+    else if (!m_client->hasHTMLView())
+        document = PlaceholderDocument::create(m_frame);
     else
         document = DOMImplementation::createDocument(m_responseMIMEType, m_frame, m_frame->inViewSourceMode());
 
@@ -953,7 +953,7 @@ void FrameLoader::begin(const KURL& url, bool dispatch, SecurityOrigin* origin)
 
     document->implicitOpen();
     
-    if (m_frame->view())
+    if (m_frame->view() && m_client->hasHTMLView())
         m_frame->view()->setContentsSize(IntSize());
 }
 
@@ -1780,6 +1780,17 @@ void FrameLoader::addData(const char* bytes, int length)
     write(bytes, length);
 }
 
+#if ENABLE(WML)
+static inline bool frameContainsWMLContent(Frame* frame)
+{
+    Document* document = frame ? frame->document() : 0;
+    if (!document)
+        return false;
+
+    return document->containsWMLContent() || document->isWMLDocument();
+}
+#endif
+
 bool FrameLoader::canCachePageContainingThisFrame()
 {
     return m_documentLoader
@@ -1807,6 +1818,9 @@ bool FrameLoader::canCachePageContainingThisFrame()
         // application cache. <rdar://problem/5917899> tracks that work.
         && !m_documentLoader->applicationCache()
         && !m_documentLoader->candidateApplicationCacheGroup()
+#endif
+#if ENABLE(WML)
+        && !frameContainsWMLContent(m_frame)
 #endif
         && m_client->canCachePage()
         ;
@@ -2920,10 +2934,12 @@ void FrameLoader::transitionToCommitted(PassRefPtr<CachedPage> cachedPage)
     
     m_committedFirstRealDocumentLoad = true;
 
-    // For non-cached HTML pages, these methods are called in FrameLoader::begin.
-    if (cachedPage || !m_client->hasHTMLView()) {
-        dispatchDidCommitLoad(); 
-            
+    if (!m_client->hasHTMLView())
+        receivedFirstData();
+    else if (cachedPage) {
+        // For non-cached HTML pages, these methods are called in receivedFirstData().
+        dispatchDidCommitLoad();
+
         // If we have a title let the WebView know about it. 
         if (!ptitle.isNull()) 
             m_client->dispatchDidReceiveTitle(ptitle);         
@@ -2958,18 +2974,11 @@ void FrameLoader::clientRedirected(const KURL& url, double seconds, double fireD
     m_quickRedirectComing = lockBackForwardList && m_documentLoader && !m_isExecutingJavaScriptFormAction;
 }
 
-#if ENABLE(WML)
-void FrameLoader::setForceReloadWmlDeck(bool reload)
-{
-    m_forceReloadWmlDeck = reload;
-}
-#endif
-
 bool FrameLoader::shouldReload(const KURL& currentURL, const KURL& destinationURL)
 {
 #if ENABLE(WML)
-    // As for WML deck, sometimes it's supposed to be reloaded even if the same URL with fragment
-    if (m_forceReloadWmlDeck)
+    // All WML decks are supposed to be reloaded, even within the same URL fragment
+    if (frameContainsWMLContent(m_frame))
         return true;
 #endif
 
@@ -4424,7 +4433,8 @@ void FrameLoader::loadItem(HistoryItem* item, FrameLoadType loadType)
     bool shouldScroll = !formData && !(m_currentHistoryItem && m_currentHistoryItem->formData()) && urlsMatchItem(item);
 
 #if ENABLE(WML)
-    if (m_frame->document()->isWMLDocument())
+    // All WML decks should go through the real load mechanism, not the scroll-to-anchor code
+    if (frameContainsWMLContent(m_frame))
         shouldScroll = false;
 #endif
 
@@ -5089,8 +5099,7 @@ void FrameLoader::didChangeTitle(DocumentLoader* loader)
 {
     m_client->didChangeTitle(loader);
 
-    // The title doesn't get communicated to the WebView until we are committed.
-    if (loader->isCommitted()) {
+    if (loader == m_documentLoader) {
         // Must update the entries in the back-forward list too.
         if (m_currentHistoryItem)
             m_currentHistoryItem->setTitle(loader->title());
