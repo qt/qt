@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
                         }
                     }
 
-                    QLatin1String intern("com.trolltech.com.assistantinternal_");
+                    QLatin1String intern("com.trolltech.com.assistantinternal-");
                     foreach (const QString &doc, userDocs) {
                         if (!callerDocs.contains(doc) && !doc.startsWith(intern))
                             user.unregisterDocumentation(doc);
