@@ -1672,10 +1672,6 @@ QRectF QFxItem::boundingRect() const
     return QRectF(0, 0, d->width, d->height);
 }
 
-void QFxItem::paintContents(QPainter &)
-{
-}
-
 /*!
     \enum QFxItem::TransformOrigin
 
@@ -1906,7 +1902,6 @@ void QFxItem::setOptions(Options options, bool set)
 
 void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    paintContents(*p);
 }
 
 QT_END_NAMESPACE

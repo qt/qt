@@ -347,7 +347,7 @@ public:
         maxX = minX = maxY = minY = 0;
     }
 
-    void paintContents(QPainter &p);
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
     void updateSize();
 
@@ -1067,13 +1067,13 @@ void QFxParticlesPainter::updateSize()
     setY(myY);
 }
 
-void QFxParticles::paintContents(QPainter &p)
+void QFxParticles::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_UNUSED(p);
     //painting is done by the ParticlesPainter, so it can have the right size
 }
 
-void QFxParticlesPainter::paintContents(QPainter &p)
+void QFxParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     if (d->image.isNull())
         return;
@@ -1083,8 +1083,8 @@ void QFxParticlesPainter::paintContents(QPainter &p)
 
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
-        p.setOpacity(particle.opacity);
-        p.drawPixmap(particle.x - myX, particle.y - myY, d->image);
+        p->setOpacity(particle.opacity);
+        p->drawPixmap(particle.x - myX, particle.y - myY, d->image);
     }
 }
 

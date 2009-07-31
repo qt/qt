@@ -209,20 +209,20 @@ void QFxPaintedItem::init()
 /*!
     \reimp
 */
-void QFxPaintedItem::paintContents(QPainter &p)
+void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QFxPaintedItem);
     const QRect content(QPoint(0,0),d->contentsSize);
     if (content.width() <= 0 || content.height() <= 0)
         return;
 
-    bool oldAntiAliasing = p.testRenderHint(QPainter::Antialiasing);
-    bool oldSmoothPixmap = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    bool oldAntiAliasing = p->testRenderHint(QPainter::Antialiasing);
+    bool oldSmoothPixmap = p->testRenderHint(QPainter::SmoothPixmapTransform);
     if (oldAntiAliasing)
-        p.setRenderHints(QPainter::Antialiasing, false); // cannot stitch properly otherwise
+        p->setRenderHints(QPainter::Antialiasing, false); // cannot stitch properly otherwise
     if (d->smooth)
-        p.setRenderHints(QPainter::SmoothPixmapTransform, true);
-    QRectF clipf = p.clipRegion().boundingRect();
+        p->setRenderHints(QPainter::SmoothPixmapTransform, true);
+    QRectF clipf = p->clipRegion().boundingRect();
     if (clipf.isEmpty())
         clipf = mapToScene(content).boundingRect(); // ### Inefficient: Maps toScene and then fromScene
     else
@@ -239,7 +239,7 @@ void QFxPaintedItem::paintContents(QPainter &p)
         QRect area = d->imagecache[i]->area;
         if (topaint.contains(area)) {
             QRectF target(area.x(), area.y(), area.width(), area.height());
-            p.drawPixmap(target.toRect(), d->imagecache[i]->image);
+            p->drawPixmap(target.toRect(), d->imagecache[i]->image);
             topaint -= area;
             d->imagecache[i]->age=0;
         } else {
@@ -284,14 +284,14 @@ void QFxPaintedItem::paintContents(QPainter &p)
             newitem->image = img;
             d->imagecache.append(newitem);
             QRectF target(r.x(), r.y(), r.width(), r.height());
-            p.drawPixmap(target.toRect(), newitem->image);
+            p->drawPixmap(target.toRect(), newitem->image);
         }
     }
 
     if (oldAntiAliasing)
-        p.setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
+        p->setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
     if (d->smooth)
-        p.setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
+        p->setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
 }
 
 /*!

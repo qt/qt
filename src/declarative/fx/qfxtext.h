@@ -125,7 +125,7 @@ public:
     bool smoothTransform() const;
     void setSmoothTransform(bool);
 
-    void paintContents(QPainter &p);
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
     virtual void componentComplete();
 

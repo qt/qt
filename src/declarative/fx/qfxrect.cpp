@@ -471,14 +471,14 @@ void QFxRect::generateBorderedRect()
     }
 }
 
-void QFxRect::paintContents(QPainter &p)
+void QFxRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QFxRect);
     if (d->radius > 0 || (d->pen && d->pen->isValid())
            || (d->gradient && d->gradient->gradient()) )
-        drawRect(p);
+        drawRect(*p);
     else
-        p.fillRect(QRect(0, 0, width(), height()), d->getColor());
+        p->fillRect(QRect(0, 0, width(), height()), d->getColor());
 }
 
 void QFxRect::drawRect(QPainter &p)

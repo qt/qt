@@ -206,7 +206,7 @@ public:
     void setTransformOrigin(TransformOrigin);
 
     QRectF boundingRect() const;
-    virtual void paintContents(QPainter &);
+    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
     virtual bool hasFocus() const;
     void setFocus(bool);
@@ -227,7 +227,6 @@ Q_SIGNALS:
 
 protected:
     bool isComponentComplete() const;
-    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     virtual void childrenChanged();
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
     virtual bool sceneEvent(QEvent *);
