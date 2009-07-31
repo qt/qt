@@ -87,6 +87,39 @@ public:
     QFxPixmapPrivate() {}
 
     QPixmap pixmap;
+
+    bool readImage(QIODevice *dev)
+    {
+        QImageReader imgio(dev);
+
+//#define QT_TEST_SCALED_SIZE
+#ifdef QT_TEST_SCALED_SIZE
+        /*
+        Some mechanism is needed for loading images at a limited size, especially
+        for remote images. Loading only thumbnails of remote progressive JPEG
+        images can be efficient. (Qt jpeg handler does not do so currently)
+        */
+
+        QSize limit(60,60);
+        QSize sz = imgio.size();
+        if (sz.width() > limit.width() || sz.height() > limit.height()) {
+            sz.scale(limit,Qt::KeepAspectRatio);
+            imgio.setScaledSize(sz);
+        }
+#endif
+
+        QImage img;
+        if (imgio.read(&img)) {
+#ifdef QT_TEST_SCALED_SIZE
+            if (!sz.isValid())
+                img = img.scaled(limit,Qt::KeepAspectRatio);
+#endif
+            pixmap = QPixmap::fromImage(img);
+            return true;
+        } else {
+            return false;
+        }
+    }
 };
 
 /*!
@@ -109,55 +142,31 @@ QFxPixmap::QFxPixmap(const QUrl &url)
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::PixmapLoad> perf;
 #endif
+    QString key = url.toString();
+    if (!QPixmapCache::find(key,&d->pixmap)) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-    if (url.scheme()==QLatin1String("file")) {
-        d->pixmap.load(url.toLocalFile());
-    } else
+        if (url.scheme()==QLatin1String("file")) {
+            QFile f(url.toLocalFile());
+            if (f.open(QIODevice::ReadOnly))
+                if (!d->readImage(&f))
+                    qWarning() << "Format error loading" << url;
+        } else
 #endif
-    {
-        QString key = url.toString();
-        if (!QPixmapCache::find(key,&d->pixmap)) {
+        {
             QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
             if (iter == qfxActiveNetworkReplies.end()) {
                 // API usage error
                 qWarning() << "QFxPixmap: URL not loaded" << url;
             } else {
-                if ((*iter)->reply->error()) {
+                if ((*iter)->reply->error())
                     qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
-                } else {
-                    QImageReader imgio((*iter)->reply);
-
-//#define QT_TEST_SCALED_SIZE
-#ifdef QT_TEST_SCALED_SIZE
-                    /*
-                    Some mechanism is needed for loading images at a limited size, especially
-                    for remote images. Loading only thumbnails of remote progressive JPEG
-                    images can be efficient. (Qt jpeg handler does not do so currently)
-                    */
-
-                    QSize limit(60,60);
-                    QSize sz = imgio.size();
-                    if (sz.width() > limit.width() || sz.height() > limit.height()) {
-                        sz.scale(limit,Qt::KeepAspectRatio);
-                        imgio.setScaledSize(sz);
-                    }
-#endif
-
-                    QImage img;
-                    if (imgio.read(&img)) {
-#ifdef QT_TEST_SCALED_SIZE
-                        if (!sz.isValid())
-                            img = img.scaled(limit,Qt::KeepAspectRatio);
-#endif
-                        d->pixmap = QPixmap::fromImage(img);
-                        QPixmapCache::insert(key, d->pixmap);
-                    } else {
+                else
+                    if (!d->readImage((*iter)->reply))
                         qWarning() << "Format error loading" << url;
-                    }
-                }
                 (*iter)->release();
             }
         }
+        QPixmapCache::insert(key, d->pixmap);
     }
 }
 
