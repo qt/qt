@@ -63,7 +63,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusRealm,QFxFocusRealm)
 QFxFocusRealm::QFxFocusRealm(QFxItem *parent) :
     QFxItem(parent)
 {
-    setOptions(IsFocusRealm);
+    setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
 }
 
 QFxFocusRealm::~QFxFocusRealm()

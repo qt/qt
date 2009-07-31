@@ -535,17 +535,17 @@ bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
     return false;
 }
 
-bool QFxPathView::mouseFilter(QGraphicsSceneMouseEvent *e)
+bool QFxPathView::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 {
     if (!isVisible())
-        return false;
+        return QFxItem::sceneEventFilter(i, e);
 
     switch (e->type()) {
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMouseRelease:
         {
-            bool ret = sendMouseEvent(e);
+            bool ret = sendMouseEvent(static_cast<QGraphicsSceneMouseEvent *>(e));
             if (e->type() == QEvent::GraphicsSceneMouseRelease)
                 return ret;
             break;
@@ -554,7 +554,7 @@ bool QFxPathView::mouseFilter(QGraphicsSceneMouseEvent *e)
         break;
     }
 
-    return false;
+    return QFxItem::sceneEventFilter(i, e);
 }
 
 void QFxPathViewPrivate::regenerate()
