@@ -355,13 +355,6 @@ QScriptValuePrivate *QScriptValuePrivate::get(const QScriptValue &q)
     return q.d_ptr;
 }
 
-namespace QScript
-{
-JSC::UString qtStringToJSCUString(const QString &str);
-QString qtStringFromJSCUString(const JSC::UString &str);
-bool isFunction(JSC::JSValue value);
-}
-
 QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
 {
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);

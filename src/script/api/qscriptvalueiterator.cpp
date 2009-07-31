@@ -93,12 +93,6 @@ QT_BEGIN_NAMESPACE
   \sa QScriptValue::property()
 */
 
-namespace QScript
-{
-JSC::UString qtStringToJSCUString(const QString &str);
-QString qtStringFromJSCUString(const JSC::UString &str);
-}
-
 class QScriptValueIteratorPrivate
 {
 public:

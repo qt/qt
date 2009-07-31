@@ -495,7 +495,7 @@ QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec)
     return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
 }
 
-bool isFunction(JSC::JSValue value)
+bool isFunction(const JSC::JSValue &value)
 {
     if (!value || !value.isObject())
         return false;

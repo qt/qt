@@ -62,10 +62,6 @@ QT_BEGIN_NAMESPACE
 namespace QScript
 {
 
-QString qtStringFromJSCUString(const JSC::UString &str);
-JSC::UString qtStringToJSCUString(const QString &str);
-QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec);
-
 ClassObjectDelegate::ClassObjectDelegate(QScriptClass *scriptClass)
     : m_scriptClass(scriptClass)
 {

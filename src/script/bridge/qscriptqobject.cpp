@@ -243,10 +243,6 @@ static inline QScriptable *scriptableFromQObject(QObject *qobj)
     return reinterpret_cast<QScriptable*>(ptr);
 }
 
-JSC::UString qtStringToJSCUString(const QString &str);
-QString qtStringFromJSCUString(const JSC::UString &str);
-QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec);
-
 QtFunction::QtFunction(JSC::JSValue object, int initialIndex, bool maybeOverloaded,
                        JSC::JSGlobalData *data, WTF::PassRefPtr<JSC::Structure> sid,
                        const JSC::Identifier &ident)

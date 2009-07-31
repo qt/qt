@@ -75,15 +75,6 @@ namespace JSC
     class UString;
 }
 
-namespace QScript
-{
-    class QObjectPrototype;
-    class QMetaObjectPrototype;
-    class QVariantPrototype;
-#ifndef QT_NO_QOBJECT
-    class QObjectData;
-#endif
-}
 
 class QString;
 class QStringList;
@@ -92,10 +83,26 @@ class QScriptValue;
 class QScriptValuePrivate;
 class QScriptTypeInfo;
 class QScriptEngineAgent;
-
+class QScriptEnginePrivate;
 class QScriptSyntaxCheckResult;
-
 class QScriptEngine;
+
+namespace QScript
+{
+    class QObjectPrototype;
+    class QMetaObjectPrototype;
+    class QVariantPrototype;
+#ifndef QT_NO_QOBJECT
+    class QObjectData;
+#endif
+
+    //some conversion helper functions
+    JSC::UString qtStringToJSCUString(const QString &str);
+    QString qtStringFromJSCUString(const JSC::UString &str);
+    QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec);
+    bool isFunction(const JSC::JSValue &value);
+}
+
 class QScriptEnginePrivate
 #ifndef QT_NO_QOBJECT
     : public QObjectPrivate

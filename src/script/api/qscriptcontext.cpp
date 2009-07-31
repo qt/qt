@@ -162,11 +162,6 @@ QT_BEGIN_NAMESPACE
     \value UnknownError An unknown error.
 */
 
-namespace QScript
-{
-JSC::UString qtStringToJSCUString(const QString &);
-}
-
 QScriptContextPrivate::QScriptContextPrivate()
 {
 }

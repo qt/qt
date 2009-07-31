@@ -60,9 +60,6 @@ ASSERT_CLASS_FITS_IN_CELL(QScript::QVariantPrototype);
 namespace QScript
 {
 
-JSC::UString qtStringToJSCUString(const QString &str);
-QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState*);
-
 QVariantDelegate::QVariantDelegate(const QVariant &value)
     : m_value(value)
 {
