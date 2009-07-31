@@ -429,7 +429,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
 {
     def->isVirtual = false;
     //skip modifiers and attributes
-    while (test(INLINE) || test(STATIC) ||
+    while (test(EXPLICIT) || test(INLINE) || test(STATIC) ||
         (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
         || testFunctionAttribute(def)) {}
     bool tilde = test(TILDE);

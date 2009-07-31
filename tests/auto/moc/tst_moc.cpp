@@ -1157,6 +1157,13 @@ void tst_Moc::constructors()
     QObject *o3 = mo->newInstance(Q_ARG(QString, str));
     QVERIFY(o3 != 0);
     QCOMPARE(qobject_cast<CtorTestClass*>(o3)->m_str, str);
+
+    {
+        //explicit constructor
+        QObject *o = QObject::staticMetaObject.newInstance();
+        QVERIFY(o);
+        delete o;
+    }
 }
 
 #include "task234909.h"

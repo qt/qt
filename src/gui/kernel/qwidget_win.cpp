@@ -467,6 +467,17 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     }
 
+    if (topLevel) {
+        if (data.window_flags & Qt::CustomizeWindowHint
+            && data.window_flags & Qt::WindowTitleHint) {
+            HMENU systemMenu = GetSystemMenu((HWND)q->internalWinId(), FALSE);
+            if (data.window_flags & Qt::WindowCloseButtonHint)
+                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
+            else
+                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
+        }
+    }
+
     q->setAttribute(Qt::WA_WState_Created);                // accept move/resize events
     hd = 0;                                        // no display context
 
@@ -637,16 +648,6 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     if (q->testAttribute(Qt::WA_AcceptDrops) || dropSiteWasRegistered
         || (!q->isWindow() && q->parentWidget() && q->parentWidget()->testAttribute(Qt::WA_DropSiteRegistered)))
         q->setAttribute(Qt::WA_DropSiteRegistered, true);
-
-
-    if (data.window_flags & Qt::CustomizeWindowHint
-        && data.window_flags & Qt::WindowTitleHint) {
-        HMENU systemMenu = GetSystemMenu((HWND)q->internalWinId(), FALSE);
-        if (data.window_flags & Qt::WindowCloseButtonHint)
-            EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
-        else
-            EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
-    }
 
 #ifdef Q_WS_WINCE
     // Show borderless toplevel windows in tasklist & NavBar
@@ -1524,6 +1525,11 @@ bool QWidgetPrivate::shouldShowMaximizeButton()
 {
     if (data.window_flags & Qt::MSWindowsFixedSizeDialogHint)
         return false;
+    // if the user explicitely asked for the maximize button, we try to add
+    // it even if the window has fixed size.
+    if (data.window_flags & Qt::CustomizeWindowHint &&
+        data.window_flags & Qt::WindowMaximizeButtonHint)
+        return true;
     if (extra) {
         if ((extra->maxw && extra->maxw != QWIDGETSIZE_MAX && extra->maxw != QLAYOUTSIZE_MAX)
             || (extra->maxh && extra->maxh != QWIDGETSIZE_MAX && extra->maxh != QLAYOUTSIZE_MAX))

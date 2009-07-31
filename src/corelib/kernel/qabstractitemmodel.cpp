@@ -481,11 +481,11 @@ namespace {
     };
 }
 
-Q_GLOBAL_STATIC(DefaultRoleNames, defaultRoleNames);
+Q_GLOBAL_STATIC(DefaultRoleNames, qDefaultRoleNames)
 
 const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 {
-    return *::defaultRoleNames();
+    return *qDefaultRoleNames();
 }
 
 /*!
