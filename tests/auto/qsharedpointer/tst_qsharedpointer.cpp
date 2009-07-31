@@ -871,9 +871,14 @@ void customDeleterFn(Data *ptr)
     delete ptr;
 }
 
+static int refcount;
+
 template <typename T>
 struct CustomDeleter
 {
+    CustomDeleter() { ++refcount; }
+    CustomDeleter(const CustomDeleter &) { ++refcount; }
+    ~CustomDeleter() { --refcount; }
     inline void operator()(T *ptr)
     {
         delete ptr;
@@ -971,6 +976,7 @@ void tst_QSharedPointer::customDeleter()
     QCOMPARE(customDeleterFnCallCount, 1);
     check();
 
+    refcount = 0;
     CustomDeleter<Data> dataDeleter;
     dataDeleter.callCount = 0;
     {
@@ -979,6 +985,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
     check();
 
     dataDeleter.callCount = 0;
@@ -989,6 +996,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
     check();
 
     dataDeleter.callCount = 0;
@@ -1002,6 +1010,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
     check();
 
     dataDeleter.callCount = 0;
@@ -1011,6 +1020,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
     check();
 
     CustomDeleter<DerivedData> derivedDataDeleter;
@@ -1024,6 +1034,7 @@ void tst_QSharedPointer::customDeleter()
     }
     QCOMPARE(dataDeleter.callCount, 0);
     QCOMPARE(derivedDataDeleter.callCount, 1);
+    QCOMPARE(refcount, 2);
     check();
 
     derivedDataDeleter.callCount = 0;
@@ -1041,6 +1052,7 @@ void tst_QSharedPointer::customDeleter()
     }
     QCOMPARE(dataDeleter.callCount, 1);
     QCOMPARE(derivedDataDeleter.callCount, 0);
+    QCOMPARE(refcount, 2);
     check();
 
     derivedDataDeleter.callCount = 0;
@@ -1058,6 +1070,7 @@ void tst_QSharedPointer::customDeleter()
     }
     QCOMPARE(dataDeleter.callCount, 0);
     QCOMPARE(derivedDataDeleter.callCount, 1);
+    QCOMPARE(refcount, 2);
 }
 
 void tst_QSharedPointer::creating()

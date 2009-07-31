@@ -210,6 +210,9 @@ namespace QtSharedPointer {
         {
             Self *realself = static_cast<Self *>(self);
             executeDeleter(realself->extra.ptr, realself->extra.deleter);
+
+            // delete the deleter too
+            realself->extra.~Next();
         }
 
         static inline Self *create(T *ptr, Deleter userDeleter)
