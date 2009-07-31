@@ -490,7 +490,7 @@ QString qtStringFromJSCUString(const JSC::UString &str)
     return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
 }
 
-QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec)
+QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
 {
     return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
 }
@@ -1120,25 +1120,11 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
 
 QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
 {
-    QHash<JSC::ExecState*, QScriptContext*>::const_iterator it;
-    it = contextForFrameHash.constFind(frame);
-    if (it != contextForFrameHash.constEnd())
-        return it.value();
-    // ### use a pool of context objects
-    QScriptContext *ctx = QScriptContextPrivate::create(frame, this);
-    contextForFrameHash.insert(frame, ctx);
-    return ctx;
+    return reinterpret_cast<QScriptContext *>(frame);
 }
 
 void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
 {
-    QHash<JSC::ExecState*, QScriptContext*>::iterator it;
-    it = contextForFrameHash.find(frame);
-    Q_ASSERT(it != contextForFrameHash.end());
-    QScriptContext *ctx = it.value();
-    contextForFrameHash.erase(it);
-    // ### put back in pool
-    delete ctx;
 }
 
 JSC::JSGlobalObject *QScriptEnginePrivate::originalGlobalObject() const

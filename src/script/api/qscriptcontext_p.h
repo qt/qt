@@ -72,20 +72,6 @@ namespace JSC
 class QScriptEnginePrivate;
 
 class QScriptContext;
-class QScriptContextPrivate
-{
-public:
-    QScriptContextPrivate();
-    ~QScriptContextPrivate();
-
-    static QScriptContext *create(JSC::ExecState *frame,
-                                  QScriptEnginePrivate *engine);
-    static const QScriptContextPrivate *get(const QScriptContext *q);
-    static QScriptContextPrivate *get(QScriptContext *q);
-
-    JSC::ExecState *frame;
-    QScriptEnginePrivate *engine;
-};
 
 QT_END_NAMESPACE
 

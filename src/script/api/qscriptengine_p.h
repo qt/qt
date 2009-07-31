@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 namespace JSC
 {
     class ExecState;
+    typedef ExecState CallFrame;
     class JSCell;
     class JSGlobalObject;
     class UString;
@@ -99,7 +100,7 @@ namespace QScript
     //some conversion helper functions
     JSC::UString qtStringToJSCUString(const QString &str);
     QString qtStringFromJSCUString(const JSC::UString &str);
-    QScriptEnginePrivate *scriptEngineFromExec(JSC::ExecState *exec);
+    QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(const JSC::JSValue &value);
 }
 

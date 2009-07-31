@@ -157,8 +157,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     lineNumber = -1;
     columnNumber = -1;
 
-    const QScriptContextPrivate *ctx_p = QScriptContextPrivate::get(context);
-    JSC::ExecState *frame = ctx_p->frame;
+    const JSC::ExecState *frame = reinterpret_cast<const JSC::ExecState *>(context);
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->isObject(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
