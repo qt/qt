@@ -10054,7 +10054,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     const QRectF sourceRect = boundingRect(system);
     QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
     if (offset)
-        *offset = sourceRect.toAlignedRect().topLeft();
+        *offset = effectRect.topLeft();
 
     if (deviceCoordinates) {
         // Clip to viewport rect.

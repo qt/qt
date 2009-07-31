@@ -543,7 +543,6 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
 
     QPoint offset;
     const int radius = d->blurRadius;
-    const int delta = radius * 3;
 
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
@@ -555,7 +554,7 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
         overlay = brightened(overlay, 70);
         img = composited(img, overlay, d->opacity, QPainter::CompositionMode_Overlay);
 
-        painter->drawImage(offset - QPoint(delta, delta), img);
+        painter->drawImage(offset, img);
         return;
     }
 
@@ -571,7 +570,7 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(offset - QPoint(radius * 3, radius * 3), img);
+    painter->drawImage(offset, img);
     painter->setWorldTransform(restoreTransform);
 }
 

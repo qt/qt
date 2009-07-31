@@ -586,7 +586,9 @@ Qt::TransformationMode QPixmapBlurFilter::quality() const
 */
 QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
 {
-    return rect;
+    Q_D(const QPixmapBlurFilter);
+    const qreal delta = d->radius * 2;
+    return rect.adjusted(-delta, -delta, delta, delta);
 }
 
 // Blur the image according to the blur radius
