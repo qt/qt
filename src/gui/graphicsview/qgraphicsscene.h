@@ -209,7 +209,6 @@ public:
     void removeItem(QGraphicsItem *item);
 
     QGraphicsItem *focusItem() const;
-    QGraphicsItem *focusItem(QGraphicsItem *item) const;
     void setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReason = Qt::OtherFocusReason);
     bool hasFocus() const;
     void setFocus(Qt::FocusReason focusReason = Qt::OtherFocusReason);
