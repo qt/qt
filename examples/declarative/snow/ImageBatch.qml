@@ -41,7 +41,7 @@ GridView {
         transformOrigin: "Center"
         width: MyGrid.imageWidth; height: MyGrid.imageHeight;
 
-        Image { id: Image; source: url; preserveAspect: true; smooth: true; anchors.fill: parent;
+        Image { id: Image; source: url; fillMode: "PreserveAspect"; smooth: true; anchors.fill: parent;
                 opacity: (status == 0)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } } 
         Loading { anchors.centeredIn: parent; visible: Image.status }
 

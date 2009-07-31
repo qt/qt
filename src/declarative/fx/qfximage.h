@@ -57,24 +57,26 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
 {
     Q_OBJECT
     Q_ENUMS(Status)
+    Q_ENUMS(FillMode)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
     Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
-    Q_PROPERTY(bool tile READ isTiled WRITE setTiled)
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
-    Q_PROPERTY(bool preserveAspect READ preserveAspect WRITE setPreserveAspect);
+    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged);
+
 public:
     QFxImage(QFxItem *parent=0);
     ~QFxImage();
 
     QFxScaleGrid *scaleGrid();
 
-    bool isTiled() const;
-    void setTiled(bool tile);
+    enum FillMode { Stretch, PreserveAspect, Tile, TileVertically, TileHorizontally };
+    FillMode fillMode() const;
+    void setFillMode(FillMode);
 
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &);
@@ -86,9 +88,6 @@ public:
     Status status() const;
     qreal progress() const;
 
-    bool preserveAspect() const;
-    void setPreserveAspect(bool);
-
     QUrl source() const;
     virtual void setSource(const QUrl &url);
 
@@ -98,6 +97,7 @@ Q_SIGNALS:
     void sourceChanged(const QUrl &);
     void statusChanged(Status);
     void progressChanged(qreal progress);
+    void fillModeChanged();
 
 protected:
     QFxImage(QFxImagePrivate &dd, QFxItem *parent);

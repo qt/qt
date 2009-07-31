@@ -70,8 +70,9 @@ class QFxImagePrivate : public QFxItemPrivate
 
 public:
     QFxImagePrivate()
-      : scaleGrid(0), tiled(false), smooth(false), opaque(false),
-        preserveAspect(false), status(QFxImage::Idle), sciReply(0),
+      : scaleGrid(0), smooth(false), opaque(false),
+        fillMode(QFxImage::Stretch),
+        status(QFxImage::Idle), sciReply(0),
         progress(0.0)
     {
     }
@@ -92,11 +93,10 @@ public:
 
     QFxScaleGrid *scaleGrid;
     QPixmap pix;
-    bool tiled : 1;
     bool smooth : 1;
     bool opaque : 1;
-    bool preserveAspect : 1;
 
+    QFxImage::FillMode fillMode;
     QFxImage::Status status;
     QUrl url;
     QUrl sciurl;
