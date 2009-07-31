@@ -55,7 +55,6 @@
 #include "qlistmodelinterface.h"
 #include "qfxanchors_p.h"
 
-#include "qfxscalegrid.h"
 #include "qfxview.h"
 #include "qmlstategroup.h"
 

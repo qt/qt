@@ -54,6 +54,7 @@
 //
 
 #include "qfxitem_p.h"
+#include "qfxscalegrid_p.h"
 
 #include <QtCore/qpointer.h>
 
