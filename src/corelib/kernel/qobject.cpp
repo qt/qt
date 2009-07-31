@@ -122,8 +122,11 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
     }
 }
 
+QObjectData::~QObjectData() {}
+QObjectDeletionNotification::~QObjectDeletionNotification() {}
+
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), currentSender(0), declarativeData(0), connectionLists(0), senders(0)
+    : threadData(0), connectionLists(0), senders(0), currentSender(0), deletionNotification(0), objectGuards(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -144,7 +147,6 @@ QObjectPrivate::QObjectPrivate(int version)
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
-    objectGuards = 0;
     metaObject = 0;
     hasGuards = false;
 }
@@ -767,6 +769,8 @@ QObject::~QObject()
     }
 
     emit destroyed(this);
+    if (d->deletionNotification)
+        d->deletionNotification->destroyed(this);
 
     {
         QMutexLocker locker(signalSlotLock(this));
@@ -843,14 +847,6 @@ QObject::~QObject()
 #endif
 
     d->eventFilters.clear();
-
-    // As declarativeData is in a union with currentChildBeingDeleted, this must
-    // be done (and declarativeData set back to 0) before deleting children.
-    if(d->declarativeData) {
-        QDeclarativeData *dd = d->declarativeData;
-        d->declarativeData = 0;
-        dd->destroyed(this);
-    }
 
     if (!d->children.isEmpty())
         d->deleteChildren();

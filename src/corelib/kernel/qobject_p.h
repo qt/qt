@@ -82,63 +82,21 @@ void Q_CORE_EXPORT qt_register_signal_spy_callbacks(const QSignalSpyCallbackSet 
 
 extern QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set;
 
-inline QObjectData::~QObjectData() {}
-
 enum { QObjectPrivateVersion = QT_VERSION };
 
-class QDeclarativeData 
+class Q_CORE_EXPORT QObjectDeletionNotification
 {
 public:
-    virtual ~QDeclarativeData() {}
-    virtual void destroyed(QObject *) {}
+    virtual ~QObjectDeletionNotification();
+    virtual void destroyed(QObject *) = 0;
 };
+typedef QObjectDeletionNotification QDeclarativeData; // remove me when Declarative UI updates
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
     Q_DECLARE_PUBLIC(QObject)
 
 public:
-    QObjectPrivate(int version = QObjectPrivateVersion);
-    virtual ~QObjectPrivate();
-
-#ifdef QT3_SUPPORT
-    QList<QObject *> pendingChildInsertedEvents;
-    void sendPendingChildInsertedEvents();
-    void removePendingChildInsertedEvents(QObject *child);
-#else
-    // preserve binary compatibility with code compiled without Qt 3 support
-    QList<QObject *> unused;
-#endif
-
-    // id of the thread that owns the object
-    QThreadData *threadData;
-    void moveToThread_helper();
-    void setThreadData_helper(QThreadData *currentData, QThreadData *targetData);
-    void _q_reregisterTimers(void *pointer);
-
-    struct Sender
-    {
-        QObject *sender;
-        int signal;
-        int ref;
-    };
-    // object currently activating the object
-    Sender *currentSender;
-
-    QDeclarativeData *declarativeData;
-
-    bool isSender(const QObject *receiver, const char *signal) const;
-    QObjectList receiverList(const char *signal) const;
-    QObjectList senderList() const;
-
-    QList<QPointer<QObject> > eventFilters;
-
-    void setParent_helper(QObject *);
-
-    void deleteChildren();
-
-    static void clearGuards(QObject *);
-
     struct ExtraData
     {
 #ifndef QT_NO_USERDATA
@@ -147,12 +105,7 @@ public:
         QList<QByteArray> propertyNames;
         QList<QVariant> propertyValues;
     };
-    ExtraData *extraData;
-    mutable quint32 connectedSignals[2];
 
-    QString objectName;
-
-    // Note: you must hold the signalSlotLock() before accessing the lists below or calling the functions
     struct Connection
     {
         QObject *sender;
@@ -167,11 +120,34 @@ public:
     };
     typedef QList<Connection *> ConnectionList;
 
-    QObjectConnectionListVector *connectionLists;
+    struct Sender
+    {
+        QObject *sender;
+        int signal;
+        int ref;
+    };
+
+
+    QObjectPrivate(int version = QObjectPrivateVersion);
+    virtual ~QObjectPrivate();
+    void deleteChildren();
+
+    void setParent_helper(QObject *);
+    void moveToThread_helper();
+    void setThreadData_helper(QThreadData *currentData, QThreadData *targetData);
+    void _q_reregisterTimers(void *pointer);
+
+    bool isSender(const QObject *receiver, const char *signal) const;
+    QObjectList receiverList(const char *signal) const;
+    QObjectList senderList() const;
+
     void addConnection(int signal, Connection *c);
     void cleanConnectionLists();
 
-    Connection *senders; //linked list;
+#ifdef QT3_SUPPORT
+    void sendPendingChildInsertedEvents();
+    void removePendingChildInsertedEvents(QObject *child);
+#endif
 
     static Sender *setCurrentSender(QObject *receiver,
                                     Sender *sender);
@@ -180,13 +156,38 @@ public:
                                    Sender *previousSender);
     static int *setDeleteWatch(QObjectPrivate *d, int *newWatch);
     static void resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch);
-
-    int *deleteWatch;
-    QGuard<QObject> *objectGuards;
+    static void clearGuards(QObject *);
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();
     }
+
+public:
+    QString objectName;
+    ExtraData *extraData;    // extra data set by the user
+    QThreadData *threadData; // id of the thread that owns the object
+
+    QObjectConnectionListVector *connectionLists;
+
+    Connection *senders;     // linked list of connections connected to this object
+    Sender *currentSender;   // object currently activating the object
+    mutable quint32 connectedSignals[2];   // 64-bit, so doesn't cause padding on 64-bit platforms
+
+#ifdef QT3_SUPPORT
+    QList<QObject *> pendingChildInsertedEvents;
+#else
+    // preserve binary compatibility with code compiled without Qt 3 support
+    // ### why?
+    QList<QObject *> unused;
+#endif
+
+    QList<QPointer<QObject> > eventFilters;
+
+    // these objects are all used to indicate that a QObject was deleted
+    // plus QPointer, which keeps a separate list
+    QObjectDeletionNotification *deletionNotification;
+    QGuard<QObject> *objectGuards;
+    int *deleteWatch;
 };
 
 inline void q_guard_addGuard(QGuard<QObject> *g)

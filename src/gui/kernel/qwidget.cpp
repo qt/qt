@@ -1375,10 +1375,9 @@ QWidget::~QWidget()
     // set all QPointers for this object to zero
     QObjectPrivate::clearGuards(this);
 
-    if(d->declarativeData) {
-        QDeclarativeData *dd = d->declarativeData;
-        d->declarativeData = 0;
-        dd->destroyed(this);
+    if (d->deletionNotification) {
+        d->deletionNotification->destroyed(this);
+        d->deletionNotification = 0;                 // don't activate again in ~QObject
     }
 
     if (!d->children.isEmpty())
