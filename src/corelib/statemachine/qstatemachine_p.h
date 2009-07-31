@@ -214,7 +214,11 @@ public:
         f_cloneEvent cloneEvent;
     };
 
-    static const Handler *handler;
+    static
+#ifndef QT_BUILD_INTERNAL // otherwise Q_AUTOTEST_EXPORT exports it all
+        Q_CORE_EXPORT
+#endif
+        const Handler *handler;
 };
 
 QT_END_NAMESPACE
