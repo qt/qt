@@ -723,11 +723,6 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();
 
-    // New code to configure the window group name such that window server knows the associated application's UID
-    CApaWindowGroupName *wgn = CApaWindowGroupName::NewL(S60->wsSession());
-    wgn->SetAppUid(S60->uid);
-    User::LeaveIfError(wgn->SetWindowGroupName((S60->windowGroup())));
-    delete wgn;
 
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
