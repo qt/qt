@@ -765,8 +765,12 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     if (q->isWindow()) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
         CAknTitlePane* titlePane = S60->titlePane();
-        if(titlePane)
-            titlePane->SetTextL(qt_QString2TPtrC(caption));
+        if(titlePane) {
+			if(caption.isEmpty())
+				titlePane->SetTextToDefaultL();
+			else
+				titlePane->SetTextL(qt_QString2TPtrC(caption));
+        }
     }
 #else
     Q_UNUSED(caption)
@@ -1113,8 +1117,10 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             // the next visible window will get keyboard focus
             WId wid = CEikonEnv::Static()->AppUi()->TopFocusedControl();
             if (wid) {
-                QWidget *widget = QWidget::find(wid);
+                QWidget *widget = QWidget::find(wid);                
                 QApplication::setActiveWindow(widget);
+                // Reset global window title for focusing window
+                widget->d_func()->setWindowTitle_sys(widget->windowTitle());                
             }
 
         }
