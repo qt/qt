@@ -74,9 +74,8 @@ JSObject* JSSVGRectPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSSVGRect::s_info = { "SVGRect", 0, &JSSVGRectTable, 0 };
 
-JSSVGRect::JSSVGRect(PassRefPtr<Structure> structure, PassRefPtr<JSSVGPODTypeWrapper<FloatRect> > impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGRect::JSSVGRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<FloatRect> > impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -99,29 +98,33 @@ bool JSSVGRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsSVGRectX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGRect* castedThis = static_cast<JSSVGRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    FloatRect imp(*static_cast<JSSVGRect*>(asObject(slot.slotBase()))->impl());
+    FloatRect imp(*castedThis->impl());
     return jsNumber(exec, imp.x());
 }
 
 JSValue jsSVGRectY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGRect* castedThis = static_cast<JSSVGRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    FloatRect imp(*static_cast<JSSVGRect*>(asObject(slot.slotBase()))->impl());
+    FloatRect imp(*castedThis->impl());
     return jsNumber(exec, imp.y());
 }
 
 JSValue jsSVGRectWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGRect* castedThis = static_cast<JSSVGRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    FloatRect imp(*static_cast<JSSVGRect*>(asObject(slot.slotBase()))->impl());
+    FloatRect imp(*castedThis->impl());
     return jsNumber(exec, imp.width());
 }
 
 JSValue jsSVGRectHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGRect* castedThis = static_cast<JSSVGRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    FloatRect imp(*static_cast<JSSVGRect*>(asObject(slot.slotBase()))->impl());
+    FloatRect imp(*castedThis->impl());
     return jsNumber(exec, imp.height());
 }
 
@@ -158,9 +161,9 @@ void setJSSVGRectHeight(ExecState* exec, JSObject* thisObject, JSValue value)
         static_cast<JSSVGRect*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGRect*>(thisObject)->context());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<FloatRect>* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPODTypeWrapper<FloatRect>* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGRect, JSSVGPODTypeWrapper<FloatRect> >(exec, object, context);
+    return getDOMObjectWrapper<JSSVGRect, JSSVGPODTypeWrapper<FloatRect> >(exec, globalObject, object, context);
 }
 FloatRect toSVGRect(JSC::JSValue value)
 {

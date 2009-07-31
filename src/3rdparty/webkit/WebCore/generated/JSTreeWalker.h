@@ -21,6 +21,7 @@
 #ifndef JSTreeWalker_h
 #define JSTreeWalker_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class TreeWalker;
 
-class JSTreeWalker : public DOMObject {
-    typedef DOMObject Base;
+class JSTreeWalker : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSTreeWalker(PassRefPtr<JSC::Structure>, PassRefPtr<TreeWalker>);
+    JSTreeWalker(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<TreeWalker>);
     virtual ~JSTreeWalker();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,7 +48,7 @@ public:
 
     virtual void mark();
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue parentNode(JSC::ExecState*, const JSC::ArgList&);
@@ -63,7 +64,7 @@ private:
     RefPtr<TreeWalker> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, TreeWalker*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, TreeWalker*);
 TreeWalker* toTreeWalker(JSC::JSValue);
 
 class JSTreeWalkerPrototype : public JSC::JSObject {

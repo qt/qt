@@ -78,12 +78,12 @@ static JSC_CONST_HASHTABLE HashTable JSSVGPaintConstructorTable =
     { 35, 31, JSSVGPaintConstructorTableValues, 0 };
 #endif
 
-class JSSVGPaintConstructor : public DOMObject {
+class JSSVGPaintConstructor : public DOMConstructorObject {
 public:
-    JSSVGPaintConstructor(ExecState* exec)
-        : DOMObject(JSSVGPaintConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGPaintConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGPaintConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGPaintPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGPaintPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -142,8 +142,8 @@ bool JSSVGPaintPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 const ClassInfo JSSVGPaint::s_info = { "SVGPaint", &JSSVGColor::s_info, &JSSVGPaintTable, 0 };
 
-JSSVGPaint::JSSVGPaint(PassRefPtr<Structure> structure, PassRefPtr<SVGPaint> impl)
-    : JSSVGColor(structure, impl)
+JSSVGPaint::JSSVGPaint(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPaint> impl)
+    : JSSVGColor(structure, globalObject, impl)
 {
 }
 
@@ -159,25 +159,28 @@ bool JSSVGPaint::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
 
 JSValue jsSVGPaintPaintType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPaint* imp = static_cast<SVGPaint*>(static_cast<JSSVGPaint*>(asObject(slot.slotBase()))->impl());
+    SVGPaint* imp = static_cast<SVGPaint*>(castedThis->impl());
     return jsNumber(exec, imp->paintType());
 }
 
 JSValue jsSVGPaintUri(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPaint* imp = static_cast<SVGPaint*>(static_cast<JSSVGPaint*>(asObject(slot.slotBase()))->impl());
+    SVGPaint* imp = static_cast<SVGPaint*>(castedThis->impl());
     return jsString(exec, imp->uri());
 }
 
 JSValue jsSVGPaintConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGPaint*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSSVGPaint* domObject = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
+    return JSSVGPaint::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSSVGPaint::getConstructor(ExecState* exec)
+JSValue JSSVGPaint::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGPaintConstructor>(exec);
+    return getDOMConstructor<JSSVGPaintConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGPaintPrototypeFunctionSetUri(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -8,9 +8,9 @@ Rect {
 
     height: Text.height + 10
     width: Text.width + 20
-    pen.width: 1
+    border.width: 1
     radius: 4
     color: "grey"
     MouseRegion { anchors.fill: parent; onClicked: Container.clicked() }
-    Text { id: Text; anchors.centeredIn:parent; font.size: 10; text: parent.text }
+    Text { id: Text; anchors.centerIn:parent; font.size: 10; text: parent.text }
 }

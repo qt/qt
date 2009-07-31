@@ -29,8 +29,10 @@
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QComboBox>
+#include <QPicture>
 #include <QRegExp>
 #include <QNetworkRequest>
+#include <QNetworkReply>
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -573,6 +575,7 @@ private slots:
     void progressSignal();
     void urlChange();
     void domCycles();
+    void requestedUrl();
     void setHtml();
     void setHtmlWithResource();
     void ipv6HostEncoding();
@@ -585,6 +588,8 @@ private slots:
     void baseUrl_data();
     void baseUrl();
     void hasSetFocus();
+    void render();
+    void scrollPosition();
 
 private:
     QString  evalJS(const QString&s) {
@@ -2159,6 +2164,93 @@ void tst_QWebFrame::domCycles()
     QVERIFY(v.type() == QVariant::Map);
 }
 
+class FakeReply : public QNetworkReply {
+    Q_OBJECT
+
+    public:
+        FakeReply(const QNetworkRequest& request, QObject* parent = 0)
+            : QNetworkReply(parent)
+        {
+            setOperation(QNetworkAccessManager::GetOperation);
+            setRequest(request);
+            if (request.url() == QUrl("qrc:/test1.html")) {
+                setHeader(QNetworkRequest::LocationHeader, QString("qrc:/test2.html"));
+                setAttribute(QNetworkRequest::RedirectionTargetAttribute, QUrl("qrc:/test2.html"));
+            } else
+                setError(QNetworkReply::HostNotFoundError, tr("Invalid URL"));
+
+            open(QIODevice::ReadOnly);
+            QTimer::singleShot(0, this, SLOT(timeout()));
+        }
+        ~FakeReply()
+        {
+            close();
+        }
+        virtual void abort() {}
+        virtual void close() {}
+    protected:
+        qint64 readData(char*, qint64)
+        {
+            return 0;
+        }
+    private slots:
+        void timeout()
+        {
+            if (request().url() == QUrl("qrc://test1.html"))
+                emit error(this->error());
+            else if (request().url() == QUrl("http://abcdef.abcdef/"))
+                emit metaDataChanged();
+
+            emit readyRead();
+            emit finished();
+        }
+};
+
+class FakeNetworkManager : public QNetworkAccessManager {
+public:
+    FakeNetworkManager(QObject* parent) : QNetworkAccessManager(parent) { }
+
+protected:
+    virtual QNetworkReply* createRequest(Operation op, const QNetworkRequest& request, QIODevice* outgoingData)
+    {
+        if (op == QNetworkAccessManager::GetOperation
+            && (request.url().toString() == "qrc:/test1.html"
+            ||  request.url().toString() == "http://abcdef.abcdef/"))
+            return new FakeReply(request, this);
+
+        return QNetworkAccessManager::createRequest(op, request, outgoingData);
+    }
+};
+
+void tst_QWebFrame::requestedUrl()
+{
+    QWebPage page;
+    QWebFrame* frame = page.mainFrame();
+
+    // in few seconds, the image should be completely loaded
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
+    page.setNetworkAccessManager(networkManager);
+
+    frame->setUrl(QUrl("qrc:/test1.html"));
+    QTest::qWait(200);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(frame->requestedUrl(), QUrl("qrc:/test1.html"));
+    QCOMPARE(frame->url(), QUrl("qrc:/test2.html"));
+
+    frame->setUrl(QUrl("qrc:/non-existent.html"));
+    QTest::qWait(200);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(frame->requestedUrl(), QUrl("qrc:/non-existent.html"));
+    QCOMPARE(frame->url(), QUrl("qrc:/non-existent.html"));
+
+    frame->setUrl(QUrl("http://abcdef.abcdef"));
+    QTest::qWait(200);
+    QCOMPARE(spy.count(), 3);
+    QCOMPARE(frame->requestedUrl(), QUrl("http://abcdef.abcdef/"));
+    QCOMPARE(frame->url(), QUrl("http://abcdef.abcdef/"));
+}
+
 void tst_QWebFrame::setHtml()
 {
     QString html("<html><head></head><body><p>hello world</p></body></html>");
@@ -2453,16 +2545,29 @@ void tst_QWebFrame::baseUrl()
 
 void tst_QWebFrame::hasSetFocus()
 {
-    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
-    QUrl url = QUrl("qrc:///frametest/iframe.html");
-    m_page->mainFrame()->load(url);
+    QString html("<html><body><p>top</p>" \
+                    "<iframe width='80%' height='30%'/>" \
+                 "</body></html>");
 
-    ::waitForSignal(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->mainFrame()->setHtml(html);
+
+    QTest::qWait(200);
+    QCOMPARE(loadSpy.size(), 1);
+
+    QList<QWebFrame*> children = m_page->mainFrame()->childFrames();
+    QWebFrame* frame = children.at(0);
+    QString innerHtml("<html><body><p>another iframe</p>" \
+                        "<iframe width='80%' height='30%'/>" \
+                      "</body></html>");
+    frame->setHtml(innerHtml);
+
+    QTest::qWait(200);
+    QCOMPARE(loadSpy.size(), 2);
 
     m_page->mainFrame()->setFocus();
     QVERIFY(m_page->mainFrame()->hasFocus());
 
-    QList<QWebFrame*> children = m_page->mainFrame()->childFrames();
     for (int i = 0; i < children.size(); ++i) {
         children.at(i)->setFocus();
         QVERIFY(children.at(i)->hasFocus());
@@ -2471,6 +2576,71 @@ void tst_QWebFrame::hasSetFocus()
 
     m_page->mainFrame()->setFocus();
     QVERIFY(m_page->mainFrame()->hasFocus());
+}
+
+void tst_QWebFrame::render()
+{
+    QString html("<html>" \
+                    "<head><style>" \
+                       "body, iframe { margin: 0px; border: none; }" \
+                    "</style></head>" \
+                    "<body><iframe width='100px' height='100px'/></body>" \
+                 "</html>");
+
+    QWebPage page;
+    page.mainFrame()->setHtml(html);
+
+    QList<QWebFrame*> frames = page.mainFrame()->childFrames();
+    QWebFrame *frame = frames.at(0);
+    QString innerHtml("<body style='margin: 0px;'><img src='qrc:/image.png'/></body>");
+    frame->setHtml(innerHtml);
+
+    QPicture picture;
+
+    // render clipping to Viewport
+    frame->setClipRenderToViewport(true);
+    QPainter painter1(&picture);
+    frame->render(&painter1);
+    painter1.end();
+
+    QSize size = page.mainFrame()->contentsSize();
+    page.setViewportSize(size);
+    QCOMPARE(size.width(), picture.boundingRect().width());   // 100px
+    QCOMPARE(size.height(), picture.boundingRect().height()); // 100px
+
+    // render without clipping to Viewport
+    frame->setClipRenderToViewport(false);
+    QPainter painter2(&picture);
+    frame->render(&painter2);
+    painter2.end();
+
+    QImage resource(":/image.png");
+    QCOMPARE(resource.width(), picture.boundingRect().width());   // resource width: 128px
+    QCOMPARE(resource.height(), picture.boundingRect().height()); // resource height: 128px
+}
+
+void tst_QWebFrame::scrollPosition()
+{
+    // enlarged image in a small viewport, to provoke the scrollbars to appear
+    QString html("<html><body><img src='qrc:/image.png' height=500 width=500/></body></html>");
+
+    QWebPage page;
+    page.setViewportSize(QSize(200, 200));
+
+    QWebFrame* frame = page.mainFrame();
+    frame->setHtml(html);
+    frame->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
+    frame->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+
+    // try to set the scroll offset programmatically
+    frame->setScrollPosition(QPoint(23, 29));
+    QCOMPARE(frame->scrollPosition().x(), 23);
+    QCOMPARE(frame->scrollPosition().y(), 29);
+
+    int x = frame->evaluateJavaScript("window.scrollX").toInt();
+    int y = frame->evaluateJavaScript("window.scrollY").toInt();
+    QCOMPARE(x, 23);
+    QCOMPARE(y, 29);
 }
 
 QTEST_MAIN(tst_QWebFrame)

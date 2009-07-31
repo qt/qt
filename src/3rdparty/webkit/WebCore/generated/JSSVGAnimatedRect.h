@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedRect : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedRect : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedRect(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedRect>, SVGElement* context);
+    JSSVGAnimatedRect(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedRect>, SVGElement* context);
     virtual ~JSSVGAnimatedRect();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,12 @@ public:
     }
 
     SVGAnimatedRect* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedRect > m_impl;
+    RefPtr<SVGAnimatedRect> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedRect*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedRect*, SVGElement* context);
 SVGAnimatedRect* toSVGAnimatedRect(JSC::JSValue);
 
 class JSSVGAnimatedRectPrototype : public JSC::JSObject {

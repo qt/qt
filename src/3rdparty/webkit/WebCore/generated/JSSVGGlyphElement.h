@@ -33,7 +33,7 @@ class SVGGlyphElement;
 class JSSVGGlyphElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGGlyphElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGGlyphElement>);
+    JSSVGGlyphElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGGlyphElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

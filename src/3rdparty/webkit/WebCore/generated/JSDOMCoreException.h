@@ -21,6 +21,7 @@
 #ifndef JSDOMCoreException_h
 #define JSDOMCoreException_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class DOMCoreException;
 
-class JSDOMCoreException : public DOMObject {
-    typedef DOMObject Base;
+class JSDOMCoreException : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDOMCoreException(PassRefPtr<JSC::Structure>, PassRefPtr<DOMCoreException>);
+    JSDOMCoreException(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMCoreException>);
     virtual ~JSDOMCoreException();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     DOMCoreException* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<DOMCoreException> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, DOMCoreException*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, DOMCoreException*);
 DOMCoreException* toDOMCoreException(JSC::JSValue);
 
 class JSDOMCoreExceptionPrototype : public JSC::JSObject {

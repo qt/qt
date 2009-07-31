@@ -21,6 +21,7 @@
 #ifndef JSGeolocation_h
 #define JSGeolocation_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Geolocation;
 
-class JSGeolocation : public DOMObject {
-    typedef DOMObject Base;
+class JSGeolocation : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSGeolocation(PassRefPtr<JSC::Structure>, PassRefPtr<Geolocation>);
+    JSGeolocation(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Geolocation>);
     virtual ~JSGeolocation();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -54,7 +55,7 @@ private:
     RefPtr<Geolocation> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Geolocation*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Geolocation*);
 Geolocation* toGeolocation(JSC::JSValue);
 
 class JSGeolocationPrototype : public JSC::JSObject {

@@ -87,12 +87,12 @@ static JSC_CONST_HASHTABLE HashTable JSSVGFEColorMatrixElementConstructorTable =
     { 17, 15, JSSVGFEColorMatrixElementConstructorTableValues, 0 };
 #endif
 
-class JSSVGFEColorMatrixElementConstructor : public DOMObject {
+class JSSVGFEColorMatrixElementConstructor : public DOMConstructorObject {
 public:
-    JSSVGFEColorMatrixElementConstructor(ExecState* exec)
-        : DOMObject(JSSVGFEColorMatrixElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGFEColorMatrixElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGFEColorMatrixElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFEColorMatrixElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFEColorMatrixElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -145,8 +145,8 @@ bool JSSVGFEColorMatrixElementPrototype::getOwnPropertySlot(ExecState* exec, con
 
 const ClassInfo JSSVGFEColorMatrixElement::s_info = { "SVGFEColorMatrixElement", &JSSVGElement::s_info, &JSSVGFEColorMatrixElementTable, 0 };
 
-JSSVGFEColorMatrixElement::JSSVGFEColorMatrixElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFEColorMatrixElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFEColorMatrixElement::JSSVGFEColorMatrixElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEColorMatrixElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -162,90 +162,101 @@ bool JSSVGFEColorMatrixElement::getOwnPropertySlot(ExecState* exec, const Identi
 
 JSValue jsSVGFEColorMatrixElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->typeAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementValues(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumberList> obj = imp->valuesAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEColorMatrixElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEColorMatrixElement* castedThis = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGFEColorMatrixElement* imp = static_cast<SVGFEColorMatrixElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsSVGFEColorMatrixElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSSVGFEColorMatrixElement* domObject = static_cast<JSSVGFEColorMatrixElement*>(asObject(slot.slotBase()));
+    return JSSVGFEColorMatrixElement::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSSVGFEColorMatrixElement::getConstructor(ExecState* exec)
+JSValue JSSVGFEColorMatrixElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGFEColorMatrixElementConstructor>(exec);
+    return getDOMConstructor<JSSVGFEColorMatrixElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGFEColorMatrixElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -258,7 +269,7 @@ JSValue JSC_HOST_CALL jsSVGFEColorMatrixElementPrototypeFunctionGetPresentationA
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

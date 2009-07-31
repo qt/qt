@@ -6,11 +6,11 @@ Item {
     clip: true
     width: 230
     height: 30
-    Item {
+    Loader {
         id: removeButton
-        qml: "RemoveButton.qml"
-        width: qmlItem.width
-        height: qmlItem.height
+        source: "RemoveButton.qml"
+        width: item.width
+        height: item.height
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom

@@ -402,7 +402,7 @@
     while setting as few widget size constraints as possible.
 
     For a more technical perspective on Qt's layout classes, refer to the
-    \l{Layout Classes} document.
+    \l{Layout Management} documentation.
 */
 
 

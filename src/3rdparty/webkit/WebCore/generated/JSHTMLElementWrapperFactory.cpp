@@ -170,358 +170,358 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-typedef JSNode* (*CreateHTMLElementWrapperFunction)(ExecState*, PassRefPtr<HTMLElement>);
+typedef JSNode* (*CreateHTMLElementWrapperFunction)(ExecState*, JSDOMGlobalObject*, PassRefPtr<HTMLElement>);
 
-static JSNode* createHTMLAnchorElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLAnchorElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLAnchorElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLAnchorElement, element.get());
 }
 
-static JSNode* createHTMLAppletElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLAppletElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLAppletElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLAppletElement, element.get());
 }
 
-static JSNode* createHTMLAreaElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLAreaElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLAreaElement, element.get());
-}
-
-#if ENABLE(VIDEO)
-
-static JSNode* createHTMLAudioElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    if (!MediaPlayer::isAvailable())
-        return CREATE_DOM_NODE_WRAPPER(exec, HTMLElement, element.get());
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLAudioElement, element.get());
-}
-
-#endif
-
-static JSNode* createHTMLBaseElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLBaseElement, element.get());
-}
-
-static JSNode* createHTMLBaseFontElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLBaseFontElement, element.get());
-}
-
-static JSNode* createHTMLBlockquoteElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLBlockquoteElement, element.get());
-}
-
-static JSNode* createHTMLBodyElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLBodyElement, element.get());
-}
-
-static JSNode* createHTMLBRElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLBRElement, element.get());
-}
-
-static JSNode* createHTMLButtonElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLButtonElement, element.get());
-}
-
-static JSNode* createHTMLCanvasElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLCanvasElement, element.get());
-}
-
-static JSNode* createHTMLTableCaptionElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableCaptionElement, element.get());
-}
-
-static JSNode* createHTMLTableColElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableColElement, element.get());
-}
-
-#if ENABLE(DATAGRID)
-
-static JSNode* createHTMLDataGridElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridElement, element.get());
-}
-
-#endif
-
-#if ENABLE(DATAGRID)
-
-static JSNode* createHTMLDataGridCellElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridCellElement, element.get());
-}
-
-#endif
-
-#if ENABLE(DATAGRID)
-
-static JSNode* createHTMLDataGridColElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridColElement, element.get());
-}
-
-#endif
-
-static JSNode* createHTMLModElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLModElement, element.get());
-}
-
-static JSNode* createHTMLDirectoryElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDirectoryElement, element.get());
-}
-
-static JSNode* createHTMLDivElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDivElement, element.get());
-}
-
-static JSNode* createHTMLDListElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDListElement, element.get());
-}
-
-#if ENABLE(DATAGRID)
-
-static JSNode* createHTMLDataGridRowElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridRowElement, element.get());
-}
-
-#endif
-
-static JSNode* createHTMLEmbedElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLEmbedElement, element.get());
-}
-
-static JSNode* createHTMLFieldSetElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLFieldSetElement, element.get());
-}
-
-static JSNode* createHTMLFontElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLFontElement, element.get());
-}
-
-static JSNode* createHTMLFormElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLFormElement, element.get());
-}
-
-static JSNode* createHTMLFrameElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLFrameElement, element.get());
-}
-
-static JSNode* createHTMLFrameSetElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLFrameSetElement, element.get());
-}
-
-static JSNode* createHTMLHeadingElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLHeadingElement, element.get());
-}
-
-static JSNode* createHTMLHeadElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLHeadElement, element.get());
-}
-
-static JSNode* createHTMLHRElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLHRElement, element.get());
-}
-
-static JSNode* createHTMLHtmlElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLHtmlElement, element.get());
-}
-
-static JSNode* createHTMLIFrameElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLIFrameElement, element.get());
-}
-
-static JSNode* createHTMLImageElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLImageElement, element.get());
-}
-
-static JSNode* createHTMLInputElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLInputElement, element.get());
-}
-
-static JSNode* createHTMLIsIndexElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLIsIndexElement, element.get());
-}
-
-static JSNode* createHTMLSelectElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLSelectElement, element.get());
-}
-
-static JSNode* createHTMLLabelElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLLabelElement, element.get());
-}
-
-static JSNode* createHTMLLegendElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLLegendElement, element.get());
-}
-
-static JSNode* createHTMLLIElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLLIElement, element.get());
-}
-
-static JSNode* createHTMLLinkElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLLinkElement, element.get());
-}
-
-static JSNode* createHTMLPreElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLPreElement, element.get());
-}
-
-static JSNode* createHTMLMapElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLMapElement, element.get());
-}
-
-static JSNode* createHTMLMarqueeElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLMarqueeElement, element.get());
-}
-
-static JSNode* createHTMLMenuElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLMenuElement, element.get());
-}
-
-static JSNode* createHTMLMetaElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLMetaElement, element.get());
-}
-
-static JSNode* createHTMLObjectElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLObjectElement, element.get());
-}
-
-static JSNode* createHTMLOListElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLOListElement, element.get());
-}
-
-static JSNode* createHTMLOptGroupElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLOptGroupElement, element.get());
-}
-
-static JSNode* createHTMLOptionElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLOptionElement, element.get());
-}
-
-static JSNode* createHTMLParagraphElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLParagraphElement, element.get());
-}
-
-static JSNode* createHTMLParamElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLParamElement, element.get());
-}
-
-static JSNode* createHTMLQuoteElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLQuoteElement, element.get());
-}
-
-static JSNode* createHTMLScriptElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLScriptElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLAreaElement, element.get());
 }
 
 #if ENABLE(VIDEO)
 
-static JSNode* createHTMLSourceElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLAudioElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
     if (!MediaPlayer::isAvailable())
-        return CREATE_DOM_NODE_WRAPPER(exec, HTMLElement, element.get());
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLSourceElement, element.get());
+        return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLAudioElement, element.get());
 }
 
 #endif
 
-static JSNode* createHTMLStyleElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLBaseElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLStyleElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLBaseElement, element.get());
 }
 
-static JSNode* createHTMLTableElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLBaseFontElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLBaseFontElement, element.get());
 }
 
-static JSNode* createHTMLTableSectionElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLBlockquoteElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableSectionElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLBlockquoteElement, element.get());
 }
 
-static JSNode* createHTMLTableCellElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLBodyElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableCellElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLBodyElement, element.get());
 }
 
-static JSNode* createHTMLTextAreaElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLBRElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTextAreaElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLBRElement, element.get());
 }
 
-static JSNode* createHTMLTitleElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLButtonElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTitleElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLButtonElement, element.get());
 }
 
-static JSNode* createHTMLTableRowElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLCanvasElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableRowElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLCanvasElement, element.get());
 }
 
-static JSNode* createHTMLUListElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLTableCaptionElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLUListElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTableCaptionElement, element.get());
+}
+
+static JSNode* createHTMLTableColElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTableColElement, element.get());
+}
+
+#if ENABLE(DATAGRID)
+
+static JSNode* createHTMLDataGridElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDataGridElement, element.get());
+}
+
+#endif
+
+#if ENABLE(DATAGRID)
+
+static JSNode* createHTMLDataGridCellElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDataGridCellElement, element.get());
+}
+
+#endif
+
+#if ENABLE(DATAGRID)
+
+static JSNode* createHTMLDataGridColElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDataGridColElement, element.get());
+}
+
+#endif
+
+static JSNode* createHTMLModElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLModElement, element.get());
+}
+
+static JSNode* createHTMLDirectoryElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDirectoryElement, element.get());
+}
+
+static JSNode* createHTMLDivElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDivElement, element.get());
+}
+
+static JSNode* createHTMLDListElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDListElement, element.get());
+}
+
+#if ENABLE(DATAGRID)
+
+static JSNode* createHTMLDataGridRowElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDataGridRowElement, element.get());
+}
+
+#endif
+
+static JSNode* createHTMLEmbedElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLEmbedElement, element.get());
+}
+
+static JSNode* createHTMLFieldSetElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLFieldSetElement, element.get());
+}
+
+static JSNode* createHTMLFontElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLFontElement, element.get());
+}
+
+static JSNode* createHTMLFormElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLFormElement, element.get());
+}
+
+static JSNode* createHTMLFrameElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLFrameElement, element.get());
+}
+
+static JSNode* createHTMLFrameSetElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLFrameSetElement, element.get());
+}
+
+static JSNode* createHTMLHeadingElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLHeadingElement, element.get());
+}
+
+static JSNode* createHTMLHeadElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLHeadElement, element.get());
+}
+
+static JSNode* createHTMLHRElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLHRElement, element.get());
+}
+
+static JSNode* createHTMLHtmlElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLHtmlElement, element.get());
+}
+
+static JSNode* createHTMLIFrameElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLIFrameElement, element.get());
+}
+
+static JSNode* createHTMLImageElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLImageElement, element.get());
+}
+
+static JSNode* createHTMLInputElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLInputElement, element.get());
+}
+
+static JSNode* createHTMLIsIndexElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLIsIndexElement, element.get());
+}
+
+static JSNode* createHTMLSelectElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLSelectElement, element.get());
+}
+
+static JSNode* createHTMLLabelElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLLabelElement, element.get());
+}
+
+static JSNode* createHTMLLegendElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLLegendElement, element.get());
+}
+
+static JSNode* createHTMLLIElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLLIElement, element.get());
+}
+
+static JSNode* createHTMLLinkElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLLinkElement, element.get());
+}
+
+static JSNode* createHTMLPreElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLPreElement, element.get());
+}
+
+static JSNode* createHTMLMapElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLMapElement, element.get());
+}
+
+static JSNode* createHTMLMarqueeElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLMarqueeElement, element.get());
+}
+
+static JSNode* createHTMLMenuElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLMenuElement, element.get());
+}
+
+static JSNode* createHTMLMetaElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLMetaElement, element.get());
+}
+
+static JSNode* createHTMLObjectElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLObjectElement, element.get());
+}
+
+static JSNode* createHTMLOListElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLOListElement, element.get());
+}
+
+static JSNode* createHTMLOptGroupElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLOptGroupElement, element.get());
+}
+
+static JSNode* createHTMLOptionElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLOptionElement, element.get());
+}
+
+static JSNode* createHTMLParagraphElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLParagraphElement, element.get());
+}
+
+static JSNode* createHTMLParamElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLParamElement, element.get());
+}
+
+static JSNode* createHTMLQuoteElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLQuoteElement, element.get());
+}
+
+static JSNode* createHTMLScriptElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLScriptElement, element.get());
 }
 
 #if ENABLE(VIDEO)
 
-static JSNode* createHTMLVideoElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLSourceElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
     if (!MediaPlayer::isAvailable())
-        return CREATE_DOM_NODE_WRAPPER(exec, HTMLElement, element.get());
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLVideoElement, element.get());
+        return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLSourceElement, element.get());
 }
 
 #endif
 
-JSNode* createJSHTMLWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+static JSNode* createHTMLStyleElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLStyleElement, element.get());
+}
+
+static JSNode* createHTMLTableElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTableElement, element.get());
+}
+
+static JSNode* createHTMLTableSectionElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTableSectionElement, element.get());
+}
+
+static JSNode* createHTMLTableCellElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTableCellElement, element.get());
+}
+
+static JSNode* createHTMLTextAreaElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTextAreaElement, element.get());
+}
+
+static JSNode* createHTMLTitleElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTitleElement, element.get());
+}
+
+static JSNode* createHTMLTableRowElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLTableRowElement, element.get());
+}
+
+static JSNode* createHTMLUListElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLUListElement, element.get());
+}
+
+#if ENABLE(VIDEO)
+
+static JSNode* createHTMLVideoElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    if (!MediaPlayer::isAvailable())
+        return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLElement, element.get());
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLVideoElement, element.get());
+}
+
+#endif
+
+JSNode* createJSHTMLWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {   
     typedef HashMap<WebCore::AtomicStringImpl*, CreateHTMLElementWrapperFunction> FunctionMap;
     DEFINE_STATIC_LOCAL(FunctionMap, map, ());
@@ -620,8 +620,8 @@ JSNode* createJSHTMLWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
     }
     CreateHTMLElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
     if (createWrapperFunction)
-        return createWrapperFunction(exec, element);
-    return CREATE_DOM_NODE_WRAPPER(exec, HTMLElement, element.get());
+        return createWrapperFunction(exec, globalObject, element);
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLElement, element.get());
 }
 
 }

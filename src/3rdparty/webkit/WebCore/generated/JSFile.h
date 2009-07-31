@@ -21,6 +21,7 @@
 #ifndef JSFile_h
 #define JSFile_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class File;
 
-class JSFile : public DOMObject {
-    typedef DOMObject Base;
+class JSFile : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSFile(PassRefPtr<JSC::Structure>, PassRefPtr<File>);
+    JSFile(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<File>);
     virtual ~JSFile();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     File* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<File> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, File*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, File*);
 File* toFile(JSC::JSValue);
 
 class JSFilePrototype : public JSC::JSObject {

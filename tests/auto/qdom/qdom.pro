@@ -10,4 +10,8 @@ wince*: {
    DEPLOYMENT += addFiles
 
    DEPLOYMENT_PLUGIN += qcncodecs qjpcodecs qkrcodecs qtwcodecs
+    DEFINES += SRCDIR=\\\"\\\"
+}
+else {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

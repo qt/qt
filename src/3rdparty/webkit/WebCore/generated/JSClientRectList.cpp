@@ -66,12 +66,12 @@ static JSC_CONST_HASHTABLE HashTable JSClientRectListConstructorTable =
     { 1, 0, JSClientRectListConstructorTableValues, 0 };
 #endif
 
-class JSClientRectListConstructor : public DOMObject {
+class JSClientRectListConstructor : public DOMConstructorObject {
 public:
-    JSClientRectListConstructor(ExecState* exec)
-        : DOMObject(JSClientRectListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSClientRectListConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSClientRectListConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSClientRectListPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSClientRectListPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -119,8 +119,8 @@ bool JSClientRectListPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSClientRectList::s_info = { "ClientRectList", 0, &JSClientRectListTable, 0 };
 
-JSClientRectList::JSClientRectList(PassRefPtr<Structure> structure, PassRefPtr<ClientRectList> impl)
-    : DOMObject(structure)
+JSClientRectList::JSClientRectList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ClientRectList> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -162,14 +162,16 @@ bool JSClientRectList::getOwnPropertySlot(ExecState* exec, unsigned propertyName
 
 JSValue jsClientRectListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSClientRectList* castedThis = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ClientRectList* imp = static_cast<ClientRectList*>(static_cast<JSClientRectList*>(asObject(slot.slotBase()))->impl());
+    ClientRectList* imp = static_cast<ClientRectList*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsClientRectListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSClientRectList*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSClientRectList* domObject = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
+    return JSClientRectList::getConstructor(exec, domObject->globalObject());
 }
 void JSClientRectList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
@@ -178,9 +180,9 @@ void JSClientRectList::getPropertyNames(ExecState* exec, PropertyNameArray& prop
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSClientRectList::getConstructor(ExecState* exec)
+JSValue JSClientRectList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSClientRectListConstructor>(exec);
+    return getDOMConstructor<JSClientRectListConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsClientRectListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -197,7 +199,7 @@ JSValue JSC_HOST_CALL jsClientRectListPrototypeFunctionItem(ExecState* exec, JSO
     }
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->item(index)));
     return result;
 }
 
@@ -205,11 +207,11 @@ JSValue JSC_HOST_CALL jsClientRectListPrototypeFunctionItem(ExecState* exec, JSO
 JSValue JSClientRectList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSClientRectList* thisObj = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
-    return toJS(exec, static_cast<ClientRectList*>(thisObj->impl())->item(slot.index()));
+    return toJS(exec, thisObj->globalObject(), static_cast<ClientRectList*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValue toJS(JSC::ExecState* exec, ClientRectList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, ClientRectList* object)
 {
-    return getDOMObjectWrapper<JSClientRectList>(exec, object);
+    return getDOMObjectWrapper<JSClientRectList>(exec, globalObject, object);
 }
 ClientRectList* toClientRectList(JSC::JSValue value)
 {

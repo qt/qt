@@ -616,7 +616,7 @@ controls the color of the inner rectangle.
 
         color: "red"; width: 100; height: 100
         Rect {
-            anchors.centeredIn: parent
+            anchors.centerIn: parent
             width: parent.width - 10
             height: parent.height - 10
             color: innerColor
@@ -661,7 +661,7 @@ Rect {
     color: "red"; width: 100; height: 100
     Rect {
         id: InnerRect
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
         width: parent.width - 10
         height: parent.height - 10
         color: "black"
@@ -696,7 +696,7 @@ Rect {
     color: "red"; width: 100; height: 100
     Rect {
         id: InnerRect
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
         width: parent.width - 10
         height: parent.height - 10
         color: "black"
@@ -863,7 +863,7 @@ Rect {
     color: "blue"
     Text {
         id: MyText
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
     }        
 }
 \endcode

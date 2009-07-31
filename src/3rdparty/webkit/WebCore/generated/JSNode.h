@@ -21,6 +21,7 @@
 #ifndef JSNode_h
 #define JSNode_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/Lookup.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class Node;
 
-class JSNode : public DOMObject {
-    typedef DOMObject Base;
+class JSNode : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNode(PassRefPtr<JSC::Structure>, PassRefPtr<Node>);
+    JSNode(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Node>);
     virtual ~JSNode();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -51,7 +52,7 @@ public:
 
     virtual void pushEventHandlerScope(JSC::ExecState*, JSC::ScopeChain&) const;
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue insertBefore(JSC::ExecState*, const JSC::ArgList&);
@@ -71,9 +72,9 @@ ALWAYS_INLINE bool JSNode::getOwnPropertySlot(JSC::ExecState* exec, const JSC::I
     return JSC::getStaticValueSlot<JSNode, Base>(exec, s_info.staticPropHashTable, this, propertyName, slot);
 }
 
-JSC::JSValue toJS(JSC::ExecState*, Node*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Node*);
 Node* toNode(JSC::JSValue);
-JSC::JSValue toJSNewlyCreated(JSC::ExecState*, Node*);
+JSC::JSValue toJSNewlyCreated(JSC::ExecState*, JSDOMGlobalObject*, Node*);
 
 class JSNodePrototype : public JSC::JSObject {
     typedef JSC::JSObject Base;

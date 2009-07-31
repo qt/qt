@@ -123,10 +123,10 @@
     gets and sets a widget's \c USER property.
 
     \o The presence of the \c CONSTANT attibute indicates that the property 
-    value is constant.  For a given object instance, the \c READ method of a 
+    value is constant.  For a given object instance, the READ method of a 
     constant property must return the same value every time it is called.  This
     constant value may be different for different instances of the object.  A
-    constant property cannot have a \c WRITE method or a \c NOTIFY signal.
+    constant property cannot have a WRTE method or a NOTIFY signal.
 
     \o The presence of the \c FINAL attribute indicates that the property
     will not be overridden by a derived class.  This can be used for performance

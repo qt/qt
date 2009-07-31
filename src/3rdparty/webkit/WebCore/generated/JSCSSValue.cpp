@@ -67,12 +67,12 @@ static JSC_CONST_HASHTABLE HashTable JSCSSValueConstructorTable =
     { 8, 7, JSCSSValueConstructorTableValues, 0 };
 #endif
 
-class JSCSSValueConstructor : public DOMObject {
+class JSCSSValueConstructor : public DOMConstructorObject {
 public:
-    JSCSSValueConstructor(ExecState* exec)
-        : DOMObject(JSCSSValueConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSValueConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSValueConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSValuePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSValuePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -123,8 +123,8 @@ bool JSCSSValuePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 const ClassInfo JSCSSValue::s_info = { "CSSValue", 0, &JSCSSValueTable, 0 };
 
-JSCSSValue::JSCSSValue(PassRefPtr<Structure> structure, PassRefPtr<CSSValue> impl)
-    : DOMObject(structure)
+JSCSSValue::JSCSSValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSValue> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -146,21 +146,24 @@ bool JSCSSValue::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
 
 JSValue jsCSSValueCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSValue* castedThis = static_cast<JSCSSValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSValue* imp = static_cast<CSSValue*>(static_cast<JSCSSValue*>(asObject(slot.slotBase()))->impl());
+    CSSValue* imp = static_cast<CSSValue*>(castedThis->impl());
     return jsStringOrNull(exec, imp->cssText());
 }
 
 JSValue jsCSSValueCssValueType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSValue* castedThis = static_cast<JSCSSValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSValue* imp = static_cast<CSSValue*>(static_cast<JSCSSValue*>(asObject(slot.slotBase()))->impl());
+    CSSValue* imp = static_cast<CSSValue*>(castedThis->impl());
     return jsNumber(exec, imp->cssValueType());
 }
 
 JSValue jsCSSValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSValue*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSValue* domObject = static_cast<JSCSSValue*>(asObject(slot.slotBase()));
+    return JSCSSValue::getConstructor(exec, domObject->globalObject());
 }
 void JSCSSValue::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -175,9 +178,9 @@ void setJSCSSValueCssText(ExecState* exec, JSObject* thisObject, JSValue value)
     setDOMException(exec, ec);
 }
 
-JSValue JSCSSValue::getConstructor(ExecState* exec)
+JSValue JSCSSValue::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSValueConstructor>(exec);
+    return getDOMConstructor<JSCSSValueConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters

@@ -86,9 +86,8 @@ bool JSSVGNumberListPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSSVGNumberList::s_info = { "SVGNumberList", 0, &JSSVGNumberListTable, 0 };
 
-JSSVGNumberList::JSSVGNumberList(PassRefPtr<Structure> structure, PassRefPtr<SVGNumberList> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGNumberList::JSSVGNumberList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGNumberList> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -110,8 +109,9 @@ bool JSSVGNumberList::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsSVGNumberListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGNumberList* castedThis = static_cast<JSSVGNumberList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGNumberList* imp = static_cast<SVGNumberList*>(static_cast<JSSVGNumberList*>(asObject(slot.slotBase()))->impl());
+    SVGNumberList* imp = static_cast<SVGNumberList*>(castedThis->impl());
     return jsNumber(exec, imp->numberOfItems());
 }
 
@@ -140,7 +140,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionInitialize(ExecState* exec
     float item = args.at(0).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->initialize(item, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<float>::create(imp->initialize(item, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
@@ -156,7 +156,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionGetItem(ExecState* exec, J
     unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->getItem(index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<float>::create(imp->getItem(index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
@@ -173,7 +173,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionInsertItemBefore(ExecState
     unsigned index = args.at(1).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->insertItemBefore(item, index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<float>::create(imp->insertItemBefore(item, index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
@@ -190,7 +190,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionReplaceItem(ExecState* exe
     unsigned index = args.at(1).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->replaceItem(item, index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<float>::create(imp->replaceItem(item, index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
@@ -206,7 +206,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionRemoveItem(ExecState* exec
     unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->removeItem(index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<float>::create(imp->removeItem(index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
@@ -222,14 +222,14 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionAppendItem(ExecState* exec
     float item = args.at(0).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<float>::create(imp->appendItem(item, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<float>::create(imp->appendItem(item, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGNumberList* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGNumberList* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGNumberList>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGNumberList>(exec, globalObject, object, context);
 }
 SVGNumberList* toSVGNumberList(JSC::JSValue value)
 {

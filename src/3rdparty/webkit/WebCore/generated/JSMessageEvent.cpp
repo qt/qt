@@ -71,12 +71,12 @@ static JSC_CONST_HASHTABLE HashTable JSMessageEventConstructorTable =
     { 1, 0, JSMessageEventConstructorTableValues, 0 };
 #endif
 
-class JSMessageEventConstructor : public DOMObject {
+class JSMessageEventConstructor : public DOMConstructorObject {
 public:
-    JSMessageEventConstructor(ExecState* exec)
-        : DOMObject(JSMessageEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSMessageEventConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSMessageEventConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSMessageEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSMessageEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -132,8 +132,8 @@ static const HashTable* getJSMessageEventTable(ExecState* exec)
 }
 const ClassInfo JSMessageEvent::s_info = { "MessageEvent", &JSEvent::s_info, 0, getJSMessageEventTable };
 
-JSMessageEvent::JSMessageEvent(PassRefPtr<Structure> structure, PassRefPtr<MessageEvent> impl)
-    : JSEvent(structure, impl)
+JSMessageEvent::JSMessageEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessageEvent> impl)
+    : JSEvent(structure, globalObject, impl)
 {
 }
 
@@ -149,46 +149,52 @@ bool JSMessageEvent::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsMessageEventData(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessageEvent* imp = static_cast<MessageEvent*>(static_cast<JSMessageEvent*>(asObject(slot.slotBase()))->impl());
+    MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
     return jsString(exec, imp->data());
 }
 
 JSValue jsMessageEventOrigin(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessageEvent* imp = static_cast<MessageEvent*>(static_cast<JSMessageEvent*>(asObject(slot.slotBase()))->impl());
+    MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
     return jsString(exec, imp->origin());
 }
 
 JSValue jsMessageEventLastEventId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessageEvent* imp = static_cast<MessageEvent*>(static_cast<JSMessageEvent*>(asObject(slot.slotBase()))->impl());
+    MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
     return jsString(exec, imp->lastEventId());
 }
 
 JSValue jsMessageEventSource(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessageEvent* imp = static_cast<MessageEvent*>(static_cast<JSMessageEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->source()));
+    MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->source()));
 }
 
 JSValue jsMessageEventMessagePort(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessageEvent* imp = static_cast<MessageEvent*>(static_cast<JSMessageEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->messagePort()));
+    MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->messagePort()));
 }
 
 JSValue jsMessageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSMessageEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSMessageEvent* domObject = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
+    return JSMessageEvent::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSMessageEvent::getConstructor(ExecState* exec)
+JSValue JSMessageEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSMessageEventConstructor>(exec);
+    return getDOMConstructor<JSMessageEventConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsMessageEventPrototypeFunctionInitMessageEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

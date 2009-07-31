@@ -52,6 +52,7 @@ int main(int argc, char **argv)
     eng.globalObject().setProperty("ByteArray", baClass->constructor());
 
     qDebug() << "ba = new ByteArray(4):" << eng.evaluate("ba = new ByteArray(4)").toString();
+    qDebug() << "ba instanceof ByteArray:" << eng.evaluate("ba instanceof ByteArray").toBool();
     qDebug() << "ba.length:" << eng.evaluate("ba.length").toNumber();
     qDebug() << "ba[1] = 123; ba[1]:" << eng.evaluate("ba[1] = 123; ba[1]").toNumber();
     qDebug() << "ba[7] = 224; ba.length:" << eng.evaluate("ba[7] = 224; ba.length").toNumber();
@@ -65,6 +66,9 @@ int main(int argc, char **argv)
     qDebug() << "ba.toBase64().toLatin1String():" << eng.evaluate("b64.toLatin1String()").toString();
     qDebug() << "ba.valueOf():" << eng.evaluate("ba.valueOf()").toString();
     qDebug() << "ba.chop(2); ba.length:" << eng.evaluate("ba.chop(2); ba.length").toNumber();
+    qDebug() << "ba2 = new ByteArray(ba):" << eng.evaluate("ba2 = new ByteArray(ba)").toString();
+    qDebug() << "ba2.equals(ba):" << eng.evaluate("ba2.equals(ba)").toBool();
+    qDebug() << "ba2.equals(new ByteArray()):" << eng.evaluate("ba2.equals(new ByteArray())").toBool();
 
     return 0;
 }

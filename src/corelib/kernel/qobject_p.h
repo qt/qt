@@ -86,7 +86,7 @@ inline QObjectData::~QObjectData() {}
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
-class Q_CORE_EXPORT QDeclarativeData 
+class QDeclarativeData 
 {
 public:
     virtual ~QDeclarativeData() {}

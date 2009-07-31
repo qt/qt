@@ -402,9 +402,9 @@
 
     This can be useful when the component is not complex enough to justify its
     own file.  The third way to reuse components allows for delaying loading
-    of the QML until some later event.  Each \l{Item}{Item} includes
-    a special child, qmlItem, which has its definition provided by the
-    contents of the qml property of its parent.
+    of the QML until some later event.  \l{Loader}{Loader} includes
+    a special child, item, which has its definition provided by the
+    contents of the source property of the loader.
 
     \snippet declarative/tutorials/contacts/2_Reuse/1a/ContactField.qml load
 
@@ -656,8 +656,8 @@
 
     \snippet declarative/tutorials/contacts/3_Collections/3/ContactView.qml setting qml
 
-    Each item has a qml property that represents the filename for the contents of
-    a special qmlItem child of the \l{Item}{Item}.  By setting the qml property of the Details
+    \l{Loader}{Loader} has a source property that represents the filename for the contents of
+    a special item child of the \l{Loader}{Loader}.  By setting the source property of the Details
     component on clicking the mouse region, the more complex component isn't loaded
     until needed.  The down side about this though is the properties of Contact
     cannot be set until the item is loaded.  This requires using the Bind element.
@@ -667,8 +667,8 @@
 
     Unlike binding a value to the property of a component directly, the Bind element
     allows both the target and the property set to themselves be to dynamic values.
-    This means that when the qml property is set, it will change the
-    qmlItem property of the Details component.  This in turn triggers the Bind
-    elements to set the required properties of the qmlItem, which is now
+    This means that when the source property is set, it will change the
+    item property of the Details component.  This in turn triggers the Bind
+    elements to set the required properties of the item, which is now
     an instance of the Contact component.
 */

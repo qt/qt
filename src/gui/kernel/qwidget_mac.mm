@@ -3100,7 +3100,12 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
         return;
     dirtyOnWidget += rgn;
 #ifndef QT_MAC_USE_COCOA
-    HIViewSetNeedsDisplayInRegion(qt_mac_nativeview_for(q), QMacSmartQuickDrawRegion(rgn.toQDRgn()), true);
+    RgnHandle rgnHandle = rgn.toQDRgnForUpdate_sys();
+    if (rgnHandle) 
+        HIViewSetNeedsDisplayInRegion(qt_mac_nativeview_for(q), QMacSmartQuickDrawRegion(rgnHandle), true);
+    else {
+        HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true); // do a complete repaint on overflow.
+    }
 #else
     // Cocoa doesn't do regions, it seems more efficient to just update the bounding rect instead of a potential number of message passes for each rect.
     const QRect &boundingRect = rgn.boundingRect();

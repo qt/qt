@@ -21,6 +21,7 @@
 #ifndef JSMessageChannel_h
 #define JSMessageChannel_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class MessageChannel;
 
-class JSMessageChannel : public DOMObject {
-    typedef DOMObject Base;
+class JSMessageChannel : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMessageChannel(PassRefPtr<JSC::Structure>, PassRefPtr<MessageChannel>);
+    JSMessageChannel(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MessageChannel>);
     virtual ~JSMessageChannel();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -52,7 +53,7 @@ private:
     RefPtr<MessageChannel> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, MessageChannel*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, MessageChannel*);
 MessageChannel* toMessageChannel(JSC::JSValue);
 
 class JSMessageChannelPrototype : public JSC::JSObject {

@@ -21,7 +21,7 @@ Rect {
     property int selectedY: selectedItemRow * imageHeight
 
     Item {
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
         HorizontalLayout {
             id: MyLayout
             property real targetX: -(selectedX + imageWidth / 2)

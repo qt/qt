@@ -74,8 +74,8 @@ JSObject* JSSVGFEPointLightElementPrototype::self(ExecState* exec, JSGlobalObjec
 
 const ClassInfo JSSVGFEPointLightElement::s_info = { "SVGFEPointLightElement", &JSSVGElement::s_info, &JSSVGFEPointLightElementTable, 0 };
 
-JSSVGFEPointLightElement::JSSVGFEPointLightElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFEPointLightElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFEPointLightElement::JSSVGFEPointLightElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEPointLightElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -91,26 +91,29 @@ bool JSSVGFEPointLightElement::getOwnPropertySlot(ExecState* exec, const Identif
 
 JSValue jsSVGFEPointLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEPointLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->zAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 

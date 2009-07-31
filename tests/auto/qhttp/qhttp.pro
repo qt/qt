@@ -13,6 +13,8 @@ wince*: {
     addFiles.path = .
     DEPLOYMENT = addFiles webFiles cgi
     DEFINES += SRCDIR=\\\"\\\"
+} else:vxworks*: {
+    DEFINES += SRCDIR=\\\"\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

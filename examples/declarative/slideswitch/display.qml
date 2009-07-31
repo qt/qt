@@ -5,6 +5,6 @@ Rect {
     width: 150
     height: 150
     Switch {
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
     }
 }

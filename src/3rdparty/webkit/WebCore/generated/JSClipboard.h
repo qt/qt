@@ -21,6 +21,7 @@
 #ifndef JSClipboard_h
 #define JSClipboard_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Clipboard;
 
-class JSClipboard : public DOMObject {
-    typedef DOMObject Base;
+class JSClipboard : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSClipboard(PassRefPtr<JSC::Structure>, PassRefPtr<Clipboard>);
+    JSClipboard(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Clipboard>);
     virtual ~JSClipboard();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -45,7 +46,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom attributes
     JSC::JSValue types(JSC::ExecState*) const;
@@ -61,7 +62,7 @@ private:
     RefPtr<Clipboard> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Clipboard*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Clipboard*);
 Clipboard* toClipboard(JSC::JSValue);
 
 class JSClipboardPrototype : public JSC::JSObject {

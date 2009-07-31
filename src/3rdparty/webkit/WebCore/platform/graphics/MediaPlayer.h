@@ -96,7 +96,7 @@ public:
 #endif
 };
 
-class MediaPlayer : Noncopyable {
+class MediaPlayer : public Noncopyable {
 public:
     MediaPlayer(MediaPlayerClient*);
     virtual ~MediaPlayer();
@@ -108,6 +108,7 @@ public:
     static bool isAvailable();
 
     bool supportsFullscreen() const;
+    bool supportsSave() const;
     IntSize naturalSize();
     bool hasVideo();
     

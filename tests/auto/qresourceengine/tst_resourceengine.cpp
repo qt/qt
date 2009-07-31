@@ -108,7 +108,7 @@ void tst_ResourceEngine::checkStructure_data()
                                            << QLatin1String("runtime_resource")
                                            << QLatin1String("searchpath1") << QLatin1String("searchpath2")
                                            << QLatin1String("secondary_root")
-                                           << QLatin1String("test") << QLatin1String("trolltech")
+                                           << QLatin1String("test")
                                            << QLatin1String("withoutslashes"))
                                        << QLocale::c()
                                        << qlonglong(0);

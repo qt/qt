@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGElementInstanceList;
 
-class JSSVGElementInstanceList : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGElementInstanceList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSVGElementInstanceList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGElementInstanceList>);
+    JSSVGElementInstanceList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGElementInstanceList>);
     virtual ~JSSVGElementInstanceList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -53,7 +54,7 @@ private:
     RefPtr<SVGElementInstanceList> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGElementInstanceList*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGElementInstanceList*);
 SVGElementInstanceList* toSVGElementInstanceList(JSC::JSValue);
 
 class JSSVGElementInstanceListPrototype : public JSC::JSObject {

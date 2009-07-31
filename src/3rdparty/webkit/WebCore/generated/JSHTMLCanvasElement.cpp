@@ -66,12 +66,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLCanvasElementConstructorTable =
     { 1, 0, JSHTMLCanvasElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLCanvasElementConstructor : public DOMObject {
+class JSHTMLCanvasElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLCanvasElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLCanvasElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLCanvasElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLCanvasElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLCanvasElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLCanvasElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -120,8 +120,8 @@ bool JSHTMLCanvasElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSHTMLCanvasElement::s_info = { "HTMLCanvasElement", &JSHTMLElement::s_info, &JSHTMLCanvasElementTable, 0 };
 
-JSHTMLCanvasElement::JSHTMLCanvasElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLCanvasElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLCanvasElement::JSHTMLCanvasElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLCanvasElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -137,21 +137,24 @@ bool JSHTMLCanvasElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsHTMLCanvasElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLCanvasElement* castedThis = static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()))->impl());
+    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(castedThis->impl());
     return jsNumber(exec, imp->width());
 }
 
 JSValue jsHTMLCanvasElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLCanvasElement* castedThis = static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()))->impl());
+    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(castedThis->impl());
     return jsNumber(exec, imp->height());
 }
 
 JSValue jsHTMLCanvasElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLCanvasElement* domObject = static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()));
+    return JSHTMLCanvasElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLCanvasElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -170,9 +173,9 @@ void setJSHTMLCanvasElementHeight(ExecState* exec, JSObject* thisObject, JSValue
     imp->setHeight(value.toInt32(exec));
 }
 
-JSValue JSHTMLCanvasElement::getConstructor(ExecState* exec)
+JSValue JSHTMLCanvasElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLCanvasElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLCanvasElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLCanvasElementPrototypeFunctionToDataURL(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -201,7 +204,7 @@ JSValue JSC_HOST_CALL jsHTMLCanvasElementPrototypeFunctionGetContext(ExecState* 
     const UString& contextId = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getContext(contextId)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getContext(contextId)));
     return result;
 }
 

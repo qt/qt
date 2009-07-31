@@ -21,6 +21,7 @@
 #ifndef JSConsole_h
 #define JSConsole_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Console;
 
-class JSConsole : public DOMObject {
-    typedef DOMObject Base;
+class JSConsole : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSConsole(PassRefPtr<JSC::Structure>, PassRefPtr<Console>);
+    JSConsole(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Console>);
     virtual ~JSConsole();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -53,7 +54,7 @@ private:
     RefPtr<Console> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Console*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Console*);
 Console* toConsole(JSC::JSValue);
 
 class JSConsolePrototype : public JSC::JSObject {
