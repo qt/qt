@@ -54,19 +54,10 @@
 //
 
 #include "qhelpsearchindex_default_p.h"
-#include "qhelpsearchengine.h"
+#include "qhelpsearchindexreader_p.h"
 
 #include <QtCore/QHash>
 #include <QtCore/QPair>
-#include <QtCore/QList>
-#include <QtCore/QMutex>
-#include <QtCore/QString>
-#include <QtCore/QThread>
-#include <QtCore/QObject>
-#include <QtCore/QVector>
-#include <QtCore/QByteArray>
-#include <QtCore/QStringList>
-#include <QtCore/QWaitCondition>
 
 QT_BEGIN_NAMESPACE
 
@@ -121,39 +112,19 @@ private:
 };
 
 
-class QHelpSearchIndexReader : public QThread
+class QHelpSearchIndexReaderDefault : public QHelpSearchIndexReader
 {
     Q_OBJECT
 
 public:
-    QHelpSearchIndexReader();
-    ~QHelpSearchIndexReader();
-
-    void cancelSearching();
-    void search(const QString &collectionFile,
-        const QString &indexFilesFolder,
-        const QList<QHelpSearchQuery> &queryList);
-
-    int hitsCount() const;
-    QHelpSearchEngine::SearchHit hit(int index) const;
-
-signals:
-    void searchingStarted();
-    void searchingFinished(int hits);
+    QHelpSearchIndexReaderDefault();
+    ~QHelpSearchIndexReaderDefault();
 
 private:
     void run();
 
 private:
-    QMutex mutex;
     Reader m_reader;
-    QWaitCondition waitCondition;
-    QList<QHelpSearchEngine::SearchHit> hitList;
-
-    bool m_cancel;
-    QList<QHelpSearchQuery> m_query;
-    QString m_collectionFile;
-    QString m_indexFilesFolder;
 };
 
         }   // namespace std

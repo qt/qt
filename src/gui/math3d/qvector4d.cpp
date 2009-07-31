@@ -484,7 +484,8 @@ QVector3D QVector4D::toVector3DAffine() const
 /*!
     \fn QPoint QVector4D::toPoint() const
 
-    Returns the QPoint form of this 4D vector.
+    Returns the QPoint form of this 4D vector. The z and w coordinates
+    are dropped.
 
     \sa toPointF(), toVector2D()
 */
@@ -492,7 +493,8 @@ QVector3D QVector4D::toVector3DAffine() const
 /*!
     \fn QPointF QVector4D::toPointF() const
 
-    Returns the QPointF form of this 4D vector.
+    Returns the QPointF form of this 4D vector. The z and w coordinates
+    are dropped.
 
     \sa toPoint(), toVector2D()
 */
@@ -509,6 +511,51 @@ QDebug operator<<(QDebug dbg, const QVector4D &vector)
 
 #endif
 
-#endif
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
+    \relates QVector4D
+
+    Writes the given \a vector to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
+{
+    stream << double(vector.x()) << double(vector.y())
+           << double(vector.z()) << double(vector.w());
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QVector4D &vector)
+    \relates QVector4D
+
+    Reads a 4D vector from the given \a stream into the given \a vector
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QVector4D &vector)
+{
+    double x, y, z, w;
+    stream >> x;
+    stream >> y;
+    stream >> z;
+    stream >> w;
+    vector.setX(qreal(x));
+    vector.setY(qreal(y));
+    vector.setZ(qreal(z));
+    vector.setW(qreal(w));
+    return stream;
+}
+
+#endif // QT_NO_DATASTREAM
+
+#endif // QT_NO_VECTOR4D
 
 QT_END_NAMESPACE

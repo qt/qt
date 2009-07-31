@@ -30,10 +30,11 @@
 
 #include "config.h"
 
-#if ENABLE(SHARED_WORKERS)
+#if ENABLE(WORKERS)
 
 #include "AbstractWorker.h"
 
+#include "ErrorEvent.h"
 #include "Event.h"
 #include "EventException.h"
 #include "EventNames.h"
@@ -114,12 +115,25 @@ void AbstractWorker::dispatchLoadErrorEvent()
     ASSERT(!ec);
 }
 
-void AbstractWorker::dispatchScriptErrorEvent(const String&, const String&, int)
+bool AbstractWorker::dispatchScriptErrorEvent(const String& message, const String& sourceURL, int lineNumber)
 {
-    //FIXME: Generate an ErrorEvent instead of a simple event
-    dispatchLoadErrorEvent();
+    bool handled = false;
+    RefPtr<ErrorEvent> event = ErrorEvent::create(message, sourceURL, static_cast<unsigned>(lineNumber));
+    if (m_onErrorListener) {
+        event->setTarget(this);
+        event->setCurrentTarget(this);
+        m_onErrorListener->handleEvent(event.get(), true);
+        if (event->defaultPrevented())
+            handled = true;
+    }
+
+    ExceptionCode ec = 0;
+    dispatchEvent(event.release(), ec);
+    ASSERT(!ec);
+
+    return handled;
 }
 
 } // namespace WebCore
 
-#endif // ENABLE(SHARED_WORKERS)
+#endif // ENABLE(WORKERS)

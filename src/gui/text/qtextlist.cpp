@@ -129,8 +129,6 @@ QTextList::~QTextList()
 
 /*!
     Returns the number of items in the list.
-
-    \sa isEmpty()
 */
 int QTextList::count() const
 {

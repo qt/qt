@@ -36,5 +36,6 @@
         <file>expected_benchliboptions.txt</file>
         <file>expected_benchlibtickcounter.txt</file>
         <file>expected_xunit.txt</file>
+        <file>expected_longstring.txt</file>
     </qresource>
 </RCC>

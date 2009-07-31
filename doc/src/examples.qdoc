@@ -324,7 +324,6 @@
     \o \l{statemachine/pingpong}{Ping Pong States}\raisedaster
     \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
     \o \l{statemachine/twowaybutton}{Two-way Button}\raisedaster
-    \o \l{statemachine/tankgame}{Tank Game}\raisedaster
     \endlist
 
     \section1 Threads

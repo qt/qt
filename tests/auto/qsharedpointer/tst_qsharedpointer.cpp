@@ -65,8 +65,9 @@ private slots:
     void dynamicCastVirtualBase();
     void dynamicCastFailure();
 #endif
-    void customDeleter();
     void constCorrectness();
+    void customDeleter();
+    void creating();
     void validConstructs();
     void invalidConstructs_data();
     void invalidConstructs();
@@ -104,6 +105,8 @@ public:
     {
         delete this;
     }
+
+    virtual int classLevel() { return 1; }
 };
 int Data::generationCounter = 0;
 int Data::destructorCounter = 0;
@@ -228,6 +231,9 @@ extern int forwardDeclaredDestructorRunCount;
 
 void tst_QSharedPointer::forwardDeclaration1()
 {
+#if defined(Q_CC_SUN)
+    QSKIP("This type of forward declaration is not valid with this compiler", SkipAll);
+#else
     externalForwardDeclaration();
 
     struct Wrapper { QSharedPointer<ForwardDeclared> pointer; };
@@ -239,6 +245,7 @@ void tst_QSharedPointer::forwardDeclaration1()
         QVERIFY(!w.pointer.isNull());
     }
     QCOMPARE(forwardDeclaredDestructorRunCount, 1);
+#endif
 }
 
 #include "forwarddeclared.h"
@@ -332,6 +339,8 @@ public:
     {
         delete this;
     }
+
+    virtual int classLevel() { return 2; }
 };
 int DerivedData::derivedDestructorCounter = 0;
 
@@ -339,15 +348,23 @@ class Stuffing
 {
 public:
     char buffer[16];
+    Stuffing() { for (uint i = 0; i < sizeof buffer; ++i) buffer[i] = 16 - i; }
     virtual ~Stuffing() { }
 };
 
 class DiffPtrDerivedData: public Stuffing, public Data
 {
+public:
+    virtual int classLevel() { return 3; }
 };
 
 class VirtualDerived: virtual public Data
 {
+public:
+    int moreData;
+
+    VirtualDerived() : moreData(0xc0ffee) { }
+    virtual int classLevel() { return 4; }
 };
 
 void tst_QSharedPointer::downCast()
@@ -993,6 +1010,82 @@ void tst_QSharedPointer::customDeleter()
     QCOMPARE(derivedDataDeleter.callCount, 1);
 }
 
+void tst_QSharedPointer::creating()
+{
+    Data::generationCounter = Data::destructorCounter = 0;
+    {
+        QSharedPointer<Data> ptr = QSharedPointer<Data>::create();
+        QVERIFY(ptr.data());
+        QCOMPARE(Data::generationCounter, 1);
+        QCOMPARE(ptr->generation, 1);
+        QCOMPARE(Data::destructorCounter, 0);
+
+        QCOMPARE(ptr->classLevel(), 1);
+
+        ptr.clear();
+        QCOMPARE(Data::destructorCounter, 1);
+    }
+
+    Data::generationCounter = Data::destructorCounter = 0;
+    {
+        QSharedPointer<Data> ptr = QSharedPointer<Data>::create();
+        QWeakPointer<Data> weakptr = ptr;
+        QtSharedPointer::ExternalRefCountData *d = ptr.d;
+
+        ptr.clear();
+        QVERIFY(ptr.isNull());
+        QCOMPARE(Data::destructorCounter, 1);
+
+        // valgrind will complain here if something happened to the pointer
+        QVERIFY(d->weakref == 1);
+        QVERIFY(d->strongref == 0);
+    }
+
+    Data::generationCounter = Data::destructorCounter = 0;
+    DerivedData::derivedDestructorCounter = 0;
+    {
+        QSharedPointer<Data> ptr = QSharedPointer<DerivedData>::create();
+        QCOMPARE(ptr->classLevel(), 2);
+        QCOMPARE(ptr.staticCast<DerivedData>()->moreData, 0);
+        ptr.clear();
+
+        QCOMPARE(Data::destructorCounter, 1);
+        QCOMPARE(DerivedData::derivedDestructorCounter, 1);
+    }
+
+    {
+        QSharedPointer<Data> ptr = QSharedPointer<DiffPtrDerivedData>::create();
+        QCOMPARE(ptr->classLevel(), 3);
+        QCOMPARE(ptr.staticCast<DiffPtrDerivedData>()->buffer[7]+0, 16-7);
+        QCOMPARE(ptr.staticCast<DiffPtrDerivedData>()->buffer[3]+0, 16-3);
+        QCOMPARE(ptr.staticCast<DiffPtrDerivedData>()->buffer[0]+0, 16);
+    }
+
+    {
+        QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>::create();
+        QCOMPARE(ptr->classLevel(), 4);
+        QCOMPARE(ptr->moreData, 0xc0ffee);
+
+        QSharedPointer<Data> baseptr = ptr;
+        QCOMPARE(baseptr->classLevel(), 4);
+    }
+
+    {
+        QSharedPointer<QObject> ptr = QSharedPointer<QObject>::create();
+        QCOMPARE(ptr->metaObject(), &QObject::staticMetaObject);
+
+        QPointer<QObject> qptr = ptr.data();
+        ptr.clear();
+
+        QVERIFY(qptr.isNull());
+    }
+
+    {
+        QSharedPointer<QObject> ptr = QSharedPointer<OtherObject>::create();
+        QCOMPARE(ptr->metaObject(), &OtherObject::staticMetaObject);
+    }
+}
+
 void tst_QSharedPointer::validConstructs()
 {
     {
@@ -1044,6 +1137,9 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "forwardDeclaredDestructorRunCount = 0;\n"
            "{ QSharedPointer<ForwardDeclared> ptr = QSharedPointer<ForwardDeclared>(forwardPointer()); }\n"
            "exit(forwardDeclaredDestructorRunCount);";
+    QTest::newRow("creating-forward-declaration")
+        << &QTest::QExternalTest::tryCompileFail
+        << "QSharedPointer<ForwardDeclared>::create();";
 
     // upcast without cast operator:
     QTest::newRow("upcast1")
@@ -1076,10 +1172,16 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "QSharedPointer<const Data> baseptr = QSharedPointer<const Data>(new Data);\n"
         "qSharedPointerDynamicCast<DerivedData>(baseptr);";
 #endif
-    QTest::newRow("const-dropping-object-cast")
+    QTest::newRow("const-dropping-object-cast1")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(new QObject);\n"
         "qSharedPointerObjectCast<QCoreApplication>(baseptr);";
+#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+    QTest::newRow("const-dropping-object-cast2")
+        << &QTest::QExternalTest::tryCompileFail
+        << "QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(new QObject);\n"
+        "qobject_cast<QCoreApplication *>(baseptr);";
+#endif
 
     // arithmethics through automatic cast operators
     QTest::newRow("arithmethic1")

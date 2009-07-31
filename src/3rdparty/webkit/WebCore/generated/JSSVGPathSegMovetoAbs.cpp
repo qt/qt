@@ -73,8 +73,8 @@ JSObject* JSSVGPathSegMovetoAbsPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegMovetoAbs::s_info = { "SVGPathSegMovetoAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoAbsTable, 0 };
 
-JSSVGPathSegMovetoAbs::JSSVGPathSegMovetoAbs(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegMovetoAbs> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegMovetoAbs::JSSVGPathSegMovetoAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegMovetoAbs> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -90,15 +90,17 @@ bool JSSVGPathSegMovetoAbs::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsSVGPathSegMovetoAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegMovetoAbs* castedThis = static_cast<JSSVGPathSegMovetoAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(static_cast<JSSVGPathSegMovetoAbs*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegMovetoAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegMovetoAbs* castedThis = static_cast<JSSVGPathSegMovetoAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(static_cast<JSSVGPathSegMovetoAbs*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 

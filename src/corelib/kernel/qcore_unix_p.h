@@ -67,6 +67,10 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#if defined(Q_OS_VXWORKS)
+#  include <ioLib.h>
+#endif
+
 struct sockaddr;
 
 #if defined(Q_OS_LINUX) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
@@ -110,6 +114,51 @@ using namespace QT_PREPEND_NAMESPACE(QtLibcSupplement);
 
 QT_BEGIN_NAMESPACE
 
+// Internal operator functions for timevals
+inline timeval &normalizedTimeval(timeval &t)
+{
+    while (t.tv_usec > 1000000l) {
+        ++t.tv_sec;
+        t.tv_usec -= 1000000l;
+    }
+    while (t.tv_usec < 0l) {
+        --t.tv_sec;
+        t.tv_usec += 1000000l;
+    }
+    return t;
+}
+inline bool operator<(const timeval &t1, const timeval &t2)
+{ return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_usec < t2.tv_usec); }
+inline bool operator==(const timeval &t1, const timeval &t2)
+{ return t1.tv_sec == t2.tv_sec && t1.tv_usec == t2.tv_usec; }
+inline timeval &operator+=(timeval &t1, const timeval &t2)
+{
+    t1.tv_sec += t2.tv_sec;
+    t1.tv_usec += t2.tv_usec;
+    return normalizedTimeval(t1);
+}
+inline timeval operator+(const timeval &t1, const timeval &t2)
+{
+    timeval tmp;
+    tmp.tv_sec = t1.tv_sec + t2.tv_sec;
+    tmp.tv_usec = t1.tv_usec + t2.tv_usec;
+    return normalizedTimeval(tmp);
+}
+inline timeval operator-(const timeval &t1, const timeval &t2)
+{
+    timeval tmp;
+    tmp.tv_sec = t1.tv_sec - (t2.tv_sec - 1);
+    tmp.tv_usec = t1.tv_usec - (t2.tv_usec + 1000000);
+    return normalizedTimeval(tmp);
+}
+inline timeval operator*(const timeval &t1, int mul)
+{
+    timeval tmp;
+    tmp.tv_sec = t1.tv_sec * mul;
+    tmp.tv_usec = t1.tv_usec * mul;
+    return normalizedTimeval(tmp);
+}
+
 // don't call QT_OPEN or ::open
 // call qt_safe_open
 static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 0777)
@@ -129,6 +178,7 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
 #undef QT_OPEN
 #define QT_OPEN         qt_safe_open
 
+#ifndef Q_OS_VXWORKS // no POSIX pipes in VxWorks
 // don't call ::pipe
 // call qt_safe_pipe
 static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
@@ -163,6 +213,8 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
 
     return 0;
 }
+
+#endif // Q_OS_VXWORKS
 
 // don't call dup or fcntl(F_DUPFD)
 static inline int qt_safe_dup(int oldfd, int atleast = 0, int flags = FD_CLOEXEC)
@@ -238,6 +290,8 @@ static inline int qt_safe_close(int fd)
 #undef QT_CLOSE
 #define QT_CLOSE qt_safe_close
 
+#ifndef Q_OS_VXWORKS // no processes in VxWorks
+
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])
 {
@@ -267,6 +321,10 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
     return ret;
 }
 
+#endif // Q_OS_VXWORKS
+
+bool qt_gettime_is_monotonic();
+timeval qt_gettime();
 Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
                                  const struct timeval *tv);
 

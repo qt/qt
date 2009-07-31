@@ -101,7 +101,11 @@
 #include <locale.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
+#ifdef Q_OS_VXWORKS
+#  include <sys/times.h>
+#else
+#  include <sys/time.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -194,7 +198,14 @@ QString qws_dataDir()
     static QString result;
     if (!result.isEmpty())
         return result;
-    QByteArray dataDir = QString::fromLatin1("/tmp/qtembedded-%1").arg(qws_display_id).toLocal8Bit();
+    QByteArray dataDir;
+#ifdef QT_QWS_TEMP_DIR
+    dataDir = QT_QWS_TEMP_DIR;
+#else
+    dataDir = "/tmp";
+#endif
+    dataDir += "/qtembedded-";
+    dataDir += QByteArray::number(qws_display_id);
     if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
@@ -208,7 +219,7 @@ QString qws_dataDir()
     if (!S_ISDIR(buf.st_mode))
         qFatal("%s is not a directory", dataDir.constData());
 
-#ifndef Q_OS_INTEGRITY
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
     if (buf.st_uid != getuid())
         qFatal("Qt for Embedded Linux data directory is not owned by user %d", getuid());
 
@@ -661,10 +672,14 @@ void QWSDisplay::Data::sendSynchronousCommand(QWSCommand & cmd)
 
 int QWSDisplay::Data::takeId()
 {
-    if (unused_identifiers.count() == 10)
+    int unusedIdCount = unused_identifiers.count();
+    if (unusedIdCount == 10)
         create(15);
-    if (unused_identifiers.count() == 0)
+    if (unusedIdCount == 0) {
+        create(1); // Make sure we have an incoming id to wait for, just in case we're recursive
         waitForCreation();
+    }
+
     return unused_identifiers.takeFirst();
 }
 

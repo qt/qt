@@ -235,6 +235,8 @@ void tst_QByteArray::qUncompress()
     QSKIP("Corrupt data causes this tests to lock up on HP-UX / PA-RISC with gcc", SkipAll);
 #elif defined Q_OS_SOLARIS
     QSKIP("Corrupt data causes this tests to lock up on Solaris", SkipAll);
+#elif defined Q_OS_QNX
+    QSKIP("Corrupt data causes this test to lock up on QNX", SkipAll);
 #endif
 
     QTEST(::qUncompress(in), "out");

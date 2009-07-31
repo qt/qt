@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qabstracteventdispatcher.h"
 #include "qaccessible.h"
 #include "qapplication.h"
@@ -178,11 +179,11 @@ QApplicationPrivate::~QApplicationPrivate()
 
     QApplication contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also handles the
-    application's initialization and finalization, and provides session
-    management. In addition, it handles most system-wide and application-wide
-    settings.
+    application's initialization, finalization, and provides session
+    management. In addition, QApplication handles most of the system-wide and
+    application-wide settings.
 
-    For any GUI application using Qt, there is precisely one QApplication
+    For any GUI application using Qt, there is precisely \bold one QApplication
     object, no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-GUI Qt applications, use QCoreApplication instead,
     as it does not depend on the \l QtGui library.
@@ -238,9 +239,9 @@ QApplicationPrivate::~QApplicationPrivate()
                 saveState() for details.
         \endlist
 
-    The QApplication object does so much initialization. Hence, it \e{must} be
+    Since the QApplication object does so much initialization, it \e{must} be
     created before any other objects related to the user interface are created.
-    Since QApplication also deals with common command line arguments, it is
+    QApplication also deals with common command line arguments. Hence, it is
     usually a good idea to create it \e before any interpretation or
     modification of \c argv is done in the application itself.
 
@@ -672,9 +673,9 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 
     On X11, the window system is initialized if \a GUIenabled is true. If
     \a GUIenabled is false, the application does not connect to the X server.
-    On Windows and Macintosh, currently the window system is always
-    initialized, regardless of the value of GUIenabled. This may change in
-    future versions of Qt.
+    On Windows and Mac OS, currently the window system is always initialized,
+    regardless of the value of GUIenabled. This may change in future versions
+    of Qt.
 
     The following example shows how to create an application that uses a
     graphical interface when available.
@@ -819,6 +820,12 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 #endif // Q_WS_X11
 
 extern void qInitDrawhelperAsm();
+extern int qRegisterGuiVariant();
+extern int qUnregisterGuiVariant();
+#ifndef QT_NO_STATEMACHINE
+extern int qRegisterGuiStateMachine();
+extern int qUnregisterGuiStateMachine();
+#endif
 
 /*!
   \fn void QApplicationPrivate::initialize()
@@ -832,11 +839,9 @@ void QApplicationPrivate::initialize()
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
     // trigger registering of QVariant's GUI types
-    extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
 #ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
-    extern int qRegisterGuiStateMachine();
     qRegisterGuiStateMachine();
 #endif
 
@@ -1060,11 +1065,9 @@ QApplication::~QApplication()
 
 #ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
-    extern int qUnregisterGuiStateMachine();
     qUnregisterGuiStateMachine();
 #endif
     // trigger unregistering of QVariant's GUI types
-    extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();
 }
 
@@ -1191,21 +1194,22 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.4
     \brief defines a threshold for auto maximizing widgets
 
-    The auto maximize threshold is only available as part of Qt for Windows CE.
+    \bold{The auto maximize threshold is only available as part of Qt for
+    Windows CE.}
 
     This property defines a threshold for the size of a window as a percentage
     of the screen size. If the minimum size hint of a window exceeds the
-    threshold, calling show() will then cause the window to be maximized
+    threshold, calling show() will cause the window to be maximized
     automatically.
 
-    Setting the threshold to be 100 or greater means that it will cause it to
-    always be maximized. Setting it to be 50 means that the widget is maximized
-    if the vertical minimum size hint is at least 50% of the vertical screen
-    size.
+    Setting the threshold to 100 or greater means that the widget will always
+    be maximized. Alternatively, setting the threshold to 50 means that the
+    widget will be maximized only if the vertical minimum size hint is at least
+    50% of the vertical screen size.
 
-    If -1 is specified then this will disable the feature.
+    Setting the threshold to -1 disables the feature.
 
-    On Windows CE the default is -1 (i.e. it is disabled).
+    On Windows CE the default is -1 (i.e., it is disabled).
     On Windows Mobile the default is 40.
 */
 
@@ -1214,9 +1218,9 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.5
     \brief toggles automatic SIP (software input panel) visibility
 
-    The auto SIP property is only available as part of Qt for Windows CE.
+    \bold{The auto SIP property is only available as part of Qt for Windows CE.}
 
-    Set this property to true to automatically display the SIP when entering
+    Set this property to \c true to automatically display the SIP when entering
     widgets that accept keyboard input. This property only affects widgets with
     the WA_InputMethodEnabled attribute set.
 */
@@ -1514,7 +1518,7 @@ int QApplication::colorSpec()
             strategy. Use this option if your application uses buttons, menus,
             texts and pixmaps with few colors. With this option, the
             application uses system global colors. This works fine for most
-            applications under X11, but on Windows machines it may cause
+            applications under X11, but on the Windows platform, it may cause
             dithering of non-standard colors.
         \o  QApplication::CustomColor. Use this option if your application
             needs a small number of custom colors. On X11, this option is the
@@ -3510,12 +3514,12 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
 
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
-    application's \c{main()} function because on some platforms the
-    QApplication::exec() call may not return. For example, on Windows when the
-    user logs off, the system terminates the process after Qt closes all
-    top-level windows. Hence, there is no guarantee that the application will
-    have time to exit its event loop and execute code at the end of the
-    \c{main()} function after the QApplication::exec() call.
+    application's \c{main()} function. This is because, on some platforms the
+    QApplication::exec() call may not return. For example, on the Windows
+    platform, when the user logs off, the system terminates the process after Qt
+    closes all top-level windows. Hence, there is \e{no guarantee} that the
+    application will have time to exit its event loop and execute code at the
+    end of the \c{main()} function, after the QApplication::exec() call.
 
     \sa quitOnLastWindowClosed, quit(), exit(), processEvents(),
         QCoreApplication::exec()
@@ -4759,7 +4763,7 @@ bool QApplication::keypadNavigationEnabled()
     On Mac OS X, this works more at the application level and will cause the
     application icon to bounce in the dock.
 
-    On Windows this causes the window's taskbar entry to flash for a time. If
+    On Windows, this causes the window's taskbar entry to flash for a time. If
     \a msec is zero, the flashing will stop and the taskbar entry will turn a
     different color (currently orange).
 
@@ -4776,24 +4780,22 @@ bool QApplication::keypadNavigationEnabled()
     caret display. Usually the text cursor is displayed for half the cursor
     flash time, then hidden for the same amount of time, but this may vary.
 
-    The default value on X11 is 1000 milliseconds. On Windows, the control
-    panel value is used. Widgets should not cache this value since it may be
-    changed at any time by the user changing the global desktop settings.
+    The default value on X11 is 1000 milliseconds. On Windows, the
+    \gui{Control Panel} value is used and setting this property sets the cursor
+    flash time for all applications.
 
-    \note On Microsoft Windows, setting this property sets the cursor flash
-    time for all applications.
+    We recommend that widgets do not cache this value as it may change at any
+    time if the user changes the global desktop settings.
 */
 
 /*!
     \property QApplication::doubleClickInterval
-    \brief the time limit in milliseconds that distinguishes a double click from two
-    consecutive mouse clicks
+    \brief the time limit in milliseconds that distinguishes a double click
+    from two consecutive mouse clicks
 
-    The default value on X11 is 400 milliseconds. On Windows and Mac OS X, the
-    operating system's value is used.
-
-    On Microsoft Windows, calling this function sets the double click interval
-    for all applications.
+    The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
+    operating system's value is used. However, on Windows, calling this
+    function sets the double click interval for all applications.
 */
 
 /*!
@@ -4802,7 +4804,7 @@ bool QApplication::keypadNavigationEnabled()
     from two consecutive key presses
     \since 4.2
 
-    The default value on X11 is 400 milliseconds. On Windows and Mac OS X, the
+    The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
     operating system's value is used.
 */
 
@@ -4867,7 +4869,7 @@ bool QApplication::keypadNavigationEnabled()
     You need not have a main widget; connecting lastWindowClosed() to quit()
     is an alternative.
 
-    For X11, this function also resizes and moves the main widget according
+    On X11, this function also resizes and moves the main widget according
     to the \e -geometry command-line option, so you should set the default
     geometry (using \l QWidget::setGeometry()) before calling setMainWidget().
 
@@ -4896,9 +4898,10 @@ bool QApplication::keypadNavigationEnabled()
     Application cursors are stored on an internal stack. setOverrideCursor()
     pushes the cursor onto the stack, and restoreOverrideCursor() pops the
     active cursor off the stack. changeOverrideCursor() changes the curently
-    active application override cursor. Every setOverrideCursor() must
-    eventually be followed by a corresponding restoreOverrideCursor(),
-    otherwise the stack will never be emptied.
+    active application override cursor.
+
+    Every setOverrideCursor() must eventually be followed by a corresponding
+    restoreOverrideCursor(), otherwise the stack will never be emptied.
 
     Example:
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication_x11.cpp 0
@@ -5079,19 +5082,19 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 */
 
 /*! \fn QDecoration* QApplication::qwsSetDecoration(const QString &decoration)
-  \overload
+    \overload
 
-  Requests a QDecoration object for \a decoration from the QDecorationFactory.
+    Requests a QDecoration object for \a decoration from the
+    QDecorationFactory.
 
-  The string must be one of the QDecorationFactory::keys(). Keys are
-  case insensitive.
+    The string must be one of the QDecorationFactory::keys(). Keys are case
+    insensitive.
 
-  A later call to the QApplication constructor will override the
-  requested style when a "-style" option is passed in as a commandline
-  parameter.
+    A later call to the QApplication constructor will override the requested
+    style when a "-style" option is passed in as a commandline parameter.
 
-  Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
-  returned is set as the application's GUI style.
+    Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
+    returned is set as the application's GUI style.
 */
 
 /*!

@@ -874,7 +874,7 @@ QAction *QToolBar::insertSeparator(QAction *before)
     If you add a QToolButton with this method, the tools bar's
     Qt::ToolButtonStyle will not be respected.
 
-    Note: You should use QAction::setVisible() to change the
+    \note You should use QAction::setVisible() to change the
     visibility of the widget. Using QWidget::setVisible(),
     QWidget::show() and QWidget::hide() does not work.
 

@@ -53,6 +53,10 @@
 // We mean it.
 //
 
+#if defined(Q_OS_VXWORKS) && defined(m_type)
+#  undef m_type
+#endif
+
 #include "qscriptclassdata_p.h"
 
 #ifndef QT_NO_SCRIPT

@@ -70,12 +70,12 @@ static JSC_CONST_HASHTABLE HashTable JSTreeWalkerConstructorTable =
     { 1, 0, JSTreeWalkerConstructorTableValues, 0 };
 #endif
 
-class JSTreeWalkerConstructor : public DOMObject {
+class JSTreeWalkerConstructor : public DOMConstructorObject {
 public:
-    JSTreeWalkerConstructor(ExecState* exec)
-        : DOMObject(JSTreeWalkerConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSTreeWalkerConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSTreeWalkerConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSTreeWalkerPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSTreeWalkerPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -129,8 +129,8 @@ bool JSTreeWalkerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
 
 const ClassInfo JSTreeWalker::s_info = { "TreeWalker", 0, &JSTreeWalkerTable, 0 };
 
-JSTreeWalker::JSTreeWalker(PassRefPtr<Structure> structure, PassRefPtr<TreeWalker> impl)
-    : DOMObject(structure)
+JSTreeWalker::JSTreeWalker(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TreeWalker> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -152,42 +152,48 @@ bool JSTreeWalker::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsTreeWalkerRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->root()));
+    TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->root()));
 }
 
 JSValue jsTreeWalkerWhatToShow(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
+    TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
     return jsNumber(exec, imp->whatToShow());
 }
 
 JSValue jsTreeWalkerFilter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->filter()));
+    TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->filter()));
 }
 
 JSValue jsTreeWalkerExpandEntityReferences(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
+    TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
     return jsBoolean(imp->expandEntityReferences());
 }
 
 JSValue jsTreeWalkerCurrentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->currentNode()));
+    TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->currentNode()));
 }
 
 JSValue jsTreeWalkerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSTreeWalker* domObject = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
+    return JSTreeWalker::getConstructor(exec, domObject->globalObject());
 }
 void JSTreeWalker::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -202,9 +208,9 @@ void setJSTreeWalkerCurrentNode(ExecState* exec, JSObject* thisObject, JSValue v
     setDOMException(exec, ec);
 }
 
-JSValue JSTreeWalker::getConstructor(ExecState* exec)
+JSValue JSTreeWalker::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSTreeWalkerConstructor>(exec);
+    return getDOMConstructor<JSTreeWalkerConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionParentNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -270,9 +276,9 @@ JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextNode(ExecState* exec, JSO
     return castedThisObj->nextNode(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, TreeWalker* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, TreeWalker* object)
 {
-    return getDOMObjectWrapper<JSTreeWalker>(exec, object);
+    return getDOMObjectWrapper<JSTreeWalker>(exec, globalObject, object);
 }
 TreeWalker* toTreeWalker(JSC::JSValue value)
 {

@@ -378,10 +378,16 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
     if (d->hasMenu())
         option->features |= QStyleOptionToolButton::HasMenu;
 #endif
-    if (d->toolButtonStyle == Qt::ToolButtonSystemDefault) {
+    if (d->toolButtonStyle == Qt::ToolButtonFollowStyle) {
         option->toolButtonStyle = Qt::ToolButtonStyle(style()->styleHint(QStyle::SH_ToolButtonStyle, option, this));
     } else
         option->toolButtonStyle = d->toolButtonStyle;
+
+    if (option->toolButtonStyle == Qt::ToolButtonTextBesideIcon) {
+        // If the action is not prioritized, remove the text label to save space
+        if (d->defaultAction && d->defaultAction->priority() < QAction::NormalPriority)
+            option->toolButtonStyle = Qt::ToolButtonIconOnly;
+    }
 
     if (d->icon.isNull() && d->arrowType == Qt::NoArrow && !forceNoText) {
         if (!d->text.isEmpty())
@@ -480,9 +486,8 @@ QSize QToolButton::minimumSizeHint() const
 
     The default is Qt::ToolButtonIconOnly.
 
-    If you want your toolbars to depend on system settings,
-    as is possible in GNOME and KDE desktop environments you should
-    use the ToolButtonSystemDefault.
+    To have the style of toolbuttons follow the system settings (as available
+    in GNOME and KDE desktop environments), set this property to Qt::ToolButtonFollowStyle.
 
     QToolButton automatically connects this slot to the relevant
     signal in the QMainWindow in which is resides.

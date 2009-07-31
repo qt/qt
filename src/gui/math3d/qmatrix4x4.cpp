@@ -1794,6 +1794,51 @@ QDebug operator<<(QDebug dbg, const QMatrix4x4 &m)
 
 #endif
 
-#endif
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QMatrix4x4 &matrix)
+    \relates QMatrix4x4
+
+    Writes the given \a matrix to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QMatrix4x4 &matrix)
+{
+    for (int row = 0; row < 4; ++row)
+        for (int col = 0; col < 4; ++col)
+            stream << double(matrix(row, col));
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QMatrix4x4 &matrix)
+    \relates QMatrix4x4
+
+    Reads a 4x4 matrix from the given \a stream into the given \a matrix
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QMatrix4x4 &matrix)
+{
+    double x;
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 4; ++col) {
+            stream >> x;
+            matrix(row, col) = float(x);
+        }
+    }
+    matrix.inferSpecialType();
+    return stream;
+}
+
+#endif // QT_NO_DATASTREAM
+
+#endif // QT_NO_MATRIX4X4
 
 QT_END_NAMESPACE

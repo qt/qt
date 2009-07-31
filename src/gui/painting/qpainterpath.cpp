@@ -3156,7 +3156,7 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
     Set operations on paths will treat the paths as areas. Non-closed
     paths will be treated as implicitly closed.
 
-    \sa intersected(), subtracted(), subtractedInverted()
+    \sa intersected(), subtracted()
 */
 QPainterPath QPainterPath::united(const QPainterPath &p) const
 {
@@ -3271,6 +3271,8 @@ void QPainterPath::setDirty(bool dirty)
 {
     d_func()->dirtyBounds        = dirty;
     d_func()->dirtyControlBounds = dirty;
+    delete d_func()->pathConverter;
+    d_func()->pathConverter = 0;
 }
 
 void QPainterPath::computeBoundingRect() const

@@ -122,7 +122,7 @@ QAxObject::~QAxObject()
 }
 
 /*!
-    \reimp
+    \internal
 */
 const QMetaObject *QAxObject::metaObject() const
 {
@@ -130,7 +130,7 @@ const QMetaObject *QAxObject::metaObject() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 const QMetaObject *QAxObject::parentMetaObject() const
 {
@@ -148,7 +148,7 @@ void *QAxObject::qt_metacast(const char *cname)
 }
 
 /*!
-    \reimp
+    \internal
 */
 const char *QAxObject::className() const
 {
@@ -156,7 +156,7 @@ const char *QAxObject::className() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 int QAxObject::qt_metacall(QMetaObject::Call call, int id, void **v)
 {

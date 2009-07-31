@@ -203,6 +203,11 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
             out.stripObsoleteMessages();
         out.stripEmptyContexts();
 
+        out.normalizeTranslations(cd);
+        if (!cd.errors().isEmpty()) {
+            printOut(cd.error());
+            cd.clearErrors();
+        }
         if (!out.save(fileName, cd, QLatin1String("auto"))) {
             printOut(cd.error());
             *fail = true;
@@ -515,7 +520,8 @@ int main(int argc, char **argv)
         for (QStringList::iterator it = sourceFiles.begin(); it != sourceFiles.end(); ++it) {
             if (it->endsWith(QLatin1String(".java"), Qt::CaseInsensitive))
                 loadJava(fetchedTor, *it, cd);
-            else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive))
+            else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive)
+                     || it->endsWith(QLatin1String(".jui"), Qt::CaseInsensitive))
                 loadUI(fetchedTor, *it, cd);
             else if (it->endsWith(QLatin1String(".js"), Qt::CaseInsensitive)
                      || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive))

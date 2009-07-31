@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_HPUX_LD)
+#if !defined(QT_HPUX_LD) && !defined(Q_OS_VXWORKS)
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <dlfcn.h>
 QT_END_INCLUDE_NAMESPACE
@@ -66,7 +66,9 @@ QT_END_INCLUDE_NAMESPACE
 
 static QString qdlerror()
 {
-#if !defined(QT_HPUX_LD)
+#if defined(Q_OS_VXWORKS)
+    const char *err = "VxWorks does not support dynamic libraries.";
+#elif !defined(QT_HPUX_LD)
     const char *err = dlerror();
 #else
     const char *err = strerror(errno);
@@ -76,6 +78,8 @@ static QString qdlerror()
 
 bool QLibraryPrivate::load_sys()
 {
+    QString attempt;
+#if !defined(Q_OS_VXWORKS)
     QFileInfo fi(fileName);
     QString path = fi.path();
     QString name = fi.fileName();
@@ -163,7 +167,6 @@ bool QLibraryPrivate::load_sys()
     }
 #endif
 #endif // QT_HPUX_LD
-    QString attempt;
     bool retry = true;
     for(int prefix = 0; retry && !pHnd && prefix < prefixes.size(); prefix++) {
         for(int suffix = 0; retry && !pHnd && suffix < suffixes.size(); suffix++) {
@@ -204,7 +207,8 @@ bool QLibraryPrivate::load_sys()
             attempt = str;
         }
     }
-# endif
+#endif
+#endif // Q_OS_VXWORKS
     if (!pHnd) {
         errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName).arg(qdlerror());
     }
@@ -217,14 +221,16 @@ bool QLibraryPrivate::load_sys()
 
 bool QLibraryPrivate::unload_sys()
 {
-#if defined(QT_HPUX_LD)
+#if !defined(Q_OS_VXWORKS)
+#  if defined(QT_HPUX_LD)
     if (shl_unload((shl_t)pHnd)) {
-#else
+#  else
     if (dlclose(pHnd)) {
-#endif
+#  endif
         errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName).arg(qdlerror());
         return false;
     }
+#endif
     errorString.clear();
     return true;
 }
@@ -249,6 +255,8 @@ void* QLibraryPrivate::resolve_sys(const char* symbol)
     void* address = 0;
     if (shl_findsym((shl_t*)&pHnd, symbol, TYPE_UNDEFINED, &address) < 0)
         address = 0;
+#elif defined(Q_OS_VXWORKS)
+    void *address = 0;
 #else
     void* address = dlsym(pHnd, symbol);
 #endif

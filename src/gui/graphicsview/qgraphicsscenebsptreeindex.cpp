@@ -75,6 +75,8 @@
     \sa QGraphicsScene, QGraphicsView, QGraphicsSceneIndex
 */
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_GRAPHICSVIEW
 
 #include <private/qgraphicsscene_p.h>
@@ -523,7 +525,7 @@ QGraphicsSceneBspTreeIndex::~QGraphicsSceneBspTreeIndex()
 }
 
 /*!
-    \reimp
+    \internal
     Clear the all the BSP index.
 */
 void QGraphicsSceneBspTreeIndex::clear()
@@ -564,7 +566,7 @@ void QGraphicsSceneBspTreeIndex::removeItem(QGraphicsItem *item)
 }
 
 /*!
-    \reimp
+    \internal
     Update the BSP when the \a item 's bounding rect has changed.
 */
 void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *item)
@@ -680,7 +682,7 @@ void QGraphicsSceneBspTreeIndex::setBspTreeDepth(int depth)
 }
 
 /*!
-    \reimp
+    \internal
 
     This method react to the  \a rect change of the scene and
     reset the BSP tree index.
@@ -693,11 +695,10 @@ void QGraphicsSceneBspTreeIndex::updateSceneRect(const QRectF &rect)
 }
 
 /*!
-    \reimp
+    \internal
 
     This method react to the \a change of the \a item and use the \a value to
     update the BSP tree if necessary.
-
 */
 void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {

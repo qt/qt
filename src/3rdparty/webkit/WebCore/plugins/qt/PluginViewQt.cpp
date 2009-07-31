@@ -209,7 +209,7 @@ void PluginView::setNPWindowIfNeeded()
     m_npWindow.clipRect.bottom = m_clipRect.height();
 
     PluginView::setCurrentPluginView(this);
-    JSC::JSLock::DropAllLocks dropAllLocks(false);
+    JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
     setCallingPlugin(true);
     m_plugin->pluginFuncs()->setwindow(m_instance, &m_npWindow);
     setCallingPlugin(false);
@@ -243,7 +243,7 @@ void PluginView::stop()
 
     m_isStarted = false;
 
-    JSC::JSLock::DropAllLocks dropAllLocks(false);
+    JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
 
     PluginMainThreadScheduler::scheduler().unregisterPlugin(m_instance);
 
@@ -287,7 +287,7 @@ const char* PluginView::userAgent()
 
 const char* PluginView::userAgentStatic()
 {
-    //FIXME - Just say we are Mozilla
+    // FIXME - Just say we are Mozilla
     return MozillaUserAgent;
 }
 
@@ -301,10 +301,10 @@ NPError PluginView::handlePostReadFile(Vector<char>& buffer, uint32 len, const c
     if (!fileExists(filename))
         return NPERR_FILE_NOT_FOUND;
 
-    //FIXME - read the file data into buffer
+    // FIXME - read the file data into buffer
     FILE* fileHandle = fopen((filename.utf8()).data(), "r");
 
-    if (fileHandle == 0)
+    if (!fileHandle)
         return NPERR_FILE_NOT_FOUND;
 
     //buffer.resize();
@@ -321,6 +321,8 @@ NPError PluginView::handlePostReadFile(Vector<char>& buffer, uint32 len, const c
 
 NPError PluginView::getValueStatic(NPNVariable variable, void* value)
 {
+    LOG(Plugins, "PluginView::getValueStatic(%s)", prettyNameForNPNVariable(variable).data());
+
     switch (variable) {
     case NPNVToolkit:
         *static_cast<uint32*>(value) = 0;
@@ -341,6 +343,8 @@ NPError PluginView::getValueStatic(NPNVariable variable, void* value)
 
 NPError PluginView::getValue(NPNVariable variable, void* value)
 {
+    LOG(Plugins, "PluginView::getValue(%s)", prettyNameForNPNVariable(variable).data());
+
     switch (variable) {
     case NPNVxDisplay:
         if (platformPluginWidget())
@@ -474,7 +478,7 @@ void PluginView::init()
 
     if (m_plugin->pluginFuncs()->getvalue) {
         PluginView::setCurrentPluginView(this);
-        JSC::JSLock::DropAllLocks dropAllLocks(false);
+        JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
         setCallingPlugin(true);
         m_plugin->pluginFuncs()->getvalue(m_instance, NPPVpluginNeedsXEmbed, &m_needsXEmbed);
         setCallingPlugin(false);
@@ -488,7 +492,7 @@ void PluginView::init()
         m_status = PluginStatusCanNotLoadPlugin;
         return;
     }
-    show ();
+    show();
 
     NPSetWindowCallbackStruct *wsi = new NPSetWindowCallbackStruct();
 

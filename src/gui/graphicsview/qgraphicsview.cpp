@@ -97,8 +97,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     setViewport(new QGLWidget). QGraphicsView takes ownership of the viewport
     widget.
 
-    QGraphicsView supports affine transformations, using QMatrix. You can
-    either pass a matrix to setMatrix(), or you can call one of the
+    QGraphicsView supports affine transformations, using QTransform. You can
+    either pass a matrix to setTransform(), or you can call one of the
     convenience functions rotate(), scale(), translate() or shear(). The most
     two common transformations are scaling, which is used to implement
     zooming, and rotation. QGraphicsView keeps the center of the view fixed
@@ -1583,7 +1583,7 @@ void QGraphicsView::setSceneRect(const QRectF &rect)
     Returns the current transformation matrix for the view. If no current
     transformation is set, the identity matrix is returned.
 
-    \sa setMatrix(), rotate(), scale(), shear(), translate()
+    \sa setMatrix(), transform(), rotate(), scale(), shear(), translate()
 */
 QMatrix QGraphicsView::matrix() const
 {
@@ -1615,7 +1615,7 @@ QMatrix QGraphicsView::matrix() const
     a view coordinate to a floating point scene coordinate, or mapFromScene()
     to map from floating point scene coordinates to view coordinates.
 
-    \sa matrix(), rotate(), scale(), shear(), translate()
+    \sa matrix(), setTransform(), rotate(), scale(), shear(), translate()
 */
 void QGraphicsView::setMatrix(const QMatrix &matrix, bool combine)
 {
@@ -1624,6 +1624,8 @@ void QGraphicsView::setMatrix(const QMatrix &matrix, bool combine)
 
 /*!
     Resets the view transformation matrix to the identity matrix.
+
+    \sa resetTransform()
 */
 void QGraphicsView::resetMatrix()
 {
@@ -1633,7 +1635,7 @@ void QGraphicsView::resetMatrix()
 /*!
     Rotates the current view transformation \a angle degrees clockwise.
 
-    \sa setMatrix(), matrix(), scale(), shear(), translate()
+    \sa setTransform(), transform(), scale(), shear(), translate()
 */
 void QGraphicsView::rotate(qreal angle)
 {
@@ -1646,7 +1648,7 @@ void QGraphicsView::rotate(qreal angle)
 /*!
     Scales the current view transformation by (\a sx, \a sy).
 
-    \sa setMatrix(), matrix(), rotate(), shear(), translate()
+    \sa setTransform(), transform(), rotate(), shear(), translate()
 */
 void QGraphicsView::scale(qreal sx, qreal sy)
 {
@@ -1659,7 +1661,7 @@ void QGraphicsView::scale(qreal sx, qreal sy)
 /*!
     Shears the current view transformation by (\a sh, \a sv).
 
-    \sa setMatrix(), matrix(), rotate(), scale(), translate()
+    \sa setTransform(), transform(), rotate(), scale(), translate()
 */
 void QGraphicsView::shear(qreal sh, qreal sv)
 {
@@ -1672,7 +1674,7 @@ void QGraphicsView::shear(qreal sh, qreal sv)
 /*!
     Translates the current view transformation by (\a dx, \a dy).
 
-    \sa setMatrix(), matrix(), rotate(), shear()
+    \sa setTransform(), transform(), rotate(), shear()
 */
 void QGraphicsView::translate(qreal dx, qreal dy)
 {
@@ -1830,7 +1832,7 @@ void QGraphicsView::ensureVisible(const QGraphicsItem *item, int xmargin, int ym
     If \a rect is empty, or if the viewport is too small, this
     function will do nothing.
 
-    \sa setMatrix(), ensureVisible(), centerOn()
+    \sa setTransform(), ensureVisible(), centerOn()
 */
 void QGraphicsView::fitInView(const QRectF &rect, Qt::AspectRatioMode aspectRatioMode)
 {
@@ -3129,7 +3131,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
         }
     } else
 #endif
-    if (d->dragMode == QGraphicsView::ScrollHandDrag) {
+    if (d->dragMode == QGraphicsView::ScrollHandDrag && event->button() == Qt::LeftButton) {
 #ifndef QT_NO_CURSOR
         // Restore the open hand cursor. ### There might be items
         // under the mouse that have a valid cursor at this time, so
@@ -3552,6 +3554,8 @@ QTransform QGraphicsView::viewportTransform() const
 }
 
 /*!
+    \since 4.6
+
     Returns true if the view is transformed (i.e., a non-identity transform
     has been assigned, or the scrollbars are adjusted).
 

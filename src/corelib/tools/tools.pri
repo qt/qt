@@ -5,6 +5,7 @@ HEADERS +=  \
 	tools/qbitarray.h \
 	tools/qbytearray.h \
 	tools/qbytearraymatcher.h \
+        tools/qbytedata_p.h \
 	tools/qcache.h \
 	tools/qchar.h \
 	tools/qcontainerfwd.h \
@@ -108,4 +109,4 @@ SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            tools/qharfbuzz.cpp
 HEADERS += tools/qharfbuzz_p.h
 
-!macx-icc:unix:LIBS += -lm
+!macx-icc:!vxworks:unix:LIBS += -lm

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtXmlPatterns of the Qt Toolkit.
 **
@@ -46,6 +46,8 @@
 #include <QtCore/QBuffer>
 #include <QtCore/QIODevice>
 #include <QtCore/QUrl>
+
+QT_BEGIN_NAMESPACE
 
 QXmlSchemaPrivate::QXmlSchemaPrivate(const QXmlNamePool &namePool)
     : m_namePool(namePool)
@@ -197,3 +199,5 @@ QNetworkAccessManager *QXmlSchemaPrivate::networkAccessManager() const
 
     return m_networkAccessManager.data()->value;
 }
+
+QT_END_NAMESPACE

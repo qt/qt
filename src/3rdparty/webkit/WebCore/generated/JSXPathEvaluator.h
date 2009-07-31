@@ -23,6 +23,7 @@
 
 #if ENABLE(XPATH)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class XPathEvaluator;
 
-class JSXPathEvaluator : public DOMObject {
-    typedef DOMObject Base;
+class JSXPathEvaluator : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathEvaluator(PassRefPtr<JSC::Structure>, PassRefPtr<XPathEvaluator>);
+    JSXPathEvaluator(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathEvaluator>);
     virtual ~JSXPathEvaluator();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,14 +47,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     XPathEvaluator* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<XPathEvaluator> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, XPathEvaluator*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, XPathEvaluator*);
 XPathEvaluator* toXPathEvaluator(JSC::JSValue);
 
 class JSXPathEvaluatorPrototype : public JSC::JSObject {

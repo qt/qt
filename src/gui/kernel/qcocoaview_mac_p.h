@@ -85,6 +85,7 @@ Q_GUI_EXPORT
     bool composing;
     int composingLength;
     bool sendKeyEvents;
+    bool inKeyDown;
     QString *composingText;
     QStringList *currentCustomTypes;
     NSInteger dragEnterSequence;

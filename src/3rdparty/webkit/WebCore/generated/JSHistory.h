@@ -21,6 +21,7 @@
 #ifndef JSHistory_h
 #define JSHistory_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class History;
 
-class JSHistory : public DOMObject {
-    typedef DOMObject Base;
+class JSHistory : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSHistory(PassRefPtr<JSC::Structure>, PassRefPtr<History>);
+    JSHistory(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<History>);
     virtual ~JSHistory();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -55,7 +56,7 @@ private:
     RefPtr<History> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, History*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, History*);
 History* toHistory(JSC::JSValue);
 
 class JSHistoryPrototype : public JSC::JSObject {

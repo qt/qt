@@ -2045,8 +2045,6 @@ void Configure::generateBuildKey()
     QStringList build_options;
     if (!dictionary["QCONFIG"].isEmpty())
         build_options += dictionary["QCONFIG"] + "-config ";
-    if (dictionary["STL"] == "no")
-        build_options += "no-stl";
     build_options.sort();
 
     // Sorted defines that start with QT_NO_
@@ -3109,6 +3107,9 @@ void Configure::buildQmake()
 
 void Configure::buildHostTools()
 {
+    if (dictionary[ "NOPROCESS" ] == "yes")
+        dictionary[ "DONE" ] = "yes";
+
     if (!dictionary.contains("XQMAKESPEC"))
         return;
 
@@ -3332,7 +3333,6 @@ void Configure::generateMakefiles()
     } else {
         cout << "Processing of project files have been disabled." << endl;
         cout << "Only use this option if you really know what you're doing." << endl << endl;
-        dictionary[ "DONE" ] = "yes";
         return;
     }
 }
@@ -3340,8 +3340,16 @@ void Configure::generateMakefiles()
 void Configure::showSummary()
 {
     QString make = dictionary[ "MAKE" ];
-    cout << endl << endl << "Qt is now configured for building. Just run " << qPrintable(make) << "." << endl;
-    cout << "To reconfigure, run " << qPrintable(make) << " confclean and configure." << endl << endl;
+    if (!dictionary.contains("XQMAKESPEC")) {
+        cout << endl << endl << "Qt is now configured for building. Just run " << qPrintable(make) << "." << endl;
+        cout << "To reconfigure, run " << qPrintable(make) << " confclean and configure." << endl << endl;
+    } else {
+        // we are cross compiling for Windows CE
+        cout << endl << endl << "Qt is now configured for building. To start the build run:" << endl
+             << "\tsetcepaths " << dictionary.value("XQMAKESPEC") << endl
+             << "\t" << qPrintable(make) << endl
+             << "To reconfigure, run " << qPrintable(make) << " confclean and configure." << endl << endl;
+    }
 }
 
 Configure::ProjectType Configure::projectType( const QString& proFileName )

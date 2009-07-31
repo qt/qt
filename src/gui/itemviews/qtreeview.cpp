@@ -2853,7 +2853,7 @@ int QTreeView::rowHeight(const QModelIndex &index) const
 }
 
 /*!
-  \reimp
+  \internal
 */
 void QTreeView::horizontalScrollbarAction(int action)
 {

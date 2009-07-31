@@ -238,8 +238,6 @@ namespace QT_NAMESPACE {}
 #elif defined(__DGUX__)
 #  define Q_OS_DGUX
 #elif defined(__QNXNTO__)
-#  define Q_OS_QNX6
-#elif defined(__QNX__)
 #  define Q_OS_QNX
 #elif defined(_SEQUENT_)
 #  define Q_OS_DYNIX
@@ -251,6 +249,8 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_UNIXWARE
 #elif defined(__INTEGRITY)
 #  define Q_OS_INTEGRITY
+#elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */
+#  define Q_OS_VXWORKS
 #elif defined(__MAKEDEPEND__)
 #else
 #  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
@@ -317,10 +317,6 @@ namespace QT_NAMESPACE {}
 #  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6)
 #    error "This version of Mac OS X is unsupported"
 #  endif
-#endif
-
-#ifdef QT_MAC_USE_COCOA
-#define QT_MAC_NO_QUICKDRAW 1
 #endif
 
 #ifdef __LSB_VERSION__
@@ -429,25 +425,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
-#  if defined(Q_OS_QNX4)
-/* compiler flags */
-#    define Q_TYPENAME
-#    define Q_NO_BOOL_TYPE
-#    define Q_CANNOT_DELETE_CONSTANT
-#    define mutable
-/* ??? */
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-/* no template classes in QVariant */
-#    define QT_NO_TEMPLATE_VARIANT
-/* Wcc does not fill in functions needed by valuelists, maps, and
-   valuestacks implicitly */
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-/* can we just compare the structures? */
-#    define Q_FULL_TEMPLATE_INSTANTIATION_MEMCMP
-/* these are not useful to our customers */
-#    define QT_NO_QWS_MULTIPROCESS
-#    define QT_NO_QWS_CURSOR
-#  endif
 
 #elif defined(__CC_ARM)
 #  define Q_CC_RVCT
@@ -615,6 +592,13 @@ namespace QT_NAMESPACE {}
 #  elif defined(__ghs)
 #    define Q_CC_GHS
 
+#  elif defined(__DCC__)
+#    define Q_CC_DIAB
+#    undef Q_NO_BOOL_TYPE
+#    if !defined(__bool)
+#      define Q_NO_BOOL_TYPE
+#    endif
+
 /* The UnixWare 7 UDK compiler is based on EDG and does define __EDG__ */
 #  elif defined(__USLC__) && defined(__SCO_VERSION__)
 #    define Q_CC_USLC
@@ -646,6 +630,11 @@ namespace QT_NAMESPACE {}
 #    endif
 #  endif
 
+/* VxWorks' DIAB toolchain has an additional EDG type C++ compiler
+   (see __DCC__ above). This one is for C mode files (__EDG is not defined) */
+#elif defined(_DIAB_TOOL)
+#  define Q_CC_DIAB
+
 /* Never tested! */
 #elif defined(__HIGHC__)
 #  define Q_CC_HIGHC
@@ -657,15 +646,17 @@ namespace QT_NAMESPACE {}
     in which case _BOOL is not defined
         this is the default in 4.2 compatibility mode triggered by -compat=4 */
 #  if __SUNPRO_CC >= 0x500
-#    if __SUNPRO_CC < 0x570
-#      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
-#    endif
+#    define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
    /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
 #    if __SUNPRO_CC >= 0x590
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
+//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
+#    if __SUNPRO_CC < 0x5a0
+#      define Q_NO_TEMPLATE_FRIENDS
 #    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
@@ -1112,6 +1103,15 @@ class QDataStream;
 #  define QT_NO_COP
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#  define QT_NO_CRASHHANDLER     // no popen
+#  define QT_NO_PROCESS          // no exec*, no fork
+#  define QT_NO_LPR
+#  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
+#  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
+#  define QT_NO_QWS_MULTIPROCESS // no processes
+#endif
+
 # include <QtCore/qfeatures.h>
 
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
@@ -1554,7 +1554,7 @@ Q_CORE_EXPORT void qt_check_pointer(const char *, int);
 #  define Q_CHECK_PTR(p)
 #endif
 
-#if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC)
+#if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC) || defined(Q_CC_DIAB)
 #  define Q_FUNC_INFO __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
     /* MSVC 2002 doesn't have __FUNCSIG__ nor can it handle QT_STRINGIFY. */
@@ -2144,6 +2144,17 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
              qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk;           \
              --qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk)
 
+#elif defined(Q_CC_DIAB)
+// VxWorks DIAB generates unresolvable symbols, if container is a function call
+#  define Q_FOREACH(variable,container)                                                             \
+    if(0){}else                                                                                     \
+    for (const QForeachContainerBase &_container_ = qForeachContainerNew(container);                \
+         qForeachContainer(&_container_, (__typeof__(container) *) 0)->condition();       \
+         ++qForeachContainer(&_container_, (__typeof__(container) *) 0)->i)               \
+        for (variable = *qForeachContainer(&_container_, (__typeof__(container) *) 0)->i; \
+             qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk;           \
+             --qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk)
+
 #else
 #  define Q_FOREACH(variable, container) \
     for (const QForeachContainerBase &_container_ = qForeachContainerNew(container); \
@@ -2407,30 +2418,28 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_QFUTURE
 #endif
 
-/*
-    Turn off certain features for compilers that have problems parsing
-    the code.
-*/
-#if (defined(Q_CC_HPACC) && defined(QT_ARCH_PARISC)) \
-    || defined(Q_CC_MIPS) \
-    || defined(Q_CC_XLC)
-// HP aCC A.03.*, MIPSpro, and xlC cannot handle
-// the template function declarations for the QtConcurrent functions
-#  define QT_NO_QFUTURE
-#  define QT_NO_CONCURRENT
-#endif
-
-// MSVC 6.0, MSVC .NET 2002, and old versions of Sun CC can`t handle the map(), etc templates,
+// MSVC 6.0 and MSVC .NET 2002,  can`t handle the map(), etc templates,
 // but the QFuture class compiles.
-#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300) || (defined (__SUNPRO_CC) && __SUNPRO_CC <= 0x590)
+#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300)
 #  define QT_NO_CONCURRENT
 #endif
 
-// Mingw uses a gcc 3 version which has problems with some of the
-// map/filter overloads. So does IRIX and Solaris.
-#if (defined(Q_OS_IRIX) || defined(Q_CC_MINGW) || defined (Q_OS_SOLARIS)) && (__GNUC__ < 4)
+// gcc 3 version has problems with some of the
+// map/filter overloads.
+#if defined(Q_CC_GNU) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
+#endif
+
+#ifdef Q_OS_QNX
+// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
+// shared fonts and QSystemSemaphore + QSharedMemory are not available
+#  define QT_NO_QWS_MULTIPROCESS
+#  define QT_NO_QWS_SHARE_FONTS
+#  define QT_NO_SYSTEMSEMAPHORE
+#  define QT_NO_SHAREDMEMORY
+// QNX currently doesn't support forking in a thread, so disable QProcess
+#  define QT_NO_PROCESS
 #endif
 
 QT_END_NAMESPACE

@@ -367,7 +367,7 @@ QTextDocument *QSyntaxHighlighter::document() const
 /*!
     \since 4.2
 
-    Redoes the highlighting of the whole document.
+    Reapplies the highlighting to the whole document.
 
     \sa rehighlightBlock()
 */
@@ -384,7 +384,7 @@ void QSyntaxHighlighter::rehighlight()
 /*!
     \since 4.6
 
-    Redoes the highlighting of the given QTextBlock \a block.
+    Reapplies the highlighting to the given QTextBlock \a block.
     
     \sa rehighlight()
 */

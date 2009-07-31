@@ -2426,11 +2426,15 @@ void tst_QObject::dynamicProperties()
 
 void tst_QObject::recursiveSignalEmission()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("Test requires QProcess", SkipAll);
+#else
     QProcess proc;
     proc.start("./signalbug");
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
+#endif
 }
 
 void tst_QObject::blockingQueuedConnection()

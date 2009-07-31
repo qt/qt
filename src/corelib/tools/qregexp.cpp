@@ -688,6 +688,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
         {tools/regexp}{Regular Expression Example}
 */
 
+#if defined(Q_OS_VXWORKS) && defined(EOS)
+#  undef EOS
+#endif
+
 const int NumBadChars = 64;
 #define BadChar(ch) ((ch).unicode() % NumBadChars)
 
@@ -3621,7 +3625,7 @@ static void prepareEngine_helper(QRegExpPrivate *priv)
 {
     bool initMatchState = !priv->eng;
 #if !defined(QT_NO_REGEXP_OPTIM)
-    if (!priv->eng) {
+    if (!priv->eng && globalEngineCache()) {
         QMutexLocker locker(mutex());
         priv->eng = globalEngineCache()->take(priv->engineKey);
         if (priv->eng != 0)

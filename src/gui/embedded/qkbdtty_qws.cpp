@@ -90,7 +90,7 @@ private:
     struct termios         m_tty_attr;
     char                   m_last_keycode;
     int                    m_vt_qws;
-    int                    m_originalKbdMode;
+    int                    m_orig_kbmode;
 };
 
 
@@ -111,7 +111,7 @@ bool QWSTtyKeyboardHandler::filterKeycode(char &)
 }
 
 QWSTtyKbPrivate::QWSTtyKbPrivate(QWSTtyKeyboardHandler *h, const QString &device)
-    : m_handler(h), m_tty_fd(-1), m_last_keycode(0), m_vt_qws(0)
+    : m_handler(h), m_tty_fd(-1), m_last_keycode(0), m_vt_qws(0), m_orig_kbmode(K_XLATE)
 {
     setObjectName(QLatin1String("TTY Keyboard Handler"));
 #ifndef QT_NO_QWS_SIGNALHANDLER
@@ -152,15 +152,15 @@ QWSTtyKbPrivate::QWSTtyKbPrivate(QWSTtyKeyboardHandler *h, const QString &device
         tcgetattr(m_tty_fd, &termdata);
 
 #if defined(Q_OS_LINUX)
-        // record the original mode so we can restore it again in the constructor
-        ::ioctl(m_tty_fd, KDGKBMODE, m_originalKbdMode);
+        // record the original mode so we can restore it again in the destructor.
+        ::ioctl(m_tty_fd, KDGKBMODE, &m_orig_kbmode);
 
         // PLEASE NOTE:
-        // The tty keycode interface can only report keycodes 0x01 .. 0x7f
+        // the tty keycode interface can only report keycodes 0x01 .. 0x7f
         // KEY_MAX is however defined to 0x1ff. In practice this is sufficient
         // for a PC style keyboard though.
-        // we don't support K_RAW anymore - if you need, you habe to add a
-        // scan- to keycode converter.
+        // we don't support K_RAW anymore - if you need that, you have to add
+        // a scan- to keycode converter yourself.
         ::ioctl(m_tty_fd, KDSKBMODE, K_MEDIUMRAW);
 #endif
 
@@ -211,12 +211,10 @@ QWSTtyKbPrivate::~QWSTtyKbPrivate()
 {
     if (m_tty_fd >= 0) {
 #if defined(Q_OS_LINUX)
-        ::ioctl(m_tty_fd, KDSKBMODE, m_originalKbdMode);
+        ::ioctl(m_tty_fd, KDSKBMODE, m_orig_kbmode);
 #endif
         tcsetattr(m_tty_fd, TCSANOW, &m_tty_attr);
-
-        // we're leaking m_tty_fd here?
-        //QT_CLOSE(m_tty_fd);
+        QT_CLOSE(m_tty_fd);
     }
 }
 

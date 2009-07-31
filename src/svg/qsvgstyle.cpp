@@ -59,6 +59,9 @@ QT_BEGIN_NAMESPACE
 
 QSvgExtraStates::QSvgExtraStates()
     : fillOpacity(1.0)
+    , svgFont(0)
+    , textAnchor(Qt::AlignLeft)
+    , fontWeight(400)
 {
 }
 
@@ -81,12 +84,25 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 }
 
 QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false), m_fillRule(Qt::WindingFill), m_fillOpacity(1.0), m_gradientResolved (true)
+    : m_fill(brush)
+    , m_style(0)
+    , m_fillRuleSet(false)
+    , m_fillRule(Qt::WindingFill)
+    , m_fillOpacitySet(false)
+    , m_fillOpacity(1.0)
+    , m_gradientResolved(true)
+    , m_fillSet(true)
 {
 }
 
 QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false), m_fillRule(Qt::WindingFill), m_fillOpacity(1.0), m_gradientResolved (true)
+    : m_style(style)
+    , m_fillRuleSet(false)
+    , m_fillRule(Qt::WindingFill)
+    , m_fillOpacitySet(false)
+    , m_fillOpacity(1.0)
+    , m_gradientResolved(true)
+    , m_fillSet(style != 0)
 {
 }
 
@@ -105,11 +121,14 @@ void QSvgFillStyle::setFillOpacity(qreal opacity)
 void QSvgFillStyle::setFillStyle(QSvgStyleProperty* style)
 {
     m_style = style;
+    m_fillSet = true;
 }
 
 void QSvgFillStyle::setBrush(QBrush brush)
 {
     m_fill = brush;
+    m_style = 0;
+    m_fillSet = true;
 }
 
 static void recursivelySetFill(QSvgNode *node, Qt::FillRule f)
@@ -136,20 +155,26 @@ void QSvgFillStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgE
         recursivelySetFill(node, m_fillRule);
         m_fillRuleSet = false;//set it only on the first run
     }
-    p->setBrush(m_fill);
+    if (m_fillSet) {
+        if (m_style)
+            m_style->apply(p, rect, node, states);
+        else
+            p->setBrush(m_fill);
+    }
     if (m_fillOpacitySet)
         states.fillOpacity = m_fillOpacity;
-    if (m_style)
-        m_style->apply(p, rect, node, states);
 }
 
 void QSvgFillStyle::revert(QPainter *p, QSvgExtraStates &states)
 {
-    if (m_style)
-        m_style->revert(p, states);
-    p->setBrush(m_oldFill);
     if (m_fillOpacitySet)
         states.fillOpacity = m_oldOpacity;
+    if (m_fillSet) {
+        if (m_style)
+            m_style->revert(p, states);
+        else
+            p->setBrush(m_oldFill);
+    }
 }
 
 QSvgViewportFillStyle::QSvgViewportFillStyle(const QBrush &brush)
@@ -169,39 +194,94 @@ void QSvgViewportFillStyle::revert(QPainter *p, QSvgExtraStates &)
 }
 
 QSvgFontStyle::QSvgFontStyle(QSvgFont *font, QSvgTinyDocument *doc)
-    : m_font(font), m_pointSize(24), m_doc(doc)
+    : m_svgFont(font)
+    , m_doc(doc)
+    , m_familySet(0)
+    , m_sizeSet(0)
+    , m_styleSet(0)
+    , m_variantSet(0)
+    , m_weightSet(0)
+    , m_textAnchorSet(0)
 {
 }
 
-QSvgFontStyle::QSvgFontStyle(const QFont &font, QSvgTinyDocument *doc)
-    : m_font(0), m_pointSize(24), m_doc(doc), m_qfont(font)
+QSvgFontStyle::QSvgFontStyle()
+    : m_doc(0)
+    , m_svgFont(0)
+    , m_familySet(0)
+    , m_sizeSet(0)
+    , m_styleSet(0)
+    , m_variantSet(0)
+    , m_weightSet(0)
+    , m_textAnchorSet(0)
 {
 }
 
-
-void QSvgFontStyle::setPointSize(qreal size)
-{
-    m_pointSize = size;
-}
-
-qreal QSvgFontStyle::pointSize() const
-{
-    return m_pointSize;
-}
-
-void QSvgFontStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
-{
-    if (!m_font) {
-        m_oldFont = p->font();
-        p->setFont(m_qfont);
+int QSvgFontStyle::SVGToQtWeight(int weight) {
+    switch (weight) {
+    case 100:
+    case 200:
+        return QFont::Light;
+    case 300:
+    case 400:
+        return QFont::Normal;
+    case 500:
+    case 600:
+        return QFont::DemiBold;
+    case 700:
+    case 800:
+        return QFont::Bold;
+    case 900:
+        return QFont::Black;
     }
+    return QFont::Normal;
 }
 
-void QSvgFontStyle::revert(QPainter *p, QSvgExtraStates &)
+void QSvgFontStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &states)
 {
-    if (!m_font) {
-        p->setFont(m_oldFont);
+    m_oldQFont = p->font();
+    m_oldSvgFont = states.svgFont;
+    m_oldTextAnchor = states.textAnchor;
+    m_oldWeight = states.fontWeight;
+
+    if (m_textAnchorSet)
+        states.textAnchor = m_textAnchor;
+
+    QFont font = m_oldQFont;
+    if (m_familySet) {
+        states.svgFont = m_svgFont;
+        font.setFamily(m_qfont.family());
     }
+
+    if (m_sizeSet)
+        font.setPointSize(m_qfont.pointSizeF());
+
+    if (m_styleSet)
+        font.setStyle(m_qfont.style());
+
+    if (m_variantSet)
+        font.setCapitalization(m_qfont.capitalization());
+
+    if (m_weightSet) {
+        if (m_weight == BOLDER) {
+            states.fontWeight = qMin(states.fontWeight + 100, 900);
+        } else if (m_weight == LIGHTER) {
+            states.fontWeight = qMax(states.fontWeight - 100, 100);
+        } else {
+            states.fontWeight = m_weight;
+        }
+        font.setWeight(SVGToQtWeight(states.fontWeight));
+    }
+
+    p->setFont(font);
+}
+
+void QSvgFontStyle::revert(QPainter *p, QSvgExtraStates &states)
+{
+    p->setFont(m_oldQFont);
+    states.svgFont = m_oldSvgFont;
+    states.textAnchor = m_oldTextAnchor;
+    states.fontWeight = m_oldWeight;
 }
 
 QSvgStrokeStyle::QSvgStrokeStyle(const QPen &pen)
@@ -775,16 +855,6 @@ void QSvgAnimateColor::revert(QPainter *p, QSvgExtraStates &)
 QSvgStyleProperty::Type QSvgAnimateColor::type() const
 {
     return ANIMATE_COLOR;
-}
-
-QString QSvgFontStyle::textAnchor() const
-{
-    return m_textAnchor;
-}
-
-void QSvgFontStyle::setTextAnchor(const QString &anchor)
-{
-    m_textAnchor = anchor;
 }
 
 QSvgOpacityStyle::QSvgOpacityStyle(qreal opacity)

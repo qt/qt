@@ -33,7 +33,7 @@ class SVGFEMergeNodeElement;
 class JSSVGFEMergeNodeElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFEMergeNodeElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEMergeNodeElement>);
+    JSSVGFEMergeNodeElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFEMergeNodeElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

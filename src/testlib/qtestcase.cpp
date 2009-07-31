@@ -403,7 +403,8 @@ QT_BEGIN_NAMESPACE
 
     \overload
 
-    Simulates clicking of \a key with an optional \a modifier on a \a widget. If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    Simulates clicking of \a key with an optional \a modifier on a \a widget.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
 
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 13
@@ -416,7 +417,8 @@ QT_BEGIN_NAMESPACE
 
 /*! \fn void QTest::keyClick(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
-    Simulates clicking of \a key with an optional \a modifier on a \a widget. If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    Simulates clicking of \a key with an optional \a modifier on a \a widget.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
 
     Examples:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 14
@@ -431,20 +433,25 @@ QT_BEGIN_NAMESPACE
 
 /*! \fn void QTest::keyEvent(KeyAction action, QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
-    Sends a Qt key event to \a widget with the given \a key and an associated \a action. Optionally, a keyboard \a modifier can be specified, as well as a \a delay (in milliseconds) of the test before sending the event.
+    Sends a Qt key event to \a widget with the given \a key and an associated \a action.
+    Optionally, a keyboard \a modifier can be specified, as well as a \a delay
+    (in milliseconds) of the test before sending the event.
 */
 
 /*! \fn void QTest::keyEvent(KeyAction action, QWidget *widget, char ascii, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     \overload
 
-    Sends a Qt key event to \a widget with the given key \a ascii and an associated \a action. Optionally, a keyboard \a modifier can be specified, as well as a \a delay (in milliseconds) of the test before sending the event.
+    Sends a Qt key event to \a widget with the given key \a ascii and an associated \a action.
+    Optionally, a keyboard \a modifier can be specified, as well as a \a delay
+    (in milliseconds) of the test before sending the event.
 
 */
 
 /*! \fn void QTest::keyPress(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
-    Simulates pressing a \a key with an optional \a modifier on a \a widget. If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    Simulates pressing a \a key with an optional \a modifier on a \a widget. If \a delay
+    is larger than 0, the test will wait for \a delay milliseconds.
 
     \bold {Note:} At some point you should release the key using \l keyRelease().
 
@@ -455,7 +462,8 @@ QT_BEGIN_NAMESPACE
 
     \overload
 
-    Simulates pressing a \a key with an optional \a modifier on a \a widget. If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    Simulates pressing a \a key with an optional \a modifier on a \a widget.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
 
     \bold {Note:} At some point you should release the key using \l keyRelease().
 
@@ -464,7 +472,8 @@ QT_BEGIN_NAMESPACE
 
 /*! \fn void QTest::keyRelease(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
-    Simulates releasing a \a key with an optional \a modifier on a \a widget. If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    Simulates releasing a \a key with an optional \a modifier on a \a widget.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
 
     \sa QTest::keyPress(), QTest::keyClick()
 */
@@ -473,7 +482,8 @@ QT_BEGIN_NAMESPACE
 
     \overload
 
-    Simulates releasing a \a key with an optional \a modifier on a \a widget. If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    Simulates releasing a \a key with an optional \a modifier on a \a widget.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
 
     \sa QTest::keyClick()
 */
@@ -675,6 +685,13 @@ QT_BEGIN_NAMESPACE
     Returns a textual representation of the given \a rectangle.
 */
 
+/*!
+    \fn char *QTest::toString(const QVariant &variant)
+    \overload
+
+    Returns a textual representation of the given \a variant.
+*/
+
 /*! \fn void QTest::qWait(int ms)
 
     Waits for \a ms milliseconds. While waiting, events will be processed and
@@ -687,6 +704,84 @@ QT_BEGIN_NAMESPACE
     maximum of about 12.5 seconds.
 
     \sa QTest::qSleep()
+*/
+
+/*!
+    \class QTest::QTouchEventSequence
+    \inmodule QtTest
+    \since 4.6
+
+    \brief The QTouchEventSequence class is used to simulate a sequence of touch events.
+
+    To simulate a sequence of touch events on a specific device for a widget, call 
+    QTest::touchEvent to create a QTouchEventSequence instance. Add touch events to
+    the sequence by calling press(), move(), release() and stationary(), and let the
+    instance run out of scope to commit the sequence to the event system.
+*/
+
+/*!
+    \fn QTest::QTouchEventSequence::~QTouchEventSequence()
+
+    Commits this sequence of touch events and frees allocated resources.
+*/
+
+/*!
+    \fn QTouchEventSequence &QTest::QTouchEventSequence::press(int touchId, const QPoint &pt, QWidget *widget)
+
+    Adds a press event for touchpoint \a touchId at position \a pt to this sequence and returns
+    a reference to this QTouchEventSequence.
+
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
+
+    Simulates that the user pressed the touch screen or pad with the finger identified by \a touchId.
+*/
+
+/*!
+    \fn QTouchEventSequence &QTest::QTouchEventSequence::move(int touchId, const QPoint &pt, QWidget *widget)
+
+    Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
+    a reference to this QTouchEventSequence.
+
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
+
+    Simulates that the user moved the finger identified by \a touchId.
+*/
+
+/*!
+    \fn QTouchEventSequence &QTest::QTouchEventSequence::release(int touchId, const QPoint &pt, QWidget *widget)
+
+    Adds a release event for touchpoint \a touchId at position \a pt to this sequence and returns
+    a reference to this QTouchEventSequence.
+        
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
+
+    Simulates that the user lifted the finger identified by \a touchId.
+*/
+
+/*!
+    \fn QTouchEventSequence &QTest::QTouchEventSequence::stationary(int touchId)
+
+    Adds a stationary event for touchpoint \a touchId to this sequence and returns
+    a reference to this QTouchEventSequence.
+    
+    Simulates that the user did not move the finger identified by \a touchId.
+*/
+
+/*!
+    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchEvent::DeviceType deviceType)
+
+    Creates and returns a QTouchEventSequence for the device \a deviceType to
+    simulate events for \a widget.
+
+    When adding touch events to the sequence, \a widget will also be used to translate
+    the position provided to screen coordinates, unless another widget is provided in the
+    respective calls to press(), move() etc.
+
+    The touch events are committed to the event system when the destructor of the
+    QTouchEventSequence is called (ie when the object returned runs out of scope).
 */
 
 namespace QTest
@@ -713,6 +808,51 @@ namespace QTest
     static int eventDelay = -1;
     static int keyVerbose = -1;
 
+void filter_unprintable(char *str)
+{
+    char *idx = str;
+    while (*idx) {
+        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
+            *idx = '?';
+        ++idx;
+    }
+}
+
+int qt_asprintf(char **str, const char *format, ...)
+{
+    static const int MAXSIZE = 1024*1024*2;
+
+    int size = 32;
+    delete[] *str;
+    *str = new char[size];
+
+    va_list ap;
+    int res = 0;
+
+    for (;;) {
+        va_start(ap, format);
+        res = qvsnprintf(*str, size, format, ap);
+        va_end(ap);
+        (*str)[size - 1] = '\0';
+        if (res >= 0 && res < size) {
+            // We succeeded
+            break;
+        }
+        // buffer wasn't big enough, try again.
+        // Note, we're assuming that a result of -1 is always due to running out of space.
+        size *= 2;
+        if (size > MAXSIZE) {
+            break;
+        }
+        delete[] *str;
+        *str = new char[size];
+    }
+
+    filter_unprintable(*str);
+
+    return res;
+}
+
 /*! \internal
  */
 int qt_snprintf(char *str, int size, const char *format, ...)
@@ -725,12 +865,8 @@ int qt_snprintf(char *str, int size, const char *format, ...)
     va_end(ap);
     str[size - 1] = '\0';
 
-    char *idx = str;
-    while (*idx) {
-        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
-            *idx = '?';
-        ++idx;
-    }
+    filter_unprintable(str);
+
     return res;
 }
 
@@ -849,7 +985,7 @@ static void qParseArgs(int argc, char *argv[])
         " -iterations  n  : Sets the number of accumulation iterations.\n"
         " -median  n      : Sets the number of median iterations.\n"
         " -vb             : Print out verbose benchmarking information.\n"
-#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
+#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
         " -chart          : Create chart based on the benchmark result.\n"
 #endif
          "\n"
@@ -965,7 +1101,7 @@ static void qParseArgs(int argc, char *argv[])
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
+#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
         } else if (strcmp(argv[i], "-chart") == 0) {
             QBenchmarkGlobalData::current->createChart = true;
             QTestLog::setLogMode(QTestLog::XML);
@@ -1392,7 +1528,7 @@ FatalSignalHandler::~FatalSignalHandler()
 
     struct sigaction oldact;
 
-    for (int i = 0; i < 32; ++i) {
+    for (int i = 1; i < 32; ++i) {
         if (!sigismember(&handledSignals, i))
             continue;
         sigaction(i, &act, &oldact);
@@ -1539,7 +1675,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 
-#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
+#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
     if (QBenchmarkGlobalData::current->createChart) {
         QString chartLocation = QLibraryInfo::location(QLibraryInfo::BinariesPath);
 #ifdef Q_OS_WIN
@@ -2000,10 +2136,6 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
 */
 
 /*! \fn void QTest::simulateEvent(QWidget *widget, bool press, int code, Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
-    \internal
-*/
-
-/*! \fn int QTest::qt_snprintf(char *str, int size, const char *format, ...)
     \internal
 */
 

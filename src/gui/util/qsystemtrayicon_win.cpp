@@ -106,6 +106,7 @@ public:
 private:
     uint notifyIconSize;
     int maxTipLength;
+    bool ignoreNextMouseRelease;
 };
 
 bool QSystemTrayIconSys::allowsMessages()
@@ -128,7 +129,8 @@ bool QSystemTrayIconSys::supportsMessages()
 }
 
 QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *object)
-    : hIcon(0), q(object)
+    : hIcon(0), q(object), ignoreNextMouseRelease(false)
+
 {
 #ifndef Q_OS_WINCE
     notifyIconSize = FIELD_OFFSET(NOTIFYICONDATA, guidItem); // NOTIFYICONDATAW_V2_SIZE;
@@ -311,10 +313,15 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
 
             switch (m->lParam) {
             case WM_LBUTTONUP:
-                emit q->activated(QSystemTrayIcon::Trigger);
+                if (ignoreNextMouseRelease)
+                    ignoreNextMouseRelease = false;
+                else 
+                    emit q->activated(QSystemTrayIcon::Trigger);
                 break;
 
             case WM_LBUTTONDBLCLK:
+                ignoreNextMouseRelease = true; // Since DBLCLICK Generates a second mouse 
+                                               // release we must ignore it
                 emit q->activated(QSystemTrayIcon::DoubleClick);
                 break;
 

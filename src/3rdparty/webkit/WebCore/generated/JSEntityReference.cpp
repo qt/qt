@@ -59,12 +59,12 @@ static JSC_CONST_HASHTABLE HashTable JSEntityReferenceConstructorTable =
     { 1, 0, JSEntityReferenceConstructorTableValues, 0 };
 #endif
 
-class JSEntityReferenceConstructor : public DOMObject {
+class JSEntityReferenceConstructor : public DOMConstructorObject {
 public:
-    JSEntityReferenceConstructor(ExecState* exec)
-        : DOMObject(JSEntityReferenceConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSEntityReferenceConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSEntityReferenceConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSEntityReferencePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSEntityReferencePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,8 +106,8 @@ JSObject* JSEntityReferencePrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSEntityReference::s_info = { "EntityReference", &JSNode::s_info, &JSEntityReferenceTable, 0 };
 
-JSEntityReference::JSEntityReference(PassRefPtr<Structure> structure, PassRefPtr<EntityReference> impl)
-    : JSNode(structure, impl)
+JSEntityReference::JSEntityReference(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<EntityReference> impl)
+    : JSNode(structure, globalObject, impl)
 {
 }
 
@@ -123,11 +123,12 @@ bool JSEntityReference::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsEntityReferenceConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSEntityReference*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSEntityReference* domObject = static_cast<JSEntityReference*>(asObject(slot.slotBase()));
+    return JSEntityReference::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSEntityReference::getConstructor(ExecState* exec)
+JSValue JSEntityReference::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSEntityReferenceConstructor>(exec);
+    return getDOMConstructor<JSEntityReferenceConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

@@ -30,7 +30,7 @@ class Text;
 class JSText : public JSCharacterData {
     typedef JSCharacterData Base;
 public:
-    JSText(PassRefPtr<JSC::Structure>, PassRefPtr<Text>);
+    JSText(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Text>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -41,10 +41,10 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 };
 
-JSC::JSValue toJSNewlyCreated(JSC::ExecState*, Text*);
+JSC::JSValue toJSNewlyCreated(JSC::ExecState*, JSDOMGlobalObject*, Text*);
 
 class JSTextPrototype : public JSC::JSObject {
     typedef JSC::JSObject Base;

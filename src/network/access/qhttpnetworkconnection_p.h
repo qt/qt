@@ -65,6 +65,7 @@
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qhttpnetworkreply_p.h>
 
+#include "qhttpnetworkconnectionchannel_p.h"
 
 #ifndef QT_NO_HTTP
 
@@ -79,6 +80,7 @@ QT_BEGIN_NAMESPACE
 
 class QHttpNetworkRequest;
 class QHttpNetworkReply;
+class QByteArray;
 
 class QHttpNetworkConnectionPrivate;
 class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
@@ -116,6 +118,7 @@ public:
 #ifndef QT_NO_OPENSSL
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
+    void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
 
 Q_SIGNALS:
     void sslErrors(const QList<QSslError> &errors);
@@ -155,8 +158,6 @@ private:
 };
 
 
-
-
 // private classes
 typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 
@@ -169,16 +170,6 @@ public:
     ~QHttpNetworkConnectionPrivate();
     void init();
     void connectSignals(QAbstractSocket *socket);
-
-    enum SocketState {
-        IdleState = 0,          // ready to send request
-        ConnectingState = 1,    // connecting to host
-        WritingState = 2,       // writing the data
-        WaitingState = 4,       // waiting for reply
-        ReadingState = 8,       // reading the reply
-        Wait4AuthState = 0x10,  // blocked for send till the current authentication slot is done
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|Wait4AuthState)
-    };
 
     enum { ChunkSize = 4096 };
 
@@ -224,45 +215,19 @@ public:
     quint16 port;
     bool encrypt;
 
-    struct Channel {
-        QAbstractSocket *socket;
-        SocketState state;
-        QHttpNetworkRequest request; // current request
-        QHttpNetworkReply *reply; // current reply for this request
-        qint64 written;
-        qint64 bytesTotal;
-        bool resendCurrent;
-        int lastStatus; // last status received on this channel
-        bool pendingEncrypt; // for https (send after encrypted)
-        int reconnectAttempts; // maximum 2 reconnection attempts
-        QAuthenticatorPrivate::Method authMehtod;
-        QAuthenticatorPrivate::Method proxyAuthMehtod;
-        QAuthenticator authenticator;
-        QAuthenticator proxyAuthenticator;
-#ifndef QT_NO_OPENSSL
-        bool ignoreSSLErrors;
-#endif
-        Channel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
-            lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
-            authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
-#ifndef QT_NO_OPENSSL
-            , ignoreSSLErrors(false)
-#endif
-        {}
-    };
     static const int channelCount;
-    Channel *channels; // parallel connections to the server
+    QHttpNetworkConnectionChannel *channels; // parallel connections to the server
+
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
-    void appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
-    void appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
+    void appendUncompressedData(QHttpNetworkReply &reply, QByteArray &qba);
+    void appendUncompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
+    void appendCompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
     qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;
-
-    qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize);
 
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);

@@ -74,22 +74,22 @@ QT_BEGIN_NAMESPACE
 class QString;
 
 /**
- * @internal
- *
- * A method to allow a QHash or QSet with QUrl
- * as key type.
- */
-inline uint qHash(const QUrl &uri)
-{
-    return qHash(uri.toString());
-}
-
-/**
  * @short The namespace for the internal API of QtXmlPatterns
  * @internal
  */
 namespace QPatternist
 {
+
+    /**
+     * @internal
+     *
+     * A method to allow a QHash or QSet with QUrl
+     * as key type.
+     */
+    inline uint qHash(const QUrl &uri)
+    {
+        return qHash(uri.toString());
+    }
 
     /**
      * @defgroup Patternist_cppWXSTypes C++ Primitives for W3C XML Schema Number Types
@@ -207,6 +207,8 @@ namespace QPatternist
      */
     QString Q_AUTOTEST_EXPORT escape(const QString &input);
 }
+
+using QPatternist::qHash;
 
 QT_END_NAMESPACE
 

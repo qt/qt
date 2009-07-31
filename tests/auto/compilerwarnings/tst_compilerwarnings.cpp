@@ -47,6 +47,10 @@
 
 #include <QtTest/QtTest>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #include <stdlib.h>
 
 QT_USE_NAMESPACE
@@ -67,8 +71,8 @@ private slots:
 static QStringList getFeatures()
 {
     QStringList srcDirs;
-    srcDirs << QString::fromLocal8Bit(getenv("QTDIR"))
-            << QString::fromLocal8Bit(getenv("QTSRCDIR"));
+    srcDirs << QString::fromLocal8Bit(qgetenv("QTDIR"))
+            << QString::fromLocal8Bit(qgetenv("QTSRCDIR"));
 
     QString featurefile;
     foreach (QString dir, srcDirs) {
@@ -157,7 +161,7 @@ void tst_CompilerWarnings::warnings()
     QStringList args;
     QString compilerName;
 
-    static QString qtDir = QString::fromLocal8Bit(getenv("QTDIR"));
+    static QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
     QVERIFY2(!qtDir.isEmpty(), "This test needs $QTDIR");
 
     args << cflags;
@@ -248,4 +252,4 @@ void tst_CompilerWarnings::warnings()
 QTEST_APPLESS_MAIN(tst_CompilerWarnings)
 
 #include "tst_compilerwarnings.moc"
-
+#endif // QT_NO_PROCESS

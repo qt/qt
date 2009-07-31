@@ -276,13 +276,30 @@ qint64 QHttpSocketEngine::pendingDatagramSize() const
 }
 #endif // QT_NO_UDPSOCKET
 
-int QHttpSocketEngine::option(SocketOption) const
+int QHttpSocketEngine::option(SocketOption option) const
 {
+    Q_D(const QHttpSocketEngine);
+    if (d->socket) {
+        // convert the enum and call the real socket
+        if (option == QAbstractSocketEngine::LowDelayOption)
+            return d->socket->socketOption(QAbstractSocket::LowDelayOption).toInt();
+        if (option == QAbstractSocketEngine::KeepAliveOption)
+            return d->socket->socketOption(QAbstractSocket::KeepAliveOption).toInt();
+    }
     return -1;
 }
 
-bool QHttpSocketEngine::setOption(SocketOption, int)
+bool QHttpSocketEngine::setOption(SocketOption option, int value)
 {
+    Q_D(QHttpSocketEngine);
+    if (d->socket) {
+        // convert the enum and call the real socket
+        if (option == QAbstractSocketEngine::LowDelayOption)
+            d->socket->setSocketOption(QAbstractSocket::LowDelayOption, value);
+        if (option == QAbstractSocketEngine::KeepAliveOption)
+            d->socket->setSocketOption(QAbstractSocket::KeepAliveOption, value);
+        return true;
+    }
     return false;
 }
 
@@ -454,6 +471,7 @@ void QHttpSocketEngine::slotSocketConnected()
     data += path;
     data += " HTTP/1.1\r\n";
     data += "Proxy-Connection: keep-alive\r\n"
+            "User-Agent: Mozilla/5.0\r\n"
             "Host: " + peerAddress + "\r\n";
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
     //qDebug() << "slotSocketConnected: priv=" << priv << (priv ? (int)priv->method : -1);

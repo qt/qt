@@ -542,9 +542,12 @@ cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
 
 QMakeVar add styles "cde mac motif plastique cleanlooks windows"
 QMakeVar add decorations "default windows styled"
-QMakeVar add gfx-drivers "linuxfb"
+QMakeVar add mouse-drivers "pc"
+if [ "$UNAME_SYSTEM" = "Linux" ] ; then
+    QMakeVar add gfx-drivers "linuxfb"
+    QMakeVar add mouse-drivers "linuxtp"
+fi
 QMakeVar add kbd-drivers "tty"
-QMakeVar add mouse-drivers "pc linuxtp"
 
 if [ "$CFG_DEV" = "yes" ]; then
     QMakeVar add kbd-drivers "um"
@@ -614,10 +617,16 @@ CFG_GFX_ON="linuxfb multiscreen"
 CFG_GFX_PLUGIN_AVAILABLE=
 CFG_GFX_PLUGIN=
 CFG_GFX_OFF=
-CFG_KBD_AVAILABLE="tty linuxinput sl5000 yopy vr41xx qvfb"
+CFG_KBD_AVAILABLE="tty linuxinput qvfb"
 CFG_KBD_ON="tty"    #default, see QMakeVar above
-CFG_MOUSE_AVAILABLE="pc bus linuxtp yopy vr41xx tslib qvfb"
+CFG_MOUSE_AVAILABLE="pc linuxtp linuxinput tslib qvfb"
 CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
+
+if [ -f "$relpath/src/gui/embedded/qscreenqnx_qws.cpp" ]; then
+    CFG_KBD_AVAILABLE="${CFG_KBD_AVAILABLE} qnx"
+    CFG_MOUSE_AVAILABLE="${CFG_MOUSE_AVAILABLE} qnx"
+    CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} qnx"
+fi
 
 CFG_ARCH=
 CFG_HOST_ARCH=
@@ -1166,6 +1175,8 @@ while [ "$#" -gt 0 ]; do
         else
             if  [ "$VAL" = "opengl" ]; then
                 CFG_GRAPHICS_SYSTEM="opengl"
+            elif [ "$VAL" = "openvg" ]; then
+                CFG_GRAPHICS_SYSTEM="openvg"
             elif [ "$VAL" = "raster" ]; then
                 CFG_GRAPHICS_SYSTEM="raster"
             else
@@ -2019,6 +2030,12 @@ for e in gawk nawk awk; do
     fi
 done
 
+# find perl
+PERL="/usr/bin/perl"
+if "$WHICH" perl >/dev/null 2>&1 && ( perl /dev/null ) >/dev/null 2>&1; then
+    PERL=`$WHICH perl`
+fi
+
 ### skip this if the user just needs help...
 if [ "$OPT_HELP" != "yes" ]; then
 
@@ -2247,6 +2264,13 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
             XPLATFORM="qws/linux-$CFG_EMBEDDED-g++"
         fi
         ;;
+    QNX:*)
+        [ -z "$PLATFORM" ] && PLATFORM=unsupported/qws/qnx-generic-g++
+        if [ -z "$XPLATFORM" ]; then
+            [ "$CFG_EMBEDDED" = "auto" ] && CFG_EMBEDDED=generic
+            XPLATFORM="unsupported/qws/qnx-$CFG_EMBEDDED-g++"
+        fi
+        ;;
     CYGWIN*:*)
 	CFG_EMBEDDED=x86
 	;;
@@ -2397,6 +2421,9 @@ if [ -z "$PLATFORM" ]; then
         ;;
      UNIX_SV:*)
         PLATFORM=unixware-g++
+        ;;
+     QNX:*)
+        PLATFORM=unsupported/qnx-g++
         ;;
      *)
         if [ "$OPT_HELP" != "yes" ]; then
@@ -2622,6 +2649,16 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
             echo "    Linux on SPARC"
         fi
         CFG_HOST_ARCH=sparc
+        ;;
+    QNX:*:*)
+        case "$UNAME_MACHINE" in
+        x86pc)
+            if [ "$OPT_VERBOSE" = "yes" ]; then
+                echo "    QNX on Intel 80x86 (i386)"
+            fi
+            CFG_HOST_ARCH=i386
+            ;;
+        esac
         ;;
     *:*:*)
         if [ "$OPT_VERBOSE" = "yes" ]; then
@@ -3769,7 +3806,7 @@ elif [ "$Edition" = "OpenSource" ]; then
             read acceptance
         fi
         echo
-        if [ "$acceptance" = "yes" ]; then
+        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
             break
         elif [ "$acceptance" = "no" ]; then
             echo "You are not licensed to use this software."
@@ -5612,6 +5649,12 @@ if [ "$CFG_OPENVG" != "no" ]; then
     fi
 fi
 
+# if openvg is disabled and the user specified graphicssystem vg, disable it...
+if [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && [ "$CFG_OPENVG" = "no" ]; then
+    echo "OpenVG Graphics System is disabled due to missing OpenVG support..."
+    CFG_GRAPHICS_SYSTEM=default
+fi
+
 if [ "$CFG_PTMALLOC" != "no" ]; then
     # build ptmalloc, copy .a file to lib/
     echo "Building ptmalloc. Please wait..."
@@ -5713,6 +5756,13 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
 	# gcc, Carbon
 	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.4
 	;;
+esac
+
+# disable Qt 3 support on VxWorks
+case "$XPLATFORM" in
+    unsupported/vxworks*)
+	CFG_QT3SUPPORT="no"
+    ;;
 esac
 
 # enable Qt 3 support functionality
@@ -6057,6 +6107,7 @@ fi
 #
 canBuildQtXmlPatterns="yes"
 canBuildWebKit="$HAVE_STL"
+canBuildQtConcurrent="yes"
 
 # WebKit requires stdint.h
 "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stdint "Stdint" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6083,14 +6134,21 @@ case "$XPLATFORM" in
 		;;
 	esac
 	;;
+    unsupported/vxworks-*-g++*)
+	canBuildWebKit="no"
+	;;
+    unsupported/vxworks-*-dcc*)
+	canBuildWebKit="no"
+	canBuildQtXmlPatterns="no"
+	;;
     *-g++*)
 	# Check gcc's version
 	case "$(${QMAKE_CONF_COMPILER} -dumpversion)" in
 	    4*|3.4*)
 		;;
-	    3.3*)
-		canBuildWebKit="no"
-		;;
+            3.3*)
+                canBuildWebKit="no"
+                ;;
 	    *)
 		canBuildWebKit="no"
 		canBuildQtXmlPatterns="no"
@@ -6098,29 +6156,73 @@ case "$XPLATFORM" in
 	esac
 	;;
     solaris-cc*)
-	# Check the compiler version
-	case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
-	    *)
-		canBuildWebKit="no"
-		canBuildQtXmlPatterns="no"
-		;;
-	esac
-	;;
+        # Check the compiler version
+        case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
+            5.[012345678])
+                canBuildWebKit="no"
+                canBuildQtXmlPatterns="no"
+                canBuildQtConcurrent="no"
+                ;;
+            5.9)
+                canBuildWebKit="no"
+                canBuildQtConcurrent="no"
+                ;;
+        esac
+        ;;
     hpux-acc*)
 	canBuildWebKit="no"
 	canBuildQtXmlPatterns="no"
+        canBuildQtConcurrent="no"
 	;;
     hpuxi-acc*)
 	canBuildWebKit="no"
 	;;
     aix-xlc*)
-	canBuildWebKit="no"
-	canBuildQtXmlPatterns="no"
-	;;
+        # Get the xlC version
+        cat > xlcver.c <<EOF
+#include <stdio.h>
+int main()
+{
+    printf("%d.%d\n", __xlC__ >> 8, __xlC__ & 0xFF);
+    return 0;
+}
+EOF
+        xlcver=
+        if ${QMAKE_CONF_COMPILER} -o xlcver xlcver.c >/dev/null 2>/dev/null; then
+            xlcver=`./xlcver 2>/dev/null`
+            rm -f ./xlcver
+        fi
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            if [ -n "$xlcver" ]; then
+                echo Found IBM xlC version: $xlcver.
+            else
+                echo Could not determine IBM xlC version, assuming oldest supported.
+            fi
+        fi
+
+        case "$xlcver" in
+            [123456].*)
+                canBuildWebKit="no"
+                canBuildQtXmlPatterns="no"
+                canBuildQtConcurrent="no"
+                ;;
+            *)
+                canBuildWebKit="no"
+                canBuildQtConcurrent="no"
+                ;;
+        esac
+        ;;
     irix-cc*)
         canBuildWebKit="no"
+        canBuildQtConcurrent="no"
 	;;
 esac
+
+CFG_CONCURRENT="yes"
+if [ "$canBuildQtConcurrent" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT"
+    CFG_CONCURRENT="no"
+fi
 
 if [ "$CFG_XMLPATTERNS" = "yes" -a "$CFG_EXCEPTIONS" = "no" ]; then
     echo "QtXmlPatterns was requested, but it can't be built due to exceptions being disabled."
@@ -6275,10 +6377,8 @@ esac
 #   Different edition modules:
 #     network canvas table xml opengl sql
 #
-#   Options:
-#     stl
-#
 # Things that do not affect the Qt API/ABI:
+#     stl
 #     system-jpeg no-jpeg jpeg
 #     system-mng no-mng mng
 #     system-png no-png png
@@ -6299,7 +6399,7 @@ esac
 #     X11     : x11sm xinerama xcursor xfixes xrandr xrender mitshm fontconfig xkb
 #     Embedded: embedded freetype
 #
-ALL_OPTIONS="stl"
+ALL_OPTIONS=
 BUILD_CONFIG=
 BUILD_OPTIONS=
 
@@ -6311,12 +6411,6 @@ for config_option in $QMAKE_CONFIG $QT_CONFIG; do
         # take the last *-config setting.  this is the highest config being used,
         # and is the one that we will use for tagging plugins
         BUILD_CONFIG="$config_option"
-        ;;
-
-    stl)
-        # these config options affect the Qt API/ABI. they should influence
-        # the generation of the buildkey, so we don't skip them
-        SKIP="no"
         ;;
 
     *) # skip all other options since they don't affect the Qt API/ABI.
@@ -6638,6 +6732,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 if [ "$PLATFORM_QWS" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
     [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
+    [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
 fi
 
 # X11/Unix/Mac only configs
@@ -7030,6 +7125,7 @@ echo "Qt 3 compatibility .. $CFG_QT3SUPPORT"
 [ "$CFG_DBUS" = "no" ]     && echo "QtDBus module ....... no"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module ....... yes (run-time)"
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module ....... yes (linked)"
+echo "QtConcurrent code.... $CFG_CONCURRENT"
 echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"

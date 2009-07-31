@@ -163,7 +163,7 @@ template <> struct QConcatenable<QString>
     static inline void appendTo(const QString &a, QChar *&out)
     {
         const int n = a.size();
-        memcpy(out, (char*)a.constData(), sizeof(QChar) * n);
+        memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n; 
     }
 };
@@ -175,7 +175,7 @@ template <> struct QConcatenable<QStringRef>
     static inline void appendTo(QStringRef a, QChar *&out)
     {
         const int n = a.size();
-        memcpy(out, (char*)a.constData(), sizeof(QChar) * n);
+        memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n; 
     }
 };

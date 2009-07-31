@@ -62,12 +62,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLHtmlElementConstructorTable =
     { 1, 0, JSHTMLHtmlElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLHtmlElementConstructor : public DOMObject {
+class JSHTMLHtmlElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLHtmlElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLHtmlElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLHtmlElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLHtmlElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLHtmlElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLHtmlElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,8 +109,8 @@ JSObject* JSHTMLHtmlElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLHtmlElement::s_info = { "HTMLHtmlElement", &JSHTMLElement::s_info, &JSHTMLHtmlElementTable, 0 };
 
-JSHTMLHtmlElement::JSHTMLHtmlElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLHtmlElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLHtmlElement::JSHTMLHtmlElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLHtmlElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +126,16 @@ bool JSHTMLHtmlElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsHTMLHtmlElementVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLHtmlElement* castedThis = static_cast<JSHTMLHtmlElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLHtmlElement* imp = static_cast<HTMLHtmlElement*>(static_cast<JSHTMLHtmlElement*>(asObject(slot.slotBase()))->impl());
+    HTMLHtmlElement* imp = static_cast<HTMLHtmlElement*>(castedThis->impl());
     return jsString(exec, imp->version());
 }
 
 JSValue jsHTMLHtmlElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLHtmlElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLHtmlElement* domObject = static_cast<JSHTMLHtmlElement*>(asObject(slot.slotBase()));
+    return JSHTMLHtmlElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLHtmlElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -146,9 +148,9 @@ void setJSHTMLHtmlElementVersion(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setVersion(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLHtmlElement::getConstructor(ExecState* exec)
+JSValue JSHTMLHtmlElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLHtmlElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLHtmlElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

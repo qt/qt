@@ -112,7 +112,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 157 "../../JavaScriptCore/parser/Grammar.y"
+#line 155 "../../JavaScriptCore/parser/Grammar.y"
 
     int                 intValue;
     double              doubleValue;

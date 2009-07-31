@@ -557,11 +557,10 @@ int QFontMetrics::width(const QString &text, int len) const
     \warning This function will produce incorrect results for Arabic
     characters or non-spacing marks in the middle of a string, as the
     glyph shaping and positioning of marks that happens when
-    processing strings cannot be taken into account. Use charWidth()
-    instead if you aren't looking for the width of isolated
-    characters.
+    processing strings cannot be taken into account. When implementing
+    an interactive text control, use QTextLayout instead.
 
-    \sa boundingRect(), charWidth()
+    \sa boundingRect()
 */
 int QFontMetrics::width(QChar ch) const
 {
@@ -1386,9 +1385,8 @@ qreal QFontMetricsF::width(const QString &text) const
     \warning This function will produce incorrect results for Arabic
     characters or non-spacing marks in the middle of a string, as the
     glyph shaping and positioning of marks that happens when
-    processing strings cannot be taken into account. Use charWidth()
-    instead if you aren't looking for the width of isolated
-    characters.
+    processing strings cannot be taken into account. When implementing
+    an interactive text control, use QTextLayout instead.
 
     \sa boundingRect()
 */

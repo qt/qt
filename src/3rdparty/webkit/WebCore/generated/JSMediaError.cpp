@@ -68,12 +68,12 @@ static JSC_CONST_HASHTABLE HashTable JSMediaErrorConstructorTable =
     { 9, 7, JSMediaErrorConstructorTableValues, 0 };
 #endif
 
-class JSMediaErrorConstructor : public DOMObject {
+class JSMediaErrorConstructor : public DOMConstructorObject {
 public:
-    JSMediaErrorConstructor(ExecState* exec)
-        : DOMObject(JSMediaErrorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSMediaErrorConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSMediaErrorConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSMediaErrorPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSMediaErrorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -124,8 +124,8 @@ bool JSMediaErrorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
 
 const ClassInfo JSMediaError::s_info = { "MediaError", 0, &JSMediaErrorTable, 0 };
 
-JSMediaError::JSMediaError(PassRefPtr<Structure> structure, PassRefPtr<MediaError> impl)
-    : DOMObject(structure)
+JSMediaError::JSMediaError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MediaError> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -147,18 +147,20 @@ bool JSMediaError::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsMediaErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMediaError* castedThis = static_cast<JSMediaError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MediaError* imp = static_cast<MediaError*>(static_cast<JSMediaError*>(asObject(slot.slotBase()))->impl());
+    MediaError* imp = static_cast<MediaError*>(castedThis->impl());
     return jsNumber(exec, imp->code());
 }
 
 JSValue jsMediaErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSMediaError*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSMediaError* domObject = static_cast<JSMediaError*>(asObject(slot.slotBase()));
+    return JSMediaError::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSMediaError::getConstructor(ExecState* exec)
+JSValue JSMediaError::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSMediaErrorConstructor>(exec);
+    return getDOMConstructor<JSMediaErrorConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters
@@ -183,9 +185,9 @@ JSValue jsMediaErrorMEDIA_ERR_SRC_NOT_SUPPORTED(ExecState* exec, const Identifie
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, MediaError* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MediaError* object)
 {
-    return getDOMObjectWrapper<JSMediaError>(exec, object);
+    return getDOMObjectWrapper<JSMediaError>(exec, globalObject, object);
 }
 MediaError* toMediaError(JSC::JSValue value)
 {

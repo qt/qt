@@ -56,43 +56,40 @@ class QDirectFBPaintEngine : public QRasterPaintEngine
     Q_DECLARE_PRIVATE(QDirectFBPaintEngine)
 public:
     QDirectFBPaintEngine(QPaintDevice *device);
-    ~QDirectFBPaintEngine();
+    virtual ~QDirectFBPaintEngine();
 
-    bool begin(QPaintDevice *device);
-    bool end();
+    virtual bool begin(QPaintDevice *device);
+    virtual bool end();
 
-    void drawRects(const QRect  *rects, int rectCount);
-    void drawRects(const QRectF *rects, int rectCount);
+    virtual void drawRects(const QRect  *rects, int rectCount);
+    virtual void drawRects(const QRectF *rects, int rectCount);
 
-    void fillRect(const QRectF &r, const QBrush &brush);
-    void fillRect(const QRectF &r, const QColor &color);
+    virtual void fillRect(const QRectF &r, const QBrush &brush);
+    virtual void fillRect(const QRectF &r, const QColor &color);
 
-    void drawLines(const QLine *line, int lineCount);
-    void drawLines(const QLineF *line, int lineCount);
+    virtual void drawLines(const QLine *line, int lineCount);
+    virtual void drawLines(const QLineF *line, int lineCount);
 
-    void drawImage(const QPointF &p, const QImage &img);
-    void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
-                   Qt::ImageConversionFlags falgs = Qt::AutoColor);
+    virtual void drawImage(const QPointF &p, const QImage &img);
+    virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
+                           Qt::ImageConversionFlags falgs = Qt::AutoColor);
 
-    void drawPixmap(const QPointF &p, const QPixmap &pm);
-    void drawPixmap(const QRectF &r, const QPixmap &pixmap, const QRectF &sr);
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr);
+    virtual void drawPixmap(const QPointF &p, const QPixmap &pm);
+    virtual void drawPixmap(const QRectF &r, const QPixmap &pixmap, const QRectF &sr);
+    virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr);
 
-    void drawColorSpans(const QSpan *spans, int count, uint color);
-    void drawBufferSpan(const uint *buffer, int bufsize,
-                        int x, int y, int length, uint const_alpha);
+    virtual void drawBufferSpan(const uint *buffer, int bufsize,
+                                int x, int y, int length, uint const_alpha);
 
-
-    // The following methods simply lock the surface & call the base implementation
-    void stroke(const QVectorPath &path, const QPen &pen);
-    void drawPath(const QPainterPath &path);
-    void drawPoints(const QPointF *points, int pointCount);
-    void drawPoints(const QPoint *points, int pointCount);
-    void drawEllipse(const QRectF &rect);
-    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
-    void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode);
-    void drawTextItem(const QPointF &p, const QTextItem &textItem);
-    void fill(const QVectorPath &path, const QBrush &brush);
+    virtual void stroke(const QVectorPath &path, const QPen &pen);
+    virtual void drawPath(const QPainterPath &path);
+    virtual void drawPoints(const QPointF *points, int pointCount);
+    virtual void drawPoints(const QPoint *points, int pointCount);
+    virtual void drawEllipse(const QRectF &rect);
+    virtual void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
+    virtual void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode);
+    virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
+    virtual void fill(const QVectorPath &path, const QBrush &brush);
 
     virtual void clipEnabledChanged();
     virtual void penChanged();

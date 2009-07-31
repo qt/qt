@@ -59,9 +59,14 @@
 #include <qimage.h>
 #include <qicon.h>
 #include <qmatrix.h>
-#include <qtransform.h>
+#include <qmatrix4x4.h>
 #include <qpen.h>
 #include <qpolygon.h>
+#include <qtransform.h>
+#include <qvector2d.h>
+#include <qvector3d.h>
+#include <qvector4d.h>
+#include <qquaternion.h>
 
 #include <limits.h>
 
@@ -193,6 +198,12 @@ private slots:
     void matrix();
 
     void transform();
+
+    void matrix4x4();
+    void vector2D();
+    void vector3D();
+    void vector4D();
+    void quaternion();
 
     void url();
 
@@ -1403,6 +1414,19 @@ void tst_QVariant::matrix()
     QMetaType::destroy(QVariant::Matrix, mmatrix);
 }
 
+void tst_QVariant::matrix4x4()
+{
+    QVariant variant;
+    QMatrix4x4 matrix = qVariantValue<QMatrix4x4>(variant);
+    QVERIFY(matrix.isIdentity());
+    qVariantSetValue(variant, QMatrix4x4().scale(2.0));
+    QCOMPARE(QMatrix4x4().scale(2.0), qVariantValue<QMatrix4x4>(variant));
+
+    void *mmatrix = QMetaType::construct(QVariant::Matrix4x4, 0);
+    QVERIFY(mmatrix);
+    QMetaType::destroy(QVariant::Matrix4x4, mmatrix);
+}
+
 void tst_QVariant::transform()
 {
     QVariant variant;
@@ -1414,6 +1438,59 @@ void tst_QVariant::transform()
     void *mmatrix = QMetaType::construct(QVariant::Transform, 0);
     QVERIFY(mmatrix);
     QMetaType::destroy(QVariant::Transform, mmatrix);
+}
+
+
+void tst_QVariant::vector2D()
+{
+    QVariant variant;
+    QVector2D vector = qVariantValue<QVector2D>(variant);
+    QVERIFY(vector.isNull());
+    qVariantSetValue(variant, QVector2D(0.1, 0.2));
+    QCOMPARE(QVector2D(0.1, 0.2), qVariantValue<QVector2D>(variant));
+
+    void *pvector = QMetaType::construct(QVariant::Vector2D, 0);
+    QVERIFY(pvector);
+    QMetaType::destroy(QVariant::Vector2D, pvector);
+}
+
+void tst_QVariant::vector3D()
+{
+    QVariant variant;
+    QVector3D vector = qVariantValue<QVector3D>(variant);
+    QVERIFY(vector.isNull());
+    qVariantSetValue(variant, QVector3D(0.1, 0.2, 0.3));
+    QCOMPARE(QVector3D(0.1, 0.2, 0.3), qVariantValue<QVector3D>(variant));
+
+    void *pvector = QMetaType::construct(QVariant::Vector3D, 0);
+    QVERIFY(pvector);
+    QMetaType::destroy(QVariant::Vector3D, pvector);
+}
+
+void tst_QVariant::vector4D()
+{
+    QVariant variant;
+    QVector4D vector = qVariantValue<QVector4D>(variant);
+    QVERIFY(vector.isNull());
+    qVariantSetValue(variant, QVector4D(0.1, 0.2, 0.3, 0.4));
+    QCOMPARE(QVector4D(0.1, 0.2, 0.3, 0.4), qVariantValue<QVector4D>(variant));
+
+    void *pvector = QMetaType::construct(QVariant::Vector4D, 0);
+    QVERIFY(pvector);
+    QMetaType::destroy(QVariant::Vector4D, pvector);
+}
+
+void tst_QVariant::quaternion()
+{
+    QVariant variant;
+    QQuaternion quaternion = qVariantValue<QQuaternion>(variant);
+    QVERIFY(quaternion.isIdentity());
+    qVariantSetValue(variant, QQuaternion(0.1, 0.2, 0.3, 0.4));
+    QCOMPARE(QQuaternion(0.1, 0.2, 0.3, 0.4), qVariantValue<QQuaternion>(variant));
+
+    void *pquaternion = QMetaType::construct(QVariant::Quaternion, 0);
+    QVERIFY(pquaternion);
+    QMetaType::destroy(QVariant::Quaternion, pquaternion);
 }
 
 void tst_QVariant::writeToReadFromDataStream_data()
@@ -1955,6 +2032,11 @@ void tst_QVariant::typeName_data()
     QTest::newRow("45") << int(QVariant::Matrix) << QByteArray("QMatrix");
     QTest::newRow("46") << int(QVariant::Transform) << QByteArray("QTransform");
     QTest::newRow("47") << int(QVariant::Hash) << QByteArray("QVariantHash");
+    QTest::newRow("48") << int(QVariant::Matrix4x4) << QByteArray("QMatrix4x4");
+    QTest::newRow("49") << int(QVariant::Vector2D) << QByteArray("QVector2D");
+    QTest::newRow("50") << int(QVariant::Vector3D) << QByteArray("QVector3D");
+    QTest::newRow("51") << int(QVariant::Vector4D) << QByteArray("QVector4D");
+    QTest::newRow("52") << int(QVariant::Quaternion) << QByteArray("QQuaternion");
 }
 
 void tst_QVariant::typeName()
@@ -1972,7 +2054,7 @@ void tst_QVariant::typeToName()
     QCOMPARE( QVariant::typeToName( v.type() ), (const char*)0 ); // Invalid
     // assumes that QVariant::Type contains consecutive values
 
-    int max = QVariant::Transform;
+    int max = QVariant::Quaternion;
     for ( int t = 1; t <= max; t++ ) {
         const char *n = QVariant::typeToName( (QVariant::Type)t );
         if (n)

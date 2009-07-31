@@ -130,7 +130,7 @@ void tst_QHelpEngineCore::setCollectionFile()
 
     QStringList docs = help.registeredDocumentations();
     QCOMPARE(docs.count(), 1);
-    QCOMPARE(docs.first(), QLatin1String("trolltech.com.1_0_0.test"));
+    QCOMPARE(docs.first(), QLatin1String("trolltech.com.1-0-0.test"));
 }
 
 void tst_QHelpEngineCore::copyCollectionFile()
@@ -177,7 +177,7 @@ void tst_QHelpEngineCore::copyCollectionFile()
         i = 0;
         while (m_query->next()) {
             if (i == 0) {
-                QCOMPARE(m_query->value(0).toString(), QString("trolltech.com.3_3_8.qmake"));
+                QCOMPARE(m_query->value(0).toString(), QString("trolltech.com.3-3-8.qmake"));
                 QCOMPARE(m_query->value(1).toString(), QString("data/qmake-3.3.8.qch"));
             }
             ++i;
@@ -193,9 +193,9 @@ void tst_QHelpEngineCore::copyCollectionFile()
 void tst_QHelpEngineCore::namespaceName()
 {
     QCOMPARE(QHelpEngineCore::namespaceName(m_path + "/data/qmake-3.3.8.qch"),
-        QString("trolltech.com.3_3_8.qmake"));
+        QString("trolltech.com.3-3-8.qmake"));
     QCOMPARE(QHelpEngineCore::namespaceName(m_path + "/data/linguist-3.3.8.qch"),
-        QString("trolltech.com.3_3_8.linguist"));
+        QString("trolltech.com.3-3-8.linguist"));
 }
 
 void tst_QHelpEngineCore::registeredDocumentations()
@@ -205,8 +205,8 @@ void tst_QHelpEngineCore::registeredDocumentations()
     QStringList docs = help.registeredDocumentations();
     QCOMPARE(docs.count(), 3);
     QStringList lst;
-    lst << "trolltech.com.3_3_8.qmake" << "trolltech.com.4_3_0.qmake"
-        << "trolltech.com.1_0_0.test";
+    lst << "trolltech.com.3-3-8.qmake" << "trolltech.com.4-3-0.qmake"
+        << "trolltech.com.1-0-0.test";
     foreach (QString s, docs)
         lst.removeAll(s);
     QCOMPARE(lst.isEmpty(), true);
@@ -236,7 +236,7 @@ void tst_QHelpEngineCore::registerDocumentation()
         }
         QSqlQuery query(db);
         query.exec("SELECT FilePath FROM NamespaceTable WHERE "
-            "Name=\'trolltech.com.3_3_8.linguist\'");
+            "Name=\'trolltech.com.3-3-8.linguist\'");
         if (query.next())
             QCOMPARE(query.value(0).toString(),
                 QString("linguist-3.3.8.qch"));
@@ -251,7 +251,7 @@ void tst_QHelpEngineCore::unregisterDocumentation()
     QHelpEngineCore c(m_colFile);
     QCOMPARE(c.setupData(), true);
     QCOMPARE(c.registeredDocumentations().count(), 3);
-    c.unregisterDocumentation("trolltech.com.3_3_8.qmake");
+    c.unregisterDocumentation("trolltech.com.3-3-8.qmake");
     QCOMPARE(c.registeredDocumentations().count(), 2);
     QCOMPARE(c.unregisterDocumentation("noexisting"), false);
 }
@@ -260,9 +260,9 @@ void tst_QHelpEngineCore::documentationFileName()
 {
     QHelpEngineCore c(m_colFile);
     QCOMPARE(c.setupData(), true);
-    QCOMPARE(c.documentationFileName(QLatin1String("trolltech.com.3_3_8.qmake")),
+    QCOMPARE(c.documentationFileName(QLatin1String("trolltech.com.3-3-8.qmake")),
         QString(m_path + "/data/qmake-3.3.8.qch"));
-    QCOMPARE(c.documentationFileName(QLatin1String("trolltech.com.1_0_0.test")),
+    QCOMPARE(c.documentationFileName(QLatin1String("trolltech.com.1-0-0.test")),
         QString(m_path + "/data/test.qch"));
     QCOMPARE(c.documentationFileName(QLatin1String("trolltech.com.empty")),
         QString());
@@ -337,7 +337,7 @@ void tst_QHelpEngineCore::filterAttributeSets()
 {
     QHelpEngineCore help(m_colFile, 0);
     QCOMPARE(help.setupData(), true);
-    QList<QStringList> lst = help.filterAttributeSets("trolltech.com.1_0_0.test");
+    QList<QStringList> lst = help.filterAttributeSets("trolltech.com.1-0-0.test");
     QCOMPARE(lst.count(), 2);
     QCOMPARE(lst.first().count(), 2);
     QCOMPARE((bool)lst.first().contains("filter1"), true);
@@ -348,22 +348,22 @@ void tst_QHelpEngineCore::files()
 {
     QHelpEngineCore help(m_colFile, 0);
     QCOMPARE(help.setupData(), true);
-    QList<QUrl> lst = help.files("trolltech.com.4_3_0.qmake",
+    QList<QUrl> lst = help.files("trolltech.com.4-3-0.qmake",
         QStringList());
     QCOMPARE(lst.count(), 16);
-    lst = help.files("trolltech.com.4_3_0.qmake",
+    lst = help.files("trolltech.com.4-3-0.qmake",
         QStringList(), "png");
     QCOMPARE(lst.count(), 2);
-    lst = help.files("trolltech.com.4_3_0.qmake",
+    lst = help.files("trolltech.com.4-3-0.qmake",
         QStringList() << "qt", "html");
     QCOMPARE(lst.count(), 13);
-    lst = help.files("trolltech.com.4_3_0.qmake",
+    lst = help.files("trolltech.com.4-3-0.qmake",
         QStringList() << "qt" << "qmake", "html");
     QCOMPARE(lst.count(), 13);
-    lst = help.files("trolltech.com.4_3_0.qmake",
+    lst = help.files("trolltech.com.4-3-0.qmake",
         QStringList() << "qt" << "qmake" << "bla", "html");
     QCOMPARE(lst.count(), 0);
-    lst = help.files("trolltech.com.4_3_0.qmake",
+    lst = help.files("trolltech.com.4-3-0.qmake",
         QStringList() << "qt" << "qmake", "foo");
     QCOMPARE(lst.count(), 0);
 
@@ -378,7 +378,7 @@ void tst_QHelpEngineCore::fileData()
     QCOMPARE(help.setupData(), true);
     QByteArray ba = help.fileData(QUrl("NotExisting"));
     QCOMPARE(ba.size(), 0);
-    ba = help.fileData(QUrl("qthelp://trolltech.com.1_0_0.test/testFolder/test.html"));
+    ba = help.fileData(QUrl("qthelp://trolltech.com.1-0-0.test/testFolder/test.html"));
     QTextStream s(ba, QIODevice::ReadOnly|QIODevice::Text);
     QFile f(m_path + "/data/test.html");
     if (!f.open(QIODevice::ReadOnly|QIODevice::Text))
@@ -396,7 +396,7 @@ void tst_QHelpEngineCore::linksForIdentifier()
     QCOMPARE(map.contains("Test Manual"), true);
     QCOMPARE(map.count(), 1);
     QCOMPARE(map.value("Test Manual"),
-        QUrl("qthelp://trolltech.com.1_0_0.test/testFolder/test.html#foo"));
+        QUrl("qthelp://trolltech.com.1-0-0.test/testFolder/test.html#foo"));
 
     help.setCurrentFilter("Custom Filter 2");
     map = help.linksForIdentifier("People::newton");
@@ -405,7 +405,7 @@ void tst_QHelpEngineCore::linksForIdentifier()
     QCOMPARE(map.contains("Fancy"), true);
     QCOMPARE(map.count(), 1);
     QCOMPARE(map.value("Fancy"),
-        QUrl("qthelp://trolltech.com.1_0_0.test/testFolder/fancy.html#foobar"));
+        QUrl("qthelp://trolltech.com.1-0-0.test/testFolder/fancy.html#foobar"));
 }
 
 void tst_QHelpEngineCore::customValue()

@@ -719,6 +719,8 @@ void tst_QReadWriteLock::multipleReadersLoop()
     int wait=0;
 #if defined (Q_OS_HPUX)
     const int numthreads=50;
+#elif defined(Q_OS_VXWORKS)
+    const int numthreads=40;
 #else
     const int numthreads=75;
 #endif

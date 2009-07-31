@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qhttpnetworkconnection_p.h"
+#include "qhttpnetworkconnectionchannel_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 #include <private/qnetworkrequest_p.h>
 #include <private/qobject_p.h>
@@ -74,7 +75,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 #endif
 
 {
-    channels = new Channel[channelCount];
+    channels = new QHttpNetworkConnectionChannel[channelCount];
 }
 
 QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
@@ -154,67 +155,69 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
 bool QHttpNetworkConnectionPrivate::isSocketBusy(QAbstractSocket *socket) const
 {
     int i = indexOf(socket);
-    return (channels[i].state & BusyState);
+    return (channels[i].state & QHttpNetworkConnectionChannel::BusyState);
 }
 
 bool QHttpNetworkConnectionPrivate::isSocketWriting(QAbstractSocket *socket) const
 {
     int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & WritingState));
+    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WritingState));
 }
 
 bool QHttpNetworkConnectionPrivate::isSocketWaiting(QAbstractSocket *socket) const
 {
     int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & WaitingState));
+    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WaitingState));
 }
 
 bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) const
 {
     int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & ReadingState));
+    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::ReadingState));
 }
 
-
-void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
+void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, QByteArray &qba)
 {
-    char *dst = reply.d_func()->responseData.reserve(fragment.size());
-    qMemCopy(dst, fragment.constData(), fragment.size());
+    reply.d_func()->responseData.append(qba);
+
+    // clear the original! helps with implicit sharing and
+    // avoiding memcpy when the user is reading the data
+    qba.clear();
 }
 
-void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
+void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data)
 {
-    reply.d_func()->compressedData.append(fragment);
+    reply.d_func()->responseData.append(data);
+
+    // clear the original! helps with implicit sharing and
+    // avoiding memcpy when the user is reading the data
+    data.clear();
+}
+
+void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data)
+{
+    // Work in progress: Later we will directly use a list of QByteArray or a QRingBuffer
+    // instead of one QByteArray.
+    for(int i = 0; i < data.bufferCount(); i++) {
+        QByteArray &byteData = data[i];
+        reply.d_func()->compressedData.append(byteData.constData(), byteData.size());
+    }
+    data.clear();
 }
 
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
-    return reply.d_func()->responseData.size();
+    return reply.d_func()->responseData.byteAmount();
 }
 
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const
 {
-    return reply.d_func()->responseData.nextDataBlockSize();
+    return reply.d_func()->responseData.sizeNextBlock();
 }
 
 qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
     return reply.d_func()->compressedData.size();
-}
-
-qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize)
-{
-    QRingBuffer *rb = &reply.d_func()->responseData;
-    if (maxSize == -1 || maxSize >= rb->size()) {
-        // read the whole data
-        data = rb->readAll();
-        rb->clear();
-    } else {
-        // read only the requested length
-        data.resize(maxSize);
-        rb->read(data.data(), maxSize);
-    }
-    return data.size();
 }
 
 void QHttpNetworkConnectionPrivate::eraseData(QHttpNetworkReply *reply)
@@ -259,7 +262,12 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 #ifndef QT_NO_NETWORKPROXY
     }
 #endif
-    // set the gzip header
+
+    // If the request had a accept-encoding set, we better not mess
+    // with it. If it was not set, we announce that we understand gzip
+    // and remember this fact in request.d->autoDecompress so that
+    // we can later decompress the HTTP reply if it has such an
+    // encoding.
     value = request.headerField("accept-encoding");
     if (value.isEmpty()) {
 #ifndef QT_NO_COMPRESS
@@ -303,7 +311,7 @@ bool QHttpNetworkConnectionPrivate::ensureConnection(QAbstractSocket *socket)
             channels[index].resendCurrent = true;
             return false;
         }
-        channels[index].state = ConnectingState;
+        channels[index].state = QHttpNetworkConnectionChannel::ConnectingState;
         channels[index].pendingEncrypt = encrypt;
 
         // This workaround is needed since we use QAuthenticator for NTLM authentication. The "phase == Done"
@@ -333,8 +341,9 @@ bool QHttpNetworkConnectionPrivate::ensureConnection(QAbstractSocket *socket)
 #ifndef QT_NO_OPENSSL
             QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
             sslSocket->connectToHostEncrypted(connectHost, connectPort);
-            if (channels[index].ignoreSSLErrors)
+            if (channels[index].ignoreAllSslErrors)
                 sslSocket->ignoreSslErrors();
+            sslSocket->ignoreSslErrors(channels[index].ignoreSslErrorsList);
 #else
             emitReplyError(socket, channels[index].reply, QNetworkReply::ProtocolUnknownError);
 #endif
@@ -353,7 +362,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
     int i = indexOf(socket);
     switch (channels[i].state) {
-    case IdleState: { // write the header
+    case QHttpNetworkConnectionChannel::IdleState: { // write the header
         if (!ensureConnection(socket)) {
             // wait for the connection (and encryption) to be done
             // sendRequest will be called again from either
@@ -367,7 +376,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
             channels[i].reply->d_func()->connection = q;
             channels[i].reply->d_func()->autoDecompress = channels[i].request.d->autoDecompress;
         }
-        channels[i].state = WritingState;
+        channels[i].state = QHttpNetworkConnectionChannel::WritingState;
         channels[i].pendingEncrypt = false;
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
@@ -401,20 +410,21 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
             channels[i].bytesTotal = channels[i].request.contentLength();
         } else {
-            channels[i].state = WaitingState;
+            socket->flush(); // ### Remove this when pipelining is implemented. We want less TCP packets!
+            channels[i].state = QHttpNetworkConnectionChannel::WaitingState;
             break;
         }
         // write the initial chunk together with the headers
         // fall through
     }
-    case WritingState:
+    case QHttpNetworkConnectionChannel::WritingState:
     {
         // write the data
         QNonContiguousByteDevice* uploadByteDevice = channels[i].request.uploadByteDevice();
         if (!uploadByteDevice || channels[i].bytesTotal == channels[i].written) {
             if (uploadByteDevice)
                 emit channels[i].reply->dataSendProgress(channels[i].written, channels[i].bytesTotal);
-            channels[i].state = WaitingState; // now wait for response
+            channels[i].state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
             sendRequest(socket);
             break;
         }
@@ -461,7 +471,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
                     if (channels[i].written == channels[i].bytesTotal) {
                         // make sure this function is called once again
-                        channels[i].state = WaitingState;
+                        channels[i].state = QHttpNetworkConnectionChannel::WaitingState;
                         sendRequest(socket);
                         break;
                     }
@@ -471,7 +481,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
         break;
     }
 
-    case WaitingState:
+    case QHttpNetworkConnectionChannel::WaitingState:
     {
         QNonContiguousByteDevice* uploadByteDevice = channels[i].request.uploadByteDevice();
         if (uploadByteDevice) {
@@ -483,8 +493,8 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
         receiveReply(socket, channels[i].reply);
         break;
     }
-    case ReadingState:
-    case Wait4AuthState:
+    case QHttpNetworkConnectionChannel::ReadingState:
+    case QHttpNetworkConnectionChannel::Wait4AuthState:
         // ignore _q_bytesWritten in these states
         // fall through
     default:
@@ -556,13 +566,12 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
                 reply->d_func()->totalProgress += inflated.size();
                 appendUncompressedData(*reply, inflated);
                 if (shouldEmitSignals(reply)) {
+                    // important: At the point of this readyRead(), inflated must be cleared,
+                    // else implicit sharing will trigger memcpy when the user is reading data!
                     emit reply->readyRead();
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
                         return true;
-                        // emit dataReadProgress signal (signal is currently not connected
-                        // to the rest of QNAM) since readProgress of the
-                        // QNonContiguousByteDevice is used
                     emit reply->dataReadProgress(reply->d_func()->totalProgress, 0);
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
@@ -593,7 +602,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
         if (!socket->bytesAvailable()) {
             if (reply && reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
                 reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
-                channels[i].state = IdleState;
+                channels[i].state = QHttpNetworkConnectionChannel::IdleState;
                 allDone(socket, reply);
             } else {
                 // try to reconnect/resend before sending an error.
@@ -644,7 +653,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                     emit reply->headerChanged();
                 if (!expectContent(reply)) {
                     reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
-                    channels[i].state = IdleState;
+                    channels[i].state = QHttpNetworkConnectionChannel::IdleState;
                     allDone(socket, reply);
                     return;
                 }
@@ -672,25 +681,23 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
             {
                 // use the traditional slower reading (for compressed encoding, chunked encoding,
                 // no content-length etc)
-                QBuffer fragment;
-                fragment.open(QIODevice::WriteOnly);
-                bytes = reply->d_func()->readBody(socket, &fragment);
+                QByteDataBuffer byteDatas;
+                bytes = reply->d_func()->readBody(socket, &byteDatas);
                 if (bytes) {
                     if (reply->d_func()->autoDecompress)
-                        appendCompressedData(*reply, fragment.data());
+                        appendCompressedData(*reply, byteDatas);
                     else
-                        appendUncompressedData(*reply, fragment.data());
+                        appendUncompressedData(*reply, byteDatas);
 
                     if (!reply->d_func()->autoDecompress) {
-                        reply->d_func()->totalProgress += fragment.size();
+                        reply->d_func()->totalProgress += bytes;
                         if (shouldEmitSignals(reply)) {
+                            // important: At the point of this readyRead(), the byteDatas list must be empty,
+                            // else implicit sharing will trigger memcpy when the user is reading data!
                             emit reply->readyRead();
                             // make sure that the reply is valid
                             if (channels[i].reply != reply)
                                 return;
-                            // emit dataReadProgress signal (signal is currently not connected
-                            // to the rest of QNAM) since readProgress of the
-                            // QNonContiguousByteDevice is used
                             emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
                             // make sure that the reply is valid
                             if (channels[i].reply != reply)
@@ -709,7 +716,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
             // everything done, fall through
             }
       case QHttpNetworkReplyPrivate::AllDoneState:
-            channels[i].state = IdleState;
+            channels[i].state = QHttpNetworkConnectionChannel::IdleState;
             allDone(socket, reply);
             break;
         default:
@@ -858,11 +865,11 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
                 eraseData(channels[i].reply);
                 closeChannel(i);
                 channels[i].lastStatus = 0;
-                channels[i].state =  Wait4AuthState;
+                channels[i].state =  QHttpNetworkConnectionChannel::Wait4AuthState;
                 return false;
             }
             // cannot use this socket until the slot returns
-            channels[i].state = WaitingState;
+            channels[i].state = QHttpNetworkConnectionChannel::WaitingState;
             socket->blockSignals(true);
             if (!isProxy) {
                 pendingAuthSignal = true;
@@ -877,7 +884,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             }
             socket->blockSignals(false);
             // socket free to use
-            channels[i].state = IdleState;
+            channels[i].state = QHttpNetworkConnectionChannel::IdleState;
             if (priv->phase != QAuthenticatorPrivate::Done) {
                 // send any pending requests
                 copyCredentials(i,  auth, isProxy);
@@ -900,8 +907,8 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             socket->close();
             // remove pending request on the other channels
             for (int j = 0; j < channelCount; ++j) {
-                if (j != i && channels[j].state ==  Wait4AuthState)
-                    channels[j].state = IdleState;
+                if (j != i && channels[j].state ==  QHttpNetworkConnectionChannel::Wait4AuthState)
+                    channels[j].state = QHttpNetworkConnectionChannel::IdleState;
             }
             return true;
         }
@@ -1001,7 +1008,7 @@ void QHttpNetworkConnectionPrivate::closeChannel(int channel)
     socket->blockSignals(true);
     socket->close();
     socket->blockSignals(false);
-    channels[channel].state = IdleState;
+    channels[channel].state = QHttpNetworkConnectionChannel::IdleState;
 }
 
 void QHttpNetworkConnectionPrivate::resendCurrentRequest(QAbstractSocket *socket)
@@ -1104,7 +1111,7 @@ void QHttpNetworkConnectionPrivate::_q_readyRead()
         return; // ### error
     if (isSocketWaiting(socket) || isSocketReading(socket)) {
         int i = indexOf(socket);
-        channels[i].state = ReadingState;
+        channels[i].state = QHttpNetworkConnectionChannel::ReadingState;
         if (channels[i].reply)
             receiveReply(socket, channels[i].reply);
     }
@@ -1133,14 +1140,14 @@ void QHttpNetworkConnectionPrivate::_q_disconnected()
     // read the available data before closing
     int i = indexOf(socket);
     if (isSocketWaiting(socket) || isSocketReading(socket)) {
-        channels[i].state = ReadingState;
+        channels[i].state = QHttpNetworkConnectionChannel::ReadingState;
         if (channels[i].reply)
             receiveReply(socket, channels[i].reply);
-    } else if (channels[i].state == IdleState && channels[i].resendCurrent) {
+    } else if (channels[i].state == QHttpNetworkConnectionChannel::IdleState && channels[i].resendCurrent) {
         // re-sending request because the socket was in ClosingState
         QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
     }
-    channels[i].state = IdleState;
+    channels[i].state = QHttpNetworkConnectionChannel::IdleState;
 }
 
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
@@ -1149,7 +1156,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].resendCurrent) {
             channels[i].resendCurrent = false;
-            channels[i].state = IdleState;
+            channels[i].state = QHttpNetworkConnectionChannel::IdleState;
             if (channels[i].reply)
                 sendRequest(channels[i].socket);
         }
@@ -1173,8 +1180,8 @@ void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
     // send the request using the idle socket
     for (int i = 0 ; i < channelCount; ++i) {
         QAbstractSocket *socket = channels[i].socket;
-        if (channels[i].state ==  Wait4AuthState) {
-            channels[i].state = IdleState;
+        if (channels[i].state ==  QHttpNetworkConnectionChannel::Wait4AuthState) {
+            channels[i].state = QHttpNetworkConnectionChannel::IdleState;
             if (channels[i].reply)
                 sendRequest(socket);
         }
@@ -1187,11 +1194,15 @@ void QHttpNetworkConnectionPrivate::_q_connected()
     QAbstractSocket *socket = qobject_cast<QAbstractSocket*>(q->sender());
     if (!socket)
         return; // ### error
+
+    // improve performance since we get the request sent by the kernel ASAP
+    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
     int i = indexOf(socket);
     // ### FIXME: if the server closes the connection unexpectedly, we shouldn't send the same broken request again!
     //channels[i].reconnectAttempts = 2;
     if (!channels[i].pendingEncrypt) {
-        channels[i].state = IdleState;
+        channels[i].state = QHttpNetworkConnectionChannel::IdleState;
         if (channels[i].reply)
             sendRequest(socket);
         else
@@ -1220,7 +1231,7 @@ void QHttpNetworkConnectionPrivate::_q_error(QAbstractSocket::SocketError socket
     case QAbstractSocket::RemoteHostClosedError:
         // try to reconnect/resend before sending an error.
         // while "Reading" the _q_disconnected() will handle this.
-        if (channels[i].state != IdleState && channels[i].state != ReadingState) {
+        if (channels[i].state != QHttpNetworkConnectionChannel::IdleState && channels[i].state != QHttpNetworkConnectionChannel::ReadingState) {
             if (channels[i].reconnectAttempts-- > 0) {
                 resendCurrentRequest(socket);
                 return;
@@ -1234,7 +1245,7 @@ void QHttpNetworkConnectionPrivate::_q_error(QAbstractSocket::SocketError socket
         break;
     case QAbstractSocket::SocketTimeoutError:
         // try to reconnect/resend before sending an error.
-        if (channels[i].state == WritingState &&  (channels[i].reconnectAttempts-- > 0)) {
+        if (channels[i].state == QHttpNetworkConnectionChannel::WritingState &&  (channels[i].reconnectAttempts-- > 0)) {
             resendCurrentRequest(socket);
             return;
         }
@@ -1393,7 +1404,7 @@ void QHttpNetworkConnectionPrivate::_q_encrypted()
     if (!socket)
         return; // ### error
     int i = indexOf(socket);
-    channels[i].state = IdleState;
+    channels[i].state = QHttpNetworkConnectionChannel::IdleState;
     sendRequest(socket);
 }
 
@@ -1438,15 +1449,32 @@ void QHttpNetworkConnection::ignoreSslErrors(int channel)
     if (channel == -1) { // ignore for all channels
         for (int i = 0; i < d->channelCount; ++i) {
             static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors();
-            d->channels[i].ignoreSSLErrors = true;
+            d->channels[i].ignoreAllSslErrors = true;
         }
 
     } else {
         static_cast<QSslSocket *>(d->channels[channel].socket)->ignoreSslErrors();
-        d->channels[channel].ignoreSSLErrors = true;
+        d->channels[channel].ignoreAllSslErrors = true;
     }
 }
 
+void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int channel)
+{
+    Q_D(QHttpNetworkConnection);
+    if (!d->encrypt)
+        return;
+
+    if (channel == -1) { // ignore for all channels
+        for (int i = 0; i < d->channelCount; ++i) {
+            static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors(errors);
+            d->channels[i].ignoreSslErrorsList = errors;
+        }
+
+    } else {
+        static_cast<QSslSocket *>(d->channels[channel].socket)->ignoreSslErrors(errors);
+        d->channels[channel].ignoreSslErrorsList = errors;
+    }
+}
 
 #endif //QT_NO_OPENSSL
 

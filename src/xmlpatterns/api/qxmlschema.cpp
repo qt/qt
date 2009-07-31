@@ -45,6 +45,8 @@
 #include <QtCore/QIODevice>
 #include <QtCore/QUrl>
 
+QT_BEGIN_NAMESPACE
+
 /*!
   \class QXmlSchema
 
@@ -293,3 +295,5 @@ QNetworkAccessManager *QXmlSchema::networkAccessManager() const
 {
     return d->networkAccessManager();
 }
+
+QT_END_NAMESPACE

@@ -66,12 +66,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLFieldSetElementConstructorTable =
     { 1, 0, JSHTMLFieldSetElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLFieldSetElementConstructor : public DOMObject {
+class JSHTMLFieldSetElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLFieldSetElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLFieldSetElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLFieldSetElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLFieldSetElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFieldSetElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFieldSetElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -113,8 +113,8 @@ JSObject* JSHTMLFieldSetElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLFieldSetElement::s_info = { "HTMLFieldSetElement", &JSHTMLElement::s_info, &JSHTMLFieldSetElementTable, 0 };
 
-JSHTMLFieldSetElement::JSHTMLFieldSetElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLFieldSetElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLFieldSetElement::JSHTMLFieldSetElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFieldSetElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -130,32 +130,36 @@ bool JSHTMLFieldSetElement::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsHTMLFieldSetElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->form()));
+    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLFieldSetElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->validity()));
+    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLFieldSetElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()))->impl());
+    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
     return jsBoolean(imp->willValidate());
 }
 
 JSValue jsHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLFieldSetElement* domObject = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
+    return JSHTMLFieldSetElement::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSHTMLFieldSetElement::getConstructor(ExecState* exec)
+JSValue JSHTMLFieldSetElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLFieldSetElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLFieldSetElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

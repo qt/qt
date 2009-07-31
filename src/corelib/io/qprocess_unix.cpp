@@ -1161,10 +1161,10 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
     // To catch the startup of the child
     int startedPipe[2];
-    ::pipe(startedPipe);
+    qt_safe_pipe(startedPipe);
     // To communicate the pid of the child
     int pidPipe[2];
-    ::pipe(pidPipe);
+    qt_safe_pipe(pidPipe);
 
     pid_t childPid = qt_fork();
     if (childPid == 0) {

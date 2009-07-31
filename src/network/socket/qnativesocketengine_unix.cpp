@@ -65,6 +65,8 @@
 #include <ctype.h>
 #endif
 
+#include <netinet/tcp.h>
+
 QT_BEGIN_NAMESPACE
 
 #if defined QNATIVESOCKETENGINE_DEBUG
@@ -203,6 +205,8 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         return -1;
 
     int n = -1;
+    int level = SOL_SOCKET; // default
+
     switch (opt) {
     case QNativeSocketEngine::ReceiveBufferSocketOption:
         n = SO_RCVBUF;
@@ -222,11 +226,18 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     case QNativeSocketEngine::ReceiveOutOfBandData:
         n = SO_OOBINLINE;
         break;
+    case QNativeSocketEngine::LowDelayOption:
+        level = IPPROTO_TCP;
+        n = TCP_NODELAY;
+        break;
+    case QNativeSocketEngine::KeepAliveOption:
+        n = SO_KEEPALIVE;
+        break;
     }
 
     int v = -1;
     QT_SOCKOPTLEN_T len = sizeof(v);
-    if (getsockopt(socketDescriptor, SOL_SOCKET, n, (char *) &v, &len) != -1)
+    if (::getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
         return v;
     return -1;
 }
@@ -242,6 +253,8 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         return false;
 
     int n = 0;
+    int level = SOL_SOCKET; // default
+
     switch (opt) {
     case QNativeSocketEngine::ReceiveBufferSocketOption:
         n = SO_RCVBUF;
@@ -254,6 +267,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         break;
     case QNativeSocketEngine::NonBlockingSocketOption: {
         // Make the socket nonblocking.
+#if !defined(Q_OS_VXWORKS)
         int flags = ::fcntl(socketDescriptor, F_GETFL, 0);
         if (flags == -1) {
 #ifdef QNATIVESOCKETENGINE_DEBUG
@@ -267,7 +281,15 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
 #endif
             return false;
         }
-
+#else // Q_OS_VXWORKS
+        int onoff = 1;
+        if (qt_safe_ioctl(socketDescriptor, FIONBIO, &onoff) < 0) {
+#ifdef QNATIVESOCKETENGINE_DEBUG
+            perror("QNativeSocketEnginePrivate::setOption(): ioctl(FIONBIO, 1) failed");
+#endif
+            return false;
+        }
+#endif // Q_OS_VXWORKS
         return true;
     }
     case QNativeSocketEngine::AddressReusable:
@@ -282,9 +304,16 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     case QNativeSocketEngine::ReceiveOutOfBandData:
         n = SO_OOBINLINE;
         break;
+    case QNativeSocketEngine::LowDelayOption:
+        level = IPPROTO_TCP;
+        n = TCP_NODELAY;
+        break;
+    case QNativeSocketEngine::KeepAliveOption:
+        n = SO_KEEPALIVE;
+        break;
     }
 
-    return ::setsockopt(socketDescriptor, SOL_SOCKET, n, (char *) &v, sizeof(v)) == 0;
+    return ::setsockopt(socketDescriptor, level, n, (char *) &v, sizeof(v)) == 0;
 }
 
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
@@ -632,11 +661,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
     // ignore the SIGPIPE signal
     qt_ignore_sigpipe();
 
-    ssize_t sentBytes;
-    do {
-        sentBytes = qt_safe_sendto(socketDescriptor, data, len,
-                                   0, sockAddrPtr, sockAddrSize);
-    } while (sentBytes == -1 && errno == EINTR);
+    ssize_t sentBytes = qt_safe_sendto(socketDescriptor, data, len,
+                                       0, sockAddrPtr, sockAddrSize);
 
     if (sentBytes < 0) {
         switch (errno) {
@@ -702,7 +728,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     // Determine the socket type (UDP/TCP)
     int value = 0;
     QT_SOCKOPTLEN_T valueSize = sizeof(int);
-    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, &value, &valueSize) == 0) {
+    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, (char *) &value, &valueSize) == 0) {
         if (value == SOCK_STREAM)
             socketType = QAbstractSocket::TcpSocket;
         else if (value == SOCK_DGRAM)
@@ -747,7 +773,7 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
     // of an interrupting signal.
     ssize_t writtenBytes;
     do {
-        writtenBytes = ::write(socketDescriptor, data, len);
+        writtenBytes = QT_WRITE(socketDescriptor, data, len);
     } while (writtenBytes < 0 && errno == EINTR);
 
     if (writtenBytes < 0) {
@@ -808,6 +834,9 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
             setError(QAbstractSocket::NetworkError, ReadErrorString);
             break;
         case ECONNRESET:
+#if defined(Q_OS_VXWORKS)
+        case ESHUTDOWN:
+#endif
             r = 0;
             break;
         default:

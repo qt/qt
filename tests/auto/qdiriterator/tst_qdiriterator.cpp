@@ -48,6 +48,10 @@
 #include <qfileinfo.h>
 #include <qstringlist.h>
 
+#if defined(Q_OS_VXWORKS)
+#define Q_NO_SYMLINKS
+#endif
+
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)
 Q_DECLARE_METATYPE(QDir::Filters)
 
@@ -87,6 +91,7 @@ tst_QDirIterator::tst_QDirIterator()
     QFile::remove("entrylist/directory/entrylist3.lnk");
     QFile::remove("entrylist/directory/entrylist4.lnk");
 
+#ifndef Q_NO_SYMLINKS
 #ifdef Q_OS_WIN
     // ### Sadly, this is a platform difference right now.
     QFile::link("entrylist/file", "entrylist/linktofile.lnk");
@@ -96,6 +101,7 @@ tst_QDirIterator::tst_QDirIterator()
     QFile::link("file", "entrylist/linktofile.lnk");
     QFile::link("directory", "entrylist/linktodirectory.lnk");
     QFile::link("nothing", "entrylist/brokenlink.lnk");
+#endif
 #endif
     QFile("entrylist/writable").open(QIODevice::ReadWrite);
 }
@@ -135,9 +141,13 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/..,"
 #endif
                    "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/directory,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
+#endif
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories | QDir::FollowSymlinks")
@@ -151,10 +161,14 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/directory/..,"
 #endif
                    "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/directory,"
                    "entrylist/directory/dummy,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
+#endif
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories / QDir::Files")
@@ -162,14 +176,18 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QDir::Filters(QDir::Files) << QStringList("*")
         << QString("entrylist/directory/dummy,"
                    "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories | QDir::FollowSymlinks / QDir::Files")
         << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
         << QDir::Filters(QDir::Files) << QStringList("*")
         << QString("entrylist/file,"
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktofile.lnk,"
+#endif
                    "entrylist/directory/dummy,"
                    "entrylist/writable").split(',');
 }
@@ -183,17 +201,28 @@ void tst_QDirIterator::iterateRelativeDirectory()
     QFETCH(QStringList, entries);
 
     QDirIterator it(dirName, nameFilters, filters, flags);
-    QStringList iteratorList;
-    while (it.hasNext())
-        iteratorList << it.next();
-
-    // The order of QDirIterator returning items differs on some platforms.
-    // Thus it is not guaranteed that all paths will be returned relative
-    // and we need to assure we have two valid StringLists to compare. So
-    // we make all entries absolute for comparison.
     QStringList list;
-    foreach(QString item, iteratorList)
-        list.append(QFileInfo(item).canonicalFilePath());
+    while (it.hasNext()) {
+        QString next = it.next();
+
+        QString fileName = it.fileName();
+        QString filePath = it.filePath();
+        QString path = it.path();
+
+        QFileInfo info = it.fileInfo();
+
+        QCOMPARE(path, dirName);
+        QCOMPARE(next, filePath);
+
+        QCOMPARE(info, QFileInfo(next));
+        QCOMPARE(fileName, info.fileName());
+        QCOMPARE(filePath, info.filePath());
+
+        // Using canonical file paths for final comparison
+        list << info.canonicalFilePath();
+    }
+
+    // The order of items returned by QDirIterator is not guaranteed.
     list.sort();
 
     QStringList sortedEntries;

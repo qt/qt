@@ -54,3 +54,14 @@ socket->connectToHostEncrypted("imap", 993);
 if (socket->waitForEncrypted(1000))
     qDebug("Encrypted!");
 //! [5]
+
+//! [6]
+QList<QSslCertificate> cert = QSslCertificate::fromPath(QLatin1String("server-certificate.pem"));
+QSslError error(QSslError::SelfSignedCertificate, cert.at(0));
+QList<QSslError> expectedSslErrors;
+expectedSslErrors.append(error);
+
+QSslSocket socket;
+socket.ignoreSslErrors(expectedSslErrors);
+socket.connectToHostEncrypted("server.tld", 443);
+//! [6]

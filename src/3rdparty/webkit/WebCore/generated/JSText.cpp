@@ -65,12 +65,12 @@ static JSC_CONST_HASHTABLE HashTable JSTextConstructorTable =
     { 1, 0, JSTextConstructorTableValues, 0 };
 #endif
 
-class JSTextConstructor : public DOMObject {
+class JSTextConstructor : public DOMConstructorObject {
 public:
-    JSTextConstructor(ExecState* exec)
-        : DOMObject(JSTextConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSTextConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSTextConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSTextPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSTextPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -119,8 +119,8 @@ bool JSTextPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 const ClassInfo JSText::s_info = { "Text", &JSCharacterData::s_info, &JSTextTable, 0 };
 
-JSText::JSText(PassRefPtr<Structure> structure, PassRefPtr<Text> impl)
-    : JSCharacterData(structure, impl)
+JSText::JSText(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Text> impl)
+    : JSCharacterData(structure, globalObject, impl)
 {
 }
 
@@ -136,18 +136,20 @@ bool JSText::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
 
 JSValue jsTextWholeText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSText* castedThis = static_cast<JSText*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Text* imp = static_cast<Text*>(static_cast<JSText*>(asObject(slot.slotBase()))->impl());
+    Text* imp = static_cast<Text*>(castedThis->impl());
     return jsString(exec, imp->wholeText());
 }
 
 JSValue jsTextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSText*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSText* domObject = static_cast<JSText*>(asObject(slot.slotBase()));
+    return JSText::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSText::getConstructor(ExecState* exec)
+JSValue JSText::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSTextConstructor>(exec);
+    return getDOMConstructor<JSTextConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsTextPrototypeFunctionSplitText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -165,7 +167,7 @@ JSValue JSC_HOST_CALL jsTextPrototypeFunctionSplitText(ExecState* exec, JSObject
     }
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->splitText(offset, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->splitText(offset, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -181,7 +183,7 @@ JSValue JSC_HOST_CALL jsTextPrototypeFunctionReplaceWholeText(ExecState* exec, J
     const UString& content = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->replaceWholeText(content, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->replaceWholeText(content, ec)));
     setDOMException(exec, ec);
     return result;
 }

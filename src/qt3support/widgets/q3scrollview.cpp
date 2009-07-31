@@ -669,7 +669,7 @@ bool Q3ScrollView::isVerticalSliderPressed()
 }
 
 /*!
-    \reimp
+    \internal
 */
 void Q3ScrollView::styleChange(QStyle& old)
 {
@@ -679,7 +679,7 @@ void Q3ScrollView::styleChange(QStyle& old)
 }
 
 /*!
-    \reimp
+    \internal
 */
 void Q3ScrollView::fontChange(const QFont &old)
 {
