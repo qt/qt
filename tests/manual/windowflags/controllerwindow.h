@@ -39,36 +39,77 @@
 **
 ****************************************************************************/
 
-#include <QtScript>
-#include "bytearrayclass.h"
+#ifndef CONTROLLERWINDOW_H
+#define CONTROLLERWINDOW_H
 
-int main(int argc, char **argv)
+#include <QWidget>
+
+#include "previewwindow.h"
+
+QT_BEGIN_NAMESPACE
+class QCheckBox;
+class QGroupBox;
+class QLabel;
+class QPushButton;
+class QRadioButton;
+class QMainWindow;
+QT_END_NAMESPACE
+
+//! [0]
+class ControllerWindow : public QWidget
 {
-    QCoreApplication app(argc, argv);
+    Q_OBJECT
 
-    QScriptEngine eng;
+public:
+    ControllerWindow();
 
-    ByteArrayClass *baClass = new ByteArrayClass(&eng);
-    eng.globalObject().setProperty("ByteArray", baClass->constructor());
+private slots:
+    void updatePreview();
 
-    qDebug() << "ba = new ByteArray(4):" << eng.evaluate("ba = new ByteArray(4)").toString();
-    qDebug() << "ba instanceof ByteArray:" << eng.evaluate("ba instanceof ByteArray").toBool();
-    qDebug() << "ba.length:" << eng.evaluate("ba.length").toNumber();
-    qDebug() << "ba[1] = 123; ba[1]:" << eng.evaluate("ba[1] = 123; ba[1]").toNumber();
-    qDebug() << "ba[7] = 224; ba.length:" << eng.evaluate("ba[7] = 224; ba.length").toNumber();
-    qDebug() << "for-in loop:" << eng.evaluate("result = '';\n"
-                                               "for (var p in ba) {\n"
-                                               "  if (result.length > 0)\n"
-                                               "    result += ', ';\n"
-                                               "  result += '(' + p + ',' + ba[p] + ')';\n"
-                                               "} result").toString();
-    qDebug() << "ba.toBase64():" << eng.evaluate("b64 = ba.toBase64()").toString();
-    qDebug() << "ba.toBase64().toLatin1String():" << eng.evaluate("b64.toLatin1String()").toString();
-    qDebug() << "ba.valueOf():" << eng.evaluate("ba.valueOf()").toString();
-    qDebug() << "ba.chop(2); ba.length:" << eng.evaluate("ba.chop(2); ba.length").toNumber();
-    qDebug() << "ba2 = new ByteArray(ba):" << eng.evaluate("ba2 = new ByteArray(ba)").toString();
-    qDebug() << "ba2.equals(ba):" << eng.evaluate("ba2.equals(ba)").toBool();
-    qDebug() << "ba2.equals(new ByteArray()):" << eng.evaluate("ba2.equals(new ByteArray())").toBool();
+private:
+    void createTypeGroupBox();
+    void createHintsGroupBox();
+    QCheckBox *createCheckBox(const QString &text);
+    QRadioButton *createRadioButton(const QString &text);
 
-    return 0;
-}
+    QMainWindow *parentWindow;
+    PreviewWindow *previewWindow;
+    PreviewDialog *previewDialog;
+
+    QGroupBox *widgetTypeGroupBox;
+    QGroupBox *additionalOptionsGroupBox;
+    QGroupBox *typeGroupBox;
+    QGroupBox *hintsGroupBox;
+    QPushButton *quitButton;
+
+    QRadioButton *previewWidgetButton;
+    QRadioButton *previewDialogButton;
+    QCheckBox *modalWindowCheckBox;
+    QCheckBox *fixedSizeWindowCheckBox;
+
+    QRadioButton *windowRadioButton;
+    QRadioButton *dialogRadioButton;
+    QRadioButton *sheetRadioButton;
+    QRadioButton *drawerRadioButton;
+    QRadioButton *popupRadioButton;
+    QRadioButton *toolRadioButton;
+    QRadioButton *toolTipRadioButton;
+    QRadioButton *splashScreenRadioButton;
+
+    QCheckBox *msWindowsFixedSizeDialogCheckBox;
+    QCheckBox *x11BypassWindowManagerCheckBox;
+    QCheckBox *framelessWindowCheckBox;
+    QCheckBox *windowTitleCheckBox;
+    QCheckBox *windowSystemMenuCheckBox;
+    QCheckBox *windowMinimizeButtonCheckBox;
+    QCheckBox *windowMaximizeButtonCheckBox;
+    QCheckBox *windowCloseButtonCheckBox;
+    QCheckBox *windowContextHelpButtonCheckBox;
+    QCheckBox *windowShadeButtonCheckBox;
+    QCheckBox *windowStaysOnTopCheckBox;
+    QCheckBox *windowStaysOnBottomCheckBox;
+    QCheckBox *customizeWindowHintCheckBox;
+};
+//! [0]
+
+#endif

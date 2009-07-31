@@ -39,36 +39,43 @@
 **
 ****************************************************************************/
 
-#include <QtScript>
-#include "bytearrayclass.h"
+#ifndef PREVIEWWINDOW_H
+#define PREVIEWWINDOW_H
 
-int main(int argc, char **argv)
+#include <QWidget>
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+class QPushButton;
+class QTextEdit;
+QT_END_NAMESPACE
+
+class PreviewWindow : public QWidget
 {
-    QCoreApplication app(argc, argv);
+    Q_OBJECT
 
-    QScriptEngine eng;
+public:
+    PreviewWindow(QWidget *parent = 0);
 
-    ByteArrayClass *baClass = new ByteArrayClass(&eng);
-    eng.globalObject().setProperty("ByteArray", baClass->constructor());
+    void setWindowFlags(Qt::WindowFlags flags);
 
-    qDebug() << "ba = new ByteArray(4):" << eng.evaluate("ba = new ByteArray(4)").toString();
-    qDebug() << "ba instanceof ByteArray:" << eng.evaluate("ba instanceof ByteArray").toBool();
-    qDebug() << "ba.length:" << eng.evaluate("ba.length").toNumber();
-    qDebug() << "ba[1] = 123; ba[1]:" << eng.evaluate("ba[1] = 123; ba[1]").toNumber();
-    qDebug() << "ba[7] = 224; ba.length:" << eng.evaluate("ba[7] = 224; ba.length").toNumber();
-    qDebug() << "for-in loop:" << eng.evaluate("result = '';\n"
-                                               "for (var p in ba) {\n"
-                                               "  if (result.length > 0)\n"
-                                               "    result += ', ';\n"
-                                               "  result += '(' + p + ',' + ba[p] + ')';\n"
-                                               "} result").toString();
-    qDebug() << "ba.toBase64():" << eng.evaluate("b64 = ba.toBase64()").toString();
-    qDebug() << "ba.toBase64().toLatin1String():" << eng.evaluate("b64.toLatin1String()").toString();
-    qDebug() << "ba.valueOf():" << eng.evaluate("ba.valueOf()").toString();
-    qDebug() << "ba.chop(2); ba.length:" << eng.evaluate("ba.chop(2); ba.length").toNumber();
-    qDebug() << "ba2 = new ByteArray(ba):" << eng.evaluate("ba2 = new ByteArray(ba)").toString();
-    qDebug() << "ba2.equals(ba):" << eng.evaluate("ba2.equals(ba)").toBool();
-    qDebug() << "ba2.equals(new ByteArray()):" << eng.evaluate("ba2.equals(new ByteArray())").toBool();
+private:
+    QTextEdit *textEdit;
+    QPushButton *closeButton;
+};
 
-    return 0;
-}
+class PreviewDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    PreviewDialog(QWidget *parent = 0);
+
+    void setWindowFlags(Qt::WindowFlags flags);
+
+private:
+    QTextEdit *textEdit;
+    QPushButton *closeButton;
+};
+
+#endif

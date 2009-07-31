@@ -187,6 +187,8 @@ private:
     int m_rx, m_ry;
 };
 
+class  QSvgTspan;
+
 class  QSvgText : public QSvgNode
 {
 public:
@@ -202,26 +204,47 @@ public:
 
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    void insertText(const QString &text, WhitespaceMode mode);
-    void insertFormat(const QTextCharFormat &format);
-    void insertLineBreak();
-    void popFormat();
-    void setTextAlignment(const Qt::Alignment &alignment);
-    const QTextCharFormat &topFormat() const;
-    qreal scale() const;
-    void setScale(qreal scale);
+
+    void addTspan(QSvgTspan *tspan) {m_tspans.append(tspan);}
+    void addText(const QString &text);
+    void addLineBreak() {m_tspans.append(LINEBREAK);}
+    void setWhitespaceMode(WhitespaceMode mode) {m_mode = mode;}
+
     //virtual QRectF bounds() const;
 private:
+    static QSvgTspan * const LINEBREAK;
+
     QPointF m_coord;
 
-    QVector<QString> m_paragraphs;
-    QStack<QTextCharFormat> m_formats;
-    Qt::Alignment           m_textAlignment;
-    QVector<QList<QTextLayout::FormatRange> > m_formatRanges;
-    qreal m_scale;
-    bool m_appendSpace;
+    // 'm_tspans' is also used to store characters outside tspans and line breaks.
+    // If a 'm_tspan' item is null, it indicates a line break.
+    QVector<QSvgTspan *> m_tspans;
+
     Type m_type;
     QSizeF m_size;
+    WhitespaceMode m_mode;
+};
+
+class  QSvgTspan : public QSvgNode
+{
+public:
+    // tspans are also used to store normal text, so the 'isProperTspan' is used to separate text from tspan.
+    QSvgTspan(QSvgNode *parent, bool isProperTspan = true)
+        : QSvgNode(parent), m_mode(QSvgText::Default), m_isTspan(isProperTspan)
+    {
+    }
+    ~QSvgTspan() { };
+    virtual Type type() const {return TSPAN;}
+    virtual void draw(QPainter *, QSvgExtraStates &) {Q_ASSERT(!"Tspans should be drawn through QSvgText::draw().");}
+    void addText(const QString &text) {m_text += text;}
+    const QString &text() const {return m_text;}
+    bool isTspan() const {return m_isTspan;}
+    void setWhitespaceMode(QSvgText::WhitespaceMode mode) {m_mode = mode;}
+    QSvgText::WhitespaceMode whitespaceMode() const {return m_mode;}
+private:
+    QString m_text;
+    QSvgText::WhitespaceMode m_mode;
+    bool m_isTspan;
 };
 
 class QSvgUse : public QSvgNode

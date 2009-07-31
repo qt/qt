@@ -116,6 +116,7 @@ private:
     friend class QPixmap;
     friend class QGLContextPrivate;
     friend class QX11PixmapData;
+    friend class QGLTextureCache; //Needs to check the reference count
 
     QAtomicInt ref;
     int detach_no;

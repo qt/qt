@@ -135,38 +135,39 @@
 
     \section1 Transformation
 
-    QGraphicsItem supports affine transformations in addition to its base
-    position, pos(). To change the item's transformation, you can pass
-    a transformation matrix to setTransform()
+    QGraphicsItem supports projective transformations in addition to its base
+    position, pos(). There are several ways to change an item's transformation.
+    For simple transformations, you can call either of the convenience
+    functions setRotation() or setScale(), or you can pass any transformation
+    matrix to setTransform(). For advanced transformation control you also have
+    the option of setting several combined transformations by calling
+    setTransformations().
 
-    Item transformations accumulate from parent to child, so if both a
-    parent and child item are rotated 90 degrees, the child's total
-    transformation will be 180 degrees.  Similarly, if the item's
-    parent is scaled to 2x its original size, its children will also
-    be twice as large. An item's transformation does not affect its
-    own local geometry; all geometry functions (e.g., contains(),
-    update(), and all the mapping functions) still operate in local
-    coordinates. For convenience, QGraphicsItem provides the functions
-    sceneTransform(), which returns the item's total transformation
+    Item transformations accumulate from parent to child, so if both a parent
+    and child item are rotated 90 degrees, the child's total transformation
+    will be 180 degrees. Similarly, if the item's parent is scaled to 2x its
+    original size, its children will also be twice as large. An item's
+    transformation does not affect its own local geometry; all geometry
+    functions (e.g., contains(), update(), and all the mapping functions) still
+    operate in local coordinates. For convenience, QGraphicsItem provides the
+    functions sceneTransform(), which returns the item's total transformation
     matrix (including its position and all parents' positions and
-    transformations), and scenePos(), which returns its position in
-    scene coordinates. To reset an item's matrix, call
-    resetTransform().
+    transformations), and scenePos(), which returns its position in scene
+    coordinates. To reset an item's matrix, call resetTransform().
 
-    Another way to apply transformation to an item is to use the , or
-    set the different transformation properties (transformOrigin,
-    x/y/zRotation, x/yScale, horizontal/verticalShear).  Those
-    properties come in addition to the base transformation
+    Certain transformation operations produce a different outcome depending on
+    the order in which they are applied. For example, if you scale an
+    transform, and then rotate it, you may get a different result than if the
+    transform was rotated first. However, the order you set the transformation
+    properties on QGraphicsItem does not affect the resulting transformation;
+    QGraphicsItem always applies the properties in a fixed, defined order:
 
-    The order you set the transformation properties does not affect
-    the resulting transformation The resulting transformation is
-    always computed in the following order
-
-    \code
-    [Origin] [Base] [RotateX] [RotateY] [RotateZ] [Shear] [Scale] [-Origin]
-    \endcode
-
-    Where [Base] is the stransformation set by setTransform
+    \list
+    \o The item's base transform is applied (transform())
+    \o The item's transformations list is applied in order (transformations())
+    \o The item is rotated relative to its transform origin point (rotation(), transformOriginPoint())
+    \o The item is scaled relative to its transform origin point (scale(), transformOriginPoint())
+    \endlist
 
     \section1 Painting
 
@@ -2969,11 +2970,10 @@ QMatrix QGraphicsItem::matrix() const
 
     Returns this item's transformation matrix.
 
-    Either the one set by setTransform, or the resulting transformation from
-    all the transfmation properties
-
-    If no matrix or transformation property has been set, the
-    identity matrix is returned. 
+    The transformation matrix is combined with the item's rotation(), scale()
+    and transformations() into a combined transformations for the item.
+    
+    The default transformation matrix is an identity matrix.
 
     \sa setTransform(), sceneTransform()
 */
@@ -2987,13 +2987,13 @@ QTransform QGraphicsItem::transform() const
 /*!
     \since 4.6
 
-    Returns the rotation around the Z axis.
+    Returns the clockwise rotation, in degrees, around the Z axis. The default
+    value is 0 (i.e., the item is not rotated).
 
-    The default is 0
+    The rotation is combined with the item's scale(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
 
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa setRotation(), {Transformations}
+    \sa setRotation(), transformOriginPoint(), {Transformations}
 */
 qreal QGraphicsItem::rotation() const
 {
@@ -3005,9 +3005,19 @@ qreal QGraphicsItem::rotation() const
 /*!
     \since 4.6
 
-    Sets the rotation around the Z axis to \a angle degrees.
+    Sets the clockwise rotation \a angle, in degrees, around the Z axis. The
+    default value is 0 (i.e., the item is not rotated). Assigning a negative
+    value will rotate the item counter-clockwise. Normally the rotation angle
+    is in the range (-360, 360), but it's also possible to assign values
+    outside of this range (e.g., a rotation of 370 degrees is the same as a
+    rotation of 10 degrees).
 
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
+    The item is rotated around its transform origin point, which by default
+    is (0, 0). You can select a different transformation origin by calling
+    setTransformOriginPoint().
+
+    The rotation is combined with the item's scale(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
 
     \sa rotation(), setTransformOriginPoint(), {Transformations}
 */
@@ -3027,13 +3037,13 @@ void QGraphicsItem::setRotation(qreal angle)
 /*!
     \since 4.6
 
-    Returns the scale factor of the item.
+    Returns the scale factor of the item. The default scale factor is 1.0
+    (i.e., the item is not scaled).
 
-    The default is 1
+    The scale is combined with the item's rotation(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
 
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa setScale(), {Transformations}
+    \sa setScale(), rotation(), {Transformations}
 */
 qreal QGraphicsItem::scale() const
 {
@@ -3045,9 +3055,17 @@ qreal QGraphicsItem::scale() const
 /*!
     \since 4.6
 
-    Sets the scale factor of the item to \a factor.
+    Sets the scale \a factor of the item. The default scale factor is 1.0
+    (i.e., the item is not scaled). A scale factor of 0.0 will collapse the
+    item to a single point. If you provide a negative scale factor, the
+    item will be flipped and mirrored (i.e., rotated 180 degrees).
 
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
+    The item is scaled around its transform origin point, which by default
+    is (0, 0). You can select a different transformation origin by calling
+    setTransformOriginPoint().
+
+    The scale is combined with the item's rotation(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
 
     \sa scale(), setTransformOriginPoint(), {Transformations}
 */
@@ -3068,9 +3086,17 @@ void QGraphicsItem::setScale(qreal factor)
 /*!
     \since 4.6
 
-    returns list of graphics transformations on the item.
+    Returns a list of graphics transforms that currently apply to this item.
 
-    \sa scale(), setTransformOriginPoint(), {Transformations}
+    QGraphicsTransform is for applying and controlling a chain of individual
+    transformation operations on an item. It's particularily useful in
+    animations, where each transform operation needs to be interpolated
+    independently, or differently.
+
+    The transformations are combined with the item's rotation(), scale() and
+    transform() to map the item's coordinate system to the parent item.
+
+    \sa scale(), rotation(), transformOriginPoint(), {Transformations}
 */
 QList<QGraphicsTransform *> QGraphicsItem::transformations() const
 {
@@ -3082,7 +3108,20 @@ QList<QGraphicsTransform *> QGraphicsItem::transformations() const
 /*!
     \since 4.6
 
-    Sets a list of graphics transformations on the item to \a transformations.
+    Sets a list of graphics \a transformations (QGraphicsTransform) that
+    currently apply to this item.
+
+    If all you want is to rotate or scale an item, you should call setRotation()
+    or setScale() instead. If you want to set an arbitrary transformation on
+    an item, you can call setTransform().
+
+    QGraphicsTransform is for applying and controlling a chain of individual
+    transformation operations on an item. It's particularily useful in
+    animations, where each transform operation needs to be interpolated
+    independently, or differently.
+
+    The transformations are combined with the item's rotation(), scale() and
+    transform() to map the item's coordinate system to the parent item.
 
     \sa scale(), setTransformOriginPoint(), {Transformations}
 */
@@ -3098,7 +3137,9 @@ void QGraphicsItem::setTransformations(const QList<QGraphicsTransform *> &transf
     d_ptr->dirtySceneTransform = 1;
 }
 
-
+/*!
+    \internal
+*/
 void QGraphicsItemPrivate::appendGraphicsTransform(QGraphicsTransform *t)
 {
     if (!transformData)
@@ -3432,7 +3473,9 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     to map an item coordiate to a scene coordinate, or mapFromScene() to map
     from scene coordinates to item coordinates.
 
-    \warning using this function doesnt affect the value of the transformation properties
+    The transformation matrix is combined with the item's rotation(), scale()
+    and transformations() into a combined transformation that maps the item's
+    coordinate system to its parent.
 
     \sa transform(), setRotation(), setScale(), setTransformOriginPoint(), {The Graphics View Coordinate System}, {Transformations}
 */
@@ -3491,7 +3534,8 @@ void QGraphicsItem::resetTransform()
 
 /*!
     \obsolete
-    Use setZRotation() instead
+
+    Use setRotation() instead
 
     Rotates the current item transformation \a angle degrees clockwise around
     its origin. To translate around an arbitrary point (x, y), you need to
@@ -3500,8 +3544,6 @@ void QGraphicsItem::resetTransform()
     Example:
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 6
-
-    \warning using this functionhas no effect on the zRotation value
 
     \sa setTransform(), transform(), scale(), shear(), translate()
 */
@@ -3512,6 +3554,7 @@ void QGraphicsItem::rotate(qreal angle)
 
 /*!
     \obsolete
+
     Use setScale() instead
 
     Scales the current item transformation by (\a sx, \a sy) around its
@@ -3522,8 +3565,6 @@ void QGraphicsItem::rotate(qreal angle)
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 7
 
-    \warning using this function has no effect on the xScale or yScale value
-
     \sa setTransform(), transform()
 */
 void QGraphicsItem::scale(qreal sx, qreal sy)
@@ -3533,11 +3574,10 @@ void QGraphicsItem::scale(qreal sx, qreal sy)
 
 /*!
     \obsolete
-    Use setShear instead.
+
+    Use setTransform() instead.
 
     Shears the current item transformation by (\a sh, \a sv).
-
-    \warning using this function has no effect on the horizontalShear or verticalShear value
 
     \sa setTransform(), transform()
 */
@@ -3548,6 +3588,7 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 
 /*!
     \obsolete
+
     Use setPos() or setTransformOriginPoint() instead.
 
     Translates the current item transformation by (\a dx, \a dy).
