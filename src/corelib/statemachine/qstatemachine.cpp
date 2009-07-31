@@ -1446,7 +1446,7 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 }
 #endif
 
-void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int signalIndex,
+void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalIndex,
                                                   void **argv)
 {
     Q_ASSERT(connections[sender].at(signalIndex) != 0);
@@ -2026,7 +2026,7 @@ QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
   Constructs a new QSignalEvent object with the given \a sender, \a
   signalIndex and \a arguments.
 */
-QSignalEvent::QSignalEvent(const QObject *sender, int signalIndex,
+QSignalEvent::QSignalEvent(QObject *sender, int signalIndex,
                            const QList<QVariant> &arguments)
     : QEvent(QEvent::Signal), m_sender(sender),
       m_signalIndex(signalIndex), m_arguments(arguments)
