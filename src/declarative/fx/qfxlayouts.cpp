@@ -253,9 +253,15 @@ void QFxBaseLayout::componentComplete()
     preLayout();
 }
 
-void QFxBaseLayout::childrenChanged()
+QVariant QFxBaseLayout::itemChange(GraphicsItemChange change,
+                                       const QVariant &value)
 {
-    preLayout();
+    if (change == ItemChildAddedChange ||
+               change == ItemChildRemovedChange) {
+        preLayout();
+    }
+
+    return QFxItem::itemChange(change, value);
 }
 
 bool QFxBaseLayout::event(QEvent *e)
