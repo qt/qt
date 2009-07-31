@@ -125,10 +125,7 @@ public:
     // object currently activating the object
     Sender *currentSender;
 
-    union {
-        QObject *currentChildBeingDeleted;
-        QDeclarativeData *declarativeData;
-    };
+    QDeclarativeData *declarativeData;
 
     bool isSender(const QObject *receiver, const char *signal) const;
     QObjectList receiverList(const char *signal) const;

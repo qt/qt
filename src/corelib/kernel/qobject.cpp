@@ -123,7 +123,7 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 }
 
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), currentSender(0), currentChildBeingDeleted(0), connectionLists(0), senders(0)
+    : threadData(0), currentSender(0), declarativeData(0), connectionLists(0), senders(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -1859,12 +1859,13 @@ void QObjectPrivate::deleteChildren()
     // don't use qDeleteAll as the destructor of the child might
     // delete siblings
     for (int i = 0; i < children.count(); ++i) {
-        currentChildBeingDeleted = children.at(i);
+        QObject *child = children.at(i);
         children[i] = 0;
-        delete currentChildBeingDeleted;
+        if (child)
+            child->d_func()->parent = 0;
+        delete child;
     }
     children.clear();
-    currentChildBeingDeleted = 0;
     wasDeleted = reallyWasDeleted;
 }
 
@@ -1875,20 +1876,14 @@ void QObjectPrivate::setParent_helper(QObject *o)
         return;
     if (parent) {
         QObjectPrivate *parentD = parent->d_func();
-        if (parentD->wasDeleted && wasDeleted
-            && parentD->currentChildBeingDeleted == q) {
-            // don't do anything since QObjectPrivate::deleteChildren() already
-            // cleared our entry in parentD->children.
+        const int index = parentD->children.indexOf(q);
+        if (parentD->wasDeleted) {
+            parentD->children[index] = 0;
         } else {
-            const int index = parentD->children.indexOf(q);
-            if (parentD->wasDeleted) {
-                parentD->children[index] = 0;
-            } else {
-                parentD->children.removeAt(index);
-                if (sendChildEvents && parentD->receiveChildEvents) {
-                    QChildEvent e(QEvent::ChildRemoved, q);
-                    QCoreApplication::sendEvent(parent, &e);
-                }
+            parentD->children.removeAt(index);
+            if (sendChildEvents && parentD->receiveChildEvents) {
+                QChildEvent e(QEvent::ChildRemoved, q);
+                QCoreApplication::sendEvent(parent, &e);
             }
         }
     }
