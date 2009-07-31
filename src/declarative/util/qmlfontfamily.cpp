@@ -57,14 +57,14 @@ class QmlFontFamilyPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlFontFamily);
 
 public:
-    QmlFontFamilyPrivate() : reply(0), loading(false) {}
+    QmlFontFamilyPrivate() : reply(0), status(QmlFontFamily::Null) {}
 
     void addFontToDatabase(const QByteArray &);
 
     QUrl url;
     QString name;
     QNetworkReply *reply;
-    bool loading;
+    QmlFontFamily::Status status;
 };
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontFamily,QmlFontFamily)
@@ -72,6 +72,15 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontFamily,QmlFontFamily)
 /*!
     \qmlclass FontFamily QmlFontFamily
     \ingroup group_utility
+    \brief This item allows using fonts by name or url.
+
+    \code
+        FontFamily { id: FixedFont; name: "Courier" }
+        FontFamily { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
+
+	Text { text: "Fixed-size font"; font.family: FixedFont.name }
+	Text { text: "Fancy font"; font.family: WebFont.name }
+    \endcode
 */
 QmlFontFamily::QmlFontFamily(QObject *parent)
     : QObject(*(new QmlFontFamilyPrivate), parent)
@@ -82,6 +91,10 @@ QmlFontFamily::~QmlFontFamily()
 {
 }
 
+/*!
+    \qmlproperty FontFamily::source
+    The source for the font.
+*/
 QUrl QmlFontFamily::source() const
 {
     Q_D(const QmlFontFamily);
@@ -95,8 +108,8 @@ void QmlFontFamily::setSource(const QUrl &url)
         return;
     d->url = qmlContext(this)->resolvedUrl(url);
 
-    d->loading = true;
-    emit loadingChanged();
+    d->status = Loading;
+    emit statusChanged();
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (d->url.scheme() == QLatin1String("file")) {
         QFile file(d->url.toLocalFile());
@@ -128,10 +141,10 @@ void QmlFontFamily::setName(const QString &name)
     emit nameChanged();
 }
 
-bool QmlFontFamily::isLoading() const
+QmlFontFamily::Status QmlFontFamily::status() const
 {
     Q_D(const QmlFontFamily);
-    return d->loading;
+    return d->status;
 }
 
 void QmlFontFamily::replyFinished()
@@ -140,6 +153,9 @@ void QmlFontFamily::replyFinished()
     if (!d->reply->error()) {
         QByteArray ba = d->reply->readAll();
         d->addFontToDatabase(ba);
+    } else {
+	d->status = Error;
+        emit statusChanged();
     }
     d->reply->deleteLater();
     d->reply = 0;
@@ -153,11 +169,12 @@ void QmlFontFamilyPrivate::addFontToDatabase(const QByteArray &ba)
     if (id != -1) {
         name = QFontDatabase::applicationFontFamilies(id).at(0);
         emit q->nameChanged();
-        loading = false;
-        emit q->loadingChanged();
+        status = QmlFontFamily::Ready;
     } else {
+        status = QmlFontFamily::Error;
         qWarning() << "Cannot load font: " << name << url;
     }
+    emit q->statusChanged();
 }
 
 QT_END_NAMESPACE

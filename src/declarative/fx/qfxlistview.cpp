@@ -278,6 +278,18 @@ public:
         return -1;
     }
 
+    int lastVisibleIndex() const {
+        int lastIndex = -1;
+        for (int i = visibleItems.count()-1; i >= 0; --i) {
+            FxListItem *listItem = visibleItems.at(i);
+            if (listItem->index != -1) {
+                lastIndex = listItem->index;
+                break;
+            }
+        }
+        return lastIndex;
+    }
+
     // map a model index to visibleItems index.
     // These may differ if removed items are still present in the visible list,
     // e.g. doing a removal animation
@@ -542,7 +554,7 @@ void QFxListViewPrivate::layout()
             pos += item->size();
         }
         // move current item if it is after the visible items.
-        if (currentItem && currentIndex > visibleItems.last()->index)
+        if (currentItem && currentIndex > lastVisibleIndex())
             currentItem->setPosition(currentItem->position() + (visibleItems.last()->endPosition() - oldEnd));
     }
     if (!isValid())
@@ -647,7 +659,8 @@ void QFxListViewPrivate::createHighlight()
             const QLatin1String posProp(orient == Qt::Vertical ? "y" : "x");
             highlightPosAnimator = new QmlFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
-            highlightPosAnimator->setSpring(3);
+            highlightPosAnimator->setEpsilon(0.25);
+            highlightPosAnimator->setSpring(2.5);
             highlightPosAnimator->setDamping(0.3);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
