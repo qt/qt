@@ -88,7 +88,7 @@ public:
 
 protected:
     virtual void componentComplete();
-    virtual void childrenChanged();
+    virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual bool event(QEvent *);
     QSet<QFxItem *>* newItems();
     QSet<QFxItem *>* leavingItems();
