@@ -159,7 +159,7 @@ public:
 
     QRectF boundingRect() const;
 
-    void paintContents(QPainter &painter);
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 private Q_SLOTS:
     void doUpdate();

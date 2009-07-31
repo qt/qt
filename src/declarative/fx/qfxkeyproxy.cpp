@@ -85,12 +85,20 @@ public:
     QFxKeyProxyPrivate() : inPress(false), inRelease(false), inIM(false), imeItem(0) {}
     QList<QFxItem *> targets;
 
+    QGraphicsItem *finalFocusProxy(QGraphicsItem *item)
+    {
+        QGraphicsItem *fp;
+        while ((fp = item->focusProxy()))
+            item = fp;
+        return item;
+    }
+
     //loop detection
     bool inPress:1;
     bool inRelease:1;
     bool inIM:1;
 
-    QFxItem *imeItem;
+    QGraphicsItem *imeItem;
 };
 
 QFxKeyProxy::QFxKeyProxy(QFxItem *parent)
@@ -125,7 +133,7 @@ void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
     if (!d->inPress) {
         d->inPress = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
-            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
             if (i) {
                 scene()->sendEvent(i, e);
                 if (e->isAccepted()) {
@@ -145,7 +153,7 @@ void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
     if (!d->inRelease) {
         d->inRelease = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
-            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
             if (i) {
                 scene()->sendEvent(i, e);
                 if (e->isAccepted()) {
@@ -165,7 +173,7 @@ void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
     if (!d->inIM) {
         d->inIM = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
-            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
             if (i && (i->flags() & ItemAcceptsInputMethod)) {
                 scene()->sendEvent(i, e);
                 if (e->isAccepted()) {
@@ -179,20 +187,20 @@ void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
     }
 }
 
-class QFxItemAccessor : public QFxItem
+class QFxItemAccessor : public QGraphicsItem
 {
 public:
     QVariant doInputMethodQuery(Qt::InputMethodQuery query) const {
-        return QFxItem::inputMethodQuery(query);
+        return QGraphicsItem::inputMethodQuery(query);
     }
 };
 
 QVariant QFxKeyProxy::inputMethodQuery(Qt::InputMethodQuery query) const
 {   
     for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
         if (i && (i->flags() & ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
-            QVariant v = static_cast<QFxItemAccessor*>(i)->doInputMethodQuery(query);
+            QVariant v = static_cast<QFxItemAccessor *>(i)->doInputMethodQuery(query);
             if (v.type() == QVariant::RectF)
                 v = mapRectFromItem(i, v.toRectF());  //### cost?
             return v;

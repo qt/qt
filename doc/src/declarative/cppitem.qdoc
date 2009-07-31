@@ -99,6 +99,8 @@ a simple cached-image painting model.
 
 \section2 Reimplementing paint functions
 
+\warning This section is out of date. Use the normal QGraphicsItem::paint function.
+
 Two alternative painters are available, offering
 different levels of performance and functionality:
 QPainter, GLPainter.

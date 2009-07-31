@@ -203,7 +203,7 @@ public:
     QFxParticleMotion *motion() const;
     void setMotion(QFxParticleMotion *);
 
-    void paintContents(QPainter &p);
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 protected:
     virtual void componentComplete();

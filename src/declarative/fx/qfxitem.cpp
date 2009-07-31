@@ -1087,13 +1087,14 @@ QFxAnchorLine QFxItem::baseline() const
   \qmlproperty real Item::anchors.rightMargin
   \qmlproperty real Item::anchors.horizontalCenterOffset
   \qmlproperty real Item::anchors.verticalCenterOffset
+  \qmlproperty real Item::anchors.baselineOffset
   
   Anchors provide a way to position an item by specifying its
   relationship with other items.
 
   Margins apply to top, bottom, left, right, and fill anchors.
 
-  Offsets apply for horizontal and vertical center anchors.
+  Offsets apply for horizontal center, vertical center, and baseline anchors.
 
   \table
   \row
@@ -1671,10 +1672,6 @@ QRectF QFxItem::boundingRect() const
     return QRectF(0, 0, d->width, d->height);
 }
 
-void QFxItem::paintContents(QPainter &)
-{
-}
-
 /*!
     \enum QFxItem::TransformOrigin
 
@@ -1905,7 +1902,6 @@ void QFxItem::setOptions(Options options, bool set)
 
 void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    paintContents(*p);
 }
 
 QT_END_NAMESPACE
