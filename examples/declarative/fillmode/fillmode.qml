@@ -29,10 +29,10 @@ Image {
         color: "blue"
         style: "Outline"
         styleColor: "white"
-        anchors { centeredIn: parent }
+        anchors { centerIn: parent }
     }
     Rect {
-        pen.color: "black"
+        border.color: "black"
         color: "transparent"
         anchors { fill: parent; rightMargin: 1; bottomMargin: 1}
     }
