@@ -159,8 +159,6 @@ void tst_QScriptValueIterator::iterateBackward_data()
 
 void tst_QScriptValueIterator::iterateBackward()
 {
-    QSKIP("Not implemented", SkipAll);
-
     QFETCH(QStringList, propertyNames);
     QFETCH(QStringList, propertyValues);
     QMap<QString, QString> pmap;
@@ -263,23 +261,31 @@ void tst_QScriptValueIterator::iterateBackAndForth()
         object.setProperty("rab", QScriptValue(&engine, "oof"),
                            QScriptValue::SkipInEnumeration); // should not affect iterator
         QScriptValueIterator it(object);
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("foo"));
         QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("rab"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("rab"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("rab"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("rab"));
     }

@@ -103,7 +103,7 @@ class QScriptValueIteratorPrivate
 {
 public:
     QScriptValueIteratorPrivate()
-        : propertyNames(0), it(0)
+        : propertyNames(0), it(0), current(0)
     {}
     ~QScriptValueIteratorPrivate()
     {
@@ -117,11 +117,13 @@ public:
         JSC::ExecState *exec = eng_p->globalExec();
         propertyNames = new JSC::PropertyNameArray(exec);
         JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getPropertyNames(exec, *propertyNames);
+        it = propertyNames->begin();
     }
 
     QScriptValue object;
     JSC::PropertyNameArray *propertyNames;
     JSC::PropertyNameArray::const_iterator it;
+    const JSC::Identifier *current;
 };
 
 /*!
@@ -162,10 +164,9 @@ bool QScriptValueIterator::hasNext() const
     Q_D(const QScriptValueIterator);
     if (!d)
         return false;
+
     const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();
-    if (!d->it)
-        return (d->propertyNames->size() != 0);
-    return ((d->it+1) != d->propertyNames->end());
+    return d->it != d->propertyNames->end();
 }
 
 /*!
@@ -182,10 +183,9 @@ void QScriptValueIterator::next()
     if (!d)
         return;
     d->ensureInitialized();
-    if (!d->it)
-        d->it = d->propertyNames->begin();
-    else
-        ++d->it;
+
+    d->current = d->it;
+    ++(d->it);
 }
 
 /*!
@@ -197,8 +197,12 @@ void QScriptValueIterator::next()
 */
 bool QScriptValueIterator::hasPrevious() const
 {
-    // ### implement me
-    return false;
+    Q_D(const QScriptValueIterator);
+    if (!d)
+        return false;
+
+    const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();
+    return d->it != d->propertyNames->begin();
 }
 
 /*!
@@ -211,7 +215,12 @@ bool QScriptValueIterator::hasPrevious() const
 */
 void QScriptValueIterator::previous()
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    Q_D(QScriptValueIterator);
+    if (!d)
+        return;
+    d->ensureInitialized();
+    --(d->it);
+    d->current = d->it;
 }
 
 /*!
@@ -223,9 +232,10 @@ void QScriptValueIterator::previous()
 void QScriptValueIterator::toFront()
 {
     Q_D(QScriptValueIterator);
-    if (!d || !d->propertyNames)
+    if (!d)
         return;
-    d->it = 0;
+    d->ensureInitialized();
+    d->it = d->propertyNames->begin();
 }
 
 /*!
@@ -236,7 +246,11 @@ void QScriptValueIterator::toFront()
 */
 void QScriptValueIterator::toBack()
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    Q_D(QScriptValueIterator);
+    if (!d)
+        return;
+    d->ensureInitialized();
+    d->it = d->propertyNames->end();
 }
 
 /*!
@@ -250,7 +264,7 @@ QString QScriptValueIterator::name() const
     Q_D(const QScriptValueIterator);
     if (!d || !d->it)
         return QString();
-    return QScript::qtStringFromJSCUString(d->it->ustring());
+    return QScript::qtStringFromJSCUString(d->current->ustring());
 }
 
 /*!
@@ -321,6 +335,7 @@ void QScriptValueIterator::remove()
     if (!d || !d->it)
         return;
     d->object.setProperty(name(), QScriptValue());
+    d->current = 0;
 }
 
 /*!
