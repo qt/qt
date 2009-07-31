@@ -79,7 +79,7 @@ Flipable {
 
         Rect { anchors.fill: parent; color: "black"; opacity: 0.4; border.color: "white"; border.width: 2 }
 
-        Progress { anchors.centerIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status }
+        Progress { anchors.centerIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status!=1 }
         Flickable {
             id: Flick; width: Container.width - 10; height: Container.height - 10
             x: 5; y: 5; clip: true;
@@ -98,7 +98,7 @@ Flipable {
                     smooth: !Flick.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
-                        if (status == 0 && width != 0) {
+                        if (status == 1 && width != 0) {
                             Slider.minimum = Math.min(Flick.width / width, Flick.height / height);
                             prevScale = Math.min(Slider.minimum, 1);
                             Slider.value = prevScale;
@@ -118,7 +118,7 @@ Flipable {
         }
 
         Slider {
-            id: Slider; x: 25; y: 374; visible: { BigImage.status == 0 && maximum > minimum }
+            id: Slider; x: 25; y: 374; visible: { BigImage.status == 1 && maximum > minimum }
             onValueChanged: {
                 if (BigImage.width * value > Flick.width) {
                     var xoff = (Flick.width/2 + Flick.xPosition) * value / prevScale;

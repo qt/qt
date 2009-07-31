@@ -42,8 +42,8 @@ GridView {
         width: MyGrid.imageWidth; height: MyGrid.imageHeight;
 
         Image { id: Image; source: url; fillMode: "PreserveAspect"; smooth: true; anchors.fill: parent;
-                opacity: (status == 0)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } } 
-        Loading { anchors.centerIn: parent; visible: Image.status }
+                opacity: (status == 1)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } } 
+        Loading { anchors.centerIn: parent; visible: Image.status!=1 }
 
         states: State {
             name: "selected"
