@@ -576,13 +576,16 @@ void QFxPathViewPrivate::regenerate()
 
     int numItems = pathItems >= 0 ? pathItems : model->count();
     for (int i=0; i < numItems && i < model->count(); ++i){
-        QFxItem *item = getItem((i + firstIndex) % model->count());
+        int index = (i + firstIndex) % model->count();
+        QFxItem *item = getItem(index);
         if (!item) {
             qWarning() << "PathView: Cannot create item, index" << (i + firstIndex) % model->count();
             return;
         }
         items.append(item);
         item->setZValue(i);
+        if (currentIndex == index)
+            item->setFocus(true);
     }
     q->refill();
 }
@@ -639,8 +642,11 @@ void QFxPathView::refill()
                 d->firstIndex++;
                 d->firstIndex %= d->model->count();
                 int index = (d->firstIndex + d->items.count())%d->model->count();
-                d->items << d->getItem(index);
-                d->items.last()->setZValue(wrapIndex);
+                QFxItem *item = d->getItem(index);
+                item->setZValue(wrapIndex);
+                if (d->currentIndex == index)
+                    item->setFocus(true);
+                d->items << item;
                 d->pathOffset++;
                 d->pathOffset=d->pathOffset % d->items.count();
             }
@@ -652,8 +658,11 @@ void QFxPathView::refill()
                 d->firstIndex--;
                 if (d->firstIndex < 0)
                     d->firstIndex = d->model->count() - 1;
-                d->items.prepend(d->getItem(d->firstIndex));
-                d->items.first()->setZValue(d->firstIndex);
+                QFxItem *item = d->getItem(d->firstIndex);
+                item->setZValue(d->firstIndex);
+                if (d->currentIndex == d->firstIndex)
+                    item->setFocus(true);
+                d->items.prepend(item);
                 d->pathOffset--;
                 if (d->pathOffset < 0)
                     d->pathOffset = d->items.count() - 1;

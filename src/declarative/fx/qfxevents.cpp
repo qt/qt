@@ -106,6 +106,17 @@ Item {
 */
 
 /*!
+    \qmlproperty bool KeyEvent::accepted
+
+    Setting \a accepted to true prevents the key event from being
+    propagated to the item's parent.
+
+    Generally, if the item acts on the key event then it should be accepted
+    so that ancestor items do not also respond to the same event.
+*/
+
+
+/*!
     \qmlclass MouseEvent QFxMouseEvent
     \brief The MouseEvent object provides information about a mouse event.
 
