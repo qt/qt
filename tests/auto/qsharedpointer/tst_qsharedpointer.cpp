@@ -44,6 +44,8 @@
 #include "externaltests.h"
 #include <QtTest/QtTest>
 
+#include "wrapper.h"
+
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
 }
@@ -72,6 +74,7 @@ private slots:
     void constCorrectness();
     void customDeleter();
     void creating();
+    void mixTrackingPointerCode();
     void validConstructs();
     void invalidConstructs_data();
     void invalidConstructs();
@@ -1154,6 +1157,25 @@ void tst_QSharedPointer::creating()
         QCOMPARE(ptr->metaObject(), &OtherObject::staticMetaObject);
     }
     check();
+}
+
+void tst_QSharedPointer::mixTrackingPointerCode()
+{
+    {
+        // pointer created with tracking
+        // deleted in code without tracking
+        QSharedPointer<int> ptr = QSharedPointer<int>(new int(42));
+        Wrapper w(ptr);
+        ptr.clear();
+    }
+    check();
+
+    {
+        // pointer created without tracking
+        // deleted in code with tracking
+        Wrapper w = Wrapper::create();
+        w.ptr.clear();
+    }
 }
 
 void tst_QSharedPointer::validConstructs()

@@ -214,10 +214,19 @@ namespace QtSharedPointer {
             // delete the deleter too
             realself->extra.~Next();
         }
+        static void safetyCheckDeleter(ExternalRefCountData *self)
+        {
+            internalSafetyCheckRemove2(self);
+            deleter(self);
+        }
 
         static inline Self *create(T *ptr, Deleter userDeleter)
         {
+# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+            DestroyerFn destroy = &safetyCheckDeleter;
+# else
             DestroyerFn destroy = &deleter;
+# endif
             Self *d = static_cast<Self *>(::operator new(sizeof(Self)));
 
             // initialize the two sub-objects
@@ -244,10 +253,19 @@ namespace QtSharedPointer {
                     static_cast<ExternalRefCountWithContiguousData *>(self);
             that->data.~T();
         }
+        static void safetyCheckDeleter(ExternalRefCountData *self)
+        {
+            internalSafetyCheckRemove2(self);
+            deleter(self);
+        }
 
         static inline ExternalRefCountData *create(T **ptr)
         {
+# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+            DestroyerFn destroy = &safetyCheckDeleter;
+# else
             DestroyerFn destroy = &deleter;
+# endif
             ExternalRefCountWithContiguousData *d =
                 static_cast<ExternalRefCountWithContiguousData *>(::operator new(sizeof(ExternalRefCountWithContiguousData)));
 
@@ -282,32 +300,34 @@ namespace QtSharedPointer {
 
         inline void internalConstruct(T *ptr)
         {
-            Basic<T>::internalConstruct(ptr);
+#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+            internalConstruct<void (*)(T *)>(ptr, normalDeleter);
+#else
             Q_ASSERT(!d);
             if (ptr)
                 d = new Data;
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (ptr) internalSafetyCheckAdd2(d, ptr);
+            internalFinishConstruction(ptr);
 #endif
         }
 
         template <typename Deleter>
         inline void internalConstruct(T *ptr, Deleter deleter)
         {
-            Basic<T>::internalConstruct(ptr);
             Q_ASSERT(!d);
             if (ptr)
                 d = ExternalRefCountWithCustomDeleter<T, Deleter>::create(ptr, deleter);
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (ptr) internalSafetyCheckAdd2(d, ptr);
-#endif
+            internalFinishConstruction(ptr);
         }
 
         inline void internalCreate()
         {
             T *ptr;
             d = ExternalRefCountWithContiguousData<T>::create(&ptr);
+            Basic<T>::internalConstruct(ptr);
+        }
 
+        inline void internalFinishConstruction(T *ptr)
+        {
             Basic<T>::internalConstruct(ptr);
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
             if (ptr) internalSafetyCheckAdd2(d, ptr);
@@ -327,9 +347,6 @@ namespace QtSharedPointer {
 
         inline void internalDestroy()
         {
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            internalSafetyCheckRemove2(d);
-#endif
             if (!d->destroy())
                 delete this->value;
         }
@@ -450,6 +467,7 @@ public:
 
         // now initialize the data
         new (result.data()) T();
+        result.internalFinishConstruction(result.data());
         return result;
     }
 };
