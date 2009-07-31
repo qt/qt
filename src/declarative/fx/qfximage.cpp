@@ -60,7 +60,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    The Image element supports untransformed, stretched, grid-scaled and tiled images.
+    The Image element supports untransformed, stretched, tiled, and grid-scaled images.
+    
+    For an explanation of stretching and tiling, see the fillMode property description.
+
     For an explanation of grid-scaling see the scaleGrid property description
     or the QFxScaleGrid class description.
 
@@ -74,23 +77,53 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     \endqml
     \row
     \o \image declarative-qtlogo2.png
-    \o Stretched
+    \o fillMode: Stretch (default)
     \qml
-    Image { width: 160; height: 160; source: "pics/qtlogo.png" }
+    Image {
+        width: 160
+        height: 160
+        source: "pics/qtlogo.png"
+    }
     \endqml
     \row
     \o \image declarative-qtlogo4.png
-    \o Grid-scaled
+    \o Grid-scaled (only with fillMode: Stretch)
     \qml
     Image { scaleGrid.left: 20; scaleGrid.right: 10
             scaleGrid.top: 14; scaleGrid.bottom: 14
-            width: 160; height: 160; source: "pics/qtlogo.png" }
+            width: 160; height: 160
+            source: "pics/qtlogo.png"
+    }
     \endqml
     \row
     \o \image declarative-qtlogo3.png
-    \o Tiled
+    \o fillMode: Tile
     \qml
-    Image { tile: true; width: 160; height: 160; source: "pics/qtlogo.png" }
+    Image {
+        fillMode: "Tile"
+        width: 160; height: 160
+        source: "pics/qtlogo.png"
+    }
+    \endqml
+    \row
+    \o \image declarative-qtlogo6.png
+    \o fillMode: TileVertically
+    \qml
+    Image {
+        fillMode: "TileVertically"
+        width: 160; height: 160
+        source: "pics/qtlogo.png"
+    }
+    \endqml
+    \row
+    \o \image declarative-qtlogo5.png
+    \o fillMode: TileHorizontally
+    \qml
+    Image {
+        fillMode: "TileHorizontally"
+        width: 160; height: 160
+        source: "pics/qtlogo.png"
+    }
     \endqml
     \endtable
  */
@@ -193,33 +226,40 @@ QFxScaleGrid *QFxImage::scaleGrid()
 }
 
 /*!
-    \qmlproperty bool Image::tile
+    \qmlproperty FillMode Image::fillMode
 
-    Set this property to enable image tiling.  Normally the Image element scales the
-    bitmap file to its size.  If tiling is enabled, the bitmap is repeated as a set
-    of unscaled tiles, clipped to the size of the Image.
+    Set this property to define what happens when the image set for the item is smaller
+    than the size of the item.
 
-    \qml
-    Item {
-        Image { source: "tile.png" }
-        Image { x: 80; width: 100; height: 100; source: "tile.png" }
-        Image { x: 190; width: 100; height: 100; tile: true; source: "tile.png" }
-    }
-    \endqml
-    \image declarative-image_tile.png
+    \list
+    \o Stretch - the image is scaled to fit
+    \o PreserveAspect - the image is scaled uniformly to fit
+    \o Tile - the image is duplicated horizontally and vertically
+    \o TileVertically - the image is stretched horizontally and tiled vertically
+    \o TileHorizontally - the image is stretched vertically and tiled horizontally
+    \endlist
 
-    If both tiling and the scaleGrid are set, tiling takes precedence.
+    \image declarative-image_fillMode.gif
+
+    Only fillMode: Stretch can be used with scaleGrid. Other settings
+    will cause a run-time warning.
+
+    \sa examples/declarative/aspectratio
 */
-bool QFxImage::isTiled() const
+QFxImage::FillMode QFxImage::fillMode() const
 {
     Q_D(const QFxImage);
-    return d->tiled;
+    return d->fillMode;
 }
 
-void QFxImage::setTiled(bool tile)
+void QFxImage::setFillMode(FillMode mode)
 {
     Q_D(QFxImage);
-    d->tiled = tile;
+    if (d->fillMode == mode)
+        return;
+    d->fillMode = mode;
+    update();
+    emit fillModeChanged();
 }
 
 void QFxImage::componentComplete()
@@ -283,51 +323,72 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     QPixmap pix = d->pix;
 
-    if (d->tiled) {
-        p->save();
-        p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
-        QRect me = QRect(0, 0, width(), height());
-
-        int pw = pix.width();
-        int ph = pix.height();
-        int yy = 0;
-
-        while(yy < height()) {
-            int xx = 0;
-            while(xx < width()) {
-                p->drawPixmap(xx, yy, pix);
-                xx += pw;
-            }
-            yy += ph;
-        }
-
-        p->restore();
-    } else if (!d->scaleGrid || d->scaleGrid->isNull()) {
+    if (!d->scaleGrid || d->scaleGrid->isNull()) {
         if (width() != pix.width() || height() != pix.height()) {
-            qreal widthScale = width() / qreal(pix.width());
-            qreal heightScale = height() / qreal(pix.height());
+            if (d->fillMode >= Tile) {
+                p->save();
+                p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
 
-            QTransform scale;
+                if (d->fillMode == Tile) {
+                    const int pw = pix.width();
+                    const int ph = pix.height();
+                    int yy = 0;
 
-            if (d->preserveAspect) {
-                if (widthScale < heightScale) {
-                    heightScale = widthScale;
-                    scale.translate(0, (height() - heightScale * pix.height()) / 2);
-                } else if(heightScale < widthScale) {
-                    widthScale = heightScale;
-                    scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                    while(yy < height()) {
+                        int xx = 0;
+                        while(xx < width()) {
+                            p->drawPixmap(xx, yy, pix);
+                            xx += pw;
+                        }
+                        yy += ph;
+                    }
+                } else if (d->fillMode == TileVertically) {
+                    const int ph = pix.height();
+                    int yy = 0;
+
+                    while(yy < height()) {
+                        p->drawPixmap(QRect(0, yy, width(), ph), pix);
+                        yy += ph;
+                    }
+                } else {
+                    const int pw = pix.width();
+                    int xx = 0;
+
+                    while(xx < width()) {
+                        p->drawPixmap(QRect(xx, 0, pw, height()), pix);
+                        xx += pw;
+                    }
                 }
-            }
 
-            scale.scale(widthScale, heightScale);
-            QTransform old = p->transform();
-            p->setWorldTransform(scale * old);
-            p->drawPixmap(0, 0, pix);
-            p->setWorldTransform(old);
+                p->restore();
+            } else {
+                qreal widthScale = width() / qreal(pix.width());
+                qreal heightScale = height() / qreal(pix.height());
+
+                QTransform scale;
+
+                if (d->fillMode == PreserveAspect) {
+                    if (widthScale < heightScale) {
+                        heightScale = widthScale;
+                        scale.translate(0, (height() - heightScale * pix.height()) / 2);
+                    } else if(heightScale < widthScale) {
+                        widthScale = heightScale;
+                        scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                    }
+                }
+
+                scale.scale(widthScale, heightScale);
+                QTransform old = p->transform();
+                p->setWorldTransform(scale * old);
+                p->drawPixmap(0, 0, pix);
+                p->setWorldTransform(old);
+            }
         } else {
             p->drawPixmap(0, 0, pix);
         }
     } else {
+        if (d->fillMode != Stretch)
+            qWarning("Only fillmode:Stretch supported for scale grid images");
         int sgl = d->scaleGrid->left();
         int sgr = d->scaleGrid->right();
         int sgt = d->scaleGrid->top();
@@ -456,28 +517,6 @@ QUrl QFxImage::source() const
 {
     Q_D(const QFxImage);
     return d->url;
-}
-
-/*!
-    \qmlproperty bool Image::preserveAspect
-
-    Whether the image's aspect ratio should be preserved when resizing. By default this
-    is false.
-*/
-bool QFxImage::preserveAspect() const
-{
-    Q_D(const QFxImage);
-    return d->preserveAspect;
-}
-
-void QFxImage::setPreserveAspect(bool p)
-{
-    Q_D(QFxImage);
-
-    if (p == d->preserveAspect)
-        return;
-    d->preserveAspect = p;
-    update();
 }
 
 void QFxImage::setSource(const QUrl &url)

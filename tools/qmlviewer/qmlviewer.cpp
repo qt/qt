@@ -640,8 +640,10 @@ void QmlViewer::setSkin(const QString& skinDirectory)
 
 void QmlViewer::setAutoRecord(int from, int to)
 {
+    if (from==0) from=1; // ensure resized
     record_autotime = to-from;
     autoStartTimer.setInterval(from);
+    autoStartTimer.setRunning(true);
 }
 
 void QmlViewer::setRecordArgs(const QStringList& a)
@@ -866,7 +868,7 @@ void QmlViewer::autoStartRecording()
 
 void QmlViewer::autoStopRecording()
 {
-    setRecording(true);
+    setRecording(false);
 }
 
 void QmlViewer::recordFrame()

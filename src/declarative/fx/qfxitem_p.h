@@ -77,7 +77,7 @@ public:
       _baselineOffset(0),
       _componentComplete(true), _keepMouse(false),
       _anchorLines(0),
-      _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
+      _stateGroup(0), origin(QFxItem::TopLeft),
       options(QFxItem::NoOption),
       widthValid(false), heightValid(false), width(0), height(0)
     {}
@@ -175,9 +175,6 @@ public:
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
-
-
-    QGraphicsScene *canvas;
 
     QFxItem::TransformOrigin origin:4;
     int options:10;

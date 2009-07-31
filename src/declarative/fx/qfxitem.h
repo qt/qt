@@ -227,9 +227,9 @@ Q_SIGNALS:
 
 protected:
     bool isComponentComplete() const;
-    virtual void childrenChanged();
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
     virtual bool sceneEvent(QEvent *);
+    virtual bool event(QEvent *);
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mouseUngrabEvent();

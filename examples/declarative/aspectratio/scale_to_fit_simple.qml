@@ -13,7 +13,7 @@ Rect {
     Image {
         id: Image
         source: "pics/face.png"
-        preserveAspect: true
+        fillMode: "PreserveAspect"
         anchors.fill: parent
     }
 }

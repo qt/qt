@@ -119,7 +119,7 @@ Item {
     ]
     Image {
         source: "pics/No-Ones-Laughing-3.jpg"
-        tile: true
+        fillMode: "Tile"
     }
     Description {
         text: "Use the 'minehunt' executable to run this demo!"

@@ -1640,25 +1640,14 @@ bool QFxItem::sceneEvent(QEvent *event)
 QVariant QFxItem::itemChange(GraphicsItemChange change, 
                                        const QVariant &value)
 {
-    Q_D(QFxItem);
-    if (change == ItemSceneHasChanged) {
-        d->canvas = qvariant_cast<QGraphicsScene *>(value);
-    } else if (change == ItemChildAddedChange ||
-               change == ItemChildRemovedChange) {
-        childrenChanged();
-    } else if (change == ItemParentHasChanged) {
+    if (change == ItemParentHasChanged) {
         emit parentChanged();
     }
 
     return QGraphicsItem::itemChange(change, value);
 }
 
-
 void QFxItem::mouseUngrabEvent()
-{
-}
-
-void QFxItem::childrenChanged()
 {
 }
 
@@ -1896,8 +1885,13 @@ void QFxItem::setOptions(Options options, bool set)
     setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
 }
 
-void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QFxItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
 {
+}
+
+bool QFxItem::event(QEvent *ev)
+{
+    return QGraphicsObject::event(ev);
 }
 
 QT_END_NAMESPACE
