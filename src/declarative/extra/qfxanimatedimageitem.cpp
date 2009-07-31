@@ -197,7 +197,7 @@ void QFxAnimatedImageItem::setSource(const QUrl &url)
 
     if (url.isEmpty()) {
         delete d->_movie;
-        d->status = Idle;
+        d->status = Null;
     } else {
         d->status = Loading;
         QNetworkRequest req(d->url);
