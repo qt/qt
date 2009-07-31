@@ -79,7 +79,7 @@ Flipable {
 
         Rect { anchors.fill: parent; color: "black"; opacity: 0.4; pen.color: "white"; pen.width: 2 }
 
-        Progress { anchors.centeredIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status }
+        Progress { anchors.centerIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status }
         Flickable {
             id: Flick; width: Container.width - 10; height: Container.height - 10
             x: 5; y: 5; clip: true;
@@ -114,7 +114,7 @@ Flipable {
         Text {
             text: "Image Unavailable"
             visible: BigImage.status == 'Error'
-            anchors.centeredIn: parent; color: "white"; font.bold: true
+            anchors.centerIn: parent; color: "white"; font.bold: true
         }
 
         Slider {

@@ -11,5 +11,5 @@ Rect {
             NumberAnimation {property: "opacity"; to: 0;  duration: 1500 }
         }
     }
-    Text { anchors.centeredIn: parent; text: parent.text }
+    Text { anchors.centerIn: parent; text: parent.text }
 }

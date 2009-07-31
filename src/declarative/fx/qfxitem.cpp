@@ -1079,7 +1079,7 @@ QFxAnchorLine QFxItem::baseline() const
   \qmlproperty AnchorLine Item::anchors.baseline
 
   \qmlproperty Item Item::anchors.fill
-  \qmlproperty Item Item::anchors.centeredIn
+  \qmlproperty Item Item::anchors.centerIn
 
   \qmlproperty real Item::anchors.topMargin
   \qmlproperty real Item::anchors.bottomMargin

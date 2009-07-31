@@ -30,7 +30,7 @@ Rect {
             }
             Item {
                 width: 32; height: 32
-                Image { source: "images/fileopen.png"; anchors.centeredIn: parent; visible: folders.isFolder(index)}
+                Image { source: "images/fileopen.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
             }
             Text {
                 id: NameText
@@ -90,7 +90,7 @@ Rect {
             height: TitleBar.height
             pen.color: activePalette.mid; color: "transparent"
             MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
-            Image { anchors.centeredIn: parent; source: "images/up.png" }
+            Image { anchors.centerIn: parent; source: "images/up.png" }
         }
 
         Text {

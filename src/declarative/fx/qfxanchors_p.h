@@ -65,7 +65,7 @@ public:
     QFxAnchorsPrivate()
       : updatingMe(false), updatingHorizontalAnchor(0),
         updatingVerticalAnchor(0), item(0), usedAnchors(0), fill(0),
-        centeredIn(0), leftMargin(0), rightMargin(0), topMargin(0), 
+        centerIn(0), leftMargin(0), rightMargin(0), topMargin(0),
         bottomMargin(0), vCenterOffset(0), hCenterOffset(0),
         componentComplete(true)
     {
@@ -104,13 +104,13 @@ public:
     void updateHorizontalAnchors();
     void updateVerticalAnchors();
     void fillChanged();
-    void centeredInChanged();
+    void centerInChanged();
 
     QFxItem *item;
     QFxAnchors::UsedAnchors usedAnchors;
 
     QFxItem *fill;
-    QFxItem *centeredIn;
+    QFxItem *centerIn;
 
     QFxAnchorLine left;
     QFxAnchorLine right;

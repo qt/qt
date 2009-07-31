@@ -8,7 +8,7 @@ Rect {
     Rect {
         id: MyPhone
         transformOrigin: "Center"
-        anchors.centeredIn: parent
+        anchors.centerIn: parent
         width: 800
         height: 480
         clip: true

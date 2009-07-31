@@ -22,7 +22,7 @@ Rect {
         }
     }
 
-    Dialog { id: dialog; anchors.centeredIn: parent; z: 21}
+    Dialog { id: dialog; anchors.centerIn: parent; z: 21}
     Button { 
         id: btnA; text: "New Game"; onClicked: {initBoard();} 
         anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.left: gameCanvas.left;

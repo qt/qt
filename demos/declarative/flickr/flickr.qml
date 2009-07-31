@@ -124,7 +124,7 @@ Item {
 
         Image { source: "content/pics/background.png"; anchors.fill: parent }
 
-        Loading { anchors.centeredIn: parent; visible: FeedModel.status != 0 }
+        Loading { anchors.centerIn: parent; visible: FeedModel.status != 0 }
 
         GridView {
             id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate; cacheBuffer: 100

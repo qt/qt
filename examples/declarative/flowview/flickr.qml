@@ -35,7 +35,7 @@ Rect {
         delegate: 
             Item { width: 90; height: 86 
                 Rect {
-                    anchors.centeredIn: parent
+                    anchors.centerIn: parent
                     width: 86; height: 86; 
                     color: "white"; radius: 5
                     Image { source: imagePath; x: 5; y: 5 }
