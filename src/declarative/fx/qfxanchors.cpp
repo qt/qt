@@ -468,7 +468,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
         } else if (usedAnchors & QFxAnchors::HasBaselineAnchor) {
             //Handle baseline
             if (baseline.item->parentItem() == item->parentItem()) {
-                setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset());
+                setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset() + baselineOffset);
             }
         }
         --updatingVerticalAnchor;
@@ -870,6 +870,22 @@ void QFxAnchors::setVerticalCenterOffset(qreal offset)
     d->vCenterOffset = offset;
     d->updateVerticalAnchors();
     emit verticalCenterOffsetChanged();
+}
+
+qreal QFxAnchors::baselineOffset() const
+{
+    Q_D(const QFxAnchors);
+    return d->baselineOffset;
+}
+
+void QFxAnchors::setBaselineOffset(qreal offset)
+{
+    Q_D(QFxAnchors);
+    if (d->baselineOffset == offset)
+        return;
+    d->baselineOffset = offset;
+    d->updateVerticalAnchors();
+    emit baselineOffsetChanged();
 }
 
 QFxAnchors::UsedAnchors QFxAnchors::usedAnchors() const
