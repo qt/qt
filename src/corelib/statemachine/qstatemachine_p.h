@@ -214,7 +214,7 @@ public:
         f_cloneEvent cloneEvent;
     };
 
-    static Q_CORE_EXPORT const Handler *handler;
+    static const Handler *handler;
 };
 
 QT_END_NAMESPACE
