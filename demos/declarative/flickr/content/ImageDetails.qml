@@ -30,7 +30,7 @@ Flipable {
         Rect {
             anchors.fill: parent
             color: "black"; opacity: 0.4
-            pen.color: "white"; pen.width: 2
+            border.color: "white"; border.width: 2
         }
 
         MediaButton {
@@ -77,7 +77,7 @@ Flipable {
     back: Item {
         anchors.fill: Container
 
-        Rect { anchors.fill: parent; color: "black"; opacity: 0.4; pen.color: "white"; pen.width: 2 }
+        Rect { anchors.fill: parent; color: "black"; opacity: 0.4; border.color: "white"; border.width: 2 }
 
         Progress { anchors.centerIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status }
         Flickable {

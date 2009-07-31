@@ -16,7 +16,7 @@ FocusRealm {
         width: groupBox.width-20
         height: groupBox.height-20
         color: "white"
-        pen.color: "black"
+        border.color: "black"
         Loader {
             id: subItem
             source: groupBox.contents

@@ -9,7 +9,7 @@ Rect {
     Rect {
         id: gameCanvas
         property int score: 0
-        z:20; y:20; color: "white"; pen.width: 1
+        z:20; y:20; color: "white"; border.width: 1
         width:parent.width - tileSize - (parent.width % tileSize); 
         height:parent.height - tileSize - (parent.height % tileSize); 
         anchors.horizontalCenter: parent.horizontalCenter

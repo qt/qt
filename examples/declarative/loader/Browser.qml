@@ -82,13 +82,13 @@ Rect {
         id: TitleBar
         width: parent.width
         height: 32
-        color: activePalette.button; pen.color: activePalette.mid
+        color: activePalette.button; border.color: activePalette.mid
 
         Rect {
             id: UpButton
             width: 30
             height: TitleBar.height
-            pen.color: activePalette.mid; color: "transparent"
+            border.color: activePalette.mid; color: "transparent"
             MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
             Image { anchors.centerIn: parent; source: "images/up.png" }
         }

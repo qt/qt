@@ -12,7 +12,7 @@ Item {
 
     Rect {
         id: Container; anchors.fill: parent
-        pen.color: "white"; pen.width: 0; radius: 8
+        border.color: "white"; border.width: 0; radius: 8
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#66343434" }
             GradientStop { position: 1.0; color: "#66000000" }

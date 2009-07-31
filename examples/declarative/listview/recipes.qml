@@ -24,7 +24,7 @@ Rect {
                 Rect {
                     id: background
                     x: 1; y: 2; width: parent.width-2; height: parent.height-4
-                    color: "#FEFFEE"; pen.color: "#FFBE4F"; radius: 5
+                    color: "#FEFFEE"; border.color: "#FFBE4F"; radius: 5
                 }
                 // This mouse region covers the entire delegate.
                 // When clicked it changes mode to 'Details'.  If we are already

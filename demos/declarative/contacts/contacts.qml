@@ -213,7 +213,7 @@ Rect {
         highlight: [
             Rect {
                 id: contactHighlight
-                pen.width: 0
+                border.width: 0
                 color: 'white'
                 opacity: contacts.mode == 'list' ? 1 : 0
                 opacity: Behavior {

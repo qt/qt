@@ -2,7 +2,7 @@ import Qt 4.6
 
 Rect { 
     id: page; color: activePalette.button; width: txtItem.width+20; height: txtItem.height+4
-    pen.width: 1; pen.color: activePalette.mid; radius: 10;
+    border.width: 1; border.color: activePalette.mid; radius: 10;
     signal clicked
     property string text: "Button"
     gradient: Gradient { 
