@@ -55,10 +55,24 @@ public:
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Palette,QmlPalette)
 
 /*!
-    \internal
-    \class QmlPalette
+    \qmlclass Palette QmlPalette
     \ingroup group_utility
-    \brief The QmlPalette class gives access to the Qt palettes.
+    \brief The Palette item gives access to the Qt palettes.
+    \sa QPalette
+
+
+    \code
+        Palette { id: MyPalette; colorGroup: "Active" }
+
+        Rect {
+            width: 640; height: 480
+            color: MyPalette.window
+            Text {
+                anchors.fill: parent
+                text: "Hello!"; color: MyPalette.windowText
+            }
+        }
+     \endcode
 */
 QmlPalette::QmlPalette(QObject *parent)
     : QObject(*(new QmlPalettePrivate), parent)
@@ -73,12 +87,20 @@ QmlPalette::~QmlPalette()
 {
 }
 
+/*!
+    \qmlproperty Palette::window
+    \brief The window (general background) color of the current color group.
+*/
 QColor QmlPalette::window() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Window);
 }
 
+/*!
+    \qmlproperty Palette::windowText
+    \brief The window text (general foreground) color of the current color group.
+*/
 QColor QmlPalette::windowText() const
 {
     Q_D(const QmlPalette);
@@ -172,12 +194,6 @@ void QmlPalette::setColorGroup(ColorGroup colorGroup)
     Q_D(QmlPalette);
     d->group = (QPalette::ColorGroup)int(colorGroup);
     emit paletteChanged();
-}
-
-QPalette QmlPalette::palette() const
-{
-    Q_D(const QmlPalette);
-    return d->palette;
 }
 
 bool QmlPalette::eventFilter(QObject *watched, QEvent *event)

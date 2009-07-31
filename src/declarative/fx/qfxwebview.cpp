@@ -236,7 +236,7 @@ void QFxWebView::init()
     Q_D(QFxWebView);
 
     setAcceptedMouseButtons(Qt::LeftButton);
-    setOptions(HasContents | MouseEvents);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 
     d->page = 0;
 }

@@ -71,18 +71,15 @@ class QFxItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxItem)
 
-    typedef QHash<QString, QFxItem *> QmlChildren;
-
 public:
     QFxItemPrivate()
-    : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
+    : _anchors(0), _contents(0),
       _baselineOffset(0),
-      _classComplete(true), _componentComplete(true), _keepMouse(false), 
+      _componentComplete(true), _keepMouse(false),
       _anchorLines(0),
       _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
       options(QFxItem::NoOption),
-      widthValid(false), heightValid(false), width(0), height(0), 
-      paintmargin(0)
+      widthValid(false), heightValid(false), width(0), height(0)
     {}
     ~QFxItemPrivate() 
     { delete _anchors; }
@@ -144,25 +141,19 @@ public:
             Q_Q(QFxItem);
             _anchors = new QFxAnchors;
             _anchors->setItem(q);
+            if (!_componentComplete)
+                _anchors->classBegin();
         }
         return _anchors;
     }
     QList<QFxAnchors *> dependantAnchors;
     QFxAnchors *_anchors;
     QFxContents *_contents;
-    QFxItem *qmlItem;
-    QmlComponent *_qmlcomp;
-    QUrl _qml;
-    QList<QUrl> _qmlnewloading;
-    QList<QmlComponent*> _qmlnewcomp;
 
     QmlNullableValue<qreal> _baselineOffset;
 
-    bool _classComplete:1;
     bool _componentComplete:1;
     bool _keepMouse:1;
-
-    QmlChildren _qmlChildren;
 
     struct AnchorLines {
         AnchorLines(QFxItem *);
@@ -195,12 +186,8 @@ public:
 
     qreal width;
     qreal height;
-    qreal paintmargin;
 
     QPointF computeTransformOrigin() const;
-
-    void gvRemoveMouseFilter();
-    void gvAddMouseFilter();
 
     virtual void setPosHelper(const QPointF &pos)
     {

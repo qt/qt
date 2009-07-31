@@ -73,7 +73,7 @@ public:
     void setFormat(const QString &);
 
     virtual void classBegin();
-    virtual void classComplete();
+    virtual void componentComplete();
 
 Q_SIGNALS:
     void textChanged();

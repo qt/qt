@@ -72,7 +72,7 @@ class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
     Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
     Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
     Q_PROPERTY(QFxItem *fill READ fill WRITE setFill)
-    Q_PROPERTY(QFxItem *centeredIn READ centeredIn WRITE setCenteredIn)
+    Q_PROPERTY(QFxItem *centerIn READ centerIn WRITE setCenterIn)
 
 public:
     QFxAnchors(QObject *parent=0);
@@ -140,12 +140,15 @@ public:
     QFxItem *fill() const;
     void setFill(QFxItem *);
 
-    QFxItem *centeredIn() const;
-    void setCenteredIn(QFxItem *);
+    QFxItem *centerIn() const;
+    void setCenterIn(QFxItem *);
 
     UsedAnchors usedAnchors() const;
 
     void setItem(QFxItem *item);
+
+    void classBegin();
+    void componentComplete();
 
 Q_SIGNALS:
     void leftMarginChanged();

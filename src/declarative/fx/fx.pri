@@ -19,6 +19,8 @@ HEADERS += \
            fx/qfxkeyproxy.h \
            fx/qfxlayouts.h \
            fx/qfxlayouts_p.h \
+           fx/qfxloader.h \
+           fx/qfxloader_p.h \
            fx/qfxmouseregion.h \
            fx/qfxmouseregion_p.h \
            fx/qfxpath.h \
@@ -55,6 +57,7 @@ SOURCES += \
            fx/qfxkeyactions.cpp \
            fx/qfxkeyproxy.cpp \
            fx/qfxlayouts.cpp \
+           fx/qfxloader.cpp \
            fx/qfxmouseregion.cpp \
            fx/qfxpath.cpp \
            fx/qfxpathview.cpp \

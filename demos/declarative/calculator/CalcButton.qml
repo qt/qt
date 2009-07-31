@@ -37,7 +37,7 @@ Item {
     }
 
     Text {
-        anchors.centeredIn: Image
+        anchors.centerIn: Image
         text: Button.operation
         color: "white"
         font.bold: true

@@ -72,8 +72,6 @@ public:
     void setName(const QString &name);
     void setValue(const QVariant &);
 
-    virtual void classComplete();
-
 Q_SIGNALS:
     void valueChanged();
 
@@ -111,7 +109,8 @@ public:
 
     QString lastError() const;
 
-    virtual void classComplete();
+    //### missing classBegin
+    virtual void componentComplete();
 
     QmlList<QmlSqlBind *> *bindings();
     const QmlList<QmlSqlBind *> *bindings() const;

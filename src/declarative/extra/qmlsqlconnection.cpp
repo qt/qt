@@ -381,13 +381,6 @@ void QmlSqlConnection::setDriver(const QString &type)
 }
 
 /*!
-    \reimp
-*/
-void QmlSqlConnection::classComplete()
-{
-}
-
-/*!
     Returns the database object associated with this connection.
     If the database is not yet open, it will open the database
     passed on the settings specified for the SQL connection.

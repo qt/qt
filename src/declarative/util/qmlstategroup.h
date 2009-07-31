@@ -76,7 +76,6 @@ public:
     QmlState *findState(const QString &name) const;
 
     virtual void classBegin();
-    virtual void classComplete();
     virtual void componentComplete();
 Q_SIGNALS:
     void stateChanged(const QString &);

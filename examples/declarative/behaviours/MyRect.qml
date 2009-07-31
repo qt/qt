@@ -2,7 +2,7 @@ import Qt 4.6
 
 Rect {
     radius: 15
-    pen.color: "black"
+    border.color: "black"
     width: 100
     height: 100
     id: Page

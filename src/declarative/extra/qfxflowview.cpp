@@ -71,7 +71,6 @@ QFxFlowView::QFxFlowView()
 : m_columns(0), m_model(0), m_vertical(false), m_dragItem(0), m_dragIdx(-1)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
-    setOptions(MouseEvents);
 }
 
 QFxVisualItemModel *QFxFlowView::model() const

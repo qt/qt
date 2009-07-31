@@ -152,9 +152,6 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::BeginObject:
         qWarning() << idx << "\t" << line << "\t" << "BEGIN\t\t\t" << instr->begin.castValue;
         break;
-    case QmlInstruction::CompleteObject:
-        qWarning() << idx << "\t" << line << "\t" << "COMPLETE\t\t" << instr->complete.castValue;
-        break;
     case QmlInstruction::StoreObjectQmlList:
         qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT_QMLLIST";
         break;

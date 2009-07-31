@@ -57,7 +57,6 @@ public:
     virtual ~QmlParserStatus();
 
     virtual void classBegin();
-    virtual void classComplete();
     virtual void componentComplete();
 
 private:

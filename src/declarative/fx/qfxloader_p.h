@@ -39,42 +39,42 @@
 **
 ****************************************************************************/
 
-#include "qmlparserstatus.h"
+#ifndef QFXLOADER_P_H
+#define QFXLOADER_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qfxitem_p.h"
+#include "qfxloader.h"
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QmlParserStatus
-    \brief The QmlParserStatus class provides updates on the parser state.
-*/
-
-/*! \internal */
-QmlParserStatus::QmlParserStatus()
-: d(0)
+class QmlContext;
+class QFxLoaderPrivate : public QFxItemPrivate
 {
-}
+    Q_DECLARE_PUBLIC(QFxLoader)
 
-/*! \internal */
-QmlParserStatus::~QmlParserStatus()
-{
-    if(d)
-        (*d) = 0;
-}
+public:
+    QFxLoaderPrivate();
+    ~QFxLoaderPrivate();
 
-/*!
-    Invoked after class creation, but before any properties have been set.
-*/
-void QmlParserStatus::classBegin()
-{
-}
+    QUrl source;
+    QFxItem *item;
+    QmlComponent *qmlcomp;
+    QHash<QString, QFxItem *> cachedChildren;
 
-/*!
-    Invoked after the root component that caused this instantiation has 
-    completed construction.  At this point all static values and binding values
-    have been assigned to the class.
-*/
-void QmlParserStatus::componentComplete()
-{
-}
+    void _q_sourceLoaded();
+};
 
 QT_END_NAMESPACE
+
+#endif // QFXLOADER_P_H

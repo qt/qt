@@ -129,7 +129,6 @@ public:
         StoreValueSource,         /* assignValueSource */
 
         BeginObject,              /* begin */
-        CompleteObject,           /* complete */
 
         StoreObjectQmlList,       /* NA */
         StoreObjectQList,         /* NA */
@@ -198,9 +197,6 @@ public:
             int property;
             int type;
         } fetchQmlList;
-        struct {
-            int castValue;
-        } complete;
         struct {
             int castValue;
         } begin;

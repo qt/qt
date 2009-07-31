@@ -1016,8 +1016,8 @@ void QFxTextEditPrivate::init()
 
     q->setSmooth(true);
     q->setAcceptedMouseButtons(Qt::LeftButton);
-    q->setOptions(QFxTextEdit::AcceptsInputMethods | QFxTextEdit::SimpleItem
-        | QFxTextEdit::HasContents | QFxTextEdit::MouseEvents);
+    q->setFlag(QGraphicsItem::ItemHasNoContents, false);
+    q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
 
     QObject::connect(&font, SIGNAL(updated()), q, SLOT(fontChanged()));
 

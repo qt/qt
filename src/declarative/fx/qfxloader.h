@@ -39,42 +39,47 @@
 **
 ****************************************************************************/
 
-#include "qmlparserstatus.h"
+#ifndef QFXLOADER_H
+#define QFXLOADER_H
+
+#include <QtDeclarative/qfxitem.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QmlParserStatus
-    \brief The QmlParserStatus class provides updates on the parser state.
-*/
+QT_MODULE(Declarative)
 
-/*! \internal */
-QmlParserStatus::QmlParserStatus()
-: d(0)
+class QFxLoaderPrivate;
+class Q_DECLARATIVE_EXPORT QFxLoader : public QFxItem
 {
-}
+    Q_OBJECT
 
-/*! \internal */
-QmlParserStatus::~QmlParserStatus()
-{
-    if(d)
-        (*d) = 0;
-}
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QFxItem *item READ item)
 
-/*!
-    Invoked after class creation, but before any properties have been set.
-*/
-void QmlParserStatus::classBegin()
-{
-}
+public:
+    QFxLoader(QFxItem *parent=0);
+    virtual ~QFxLoader();
 
-/*!
-    Invoked after the root component that caused this instantiation has 
-    completed construction.  At this point all static values and binding values
-    have been assigned to the class.
-*/
-void QmlParserStatus::componentComplete()
-{
-}
+    QUrl source() const;
+    void setSource(const QUrl &);
+
+    QFxItem *item() const;
+
+Q_SIGNALS:
+    void sourceChanged();
+
+private:
+    Q_DISABLE_COPY(QFxLoader)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxLoader)
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceLoaded())
+};
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxLoader)
+
+QT_END_HEADER
+
+#endif // QFXLOADER_H

@@ -56,8 +56,7 @@ class QmlStateGroupPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlStateGroup)
 public:
     QmlStateGroupPrivate(QmlStateGroup *p)
-    : nullState(0), states(p), classComplete(true), 
-      componentComplete(true), ignoreTrans(false) {}
+    : nullState(0), states(p), componentComplete(true), ignoreTrans(false) {}
 
     QString currentState;
     QmlState *nullState;
@@ -76,7 +75,6 @@ public:
     StateList states;
 
     QmlConcreteList<QmlTransition *> transitions;
-    bool classComplete;
     bool componentComplete;
     bool ignoreTrans;
 
@@ -133,14 +131,19 @@ void QmlStateGroup::setState(const QString &state)
 void QmlStateGroup::classBegin()
 {
     Q_D(QmlStateGroup);
-    d->classComplete = false;
     d->componentComplete = false;
 }
 
-void QmlStateGroup::classComplete()
+void QmlStateGroup::componentComplete()
 {
     Q_D(QmlStateGroup);
-    d->classComplete = true;
+    d->componentComplete = true;
+    d->updateAutoState();
+    if (!d->currentState.isEmpty()) {
+        QString cs = d->currentState;
+        d->currentState = QString();
+        d->setCurrentStateInternal(cs, true);
+    }
 }
 
 void QmlStateGroup::updateAutoState()
@@ -152,7 +155,7 @@ void QmlStateGroup::updateAutoState()
 void QmlStateGroupPrivate::updateAutoState()
 {
     Q_Q(QmlStateGroup);
-    if (!classComplete)
+    if (!componentComplete)
         return;
 
     bool revert = false;
@@ -277,18 +280,6 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     }
 
     newState->apply(q, transition, oldState);
-}
-
-void QmlStateGroup::componentComplete()
-{
-    Q_D(QmlStateGroup);
-    d->updateAutoState();
-    d->componentComplete = true;
-    if (!d->currentState.isEmpty()) {
-        QString cs = d->currentState;
-        d->currentState = QString();
-        d->setCurrentStateInternal(cs, true);
-    }
 }
 
 QmlState *QmlStateGroup::findState(const QString &name) const

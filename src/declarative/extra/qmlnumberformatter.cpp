@@ -53,7 +53,7 @@ class QmlNumberFormatterPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlNumberFormatter)
 public:
-    QmlNumberFormatterPrivate() : locale(QLocale::system()), number(0), classComplete(true) {}
+    QmlNumberFormatterPrivate() : locale(QLocale::system()), number(0), componentComplete(true) {}
 
     void updateText();
 
@@ -62,7 +62,7 @@ public:
     QNumberFormat numberFormat;
     QString text;
     qreal number;
-    bool classComplete;
+    bool componentComplete;
 };
 /*!
     \qmlclass NumberFormatter
@@ -186,7 +186,7 @@ void QmlNumberFormatter::setFormat(const QString &format)
 void QmlNumberFormatterPrivate::updateText()
 {
     Q_Q(QmlNumberFormatter);
-    if (!classComplete)
+    if (!componentComplete)
         return;
 
     QNumberFormat tempFormat;
@@ -201,13 +201,13 @@ void QmlNumberFormatterPrivate::updateText()
 void QmlNumberFormatter::classBegin()
 {
     Q_D(QmlNumberFormatter);
-    d->classComplete = false;
+    d->componentComplete = false;
 }
 
-void QmlNumberFormatter::classComplete()
+void QmlNumberFormatter::componentComplete()
 {
     Q_D(QmlNumberFormatter);
-    d->classComplete = true;
+    d->componentComplete = true;
     d->updateText();
 }
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,NumberFormatter,QmlNumberFormatter);

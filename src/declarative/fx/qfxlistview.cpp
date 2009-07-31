@@ -278,6 +278,18 @@ public:
         return -1;
     }
 
+    int lastVisibleIndex() const {
+        int lastIndex = -1;
+        for (int i = visibleItems.count()-1; i >= 0; --i) {
+            FxListItem *listItem = visibleItems.at(i);
+            if (listItem->index != -1) {
+                lastIndex = listItem->index;
+                break;
+            }
+        }
+        return lastIndex;
+    }
+
     // map a model index to visibleItems index.
     // These may differ if removed items are still present in the visible list,
     // e.g. doing a removal animation
@@ -439,10 +451,6 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     Q_Q(QFxListView);
     if (!item)
         return;
-    if (orient == Qt::Vertical)
-        QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
-    else
-        QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
     if (trackedItem == item) {
         const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
         const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
@@ -453,6 +461,10 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
+        if (orient == Qt::Vertical)
+            QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
+        else
+            QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
     }
     delete item;
 }
@@ -542,13 +554,12 @@ void QFxListViewPrivate::layout()
             pos += item->size();
         }
         // move current item if it is after the visible items.
-        if (currentItem && currentIndex > visibleItems.last()->index)
+        if (currentItem && currentIndex > lastVisibleIndex())
             currentItem->setPosition(currentItem->position() + (visibleItems.last()->endPosition() - oldEnd));
     }
     if (!isValid())
         return;
     q->refill();
-    q->trackedPositionChanged();
     updateHighlight();
     if (orient == Qt::Vertical) {
         fixupY();
@@ -588,6 +599,8 @@ void QFxListViewPrivate::updateTrackedItem()
     if (highlight)
         item = highlight;
 
+    FxListItem *oldTracked = trackedItem;
+
     const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
     const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
@@ -601,9 +614,8 @@ void QFxListViewPrivate::updateTrackedItem()
         trackedItem = item;
         QObject::connect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::connect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
-        q->trackedPositionChanged();
     }
-    if (trackedItem)
+    if (trackedItem && trackedItem != oldTracked)
         q->trackedPositionChanged();
 }
 
@@ -647,7 +659,8 @@ void QFxListViewPrivate::createHighlight()
             const QLatin1String posProp(orient == Qt::Vertical ? "y" : "x");
             highlightPosAnimator = new QmlFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
-            highlightPosAnimator->setSpring(3);
+            highlightPosAnimator->setEpsilon(0.25);
+            highlightPosAnimator->setSpring(2.5);
             highlightPosAnimator->setDamping(0.3);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
@@ -1274,8 +1287,9 @@ qreal QFxListView::maxYExtent() const
         extent = -(d->positionAt(count()-1) - d->snapPos);
     else
         extent = -(d->endPosition() - height());
-    if (extent > 0)
-        extent = 0;
+    qreal minY = minYExtent();
+    if (extent > minY)
+        extent = minY;
     return extent;
 }
 
@@ -1307,8 +1321,9 @@ qreal QFxListView::maxXExtent() const
         extent = -(d->positionAt(count()-1) - d->snapPos);
     else
         extent = -(d->endPosition() - width());
-    if (extent > 0)
-        extent = 0;
+    qreal minX = minXExtent();
+    if (extent > minX)
+        extent = minX;
     return extent;
 }
 
@@ -1386,19 +1401,6 @@ void QFxListView::trackedPositionChanged()
             d->setPosition(d->trackedItem->position() - d->snapPos);
             break;
         }
-    } else if (d->fixCurrentVisibility && d->currentItem && !d->pressed) {
-        /*
-        if (d->trackedItem->position() < d->position()
-                && d->currentItem->position() < d->position()) {
-            d->setPosition(d->trackedItem->position());
-        } else if (d->size() && d->trackedItem->size() <= d->size()
-                && d->trackedItem->endPosition() > d->position() + d->size()
-                && d->currentItem->endPosition() > d->position() + d->size()) {
-            d->setPosition(d->trackedItem->endPosition() - d->size());
-        }
-        if (d->trackedItem->position() == d->currentItem->position())
-            d->fixCurrentVisibility = false;
-            */
     }
 }
 

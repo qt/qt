@@ -354,11 +354,14 @@ void QFxBaseLayout::preLayout()
     d->_animated.clear();
     doLayout();
     //Set the layout's size to be the rect containing all children
-    //Also set the margin
+    //d->aut determines whether a dimension is sum or max
+    //Also sets the margin
     qreal width=0;
     qreal height=0;
+    qreal maxWidth=0;
+    qreal maxHeight=0;
     foreach(QFxItem *item, d->_items){
-        if (item->opacity() == 0.0){
+        if (item->opacity() != 0.0){
             if (!d->_animated.contains(item)){
                 setMovingItem(item);
                 QPointF p(item->x(), item->y());
@@ -369,6 +372,8 @@ void QFxBaseLayout::preLayout()
                 item->setPos(p);
                 setMovingItem(0);
             }
+            maxWidth = qMax(maxWidth, item->width());
+            maxHeight = qMax(maxHeight, item->height());
             width = qMax(width, item->x() + item->width());
             height = qMax(height, item->y() + item->height());
         }
@@ -376,14 +381,19 @@ void QFxBaseLayout::preLayout()
     width += d->_margin;
     height+= d->_margin;
 
-    if (d->aut & Horizontal)
-        setWidth(int(width));
-    else if (parentItem())
-        setImplicitWidth(parentItem()->width());
-    if (d->aut & Vertical)
-        setHeight(int(height));
-    else if (parentItem())
-        setImplicitHeight(parentItem()->height());
+    if(d->aut & Both){
+        setImplicitHeight(int(height));
+        setImplicitWidth(int(width));
+    }else if (d->aut & Horizontal){
+        setImplicitWidth(int(width));
+        setImplicitHeight(int(maxHeight));
+    } else if (d->aut & Vertical){
+        setImplicitHeight(int(height));
+        setImplicitWidth(int(maxWidth));
+    }else{
+        setImplicitHeight(int(maxHeight));
+        setImplicitWidth(int(maxWidth));
+    }
     setLayoutItem(0);
 }
 
@@ -656,7 +666,6 @@ void QFxVerticalLayout::doLayout()
     }
     finishApplyTransitions();
     setMovingItem(this);
-    setHeight(voffset);
     setMovingItem(0);
 }
 
@@ -823,7 +832,6 @@ void QFxHorizontalLayout::doLayout()
         hoffset += spacing();
     }
     finishApplyTransitions();
-    setWidth(hoffset);
 }
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridLayout,QFxGridLayout)

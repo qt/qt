@@ -124,18 +124,16 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(QFxItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
+    Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
-    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
-    Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
-    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged) // ### name? Move to own class?
-    Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)  // ### see above
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
+    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
+    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine right READ right CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter CONSTANT FINAL)
@@ -147,30 +145,21 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
-    Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL) // ## QGI/QGO
-    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin) // ### move to QGI
+    Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
+    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
 
-    typedef QHash<QString, QFxItem *> QmlChildren; // ###
-
 public:
     enum Option { NoOption = 0x00000000,
-                  MouseFilter = 0x00000001,
                   ChildMouseFilter = 0x00000002,
-                  HoverEvents = 0x00000004,
-                  MouseEvents = 0x00000008,
-                  HasContents = 0x00000010,
-                  SimpleItem = 0x00000020,
-                  IsFocusPanel = 0x00000040,
-                  IsFocusRealm = 0x00000080,
-                  AcceptsInputMethods = 0x00000100 };
+                  IsFocusRealm = 0x00000080 };
     Q_DECLARE_FLAGS(Options, Option)
 
     enum TransformOrigin {
-        TopLeft, TopCenter, TopRight,
-        MiddleLeft, Center, MiddleRight,
-        BottomLeft, BottomCenter, BottomRight 
+        TopLeft, Top, TopRight,
+        Left, Center, Right,
+        BottomLeft, Bottom, BottomRight
     };
 
     QFxItem(QFxItem *parent = 0);
@@ -185,31 +174,21 @@ public:
     QmlList<QObject *> *resources();
 
     QFxAnchors *anchors();
-
     QFxContents *contents();
 
     bool clip() const;
     void setClip(bool);
 
     QmlList<QmlState *>* states();
-    QmlState *findState(const QString &name) const;
-
     QmlList<QmlTransition *>* transitions();
 
     QString state() const;
     void setState(const QString &);
 
-    QFxItem *qmlItem() const;
-    QUrl qml() const;
-    void setQml(const QUrl &);
-
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
     QmlList<QGraphicsTransform *> *transform();
-
-    bool isClassComplete() const;
-    bool isComponentComplete() const;
 
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
@@ -219,35 +198,19 @@ public:
 
     qreal width() const;
     void setWidth(qreal);
-    void setImplicitWidth(qreal);
-    bool widthValid() const; // ### better name?
+
     qreal height() const;
     void setHeight(qreal);
-    void setImplicitHeight(qreal);
-    bool heightValid() const; // ### better name?
 
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
-    void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
 
-    QFxItem *mouseGrabberItem() const;
-
     virtual bool hasFocus() const;
     void setFocus(bool);
-    bool activeFocusPanel() const;
-    void setActiveFocusPanel(bool);
-
     bool hasActiveFocus() const;
-
-    static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont()); // ### remove me, make private for now
-
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;  //### for KeyProxy
-
-public Q_SLOTS:
-    void newChild(const QString &url);
 
 Q_SIGNALS:
     void xChanged();
@@ -261,12 +224,9 @@ Q_SIGNALS:
     void parentChanged();
     void keyPress(QFxKeyEvent *event);
     void keyRelease(QFxKeyEvent *event);
-    void rotationChanged();
-    void scaleChanged();
-    void qmlChanged();
-    void newChildCreated(const QString &url, QScriptValue);
 
 protected:
+    bool isComponentComplete() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     virtual void childrenChanged();
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
@@ -275,10 +235,13 @@ protected:
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mouseUngrabEvent();
 
+    void setImplicitWidth(qreal);
+    bool widthValid() const; // ### better name?
+    void setImplicitHeight(qreal);
+    bool heightValid() const; // ### better name?
+
     virtual void classBegin();
-    virtual void classComplete();
     virtual void componentComplete();
-    virtual void parentChanged(QFxItem *, QFxItem *);
     virtual void focusChanged(bool);
     virtual void activeFocusChanged(bool);
     virtual void keyPressEvent(QKeyEvent *event);
@@ -288,7 +251,6 @@ protected:
 
 private Q_SLOTS:
     void doUpdate();
-    void qmlLoaded();
 
 protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);

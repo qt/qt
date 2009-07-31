@@ -56,12 +56,15 @@ class Q_DECLARATIVE_EXPORT QmlFontFamily : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlFontFamily)
+    Q_ENUMS(Status)
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
 
 public:
+    enum Status { Null = 0, Ready, Loading, Error };
+
     QmlFontFamily(QObject *parent = 0);
     ~QmlFontFamily();
 
@@ -71,14 +74,14 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    bool isLoading() const;
+    Status status() const;
 
 private Q_SLOTS:
     void replyFinished();
 
 Q_SIGNALS:
     void nameChanged();
-    void loadingChanged();
+    void statusChanged();
 };
 
 QT_END_NAMESPACE
@@ -88,3 +91,4 @@ QML_DECLARE_TYPE(QmlFontFamily)
 QT_END_HEADER
 
 #endif // QMLFONTFAMILY_H
+

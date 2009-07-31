@@ -12,7 +12,7 @@ Rect {
         Rect {
             id: Container
             width: 316; height: 60; z: 2
-            pen.color: "white"; color: "#343434"
+            border.color: "white"; color: "#343434"
 
             Text {
                 id: CurNum

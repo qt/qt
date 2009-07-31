@@ -522,14 +522,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             }
             break;
 
-        case QmlInstruction::CompleteObject:
-            {
-                QObject *target = stack.top();
-                QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>(target) + instr.complete.castValue);
-                status->classComplete();
-            }
-            break;
-
         case QmlInstruction::StoreCompiledBinding:
             {
                 QObject *target = 

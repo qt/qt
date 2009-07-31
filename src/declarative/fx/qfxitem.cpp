@@ -51,7 +51,6 @@
 #include <QtGui/qgraphicstransform.h>
 
 #include <QtDeclarative/qmlengine.h>
-#include <private/qmlengine_p.h>
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
 #include "qfxanchors_p.h"
@@ -446,8 +445,6 @@ void QFxItem::setParentItem(QFxItem *parent)
 
     QObject::setParent(parent);
     QGraphicsObject::setParentItem(parent);
-
-    parentChanged(parent, oldParent);
 }
 
 /*!
@@ -497,18 +494,6 @@ QFxItem *QFxItem::parentItem() const
     This property contains non-visual resources that you want to 
     reference by name.
 */
-
-/*!
-    Returns true if all of the attributes set via QML have been set;
-    otherwise returns false.
-
-    \sa classComplete()
-*/
-bool QFxItem::isClassComplete() const
-{
-    Q_D(const QFxItem);
-    return d->_classComplete;
-}
 
 /*!
     Returns true if construction of the QML component is complete; otherwise
@@ -754,151 +739,6 @@ bool QFxItem::clip() const
 void QFxItem::setClip(bool c)
 {
     setFlag(ItemClipsChildrenToShape, c);
-}
-
-/*!
-  \internal
-  \property QFxItem::qmlItem
-*/
-
-/*! \fn QFxItem *QFxItem::qmlItem() const
-  \internal
- */
-QFxItem *QFxItem::qmlItem() const
-{
-    Q_D(const QFxItem);
-    return d->qmlItem;
-}
-
-/*!
-    \qmlproperty url Item::qml
-    This property holds the dynamic URL of the QML for the item.
-
-    This property is used for dynamically loading QML into the
-    item. Querying for the QML only has meaning if the QML has been
-    dynamically set; otherwise an empty URL is returned.
-*/
-
-/*! \fn void QFxItem::qmlChanged()
-  This signal is emitted whenever the item's dynamic QML
-  string changes.
-
-  \sa setQml()
- */
-
-/*!
-    \property QFxItem::qml
-    This property holds the dynamic URL of the QML for the item.
-
-    This property is used for dynamically loading QML into the
-    item. Querying for the QML only has meaning if the QML has been
-    dynamically set; otherwise an empty URL is returned.
-*/
-QUrl QFxItem::qml() const
-{
-    Q_D(const QFxItem);
-    return d->_qml;
-}
-
-void QFxItem::setQml(const QUrl &qml)
-{
-    Q_D(QFxItem);
-    if (d->_qml == qml)
-        return;
-
-    if (!d->_qml.isEmpty()) {
-        QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
-        if (iter != d->_qmlChildren.end())
-            (*iter)->setOpacity(0.);
-    }
-
-    d->_qml = qml;
-    d->qmlItem = 0;
-
-    if (d->_qml.isEmpty()) {
-        emit qmlChanged();
-        return;
-    }
-
-    QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
-    if (iter != d->_qmlChildren.end()) {
-        (*iter)->setOpacity(1.);
-        d->qmlItem = (*iter);
-        emit qmlChanged();
-    } else {
-        d->_qmlcomp = 
-            new QmlComponent(qmlEngine(this), d->_qml, this);
-        if (!d->_qmlcomp->isLoading())
-            qmlLoaded();
-        else
-            QObject::connect(d->_qmlcomp, SIGNAL(statusChanged(QmlComponent::Status)),
-                             this, SLOT(qmlLoaded()));
-    }
-}
-
-/*! \fn void QFxItem::newChildCreated(const QString &url, QScriptValue v)
-  This signal is emitted with the \a url and the script value \a v,
-  when a new child is created.
- */
-
-/*!
-  \internal
- */
-void QFxItem::qmlLoaded()
-{
-    Q_D(QFxItem);
-
-    { // newChild...
-        // ###
-        for (int i=0; i<d->_qmlnewloading.length(); ++i) {
-            QmlComponent *c = d->_qmlnewcomp.at(i);
-            if (c->isLoading())
-                continue;
-
-            QmlContext *ctxt = new QmlContext(qmlContext(this));
-            QObject* o = c ? c->create(ctxt):0;
-            QFxItem* ret = qobject_cast<QFxItem*>(o);
-            if (ret) {
-                ret->setParentItem(this);
-                QScriptValue v = QmlEnginePrivate::getScriptEngine(qmlEngine(this))->newQObject(ret);
-                emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
-            }
-
-            delete c;
-            d->_qmlnewloading.removeAt(i);
-            d->_qmlnewcomp.removeAt(i);
-            --i;
-        }
-    }
-
-    // setQml...
-    if (d->_qmlcomp) {
-        QmlContext *ctxt = new QmlContext(qmlContext(this));
-        ctxt->addDefaultObject(this);
-
-        if (!d->_qmlcomp->errors().isEmpty()) {
-            qWarning() << d->_qmlcomp->errors();
-            delete d->_qmlcomp;
-            d->_qmlcomp = 0;
-            emit qmlChanged();
-            return;
-        }
-        QObject *obj = d->_qmlcomp->create(ctxt);
-        if (!d->_qmlcomp->errors().isEmpty())
-            qWarning() << d->_qmlcomp->errors();
-        QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
-        if (qmlChild) {
-            qmlChild->setParentItem(this);
-            d->_qmlChildren.insert(d->_qml.toString(), qmlChild);
-            d->qmlItem = qmlChild;
-        } else {
-            delete qmlChild;
-            d->_qml = QUrl();
-        }
-        delete d->_qmlcomp;
-        d->_qmlcomp = 0;
-        emit qmlChanged();
-    }
 }
 
 /*!
@@ -1239,7 +1079,7 @@ QFxAnchorLine QFxItem::baseline() const
   \qmlproperty AnchorLine Item::anchors.baseline
 
   \qmlproperty Item Item::anchors.fill
-  \qmlproperty Item Item::anchors.centeredIn
+  \qmlproperty Item Item::anchors.centerIn
 
   \qmlproperty real Item::anchors.topMargin
   \qmlproperty real Item::anchors.bottomMargin
@@ -1360,12 +1200,6 @@ void QFxItem::setBaselineOffset(qreal offset)
   \endqml
   \endtable
 */
-
-/*! \fn void QFxItem::rotationChanged()
-  This signal is emitted when the rotation property is changed.
-
-  \sa setRotation()
- */
 
 /*!
   \qmlproperty real Item::scale
@@ -1606,18 +1440,6 @@ QmlList<QmlTransition *>* QFxItem::transitions()
 */
 
 /*!
-  Returns the state with \a name.  Returns 0 if no matching state is found.
-*/
-QmlState *QFxItem::findState(const QString &name) const
-{
-    Q_D(const QFxItem);
-    if (!d->_stateGroup)
-        return 0;
-    else
-        return d->_stateGroup->findState(name);
-}
-
-/*!
   \qmlproperty string Item::state
 
   This property holds the name of the current state of the item.
@@ -1701,59 +1523,19 @@ QmlList<QGraphicsTransform *>* QFxItem::transform()
 }
 
 /*!
-  Creates a new child of the given component \a type.  The
-  newChildCreated() signal will be emitted when and if the child is
-  successfully created.
-
-  \preliminary
-*/
-void QFxItem::newChild(const QString &type)
-{
-    Q_D(QFxItem);
-
-    QUrl url = qmlContext(this)->resolvedUrl(QUrl(type));
-    if (url.isEmpty())
-        return;
-
-    d->_qmlnewloading.append(url);
-    d->_qmlnewcomp.append(new QmlComponent(qmlEngine(this), url, this));
-
-    if (!d->_qmlnewcomp.last()->isLoading())
-        qmlLoaded();
-    else
-        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(QmlComponent::Status)), 
-                this, SLOT(qmlLoaded()));
-}
-
-/*!
   classBegin() is called when the item is constructed, but its
   properties have not yet been set.
 
-  \sa classComplete(), componentComplete(), isClassComplete(), isComponentComplete()
+  \sa componentComplete(), isComponentComplete()
 */
 void QFxItem::classBegin()
 {
     Q_D(QFxItem);
-    d->_classComplete = false;
     d->_componentComplete = false;
     if (d->_stateGroup)
         d->_stateGroup->classBegin();
-}
-
-/*!
-  classComplete() is called when all properties specified in QML
-  have been assigned.  It is sometimes desireable to delay some
-  processing until all property assignments are complete.
-*/
-void QFxItem::classComplete()
-{
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ItemComponentComplete> cc;
-#endif
-    Q_D(QFxItem);
-    d->_classComplete = true;
-    if (d->_stateGroup)
-        d->_stateGroup->classComplete();
+    if (d->_anchors)
+        d->_anchors->classBegin();
 }
 
 /*!
@@ -1764,12 +1546,18 @@ void QFxItem::classComplete()
 */
 void QFxItem::componentComplete()
 {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::ItemComponentComplete> cc;
+#endif
+
     Q_D(QFxItem);
     d->_componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
-    if (d->_anchors) 
-        d->anchors()->d_func()->updateOnComplete();
+    if (d->_anchors) {
+        d->_anchors->componentComplete(); 
+        d->_anchors->d_func()->updateOnComplete();
+    }
 }
 
 QmlStateGroup *QFxItemPrivate::states()
@@ -1777,7 +1565,7 @@ QmlStateGroup *QFxItemPrivate::states()
     Q_Q(QFxItem);
     if (!_stateGroup) {
         _stateGroup = new QmlStateGroup(q);
-        if (!_classComplete)
+        if (!_componentComplete)
             _stateGroup->classBegin();
         QObject::connect(_stateGroup, SIGNAL(stateChanged(QString)),
                          q, SIGNAL(stateChanged(QString)));
@@ -1814,19 +1602,19 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
     default:
     case QFxItem::TopLeft:
         return QPointF(0, 0);
-    case QFxItem::TopCenter:
+    case QFxItem::Top:
         return QPointF(br.width() / 2., 0);
     case QFxItem::TopRight:
         return QPointF(br.width(), 0);
-    case QFxItem::MiddleLeft:
+    case QFxItem::Left:
         return QPointF(0, br.height() / 2.);
     case QFxItem::Center:
         return QPointF(br.width() / 2., br.height() / 2.);
-    case QFxItem::MiddleRight:
+    case QFxItem::Right:
         return QPointF(br.width(), br.height() / 2.);
     case QFxItem::BottomLeft:
         return QPointF(0, br.height());
-    case QFxItem::BottomCenter:
+    case QFxItem::Bottom:
         return QPointF(br.width() / 2., br.height());
     case QFxItem::BottomRight:
         return QPointF(br.width(), br.height());
@@ -1857,17 +1645,12 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
 {
     Q_D(QFxItem);
     if (change == ItemSceneHasChanged) {
-        if (options() & QFxItem::MouseFilter)
-            d->gvRemoveMouseFilter();
-
         d->canvas = qvariant_cast<QGraphicsScene *>(value);
-            
-        if (options() & QFxItem::MouseFilter)
-            d->gvAddMouseFilter();
-
     } else if (change == ItemChildAddedChange ||
                change == ItemChildRemovedChange) {
         childrenChanged();
+    } else if (change == ItemParentHasChanged) {
+        emit parentChanged();
     }
 
     return QGraphicsItem::itemChange(change, value);
@@ -1882,28 +1665,14 @@ void QFxItem::childrenChanged()
 {
 }
 
-void QFxItem::setPaintMargin(qreal margin)
-{
-    Q_D(QFxItem);
-    if (margin == d->paintmargin)
-        return;
-    prepareGeometryChange();
-    d->paintmargin = margin;
-}
-
 QRectF QFxItem::boundingRect() const
 {
     Q_D(const QFxItem);
-    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
+    return QRectF(0, 0, d->width, d->height);
 }
 
 void QFxItem::paintContents(QPainter &)
 {
-}
-
-void QFxItem::parentChanged(QFxItem *, QFxItem *)
-{
-    emit parentChanged();
 }
 
 /*!
@@ -1912,13 +1681,13 @@ void QFxItem::parentChanged(QFxItem *, QFxItem *)
     Controls the point about which simple transforms like scale apply.
 
     \value TopLeft The top-left corner of the item.
-    \value TopCenter The center point of the top of the item.
+    \value Top The center point of the top of the item.
     \value TopRight The top-right corner of the item.
-    \value MiddleLeft The left most point of the vertical middle.
+    \value Left The left most point of the vertical middle.
     \value Center The center of the item.
-    \value MiddleRight The right most point of the vertical middle.
+    \value Right The right most point of the vertical middle.
     \value BottomLeft The bottom-left corner of the item.
-    \value BottomCenter The center point of the bottom of the item. 
+    \value Bottom The center point of the bottom of the item.
     \value BottomRight The bottom-right corner of the item.
 */
 
@@ -2033,16 +1802,6 @@ bool QFxItem::heightValid() const
     return d->heightValid;
 }
 
-QFxItem *QFxItem::mouseGrabberItem() const
-{
-    QGraphicsScene *s = scene();
-    if (s) {
-        QGraphicsItem *item = s->mouseGrabberItem();
-        return static_cast<QFxItem*>(item); // ###
-    }
-    return 0;
-}
-
 /*!
   \qmlproperty bool Item::focus
   This property indicates whether the item has has an active focus request. Set this
@@ -2106,16 +1865,6 @@ bool QFxItem::hasActiveFocus() const
     return QGraphicsItem::hasFocus();
 }
 
-bool QFxItem::activeFocusPanel() const
-{
-    return false;
-}
-
-void QFxItem::setActiveFocusPanel(bool b)
-{
-    Q_UNUSED(b)
-}
-
 bool QFxItem::sceneEventFilter(QGraphicsItem *w, QEvent *e)
 {
     switch(e->type()) {
@@ -2150,61 +1899,13 @@ void QFxItem::setOptions(Options options, bool set)
     else
         d->options &= ~options;
 
-    if ((d->options & IsFocusPanel) && (d->options & IsFocusRealm)) {
-        qWarning("QFxItem::setOptions: Cannot set both IsFocusPanel and IsFocusRealm.  IsFocusRealm will be unset.");
-        d->options &= ~IsFocusRealm;
-    }
-
-    setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
     setFiltersChildEvents(d->options & ChildMouseFilter);
-    setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
-    setAcceptHoverEvents(d->options & HoverEvents);
-
     setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
-
-    if ((old & MouseFilter) != (d->options & MouseFilter)) {
-        if (d->options & MouseFilter)
-            d->gvAddMouseFilter();
-        else
-            d->gvRemoveMouseFilter();
-    }
 }
 
 void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     paintContents(*p);
-}
-
-void QFxItemPrivate::gvRemoveMouseFilter()
-{
-    Q_Q(QFxItem);
-    if (q->scene())
-        q->removeSceneEventFilter(q);
-}
-
-void QFxItemPrivate::gvAddMouseFilter()
-{
-    Q_Q(QFxItem);
-    if (q->scene())
-        q->installSceneEventFilter(q);
-}
-
-QPixmap QFxItem::string(const QString &str, const QColor &c, const QFont &f)
-{
-    QFontMetrics fm(f);
-    QSize size(fm.width(str), fm.height()*(str.count(QLatin1Char('\n'))+1)); //fm.boundingRect(str).size();
-    QPixmap img(size);
-    img.fill(Qt::transparent);
-    QPainter p(&img);
-    p.setPen(c);
-    p.setFont(f);
-    p.drawText(img.rect(), Qt::AlignVCenter, str);
-    return img;
-}
-
-QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
-{
-    return QGraphicsItem::inputMethodQuery(query);
 }
 
 QT_END_NAMESPACE

@@ -88,6 +88,7 @@ private:
     QmlTimer autoStopTimer;
     QString record_dither;
     QString record_file;
+    QSize record_outsize;
     QStringList record_args;
     int record_rate;
     int record_autotime;

@@ -74,7 +74,7 @@ public:
     {
         Q_Q(QFxMouseRegion);
         q->setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
-        q->setOptions(QFxItem::HoverEvents | QFxItem::MouseEvents);
+        q->setAcceptHoverEvents(true);
     }
 
     void saveEvent(QGraphicsSceneMouseEvent *event) {

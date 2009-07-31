@@ -138,7 +138,7 @@ class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QColor tintColor READ tintColor WRITE setTintColor)
     Q_PROPERTY(QFxGradient *gradient READ gradient WRITE setGradient)
-    Q_PROPERTY(QFxPen * pen READ pen)
+    Q_PROPERTY(QFxPen * border READ border)
     Q_PROPERTY(qreal radius READ radius WRITE setRadius)
 public:
     QFxRect(QFxItem *parent=0);
@@ -149,13 +149,15 @@ public:
     QColor tintColor() const;
     void setTintColor(const QColor &);
 
-    QFxPen *pen();
+    QFxPen *border();
 
     QFxGradient *gradient() const;
     void setGradient(QFxGradient *gradient);
 
     qreal radius() const;
     void setRadius(qreal radius);
+
+    QRectF boundingRect() const;
 
     void paintContents(QPainter &painter);
 
@@ -165,9 +167,8 @@ private Q_SLOTS:
 private:
     void generateRoundedRect();
     void generateBorderedRect();
-#if defined(QFX_RENDER_QPAINTER)
     void drawRect(QPainter &painter);
-#endif
+
 protected:
     QFxRect(QFxRectPrivate &dd, QFxItem *parent);
 

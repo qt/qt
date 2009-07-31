@@ -52,7 +52,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
 /*!
     \internal
     \class QFxPen
-    \ingroup group_utility
     \brief The QFxPen class provides a pen used for drawing rect borders on a QFxView.
 
     By default, the pen is invalid and nothing is drawn. You must either set a color (then the default
@@ -62,12 +61,12 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
 
     Example:
     \qml
-    Rect { pen.width: 2; pen.color: "red" ... }
+    Rect { border.width: 2; border.color: "red" ... }
     \endqml
 */
 
 /*! \property QFxPen::width
-    \brief the width of the pen.
+    \brief the width of the border.
 
     A width of 1 is a single-pixel line on the border of the item being painted.
 
@@ -76,17 +75,17 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
 
 /*!
     \property QFxPen::color
-    \brief the color of the pen.
+    \brief the color of the border.
 
     color is most commonly specified in hexidecimal notation (#RRGGBB)
     or as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword name}
      (as defined by the World Wide Web Consortium). For example:
     \qml
     // rect with green border using hexidecimal notation
-    Rect { pen.color: "#00FF00" }
+    Rect { border.color: "#00FF00" }
 
     // rect with steelblue border using SVG color name
-    Rect { pen.color: "steelblue" }
+    Rect { border.color: "steelblue" }
     \endqml
 
     For the full set of ways to specify color, see Qt's QColor::setNamedColor documentation.
@@ -101,10 +100,10 @@ void QFxPen::setColor(const QColor &c)
 
 /*!
     \property QFxPen::width
-    \brief the width of the pen.
+    \brief the width of the border.
 
     \qml
-    Rect { pen.width: 4 }
+    Rect { border.width: 4 }
     \endqml
 
     A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
@@ -200,8 +199,8 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rect,QFxRect)
         width: 100
         height: 100
         color: "red"
-        pen.color: "black"
-        pen.width: 5
+        border.color: "black"
+        border.width: 5
         radius: 10
     }
     \endqml
@@ -213,33 +212,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rect,QFxRect)
     \internal
     \class QFxRect
     \brief The QFxRect class provides a rect item that you can add to a QFxView.
-
-    A Rect is painted having a solid fill (color) and an optional border (pen).
-    You can also create rounded rectangles using the radius property.
-
-    \qml
-    Rect {
-        width: 100
-        height: 100
-        color: "red"
-        pen.color: "black"
-        pen.width: 5
-        radius: 10
-    }
-    \endqml
-
-    \image declarative-rect.png
-
-    A QFxRect object can be instantiated in Qml using the tag \l Rect.
-
-    \ingroup group_coreitems
 */
 QFxRect::QFxRect(QFxItem *parent)
   : QFxItem(*(new QFxRectPrivate), parent)
 {
     Q_D(QFxRect);
     d->init();
-    setOptions(HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
@@ -247,7 +226,7 @@ QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
 {
     Q_D(QFxRect);
     d->init();
-    setOptions(HasContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 void QFxRect::doUpdate()
@@ -255,21 +234,22 @@ void QFxRect::doUpdate()
     Q_D(QFxRect);
     d->rectImage = QPixmap();
     const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-    setPaintMargin((pw+1)/2);
+    d->setPaintMargin((pw+1)/2);
     update();
 }
 
 /*!
-    \qmlproperty int Rect::pen.width
-    \qmlproperty color Rect::pen.color
+    \qmlproperty int Rect::border.width
+    \qmlproperty color Rect::border.color
 
-    The pen used to draw the border of the rect.
+    The width and color used to draw the border of the rect.
+
+    A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
+
+    To keep the border smooth (rather than blurry), odd widths cause the rect to be painted at
+    a half-pixel offset;
 */
-/*!
-    \property QFxRect::pen
-    \brief the pen used to draw the border of the rect.
-*/
-QFxPen *QFxRect::pen()
+QFxPen *QFxRect::border()
 {
     Q_D(QFxRect);
     return d->getPen();
@@ -305,6 +285,8 @@ QFxPen *QFxRect::pen()
     \endqml
     \endtable
 
+    If both a gradient and a color are specified, the gradient will be used.
+
     \sa Gradient, color
 */
 QFxGradient *QFxRect::gradient() const
@@ -334,11 +316,6 @@ void QFxRect::setGradient(QFxGradient *gradient)
     If radius is non-zero, the rect will be painted as a rounded rectangle, otherwise it will be
     painted as a normal rectangle. The same radius is used by all 4 corners; there is currently
     no way to specify different radii for different corners.
-*/
-
-/*!
-    \property QFxRect::radius
-    \brief the corner radius used to draw a rounded rect.
 */
 qreal QFxRect::radius() const
 {
@@ -370,11 +347,8 @@ void QFxRect::setRadius(qreal radius)
     \endqml
 
     The default color is white.
-*/
 
-/*!
-    \property QFxRect::color
-    \brief the color used to fill the rect.
+    If both a gradient and a color are specified, the gradient will be used.
 */
 QColor QFxRect::color() const
 {
@@ -393,8 +367,6 @@ void QFxRect::setColor(const QColor &c)
     update();
 }
 
-
-
 /*!
     \qmlproperty color Rect::tintColor
     This property holds The color to tint the rectangle.
@@ -408,11 +380,6 @@ void QFxRect::setColor(const QColor &c)
     \image declarative-rect_tint.png
 
     This attribute is not intended to be used with a single color over the lifetime of an user interface. It is most useful when a subtle change is intended to be conveyed due to some event; you can then use the tint color to more effectively tune the visible color.
-*/
-
-/*!
-    \property QFxRect::tintColor
-    \brief The color to tint the rectangle.
 */
 QColor QFxRect::tintColor() const
 {
@@ -603,6 +570,12 @@ void QFxRect::drawRect(QPainter &p)
         p.drawPixmap(QPoint(width()-xOffset+pw/2, height() - yOffset+pw/2), d->rectImage,
                         QRect(d->rectImage.width()-xOffset, d->rectImage.height() - yOffset, xOffset, yOffset));
     }
+}
+
+QRectF QFxRect::boundingRect() const
+{
+    Q_D(const QFxRect);
+    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
 }
 
 QT_END_NAMESPACE

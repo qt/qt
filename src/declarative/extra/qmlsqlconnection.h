@@ -100,8 +100,6 @@ public:
 
     QString lastError() const;
 
-    virtual void classComplete();
-
     QSqlDatabase database() const;
 private:
     Q_DISABLE_COPY(QmlSqlConnection)

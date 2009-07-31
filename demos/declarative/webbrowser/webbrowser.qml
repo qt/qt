@@ -126,7 +126,7 @@ Item {
                         }
                         KeyActions {
                             id: keyActions
-                            return: "WebBrowser.url = EditUrl.text; proxy.focus=false;"
+                            keyReturn: "WebBrowser.url = EditUrl.text; proxy.focus=false;"
                         }
                         */
                         TextEdit {

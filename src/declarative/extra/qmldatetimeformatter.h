@@ -97,7 +97,7 @@ public:
     void setLongStyle(bool);
 
     virtual void classBegin();
-    virtual void classComplete();
+    virtual void componentComplete();
 
 Q_SIGNALS:
     void textChanged();
