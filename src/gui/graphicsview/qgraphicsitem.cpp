@@ -3565,7 +3565,7 @@ void QGraphicsItem::rotate(qreal angle)
 
     \code
     setTransform(QTransform::fromScale(sx, sy), true);
-    \encode
+    \endcode
 
     instead.
 
