@@ -84,7 +84,7 @@ public:
     bool smoothTransform() const;
     void setSmoothTransform(bool);
 
-    enum Status { Idle, Loading, Error };
+    enum Status { Null, Ready, Loading, Error };
     Status status() const;
     qreal progress() const;
 
