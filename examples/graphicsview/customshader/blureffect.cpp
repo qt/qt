@@ -59,7 +59,7 @@ void BlurEffect::adjustForItem()
 QRectF BlurEffect::boundingRectFor(const QRectF &rect) const
 {
     const_cast<BlurEffect *>(this)->adjustForItem();
-    return QGraphicsBlurEffect::boundingRect();
+    return QGraphicsBlurEffect::boundingRectFor(rect);
 }
 
 void BlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
