@@ -364,12 +364,22 @@ namespace QtSharedPointer {
         inline void internalSet(Data *o, T *actual)
         {
             if (d == o) return;
-            if (o && !o->strongref)
-                o = 0;
             if (o) {
                 verifyReconstruction(actual);
-                o->weakref.ref();
-                o->strongref.ref();
+
+                // increase the strongref, but never up from zero
+                register int tmp = o->strongref;
+                while (tmp > 0) {
+                    // try to increment from "tmp" to "tmp + 1"
+                    if (o->strongref.testAndSetRelaxed(tmp, tmp + 1))
+                        break;   // succeeded
+                    tmp = o->strongref;  // failed, try again
+                }
+
+                if (tmp)
+                    o->weakref.ref();
+                else
+                    o = 0;
             }
             if (d && !deref())
                 delete d;

@@ -41,10 +41,15 @@
 
 #define QT_SHAREDPOINTER_TRACK_POINTERS
 #include "qsharedpointer.h"
-#include "externaltests.h"
 #include <QtTest/QtTest>
+#include <QtCore/QThread>
+#include <QtCore/QVector>
 
+#include "externaltests.h"
 #include "wrapper.h"
+
+#include <stdlib.h>
+#include <time.h>
 
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
@@ -75,6 +80,8 @@ private slots:
     void customDeleter();
     void creating();
     void mixTrackingPointerCode();
+    void threadStressTest_data();
+    void threadStressTest();
     void validConstructs();
     void invalidConstructs_data();
     void invalidConstructs();
@@ -1175,6 +1182,122 @@ void tst_QSharedPointer::mixTrackingPointerCode()
         // deleted in code with tracking
         Wrapper w = Wrapper::create();
         w.ptr.clear();
+    }
+}
+
+class ThreadData
+{
+    QAtomicInt * volatile ptr;
+public:
+    ThreadData(QAtomicInt *p) : ptr(p) { }
+    ~ThreadData() { ++ptr; }
+    void ref()
+    {
+        // if we're called after the destructor, we'll crash
+        ptr->ref();
+    }
+};
+
+class StrongThread: public QThread
+{
+protected:
+    void run()
+    {
+        usleep(rand() % 2000);
+        ptr->ref();
+        ptr.clear();
+    }
+public:
+    QSharedPointer<ThreadData> ptr;
+};
+
+class WeakThread: public QThread
+{
+protected:
+    void run()
+    {
+        usleep(rand() % 2000);
+        QSharedPointer<ThreadData> ptr = weak;
+        if (ptr)
+            ptr->ref();
+        ptr.clear();
+    }
+public:
+    QWeakPointer<ThreadData> weak;
+};
+
+void tst_QSharedPointer::threadStressTest_data()
+{
+    QTest::addColumn<int>("strongThreadCount");
+    QTest::addColumn<int>("weakThreadCount");
+
+    QTest::newRow("0+0") << 0 << 0;
+    QTest::newRow("1+0") << 1 << 0;
+    QTest::newRow("2+0") << 2 << 0;
+    QTest::newRow("10+0") << 10 << 0;
+
+    QTest::newRow("0+1") << 0 << 1;
+    QTest::newRow("1+1") << 1 << 1;
+
+    QTest::newRow("2+10") << 2 << 10;
+    QTest::newRow("5+10") << 5 << 10;
+    QTest::newRow("5+30") << 5 << 30;
+
+    QTest::newRow("100+100") << 100 << 100;
+}
+
+void tst_QSharedPointer::threadStressTest()
+{
+    QFETCH(int, strongThreadCount);
+    QFETCH(int, weakThreadCount);
+
+    int guard1[128];
+    QAtomicInt counter;
+    int guard2[128];
+
+    memset(guard1, 0, sizeof guard1);
+    memset(guard2, 0, sizeof guard2);
+
+    for (int r = 0; r < 5; ++r) {
+        QVector<QThread*> allThreads(6 * qMax(strongThreadCount, weakThreadCount) + 3, 0);
+        QSharedPointer<ThreadData> base = QSharedPointer<ThreadData>(new ThreadData(&counter));
+        counter = 0;
+
+        // set the pointers
+        for (int i = 0; i < strongThreadCount; ++i) {
+            StrongThread *t = new StrongThread;
+            t->ptr = base;
+            allThreads[2 * i] = t;
+        }
+        for (int i = 0; i < weakThreadCount; ++i) {
+            WeakThread *t = new WeakThread;
+            t->weak = base;
+            allThreads[6 * i + 3] = t;
+        }
+
+        base.clear();
+
+        srand(time(NULL));
+        // start threads
+        for (int i = 0; i < allThreads.count(); ++i)
+            if (allThreads[i]) allThreads[i]->start();
+
+        // wait for them to finish
+        for (int i = 0; i < allThreads.count(); ++i)
+            if (allThreads[i]) allThreads[i]->wait();
+        qDeleteAll(allThreads);
+
+        // ensure the guards aren't touched
+        for (uint i = 0; i < sizeof guard1 / sizeof guard1[0]; ++i)
+            QVERIFY(!guard1[i]);
+        for (uint i = 0; i < sizeof guard2 / sizeof guard2[0]; ++i)
+            QVERIFY(!guard2[i]);
+
+        // verify that the count is the right range
+        int minValue = strongThreadCount;
+        int maxValue = strongThreadCount + weakThreadCount;
+        QVERIFY(counter >= minValue);
+        QVERIFY(counter <= maxValue);
     }
 }
 
