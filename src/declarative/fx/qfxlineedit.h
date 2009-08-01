@@ -60,7 +60,7 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     Q_OBJECT
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QmlFont *font READ font)
+    Q_PROPERTY(QmlFont *font READ font CONSTANT)
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QFxText::HAlignment hAlign READ hAlign WRITE setHAlign)
 
