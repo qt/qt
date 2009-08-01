@@ -174,7 +174,7 @@ void QFxLoaderPrivate::_q_sourceLoaded()
 }
 
 /*!
-    \qmlproperty url Loader::item
+    \qmlproperty Item Loader::item
     This property holds the top-level item created from source.
 */
 QFxItem *QFxLoader::item() const

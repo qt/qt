@@ -127,7 +127,7 @@ void QmlScript::setScript(const QString &script)
 }
 
 /*!
-    \qmlproperty string Script::source
+    \qmlproperty url Script::source
 
     Setting this property causes the Script element to read JavaScript code from
     the file specified.

@@ -102,6 +102,7 @@ public:
     ColorGroup colorGroup() const;
     void setColorGroup(ColorGroup);
 
+    // FIXME: Move to utility class?
     Q_INVOKABLE QColor lighter(const QColor&) const;
     Q_INVOKABLE QColor darker(const QColor&) const;
 
