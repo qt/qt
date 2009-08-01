@@ -289,7 +289,7 @@ void QHelpProjectDataPrivate::addMatchingFiles(const QString &pattern)
 
     bool matchFound = false;
 #ifdef Q_OS_WIN
-    Qt::CaseSensitivity cs = Qt::CaseInSensitive;
+    Qt::CaseSensitivity cs = Qt::CaseInsensitive;
 #else
     Qt::CaseSensitivity cs = Qt::CaseSensitive;
 #endif
