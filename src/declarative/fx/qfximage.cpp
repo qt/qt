@@ -167,13 +167,12 @@ QFxImage::~QFxImage()
 }
 
 /*!
-    \property QFxImage::pixmap
+    \property QFxImage::image
     \brief the image displayed in this item.
 
     This property contains the image currently being displayed by this item,
-    which may be an empty pixmap if nothing is currently displayed. If this
-    property is set, the source property will be unset. This property is intended
-    to be used only in C++, not in QML.
+    which may be empty if nothing is currently displayed. Setting the source
+    property overrides any setting of this property.
 */
 QPixmap QFxImage::pixmap() const
 {
@@ -184,9 +183,9 @@ QPixmap QFxImage::pixmap() const
 void QFxImage::setPixmap(const QPixmap &pix)
 {
     Q_D(QFxImage);
-    d->url = QUrl();
+    if (!d->url.isEmpty())
+        return;
     d->pix = pix;
-    d->opaque=false;
 
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
@@ -454,8 +453,9 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     This property holds the status of image loading.  It can be one of:
     \list
-    \o Idle - no image has been set, or the image has been loaded
-    \o Loading - the images is currently being loaded
+    \o Null - no image has been set
+    \o Ready - the image has been loaded
+    \o Loading - the image is currently being loaded
     \o Error - an error occurred while loading the image
     \endlist
 
@@ -484,7 +484,7 @@ qreal QFxImage::progress() const
 }
 
 /*!
-    \qmlproperty string Image::source
+    \qmlproperty url Image::source
 
     Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 
@@ -546,8 +546,8 @@ void QFxImage::setSource(const QUrl &url)
     }
 
     if (url.isEmpty()) {
-        setPixmap(QPixmap());
-        d->status = Idle;
+        d->pix = QPixmap();
+        d->status = Null;
         d->progress = 1.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
@@ -605,7 +605,7 @@ void QFxImage::requestFinished()
     setImplicitHeight(d->pix.height());
 
     if (d->status == Loading)
-        d->status = Idle;
+        d->status = Ready;
     d->progress = 1.0;
     emit statusChanged(d->status);
     emit sourceChanged(d->url);

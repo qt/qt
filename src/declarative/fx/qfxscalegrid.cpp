@@ -41,7 +41,7 @@
 
 #include <QBuffer>
 #include <qml.h>
-#include "qfxscalegrid.h"
+#include "qfxscalegrid_p.h"
 
 
 QT_BEGIN_NAMESPACE

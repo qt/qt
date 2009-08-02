@@ -66,7 +66,7 @@ Item {
                     Rect {
                         id: WhiteRect; anchors.fill: parent; color: "white"; radius: 5
 
-                        Loading { x: 26; y: 26; visible: Thumb.status }
+                        Loading { x: 26; y: 26; visible: Thumb.status!=1 }
                         Image { id: Thumb; source: imagePath; x: 5; y: 5 }
 
                         Item {

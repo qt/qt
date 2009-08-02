@@ -55,7 +55,6 @@
 #include "qlistmodelinterface.h"
 #include "qfxanchors_p.h"
 
-#include "qfxscalegrid.h"
 #include "qfxview.h"
 #include "qmlstategroup.h"
 
@@ -1618,17 +1617,6 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
     }
 }
 
-QFxItem::Options QFxItem::options() const
-{
-    Q_D(const QFxItem);
-    return (QFxItem::Options)d->options;
-}
-
-bool QFxItem::mouseFilter(QGraphicsSceneMouseEvent *)
-{
-    return false;
-}
-
 bool QFxItem::sceneEvent(QEvent *event)
 {
     bool rv = QGraphicsItem::sceneEvent(event);
@@ -1845,44 +1833,6 @@ void QFxItem::setFocus(bool focus)
 bool QFxItem::hasActiveFocus() const
 {
     return QGraphicsItem::hasFocus();
-}
-
-bool QFxItem::sceneEventFilter(QGraphicsItem *w, QEvent *e)
-{
-    switch(e->type()) {
-    case QEvent::GraphicsSceneMouseDoubleClick:
-    case QEvent::GraphicsSceneMouseMove:
-    case QEvent::GraphicsSceneMousePress:
-    case QEvent::GraphicsSceneMouseRelease:
-        if (mouseFilter(static_cast<QGraphicsSceneMouseEvent *>(e))) 
-            return true;
-        break;
-    default:
-        break;
-    }
-
-    return QGraphicsItem::sceneEventFilter(w, e);
-}
-
-void QFxItem::setOptions(Options options, bool set)
-{
-    Q_D(QFxItem);
-    Options old = (Options)d->options;
-
-    if (options & IsFocusRealm) {
-        if (!set) {
-            qWarning("QFxItem::setOptions: Cannot unset IsFocusRealm");
-            return;
-        }
-    }
-
-    if (set)
-        d->options |= options;
-    else
-        d->options &= ~options;
-
-    setFiltersChildEvents(d->options & ChildMouseFilter);
-    setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy, d->options & IsFocusRealm);
 }
 
 void QFxItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)

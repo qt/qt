@@ -151,7 +151,7 @@ Q_SIGNALS:
     void pageChanged();
 
 protected:
-    virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
+    virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);

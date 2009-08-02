@@ -43,7 +43,6 @@
 #define QFXIMAGE_H
 
 #include <QtDeclarative/qfxitem.h>
-#include <QtDeclarative/qfxscalegrid.h>
 #include <QtNetwork/qnetworkreply.h>
 
 
@@ -53,6 +52,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 class QFxImagePrivate;
+class QFxScaleGrid;
+class QFxGridScaledImage;
+
 class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
 {
     Q_OBJECT
@@ -72,8 +74,6 @@ public:
     QFxImage(QFxItem *parent=0);
     ~QFxImage();
 
-    QFxScaleGrid *scaleGrid();
-
     enum FillMode { Stretch, PreserveAspect, Tile, TileVertically, TileHorizontally };
     FillMode fillMode() const;
     void setFillMode(FillMode);
@@ -84,7 +84,7 @@ public:
     bool smoothTransform() const;
     void setSmoothTransform(bool);
 
-    enum Status { Idle, Loading, Error };
+    enum Status { Null, Ready, Loading, Error };
     Status status() const;
     qreal progress() const;
 
@@ -112,6 +112,7 @@ private:
     Q_DISABLE_COPY(QFxImage)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
     void setGridScaledImage(const QFxGridScaledImage& sci);
+    QFxScaleGrid *scaleGrid();
 };
 
 QT_END_NAMESPACE

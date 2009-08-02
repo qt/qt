@@ -31,7 +31,7 @@ HEADERS += \
            fx/qfxrect_p.h \
            fx/qfxrepeater.h \
            fx/qfxrepeater_p.h \
-           fx/qfxscalegrid.h \
+           fx/qfxscalegrid_p.h \
            fx/qfxlineedit.h \
            fx/qfxlineedit_p.h \
            fx/qfxtextedit.h \

@@ -74,12 +74,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontFamily,QmlFontFamily)
     \ingroup group_utility
     \brief This item allows using fonts by name or url.
 
+    Example:
     \code
-        FontFamily { id: FixedFont; name: "Courier" }
-        FontFamily { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
+    FontFamily { id: FixedFont; name: "Courier" }
+    FontFamily { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
 
-	Text { text: "Fixed-size font"; font.family: FixedFont.name }
-	Text { text: "Fancy font"; font.family: WebFont.name }
+    Text { text: "Fixed-size font"; font.family: FixedFont.name }
+    Text { text: "Fancy font"; font.family: WebFont.name }
     \endcode
 */
 QmlFontFamily::QmlFontFamily(QObject *parent)
@@ -92,8 +93,8 @@ QmlFontFamily::~QmlFontFamily()
 }
 
 /*!
-    \qmlproperty FontFamily::source
-    The source for the font.
+    \qmlproperty url FontFamily::source
+    The url of the font to load.
 */
 QUrl QmlFontFamily::source() const
 {
@@ -126,6 +127,20 @@ void QmlFontFamily::setSource(const QUrl &url)
     }
 }
 
+/*!
+    \qmlproperty string FontFamily::name
+
+    This property holds the name of the font family.
+    It is set automatically when a font is loaded using the \c url property.
+
+    Use this to set the \c font.family property of a \c Text item.
+
+    Example:
+    \qml
+    FontFamily { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
+    Text { text: "Fancy font"; font.family: WebFont.name }
+    \endqml
+*/
 QString QmlFontFamily::name() const
 {
     Q_D(const QmlFontFamily);
@@ -141,6 +156,17 @@ void QmlFontFamily::setName(const QString &name)
     emit nameChanged();
 }
 
+/*!
+    \qmlproperty enum FontFamily::status
+
+    This property holds the status of font loading.  It can be one of:
+    \list
+    \o Null - no font has been set
+    \o Ready - the font has been loaded
+    \o Loading - the font is currently being loaded
+    \o Error - an error occurred while loading the font
+    \endlist
+*/
 QmlFontFamily::Status QmlFontFamily::status() const
 {
     Q_D(const QmlFontFamily);

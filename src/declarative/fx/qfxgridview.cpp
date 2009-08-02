@@ -325,7 +325,7 @@ public:
 void QFxGridViewPrivate::init()
 {
     Q_Q(QFxGridView);
-    q->setOptions(QFxGridView::IsFocusRealm);
+    q->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(sizeChange()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(sizeChange()));
 }
