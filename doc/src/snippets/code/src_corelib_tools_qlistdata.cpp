@@ -190,10 +190,10 @@ QVector<QString> vect = list.toVector();
 
 
 //! [23]
-QSet<double> set;
-set << 20.0 << 30.0 << 40.0 << ... << 70.0;
+QSet<int> set;
+set << 20 << 30 << 40 << ... << 70;
 
-QList<double> list = QList<double>::fromSet(set);
+QList<int> list = QList<int>::fromSet(set);
 qSort(list);
 //! [23]
 
