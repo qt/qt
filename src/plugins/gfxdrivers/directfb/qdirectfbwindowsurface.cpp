@@ -209,7 +209,6 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
             if (!dfbWindow)
                 createWindow();
             ::setGeometry(dfbWindow, oldRect, rect);
-            // ### do I need to release and get the surface again here?
 #endif
             break;
         case Offscreen: {
@@ -227,7 +226,10 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         if (result != DFB_OK)
             DirectFBErrorFatal("QDirectFBWindowSurface::setGeometry()", result);
     }
-
+    if (engine) {
+        delete engine;
+        engine = 0;
+    }
     QWSWindowSurface::setGeometry(rect);
 }
 

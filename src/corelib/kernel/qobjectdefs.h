@@ -334,6 +334,9 @@ struct Q_CORE_EXPORT QMetaObject
     static void activate(QObject *sender, int from_signal_index, int to_signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int from_local_signal_index, int to_local_signal_index, void **argv);
+
+    static bool isConnected(QObject *sender, int signal_index);
+
     // internal guarded pointers
     static void addGuard(QObject **ptr);
     static void removeGuard(QObject **ptr);
@@ -428,6 +431,7 @@ struct Q_CORE_EXPORT QMetaObject
     };
 
     int static_metacall(Call, int, void **) const;
+    static int metacall(QObject *, Call, int, void **);
 
 #ifdef QT3_SUPPORT
     QT3_SUPPORT const char *superClassName() const;
@@ -439,6 +443,7 @@ struct Q_CORE_EXPORT QMetaObject
         const uint *data;
         const void *extradata;
     } d;
+
 };
 
 struct QMetaObjectExtraData

@@ -3535,7 +3535,13 @@ void QGraphicsItem::resetTransform()
 /*!
     \obsolete
 
-    Use setRotation() instead
+    Use
+
+    \code
+    setRotation(rotation() + angle);
+    \endcode
+
+    instead.
 
     Rotates the current item transformation \a angle degrees clockwise around
     its origin. To translate around an arbitrary point (x, y), you need to
@@ -3555,7 +3561,13 @@ void QGraphicsItem::rotate(qreal angle)
 /*!
     \obsolete
 
-    Use setScale() instead
+    Use
+
+    \code
+    setTransform(QTransform::fromScale(sx, sy), true);
+    \endcode
+
+    instead.
 
     Scales the current item transformation by (\a sx, \a sy) around its
     origin. To scale from an arbitrary point (x, y), you need to combine
@@ -3575,7 +3587,13 @@ void QGraphicsItem::scale(qreal sx, qreal sy)
 /*!
     \obsolete
 
-    Use setTransform() instead.
+    Use 
+
+    \code
+    setTransform(QTransform().shear(sh, sv), true);
+    \endcode
+
+    instead.
 
     Shears the current item transformation by (\a sh, \a sv).
 
@@ -3589,7 +3607,12 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 /*!
     \obsolete
 
-    Use setPos() or setTransformOriginPoint() instead.
+    Use setPos() or setTransformOriginPoint() instead. For identical
+    behavior, use
+    
+    \code
+    setTransform(QTransform::fromTranslate(dx, dy), true);
+    \endcode
 
     Translates the current item transformation by (\a dx, \a dy).
 
@@ -6503,7 +6526,7 @@ void QGraphicsItem::prepareGeometryChange()
         // if someone is connected to the changed signal or the scene has no views.
         // Note that this has to be done *after* markDirty to ensure that
         // _q_processDirtyItems is called before _q_emitUpdated.
-        if ((scenePrivate->connectedSignals & scenePrivate->changedSignalMask)
+	if ((scenePrivate->connectedSignals[0] & scenePrivate->changedSignalMask)
             || scenePrivate->views.isEmpty()) {
             if (d_ptr->hasTranslateOnlySceneTransform()) {
                 d_ptr->scene->update(boundingRect().translated(d_ptr->sceneTransform.dx(),

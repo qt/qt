@@ -908,6 +908,15 @@ void Moc::parseProperty(ClassDef *def)
     propDef.name = lexem();
     while (test(IDENTIFIER)) {
         QByteArray l = lexem();
+
+        if (l[0] == 'C' && l == "CONSTANT") {
+            propDef.constant = true;
+            continue;
+        } else if(l[0] == 'F' && l == "FINAL") {
+            propDef.final = true;
+            continue;
+        }
+
         QByteArray v, v2;
         if (test(LPAREN)) {
             v = lexemUntil(RPAREN);
@@ -963,6 +972,23 @@ void Moc::parseProperty(ClassDef *def)
         msg += " has no READ accessor function. The property will be invalid.";
         warning(msg.constData());
     }
+    if (propDef.constant && !propDef.write.isNull()) {
+        QByteArray msg;
+        msg += "Property declaration ";
+        msg += propDef.name;
+        msg += " is both WRITEable and CONSTANT. CONSTANT will be ignored.";
+        propDef.constant = false;
+        warning(msg.constData());
+    }
+    if (propDef.constant && !propDef.notify.isNull()) {
+        QByteArray msg;
+        msg += "Property declaration ";
+        msg += propDef.name;
+        msg += " is both NOTIFYable and CONSTANT. CONSTANT will be ignored.";
+        propDef.constant = false;
+        warning(msg.constData());
+    }
+
     if(!propDef.notify.isEmpty())
         def->notifyableProperties++;
 

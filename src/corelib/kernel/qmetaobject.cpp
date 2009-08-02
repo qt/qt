@@ -148,7 +148,9 @@ enum PropertyFlags  {
     Resettable = 0x00000004,
     EnumOrFlag = 0x00000008,
     StdCppSet = 0x00000100,
-//    Override = 0x00000200,
+//     Override = 0x00000200,
+    Constant = 0x00000400,
+    Final = 0x00000800,
     Designable = 0x00001000,
     ResolveDesignable = 0x00002000,
     Scriptable = 0x00004000,
@@ -179,6 +181,10 @@ enum MethodFlags  {
     MethodScriptable = 0x40
 };
 
+enum MetaObjectFlags {
+    DynamicMetaObject = 0x01
+};
+
 struct QMetaObjectPrivate
 {
     int revision;
@@ -188,6 +194,7 @@ struct QMetaObjectPrivate
     int propertyCount, propertyData;
     int enumeratorCount, enumeratorData;
     int constructorCount, constructorData;
+    int flags;
 };
 
 static inline const QMetaObjectPrivate *priv(const uint* data)
@@ -274,6 +281,17 @@ int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
     if (!extra || !extra->static_metacall)
         return 0;
     return extra->static_metacall(cl, idx, argv);
+}
+
+/*!
+    \internal
+*/
+int QMetaObject::metacall(QObject *object, Call cl, int idx, void **argv)
+{
+    if (QMetaObject *mo = object->d_ptr->metaObject)
+        return static_cast<QAbstractDynamicMetaObject*>(mo)->metaCall(cl, idx, argv);
+    else
+        return object->qt_metacall(cl, idx, argv);
 }
 
 /*!
@@ -696,6 +714,14 @@ int QMetaObject::indexOfProperty(const char *name) const
             }
         m = m->d.superdata;
     }
+
+    if (i == -1 && priv(this->d.data)->revision >= 3 && (priv(this->d.data)->flags & DynamicMetaObject)){
+        QAbstractDynamicMetaObject *me = 
+            const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(this));
+
+        i = me->createProperty(name, 0);
+    }
+
     return i;
 }
 
@@ -1326,6 +1352,16 @@ int QMetaMethod::attributes() const
 }
 
 /*!
+  Returns this method's index.
+*/
+int QMetaMethod::methodIndex() const
+{
+    if (!mobj)
+        return -1;
+    return ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
+}
+
+/*!
     Returns the access specification of this method (private,
     protected, or public).
 
@@ -1525,7 +1561,7 @@ bool QMetaMethod::invoke(QObject *object,
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
     int methodIndex = ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
     if (connectionType == Qt::DirectConnection) {
-        return object->qt_metacall(QMetaObject::InvokeMetaMethod, methodIndex, param) < 0;
+        return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, methodIndex, param) < 0;
     } else {
         if (returnValue.data()) {
             qWarning("QMetaMethod::invoke: Unable to invoke methods with return values in "
@@ -2040,6 +2076,16 @@ int QMetaProperty::userType() const
 }
 
 /*!
+  Returns this property's index.
+*/
+int QMetaProperty::propertyIndex() const
+{
+    if (!mobj)
+        return -1;
+    return idx + mobj->propertyOffset();
+}
+
+/*!
     Returns true if the property's type is an enumeration value that
     is used as a flag; otherwise returns false.
 
@@ -2151,9 +2197,8 @@ QVariant QMetaProperty::read(const QObject *object) const
         value = QVariant(t, (void*)0);
         argv[0] = value.data();
     }
-    const_cast<QObject*>(object)->qt_metacall(QMetaObject::ReadProperty,
-                                              idx + mobj->propertyOffset(),
-                                              argv);
+    QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::ReadProperty,
+                          idx + mobj->propertyOffset(), argv);
 
     if (status != -1)
         return value;
@@ -2224,7 +2269,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         argv[0] = &v;
     else
         argv[0] = v.data();
-    object->qt_metacall(QMetaObject::WriteProperty, idx + mobj->propertyOffset(), argv);
+    QMetaObject::metacall(object, QMetaObject::WriteProperty, idx + mobj->propertyOffset(), argv);
     return status;
 }
 
@@ -2241,7 +2286,7 @@ bool QMetaProperty::reset(QObject *object) const
     if (!object || !mobj || !isResettable())
         return false;
     void *argv[] = { 0 };
-    object->qt_metacall(QMetaObject::ResetProperty, idx + mobj->propertyOffset(), argv);
+    QMetaObject::metacall(object, QMetaObject::ResetProperty, idx + mobj->propertyOffset(), argv);
     return true;
 }
 
@@ -2355,8 +2400,8 @@ bool QMetaProperty::isDesignable(const QObject *object) const
     bool b = flags & Designable;
     if (object) {
         void *argv[] = { &b };
-        const_cast<QObject*>(object)->qt_metacall(QMetaObject::QueryPropertyDesignable,
-                                                  idx + mobj->propertyOffset(), argv);
+        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyDesignable,
+                              idx + mobj->propertyOffset(), argv);
     }
     return b;
 
@@ -2381,8 +2426,8 @@ bool QMetaProperty::isScriptable(const QObject *object) const
     bool b = flags & Scriptable;
     if (object) {
         void *argv[] = { &b };
-        const_cast<QObject*>(object)->qt_metacall(QMetaObject::QueryPropertyScriptable,
-                                                  idx + mobj->propertyOffset(), argv);
+        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyScriptable,
+                              idx + mobj->propertyOffset(), argv);
     }
     return b;
 }
@@ -2405,8 +2450,8 @@ bool QMetaProperty::isStored(const QObject *object) const
     bool b = flags & Stored;
     if (object) {
         void *argv[] = { &b };
-        const_cast<QObject*>(object)->qt_metacall(QMetaObject::QueryPropertyStored,
-                                                  idx + mobj->propertyOffset(), argv);
+        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyStored,
+                              idx + mobj->propertyOffset(), argv);
     }
     return b;
 }
@@ -2432,10 +2477,38 @@ bool QMetaProperty::isUser(const QObject *object) const
     bool b = flags & User;
     if (object) {
         void *argv[] = { &b };
-        const_cast<QObject*>(object)->qt_metacall(QMetaObject::QueryPropertyUser,
-                                                  idx + mobj->propertyOffset(), argv);
+        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyUser,
+                              idx + mobj->propertyOffset(), argv);
     }
     return b;
+}
+
+/*!
+    Returns true if the property is constant; otherwise returns false.
+
+    A property is constant if the \c{Q_PROPERTY()}'s \c CONSTANT attribute
+    is set.
+*/
+bool QMetaProperty::isConstant() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & Constant;
+}
+
+/*!
+    Returns true if the property is final; otherwise returns false.
+
+    A property is final if the \c{Q_PROPERTY()}'s \c FINAL attribute
+    is set.
+*/
+bool QMetaProperty::isFinal() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & Final;
 }
 
 /*!
@@ -2458,8 +2531,8 @@ bool QMetaProperty::isEditable(const QObject *object) const
     bool b = flags & Editable;
     if (object) {
         void *argv[] = { &b };
-        const_cast<QObject*>(object)->qt_metacall(QMetaObject::QueryPropertyEditable,
-                                                  idx + mobj->propertyOffset(), argv);
+        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyEditable,
+                              idx + mobj->propertyOffset(), argv);
     }
     return b;
 }

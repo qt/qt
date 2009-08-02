@@ -44,6 +44,7 @@
 
 #include <QtCore/qatomic.h>
 #include <limits.h>
+#include <new>
 
 QT_BEGIN_HEADER
 
@@ -76,6 +77,12 @@ struct QContiguousCacheTypedData
     int start;
     int offset;
     uint sharable : 1;
+    // uint unused : 31;
+
+    // total is 24 bytes (HP-UX aCC: 40 bytes)
+    // the next entry is already aligned to 8 bytes
+    // there will be an 8 byte gap here if T requires 16-byte alignment
+    //  (such as long double on 64-bit platforms, __int128, __float128)
 
     T array[1];
 };

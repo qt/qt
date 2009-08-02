@@ -274,7 +274,7 @@ bool MainWindow::initHelpDB()
         return false;
 
     bool assistantInternalDocRegistered = false;
-    QString intern(QLatin1String("com.trolltech.com.assistantinternal_"));
+    QString intern(QLatin1String("com.trolltech.com.assistantinternal-"));
     foreach (const QString &ns, m_helpEngine->registeredDocumentations()) {
         if (ns.startsWith(intern)) {
             intern = ns;

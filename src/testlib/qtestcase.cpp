@@ -818,6 +818,8 @@ void filter_unprintable(char *str)
     }
 }
 
+/*! \internal
+ */
 int qt_asprintf(char **str, const char *format, ...)
 {
     static const int MAXSIZE = 1024*1024*2;
