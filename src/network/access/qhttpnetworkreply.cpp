@@ -550,7 +550,7 @@ bool QHttpNetworkReplyPrivate::connectionCloseEnabled()
 // note this function can only be used for non-chunked, non-compressed with
 // known content length
 qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QRingBuffer *rb)
-{   
+{
     quint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
     char* dst = rb->reserve(toBeRead);
     qint64 haveRead = socket->read(dst, toBeRead);

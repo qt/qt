@@ -351,8 +351,8 @@ public:
     struct sockaddr_storage aa;
 #else
     struct sockaddr_in aa;
-#endif    
-    
+#endif
+
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 
 #ifdef Q_OS_WIN

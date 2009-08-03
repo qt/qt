@@ -602,7 +602,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(d2i_RSAPrivateKey, 2296, libs.second )
 #endif
     RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf, 1153, libs.second )
-    RESOLVEFUNC(OPENSSL_add_all_algorithms_conf, 1152, libs.second )    
+    RESOLVEFUNC(OPENSSL_add_all_algorithms_conf, 1152, libs.second )
 #else // Q_OS_SYMBIAN
 #ifdef SSLEAY_MACROS
     RESOLVEFUNC(ASN1_dup)
@@ -723,7 +723,7 @@ bool q_resolveOpenSslSymbols()
 #endif
     RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf)
     RESOLVEFUNC(OPENSSL_add_all_algorithms_conf)
-#endif // Q_OS_SYMBIAN    
+#endif // Q_OS_SYMBIAN
     symbolsResolved = true;
     delete libs.first;
     delete libs.second;
