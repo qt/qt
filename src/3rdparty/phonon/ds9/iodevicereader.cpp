@@ -167,7 +167,7 @@ namespace Phonon
                       oldSize = currentBufferSize();
                   }
 
-                  DWORD bytesRead = qMin(currentBufferSize(), int(length));
+                  int bytesRead = qMin(currentBufferSize(), int(length));
                   {
                       QWriteLocker locker(&m_lock);
                       qMemCopy(buffer, m_buffer.data(), bytesRead);
