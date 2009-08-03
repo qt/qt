@@ -43,6 +43,7 @@
 #include "helpviewer.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
+#include "preferencesdialog.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QEvent>
@@ -421,6 +422,27 @@ void CentralWidget::setSource(const QUrl &url)
     viewer->setFocus(Qt::OtherFocusReason);
     tabWidget->setCurrentIndex(lastTabPage);
     tabWidget->setTabText(lastTabPage, quoteTabTitle(viewer->documentTitle()));
+}
+
+void CentralWidget::setupWidget()
+{
+    int option = helpEngine->customValue(QLatin1String("StartOption"),
+        ShowLastPages).toInt();
+
+    if (option != ShowLastPages) {
+        QString homePage;
+        if (option == ShowHomePage) {
+            homePage = helpEngine->customValue(QLatin1String("defaultHomepage"),
+                QLatin1String("help")).toString();
+            homePage = helpEngine->customValue(QLatin1String("homepage"),
+                homePage).toString();
+        }
+        if (option == ShowBlankPage)
+            homePage = QLatin1String("about:blank");
+        setSource(homePage);
+    } else {
+        setLastShownPages();
+    }
 }
 
 void CentralWidget::setLastShownPages()

@@ -407,7 +407,7 @@ void MainWindow::insertLastPages()
     if (m_cmdLine->url().isValid())
         m_centralWidget->setSource(m_cmdLine->url());
     else
-        m_centralWidget->setLastShownPages();
+        m_centralWidget->setupWidget();
 
     if (m_cmdLine->search() == CmdLineParser::Activate)
         showSearch();
