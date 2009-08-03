@@ -56,8 +56,8 @@ namespace JSC {
 // Number of ticks before the first timeout check is done.
 static const int ticksUntilFirstCheck = 1024;
 
-// Number of milliseconds between each timeout check.
-static const int intervalBetweenChecks = 1000;
+// Default number of milliseconds between each timeout check.
+static const int defaultIntervalBetweenChecks = 1000;
 
 // Returns the time the current thread has spent executing, in milliseconds.
 static inline unsigned getCPUTime()
@@ -104,6 +104,7 @@ static inline unsigned getCPUTime()
 TimeoutChecker::TimeoutChecker()
     : m_timeoutInterval(0)
     , m_startCount(0)
+    , m_intervalBetweenChecks(defaultIntervalBetweenChecks)
 {
     reset();
 }
@@ -139,7 +140,7 @@ bool TimeoutChecker::didTimeOut(ExecState* exec)
     
     // Adjust the tick threshold so we get the next checkTimeout call in the
     // interval specified in intervalBetweenChecks.
-    m_ticksUntilNextCheck = static_cast<unsigned>((static_cast<float>(intervalBetweenChecks) / timeDiff) * m_ticksUntilNextCheck);
+    m_ticksUntilNextCheck = static_cast<unsigned>((static_cast<float>(m_intervalBetweenChecks) / timeDiff) * m_ticksUntilNextCheck);
     // If the new threshold is 0 reset it to the default threshold. This can happen if the timeDiff is higher than the
     // preferred script check time interval.
     if (m_ticksUntilNextCheck == 0)
