@@ -764,15 +764,21 @@ static QScriptValue storeCalledAsConstructorV2(QScriptContext *ctx, QScriptEngin
     return eng->undefinedValue();
 }
 
+static QScriptValue storeCalledAsConstructorV3(QScriptContext *ctx, QScriptEngine *eng)
+{
+    ctx->callee().setProperty("calledAsConstructor", ctx->parentContext()->isCalledAsConstructor());
+    return eng->undefinedValue();
+}
+
 void tst_QScriptContext::calledAsConstructor()
 {
     QScriptEngine eng;
+    QScriptValue fun1 = eng.newFunction(storeCalledAsConstructor);
     {
-        QScriptValue fun = eng.newFunction(storeCalledAsConstructor);
-        fun.call();
-        QVERIFY(!fun.property("calledAsConstructor").toBool());
-        fun.construct();
-        QVERIFY(fun.property("calledAsConstructor").toBool());
+        fun1.call();
+        QVERIFY(!fun1.property("calledAsConstructor").toBool());
+        fun1.construct();
+        QVERIFY(fun1.property("calledAsConstructor").toBool());
     }
     {
         QScriptValue fun = eng.newFunction(storeCalledAsConstructorV2, (void*)0);
@@ -781,6 +787,23 @@ void tst_QScriptContext::calledAsConstructor()
         fun.construct();
         QVERIFY(fun.property("calledAsConstructor").toBool());
     }
+    {
+        eng.globalObject().setProperty("fun1", fun1);
+        eng.evaluate("fun1();");
+        QVERIFY(!fun1.property("calledAsConstructor").toBool());
+        eng.evaluate("new fun1();");
+        QVERIFY(fun1.property("calledAsConstructor").toBool());
+    }
+    {
+        QScriptValue fun3 = eng.newFunction(storeCalledAsConstructorV3);
+        eng.globalObject().setProperty("fun3", fun3);
+        eng.evaluate("function test() { fun3() }");
+        eng.evaluate("test();");
+        QVERIFY(!fun3.property("calledAsConstructor").toBool());
+        eng.evaluate("new test();");
+        QVERIFY(fun3.property("calledAsConstructor").toBool());
+    }
+
 }
 
 static QScriptValue argumentsObjectInNative_test1(QScriptContext *ctx, QScriptEngine *)

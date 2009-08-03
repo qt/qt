@@ -330,19 +330,35 @@ QScriptValue QScriptContext::argumentsObject() const
 */
 bool QScriptContext::isCalledAsConstructor() const
 {
-    const JSC::CallFrame *frame = reinterpret_cast<const JSC::CallFrame *>(this);
-    //look up for the QScriptActivationObject and its calledAsConstructor flag.
+    JSC::CallFrame *frame = reinterpret_cast<JSC::CallFrame *>(const_cast<QScriptContext *>(this));
+
+    //For native functions, look up for the QScriptActivationObject and its calledAsConstructor flag.
     JSC::ScopeChainNode *node = frame->scopeChain();
     JSC::ScopeChainIterator it(node);
     for (it = node->begin(); it != node->end(); ++it) {
-        if (!(*it)->isVariableObject()) {
+        if ((*it)->isVariableObject()) {
             if ((*it)->inherits(&QScript::QScriptActivationObject::info)) {
                 return static_cast<QScript::QScriptActivationObject *>(*it)->d_ptr()->calledAsConstructor;
             }
             //not a native function
-            //### we have no way to know if is is or not a constructor
-            return false; 
+            break;
         }
+    }
+
+    //Not a native function, try to look up in the bytecode if we where called from op_construct
+    JSC::Instruction* returnPC = frame->returnPC();
+
+    if (!returnPC)
+        return false;
+
+    JSC::CallFrame *callerFrame = reinterpret_cast<JSC::CallFrame *>(parentContext());
+    if (!callerFrame)
+        return false;
+
+    if (returnPC[-JSC::op_construct_length].u.opcode == frame->interpreter()->getOpcode(JSC::op_construct)) {
+        //We are maybe called from the op_construct opcode which has 6 opperands.
+        //But we need to check we are not called from op_call with 4 opperands (by checking the argc operand)
+        return returnPC[-4].u.operand == frame->argumentCount();
     }
     return false;
 }
