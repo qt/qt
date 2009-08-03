@@ -226,7 +226,8 @@ class TestTransition : public QAbstractTransition
 {
 public:
     TestTransition(QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target) {}
+        : QAbstractTransition()
+    { setTargetState(target); }
     QList<int> triggers;
 protected:
     virtual bool eventTest(QEvent *) {
@@ -249,7 +250,8 @@ class EventTransition : public QAbstractTransition
 {
 public:
     EventTransition(QEvent::Type type, QAbstractState *target, QState *parent = 0)
-        : QAbstractTransition(QList<QAbstractState*>() << target, parent), m_type(type) {}
+        : QAbstractTransition(parent), m_type(type)
+    { setTargetState(target); }
 protected:
     virtual bool eventTest(QEvent *e) {
         return (e->type() == m_type);
@@ -1514,7 +1516,8 @@ class StringTransition : public QAbstractTransition
 {
 public:
     StringTransition(const QString &value, QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target), m_value(value) {}
+        : QAbstractTransition(), m_value(value)
+    { setTargetState(target); }
 
 protected:
     virtual bool eventTest(QEvent *e) 
@@ -1737,7 +1740,8 @@ public:
         : QSignalTransition(sourceState) {}
     TestSignalTransition(QObject *sender, const char *signal,
                          QAbstractState *target)
-        : QSignalTransition(sender, signal, QList<QAbstractState*>() << target) {}
+        : QSignalTransition(sender, signal)
+    { setTargetState(target); }
     QVariantList argumentsReceived() const {
         return m_args;
     }
@@ -2022,20 +2026,15 @@ void tst_QStateMachine::signalTransitions()
 void tst_QStateMachine::eventTransitions()
 {
     QPushButton button;
-    for (int x = 0; x < 2; ++x) {
+    {
         QStateMachine machine;
         QState *s0 = new QState(&machine);
         QFinalState *s1 = new QFinalState(&machine);
 
         QMouseEventTransition *trans;
-        if (x == 0) {
-            trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress, Qt::LeftButton);
-            QCOMPARE(trans->targetState(), (QAbstractState*)0);
-            trans->setTargetState(s1);
-        } else {
-            trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress,
-                                              Qt::LeftButton, QList<QAbstractState*>() << s1);
-        }
+        trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress, Qt::LeftButton);
+        QCOMPARE(trans->targetState(), (QAbstractState*)0);
+        trans->setTargetState(s1);
         QCOMPARE(trans->eventType(), QEvent::MouseButtonPress);
         QCOMPARE(trans->button(), Qt::LeftButton);
         QCOMPARE(trans->targetState(), (QAbstractState*)s1);
@@ -2071,7 +2070,7 @@ void tst_QStateMachine::eventTransitions()
         QTest::mousePress(&button2, Qt::LeftButton);
         QTRY_COMPARE(finishedSpy.count(), 4);
     }
-    for (int x = 0; x < 3; ++x) {
+    for (int x = 0; x < 2; ++x) {
         QStateMachine machine;
         QState *s0 = new QState(&machine);
         QFinalState *s1 = new QFinalState(&machine);
@@ -2087,9 +2086,6 @@ void tst_QStateMachine::eventTransitions()
         } else if (x == 1) {
             trans = new QEventTransition(&button, QEvent::MouseButtonPress);
             trans->setTargetState(s1);
-        } else {
-            trans = new QEventTransition(&button, QEvent::MouseButtonPress,
-                                         QList<QAbstractState*>() << s1);
         }
         QCOMPARE(trans->eventObject(), (QObject*)&button);
         QCOMPARE(trans->eventType(), QEvent::MouseButtonPress);

@@ -106,19 +106,6 @@ QKeyEventTransition::QKeyEventTransition(QObject *object, QEvent::Type type,
 }
 
 /*!
-  Constructs a new key event transition for events of the given \a type for
-  the given \a object, with the given \a key, \a targets and \a sourceState.
-*/
-QKeyEventTransition::QKeyEventTransition(QObject *object, QEvent::Type type,
-                                         int key, const QList<QAbstractState*> &targets,
-                                         QState *sourceState)
-    : QEventTransition(*new QKeyEventTransitionPrivate, object, type, targets, sourceState)
-{
-    Q_D(QKeyEventTransition);
-    d->transition = new QBasicKeyEventTransition(type, key);
-}
-
-/*!
   Destroys this key event transition.
 */
 QKeyEventTransition::~QKeyEventTransition()
