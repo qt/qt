@@ -68,6 +68,7 @@
 #include "ObjectPrototype.h"
 #include "SourceCode.h"
 #include "FunctionPrototype.h"
+#include "TimeoutChecker.h"
 #include "JSFunction.h"
 #include "Parser.h"
 #include "Operations.h"
@@ -408,6 +409,31 @@ public:
     { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, includeNonEnumerable); }
 private:
     JSC::JSGlobalObject *originalGlobalObject;
+};
+
+class TimeoutCheckerProxy : public JSC::TimeoutChecker
+{
+public:
+    TimeoutCheckerProxy(const JSC::TimeoutChecker& originalChecker)
+        : JSC::TimeoutChecker(originalChecker)
+        , m_shouldProcessEvents(false)
+    {}
+
+    void setShouldProcessEvents(bool shouldProcess) { m_shouldProcessEvents = shouldProcess; }
+
+    virtual bool didTimeOut(JSC::ExecState* exec)
+    {
+        if (JSC::TimeoutChecker::didTimeOut(exec))
+            return true;
+
+        if (m_shouldProcessEvents)
+            QCoreApplication::processEvents();
+
+        return false;
+    }
+
+private:
+    bool m_shouldProcessEvents;
 };
 
 static int toDigit(char c)
@@ -930,6 +956,10 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
     // ### rather than extending Function.prototype, consider creating a QtSignal.prototype
     globalObject->functionPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "disconnect"), QScript::functionDisconnect));
     globalObject->functionPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "connect"), QScript::functionConnect));
+
+    JSC::TimeoutChecker* originalChecker = globalData->timeoutChecker;
+    globalData->timeoutChecker = new QScript::TimeoutCheckerProxy(*originalChecker);
+    delete originalChecker;
 
     currentFrame = exec;
 
@@ -3458,12 +3488,12 @@ void QScriptEngine::collectGarbage()
 void QScriptEngine::setProcessEventsInterval(int interval)
 {
     Q_D(QScriptEngine);
-    qWarning("QScriptEngine::setProcessEventsInterval() not implemented");
-    // is it possible with JSC?
-    // JSC has some code for detecting timeouts but not for getting
-    // a callback at fixed intervals.
-    // ### we can install a JSC "debugger client"
     d->processEventsInterval = interval;
+
+    if (interval > 0)
+        d->globalData->timeoutChecker->setCheckInterval(interval);
+
+    dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->setShouldProcessEvents(interval > 0);
 }
 
 /*!

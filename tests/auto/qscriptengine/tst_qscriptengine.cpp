@@ -2095,7 +2095,7 @@ void tst_QScriptEngine::processEventsWhileRunning()
             eng.pushContext();
 
         QString script = QString::fromLatin1(
-            "var end = Number(new Date()) + 1000;"
+            "var end = Number(new Date()) + 2000;"
             "var x = 0;"
             "while (Number(new Date()) < end) {"
             "    ++x;"
@@ -2112,7 +2112,6 @@ void tst_QScriptEngine::processEventsWhileRunning()
         eng.setProcessEventsInterval(100);
         eng.evaluate(script);
         QVERIFY(!eng.hasUncaughtException());
-        QEXPECT_FAIL("", "", Continue);
         QVERIFY(receiver.received);
 
         if (x == 0)
