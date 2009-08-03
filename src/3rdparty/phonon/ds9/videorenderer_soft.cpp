@@ -194,8 +194,8 @@ namespace Phonon
                 m_sampleBuffer = ComPointer<IMediaSample>();
 #ifndef QT_NO_OPENGL
                 freeGLResources();
-#endif // QT_NO_OPENGL
                 m_textureUploaded = false;
+#endif // QT_NO_OPENGL
             }
 
             void endOfStream()
@@ -314,7 +314,6 @@ namespace Phonon
             REFERENCE_TIME m_start;
             HANDLE m_renderEvent, m_receiveCanWait;         // Signals sample to render
             QSize m_size;
-            bool m_textureUploaded;
 
             //mixer settings
             qreal m_brightness,
@@ -356,6 +355,7 @@ namespace Phonon
 
             bool m_checkedPrograms;
             bool m_usingOpenGL;
+            bool m_textureUploaded;
             GLuint m_program[2];
             GLuint m_texture[3];
 #endif
@@ -436,7 +436,7 @@ namespace Phonon
         QBaseFilter(CLSID_NULL), m_inputPin(new VideoRendererSoftPin(this)),
             m_renderer(renderer), m_start(0)
 #ifndef QT_NO_OPENGL
-            ,m_usingOpenGL(false), m_checkedPrograms(false), m_textureUploaded(false)
+            , m_checkedPrograms(false), m_usingOpenGL(false), m_textureUploaded(false)
 #endif
         {
             m_renderEvent    = ::CreateEvent(0, 0, 0, 0);

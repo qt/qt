@@ -91,8 +91,8 @@ namespace Phonon
                     return E_INVALIDARG;
                 }
 
-                int nbFetched = 0;
-                while (nbFetched < int(count) && m_index < m_pin->mediaTypes().count()) {
+                uint nbFetched = 0;
+                while (nbFetched < count && m_index < m_pin->mediaTypes().count()) {
                     //the caller will deallocate the memory
                     *out = static_cast<AM_MEDIA_TYPE *>(::CoTaskMemAlloc(sizeof(AM_MEDIA_TYPE)));
                     const AM_MEDIA_TYPE original = m_pin->mediaTypes().at(m_index);
@@ -145,9 +145,9 @@ namespace Phonon
 
 
         QPin::QPin(QBaseFilter *parent, PIN_DIRECTION dir, const QVector<AM_MEDIA_TYPE> &mt) :
-        m_memAlloc(0), m_parent(parent), m_refCount(1),  m_connected(0),
+            m_parent(parent), m_flushing(false), m_refCount(1),  m_connected(0),
             m_direction(dir), m_mediaTypes(mt), m_connectedType(defaultMediaType),
-            m_flushing(false)
+            m_memAlloc(0)
         {
             Q_ASSERT(m_parent);
             m_parent->addPin(this);

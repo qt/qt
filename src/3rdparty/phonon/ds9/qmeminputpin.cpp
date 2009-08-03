@@ -137,7 +137,8 @@ namespace Phonon
                 return E_POINTER;
             }
 
-            if (*alloc = memoryAllocator(true)) {
+            *alloc = memoryAllocator(true);
+            if (*alloc) {
                 return S_OK;
             }
 
@@ -294,7 +295,7 @@ namespace Phonon
             LONG length = sample->GetActualDataLength();
 
             HRESULT hr = alloc->Commit();
-            if (hr == VFW_E_SIZENOTSET) {
+            if (hr == HRESULT(VFW_E_SIZENOTSET)) {
                 ALLOCATOR_PROPERTIES prop = getDefaultAllocatorProperties();
                 prop.cbBuffer = qMax(prop.cbBuffer, length);
                 ALLOCATOR_PROPERTIES actual;
@@ -324,7 +325,7 @@ namespace Phonon
             {
                 LONGLONG start, end;
                 hr = sample->GetMediaTime(&start, &end);
-                if (hr != VFW_E_MEDIA_TIME_NOT_SET) {
+                if (hr != HRESULT(VFW_E_MEDIA_TIME_NOT_SET)) {
                     hr = out->SetMediaTime(&start, &end);
                     Q_ASSERT(SUCCEEDED(hr));
                 }
