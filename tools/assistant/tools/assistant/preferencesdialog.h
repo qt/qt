@@ -50,6 +50,12 @@ QT_BEGIN_NAMESPACE
 class FontPanel;
 class QHelpEngineCore;
 
+enum {
+    ShowHomePage = 0,
+    ShowBlankPage = 1,
+    ShowLastPages = 2
+};
+
 class PreferencesDialog : public QDialog
 {
     Q_OBJECT
@@ -72,8 +78,10 @@ private slots:
     void appFontSettingChanged(int index);
     void browserFontSettingToggled(bool on);
     void browserFontSettingChanged(int index);
-    void restoreDefaultHomepage();
-    void currentHomepageChanged();
+    
+    void setBlankPage();
+    void setCurrentPage();
+    void setDefaultPage();
 
 signals:
     void updateBrowserFont();

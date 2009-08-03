@@ -43,10 +43,17 @@
 
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintdevice.h"
+#include "qdirectfbpaintengine.h"
+
+QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
+    : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
+      lock(DFBSurfaceLockFlags(0)), mem(0), engine(0)
+{}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
 {
     delete lockedImage;
+    delete engine;
 }
 
 
@@ -164,4 +171,10 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     }
 }
 
+QPaintEngine *QDirectFBPaintDevice::paintEngine() const
+{
+    return engine;
+}
+
 #endif
+

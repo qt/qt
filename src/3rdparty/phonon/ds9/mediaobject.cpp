@@ -786,14 +786,15 @@ namespace Phonon
                 case Phonon::PausedState:
                     pause();
                     break;
-                case Phonon::StoppedState:
-                    stop();
-                    break;
                 case Phonon::PlayingState:
                     play();
                     break;
                 case Phonon::ErrorState:
                     setState(Phonon::ErrorState);
+                    break;
+                case Phonon::StoppedState:
+                default:
+                    stop();
                     break;
                 }
             }

@@ -1139,7 +1139,8 @@ class InitialTransition : public QAbstractTransition
 {
 public:
     InitialTransition(QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target) {}
+        : QAbstractTransition()
+    { setTargetState(target); }
 protected:
     virtual bool eventTest(QEvent *) { return true; }
     virtual void onTransition(QEvent *) {}
@@ -1306,7 +1307,8 @@ class GoToStateTransition : public QAbstractTransition
 {
 public:
     GoToStateTransition(QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target) {}
+        : QAbstractTransition()
+    { setTargetState(target); }
 protected:
     void onTransition(QEvent *) { deleteLater(); }
     bool eventTest(QEvent *) { return true; }

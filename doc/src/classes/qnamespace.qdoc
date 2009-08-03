@@ -1884,7 +1884,10 @@
                    We refer to a top-level window that has a parent
                    as a \e secondary window.
 
-    \value Sheet   Indicates that the widget is a Macintosh sheet.
+    \value Sheet   Indicates that the window is a Macintosh sheet. Since
+                   using a sheet implies window modality, the recommended
+                   way is to use QWidget::setWindowModality(), or
+                   QDialog::open(), instead.
 
     \value Drawer  Indicates that the widget is a Macintosh drawer.
 

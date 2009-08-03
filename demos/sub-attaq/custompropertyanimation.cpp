@@ -96,7 +96,7 @@ void CustomPropertyAnimation::updateState(QAbstractAnimation::State oldState, QA
             setKeyValues(values);
         }
 
-        if (animProp && !startValue().isValid() && currentTime() == 0
+        if ((animProp && !startValue().isValid() && currentTime() == 0)
             || (currentTime() == duration() && currentLoop() == (loopCount() - 1))) {
                 setStartValue(def);
         }

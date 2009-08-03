@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QEVENTTRANSITION_H
-#define QEVENTTRANSITION_H
-
-#include <QtCore/qabstracttransition.h>
-#include <QtCore/qcoreevent.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Core)
-
-#ifndef QT_NO_STATEMACHINE
-
-class QEventTransitionPrivate;
-class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
-{
-    Q_OBJECT
-    Q_PROPERTY(QObject* eventObject READ eventObject WRITE setEventObject)
-    Q_PROPERTY(QEvent::Type eventType READ eventType WRITE setEventType)
-public:
-    QEventTransition(QState *sourceState = 0);
-    QEventTransition(QObject *object, QEvent::Type type, QState *sourceState = 0);
-    ~QEventTransition();
-
-    QObject *eventObject() const;
-    void setEventObject(QObject *object);
-
-    QEvent::Type eventType() const;
-    void setEventType(QEvent::Type type);
-
-protected:
-    bool eventTest(QEvent *event);
-    void onTransition(QEvent *event);
-
-    bool event(QEvent *e);
-
-protected:
-    QEventTransition(QEventTransitionPrivate &dd, QState *parent);
-    QEventTransition(QEventTransitionPrivate &dd, QObject *object,
-                     QEvent::Type type, QState *parent);
-
-private:
-    Q_DISABLE_COPY(QEventTransition)
-    Q_DECLARE_PRIVATE(QEventTransition)
-};
-
-#endif //QT_NO_STATEMACHINE
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
+#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+# undef QT_SHAREDPOINTER_TRACK_POINTERS
 #endif
+#include <QtCore/qsharedpointer.h>
+#include "wrapper.h"
+
+Wrapper::Wrapper(const QSharedPointer<int> &value)
+        : ptr(value)
+{
+}
+
+Wrapper::~Wrapper()
+{
+}
+
+Wrapper Wrapper::create()
+{
+    return Wrapper(QSharedPointer<int>(new int(-47)));
+}

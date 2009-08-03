@@ -153,34 +153,12 @@ QAbstractTransition::QAbstractTransition(QState *sourceState)
 }
 
 /*!
-  Constructs a new QAbstractTransition object with the given \a targets and \a
-  sourceState.
-*/
-QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
-                                         QState *sourceState)
-    : QObject(*new QAbstractTransitionPrivate, sourceState)
-{
-    setTargetStates(targets);
-}
-
-/*!
   \internal
 */
 QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
                                          QState *parent)
     : QObject(dd, parent)
 {
-}
-
-/*!
-  \internal
-*/
-QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
-                                         const QList<QAbstractState*> &targets,
-                                         QState *parent)
-    : QObject(dd, parent)
-{
-    setTargetStates(targets);
 }
 
 /*!

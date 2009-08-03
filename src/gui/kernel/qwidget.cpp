@@ -9865,6 +9865,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             data->window_modality = (w && w->testAttribute(Qt::WA_GroupLeader))
                                     ? Qt::WindowModal
                                     : Qt::ApplicationModal;
+            // Some window managers does not allow us to enter modal after the
+            // window is showing. Therefore, to be consistent, we cannot call
+            // QApplicationPrivate::enterModal(this) here. The window must be
+            // hidden before changing modality.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
             // don't call setModal_sys() before create_sys()

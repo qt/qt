@@ -422,9 +422,12 @@ void QFSEventsFileSystemWatcherEngine::fseventsCallback(ConstFSEventStreamRef ,
 void QFSEventsFileSystemWatcherEngine::stop()
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+    QMutexLocker locker(&mutex);
     stopFSStream(fsStream);
-    if (threadsRunLoop)
+    if (threadsRunLoop) {
         CFRunLoopStop(threadsRunLoop);
+        waitForStop.wait(&mutex);
+    }
 #endif
 }
 
@@ -461,6 +464,8 @@ void QFSEventsFileSystemWatcherEngine::run()
     // immediately.
     CFRunLoopRun();
     threadsRunLoop = 0;
+    QMutexLocker locker(&mutex);
+    waitForStop.wakeAll();
 #endif
 }
 

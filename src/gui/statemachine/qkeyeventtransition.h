@@ -62,9 +62,6 @@ public:
     QKeyEventTransition(QState *sourceState = 0);
     QKeyEventTransition(QObject *object, QEvent::Type type, int key,
                         QState *sourceState = 0);
-    QKeyEventTransition(QObject *object, QEvent::Type type, int key,
-                        const QList<QAbstractState*> &targets,
-                        QState *sourceState = 0);
     ~QKeyEventTransition();
 
     int key() const;

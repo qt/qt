@@ -897,6 +897,7 @@ QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckAdd(const volatile void *);
     Q_CORE_EXPORT void internalSafetyCheckRemove(const volatile void *);
+    Q_AUTOTEST_EXPORT void internalSafetyCheckCleanCheck();
 }
 
 /*!
@@ -961,6 +962,7 @@ void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile 
 
     kp->dPointers.insert(d_ptr, data);
     kp->dataPointers.insert(ptr, d_ptr);
+    Q_ASSERT(kp->dPointers.size() == kp->dataPointers.size());
 }
 
 /*!
@@ -985,10 +987,29 @@ void QtSharedPointer::internalSafetyCheckRemove2(const void *d_ptr)
     Q_ASSERT(it2 != kp->dataPointers.end());
 
     //qDebug("Removing d=%p value=%p", d_ptr, it->pointer);
-    
+
     // remove entries
     kp->dataPointers.erase(it2);
     kp->dPointers.erase(it);
+    Q_ASSERT(kp->dPointers.size() == kp->dataPointers.size());
+}
+
+/*!
+    \internal
+    Called by the QSharedPointer autotest
+*/
+void QtSharedPointer::internalSafetyCheckCleanCheck()
+{
+#  ifdef QT_BUILD_INTERNAL
+    KnownPointers *const kp = knownPointers();
+    Q_ASSERT_X(kp, "internalSafetyCheckSelfCheck()", "Called after global statics deletion!");
+
+    if (kp->dPointers.size() != kp->dataPointers.size())
+        qFatal("Internal consistency error: the number of pointers is not equal!");
+
+    if (!kp->dPointers.isEmpty())
+        qFatal("Pointer cleaning failed: %d entries remaining", kp->dPointers.size());
+#  endif
 }
 
 QT_END_NAMESPACE

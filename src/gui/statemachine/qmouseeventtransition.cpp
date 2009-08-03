@@ -112,21 +112,6 @@ QMouseEventTransition::QMouseEventTransition(QObject *object, QEvent::Type type,
 }
 
 /*!
-  Constructs a new mouse event transition for events of the given \a type for
-  the given \a object, with the given \a button, \a targets and \a
-  sourceState.
-*/
-QMouseEventTransition::QMouseEventTransition(QObject *object, QEvent::Type type,
-                                             Qt::MouseButton button,
-                                             const QList<QAbstractState*> &targets,
-                                             QState *sourceState)
-    : QEventTransition(*new QMouseEventTransitionPrivate, object, type, targets, sourceState)
-{
-    Q_D(QMouseEventTransition);
-    d->transition = new QBasicMouseEventTransition(type, button);
-}
-
-/*!
   Destroys this mouse event transition.
 */
 QMouseEventTransition::~QMouseEventTransition()

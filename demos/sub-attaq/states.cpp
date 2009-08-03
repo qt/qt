@@ -269,9 +269,10 @@ void UpdateScoreState::onEntry(QEvent *e)
 
 /** Win transition */
 UpdateScoreTransition::UpdateScoreTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target)
-    : QSignalTransition(scene,SIGNAL(subMarineDestroyed(int)), QList<QAbstractState*>() << target),
+    : QSignalTransition(scene,SIGNAL(subMarineDestroyed(int))),
     game(game), scene(scene)
 {
+    setTargetState(target);
 }
 
 bool UpdateScoreTransition::eventTest(QEvent *event)
@@ -288,9 +289,10 @@ bool UpdateScoreTransition::eventTest(QEvent *event)
 
 /** Win transition */
 WinTransition::WinTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target)
-    : QSignalTransition(scene,SIGNAL(allSubMarineDestroyed(int)), QList<QAbstractState*>() << target),
+    : QSignalTransition(scene,SIGNAL(allSubMarineDestroyed(int))),
     game(game), scene(scene)
 {
+    setTargetState(target);
 }
 
 bool WinTransition::eventTest(QEvent *event)

@@ -1432,10 +1432,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     qt_wince_maximize(q);
                 } else {
 #endif
-                    if (!isTranslucentWindow)
-                        MoveWindow(q->internalWinId(), fs.x(), fs.y(), fs.width(), fs.height(), true);
-                    else if (isMove && !isResize)
-                        SetWindowPos(q->internalWinId(), 0, fs.x(), fs.y(), 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
+                    MoveWindow(q->internalWinId(), fs.x(), fs.y(), fs.width(), fs.height(), true);
                 }
                 if (!q->isVisible())
                     InvalidateRect(q->internalWinId(), 0, FALSE);

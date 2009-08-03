@@ -153,22 +153,6 @@ QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
 }
 
 /*!
-  Constructs a new QEventTransition object associated with events of the given
-  \a type for the given \a object. The transition has the given \a targets and
-  \a sourceState.
-*/
-QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
-                                   const QList<QAbstractState*> &targets,
-                                   QState *sourceState)
-    : QAbstractTransition(*new QEventTransitionPrivate, targets, sourceState)
-{
-    Q_D(QEventTransition);
-    d->registered = false;
-    d->object = object;
-    d->eventType = type;
-}
-
-/*!
   \internal
 */
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QState *parent)
@@ -182,20 +166,6 @@ QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QState *parent)
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
                                    QEvent::Type type, QState *parent)
     : QAbstractTransition(dd, parent)
-{
-    Q_D(QEventTransition);
-    d->registered = false;
-    d->object = object;
-    d->eventType = type;
-}
-
-/*!
-  \internal
-*/
-QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
-                                   QEvent::Type type, const QList<QAbstractState*> &targets,
-                                   QState *parent)
-    : QAbstractTransition(dd, targets, parent)
 {
     Q_D(QEventTransition);
     d->registered = false;

@@ -125,7 +125,17 @@ void QEglProperties::setVisualFormat(const QX11Info *xinfo)
     setValue(EGL_RED_SIZE, countBits(visual->red_mask));
     setValue(EGL_GREEN_SIZE, countBits(visual->green_mask));
     setValue(EGL_BLUE_SIZE, countBits(visual->blue_mask));
-    setValue(EGL_ALPHA_SIZE, 0);    // XXX
+
+    EGLint alphaBits = 0;
+#if !defined(QT_NO_XRENDER)
+    XRenderPictFormat *format;
+    format = XRenderFindVisualFormat(xinfo->display(), visual);
+    if (format && (format->type == PictTypeDirect) && format->direct.alphaMask) {
+        alphaBits = countBits(format->direct.alphaMask);
+        qDebug("QEglProperties::setVisualFormat() - visual's alphaMask is %d", alphaBits);
+    }
+#endif
+    setValue(EGL_ALPHA_SIZE, alphaBits);
 }
 
 extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
