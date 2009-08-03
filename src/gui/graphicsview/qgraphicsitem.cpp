@@ -1201,7 +1201,7 @@ QGraphicsItem::~QGraphicsItem()
     if (d_ptr->transformData) {
         for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
             QGraphicsTransform *t = d_ptr->transformData->graphicsTransforms.at(i);
-            static_cast<QGraphicsTransformPrivate *>(t->d_ptr)->item = 0;
+            static_cast<QGraphicsTransformPrivate *>(t->d_ptr.data())->item = 0;
             delete t;
         }
     }

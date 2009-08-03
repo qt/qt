@@ -568,9 +568,10 @@ QXmlParseException::QXmlParseException(const QString& name, int c, int l,
 /*!
     Creates a copy of \a other.
 */
-QXmlParseException::QXmlParseException(const QXmlParseException& other)
+QXmlParseException::QXmlParseException(const QXmlParseException& other) :
+     d(new QXmlParseExceptionPrivate(*other.d))
 {
-    d = new QXmlParseExceptionPrivate(*other.d);
+
 }
 
 /*!
