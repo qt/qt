@@ -905,7 +905,7 @@ void QS60StyleModeSpecifics::checkAndUnCompressBitmapL(CFbsBitmap*& aOriginalBit
     const TSize iconSize = aOriginalBitmap->SizeInPixels();
     const int iconBytesPerLine = CFbsBitmap::ScanLineLength(iconSize.iWidth, aOriginalBitmap->DisplayMode());
     const int iconBytesCount = iconBytesPerLine * iconSize.iHeight;
-    if (aOriginalBitmap->IsCompressedInRAM() || aOriginalBitmap->DataSize() < iconBytesCount) {
+    if (aOriginalBitmap->IsCompressedInRAM() || aOriginalBitmap->Header().iBitmapSize < iconBytesCount) {
         const TSize iconSize(aOriginalBitmap->SizeInPixels().iWidth,
             aOriginalBitmap->SizeInPixels().iHeight);
         CFbsBitmap* uncompressedBitmap = new (ELeave) CFbsBitmap();
