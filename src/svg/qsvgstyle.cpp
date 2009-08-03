@@ -206,8 +206,8 @@ QSvgFontStyle::QSvgFontStyle(QSvgFont *font, QSvgTinyDocument *doc)
 }
 
 QSvgFontStyle::QSvgFontStyle()
-    : m_doc(0)
-    , m_svgFont(0)
+    : m_svgFont(0)
+    , m_doc(0)
     , m_familySet(0)
     , m_sizeSet(0)
     , m_styleSet(0)
