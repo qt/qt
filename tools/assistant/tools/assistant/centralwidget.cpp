@@ -739,8 +739,10 @@ void CentralWidget::setTabTitle(const QUrl &url)
     QTabBar *tabBar = qFindChild<QTabBar*>(tabWidget);
     for (int tab = 0; tab < tabBar->count(); ++tab) {
         HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(tab));
-        if (viewer)
-            tabWidget->setTabText(tab, viewer->documentTitle().trimmed());
+        if (viewer) {
+            tabWidget->setTabText(tab,
+                quoteTabTitle(viewer->documentTitle().trimmed()));
+        }
     }
 #else
     HelpViewer *viewer = currentHelpViewer();

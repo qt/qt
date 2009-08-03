@@ -55,7 +55,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engine(0)
+    , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
@@ -76,7 +76,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engine(0)
+    , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
@@ -295,16 +295,6 @@ bool QDirectFBWindowSurface::move(const QPoint &moveBy)
     return true;
 }
 
-QPaintEngine *QDirectFBWindowSurface::paintEngine() const
-{
-    if (!engine) {
-        QDirectFBWindowSurface *that = const_cast<QDirectFBWindowSurface*>(this);
-        that->engine = new QDirectFBPaintEngine(that);
-        return that->engine;
-    }
-    return engine;
-}
-
 // hw: XXX: copied from QWidgetPrivate::isOpaque()
 inline bool isWidgetOpaque(const QWidget *w)
 {
@@ -429,6 +419,12 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
 
 void QDirectFBWindowSurface::beginPaint(const QRegion &)
 {
+    const int h = height();
+    if (h > engineHeight) {
+        engineHeight = h;
+        delete engine;
+        engine = new QDirectFBPaintEngine(this);
+    }
 }
 
 void QDirectFBWindowSurface::endPaint(const QRegion &)

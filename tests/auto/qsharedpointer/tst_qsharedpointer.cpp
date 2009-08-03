@@ -1195,6 +1195,7 @@ void tst_QSharedPointer::invalidConstructs_data()
            "QSharedPointer<Data> b;\n"
            "if (a + b) return;";
 
+#if QT_VERSION >= 0x040600
     // two objects with the same pointer
     QTest::newRow("same-pointer")
         << &QTest::QExternalTest::tryRunFail
@@ -1208,6 +1209,7 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "Data *aData = new Data;\n"
            "QSharedPointer<Data> ptr1 = QSharedPointer<Data>(aData);"
            "ptr1 = QSharedPointer<Data>(aData);";
+#endif
 
     // any type of cast for unrelated types:
     // (we have no reinterpret_cast)
