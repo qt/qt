@@ -4324,7 +4324,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
     bool drawItem = itemHasContents && !itemIsFullyTransparent;
     if (drawItem) {
-        const QRectF brect = adjustedItemBoundingRect(item);
+        const QRectF brect = adjustedItemEffectiveBoundingRect(item);
         ENSURE_TRANSFORM_PTR
         QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toRect()
                                                         : transformPtr->mapRect(brect).toRect();

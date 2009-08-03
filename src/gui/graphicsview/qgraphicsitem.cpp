@@ -2238,7 +2238,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
     }
 
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->markDirty(this);
+        d_ptr->scene->d_func()->markDirty(this, QRectF(), false, false, false, false, !effect);
 }
 
 /*!
