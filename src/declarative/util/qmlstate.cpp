@@ -53,16 +53,16 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-Action::Action() 
+Action::Action()
 : restore(true), actionDone(false), reverseEvent(false), fromBinding(0), toBinding(0), event(0),
   specifiedObject(0)
 {
 }
 
-Action::Action(QObject *target, const QString &propertyName, 
+Action::Action(QObject *target, const QString &propertyName,
                const QVariant &value)
 : restore(true), actionDone(false), reverseEvent(false), toValue(value), fromBinding(0),
-  toBinding(0), event(0), specifiedObject(target), 
+  toBinding(0), event(0), specifiedObject(target),
   specifiedProperty(propertyName)
 {
     property = QmlMetaProperty::createProperty(target, propertyName);
@@ -112,6 +112,7 @@ void ActionEvent::clearReverseBindings()
 
 bool ActionEvent::override(ActionEvent *other)
 {
+    Q_UNUSED(other);
     return false;
 }
 
@@ -213,7 +214,7 @@ QmlBinding *QmlState::when() const
     return d->when;
 }
 
-void QmlState::setWhen(QmlBinding *when) 
+void QmlState::setWhen(QmlBinding *when)
 {
     Q_D(QmlState);
     d->when = when;
@@ -300,7 +301,7 @@ void QmlStatePrivate::complete()
 
 // Generate a list of actions for this state.  This includes coelescing state
 // actions that this state "extends"
-QmlStateOperation::ActionList 
+QmlStateOperation::ActionList
 QmlStatePrivate::generateActionList(QmlStateGroup *group) const
 {
     QmlStateOperation::ActionList applyList;
@@ -342,7 +343,7 @@ void QmlState::cancel()
     d->transitionManager.cancel();
 }
 
-void Action::deleteFromBinding() 
+void Action::deleteFromBinding()
 {
     if (fromBinding) {
         property.setBinding(0);
@@ -362,7 +363,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     d->reverting.clear();
 
     if (revert) {
-        QmlStatePrivate *revertPrivate = 
+        QmlStatePrivate *revertPrivate =
             static_cast<QmlStatePrivate*>(revert->d_ptr);
         d->revertList = revertPrivate->revertList;
         revertPrivate->revertList.clear();
@@ -419,7 +420,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             }
         }
     }
-    
+
     // Any reverts from a previous state that aren't carried forth
     // into this state need to be translated into apply actions
     for (int ii = 0; ii < d->revertList.count(); ++ii) {
@@ -466,7 +467,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     // Output for debugging
     if (stateChangeDebug()) {
         foreach(const Action &action, applyList) {
-            qWarning() << "    Action:" << action.property.object() 
+            qWarning() << "    Action:" << action.property.object()
                        << action.property.name() << action.toValue;
         }
     }

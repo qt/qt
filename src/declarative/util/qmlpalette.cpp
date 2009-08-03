@@ -124,6 +124,18 @@ QColor QmlPalette::base() const
 }
 
 /*!
+    \qmlproperty color Palette::text
+    The text color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
+QColor QmlPalette::text() const
+{
+    Q_D(const QmlPalette);
+    return d->palette.color(d->group, QPalette::Text);
+}
+
+/*!
     \qmlproperty color Palette::alternateBase
     The alternate base color of the current color group.
 
@@ -260,27 +272,23 @@ QColor QmlPalette::darker(const QColor& color) const
 }
 
 /*!
-    \qmlproperty enum Palette::colorGroup
+    \qmlproperty QPalette::ColorGroup Palette::colorGroup
 
-    The color group of the palette. It can be one of:
-    \list
-    \o Active - used for the window that has focus.
-    \o Inactive - used for other windows.
-    \o Disabled - used for widgets that are disabled for some reason.
-    \endlist
+    The color group of the palette. It can be Active, Inactive or Disabled.
+    Active is the default.
 
     \sa QPalette::ColorGroup
 */
-QmlPalette::ColorGroup QmlPalette::colorGroup() const
+QPalette::ColorGroup QmlPalette::colorGroup() const
 {
     Q_D(const QmlPalette);
-    return (QmlPalette::ColorGroup)int(d->group);
+    return d->group;
 }
 
-void QmlPalette::setColorGroup(ColorGroup colorGroup)
+void QmlPalette::setColorGroup(QPalette::ColorGroup colorGroup)
 {
     Q_D(QmlPalette);
-    d->group = (QPalette::ColorGroup)int(colorGroup);
+    d->group = colorGroup;
     emit paletteChanged();
 }
 

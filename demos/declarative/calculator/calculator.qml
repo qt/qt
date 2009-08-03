@@ -2,22 +2,23 @@ import Qt 4.6
 
 Rect {
     id: MainWindow;
-    width: 320; height: 270; color: "black"
+    width: 320; height: 270; color: Palette.window
 
+    Palette { id: Palette }
     Script { source: "calculator.js" }
 
     VerticalLayout {
-        spacing: 2; margin: 2
+        x: 2; spacing: 10; margin: 2
 
         Rect {
             id: Container
-            width: 316; height: 60; z: 2
-            border.color: "white"; color: "#343434"
+            width: 316; height: 50; z: 2
+            border.color: Palette.dark; color: Palette.base
 
             Text {
                 id: CurNum
                 font.bold: true; font.size: 16
-                color: "white"
+                color: Palette.text
                 anchors.right: Container.right
                 anchors.rightMargin: 5
                 anchors.verticalCenter: Container.verticalCenter
@@ -25,7 +26,7 @@ Rect {
 
             Text {
                 id: CurrentOperation
-                color: "white"
+                color: Palette.text
                 font.bold: true; font.size: 16
                 anchors.left: Container.left
                 anchors.leftMargin: 5

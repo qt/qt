@@ -129,8 +129,6 @@ public:
 
     int coreIndex() const;
 private:
-    void initDefault(QObject *obj);
-    void initProperty(QObject *obj, const QString &name);
     friend class QmlEnginePrivate;
     QmlMetaPropertyPrivate *d;
 };

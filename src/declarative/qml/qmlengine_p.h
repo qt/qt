@@ -71,6 +71,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <QtScript/qscriptengine.h>
+#include <private/qmlmetaproperty_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -177,6 +178,7 @@ public:
     }
 
     QmlValueTypeFactory valueTypes;
+    QHash<const QMetaObject *, QmlMetaObjectCache> propertyCache;
 
     struct Imports {
         Imports();
