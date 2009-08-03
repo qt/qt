@@ -562,8 +562,10 @@ void QFxVisualDataModel::setModel(const QVariant &model)
     if (!d->m_modelList)
         d->m_modelList = new QmlListAccessor;
     d->m_modelList->setList(model);
-    if (d->m_delegate && d->modelCount())
+    if (d->m_delegate && d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
+        emit countChanged();
+    }
 }
 
 QmlComponent *QFxVisualDataModel::delegate() const
@@ -578,8 +580,10 @@ void QFxVisualDataModel::setDelegate(QmlComponent *delegate)
 {
     Q_D(QFxVisualDataModel);
     d->m_delegate = delegate;
-    if (d->modelCount())
+    if (d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
+        emit countChanged();
+    }
 }
 
 QString QFxVisualDataModel::part() const
@@ -802,6 +806,7 @@ void QFxVisualDataModel::_q_itemsInserted(int index, int count)
     d->m_cache.unite(items);
 
     emit itemsInserted(index, count);
+    emit countChanged();
 }
 
 void QFxVisualDataModel::_q_itemsRemoved(int index, int count)
@@ -831,6 +836,7 @@ void QFxVisualDataModel::_q_itemsRemoved(int index, int count)
 
     d->m_cache.unite(items);
     emit itemsRemoved(index, count);
+    emit countChanged();
 }
 
 void QFxVisualDataModel::_q_itemsMoved(int from, int to, int count)
