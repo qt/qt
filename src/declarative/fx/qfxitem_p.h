@@ -78,9 +78,9 @@ public:
       _componentComplete(true), _keepMouse(false),
       _anchorLines(0),
       _stateGroup(0), origin(QFxItem::TopLeft),
-      widthValid(false), heightValid(false), width(0), height(0)
+      widthValid(false), heightValid(false), width(0), height(0), smooth(false)
     {}
-    ~QFxItemPrivate() 
+    ~QFxItemPrivate()
     { delete _anchors; }
 
     void init(QFxItem *parent)
@@ -181,6 +181,7 @@ public:
 
     qreal width;
     qreal height;
+    bool smooth;
 
     QPointF computeTransformOrigin() const;
 

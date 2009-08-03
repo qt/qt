@@ -67,7 +67,6 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
 
     Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
-    Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
     Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged);
 
 public:
@@ -80,9 +79,6 @@ public:
 
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &);
-
-    bool smoothTransform() const;
-    void setSmoothTransform(bool);
 
     enum Status { Null, Ready, Loading, Error };
     Status status() const;

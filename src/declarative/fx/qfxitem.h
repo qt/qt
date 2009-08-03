@@ -147,6 +147,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
     Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
+    Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
 
@@ -197,6 +198,9 @@ public:
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
+    bool smoothTransform() const;
+    void setSmoothTransform(bool);
+
     QRectF boundingRect() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
@@ -235,7 +239,7 @@ protected:
     virtual void activeFocusChanged(bool);
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
-    virtual void geometryChanged(const QRectF &newGeometry, 
+    virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
 private Q_SLOTS:

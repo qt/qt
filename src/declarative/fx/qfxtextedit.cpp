@@ -1014,7 +1014,7 @@ void QFxTextEditPrivate::init()
 {
     Q_Q(QFxTextEdit);
 
-    q->setSmooth(true);
+    q->setSmoothTransform(true);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QGraphicsItem::ItemHasNoContents, false);
     q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
