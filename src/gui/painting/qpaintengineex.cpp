@@ -421,7 +421,6 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     const qreal *lastPoint = points + (pointCount<<1);
 
-    d->activeStroker->begin(d->strokeHandler);
     d->strokeHandler->types.reset();
     d->strokeHandler->pts.reset();
 
@@ -430,13 +429,13 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
     if (d->stroker.capStyle() == Qt::RoundCap || d->stroker.joinStyle() == Qt::RoundJoin)
         flags |= QVectorPath::CurvedShapeHint;
 
-    // ### Perspective Xforms are currently not supported...
     qreal txscale = 1;
     if (!(pen.isCosmetic() || (qt_scaleForTransform(state()->matrix, &txscale) && txscale != 1))) {
         // We include cosmetic pens in this case to avoid having to
         // change the current transform. Normal transformed,
         // non-cosmetic pens will be transformed as part of fill
         // later, so they are also covered here..
+        d->activeStroker->begin(d->strokeHandler);
         if (types) {
             while (points < lastPoint) {
                 switch (*types) {
@@ -491,79 +490,64 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         const qreal strokeWidth = d->stroker.strokeWidth();
         d->stroker.setStrokeWidth(strokeWidth * txscale);
         // For cosmetic pens we need a bit of trickery... We to process xform the input points
-        if (types) {
-            bool isProject = state()->matrix.type() >= QTransform::TxProject;
-            while (points < lastPoint) {
-                switch (*types) {
-                case QPainterPath::MoveToElement: {
-                    QPointF pt = (*(QPointF *) points) * state()->matrix;
-                    d->activeStroker->moveTo(pt.x(), pt.y());
-                    points += 2;
-                    ++types;
-                    break;
-                }
-                case QPainterPath::LineToElement: {
-                    QPointF pt = (*(QPointF *) points) * state()->matrix;
-                    d->activeStroker->lineTo(pt.x(), pt.y());
-                    points += 2;
-                    ++types;
-                    break;
-                }
-                case QPainterPath::CurveToElement: {
-                    // Convert projective xformed curves to line
-                    // segments so they can be transformed more
-                    // accurately
-                    if (isProject) {
-                        // -1 access here is safe because there is
-                        // always an element prior to the cubicTo, we
-                        // just need the value..
-                        QPolygonF segment =
-                            QBezier::fromPoints(*(((QPointF *) points) - 1),
-                                                *((QPointF *) points),
-                                                *(((QPointF *) points) + 1),
-                                                *(((QPointF *) points) + 2)).toPolygon();
-
-                        for (QPolygonF::const_iterator it = segment.constBegin();
-                             it < segment.constEnd(); ++it) {
-                            const QPointF pt = *it * state()->matrix;
-                            d->activeStroker->lineTo(pt.x(), pt.y());
-                        }
-                    } else {
+        if (state()->matrix.type() >= QTransform::TxProject) {
+            QPainterPath painterPath = state()->matrix.map(path.convertToPainterPath());
+            d->activeStroker->strokePath(painterPath, d->strokeHandler, QTransform());
+        } else {
+            d->activeStroker->begin(d->strokeHandler);
+            if (types) {
+                while (points < lastPoint) {
+                    switch (*types) {
+                    case QPainterPath::MoveToElement: {
+                        QPointF pt = (*(QPointF *) points) * state()->matrix;
+                        d->activeStroker->moveTo(pt.x(), pt.y());
+                        points += 2;
+                        ++types;
+                        break;
+                    }
+                    case QPainterPath::LineToElement: {
+                        QPointF pt = (*(QPointF *) points) * state()->matrix;
+                        d->activeStroker->lineTo(pt.x(), pt.y());
+                        points += 2;
+                        ++types;
+                        break;
+                    }
+                    case QPainterPath::CurveToElement: {
                         QPointF c1 = ((QPointF *) points)[0] * state()->matrix;
                         QPointF c2 = ((QPointF *) points)[1] * state()->matrix;
                         QPointF e =  ((QPointF *) points)[2] * state()->matrix;
                         d->activeStroker->cubicTo(c1.x(), c1.y(), c2.x(), c2.y(), e.x(), e.y());
+                        points += 6;
+                        types += 3;
+                        flags |= QVectorPath::CurvedShapeHint;
+                        break;
                     }
-                    points += 6;
-                    types += 3;
-                    flags |= QVectorPath::CurvedShapeHint;
-                    break;
+                    default:
+                        break;
+                    }
                 }
-                default:
-                    break;
+                if (path.hasImplicitClose()) {
+                    QPointF pt = * ((QPointF *) path.points()) * state()->matrix;
+                    d->activeStroker->lineTo(pt.x(), pt.y());
                 }
-            }
-            if (path.hasImplicitClose()) {
-                QPointF pt = * ((QPointF *) path.points()) * state()->matrix;
-                d->activeStroker->lineTo(pt.x(), pt.y());
-            }
 
-        } else {
-            QPointF p = ((QPointF *)points)[0] * state()->matrix;
-            d->activeStroker->moveTo(p.x(), p.y());
-            points += 2;
-            ++types;
-            while (points < lastPoint) {
+            } else {
                 QPointF p = ((QPointF *)points)[0] * state()->matrix;
-                d->activeStroker->lineTo(p.x(), p.y());
+                d->activeStroker->moveTo(p.x(), p.y());
                 points += 2;
                 ++types;
+                while (points < lastPoint) {
+                    QPointF p = ((QPointF *)points)[0] * state()->matrix;
+                    d->activeStroker->lineTo(p.x(), p.y());
+                    points += 2;
+                    ++types;
+                }
+                if (path.hasImplicitClose())
+                    d->activeStroker->lineTo(p.x(), p.y());
             }
-            if (path.hasImplicitClose())
-                d->activeStroker->lineTo(p.x(), p.y());
+            d->activeStroker->end();
         }
 
-        d->activeStroker->end();
         d->stroker.setStrokeWidth(strokeWidth);
         QVectorPath strokePath(d->strokeHandler->pts.data(),
                                d->strokeHandler->types.size(),

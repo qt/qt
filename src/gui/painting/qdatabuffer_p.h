@@ -114,23 +114,6 @@ public:
         qSwap(buffer, other.buffer);
     }
 
-    inline void insertBlank(int pos, int count) {
-        Q_ASSERT(pos >= 0);
-        Q_ASSERT(pos < siz);
-        reserve(siz + count);
-        for (int i = siz - pos - 1; i >= 0; --i)
-            buffer[pos + count + i] = buffer[pos + i];
-        siz += count;
-    }
-
-    inline void removeAndShift(int pos, int count) {
-        Q_ASSERT(pos >= 0);
-        Q_ASSERT(pos < siz);
-        for (int i=pos; i<siz-count; ++i)
-            buffer[i] = buffer[i+count];
-        siz -= count;
-    }
-
     inline QDataBuffer &operator<<(const Type &t) { add(t); return *this; }
 
 private:
