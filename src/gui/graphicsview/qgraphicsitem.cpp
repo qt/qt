@@ -2227,8 +2227,11 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
         // Unset current effect.
         QGraphicsEffectPrivate *oldEffectPrivate = d_ptr->graphicsEffect->d_func();
         d_ptr->graphicsEffect = 0;
-        if (oldEffectPrivate)
+        if (oldEffectPrivate) {
             oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
+            if (d_ptr->scene) // Update the views directly.
+                d_ptr->scene->d_func()->markDirty(this, QRectF(), false, false, false, false, true);
+        }
     } else {
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QGraphicsItemEffectSourcePrivate(this);
@@ -2237,8 +2240,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
         effect->d_func()->setGraphicsEffectSource(source);
     }
 
-    if (d_ptr->scene)
-        d_ptr->scene->d_func()->markDirty(this, QRectF(), false, false, false, false, !effect);
+    prepareGeometryChange();
 }
 
 /*!
@@ -2252,9 +2254,22 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 */
 QRectF QGraphicsItem::effectiveBoundingRect() const
 {
-    if (d_ptr->graphicsEffect && d_ptr->graphicsEffect->isEnabled())
-        return d_ptr->graphicsEffect->boundingRect();
-    return boundingRect();
+    QGraphicsEffect *effect = d_ptr->graphicsEffect;
+    QRectF brect = effect && effect->isEnabled() ? effect->boundingRect() : boundingRect();
+    if (d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+        return brect;
+
+    const QGraphicsItem *effectParent = d_ptr->parent;
+    while (effectParent) {
+        effect = effectParent->d_ptr->graphicsEffect;
+        if (effect && effect->isEnabled())
+            brect = effect->boundingRectFor(brect);
+        if (effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+            return brect;
+        effectParent = effectParent->d_ptr->parent;
+    }
+
+    return brect;
 }
 
 /*!
