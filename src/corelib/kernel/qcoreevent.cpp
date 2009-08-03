@@ -269,7 +269,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue FutureCallOut
     \omitvalue CocoaRequestModal
     \omitvalue Signal
-    \omitvalue WinGesture
+    \omitvalue NativeGesture
 */
 
 /*!

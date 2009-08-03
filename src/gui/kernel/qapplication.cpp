@@ -4052,7 +4052,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         touchEvent->setAccepted(eventAccepted);
         break;
     }
-    case QEvent::WinGesture:
+    case QEvent::NativeGesture:
     {
         // only propagate the first gesture event (after the GID_BEGIN)
         QWidget *w = static_cast<QWidget *>(receiver);

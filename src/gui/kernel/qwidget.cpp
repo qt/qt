@@ -7941,8 +7941,8 @@ bool QWidget::event(QEvent *event)
         break;
     }
 #ifdef Q_WS_WIN
-    case QEvent::WinGesture: {
-        QWinGestureEvent *ev = static_cast<QWinGestureEvent*>(event);
+    case QEvent::NativeGesture: {
+        QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
         QApplicationPrivate *qAppPriv = qApp->d_func();
         QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
         it = qAppPriv->widgetGestures.find(this);
@@ -7950,15 +7950,15 @@ bool QWidget::event(QEvent *event)
             Qt::GestureState state = Qt::GestureUpdated;
             if (qAppPriv->lastGestureId == 0)
                 state = Qt::GestureStarted;
-            QWinGestureEvent::Type type = ev->gestureType;
-            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
-                type = (QWinGestureEvent::Type)qAppPriv->lastGestureId;
+            QNativeGestureEvent::Type type = ev->gestureType;
+            if (ev->gestureType == QNativeGestureEvent::GestureEnd) {
+                type = (QNativeGestureEvent::Type)qAppPriv->lastGestureId;
                 state = Qt::GestureFinished;
             }
 
             QGesture *gesture = 0;
             switch (type) {
-            case QWinGestureEvent::Pan: {
+            case QNativeGestureEvent::Pan: {
                 QPanGesture *pan = it.value().pan;
                 gesture = pan;
                 if (state == Qt::GestureStarted) {
@@ -7970,7 +7970,7 @@ bool QWidget::event(QEvent *event)
                 gesture->setPos(ev->position);
                 break;
             }
-            case QWinGestureEvent::Pinch:
+            case QNativeGestureEvent::Pinch:
                 break;
             default:
                 break;
@@ -7984,7 +7984,7 @@ bool QWidget::event(QEvent *event)
                     emit gesture->finished();
                 event->accept();
             }
-            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
+            if (ev->gestureType == QNativeGestureEvent::GestureEnd) {
                 qAppPriv->lastGestureId = 0;
             } else {
                 qAppPriv->lastGestureId = type;
