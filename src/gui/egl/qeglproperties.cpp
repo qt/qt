@@ -229,12 +229,21 @@ bool QEglProperties::reduceConfiguration()
         removeValue(EGL_SAMPLES);
         return true;
     }
-    if (removeValue(EGL_ALPHA_SIZE))
+    if (removeValue(EGL_ALPHA_SIZE)) {
+#if defined(EGL_BIND_TO_TEXTURE_RGBA) && defined(EGL_BIND_TO_TEXTURE_RGB)
+        if (removeValue(EGL_BIND_TO_TEXTURE_RGBA))
+            setValue(EGL_BIND_TO_TEXTURE_RGB, TRUE);
+#endif
         return true;
+    }
     if (removeValue(EGL_STENCIL_SIZE))
         return true;
     if (removeValue(EGL_DEPTH_SIZE))
         return true;
+#if defined(EGL_BIND_TO_TEXTURE_RGB)
+    if (removeValue(EGL_BIND_TO_TEXTURE_RGB))
+        return true;
+#endif
     return false;
 }
 
