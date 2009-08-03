@@ -144,7 +144,7 @@ QFxPathView::~QFxPathView()
     \brief the model providing data for the view.
 
     The model must be either a \l QListModelInterface or
-    \l QFxVisualItemModel subclass.
+    \l QFxVisualModel subclass.
 */
 QVariant QFxPathView::model() const
 {
@@ -168,8 +168,8 @@ void QFxPathView::setModel(const QVariant &model)
 
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
-    QFxVisualItemModel *vim = 0;
-    if (object && (vim = qobject_cast<QFxVisualItemModel *>(object))) {
+    QFxVisualModel *vim = 0;
+    if (object && (vim = qobject_cast<QFxVisualModel *>(object))) {
         if (d->ownModel) {
             delete d->model;
             d->ownModel = false;
@@ -177,10 +177,11 @@ void QFxPathView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualItemModel(qmlContext(this));
+            d->model = new QFxVisualDataModel(qmlContext(this));
             d->ownModel = true;
         }
-        d->model->setModel(model);
+        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+            dataModel->setModel(model);
     }
     if (d->model) {
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
@@ -341,18 +342,25 @@ void QFxPathView::setDragMargin(qreal dragMargin)
 QmlComponent *QFxPathView::delegate() const
 {
     Q_D(const QFxPathView);
-    return d->model ? d->model->delegate() : 0;
+     if (d->model) {
+        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+            return dataModel->delegate();
+    }
+
+    return 0;
 }
 
 void QFxPathView::setDelegate(QmlComponent *c)
 {
     Q_D(QFxPathView);
     if (!d->ownModel) {
-        d->model = new QFxVisualItemModel(qmlContext(this));
+        d->model = new QFxVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
-    d->model->setDelegate(c);
-    d->regenerate();
+    if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model)) {
+        dataModel->setDelegate(c);
+        d->regenerate();
+    }
 }
 
 /*!

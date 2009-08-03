@@ -51,21 +51,21 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxVisualItemModel;
+class QFxVisualModel;
 class QFxFlowViewValue;
 class QFxFlowViewAttached;
 class Q_DECLARATIVE_EXPORT QFxFlowView : public QFxItem
 {
     Q_OBJECT
-    Q_PROPERTY(QFxVisualItemModel *model READ model WRITE setModel)
+    Q_PROPERTY(QFxVisualModel *model READ model WRITE setModel)
     Q_PROPERTY(int column READ columns WRITE setColumns)
     Q_PROPERTY(bool vertical READ vertical WRITE setVertical)
 
 public:
     QFxFlowView();
 
-    QFxVisualItemModel *model() const;
-    void setModel(QFxVisualItemModel *);
+    QFxVisualModel *model() const;
+    void setModel(QFxVisualModel *);
 
     int columns() const;
     void setColumns(int);
@@ -86,7 +86,7 @@ private:
     void reflowDrag(const QPointF &);
     void clearTimeLine();
     int m_columns;
-    QFxVisualItemModel *m_model;
+    QFxVisualModel *m_model;
     QList<QFxItem *> m_items;
     bool m_vertical;
     void moveItem(QFxItem *item, const QPointF &);

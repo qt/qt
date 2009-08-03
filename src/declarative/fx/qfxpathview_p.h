@@ -106,7 +106,7 @@ public:
     }
 
     bool isValid() const {
-        return model && model->count() > 0 && model->delegate() && path;
+        return model && model->count() > 0 && model->isValid() && path;
     }
 
     int calcCurrentIndex();
@@ -140,7 +140,7 @@ public:
     int pathOffset;
     int requestedIndex;
     QList<QFxItem *> items;
-    QFxVisualItemModel *model;
+    QFxVisualModel *model;
     QVariant modelVariant;
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
