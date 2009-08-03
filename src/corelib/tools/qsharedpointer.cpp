@@ -864,6 +864,33 @@
 #include <qset.h>
 #include <qmutex.h>
 
+#if !defined(QT_NO_QOBJECT)
+#include "../kernel/qobject_p.h"
+
+QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+    ExternalRefCountData *that = d->sharedRefcount;
+    if (that) {
+        that->weakref.ref();
+        return that;
+    }
+
+    // we can create the refcount data because it doesn't exist
+    ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
+    x->strongref = -1;
+    x->weakref = 2;  // the QWeakPointer that called us plus the QObject itself
+    if (!d->sharedRefcount.testAndSetRelease(0, x)) {
+        delete x;
+        d->sharedRefcount->weakref.ref();
+    }
+    return d->sharedRefcount;
+}
+#endif
+
+
+
 #if !defined(QT_NO_MEMBER_TEMPLATES)
 
 //#  define QT_SHARED_POINTER_BACKTRACE_SUPPORT

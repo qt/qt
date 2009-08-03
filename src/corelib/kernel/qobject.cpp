@@ -56,6 +56,7 @@
 #include <qvarlengtharray.h>
 #include <qset.h>
 #include <qsemaphore.h>
+#include <qsharedpointer.h>
 
 #include <private/qorderedmutexlocker_p.h>
 #include <private/qmutexpool_p.h>
@@ -766,6 +767,13 @@ QObject::~QObject()
         // set all QPointers for this object to zero - note that
         // ~QWidget() does this for us, so we don't have to do it twice
         QObjectPrivate::clearGuards(this);
+    }
+
+    if (d->sharedRefcount) {
+        // indicate to all QWeakPointers that this QObject has now been deleted
+        d->sharedRefcount->strongref = 0;
+        if (!d->sharedRefcount->weakref.deref())
+            delete d->sharedRefcount;
     }
 
     emit destroyed(this);

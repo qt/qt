@@ -162,13 +162,22 @@ namespace QtSharedPointer {
 
     struct ExternalRefCountData
     {
-        QAtomicInt weakref;
-        QAtomicInt strongref;
+        QBasicAtomicInt weakref;
+        QBasicAtomicInt strongref;
 
-        inline ExternalRefCountData() : weakref(1), strongref(1) { }
-        virtual inline ~ExternalRefCountData() { Q_ASSERT(!weakref); Q_ASSERT(!strongref); }
+        inline ExternalRefCountData()
+        {
+            QBasicAtomicInt proto = Q_BASIC_ATOMIC_INITIALIZER(1);
+            weakref = strongref = proto;
+        }
+        inline ExternalRefCountData(Qt::Initialization) { }
+        virtual inline ~ExternalRefCountData() { Q_ASSERT(!weakref); Q_ASSERT(strongref <= 0); }
 
         virtual inline bool destroy() { return false; }
+
+#ifndef QT_NO_QOBJECT
+        Q_CORE_EXPORT static ExternalRefCountData *getAndRef(const QObject *);
+#endif
     };
     // sizeof(ExternalRefCount) = 12 (32-bit) / 16 (64-bit)
 
@@ -376,7 +385,7 @@ namespace QtSharedPointer {
                     tmp = o->strongref;  // failed, try again
                 }
 
-                if (tmp)
+                if (tmp > 0)
                     o->weakref.ref();
                 else
                     o = 0;
@@ -495,6 +504,15 @@ public:
 
     inline QWeakPointer() : d(0), value(0) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
+
+    // special constructor that is enabled only if X derives from QObject
+    template <class X>
+    inline QWeakPointer(X *ptr) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
+    { }
+    template <class X>
+    inline QWeakPointer &operator=(X *ptr)
+    { return *this = QWeakPointer(ptr); }
+
     inline QWeakPointer(const QWeakPointer<T> &o) : d(o.d), value(o.value)
     { if (d) d->weakref.ref(); }
     inline QWeakPointer<T> &operator=(const QWeakPointer<T> &o)
