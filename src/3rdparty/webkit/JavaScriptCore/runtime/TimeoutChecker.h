@@ -38,6 +38,7 @@ namespace JSC {
     class TimeoutChecker {
     public:
         TimeoutChecker();
+        virtual ~TimeoutChecker();
 
         void setTimeoutInterval(unsigned timeoutInterval) { m_timeoutInterval = timeoutInterval; }
         

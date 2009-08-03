@@ -108,6 +108,10 @@ TimeoutChecker::TimeoutChecker()
     reset();
 }
 
+TimeoutChecker::~TimeoutChecker()
+{
+}
+
 void TimeoutChecker::reset()
 {
     m_ticksUntilNextCheck = ticksUntilFirstCheck;

@@ -684,14 +684,14 @@ DEFINE_STUB_FUNCTION(int, timeout_check)
     STUB_INIT_STACK_FRAME(stackFrame);
     
     JSGlobalData* globalData = stackFrame.globalData;
-    TimeoutChecker& timeoutChecker = globalData->timeoutChecker;
+    TimeoutChecker* timeoutChecker = globalData->timeoutChecker;
 
-    if (timeoutChecker.didTimeOut(stackFrame.callFrame)) {
+    if (timeoutChecker->didTimeOut(stackFrame.callFrame)) {
         globalData->exception = createInterruptedExecutionException(globalData);
         VM_THROW_EXCEPTION_AT_END();
     }
     
-    return timeoutChecker.ticksUntilNextCheck();
+    return timeoutChecker->ticksUntilNextCheck();
 }
 
 DEFINE_STUB_FUNCTION(void, register_file_check)

@@ -124,7 +124,7 @@ namespace JSC {
 #if ENABLE(JIT)
         JITThunks jitStubs;
 #endif
-        TimeoutChecker timeoutChecker;
+        TimeoutChecker* timeoutChecker;
         Heap heap;
 
         JSValue exception;

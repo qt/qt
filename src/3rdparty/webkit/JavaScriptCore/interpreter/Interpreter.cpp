@@ -1135,7 +1135,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
 
     Instruction* vPC = callFrame->codeBlock()->instructions().begin();
     Profiler** enabledProfilerReference = Profiler::enabledProfilerReference();
-    unsigned tickCount = globalData->timeoutChecker.ticksUntilNextCheck();
+    unsigned tickCount = globalData->timeoutChecker->ticksUntilNextCheck();
 
 #define CHECK_FOR_EXCEPTION() \
     do { \
@@ -1151,11 +1151,11 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
 
 #define CHECK_FOR_TIMEOUT() \
     if (!--tickCount) { \
-        if (globalData->timeoutChecker.didTimeOut(callFrame)) { \
+        if (globalData->timeoutChecker->didTimeOut(callFrame)) { \
             exceptionValue = jsNull(); \
             goto vm_throw; \
         } \
-        tickCount = globalData->timeoutChecker.ticksUntilNextCheck(); \
+        tickCount = globalData->timeoutChecker->ticksUntilNextCheck(); \
     }
     
 #if ENABLE(OPCODE_SAMPLING)

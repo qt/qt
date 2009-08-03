@@ -134,6 +134,7 @@ JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
 #if ENABLE(JIT)
     , jitStubs(this)
 #endif
+    , timeoutChecker(new TimeoutChecker)
     , heap(this)
     , initializingLazyNumericCompareFunction(false)
     , head(0)
@@ -176,6 +177,7 @@ JSGlobalData::~JSGlobalData()
 
     delete parser;
     delete lexer;
+    delete timeoutChecker;
 
     deleteAllValues(opaqueJSClassData);
 

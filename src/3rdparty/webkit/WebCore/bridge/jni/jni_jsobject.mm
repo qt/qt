@@ -302,9 +302,9 @@ jobject JavaJSObject::call(jstring methodName, jobjectArray args) const
     // Call the function object.
     MarkedArgumentBuffer argList;
     getListFromJArray(exec, args, argList);
-    rootObject->globalObject()->globalData()->timeoutChecker.start();
+    rootObject->globalObject()->globalData()->timeoutChecker->start();
     JSValue result = JSC::call(exec, function, callType, callData, _imp, argList);
-    rootObject->globalObject()->globalData()->timeoutChecker.stop();
+    rootObject->globalObject()->globalData()->timeoutChecker->stop();
 
     return convertValueToJObject(result);
 }
@@ -321,9 +321,9 @@ jobject JavaJSObject::eval(jstring script) const
     if (!rootObject)
         return 0;
 
-    rootObject->globalObject()->globalData()->timeoutChecker.start();
+    rootObject->globalObject()->globalData()->timeoutChecker->start();
     Completion completion = JSC::evaluate(rootObject->globalObject()->globalExec(), rootObject->globalObject()->globalScopeChain(), makeSource(JavaString(script)));
-    rootObject->globalObject()->globalData()->timeoutChecker.stop();
+    rootObject->globalObject()->globalData()->timeoutChecker->stop();
     ComplType type = completion.complType();
     
     if (type == Normal) {
