@@ -492,6 +492,7 @@ public:
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
     inline bool operator !() const { return isNull(); }
+    inline T *data() const { return d == 0 || d->strongref == 0 ? 0 : value; }
 
     inline QWeakPointer() : d(0), value(0) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
