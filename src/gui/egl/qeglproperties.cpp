@@ -46,10 +46,24 @@ QT_BEGIN_NAMESPACE
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 
+#include "qegl_p.h"
+
+
 // Initialize a property block.
 QEglProperties::QEglProperties()
 {
     props.append(EGL_NONE);
+}
+
+QEglProperties::QEglProperties(EGLConfig cfg)
+{
+    props.append(EGL_NONE);
+    for (int name = 0x3020; name <= 0x304F; ++name) {
+        EGLint value;
+        if (name != EGL_NONE && eglGetConfigAttrib(QEglContext::defaultDisplay(0), cfg, name, &value))
+            setValue(name, value);
+    }
+    eglGetError();  // Clear the error state.
 }
 
 // Fetch the current value associated with a property.
