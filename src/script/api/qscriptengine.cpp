@@ -417,9 +417,12 @@ public:
     TimeoutCheckerProxy(const JSC::TimeoutChecker& originalChecker)
         : JSC::TimeoutChecker(originalChecker)
         , m_shouldProcessEvents(false)
+        , m_shouldAbortEvaluation(false)
     {}
 
     void setShouldProcessEvents(bool shouldProcess) { m_shouldProcessEvents = shouldProcess; }
+    void setShouldAbort(bool shouldAbort) { m_shouldAbortEvaluation = shouldAbort; }
+    bool shouldAbort() { return m_shouldAbortEvaluation; }
 
     virtual bool didTimeOut(JSC::ExecState* exec)
     {
@@ -429,11 +432,12 @@ public:
         if (m_shouldProcessEvents)
             QCoreApplication::processEvents();
 
-        return false;
+        return m_shouldAbortEvaluation;
     }
 
 private:
     bool m_shouldProcessEvents;
+    bool m_shouldAbortEvaluation;
 };
 
 static int toDigit(char c)
@@ -2278,6 +2282,12 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::JSValue exceptionValue;
     JSC::JSValue result = exec->interpreter()->execute(evalNode.get(), exec, thisObject, exec->scopeChain(), &exceptionValue);
 
+    if (dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->shouldAbort()) {
+        if (d->abortResult.isError())
+            exec->setException(d->scriptValueToJSCValue(d->abortResult));
+        return d->abortResult;
+    }
+
     if (exceptionValue) {
         exec->setException(exceptionValue);
         return d->scriptValueFromJSCValue(exceptionValue);
@@ -3541,8 +3551,10 @@ bool QScriptEngine::isEvaluating() const
 */
 void QScriptEngine::abortEvaluation(const QScriptValue &result)
 {
-    qWarning("QScriptEngine::abortEvaluation() not implemented");
-    Q_UNUSED(result);
+    Q_D(QScriptEngine);
+
+    dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->setShouldAbort(true);
+    d->abortResult = result;
 }
 
 #ifndef QT_NO_QOBJECT

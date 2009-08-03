@@ -225,6 +225,7 @@ public:
     QHash<JSC::JSCell*, QBasicAtomicInt> keepAliveValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
+    QScriptValue abortResult;
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;

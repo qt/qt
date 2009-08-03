@@ -2531,7 +2531,6 @@ static QScriptValue myFunctionAbortingEvaluation(QScriptContext *, QScriptEngine
 
 void tst_QScriptEngine::abortEvaluation()
 {
-    QSKIP("Not implemented", SkipAll);
     QScriptEngine eng;
 
     eng.abortEvaluation();
