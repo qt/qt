@@ -79,7 +79,7 @@ class QAbstractAnimation;
 #endif
 
 class QStateMachine;
-class Q_AUTOTEST_EXPORT QStateMachinePrivate : public QStatePrivate
+class Q_CORE_EXPORT QStateMachinePrivate : public QStatePrivate
 {
     Q_DECLARE_PUBLIC(QStateMachine)
 public:
@@ -214,11 +214,7 @@ public:
         f_cloneEvent cloneEvent;
     };
 
-    static
-#ifndef QT_BUILD_INTERNAL // otherwise Q_AUTOTEST_EXPORT exports it all
-        Q_CORE_EXPORT
-#endif
-        const Handler *handler;
+    static const Handler *handler;
 };
 
 QT_END_NAMESPACE
