@@ -706,8 +706,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             // Convert to CFbsBitmp
             // TODO: When QPixmap is adapted to use native CFbsBitmap,
             // it could be set directly to context pane
-            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmapL(pm, false);
-            CFbsBitmap* nMask = qt_pixmapToNativeBitmapL(mask, true);
+            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
+            CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
 
             contextPane->SetPicture(nBitmap,nMask);
         } else {
@@ -740,8 +740,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 // Convert to CFbsBitmp
                 // TODO: When QPixmap is adapted to use native CFbsBitmap,
                 // it could be set directly to context pane
-                CFbsBitmap* nBitmap = qt_pixmapToNativeBitmapL(pm, false);
-                CFbsBitmap* nMask = qt_pixmapToNativeBitmapL(mask, true);
+                CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
+                CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
 
                 titlePane->SetSmallPicture( nBitmap, nMask, ETrue );
             } else {
