@@ -60,7 +60,7 @@ namespace JSC {
 
         void reset();
 
-        bool didTimeOut(ExecState*);
+        virtual bool didTimeOut(ExecState*);
 
     private:
         unsigned m_timeoutInterval;
