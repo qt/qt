@@ -3741,7 +3741,7 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
     if (bResult) {
         switch (gi.dwID) {
         case GID_BEGIN:
-            // we are not interested in this type of event.
+            event.gestureType = QNativeGestureEvent::GestureBegin;
             break;
         case GID_END:
             event.gestureType = QNativeGestureEvent::GestureEnd;

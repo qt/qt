@@ -7940,59 +7940,6 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
-#ifdef Q_WS_WIN
-    case QEvent::NativeGesture: {
-        QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
-        QApplicationPrivate *qAppPriv = qApp->d_func();
-        QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
-        it = qAppPriv->widgetGestures.find(this);
-        if (it != qAppPriv->widgetGestures.end()) {
-            Qt::GestureState state = Qt::GestureUpdated;
-            if (qAppPriv->lastGestureId == 0)
-                state = Qt::GestureStarted;
-            QNativeGestureEvent::Type type = ev->gestureType;
-            if (ev->gestureType == QNativeGestureEvent::GestureEnd) {
-                type = (QNativeGestureEvent::Type)qAppPriv->lastGestureId;
-                state = Qt::GestureFinished;
-            }
-
-            QGesture *gesture = 0;
-            switch (type) {
-            case QNativeGestureEvent::Pan: {
-                QPanGesture *pan = it.value().pan;
-                gesture = pan;
-                if (state == Qt::GestureStarted) {
-                    gesture->setStartPos(ev->position);
-                    gesture->setLastPos(ev->position);
-                } else {
-                    gesture->setLastPos(gesture->pos());
-                }
-                gesture->setPos(ev->position);
-                break;
-            }
-            case QNativeGestureEvent::Pinch:
-                break;
-            default:
-                break;
-            }
-            if (gesture) {
-                gesture->setState(state);
-                if (state == Qt::GestureStarted)
-                    emit gesture->started();
-                emit gesture->triggered();
-                if (state == Qt::GestureFinished)
-                    emit gesture->finished();
-                event->accept();
-            }
-            if (ev->gestureType == QNativeGestureEvent::GestureEnd) {
-                qAppPriv->lastGestureId = 0;
-            } else {
-                qAppPriv->lastGestureId = type;
-            }
-        }
-        break;
-    }
-#endif
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();

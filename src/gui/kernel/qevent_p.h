@@ -124,6 +124,7 @@ class QNativeGestureEvent : public QEvent
 public:
     enum Type {
         None,
+        GestureBegin,
         GestureEnd,
         Pan,
         Pinch

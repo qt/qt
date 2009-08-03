@@ -60,6 +60,8 @@
 #include "qgesture.h"
 #include "qgesture_p.h"
 
+#include "qstandardgestures.h"
+
 QT_BEGIN_NAMESPACE
 
 class QPanGesturePrivate : public QGesturePrivate
@@ -67,11 +69,16 @@ class QPanGesturePrivate : public QGesturePrivate
     Q_DECLARE_PUBLIC(QPanGesture)
 
 public:
-    QPanGesturePrivate() { }
+    QPanGesturePrivate()
+    {
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+        panFinishedTimer = 0;
+#endif
+    }
 
-    QList<QTouchEvent::TouchPoint> touchPoints;
     QSize totalOffset;
     QSize lastOffset;
+    QPoint lastPosition;
 
 #if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
     int panFinishedTimer;

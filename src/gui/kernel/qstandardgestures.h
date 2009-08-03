@@ -70,11 +70,14 @@ public:
 
     QSize totalOffset() const;
     QSize lastOffset() const;
-
-protected:
-    bool event(QEvent *event);
+    QPoint startPos() const;
+    QPoint lastPos() const;
+    QPoint pos() const;
 
 private:
+    bool event(QEvent *event);
+    bool eventFilter(QObject *receiver, QEvent *event);
+
     friend class QWidget;
 };
 
