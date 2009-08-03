@@ -2109,6 +2109,18 @@ void QTextEngine::LayoutData::reallocate(int totalGlyphs)
     allocated = newAllocated;
 }
 
+QGlyphLayout QGlyphLayout::clone(char *address) const
+{   
+    QGlyphLayout layout(address, numGlyphs);
+    memmove(layout.attributes, attributes, numGlyphs * sizeof(HB_GlyphAttributes));
+    memmove(layout.justifications, justifications, numGlyphs * sizeof(QGlyphJustification));
+    memmove(layout.advances_y, advances_y, numGlyphs * sizeof(QFixed));
+    memmove(layout.advances_x, advances_x, numGlyphs * sizeof(QFixed));
+    memmove(layout.glyphs, glyphs, numGlyphs * sizeof(HB_Glyph));
+
+    return layout;
+}
+
 // grow to the new size, copying the existing data to the new layout
 void QGlyphLayout::grow(char *address, int totalGlyphs)
 {

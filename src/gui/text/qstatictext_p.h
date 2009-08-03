@@ -67,9 +67,12 @@ public:
 
     void init();
 
-    QTextLayout *textLayout;
-    QSizeF size;
     QAtomicInt ref;
+    QVector<QTextItemInt *> items;
+    QString text;
+    QFont font;
+    char *glyphLayoutMemory;
+    unsigned short *logClusterMemory;
     
     static QStaticTextPrivate *get(const QStaticText *q);
 };

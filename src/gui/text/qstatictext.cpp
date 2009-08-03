@@ -41,6 +41,7 @@
 
 #include "qstatictext.h"
 #include "qstatictext_p.h"
+#include <private/qtextengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -110,13 +111,11 @@ QStaticText::QStaticText()
     \a font and bounded by the given \a maximumSize. If an invalid size is passed for \a maximumSize
     the text will be unbounded.         
 */
-QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &sz)
+QStaticText::QStaticText(const QString &text, const QFont &font)
     : d_ptr(new QStaticTextPrivate) 
 {    
-    d_ptr->textLayout->setText(text);
-    d_ptr->textLayout->setFont(font);
-    d_ptr->size = sz;
-
+    d_ptr->text = text;
+    d_ptr->font = font;
     d_ptr->init();
 }
 
@@ -163,9 +162,7 @@ QStaticText &QStaticText::operator=(const QStaticText &other)
 bool QStaticText::operator==(const QStaticText &other) const
 {
     return (d_ptr == other.d_ptr
-        || (d_ptr->textLayout->text() == other.d_ptr->textLayout->text()
-            && d_ptr->textLayout->font() == other.d_ptr->textLayout->font()
-            && d_ptr->size == other.d_ptr->size));
+            || (d_ptr->text == other.d_ptr->text && d_ptr->font == other.d_ptr->font));
 }
 
 /*!
@@ -187,8 +184,7 @@ bool QStaticText::operator!=(const QStaticText &other) const
 void QStaticText::setText(const QString &text) 
 {
     detach();
-
-    d_ptr->textLayout->setText(text);
+    d_ptr->text = text;
     d_ptr->init();
 }
 
@@ -199,7 +195,7 @@ void QStaticText::setText(const QString &text)
 */
 QString QStaticText::text() const 
 {
-    return d_ptr->textLayout->text();
+    return d_ptr->text;
 }
 
 /*!
@@ -212,8 +208,7 @@ QString QStaticText::text() const
 void QStaticText::setFont(const QFont &font)
 {
     detach();
-
-    d_ptr->textLayout->setFont(font);
+    d_ptr->font = font;
     d_ptr->init();
 }
 
@@ -224,33 +219,7 @@ void QStaticText::setFont(const QFont &font)
 */
 QFont QStaticText::font() const
 {
-    return d_ptr->textLayout->font();
-}
-
-/*!
-    Sets the maximum size of the QStaticText to \a maximumSize. If a valid maximum size is set for 
-    the QStaticText, it will be formatted to fit within its width, and clipped by its height.
-
-    \note This function will cause the layout of the text to be recalculated.
-
-    \sa maximumSize()
-*/
-void QStaticText::setMaximumSize(const QSizeF &maximumSize)
-{
-    detach();
-
-    d_ptr->size = maximumSize;
-    d_ptr->init();
-}
-
-/*!
-    Returns the maximum size of the QStaticText.
-
-    \sa setMaximumSize()
-*/
-QSizeF QStaticText::maximumSize() const
-{
-    return d_ptr->size;
+    return d_ptr->font;
 }
 
 QString QStaticText::toString() const
@@ -258,22 +227,24 @@ QString QStaticText::toString() const
     return text();
 }
 
-QStaticTextPrivate::QStaticTextPrivate()
-    : textLayout(new QTextLayout())
+QStaticTextPrivate::QStaticTextPrivate() : glyphLayoutMemory(0), logClusterMemory(0)
 {
-    ref = 1;
+    ref = 1;    
 }
 
-QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)    
+QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
 {
     ref = 1;
-    textLayout = new QTextLayout(other.textLayout->text(), other.textLayout->font());
-    size = other.size;    
+    text = other.text;
+    font = other.font;
+    init();
 }
 
 QStaticTextPrivate::~QStaticTextPrivate()
 {
-    delete textLayout;
+    delete glyphLayoutMemory;
+    delete logClusterMemory;
+    qDeleteAll(items);
 }
 
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
@@ -283,22 +254,61 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
 
 void QStaticTextPrivate::init()
 {
-    Q_ASSERT(textLayout != 0);
-    textLayout->setCacheEnabled(true);
+    delete glyphLayoutMemory;
+    delete logClusterMemory;
+    qDeleteAll(items);
 
-    QFontMetrics fontMetrics(textLayout->font());
+    QStackTextEngine engine = QStackTextEngine(text, font);
+    engine.itemize();
 
-    textLayout->beginLayout();
-    int h = size.isValid() ? 0 : -fontMetrics.ascent();
+    engine.option.setTextDirection(QApplication::layoutDirection());
+    QScriptLine line;
+    line.length = text.length();
+    engine.shapeLine(line);
 
-    QTextLine line;
-    qreal lineWidth = size.isValid() ? size.width() : fontMetrics.width(textLayout->text());
-    while ((line = textLayout->createLine()).isValid()) {
-        line.setLineWidth(lineWidth);
-        line.setPosition(QPointF(0, h));
-        h += line.height();
+    int nItems = engine.layoutData->items.size();
+    QVarLengthArray<int> visualOrder(nItems);
+    QVarLengthArray<uchar> levels(nItems);
+    for (int i = 0; i < nItems; ++i)
+        levels[i] = engine.layoutData->items[i].analysis.bidiLevel;
+    QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
+
+    int numGlyphs = engine.layoutData->glyphLayout.numGlyphs;
+    glyphLayoutMemory = new char[QGlyphLayout::spaceNeededForGlyphLayout(numGlyphs)];
+    logClusterMemory = new unsigned short[numGlyphs];
+
+    char *currentGlyphLayout = glyphLayoutMemory;
+    unsigned short *currentLogCluster = logClusterMemory;
+    for (int i = 0; i < nItems; ++i) {
+        int item = visualOrder[i];
+        const QScriptItem &si = engine.layoutData->items.at(item);
+
+        QFont f = engine.font(si);
+        if (si.analysis.flags >= QScriptAnalysis::TabOrObject) {
+            QTextItemInt *gf = new QTextItemInt(si, &f);
+            gf->width = si.width;
+            items.append(gf);
+            continue;
+        }
+
+        QTextItemInt *gf = new QTextItemInt(si, &f);
+
+        QGlyphLayout l = engine.shapedGlyphs(&si);
+        gf->glyphs = l.clone(currentGlyphLayout);
+        currentGlyphLayout += QGlyphLayout::spaceNeededForGlyphLayout(l.numGlyphs);
+
+        gf->chars = text.unicode() + si.position;
+        gf->num_chars = engine.length(item);
+        gf->width = si.width;
+
+        memmove(currentLogCluster, engine.logClusters(&si), sizeof(unsigned short) * l.numGlyphs);
+        gf->logClusters = currentLogCluster;
+        currentLogCluster += l.numGlyphs;
+
+        items.append(gf);
     }
-    textLayout->endLayout();
+
+    items.squeeze();
 }
 
 QT_END_NAMESPACE

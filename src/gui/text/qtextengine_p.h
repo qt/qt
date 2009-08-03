@@ -262,6 +262,8 @@ struct QGlyphLayout
     }
 
     void grow(char *address, int totalGlyphs);
+
+    QGlyphLayout clone(char *address) const;
 };
 
 class QVarLengthGlyphLayoutArray : private QVarLengthArray<void *>, public QGlyphLayout
