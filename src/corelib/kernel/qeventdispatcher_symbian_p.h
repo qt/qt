@@ -112,6 +112,7 @@ private:
 
 struct SymbianTimerInfo : public QSharedData
 {
+    SymbianTimerInfo();
     ~SymbianTimerInfo();
 
     int timerId;
@@ -183,7 +184,7 @@ private:
 
 class QSelectThread : public QThread
 {
-    Q_DECLARE_PRIVATE(QThread)
+    Q_DECLARE_SCOPED_PRIVATE(QThread)
 
 public:
     QSelectThread();
@@ -217,7 +218,7 @@ public: // from CActiveScheduler
 
 class Q_CORE_EXPORT QEventDispatcherSymbian : public QAbstractEventDispatcher
 {
-    Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractEventDispatcher)
 
 public:
     QEventDispatcherSymbian(QObject *parent = 0);

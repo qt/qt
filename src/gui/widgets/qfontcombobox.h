@@ -97,7 +97,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFontComboBox)
-    Q_DECLARE_PRIVATE(QFontComboBox)
+    Q_DECLARE_SCOPED_PRIVATE(QFontComboBox)
     Q_PRIVATE_SLOT(d_func(), void _q_currentChanged(const QString &))
     Q_PRIVATE_SLOT(d_func(), void _q_updateModel())
 };

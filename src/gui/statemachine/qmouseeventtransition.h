@@ -84,7 +84,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QMouseEventTransition)
-    Q_DECLARE_PRIVATE(QMouseEventTransition)
+    Q_DECLARE_SCOPED_PRIVATE(QMouseEventTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

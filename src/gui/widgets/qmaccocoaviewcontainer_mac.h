@@ -63,7 +63,7 @@ public:
     void *cocoaView() const;
 
 private:
-    Q_DECLARE_PRIVATE(QMacCocoaViewContainer)
+    Q_DECLARE_SCOPED_PRIVATE(QMacCocoaViewContainer)
 };
 
 QT_END_NAMESPACE

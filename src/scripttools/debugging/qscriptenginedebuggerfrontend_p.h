@@ -80,7 +80,7 @@ protected:
     void processCommand(int id, const QScriptDebuggerCommand &command);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptEngineDebuggerFrontend)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptEngineDebuggerFrontend)
     Q_DISABLE_COPY(QScriptEngineDebuggerFrontend)
 };
 

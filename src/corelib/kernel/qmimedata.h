@@ -94,7 +94,7 @@ protected:
                                       QVariant::Type preferredType) const;
 private:
     Q_DISABLE_COPY(QMimeData)
-    Q_DECLARE_PRIVATE(QMimeData)
+    Q_DECLARE_SCOPED_PRIVATE(QMimeData)
 };
 
 QT_END_NAMESPACE

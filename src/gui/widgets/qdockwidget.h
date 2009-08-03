@@ -124,7 +124,7 @@ protected:
     void initStyleOption(QStyleOptionDockWidget *option) const;
 
 private:
-    Q_DECLARE_PRIVATE(QDockWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QDockWidget)
     Q_DISABLE_COPY(QDockWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_toggleView(bool))
     Q_PRIVATE_SLOT(d_func(), void _q_toggleTopLevel())

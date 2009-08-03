@@ -70,7 +70,7 @@ protected:
                                const QUrl &identifier,
                                const QSourceLocation &sourceLocation) = 0;
 private:
-    Q_DECLARE_PRIVATE(QAbstractMessageHandler)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractMessageHandler)
     Q_DISABLE_COPY(QAbstractMessageHandler)
 };
 

@@ -70,7 +70,7 @@ class QPixmapFilterPrivate;
 class Q_GUI_EXPORT QPixmapFilter : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPixmapFilter)
+    Q_DECLARE_SCOPED_PRIVATE(QPixmapFilter)
 public:
     virtual ~QPixmapFilter() = 0;
 
@@ -98,7 +98,7 @@ class QPixmapConvolutionFilterPrivate;
 class Q_GUI_EXPORT QPixmapConvolutionFilter : public QPixmapFilter
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPixmapConvolutionFilter)
+    Q_DECLARE_SCOPED_PRIVATE(QPixmapConvolutionFilter)
 
 public:
     QPixmapConvolutionFilter(QObject *parent = 0);
@@ -122,7 +122,7 @@ class QPixmapColorizeFilterPrivate;
 class Q_GUI_EXPORT QPixmapColorizeFilter : public QPixmapFilter
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPixmapColorizeFilter)
+    Q_DECLARE_SCOPED_PRIVATE(QPixmapColorizeFilter)
 
 public:
     QPixmapColorizeFilter(QObject *parent = 0);
@@ -138,7 +138,7 @@ class QPixmapDropShadowFilterPrivate;
 class Q_GUI_EXPORT QPixmapDropShadowFilter : public QPixmapFilter
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPixmapDropShadowFilter)
+    Q_DECLARE_SCOPED_PRIVATE(QPixmapDropShadowFilter)
 
 public:
     QPixmapDropShadowFilter(QObject *parent = 0);

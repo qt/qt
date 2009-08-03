@@ -75,8 +75,8 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
 
 
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
-    d_ptr->bitmap = new (ELeave) CFbsBitmap;
-    User::LeaveIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
+    d_ptr->bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
+    qt_throwIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
 
     updatePaintDeviceOnBitmap();
 
@@ -141,7 +141,8 @@ bool QS60WindowSurface::scroll(const QRegion &area, int dx, int dy)
     if (d_ptr->device.isNull())
         return false;
 
-    CFbsBitmapDevice *bitmapDevice = CFbsBitmapDevice::NewL(d_ptr->bitmap);
+    CFbsBitmapDevice *bitmapDevice = 0;
+    QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(d_ptr->bitmap));
     CBitmapContext *bitmapContext;
     TInt err = bitmapDevice->CreateBitmapContext(bitmapContext);
     if (err != KErrNone) {
@@ -177,7 +178,7 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     QWindowSurface::setGeometry(rect);
 
     TRect nativeRect(qt_QRect2TRect(rect));
-    User::LeaveIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
+    qt_throwIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
 
     if (!rect.isNull())
         updatePaintDeviceOnBitmap();

@@ -265,7 +265,7 @@ private:
     friend class QDateTimeEdit;
 #endif
     Q_DISABLE_COPY(QLineEdit)
-    Q_DECLARE_PRIVATE(QLineEdit)
+    Q_DECLARE_SCOPED_PRIVATE(QLineEdit)
     Q_PRIVATE_SLOT(d_func(), void _q_handleWindowActivate())
     Q_PRIVATE_SLOT(d_func(), void _q_deleteSelected())
 #ifndef QT_NO_COMPLETER

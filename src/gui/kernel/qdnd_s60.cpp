@@ -128,7 +128,7 @@ public:
         QImage temp = pm.toImage();
         QSize size = pm.size();
         temp.bits();        
-        CFbsBitmap *curbm = new (ELeave) CFbsBitmap();
+        CFbsBitmap *curbm = q_check_ptr(new CFbsBitmap());		// CBase derived object needs check on new
         curbm->Create(TSize(size.width(),size.height()),EColor16MA);
         curbm->LockHeap(ETrue);
         memcpy((uchar*)curbm->DataAddress(),temp.bits(),temp.numBytes());

@@ -88,7 +88,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QBasicKeyEventTransition)
-    Q_DECLARE_PRIVATE(QBasicKeyEventTransition)
+    Q_DECLARE_SCOPED_PRIVATE(QBasicKeyEventTransition)
 };
 
 QT_END_NAMESPACE

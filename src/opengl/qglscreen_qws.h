@@ -88,7 +88,7 @@ public:
 
 class Q_OPENGL_EXPORT QGLScreen : public QScreen
 {
-    Q_DECLARE_PRIVATE(QGLScreen)
+    Q_DECLARE_SCOPED_PRIVATE(QGLScreen)
 public:
     QGLScreen(int displayId);
     virtual ~QGLScreen();

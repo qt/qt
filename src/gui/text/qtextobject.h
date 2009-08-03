@@ -84,7 +84,7 @@ protected:
     QTextObject(QTextObjectPrivate &p, QTextDocument *doc);
 
 private:
-    Q_DECLARE_PRIVATE(QTextObject)
+    Q_DECLARE_SCOPED_PRIVATE(QTextObject)
     Q_DISABLE_COPY(QTextObject)
     friend class QTextDocumentPrivate;
 };
@@ -107,7 +107,7 @@ protected:
 protected:
     QTextBlockGroup(QTextBlockGroupPrivate &p, QTextDocument *doc);
 private:
-    Q_DECLARE_PRIVATE(QTextBlockGroup)
+    Q_DECLARE_SCOPED_PRIVATE(QTextBlockGroup)
     Q_DISABLE_COPY(QTextBlockGroup)
     friend class QTextDocumentPrivate;
 };
@@ -182,7 +182,7 @@ protected:
     QTextFrame(QTextFramePrivate &p, QTextDocument *doc);
 private:
     friend class QTextDocumentPrivate;
-    Q_DECLARE_PRIVATE(QTextFrame)
+    Q_DECLARE_SCOPED_PRIVATE(QTextFrame)
     Q_DISABLE_COPY(QTextFrame)
 };
 Q_DECLARE_TYPEINFO(QTextFrame::iterator, Q_MOVABLE_TYPE);

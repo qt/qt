@@ -65,7 +65,7 @@ class QPreviewPaintEnginePrivate;
 
 class QPreviewPaintEngine : public QPaintEngine, public QPrintEngine
 {
-    Q_DECLARE_PRIVATE(QPreviewPaintEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QPreviewPaintEngine)
 public:
     QPreviewPaintEngine();
     ~QPreviewPaintEngine();

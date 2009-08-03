@@ -89,7 +89,7 @@ private:
 
     friend class QtToolBarDialog;
     QScopedPointer<QtToolBarManagerPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtToolBarManager)
+    Q_DECLARE_SCOPED_PRIVATE(QtToolBarManager)
     Q_DISABLE_COPY(QtToolBarManager)
 };
 
@@ -113,7 +113,7 @@ protected:
 private:
 
     QScopedPointer<QtToolBarDialogPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtToolBarDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QtToolBarDialog)
     Q_DISABLE_COPY(QtToolBarDialog)
 
     Q_PRIVATE_SLOT(d_func(), void newClicked())

@@ -81,7 +81,7 @@ private:
 class Q_GUI_EXPORT QPrintDialog : public QAbstractPrintDialog
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPrintDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QPrintDialog)
     Q_ENUMS(PrintDialogOption)
     Q_PROPERTY(PrintDialogOptions options READ options WRITE setOptions)
 

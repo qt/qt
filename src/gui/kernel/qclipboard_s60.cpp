@@ -143,8 +143,10 @@ static QClipboardData *clipboardData()
     return internalCbData;
 }
 
-void writeToStream(const QMimeData* aData, RWriteStream& aStream)
+void writeToStreamLX(const QMimeData* aData, RWriteStream& aStream)
 {
+    // This function both leaves and throws exceptions. There must be no destructor
+    // dependencies between cleanup styles, and no cleanup stack dependencies on stacked objects.
     QStringList headers = aData->formats();
     aStream << TCardinality(headers.count());
     for (QStringList::const_iterator iter= headers.constBegin();iter != headers.constEnd();iter++)
@@ -162,8 +164,10 @@ void writeToStream(const QMimeData* aData, RWriteStream& aStream)
     }    
 }
 
-void readFromStream(QMimeData* aData,RReadStream& aStream)
+void readFromStreamLX(QMimeData* aData,RReadStream& aStream)
 {
+    // This function both leaves and throws exceptions. There must be no destructor
+    // dependencies between cleanup styles, and no cleanup stack dependencies on stacked objects.
     TCardinality mimeTypeCount;
     aStream >> mimeTypeCount;    
     for (int i = 0; i< mimeTypeCount;i++)
@@ -173,6 +177,7 @@ void readFromStream(QMimeData* aData,RReadStream& aStream)
         aStream >> mimeTypeSize;
         HBufC* mimeTypeBuf = HBufC::NewLC(aStream,mimeTypeSize);
         QString mimeType = QString::fromUtf16(mimeTypeBuf->Des().Ptr(),mimeTypeBuf->Length());
+        CleanupStack::PopAndDestroy(mimeTypeBuf);
         // mime data
         TCardinality dataSize;
         aStream >> dataSize;
@@ -182,8 +187,6 @@ void readFromStream(QMimeData* aData,RReadStream& aStream)
         ba.data_ptr()->size = dataSize;
         qDebug() << "paste from clipboard mime: " << mimeType << " data: " << ba;
         aData->setData(mimeType,ba);
-        CleanupStack::PopAndDestroy(mimeTypeBuf);
-
     }
 }
 
@@ -210,7 +213,7 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
             RStoreReadStream stream;
             TStreamId stid = (cb->StreamDictionary()).At(KQtCbDataStream);
             stream.OpenLC(cb->Store(),stid);
-            readFromStream(d->source(),stream);
+            QT_TRYCATCH_LEAVING(readFromStreamLX(d->source(),stream));
             CleanupStack::PopAndDestroy(2,cb);
             return d->source();
         });
@@ -235,7 +238,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
             CClipboard* cb = CClipboard::NewForWritingLC(fs);
             RStoreWriteStream  stream;
             TStreamId stid = stream.CreateLC(cb->Store());
-            writeToStream(src,stream);
+            QT_TRYCATCH_LEAVING(writeToStreamLX(src,stream));
             d->setSource(src);
             stream.CommitL();
             (cb->StreamDictionary()).AssignL(KQtCbDataStream,stid);

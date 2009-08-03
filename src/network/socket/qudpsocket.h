@@ -85,7 +85,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QUdpSocket)
-    Q_DECLARE_PRIVATE(QUdpSocket)
+    Q_DECLARE_SCOPED_PRIVATE(QUdpSocket)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QUdpSocket::BindMode)

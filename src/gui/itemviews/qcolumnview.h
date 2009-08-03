@@ -108,7 +108,7 @@ protected Q_SLOTS:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private:
-    Q_DECLARE_PRIVATE(QColumnView)
+    Q_DECLARE_SCOPED_PRIVATE(QColumnView)
     Q_DISABLE_COPY(QColumnView)
     Q_PRIVATE_SLOT(d_func(), void _q_gripMoved(int))
     Q_PRIVATE_SLOT(d_func(), void _q_changeCurrentColumn())

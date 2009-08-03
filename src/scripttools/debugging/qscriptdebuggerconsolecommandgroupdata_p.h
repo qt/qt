@@ -85,7 +85,7 @@ private:
     QScopedSharedPointer<QScriptDebuggerConsoleCommandGroupDataPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerConsoleCommandGroupData)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerConsoleCommandGroupData)
 };
 
 typedef QMap<QString, QScriptDebuggerConsoleCommandGroupData> QScriptDebuggerConsoleCommandGroupMap;

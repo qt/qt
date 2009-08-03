@@ -105,7 +105,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QState)
-    Q_DECLARE_PRIVATE(QState)
+    Q_DECLARE_SCOPED_PRIVATE(QState)
 };
 
 #endif //QT_NO_STATEMACHINE

@@ -121,7 +121,7 @@ protected:
     void adjustPosition(QWidget*);
 
 private:
-    Q_DECLARE_PRIVATE(QDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QDialog)
     Q_DISABLE_COPY(QDialog)
 
 #ifdef Q_WS_WINCE_WM

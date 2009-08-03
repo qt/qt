@@ -75,7 +75,7 @@ protected:
                                           QWidget *parent, Qt::WindowFlags flags);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebugOutputWidgetInterface)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebugOutputWidgetInterface)
     Q_DISABLE_COPY(QScriptDebugOutputWidgetInterface)
 };
 

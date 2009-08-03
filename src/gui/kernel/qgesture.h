@@ -59,7 +59,7 @@ class QGesturePrivate;
 class Q_GUI_EXPORT QGesture : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QGesture)
+    Q_DECLARE_SCOPED_PRIVATE(QGesture)
 
     Q_PROPERTY(QString type READ type)
     Q_PROPERTY(Qt::GestureState state READ state)
@@ -128,7 +128,7 @@ class QPanningGesturePrivate;
 class Q_GUI_EXPORT QPanningGesture : public QGesture
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPanningGesture)
+    Q_DECLARE_SCOPED_PRIVATE(QPanningGesture)
 
     Q_PROPERTY(Qt::DirectionType lastDirection READ lastDirection)
     Q_PROPERTY(Qt::DirectionType direction READ direction)

@@ -70,7 +70,7 @@ class QImage;
 
 class QtopiaPrintEngine : public QPaintEngine, public QPrintEngine
 {
-    Q_DECLARE_PRIVATE(QtopiaPrintEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QtopiaPrintEngine)
 public:
     QtopiaPrintEngine(QPrinter::PrinterMode mode);
 

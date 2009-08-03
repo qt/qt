@@ -64,7 +64,7 @@ class QGraphicsWidget;
 class Q_GUI_EXPORT QAction : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QAction)
+    Q_DECLARE_SCOPED_PRIVATE(QAction)
 
     Q_ENUMS(MenuRole)
     Q_ENUMS(SoftKeyRole)

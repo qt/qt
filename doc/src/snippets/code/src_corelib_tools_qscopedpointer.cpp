@@ -27,6 +27,7 @@ void myFunction(bool useSubClass)
 //! [1]
 void myFunction(bool useSubClass)
 {
+    // assuming that MyClass has a virtual destructor
     QScopedPointer<MyClass> p(useSubClass ? new MyClass() : new MySubClass);
     QScopedPointer<QIODevice> device(handsOverOwnership());
 
@@ -80,3 +81,23 @@ private:
                              // generate them.
 };
 //! [4]
+
+//! [5]
+// this QScopedPointer deletes its data using the delete[] operator:
+QScopedPointer<int, QScopedPointerArrayDeleter<int> > arrayPointer(new int[42]);
+
+// this QScopedPointer frees its data using free():
+QScopedPointer<int, QScopedPointerPodDeleter<int> > podPointer(reinterpret_cast<int *>(malloc(42)));
+
+// this struct calls "myCustomDeallocator" to delete the pointer
+struct ScopedPointerCustomDeleter
+{
+    static inline void cleanup(MyCustomClass *pointer)
+    {
+        myCustomDeallocator(pointer);
+    }
+};
+
+// QScopedPointer using a custom deleter:
+QScopedPointer<MyCustomClass, ScopedPointerCustomDeleter> customPointer(new MyCustomClass);
+//! [5]

@@ -855,7 +855,7 @@ extern void qInitDrawhelperAsm();
 void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
-    QWidgetPrivate::uncreatedWidgets = new QWidgetSet;
+    QWidgetPrivate::allWidgets = new QWidgetSet;
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
     // trigger registering of QVariant's GUI types
@@ -1007,23 +1007,13 @@ QApplication::~QApplication()
     qt_clipboard = 0;
 #endif
 
-    // delete widget mapper
-    if (QWidgetPrivate::mapper) {
-        QWidgetMapper * myMapper = QWidgetPrivate::mapper;
-        QWidgetPrivate::mapper = 0;
-        for (QWidgetMapper::ConstIterator it = myMapper->constBegin();
-                it != myMapper->constEnd(); ++it) {
-            register QWidget *w = *it;
-            if (!w->parent())                        // window
-                w->destroy(true, true);
-        }
-        delete myMapper;
-    }
+    delete QWidgetPrivate::mapper;
+    QWidgetPrivate::mapper = 0;
 
-    // delete uncreated widgets
-    if (QWidgetPrivate::uncreatedWidgets) {
-        QWidgetSet *mySet = QWidgetPrivate::uncreatedWidgets;
-        QWidgetPrivate::uncreatedWidgets = 0;
+    // delete all widgets
+    if (QWidgetPrivate::allWidgets) {
+        QWidgetSet *mySet = QWidgetPrivate::allWidgets;
+        QWidgetPrivate::allWidgets = 0;
         for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
             register QWidget *w = *it;
             if (!w->parent())                        // window
@@ -2050,12 +2040,9 @@ QWidgetList QApplication::topLevelWidgets()
 
 QWidgetList QApplication::allWidgets()
 {
-    QWidgetList list;
-    if (QWidgetPrivate::mapper)
-        list += QWidgetPrivate::mapper->values();
-    if (QWidgetPrivate::uncreatedWidgets)
-        list += QWidgetPrivate::uncreatedWidgets->toList();
-    return list;
+    if (QWidgetPrivate::allWidgets)
+        return QWidgetPrivate::allWidgets->toList();
+    return QWidgetList();
 }
 
 /*!

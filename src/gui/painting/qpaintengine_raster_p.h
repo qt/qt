@@ -134,7 +134,7 @@ Q_GUI_EXPORT
 #endif
 QRasterPaintEngine : public QPaintEngineEx
 {
-    Q_DECLARE_PRIVATE(QRasterPaintEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QRasterPaintEngine)
 public:
 
     QRasterPaintEngine(QPaintDevice *device);
@@ -333,8 +333,8 @@ public:
     void recalculateFastImages();
 
     QPaintDevice *device;
-    QOutlineMapper *outlineMapper;
-    QRasterBuffer *rasterBuffer;
+    QScopedPointer<QOutlineMapper> outlineMapper;
+    QScopedPointer<QRasterBuffer>  rasterBuffer;
 
 #if defined (Q_WS_WIN)
     HDC hdc;
@@ -345,9 +345,9 @@ public:
     QRect deviceRect;
 
     QStroker basicStroker;
-    QDashStroker *dashStroker;
+    QScopedPointer<QDashStroker> dashStroker;
 
-    QT_FT_Raster *grayRaster;
+    QScopedPointer<QT_FT_Raster> grayRaster;
     unsigned long rasterPoolSize;
     unsigned char *rasterPoolBase;
 
@@ -359,7 +359,7 @@ public:
 
     QFontEngineGlyphCache::Type glyphCacheType;
 
-    QClipData *baseClip;
+    QScopedPointer<QClipData> baseClip;
 
     int deviceDepth;
 
@@ -370,7 +370,7 @@ public:
     uint isPlain45DegreeRotation : 1;
 #endif
 
-    QRasterizer *rasterizer;
+    QScopedPointer<QRasterizer> rasterizer;
 };
 
 
@@ -541,7 +541,7 @@ inline const QClipData *QRasterPaintEnginePrivate::clip() const {
     Q_Q(const QRasterPaintEngine);
     if (q->state() && q->state()->clip && q->state()->clip->enabled)
         return q->state()->clip;
-    return baseClip;
+    return baseClip.data();
 }
 
 

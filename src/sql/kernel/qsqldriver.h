@@ -69,7 +69,7 @@ class Q_SQL_EXPORT QSqlDriver : public QObject
 {
     friend class QSqlDatabase;
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QSqlDriver)
+    Q_DECLARE_SCOPED_PRIVATE(QSqlDriver)
 
 public:
     enum DriverFeature { Transactions, QuerySize, BLOB, Unicode, PreparedQueries,

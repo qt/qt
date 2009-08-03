@@ -1191,7 +1191,7 @@ static void qWinProcessConfigRequests()                // perform requests in qu
 
 class QGuiEventDispatcherWin32 : public QEventDispatcherWin32
 {
-    Q_DECLARE_PRIVATE(QEventDispatcherWin32)
+    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherWin32)
 public:
     QGuiEventDispatcherWin32(QObject *parent = 0);
     bool processEvents(QEventLoop::ProcessEventsFlags flags);

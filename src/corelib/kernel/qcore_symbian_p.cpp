@@ -61,13 +61,12 @@ Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString)
 #else
     TPtrC16 ptr(qt_QString2TPtrC(aString));
 #endif
-    buffer = HBufC::New(ptr.Length());
-    Q_CHECK_PTR(buffer);
+    buffer = q_check_ptr(HBufC::New(ptr.Length()));
     buffer->Des().Copy(ptr);
     return buffer;
 }
 
-Q_CORE_EXPORT QString qt_TDesC2QStringL(const TDesC& aDescriptor)
+Q_CORE_EXPORT QString qt_TDesC2QString(const TDesC& aDescriptor)
 {
 #ifdef QT_NO_UNICODE
     return QString::fromLocal8Bit(aDescriptor.Ptr(), aDescriptor.Length());
@@ -82,9 +81,8 @@ QHBufC::QHBufC()
 }
 
 QHBufC::QHBufC(const QHBufC &src)
+	: m_hBufC(q_check_ptr(src.m_hBufC->Alloc()))
 {
-    m_hBufC = src.m_hBufC->Alloc();
-    Q_CHECK_PTR(m_hBufC);
 }
 
 /*!

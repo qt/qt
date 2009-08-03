@@ -89,7 +89,7 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
             return;
     }
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
-    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
 
     int position = -1;
     int command;
@@ -137,12 +137,12 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 
         if (position != -1) {
             TPtrC text = qt_QString2TPtrC(softKeyAction->text());
-            nativeContainer->SetCommandL(position, command, text);
+            QT_TRAP_THROWING(nativeContainer->SetCommandL(position, command, text));
         }
     }
 
     if (needsExitButton)
-        nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit")));
+        QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit"))));
 
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 #else
@@ -310,10 +310,8 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     } else if (topLevel) {
         if (!q->testAttribute(Qt::WA_Moved) && !q->testAttribute(Qt::WA_DontShowOnScreen))
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
-        QSymbianControl *control= new QSymbianControl(q);
-        control->ConstructL(true,desktop);
-        
-       
+        QSymbianControl *control= q_check_ptr(new QSymbianControl(q));
+        QT_TRAP_THROWING(control->ConstructL(true,desktop));
         if (!desktop) {
 			TInt stackingFlags;
 			if ((q->windowType() & Qt::Popup) == Qt::Popup) {
@@ -350,7 +348,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         control->SetRect(TRect(TPoint(x, y), TSize(w, h)));
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create native child widget
         QSymbianControl *control = new QSymbianControl(q);
-        control->ConstructL(!parentWidget);
+        QT_TRAP_THROWING(control->ConstructL(!parentWidget));
         
         TInt stackingFlags;
         if ((q->windowType() & Qt::Popup) == Qt::Popup) {
@@ -362,7 +360,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         
         setWinId(control);
         WId parentw = parentWidget->effectiveWinId();
-        control->SetContainerWindowL(*parentw);
+        QT_TRAP_THROWING(control->SetContainerWindowL(*parentw));
 
         q->setAttribute(Qt::WA_WState_Created);
         int x, y, w, h;
@@ -397,7 +395,7 @@ void QWidgetPrivate::show_sys()
 
         WId id = q->internalWinId();
         if (!extra->topextra->activated) {
-            id->ActivateL();
+        	QT_TRAP_THROWING(id->ActivateL());
             extra->topextra->activated = 1;
         }
         id->MakeVisible(true);
@@ -621,9 +619,9 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     }
 }
 
-CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
+CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
 {
-    CFbsBitmap* fbsBitmap = new(ELeave)CFbsBitmap;
+    CFbsBitmap* fbsBitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
     TSize size(pixmap.size().width(), pixmap.size().height());
     TDisplayMode mode(EColor16MU);
 
@@ -659,7 +657,7 @@ CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
         break;
     }
 
-    User::LeaveIfError(fbsBitmap->Create(size, mode));
+    qt_throwIfError(fbsBitmap->Create(size, mode));
     fbsBitmap->LockHeap();
     QImage image = pixmap.toImage();
 
@@ -714,7 +712,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             contextPane->SetPicture(nBitmap,nMask);
         } else {
             // Icon set to null -> set context pane picture to default
-            contextPane->SetPictureToDefaultL();
+            QT_TRAP_THROWING(contextPane->SetPictureToDefaultL());
         }
     } else {
         // Context pane does not exist, try setting small icon to title pane
@@ -769,7 +767,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
 			if(caption.isEmpty())
 				titlePane->SetTextToDefaultL();
 			else
-				titlePane->SetTextL(qt_QString2TPtrC(caption));
+				QT_TRAP_THROWING(titlePane->SetTextL(qt_QString2TPtrC(caption)));
         }
     }
 #else
@@ -1125,7 +1123,11 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 
         }
 
-        d->setWinId(0);
+        QT_TRY {
+            d->setWinId(0);
+        } QT_CATCH (const std::bad_alloc &) {
+            // swallow - destructors must not throw
+        }
     }
 }
 

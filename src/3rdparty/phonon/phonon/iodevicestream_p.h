@@ -39,7 +39,7 @@ class IODeviceStreamPrivate;
 class IODeviceStream : public AbstractMediaStream
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(IODeviceStream)
+    Q_DECLARE_SCOPED_PRIVATE(IODeviceStream)
     public:
         explicit IODeviceStream(QIODevice *ioDevice, QObject *parent = 0);
         ~IODeviceStream();

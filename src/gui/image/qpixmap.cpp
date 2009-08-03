@@ -268,7 +268,12 @@ QPixmap::QPixmap(const QString& fileName, const char *format, Qt::ImageConversio
     if (!qt_pixmap_thread_test())
         return;
 
-    load(fileName, format, flags);
+    QT_TRY {
+        load(fileName, format, flags);
+    } QT_CATCH(...) {
+        deref();
+        QT_RETHROW;
+    }
 }
 
 /*!
@@ -316,12 +321,17 @@ QPixmap::QPixmap(const char * const xpm[])
     if (!xpm)
         return;
 
-    QImage image(xpm);
-    if (!image.isNull()) {
-        if (data->pixelType() == QPixmapData::BitmapType)
-            *this = QBitmap::fromImage(image);
-        else
-            *this = fromImage(image);
+    QT_TRY {
+        QImage image(xpm);
+        if (!image.isNull()) {
+            if (data->pixelType() == QPixmapData::BitmapType)
+                *this = QBitmap::fromImage(image);
+            else
+                *this = fromImage(image);
+        }
+    } QT_CATCH(...) {
+        deref();
+        QT_RETHROW;
     }
 }
 #endif

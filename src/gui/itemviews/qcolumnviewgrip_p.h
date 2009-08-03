@@ -82,7 +82,7 @@ protected:
     void mousePressEvent(QMouseEvent *event);
 
 private:
-    Q_DECLARE_PRIVATE(QColumnViewGrip)
+    Q_DECLARE_SCOPED_PRIVATE(QColumnViewGrip)
     Q_DISABLE_COPY(QColumnViewGrip)
 };
 

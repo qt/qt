@@ -220,7 +220,7 @@ private:
     friend class QAccessibleItemView;
     int visualIndex(const QModelIndex &index) const;
 
-    Q_DECLARE_PRIVATE(QTreeView)
+    Q_DECLARE_SCOPED_PRIVATE(QTreeView)
     Q_DISABLE_COPY(QTreeView)
     Q_PRIVATE_SLOT(d_func(), void _q_endAnimatedOperation())
     Q_PRIVATE_SLOT(d_func(), void _q_animate())

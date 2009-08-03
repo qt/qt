@@ -57,7 +57,7 @@ QT_MODULE(Gui)
 
 class QFont;
 class QPainterPathPrivate;
-struct QPainterPathPrivateHandler;
+struct QPainterPathPrivateDeleter;
 class QPainterPathData;
 class QPainterPathStrokerPrivate;
 class QPolygonF;
@@ -203,7 +203,7 @@ public:
     QPainterPath &operator-=(const QPainterPath &other);
 
 private:
-    QScopedCustomPointer<QPainterPathPrivate, QPainterPathPrivateHandler> d_ptr;
+    QScopedPointer<QPainterPathPrivate, QPainterPathPrivateDeleter> d_ptr;
 
     inline void ensureData() { if (!d_ptr) ensureData_helper(); }
     void ensureData_helper();
@@ -237,7 +237,7 @@ public:
     friend class QPainterPathStrokerPrivate;
     friend class QMatrix;
     friend class QTransform;
-    friend struct QPainterPathPrivateHandler;
+    friend struct QPainterPathPrivateDeleter;
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPainterPath &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
@@ -256,7 +256,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
 
 class Q_GUI_EXPORT QPainterPathStroker
 {
-    Q_DECLARE_PRIVATE(QPainterPathStroker)
+    Q_DECLARE_SCOPED_PRIVATE(QPainterPathStroker)
 public:
     QPainterPathStroker();
     ~QPainterPathStroker();

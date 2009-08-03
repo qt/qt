@@ -117,7 +117,7 @@ public:
     void setExceptionNotificationEnabled(bool enable);
 
 private:
-    Q_DECLARE_PRIVATE(QSocks5SocketEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QSocks5SocketEngine)
     Q_DISABLE_COPY(QSocks5SocketEngine)
     Q_PRIVATE_SLOT(d_func(), void _q_controlSocketConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_controlSocketReadNotification())

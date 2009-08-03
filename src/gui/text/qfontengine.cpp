@@ -236,8 +236,10 @@ HB_Font QFontEngine::harfbuzzFont() const
 
 HB_Face QFontEngine::harfbuzzFace() const
 {
-    if (!hbFace)
+    if (!hbFace) {
         hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
+        Q_CHECK_PTR(hbFace);
+    }
     return hbFace;
 }
 

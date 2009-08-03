@@ -80,7 +80,7 @@ void CNotifyChangeEvent::RunL()
     if (iStatus.Int() == KErrNone){
         fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
         SetActive();
-        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(engine->emitPathChanged(this));
+        QT_TRYCATCH_LEAVING(engine->emitPathChanged(this));
     } else {
         qWarning("CNotifyChangeEvent::RunL() - Failed to order change notifications: %d", iStatus.Int());
     }

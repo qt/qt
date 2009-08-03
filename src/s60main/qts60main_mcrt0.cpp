@@ -80,14 +80,7 @@ GLDEF_C TInt QtMainWrapper()
     CleanupArrayDelete<char*>::PushL(envp);
     //Call user(application)'s main
 	int ret = 0;
-	try
-		{
-		ret = CALLMAIN(argc, argv, envp);
-    	}
-    catch (...)
-    	{
-    	User::Leave(KErrGeneral);
-    	}
+    QT_TRYCATCH_LEAVING( ret = CALLMAIN(argc, argv, envp); );
     CleanupStack::PopAndDestroy(2,argv);
     return ret;
 }

@@ -128,7 +128,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QLCDNumber)
-    Q_DECLARE_PRIVATE(QLCDNumber)
+    Q_DECLARE_SCOPED_PRIVATE(QLCDNumber)
 };
 
 #endif // QT_NO_LCDNUMBER

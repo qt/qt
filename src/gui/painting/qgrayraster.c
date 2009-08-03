@@ -1880,6 +1880,10 @@
     if (memory)
       fprintf(stderr, "gray_raster_new(), memory ignored");
     memory = malloc(sizeof(TRaster));
+    if (!memory) {
+        *araster = 0;
+        return ErrRaster_Memory_Overflow;
+    }
     QT_FT_MEM_ZERO(memory, sizeof(TRaster));
 
     *araster = (QT_FT_Raster) memory;

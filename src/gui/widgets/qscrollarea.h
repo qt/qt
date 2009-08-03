@@ -88,7 +88,7 @@ protected:
     void scrollContentsBy(int dx, int dy);
 
 private:
-    Q_DECLARE_PRIVATE(QScrollArea)
+    Q_DECLARE_SCOPED_PRIVATE(QScrollArea)
     Q_DISABLE_COPY(QScrollArea)
 };
 

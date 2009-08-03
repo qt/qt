@@ -123,7 +123,7 @@ protected:
     virtual void scrollContentsBy(int dx, int dy);
 
 private:
-    Q_DECLARE_PRIVATE(QAbstractScrollArea)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractScrollArea)
     Q_DISABLE_COPY(QAbstractScrollArea)
     Q_PRIVATE_SLOT(d_func(), void _q_hslide(int))
     Q_PRIVATE_SLOT(d_func(), void _q_vslide(int))

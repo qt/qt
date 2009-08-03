@@ -60,7 +60,7 @@ QT_MODULE(Gui)
 class Q_GUI_EXPORT QUndoGroup : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QUndoGroup)
+    Q_DECLARE_SCOPED_PRIVATE(QUndoGroup)
 
 public:
     explicit QUndoGroup(QObject *parent = 0);

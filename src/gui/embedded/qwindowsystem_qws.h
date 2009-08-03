@@ -214,7 +214,7 @@ class Q_GUI_EXPORT QWSServer : public QObject
     friend class QWSDisplay;
     friend class QWSInputMethod;
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QWSServer)
+    Q_DECLARE_SCOPED_PRIVATE(QWSServer)
 public:
     explicit QWSServer(int flags = 0, QObject *parent=0);
 #ifdef QT3_SUPPORT
@@ -443,7 +443,7 @@ class QWSConvertSelectionCommand;
 class Q_GUI_EXPORT QWSClient : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QWSClient)
+    Q_DECLARE_SCOPED_PRIVATE(QWSClient)
 public:
     QWSClient(QObject* parent, QWS_SOCK_BASE *, int id);
     ~QWSClient();

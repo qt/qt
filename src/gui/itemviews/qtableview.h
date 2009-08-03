@@ -178,7 +178,7 @@ private:
     friend class QAccessibleItemView;
     int visualIndex(const QModelIndex &index) const;
 
-    Q_DECLARE_PRIVATE(QTableView)
+    Q_DECLARE_SCOPED_PRIVATE(QTableView)
     Q_DISABLE_COPY(QTableView)
     Q_PRIVATE_SLOT(d_func(), void _q_selectRow(int))
     Q_PRIVATE_SLOT(d_func(), void _q_selectColumn(int))

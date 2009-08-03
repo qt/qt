@@ -111,7 +111,7 @@ public:
 
 private:
     void prepareBuffer(QImage::Format format, QWidget *widget);
-    Q_DECLARE_PRIVATE(QRasterWindowSurface)
+    Q_DECLARE_SCOPED_PRIVATE(QRasterWindowSurface)
     QScopedPointer<QRasterWindowSurfacePrivate> d_ptr;
 };
 

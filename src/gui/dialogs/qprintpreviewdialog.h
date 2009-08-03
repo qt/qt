@@ -58,7 +58,7 @@ class QPrintPreviewDialogPrivate;
 class Q_GUI_EXPORT QPrintPreviewDialog : public QDialog
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPrintPreviewDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QPrintPreviewDialog)
 
 public:
     explicit QPrintPreviewDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);

@@ -61,7 +61,7 @@ QT_MODULE(Gui)
 class Q_GUI_EXPORT QUndoView : public QListView
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QUndoView)
+    Q_DECLARE_SCOPED_PRIVATE(QUndoView)
     Q_PROPERTY(QString emptyLabel READ emptyLabel WRITE setEmptyLabel)
     Q_PROPERTY(QIcon cleanIcon READ cleanIcon WRITE setCleanIcon)
 

@@ -74,7 +74,7 @@ class QMngHandler : public QImageIOHandler
     virtual bool supportsOption(ImageOption option) const;
 
     private:
-    Q_DECLARE_PRIVATE(QMngHandler)
+    Q_DECLARE_SCOPED_PRIVATE(QMngHandler)
     QScopedPointer<QMngHandlerPrivate> d_ptr;
 };
 

@@ -65,8 +65,8 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString);
 
-Q_CORE_EXPORT QString qt_TDesC2QStringL(const TDesC& aDescriptor);
-inline QString qt_TDes2QStringL(const TDes& aDescriptor) { return qt_TDesC2QStringL(aDescriptor); }
+Q_CORE_EXPORT QString qt_TDesC2QString(const TDesC& aDescriptor);
+inline QString qt_TDes2QString(const TDes& aDescriptor) { return qt_TDesC2QString(aDescriptor); }
 
 static inline QSize qt_TSize2QSize(const TSize& ts)
 {

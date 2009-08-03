@@ -80,11 +80,6 @@ QT_BEGIN_NAMESPACE
 // system evens seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
 
-struct QS60Data;
-extern QS60Data *qt_s60Data;
-
-#define S60 qt_s60Data
-
 class QS60Data
 {
 public:
@@ -113,6 +108,9 @@ public:
     static inline CEikButtonGroupContainer* buttonGroupContainer();
 #endif
 };
+
+QS60Data* qGlobalS60Data();
+#define S60 qGlobalS60Data()
 
 class QAbstractLongTapObserver
 {
@@ -241,7 +239,7 @@ inline CEikButtonGroupContainer* QS60Data::buttonGroupContainer()
 static inline QFont qt_TFontSpec2QFontL(const TFontSpec &fontSpec)
 {
     return QFont(
-        qt_TDesC2QStringL(fontSpec.iTypeface.iName),
+        qt_TDesC2QString(fontSpec.iTypeface.iName),
         fontSpec.iHeight / KTwipsPerPoint,
         fontSpec.iFontStyle.StrokeWeight() == EStrokeWeightNormal ? QFont::Normal : QFont::Bold,
         fontSpec.iFontStyle.Posture() == EPostureItalic

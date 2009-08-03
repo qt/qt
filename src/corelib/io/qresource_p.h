@@ -61,7 +61,7 @@ class QResourceFileEnginePrivate;
 class QResourceFileEngine : public QAbstractFileEngine
 {
 private:
-    Q_DECLARE_PRIVATE(QResourceFileEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QResourceFileEngine)
 public:
     explicit QResourceFileEngine(const QString &path);
     ~QResourceFileEngine();

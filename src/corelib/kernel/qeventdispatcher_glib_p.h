@@ -67,7 +67,7 @@ class QEventDispatcherGlibPrivate;
 class Q_CORE_EXPORT QEventDispatcherGlib : public QAbstractEventDispatcher
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventDispatcherGlib)
+    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherGlib)
 
 public:
     explicit QEventDispatcherGlib(QObject *parent = 0);

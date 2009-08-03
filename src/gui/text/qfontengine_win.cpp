@@ -495,7 +495,7 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
             unsigned int glyph = glyphs->glyphs[glyph_pos];
             if(int(glyph) >= designAdvancesSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                designAdvances = (QFixed *)realloc(designAdvances, newSize*sizeof(QFixed));
+                designAdvances = q_check_ptr((QFixed *)realloc(designAdvances, newSize*sizeof(QFixed)));
                 for(int i = designAdvancesSize; i < newSize; ++i)
                     designAdvances[i] = -1000000;
                 designAdvancesSize = newSize;
@@ -528,7 +528,8 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 
             if (glyph >= widthCacheSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                widthCache = (unsigned char *)realloc(widthCache, newSize*sizeof(QFixed));
+                widthCache = q_check_ptr((unsigned char *)realloc(widthCache,
+                            newSize*sizeof(QFixed)));
                 memset(widthCache + widthCacheSize, 0, newSize - widthCacheSize);
                 widthCacheSize = newSize;
             }
@@ -570,7 +571,8 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
             unsigned int glyph = glyphs->glyphs[i];
             if(int(glyph) >= designAdvancesSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                designAdvances = (QFixed *)realloc(designAdvances, newSize*sizeof(QFixed));
+                designAdvances = q_check_ptr((QFixed *)realloc(designAdvances,
+                            newSize*sizeof(QFixed)));
                 for(int i = designAdvancesSize; i < newSize; ++i)
                     designAdvances[i] = -1000000;
                 designAdvancesSize = newSize;
@@ -620,7 +622,8 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
 
             if (glyph >= widthCacheSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                widthCache = (unsigned char *)realloc(widthCache, newSize*sizeof(QFixed));
+                widthCache = q_check_ptr((unsigned char *)realloc(widthCache,
+                            newSize*sizeof(QFixed)));
                 memset(widthCache + widthCacheSize, 0, newSize - widthCacheSize);
                 widthCacheSize = newSize;
             }

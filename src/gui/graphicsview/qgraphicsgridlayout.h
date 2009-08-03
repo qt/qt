@@ -127,7 +127,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QGraphicsGridLayout)
-    Q_DECLARE_PRIVATE(QGraphicsGridLayout)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsGridLayout)
 };
 
 inline void QGraphicsGridLayout::addItem(QGraphicsLayoutItem *aitem, int arow, int acolumn, Qt::Alignment aalignment)

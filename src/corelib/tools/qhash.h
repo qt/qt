@@ -167,8 +167,13 @@ inline bool QHashData::willGrow()
 
 inline void QHashData::hasShrunk()
 {
-    if (size <= (numBuckets >> 3) && numBits > userNumBits)
-        rehash(qMax(int(numBits) - 2, int(userNumBits)));
+    if (size <= (numBuckets >> 3) && numBits > userNumBits) {
+        QT_TRY {
+            rehash(qMax(int(numBits) - 2, int(userNumBits)));
+        } QT_CATCH(const std::bad_alloc &) {
+            // ignore bad allocs - shrinking shouldn't throw. rehash is exception safe.
+        }
+    }
 }
 
 inline QHashData::Node *QHashData::firstNode()
@@ -761,6 +766,8 @@ Q_INLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::insertMulti(co
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::remove(const Key &akey)
 {
+    if (isEmpty()) // prevents detaching shared null
+        return 0;
     detach();
 
     int oldSize = d->size;
@@ -782,6 +789,8 @@ Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::remove(const Key &akey)
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE T QHash<Key, T>::take(const Key &akey)
 {
+    if (isEmpty()) // prevents detaching shared null
+        return T();
     detach();
 
     Node **node = findNode(akey);

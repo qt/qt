@@ -168,7 +168,7 @@ protected:
     QAbstractButton(QAbstractButtonPrivate &dd, QWidget* parent = 0);
 
 private:
-    Q_DECLARE_PRIVATE(QAbstractButton)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractButton)
     Q_DISABLE_COPY(QAbstractButton)
     friend class QButtonGroup;
 };

@@ -74,8 +74,31 @@ _LIT(KBrowserPrefix, "4 " );
 _LIT(KFontsDir, "z:\\resource\\Fonts\\");
 const TUid KUidBrowser = { 0x10008D39 };
 
-static void handleMailtoSchemeL(const QUrl &url)
+template<class R>
+class QAutoClose
 {
+public:
+    QAutoClose(R& aObj) : mPtr(&aObj) {}
+    ~QAutoClose()
+    {
+        if (mPtr)
+            mPtr->Close();
+    }
+    void Forget()
+    {
+        mPtr = 0;
+    }
+private:
+    QAutoClose(const QAutoClose&);
+    QAutoClose& operator=(const QAutoClose&);
+private:
+    R* mPtr;
+};
+
+static void handleMailtoSchemeLX(const QUrl &url)
+{
+    // this function has many intermingled leaves and throws. Qt and Symbian objects do not have
+    // destructor dependencies, and cleanup object is used to prevent cleanup stack dependency on stack.
     QString recipient = url.path();
     QString subject = url.queryItemValue("subject");
     QString body = url.queryItemValue("body");
@@ -84,15 +107,15 @@ static void handleMailtoSchemeL(const QUrl &url)
     QString bcc = url.queryItemValue("bcc");
 
     // these fields might have comma separated addresses
-    QStringList recipients = recipient.split(",");
-    QStringList tos = to.split(",");
-    QStringList ccs = cc.split(",");
-    QStringList bccs = bcc.split(",");
+    QStringList recipients = recipient.split(",", QString::SkipEmptyParts);
+    QStringList tos = to.split(",", QString::SkipEmptyParts);
+    QStringList ccs = cc.split(",", QString::SkipEmptyParts);
+    QStringList bccs = bcc.split(",", QString::SkipEmptyParts);
 
 
 	RSendAs sendAs;
 	User::LeaveIfError(sendAs.Connect());
-	CleanupClosePushL(sendAs);
+	QAutoClose<RSendAs> sendAsCleanup(sendAs);
 
 
     CSendAsAccounts* accounts = CSendAsAccounts::NewL();
@@ -109,7 +132,7 @@ static void handleMailtoSchemeL(const QUrl &url)
 	} else {
         RSendAsMessage sendAsMessage;    
         sendAsMessage.CreateL(sendAs, KUidMsgTypeSMTP);
-        CleanupClosePushL(sendAsMessage);
+        QAutoClose<RSendAsMessage> sendAsMessageCleanup(sendAsMessage);
         
         
         // Subject
@@ -135,17 +158,14 @@ static void handleMailtoSchemeL(const QUrl &url)
         
         // send the message
         sendAsMessage.LaunchEditorAndCloseL();
-        
-        // sendAsMessage (already closed)
-        CleanupStack::Pop();
+        // sendAsMessage is already closed
+        sendAsMessageCleanup.Forget();
 	}
-	// sendAs
-	CleanupStack::PopAndDestroy();             
 }
 
 static bool handleMailtoScheme(const QUrl &url)
 {
-    TRAPD(err, handleMailtoSchemeL(url));
+    TRAPD(err, QT_TRYCATCH_LEAVING(handleMailtoSchemeLX(url)));
     return err ? false : true;
 }
 
@@ -182,7 +202,9 @@ static void handleOtherSchemesL(const TDesC& aUrl)
 
 static bool handleOtherSchemes(const QUrl &url)
 {
-    TRAPD( err, handleOtherSchemesL(qt_QString2TPtrC(url.toEncoded())));
+    QString encUrl(url.toEncoded());
+    TPtrC urlPtr(qt_QString2TPtrC(encUrl));
+    TRAPD( err, handleOtherSchemesL(urlPtr));
     return err ? false : true;
 }
 
@@ -276,7 +298,9 @@ static bool handleUrl(const QUrl &url)
 	if (!url.isValid())
 		return false;
 
-    TRAPD( err, handleUrlL(qt_QString2TPtrC(url.toString())));
+    QString urlString(url.toString());
+    TPtrC urlPtr(qt_QString2TPtrC(urlString));
+    TRAPD( err, handleUrlL(urlPtr));
     return err ? false : true;
 }
 
@@ -316,7 +340,8 @@ static bool openDocument(const QUrl &file)
 
     QString filePath = file.toLocalFile();
     filePath = QDir::toNativeSeparators(filePath);
-    TRAPD(err, openDocumentL(qt_QString2TPtrC(filePath)));
+    TPtrC filePathPtr(qt_QString2TPtrC(filePath));
+    TRAPD(err, openDocumentL(filePathPtr));
     return err ? false : true;
 }
 

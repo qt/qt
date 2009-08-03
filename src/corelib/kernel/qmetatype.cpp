@@ -434,8 +434,8 @@ int QMetaType::registerType(const char *typeName, Destructor destructor,
     int idx = qMetaTypeType_unlocked(normalizedTypeName);
 
     if (!idx) {
-        idx = currentIdx++;
         ct->resize(ct->count() + 1);
+        idx = currentIdx++;
         QCustomTypeInfo &inf = (*ct)[idx - User];
         inf.typeName = normalizedTypeName;
         inf.constr = constructor;

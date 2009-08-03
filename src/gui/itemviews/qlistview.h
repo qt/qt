@@ -190,7 +190,7 @@ private:
     friend class QAccessibleItemView;
     int visualIndex(const QModelIndex &index) const;
 
-    Q_DECLARE_PRIVATE(QListView)
+    Q_DECLARE_SCOPED_PRIVATE(QListView)
     Q_DISABLE_COPY(QListView)
 };
 

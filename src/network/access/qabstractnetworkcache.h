@@ -130,7 +130,7 @@ protected:
     QAbstractNetworkCache(QAbstractNetworkCachePrivate &dd, QObject *parent);
 
 private:
-    Q_DECLARE_PRIVATE(QAbstractNetworkCache)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractNetworkCache)
     Q_DISABLE_COPY(QAbstractNetworkCache)
 };
 

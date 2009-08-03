@@ -153,7 +153,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QMdiArea)
-    Q_DECLARE_PRIVATE(QMdiArea)
+    Q_DECLARE_SCOPED_PRIVATE(QMdiArea)
     Q_PRIVATE_SLOT(d_func(), void _q_deactivateAllWindows())
     Q_PRIVATE_SLOT(d_func(), void _q_processWindowStateChanged(Qt::WindowStates, Qt::WindowStates))
     Q_PRIVATE_SLOT(d_func(), void _q_currentTabChanged(int index))

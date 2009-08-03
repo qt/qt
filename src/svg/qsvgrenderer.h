@@ -109,7 +109,7 @@ Q_SIGNALS:
     void repaintNeeded();
 
 private:
-    Q_DECLARE_PRIVATE(QSvgRenderer)
+    Q_DECLARE_SCOPED_PRIVATE(QSvgRenderer)
 };
 
 QT_END_NAMESPACE

@@ -56,7 +56,7 @@ class Q_GUI_EXPORT QFormLayout : public QLayout
 {
     Q_OBJECT
     Q_ENUMS(FormStyle FieldGrowthPolicy RowWrapPolicy ItemRole)
-    Q_DECLARE_PRIVATE(QFormLayout)
+    Q_DECLARE_SCOPED_PRIVATE(QFormLayout)
     Q_PROPERTY(FieldGrowthPolicy fieldGrowthPolicy READ fieldGrowthPolicy WRITE setFieldGrowthPolicy RESET resetFieldGrowthPolicy)
     Q_PROPERTY(RowWrapPolicy rowWrapPolicy READ rowWrapPolicy WRITE setRowWrapPolicy RESET resetRowWrapPolicy)
     Q_PROPERTY(Qt::Alignment labelAlignment READ labelAlignment WRITE setLabelAlignment RESET resetLabelAlignment)

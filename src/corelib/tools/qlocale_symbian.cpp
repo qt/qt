@@ -637,9 +637,9 @@ static QString symbianDayName(int day, bool short_format)
         return QString();
 
     if (short_format) {
-        return qt_TDes2QStringL(TDayNameAbb(TDay(day)));
+        return qt_TDes2QString(TDayNameAbb(TDay(day)));
     } else {
-        return qt_TDes2QStringL(TDayName(TDay(day)));
+        return qt_TDes2QString(TDayName(TDay(day)));
     }
 }
 
@@ -655,9 +655,9 @@ static QString symbianMonthName(int month, bool short_format)
         return QString();
 
     if (short_format) {
-        return qt_TDes2QStringL(TMonthNameAbb(TMonth(month)));
+        return qt_TDes2QString(TMonthNameAbb(TMonth(month)));
     } else {
-        return qt_TDes2QStringL(TMonthName(TMonth(month)));
+        return qt_TDes2QString(TMonthName(TMonth(month)));
     }
 }
 
@@ -678,7 +678,7 @@ static QString symbianDateFormat(bool short_format)
         dateFormat.Set(ptrGetLongDateFormatSpec(_s60Locale));
     }
 
-    return s60ToQtFormat(qt_TDesC2QStringL(dateFormat));
+    return s60ToQtFormat(qt_TDesC2QString(dateFormat));
 }
 
 /*!
@@ -687,7 +687,7 @@ static QString symbianDateFormat(bool short_format)
 */
 static QString symbianTimeFormat()
 {
-    return s60ToQtFormat(qt_TDesC2QStringL(ptrGetTimeFormatSpec(_s60Locale)));
+    return s60ToQtFormat(qt_TDesC2QString(ptrGetTimeFormatSpec(_s60Locale)));
 }
 
 /*!
@@ -719,7 +719,7 @@ static QString symbianDateToString(const QDate &date, bool short_format)
     TRAPD(err, ptrTimeFormatL(timeStr, buffer, dateFormat, *_s60Locale.GetLocale());)
 
     if (err == KErrNone)
-        return qt_TDes2QStringL(buffer);
+        return qt_TDes2QString(buffer);
     else
         return QString();
 }
@@ -749,7 +749,7 @@ static QString symbianTimeToString(const QTime &time)
     )
 
     if (err == KErrNone)
-        return qt_TDes2QStringL(buffer);
+        return qt_TDes2QString(buffer);
     else
         return QString();
 }

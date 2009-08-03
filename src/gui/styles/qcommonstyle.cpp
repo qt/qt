@@ -3176,8 +3176,10 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
             if (!d->isViewItemCached(*vopt)) {
                 d->viewItemLayout(vopt, &d->checkRect, &d->decorationRect, &d->displayRect, false);
-                if (d->cachedOption)
+                if (d->cachedOption) {
                     delete d->cachedOption;
+                    d->cachedOption = 0;
+                }
                 d->cachedOption = new QStyleOptionViewItemV4(*vopt);
             }
             if (sr == SE_ViewItemCheckIndicator)

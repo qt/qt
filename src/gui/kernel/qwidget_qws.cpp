@@ -298,11 +298,16 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                 d->hide_sys();
             }
             if (destroyWindow && isWindow()) {
-                d->extra->topextra->backingStore->windowSurface->setGeometry(QRect());
+                if (d->extra && d->extra->topextra && d->extra->topextra->backingStore)
+                    d->extra->topextra->backingStore->windowSurface->setGeometry(QRect());
                 qwsDisplay()->destroyRegion(internalWinId());
             }
         }
-        d->setWinId(0);
+        QT_TRY {
+            d->setWinId(0);
+        } QT_CATCH (const std::bad_alloc &) {
+            // swallow - destructors must not throw
+        }
     }
 }
 

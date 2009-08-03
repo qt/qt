@@ -117,7 +117,7 @@ class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString objectName READ objectName WRITE setObjectName)
-    Q_DECLARE_PRIVATE(QObject)
+    Q_DECLARE_SCOPED_PRIVATE(QObject)
 
 public:
     Q_INVOKABLE explicit QObject(QObject *parent=0);

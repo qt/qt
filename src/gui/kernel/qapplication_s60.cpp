@@ -76,12 +76,17 @@ QT_BEGIN_NAMESPACE
 static bool        appNoGrab        = false;        // Grabbing enabled
 #endif
 
-Q_GUI_EXPORT QS60Data *qt_s60Data = 0;
+Q_GLOBAL_STATIC(QS60Data, qt_s60Data);
 extern bool qt_sendSpontaneousEvent(QObject*,QEvent*);
 
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
+
+QS60Data* qGlobalS60Data()
+{
+    return qt_s60Data();
+}
 
 bool qt_nograb()                                // application no-grab option
 {
@@ -441,7 +446,7 @@ void QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
 TKeyResponse QSymbianControl::OfferKeyEventL(const TKeyEvent& keyEvent, TEventCode type)
 {
     TKeyResponse r = EKeyWasNotConsumed;
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(r = OfferKeyEvent(keyEvent, type));
+    QT_TRYCATCH_LEAVING(r = OfferKeyEvent(keyEvent, type));
     return r;
 }
 
@@ -706,8 +711,6 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
 
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
-    S60 = new QS60Data;
-
 #ifdef QT_NO_DEBUG
     if (!qgetenv("QT_S60_AUTO_FLUSH_WSERV").isEmpty())
 #endif
@@ -722,7 +725,6 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     RProcess me;
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();
-
 
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag

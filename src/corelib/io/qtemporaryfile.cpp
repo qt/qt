@@ -289,7 +289,7 @@ static int qt_mkstemps(char *path, int slen)
 //************* QTemporaryFileEngine
 class QTemporaryFileEngine : public QFSFileEngine
 {
-    Q_DECLARE_PRIVATE(QFSFileEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QFSFileEngine)
 public:
     QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
         : QFSFileEngine(file), filePathIsTemplate(fileIsTemplate)

@@ -1023,6 +1023,7 @@ QString::QString(int size, QChar ch)
 QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+    Q_CHECK_PTR(d);
     d->ref = 1;
     d->alloc = d->size = size;
     d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
@@ -1236,11 +1237,9 @@ void QString::realloc(int alloc)
             asciiCache->remove(d);
         }
 #endif
-        Data *x = static_cast<Data *>(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar)));
-        Q_CHECK_PTR(x);
-        x->alloc = alloc;
-        x->data = x->array;
-        d = x;
+        d = static_cast<Data *>(q_check_ptr(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar))));
+        d->alloc = alloc;
+        d->data = d->array;
     }
 }
 

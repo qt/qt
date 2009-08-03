@@ -181,7 +181,7 @@ class QEventDispatcherUNIXPrivate;
 class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcher
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventDispatcherUNIX)
+    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherUNIX)
 
 public:
     explicit QEventDispatcherUNIX(QObject *parent = 0);

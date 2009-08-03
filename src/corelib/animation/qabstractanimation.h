@@ -125,7 +125,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAbstractAnimation)
-    Q_DECLARE_PRIVATE(QAbstractAnimation)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractAnimation)
 };
 
 #endif //QT_NO_ANIMATION

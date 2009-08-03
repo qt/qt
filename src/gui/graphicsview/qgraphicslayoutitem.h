@@ -117,7 +117,7 @@ protected:
 
 private:
     QSizeF *effectiveSizeHints(const QSizeF &constraint) const;
-    Q_DECLARE_PRIVATE(QGraphicsLayoutItem)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsLayoutItem)
     
     friend class QGraphicsLayout;
 };

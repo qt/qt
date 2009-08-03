@@ -169,7 +169,7 @@ private:
     ~QTransportAuth();
 
     friend class QAuthDevice;
-    Q_DECLARE_PRIVATE(QTransportAuth)
+    Q_DECLARE_SCOPED_PRIVATE(QTransportAuth)
 };
 
 class Q_GUI_EXPORT RequestAnalyzer

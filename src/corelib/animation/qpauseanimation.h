@@ -72,7 +72,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QPauseAnimation)
-    Q_DECLARE_PRIVATE(QPauseAnimation)
+    Q_DECLARE_SCOPED_PRIVATE(QPauseAnimation)
 };
 
 #endif //QT_NO_ANIMATION

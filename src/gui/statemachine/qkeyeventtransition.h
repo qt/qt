@@ -79,7 +79,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QKeyEventTransition)
-    Q_DECLARE_PRIVATE(QKeyEventTransition)
+    Q_DECLARE_SCOPED_PRIVATE(QKeyEventTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

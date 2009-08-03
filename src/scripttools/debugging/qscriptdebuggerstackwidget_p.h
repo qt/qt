@@ -73,7 +73,7 @@ public:
     void setCurrentFrameIndex(int frameIndex);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerStackWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerStackWidget)
     Q_DISABLE_COPY(QScriptDebuggerStackWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_onCurrentChanged(const QModelIndex &))

@@ -105,7 +105,7 @@ public:
 private:
     QScopedSharedPointer<QScriptDebuggerValuePrivate> d_ptr;
 
-    Q_DECLARE_PRIVATE(QScriptDebuggerValue)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerValue)
 };
 
 typedef QList<QScriptDebuggerValue> QScriptDebuggerValueList;

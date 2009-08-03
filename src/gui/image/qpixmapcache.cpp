@@ -357,7 +357,8 @@ void QPMCache::resizeKeyArray(int size)
 {
     if (size <= keyArraySize || size == 0)
         return;
-    keyArray = reinterpret_cast<int *>(realloc(keyArray, size * sizeof(int)));
+    keyArray = q_check_ptr(reinterpret_cast<int *>(realloc(keyArray,
+                    size * sizeof(int))));
     for (int i = keyArraySize; i != size; ++i)
         keyArray[i] = i + 1;
     keyArraySize = size;

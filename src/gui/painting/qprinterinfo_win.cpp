@@ -69,19 +69,13 @@ private:
 
 static QPrinterInfoPrivate nullQPrinterInfoPrivate;
 
-class QPrinterInfoPrivateCleanup
+class QPrinterInfoPrivateDeleter
 {
 public:
     static inline void cleanup(QPrinterInfoPrivate *d)
     {
         if (d != &nullQPrinterInfoPrivate)
             delete d;
-    }
-
-    static inline void reset(QPrinterInfoPrivate *&d, QPrinterInfoPrivate *other)
-    {
-        cleanup(d);
-        d = other;
     }
 };
 

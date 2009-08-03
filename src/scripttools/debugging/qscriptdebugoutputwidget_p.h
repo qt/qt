@@ -74,7 +74,7 @@ public:
     void clear();
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebugOutputWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebugOutputWidget)
     Q_DISABLE_COPY(QScriptDebugOutputWidget)
 };
 

@@ -80,7 +80,7 @@ protected:
     QScopedPointer<QScriptDebuggerJobPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerJob)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerJob)
     Q_DISABLE_COPY(QScriptDebuggerJob)
 };
 

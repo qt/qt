@@ -64,7 +64,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QTcpSocket)
-    Q_DECLARE_PRIVATE(QTcpSocket)
+    Q_DECLARE_SCOPED_PRIVATE(QTcpSocket)
 };
 
 QT_END_NAMESPACE

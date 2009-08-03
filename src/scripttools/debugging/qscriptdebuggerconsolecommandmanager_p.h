@@ -88,7 +88,7 @@ public:
 private:
     QScopedPointer<QScriptDebuggerConsoleCommandManagerPrivate> d_ptr;
 
-    Q_DECLARE_PRIVATE(QScriptDebuggerConsoleCommandManager)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerConsoleCommandManager)
 };
 
 QT_END_NAMESPACE

@@ -92,7 +92,7 @@ public:
 
 private:
     QScopedPointer<QUiLoaderPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QUiLoader)
+    Q_DECLARE_SCOPED_PRIVATE(QUiLoader)
     Q_DISABLE_COPY(QUiLoader)
 };
 

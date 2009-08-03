@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+#include "qscopedpointer.h"
+
+QT_BEGIN_NAMESPACE
+
 /*!
     \class QScopedPointer
     \brief The QScopedPointer class stores a pointer to a dynamically allocated object, and deletes it upon destruction.
@@ -53,9 +57,7 @@
     called resource acquisition is initialization(RAII).
 
     QScopedPointer guarantees that the object pointed to will get deleted when
-    the current scope dissapears, and it also has no way of releasing
-    ownership, hence clearly communicating the lifetime and ownership of the
-    object. These guarantees are convenient when reading the code.
+    the current scope dissapears.
 
     Consider this function which does heap allocations, and have various exit points:
 
@@ -68,7 +70,7 @@
 
     The code the compiler generates for QScopedPointer is the same as when
     writing it manually. Code that makes use of \a delete are candidates for
-    QScopedPointer usage(and if not, possibly another type of smart pointer
+    QScopedPointer usage (and if not, possibly another type of smart pointer
     such as QSharedPointer). QScopedPointer intentionally has no copy
     constructor or assignment operator, such that ownership and lifetime is
     clearly communicated.
@@ -78,7 +80,26 @@
 
     \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 2
 
-    \note QScopedPointer does not work with arrays.
+    \section1 Custom cleanup handlers
+
+    Arrays as well as pointers that have been allocated with \c malloc must
+    not be deleted using \c delete. QScopedPointer's second template parameter
+    can be used for custom cleanup handlers.
+
+    The following custom cleanup handlers exist:
+
+    \list
+    \i QScopedPointerDeleter - the default, deletes the pointer using \c delete
+    \i QScopedPointerArrayDeleter - deletes the pointer using \c{delete []}. Use
+       this handler for pointers that were allocated with \c{new []}.
+    \i QScopedPointerPodDeleter - deletes the pointer using \c{free()}. Use this
+       handler for pointers that were allocated with \c{malloc()}.
+    \endlist
+
+    You can pass your own classes as handlers, provided that they have a public
+    static function \c{void cleanup(T *pointer)}.
+
+    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 5
 
     \section1 Forward Declared Pointers
 
@@ -175,9 +196,6 @@
     Deletes the existing object it is pointing to if any, and sets its pointer to
     \a other. QScopedPointer now owns \a other and will delete it in its
     destructor.
-
-    If \a other is equal to the value returned by data(), behavior is
-    undefined.
 */
 
 /*!
@@ -185,8 +203,8 @@
 
     Returns the value of the pointer referenced by this object. The pointer of this
     QScopedPointer object will be reset to \c null.
+
+    Callers of this function take ownership of the pointer.
 */
 
 QT_END_NAMESPACE
-
-#endif

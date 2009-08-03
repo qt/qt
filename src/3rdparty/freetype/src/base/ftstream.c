@@ -211,7 +211,7 @@
   FT_Stream_ReleaseFrame( FT_Stream  stream,
                           FT_Byte**  pbytes )
   {
-    if ( stream->read )
+    if ( stream && stream->read )
     {
       FT_Memory  memory = stream->memory;
 

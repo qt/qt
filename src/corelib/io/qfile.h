@@ -64,7 +64,7 @@ class Q_CORE_EXPORT QFile : public QIODevice
 #ifndef QT_NO_QOBJECT
     Q_OBJECT
 #endif
-    Q_DECLARE_PRIVATE(QFile)
+    Q_DECLARE_SCOPED_PRIVATE(QFile)
 
 public:
 

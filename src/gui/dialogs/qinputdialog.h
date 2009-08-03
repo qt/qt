@@ -59,7 +59,7 @@ class QInputDialogPrivate;
 class Q_GUI_EXPORT QInputDialog : public QDialog
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QInputDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QInputDialog)
 //  Q_ENUMS(InputMode InputDialogOption)
     QDOC_PROPERTY(InputMode inputMode READ inputMode WRITE setInputMode)
     QDOC_PROPERTY(QString labelText READ labelText WRITE setLabelText)

@@ -72,7 +72,7 @@ public:
     void expand(const QModelIndex &index);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerLocalsWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerLocalsWidget)
     Q_DISABLE_COPY(QScriptDebuggerLocalsWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_onCompletionTaskFinished())

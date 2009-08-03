@@ -214,7 +214,7 @@ public:
 // thread wrapper for the main() thread
 class QAdoptedThread : public QThread
 {
-    Q_DECLARE_PRIVATE(QThread)
+    Q_DECLARE_SCOPED_PRIVATE(QThread)
 
 public:
     QAdoptedThread(QThreadData *data = 0);

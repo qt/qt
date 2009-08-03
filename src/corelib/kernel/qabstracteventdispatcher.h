@@ -58,7 +58,7 @@ template <typename T1, typename T2> struct QPair;
 class Q_CORE_EXPORT QAbstractEventDispatcher : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractEventDispatcher)
 
 public:
     typedef QPair<int, int> TimerInfo;

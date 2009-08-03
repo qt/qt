@@ -149,6 +149,8 @@ inline QString QSettingsGroup::toString() const
 class Q_AUTOTEST_EXPORT QConfFile
 {
 public:
+    ~QConfFile();
+
     ParsedSettingsMap mergedKeyMap() const;
     bool isWritable() const;
 

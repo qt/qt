@@ -158,7 +158,7 @@ QT_BEGIN_NAMESPACE
 
 QCompletionModel::QCompletionModel(QCompleterPrivate *c, QObject *parent)
     : QAbstractProxyModel(*new QCompletionModelPrivate, parent),
-      c(c), engine(0), showAll(false)
+      c(c), showAll(false)
 {
     createEngine();
 }
@@ -208,11 +208,10 @@ void QCompletionModel::createEngine()
         break;
     }
 
-    delete engine;
     if (sortedEngine)
-        engine = new QSortedModelEngine(c);
+        engine.reset(new QSortedModelEngine(c));
     else
-        engine = new QUnsortedModelEngine(c);
+        engine.reset(new QUnsortedModelEngine(c));
 }
 
 QModelIndex QCompletionModel::mapToSource(const QModelIndex& index) const

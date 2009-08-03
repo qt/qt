@@ -84,7 +84,7 @@ class QPdfEnginePrivate;
 
 class QPdfEngine : public QPdfBaseEngine
 {
-    Q_DECLARE_PRIVATE(QPdfEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QPdfEngine)
 public:
     QPdfEngine(QPrinter::PrinterMode m);
     virtual ~QPdfEngine();

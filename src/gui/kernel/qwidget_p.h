@@ -490,10 +490,11 @@ public:
     QWidgetItemV2 *widgetItem;
     QPaintEngine *extraPaintEngine;
     mutable const QMetaObject *polished;
-    // All widgets are initially added into the uncreatedWidgets set. Once
-    // they receive a window id they are removed and added to the mapper
+    // All widgets are added into the allWidgets set. Once
+    // they receive a window id they are also added to the mapper.
+    // This should just ensure that all widgets are deleted by QApplication
     static QWidgetMapper *mapper;
-    static QWidgetSet *uncreatedWidgets;
+    static QWidgetSet *allWidgets;
 #if !defined(QT_NO_IM)
     QPointer<QInputContext> ic;
     Qt::InputMethodHints imHints;

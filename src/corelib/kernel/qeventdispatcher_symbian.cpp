@@ -194,7 +194,7 @@ void QWakeUpActiveObject::RunL()
 {
     iStatus = KRequestPending;
     SetActive();
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->wakeUpWasCalled());
+    QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
 }
 
 QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo)
@@ -224,7 +224,7 @@ void QTimerActiveObject::DoCancel()
 void QTimerActiveObject::RunL()
 {
     int error;
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(error, Run());
+    QT_TRYCATCH_ERROR(error, Run());
     if (error < 0) {
         CActiveScheduler::Current()->Error(error);  // stop and report here, as this timer will be deleted on scope exit
     }
@@ -274,6 +274,11 @@ void QTimerActiveObject::Start()
     }
 }
 
+SymbianTimerInfo::SymbianTimerInfo()
+: timerAO(0)
+{
+}
+
 SymbianTimerInfo::~SymbianTimerInfo()
 {
     delete timerAO;
@@ -314,7 +319,7 @@ void QCompleteDeferredAOs::RunL()
     iStatus = KRequestPending;
     SetActive();
 
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->reactivateDeferredActiveObjects());
+    QT_TRYCATCH_LEAVING(m_dispatcher->reactivateDeferredActiveObjects());
 }
 
 QSelectThread::QSelectThread()
@@ -587,7 +592,7 @@ void QSocketActiveObject::RunL()
     if (!okToRun())
         return;
 
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->socketFired(this));
+    QT_TRYCATCH_LEAVING(m_dispatcher->socketFired(this));
 }
 
 void QSocketActiveObject::deleteLater()
@@ -619,11 +624,11 @@ QEventDispatcherSymbian::~QEventDispatcherSymbian()
 void QEventDispatcherSymbian::startingUp()
 {
     if( !CActiveScheduler::Current() ) {
-        m_activeScheduler = new(ELeave)CQtActiveScheduler();
+        m_activeScheduler = q_check_ptr(new CQtActiveScheduler());	// CBase derived class needs to be checked on new
         CActiveScheduler::Install(m_activeScheduler);
     }
-    m_wakeUpAO = new(ELeave) QWakeUpActiveObject(this);
-    m_completeDeferredAOs = new(ELeave) QCompleteDeferredAOs(this);
+    m_wakeUpAO = q_check_ptr(new QWakeUpActiveObject(this));
+    m_completeDeferredAOs = q_check_ptr(new QCompleteDeferredAOs(this));
     // We already might have posted events, wakeup once to process them
     wakeUp();
 }
@@ -742,7 +747,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         m_noSocketEvents = oldNoSocketEventsValue;
     } QT_CATCH (const std::exception& ex) {
 #ifndef QT_NO_EXCEPTIONS
-        CActiveScheduler::Current()->Error(qt_translateExceptionToSymbianError(ex));
+        CActiveScheduler::Current()->Error(qt_exception2SymbianError(ex));
 #endif
     }
 
@@ -896,7 +901,7 @@ bool QEventDispatcherSymbian::hasPendingEvents()
 
 void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifier )
 {
-    QSocketActiveObject *socketAO = new (ELeave) QSocketActiveObject(this, notifier);
+    QSocketActiveObject *socketAO = q_check_ptr(new QSocketActiveObject(this, notifier));
     m_notifiers.insert(notifier, socketAO);
     m_selectThread.requestSocketEvents(notifier, &socketAO->iStatus);
 }
@@ -930,7 +935,7 @@ void QEventDispatcherSymbian::registerTimer ( int timerId, int interval, QObject
     timer->inTimerEvent = false;
     timer->receiver     = object;
     timer->dispatcher   = this;
-    timer->timerAO      = new(ELeave) QTimerActiveObject(this, timer.data());
+    timer->timerAO      = q_check_ptr(new QTimerActiveObject(this, timer.data()));
     m_timerList.insert(timerId, timer);
 
     timer->timerAO->Start();
@@ -952,16 +957,20 @@ bool QEventDispatcherSymbian::unregisterTimer ( int timerId )
 
 bool QEventDispatcherSymbian::unregisterTimers ( QObject * object )
 {
-    QList<TimerInfo> idsToRemove = registeredTimers(object);
-
-    if (idsToRemove.isEmpty())
+    if (m_timerList.isEmpty())
         return false;
-
-    for (int c = 0; c < idsToRemove.size(); ++c) {
-        unregisterTimer(idsToRemove[c].first);
+    
+    bool unregistered = false;
+    for (QHash<int, SymbianTimerInfoPtr>::iterator i = m_timerList.begin(); i != m_timerList.end(); ) {
+        if ((*i)->receiver == object) {
+            i = m_timerList.erase(i);
+            unregistered = true;
+        } else {
+            ++i;
+        }
     }
 
-    return true;
+    return unregistered;
 }
 
 QList<QEventDispatcherSymbian::TimerInfo> QEventDispatcherSymbian::registeredTimers ( QObject * object ) const

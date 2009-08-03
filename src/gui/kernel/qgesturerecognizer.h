@@ -53,7 +53,7 @@ class QGestureRecognizerPrivate;
 class Q_GUI_EXPORT QGestureRecognizer : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QGestureRecognizer)
+    Q_DECLARE_SCOPED_PRIVATE(QGestureRecognizer)
 
 public:
     enum Result

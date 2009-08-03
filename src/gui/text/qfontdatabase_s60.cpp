@@ -107,9 +107,12 @@ private:
 QFontDatabaseS60StoreImplementation::QFontDatabaseS60StoreImplementation()
 {
     m_heap = User::ChunkHeap(NULL, 0x1000, 0x100000);
-    m_store = CFontStore::NewL(m_heap);
-    m_rasterizer = COpenFontRasterizer::NewL(TUid::Uid(0x101F7F5E));
-    m_store->InstallRasterizerL(m_rasterizer);
+    QT_TRAP_THROWING(
+        m_store = CFontStore::NewL(m_heap);
+        m_rasterizer = COpenFontRasterizer::NewL(TUid::Uid(0x101F7F5E));
+        CleanupStack::PushL(m_rasterizer);
+        m_store->InstallRasterizerL(m_rasterizer);
+        CleanupStack::Pop(m_rasterizer););
 
     QStringList filters;
     filters.append(QString::fromLatin1("*.ttf"));
@@ -117,14 +120,14 @@ QFontDatabaseS60StoreImplementation::QFontDatabaseS60StoreImplementation()
     const QFileInfoList fontFiles = alternativeFilePaths(QString::fromLatin1("resource\\Fonts"), filters);
     foreach (const QFileInfo &fontFileInfo, fontFiles) {
         const QString fontFile = QDir::toNativeSeparators(fontFileInfo.absoluteFilePath());
-        m_store->AddFileL(qt_QString2TPtrC(fontFile));
+        TPtrC fontFilePtr(qt_QString2TPtrC(fontFile));
+        QT_TRAP_THROWING(m_store->AddFileL(fontFilePtr));
     }
 }
 QFontDatabaseS60StoreImplementation::~QFontDatabaseS60StoreImplementation()
 {
     qDeleteAll(m_extensions);
-    delete m_rasterizer;
-    delete m_store;
+    // TODO m_store cleanup removed because it was crashing
     m_heap->Close();
 }
 
@@ -218,7 +221,7 @@ static void initializeDb()
         QS60Data::screenDevice()->TypefaceSupport(typefaceSupport, i);
         CFont *font; // We have to get a font instance in order to know all the details
         TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec);
+        qt_throwIfError(QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec));
         if (font->TypeUid() == KCFbsFontUid) {
             TOpenFontFaceAttrib faceAttrib;
             const CFbsFont *cfbsFont = dynamic_cast<const CFbsFont *>(font);

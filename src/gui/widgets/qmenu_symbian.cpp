@@ -244,7 +244,7 @@ Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
         return;
     rebuildMenu();
     for (int i = 0; i < symbianMenus.count(); ++i)
-        menuPane->AddMenuItemL(symbianMenus.at(i)->menuItemData);
+    	QT_TRAP_THROWING(menuPane->AddMenuItemL(symbianMenus.at(i)->menuItemData));
 }
 
 Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
@@ -252,7 +252,7 @@ Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
     SymbianMenuItem* menu = qt_symbian_find_menu(id, symbianMenus);
     if (menu) {
         for (int i = 0; i < menu->children.count(); ++i)
-            menuPane->AddMenuItemL(menu->children.at(i)->menuItemData);
+        	QT_TRAP_THROWING(menuPane->AddMenuItemL(menu->children.at(i)->menuItemData));
     }
 }
 

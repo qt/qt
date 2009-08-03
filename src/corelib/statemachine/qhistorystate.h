@@ -83,7 +83,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QHistoryState)
-    Q_DECLARE_PRIVATE(QHistoryState)
+    Q_DECLARE_SCOPED_PRIVATE(QHistoryState)
 };
 
 #endif //QT_NO_STATEMACHINE

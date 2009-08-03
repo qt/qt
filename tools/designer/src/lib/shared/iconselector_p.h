@@ -88,7 +88,7 @@ public:
 
 private:
     QScopedPointer<class LanguageResourceDialogPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(LanguageResourceDialog)
+    Q_DECLARE_SCOPED_PRIVATE(LanguageResourceDialog)
     Q_DISABLE_COPY(LanguageResourceDialog)
     Q_PRIVATE_SLOT(d_func(), void slotAccepted())
     Q_PRIVATE_SLOT(d_func(), void slotPathChanged(QString))
@@ -121,7 +121,7 @@ signals:
     void iconChanged(const PropertySheetIconValue &icon);
 private:
     QScopedPointer<class IconSelectorPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(IconSelector)
+    Q_DECLARE_SCOPED_PRIVATE(IconSelector)
     Q_DISABLE_COPY(IconSelector)
 
     Q_PRIVATE_SLOT(d_func(), void slotStateActivated())

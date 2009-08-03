@@ -57,7 +57,7 @@ class QShortcutPrivate;
 class Q_GUI_EXPORT QShortcut : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QShortcut)
+    Q_DECLARE_SCOPED_PRIVATE(QShortcut)
     Q_PROPERTY(QKeySequence key READ key WRITE setKey)
     Q_PROPERTY(QString whatsThis READ whatsThis WRITE setWhatsThis)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)

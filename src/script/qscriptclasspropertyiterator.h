@@ -84,7 +84,7 @@ protected:
     QScopedPointer<QScriptClassPropertyIteratorPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptClassPropertyIterator)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptClassPropertyIterator)
     Q_DISABLE_COPY(QScriptClassPropertyIterator)
 };
 

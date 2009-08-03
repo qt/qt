@@ -621,10 +621,10 @@ QKeyMapperPrivate::QKeyMapperPrivate()
 
 QKeyMapperPrivate::~QKeyMapperPrivate()
 {
-    clearMappings();
+    deleteLayouts();
 }
 
-void QKeyMapperPrivate::clearMappings()
+void QKeyMapperPrivate::deleteLayouts()
 {
     for (int i = 0; i < 255; ++i) {
         if (keyLayout[i]) {
@@ -632,6 +632,11 @@ void QKeyMapperPrivate::clearMappings()
             keyLayout[i] = 0;
         }
     }
+}
+
+void QKeyMapperPrivate::clearMappings()
+{
+    deleteLayouts();
 
     /* MAKELCID()'s first argument is a WORD, and GetKeyboardLayout()
      * returns a DWORD. */

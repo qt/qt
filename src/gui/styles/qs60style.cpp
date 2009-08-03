@@ -88,16 +88,16 @@ static const QByteArray propertyKeyCurrentlayout = "currentlayout";
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,14,true,QLatin1String("QVGA Landscape Mirrored")},
-{240,320,1,14,false,QLatin1String("QVGA Landscape")},
-{320,240,1,14,true,QLatin1String("QVGA Portrait Mirrored")},
-{320,240,1,14,false,QLatin1String("QVGA Portrait")},
-{360,640,1,14,true,QLatin1String("NHD Landscape Mirrored")},
-{360,640,1,14,false,QLatin1String("NHD Landscape")},
-{640,360,1,14,true,QLatin1String("NHD Portrait Mirrored")},
-{640,360,1,14,false,QLatin1String("NHD Portrait")},
-{352,800,1,12,true,QLatin1String("E90 Landscape Mirrored")},
-{352,800,1,12,false,QLatin1String("E90 Landscape")}
+{240,320,1,14,true,"QVGA Landscape Mirrored"},
+{240,320,1,14,false,"QVGA Landscape"},
+{320,240,1,14,true,"QVGA Portrait Mirrored"},
+{320,240,1,14,false,"QVGA Portrait"},
+{360,640,1,14,true,"NHD Landscape Mirrored"},
+{360,640,1,14,false,"NHD Landscape"},
+{640,360,1,14,true,"NHD Portrait Mirrored"},
+{640,360,1,14,false,"NHD Portrait"},
+{352,800,1,12,true,"E90 Landscape Mirrored"},
+{352,800,1,12,false,"E90 Landscape"}
 // *** End of generated data ***
 };
 const int QS60StylePrivate::m_numberOfLayouts =
@@ -319,7 +319,7 @@ QVariant QS60StylePrivate::styleProperty(const char *name) const
         static QStringList layouts;
         if (layouts.isEmpty())
             for (int i = 0; i < m_numberOfLayouts; i++)
-                layouts.append(m_layoutHeaders[i].layoutName);
+                layouts.append(QLatin1String(m_layoutHeaders[i].layoutName));
         return layouts;
     }
     return QVariant();

@@ -62,7 +62,7 @@ class QClipboardPrivate;
 class Q_GUI_EXPORT QClipboard : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QClipboard)
+    Q_DECLARE_SCOPED_PRIVATE(QClipboard)
 private:
     QClipboard(QObject *parent);
     ~QClipboard();

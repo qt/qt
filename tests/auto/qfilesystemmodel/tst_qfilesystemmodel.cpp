@@ -770,7 +770,7 @@ void tst_QFileSystemModel::setData()
 class MyFriendFileSystemModel : public QFileSystemModel
 {
     friend class tst_QFileSystemModel;
-    Q_DECLARE_PRIVATE(QFileSystemModel)
+    Q_DECLARE_SCOPED_PRIVATE(QFileSystemModel)
 };
 
 void tst_QFileSystemModel::sort_data()

@@ -93,7 +93,7 @@ Q_SIGNALS:
     void scopeObjectAvailable(const QModelIndex &index);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerLocalsModel)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerLocalsModel)
     Q_DISABLE_COPY(QScriptDebuggerLocalsModel)
 };
 

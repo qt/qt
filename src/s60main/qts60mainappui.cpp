@@ -63,6 +63,11 @@
 //
 void CQtS60MainAppUi::ConstructL()
 {
+    // Cone's heap and handle checks on app destruction are not suitable for Qt apps, as many
+    // objects can still exist in static data at that point. Instead we will print relevant information
+    // so that comparative checks may be made for memory leaks, using ~SPrintExitInfo in corelib.
+    iEikonEnv->DisableExitChecks(ETrue);
+    
     // Initialise app UI with standard value.
     // ENoAppResourceFile and ENonStandardResourceFile makes UI to work without
     // resource files in most SDKs. S60 3rd FP1 public seems to require resource file
@@ -127,7 +132,7 @@ void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *contro
 {
     int result = 0;
     if (qApp)
-        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(
+        QT_TRYCATCH_LEAVING(
             result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&aEvent))
         );
 

@@ -286,7 +286,7 @@ public:
     QTextDocumentPrivate *docHandle() const;
 private:
     Q_DISABLE_COPY(QTextDocument)
-    Q_DECLARE_PRIVATE(QTextDocument)
+    Q_DECLARE_SCOPED_PRIVATE(QTextDocument)
     friend class QTextObjectPrivate;
 };
 

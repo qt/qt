@@ -336,7 +336,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_buttonClicked(QAbstractButton *))
 
     Q_DISABLE_COPY(QMessageBox)
-    Q_DECLARE_PRIVATE(QMessageBox)
+    Q_DECLARE_SCOPED_PRIVATE(QMessageBox)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMessageBox::StandardButtons)

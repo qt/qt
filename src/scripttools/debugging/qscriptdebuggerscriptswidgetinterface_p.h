@@ -83,7 +83,7 @@ protected:
         QWidget *parent, Qt::WindowFlags flags);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerScriptsWidgetInterface)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerScriptsWidgetInterface)
     Q_DISABLE_COPY(QScriptDebuggerScriptsWidgetInterface)
 };
 

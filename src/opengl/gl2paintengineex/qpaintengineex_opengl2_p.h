@@ -91,7 +91,7 @@ public:
 
 class QGL2PaintEngineEx : public QPaintEngineEx
 {
-    Q_DECLARE_PRIVATE(QGL2PaintEngineEx)
+    Q_DECLARE_SCOPED_PRIVATE(QGL2PaintEngineEx)
 public:
     QGL2PaintEngineEx();
     ~QGL2PaintEngineEx();

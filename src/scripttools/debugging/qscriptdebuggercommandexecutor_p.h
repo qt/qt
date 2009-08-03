@@ -78,7 +78,7 @@ protected:
     QScopedPointer<QScriptDebuggerCommandExecutorPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerCommandExecutor)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerCommandExecutor)
     Q_DISABLE_COPY(QScriptDebuggerCommandExecutor)
 };
 

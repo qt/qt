@@ -80,21 +80,6 @@ QT_BEGIN_NAMESPACE
 bool qt_show_painter_debug_output = true;
 #endif
 
-class QPainterPrivateCleaner
-{
-public:
-    static inline void cleanup(QPainterPrivate *d)
-    {
-        delete d;
-    }
-
-    static inline void reset(QPainterPrivate *&d, QPainterPrivate *other)
-    {
-        delete d;
-        d = other;
-    }
-};
-
 extern QPixmap qt_pixmapForBrush(int style, bool invert);
 
 void qt_format_text(const QFont &font,
@@ -276,9 +261,7 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
         // However, to support corner cases we grow the array dynamically if needed.
         sp->d_ptr->d_ptrs_size <<= 1;
         const int newSize = sp->d_ptr->d_ptrs_size * sizeof(QPainterPrivate *);
-        QPainterPrivate ** newPointers = (QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize);
-        Q_CHECK_PTR(newPointers);
-        sp->d_ptr->d_ptrs = newPointers;
+        sp->d_ptr->d_ptrs = q_check_ptr((QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize));
     }
     sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr.data();
     q->d_ptr.data_ptr() = sp->d_ptr.data();
