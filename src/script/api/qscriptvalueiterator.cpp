@@ -47,9 +47,13 @@
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptvalue_p.h"
+#include "qlinkedlist.h"
+
 
 #include "JSObject.h"
 #include "PropertyNameArray.h"
+#include "JSArray.h"
+#include "JSFunction.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -97,27 +101,42 @@ class QScriptValueIteratorPrivate
 {
 public:
     QScriptValueIteratorPrivate()
-        : propertyNames(0), it(0), current(0)
+        : initialized(false)
     {}
-    ~QScriptValueIteratorPrivate()
-    {
-        delete propertyNames;
-    }
     void ensureInitialized()
     {
-        if (propertyNames != 0)
+        if (initialized)
             return;
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(object.engine());
         JSC::ExecState *exec = eng_p->globalExec();
-        propertyNames = new JSC::PropertyNameArray(exec);
-        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getPropertyNames(exec, *propertyNames, true);
-        it = propertyNames->begin();
+        JSC::PropertyNameArray propertyNamesArray(exec);
+        propertyNamesArray.setShouldCache(false);
+        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getPropertyNames(exec, propertyNamesArray, JSC::Structure::NonEnumerable);
+
+        JSC::PropertyNameArray::const_iterator propertyNamesIt = propertyNamesArray.begin();
+        for(; propertyNamesIt != propertyNamesArray.end(); ++propertyNamesIt) {
+            propertyNames.append(propertyNamesIt->ustring());
+        }
+        if (object.isArray() || (QScriptValuePrivate::get(object)->jscValue.isObject(&JSC::JSArray::info))) {
+            const JSC::JSArray *array = JSC::asArray(QScriptValuePrivate::get(object)->jscValue);
+            const int length = array->length();
+            for (int i = 0; i < length; ++i)
+                propertyNames.append(JSC::UString::from(i));
+        } else if (object.isString() || (QScriptValuePrivate::get(object)->jscValue.isObject(&JSC::StringObject::info))) {
+            const JSC::UString string =  QScriptValuePrivate::get(object)->jscValue.toString(exec);
+            const int length = string.size();
+            for (int i = 0; i < length; ++i)
+                propertyNames.append(JSC::UString::from(i));
+        }
+        it = propertyNames.begin();
+        initialized = true;
     }
 
     QScriptValue object;
-    JSC::PropertyNameArray *propertyNames;
-    JSC::PropertyNameArray::const_iterator it;
-    const JSC::Identifier *current;
+    QLinkedList<JSC::UString> propertyNames;
+    QLinkedList<JSC::UString>::iterator it;
+    QLinkedList<JSC::UString>::iterator current;
+    bool initialized;
 };
 
 /*!
@@ -160,7 +179,7 @@ bool QScriptValueIterator::hasNext() const
         return false;
 
     const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();
-    return d->it != d->propertyNames->end();
+    return d->it != d->propertyNames.end();
 }
 
 /*!
@@ -196,7 +215,7 @@ bool QScriptValueIterator::hasPrevious() const
         return false;
 
     const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();
-    return d->it != d->propertyNames->begin();
+    return d->it != d->propertyNames.begin();
 }
 
 /*!
@@ -229,7 +248,7 @@ void QScriptValueIterator::toFront()
     if (!d)
         return;
     d->ensureInitialized();
-    d->it = d->propertyNames->begin();
+    d->it = d->propertyNames.begin();
 }
 
 /*!
@@ -244,7 +263,7 @@ void QScriptValueIterator::toBack()
     if (!d)
         return;
     d->ensureInitialized();
-    d->it = d->propertyNames->end();
+    d->it = d->propertyNames.end();
 }
 
 /*!
@@ -256,9 +275,9 @@ void QScriptValueIterator::toBack()
 QString QScriptValueIterator::name() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->it)
+    if (!d || !d->initialized)
         return QString();
-    return QScript::qtStringFromJSCUString(d->current->ustring());
+    return QScript::qtStringFromJSCUString(*d->current);
 }
 
 /*!
@@ -270,7 +289,7 @@ QString QScriptValueIterator::name() const
 QScriptString QScriptValueIterator::scriptName() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->it)
+    if (!d || !d->initialized)
         return QScriptString();
     return d->object.engine()->toStringHandle(name());
 }
@@ -284,7 +303,7 @@ QScriptString QScriptValueIterator::scriptName() const
 QScriptValue QScriptValueIterator::value() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->it)
+    if (!d || !d->initialized)
         return QScriptValue();
     return d->object.property(name());
 }
@@ -298,7 +317,7 @@ QScriptValue QScriptValueIterator::value() const
 void QScriptValueIterator::setValue(const QScriptValue &value)
 {
     Q_D(QScriptValueIterator);
-    if (!d || !d->it)
+    if (!d || !d->initialized)
         return;
     d->object.setProperty(name(), value);
 }
@@ -312,7 +331,7 @@ void QScriptValueIterator::setValue(const QScriptValue &value)
 QScriptValue::PropertyFlags QScriptValueIterator::flags() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->it)
+    if (!d || !d->initialized)
         return 0;
     return d->object.propertyFlags(name());
 }
@@ -326,10 +345,10 @@ QScriptValue::PropertyFlags QScriptValueIterator::flags() const
 void QScriptValueIterator::remove()
 {
     Q_D(QScriptValueIterator);
-    if (!d || !d->it)
+    if (!d || !d->initialized)
         return;
     d->object.setProperty(name(), QScriptValue());
-    d->current = 0;
+    d->propertyNames.erase(d->current);
 }
 
 /*!

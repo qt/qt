@@ -117,7 +117,7 @@ namespace JSC {
 
         virtual bool hasInstance(ExecState*, JSValue, JSValue prototypeProperty);
 
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+        virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);
 
         virtual JSValue toPrimitive(ExecState*, PreferredPrimitiveType = NoPreference) const;
         virtual bool getPrimitiveNumber(ExecState*, double& number, JSValue& value);
