@@ -94,7 +94,6 @@ namespace QtSharedPointer {
     template <class T> class InternalRefCount;
     template <class T> class ExternalRefCount;
 
-    template <class X, class T> QSharedPointer<X> strongRefFromWeakHelper(const QWeakPointer<T> &, X*);
     template <class X, class Y> QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 
     // used in debug mode to verify the reuse of pointers
@@ -131,20 +130,9 @@ namespace QtSharedPointer {
         inline T *operator->() const { return data(); }
 
     protected:
-        inline Basic() : value(0) { }
+        inline Basic(T *ptr = 0) : value(ptr) { }
+        inline Basic(Qt::Initialization) { }
         // ~Basic();
-
-        inline void verifyReconstruction(const T *ptr)
-        {
-            Q_ASSERT_X(!ptr || value != ptr, "QSharedPointer",
-                       "QSharedPointer violation: you cannot create two QSharedPointer objects "
-                       "from the same pointer");
-
-            // make use of the "ptr" variable in the no-op statement below
-            // since this function is in a public header, we don't
-            // want warnings on "unused variables" to show up everywhere
-            ptr = 0;
-        }
 
         inline void internalConstruct(T *ptr)
         {
@@ -312,9 +300,10 @@ namespace QtSharedPointer {
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
             internalConstruct<void (*)(T *)>(ptr, normalDeleter);
 #else
-            Q_ASSERT(!d);
             if (ptr)
                 d = new Data;
+            else
+                d = 0;
             internalFinishConstruction(ptr);
 #endif
         }
@@ -322,9 +311,10 @@ namespace QtSharedPointer {
         template <typename Deleter>
         inline void internalConstruct(T *ptr, Deleter deleter)
         {
-            Q_ASSERT(!d);
             if (ptr)
                 d = ExternalRefCountWithCustomDeleter<T, Deleter>::create(ptr, deleter);
+            else
+                d = 0;
             internalFinishConstruction(ptr);
         }
 
@@ -344,9 +334,13 @@ namespace QtSharedPointer {
         }
 
         inline ExternalRefCount() : d(0) { }
-        inline ~ExternalRefCount() { if (d && !deref()) delete d; }
+        inline ExternalRefCount(Qt::Initialization i) : Basic<T>(i) { }
         inline ExternalRefCount(const ExternalRefCount<T> &other) : Basic<T>(other), d(other.d)
         { if (d) ref(); }
+        template <class X>
+        inline ExternalRefCount(const ExternalRefCount<X> &other) : Basic<T>(other.value), d(other.d)
+        { if (d) ref(); }
+        inline ~ExternalRefCount() { if (d && !deref()) delete d; }
 
         template <class X>
         inline void internalCopy(const ExternalRefCount<X> &other)
@@ -360,23 +354,19 @@ namespace QtSharedPointer {
                 delete this->value;
         }
 
-    private:
 #if defined(Q_NO_TEMPLATE_FRIENDS)
     public:
 #else
         template <class X> friend class ExternalRefCount;
         template <class X> friend class QWeakPointer;
         template <class X, class Y> friend QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
-        template <class X, class Y> friend QSharedPointer<X> QtSharedPointer::strongRefFromWeakHelper(const QWeakPointer<Y> &src, X *);
 #endif
 
         inline void internalSet(Data *o, T *actual)
         {
-            if (d == o) return;
             if (o) {
-                verifyReconstruction(actual);
-
                 // increase the strongref, but never up from zero
+                // or less (-1 is used by QWeakPointer on untracked QObject)
                 register int tmp = o->strongref;
                 while (tmp > 0) {
                     // try to increment from "tmp" to "tmp + 1"
@@ -411,7 +401,8 @@ public:
     inline QSharedPointer() { }
     // inline ~QSharedPointer() { }
 
-    inline explicit QSharedPointer(T *ptr) { internalConstruct(ptr); }
+    inline explicit QSharedPointer(T *ptr) : BaseClass(Qt::Uninitialized)
+    { internalConstruct(ptr); }
 
     template <typename Deleter>
     inline QSharedPointer(T *ptr, Deleter d) { internalConstruct(ptr, d); }
@@ -423,13 +414,9 @@ public:
         return *this;
     }
 
-    inline QSharedPointer(const QWeakPointer<T> &other)
-    { *this = QtSharedPointer::strongRefFromWeakHelper(other, static_cast<T*>(0)); }
-    inline QSharedPointer<T> &operator=(const QWeakPointer<T> &other)
-    { *this = QtSharedPointer::strongRefFromWeakHelper(other, static_cast<T*>(0)); return *this; }
-
     template <class X>
-    inline QSharedPointer(const QSharedPointer<X> &other) { *this = other; }
+    inline QSharedPointer(const QSharedPointer<X> &other) : BaseClass(other)
+    { }
 
     template <class X>
     inline QSharedPointer<T> &operator=(const QSharedPointer<X> &other)
@@ -440,12 +427,12 @@ public:
     }
 
     template <class X>
-    inline QSharedPointer(const QWeakPointer<X> &other)
-    { *this = QtSharedPointer::strongRefFromWeakHelper(other, static_cast<T *>(0)); }
+    inline QSharedPointer(const QWeakPointer<X> &other) : BaseClass(Qt::Uninitialized)
+    { this->d = 0; *this = other; }
 
     template <class X>
     inline QSharedPointer<T> &operator=(const QWeakPointer<X> &other)
-    { *this = strongRefFromWeakHelper(other, static_cast<T *>(0)); return *this; }
+    { internalSet(other.d, other.value); return *this; }
 
     template <class X>
     QSharedPointer<X> staticCast() const
@@ -477,10 +464,13 @@ public:
 
     QWeakPointer<T> toWeakRef() const;
 
+protected:
+    inline QSharedPointer(Qt::Initialization i) : BaseClass(i) {}
+
 public:
     static inline QSharedPointer<T> create()
     {
-        QSharedPointer<T> result;
+        QSharedPointer<T> result(Qt::Uninitialized);
         result.internalCreate();
 
         // now initialize the data
@@ -564,7 +554,7 @@ public:
 
     template <class X>
     inline bool operator==(const QSharedPointer<X> &o) const
-    { return d == o.d && value == static_cast<const T *>(o.data()); }
+    { return d == o.d; }
 
     template <class X>
     inline bool operator!=(const QSharedPointer<X> &o) const
@@ -579,7 +569,7 @@ private:
 #if defined(Q_NO_TEMPLATE_FRIENDS)
 public:
 #else
-    template <class X, class Y> friend QSharedPointer<X> QtSharedPointer::strongRefFromWeakHelper(const QWeakPointer<Y> &src, X *);
+    template <class X> friend class QSharedPointer;
 #endif
 
     inline void internalSet(Data *o, T *actual)
@@ -654,14 +644,6 @@ namespace QtSharedPointer {
     {
         QSharedPointer<X> result;
         result.internalSet(src.d, ptr);
-        return result;
-    }
-    template <class X, class T>
-    Q_INLINE_TEMPLATE QSharedPointer<X> strongRefFromWeakHelper
-        (const QT_PREPEND_NAMESPACE(QWeakPointer<T>) &src, X *)
-    {
-        QSharedPointer<X> result;
-        result.internalSet(src.d, src.value);
         return result;
     }
 }
