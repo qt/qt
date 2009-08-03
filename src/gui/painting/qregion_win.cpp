@@ -57,7 +57,7 @@ HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int right, 
 {
     const int tries = 10;
     for (int i = 0; i < tries; ++i) {
-        HRGN region;
+        HRGN region = 0;
         switch (type) {
         case QRegion::Rectangle:
             region = CreateRectRgn(left, top, right, bottom);
@@ -96,7 +96,7 @@ QRegion qt_region_from_HRGN(HRGN rgn)
 
     QRegion region;
     RECT *r = reinterpret_cast<RECT*>(rd->Buffer);
-    for (int i = 0; i < rd->rdh.nCount; ++i) {
+    for (uint i = 0; i < rd->rdh.nCount; ++i) {
         QRect rect;
         rect.setCoords(r->left, r->top, r->right - 1, r->bottom - 1);
         ++r;
