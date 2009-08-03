@@ -60,6 +60,7 @@ void tst_qmlcomponent::creation_data()
     QTest::newRow("MyQmlObject: basic binding") << "myqmlobject_binding.txt";
     QTest::newRow("Synthesized properties") << "synthesized_properties.txt";
     QTest::newRow("Synthesized properties.2") << "synthesized_properties.2.txt";
+    QTest::newRow("SameGame - BoomBlock") << "samegame/BoomBlock.qml";
 }
 
 void tst_qmlcomponent::creation()
