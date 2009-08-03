@@ -5712,12 +5712,12 @@ fi
 if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" == "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
-    if [ "$QT_MAC_DEFUALT_ARCH" == "x86_64" ]; then
+    if [ "$QT_MAC_DEFAULT_ARCH" == "x86_64" ]; then
         CFG_MAC_ARCHS=" x86"
-    elif [ "$QT_MAC_DEFUALT_ARCH" == "ppc64" ]; then
+    elif [ "$QT_MAC_DEFAULT_ARCH" == "ppc64" ]; then
         CFG_MAC_ARCHS=" ppc"
     else
-        CFG_MAC_ARCHS=" $QT_MAC_DEFUALT_ARCH"
+        CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
     fi
 
     [ "$OPT_VERBOSE" == "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
