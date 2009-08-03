@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXVISUALITEMMODEL_H
-#define QFXVISUALITEMMODEL_H
+#ifndef QFXVISUALDATAMODEL_H
+#define QFXVISUALDATAMODEL_H
 
 #include <QtCore/qobject.h>
 #include <QtCore/qabstractitemmodel.h>
@@ -61,11 +61,79 @@ QT_MODULE(Declarative)
 class QFxItem;
 class QmlComponent;
 class QmlPackage;
+class QFxVisualDataModelPrivate;
+
+class Q_DECLARATIVE_EXPORT QFxVisualModel : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+
+public:
+    QFxVisualModel() {}
+    virtual ~QFxVisualModel() {}
+
+    enum ReleaseFlag { Referenced = 0x01, Destroyed = 0x02 };
+    Q_DECLARE_FLAGS(ReleaseFlags, ReleaseFlag)
+
+    virtual int count() const = 0;
+    virtual bool isValid() const = 0;
+    virtual QFxItem *item(int index, bool complete=true) = 0;
+    virtual ReleaseFlags release(QFxItem *item) = 0;
+    virtual void completeItem() = 0;
+    virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext) = 0;
+
+    virtual int indexOf(QFxItem *item, QObject *objectContext) const = 0;
+
+Q_SIGNALS:
+    void countChanged();
+    void itemsInserted(int index, int count);
+    void itemsRemoved(int index, int count);
+    void itemsMoved(int from, int to, int count);
+    void createdItem(int index, QFxItem *item);
+    void destroyingItem(QFxItem *item);
+
+protected:
+    QFxVisualModel(QObjectPrivate &dd, QObject *parent = 0)
+        : QObject(dd, parent) {}
+
+private:
+    Q_DISABLE_COPY(QFxVisualModel)
+};
+
 class QFxVisualItemModelPrivate;
-class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QObject
+class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QFxVisualModel
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFxVisualItemModel)
+
+    Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
+    Q_CLASSINFO("DefaultProperty", "children")
+
+public:
+    QFxVisualItemModel();
+    virtual ~QFxVisualItemModel() {}
+
+    virtual int count() const;
+    virtual bool isValid() const;
+    virtual QFxItem *item(int index, bool complete=true);
+    virtual ReleaseFlags release(QFxItem *item);
+    virtual void completeItem();
+    virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext);
+
+    virtual int indexOf(QFxItem *item, QObject *objectContext) const;
+
+    QmlList<QFxItem *> *children();
+
+private:
+    Q_DISABLE_COPY(QFxVisualItemModel)
+};
+
+
+class Q_DECLARATIVE_EXPORT QFxVisualDataModel : public QFxVisualModel
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QFxVisualDataModel)
 
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
@@ -73,9 +141,9 @@ class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QObject
     Q_PROPERTY(QObject *parts READ parts CONSTANT)
     Q_CLASSINFO("DefaultProperty", "delegate")
 public:
-    QFxVisualItemModel();
-    QFxVisualItemModel(QmlContext *);
-    virtual ~QFxVisualItemModel();
+    QFxVisualDataModel();
+    QFxVisualDataModel(QmlContext *);
+    virtual ~QFxVisualDataModel();
 
     QVariant model() const;
     void setModel(const QVariant &);
@@ -86,10 +154,8 @@ public:
     QString part() const;
     void setPart(const QString &);
 
-    enum ReleaseFlag { Referenced = 0x01, Destroyed = 0x02 };
-    Q_DECLARE_FLAGS(ReleaseFlags, ReleaseFlag)
-
     int count() const;
+    bool isValid() const { return delegate() != 0; }
     QFxItem *item(int index, bool complete=true);
     QFxItem *item(int index, const QByteArray &, bool complete=true);
     ReleaseFlags release(QFxItem *item);
@@ -101,12 +167,7 @@ public:
     QObject *parts();
 
 Q_SIGNALS:
-    void itemsInserted(int index, int count);
-    void itemsRemoved(int index, int count);
-    void itemsMoved(int from, int to, int count);
-    void createdItem(int index, QFxItem *item);
     void createdPackage(int index, QmlPackage *package);
-    void destroyingItem(QFxItem *item);
     void destroyingPackage(QmlPackage *package);
 
 private Q_SLOTS:
@@ -121,13 +182,14 @@ private Q_SLOTS:
     void _q_destroyingPackage(QmlPackage *package);
 
 private:
-    Q_DISABLE_COPY(QFxVisualItemModel)
+    Q_DISABLE_COPY(QFxVisualDataModel)
 };
 
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxVisualItemModel)
+QML_DECLARE_TYPE(QFxVisualDataModel)
 
 QT_END_HEADER
 
-#endif // QFXVISUALITEMMODEL_H
+#endif // QFXVISUALDATAMODEL_H

@@ -49,7 +49,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxVisualItemModel;
+class QFxVisualModel;
 class QFxGridViewAttached;
 class QFxGridViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
