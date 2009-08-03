@@ -39,34 +39,34 @@
 **
 ****************************************************************************/
 
-#include "qfxfocusrealm.h"
+#include "qfxfocusscope.h"
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusRealm,QFxFocusRealm)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusScope,QFxFocusScope)
 
 /*!
-    \qmlclass FocusRealm
-    \brief The FocusRealm object explicitly creates a focus realm.
+    \qmlclass FocusScope
+    \brief The FocusScope object explicitly creates a focus scope.
     \inherits Item
 
-    Focus realms assist in keyboard focus handling when building reusable QML
-    components.  All the details are covered in the 
+    Focus scopes assist in keyboard focus handling when building reusable QML
+    components.  All the details are covered in the
     \l {qmlfocus}{keyboard focus documentation}.
 */
 
 /*!
     \internal
-    \class QFxFocusRealm
+    \class QFxFocusScope
 */
 
-QFxFocusRealm::QFxFocusRealm(QFxItem *parent) :
+QFxFocusScope::QFxFocusScope(QFxItem *parent) :
     QFxItem(parent)
 {
     setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
 }
 
-QFxFocusRealm::~QFxFocusRealm()
+QFxFocusScope::~QFxFocusScope()
 {
 }
 QT_END_NAMESPACE

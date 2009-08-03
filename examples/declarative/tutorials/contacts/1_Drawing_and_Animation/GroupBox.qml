@@ -1,6 +1,6 @@
 import Qt 4.6
 
-FocusRealm {
+FocusScope {
     id: groupBox
     width: Math.max(270, subItem.width+40)
     height: Math.max(70, subItem.height+40)
