@@ -1600,25 +1600,7 @@ QScriptValue QScriptValue::toObject() const
     Q_D(const QScriptValue);
     if (!d || !d->engine)
         return QScriptValue();
-    switch (d->type) {
-    case QScriptValuePrivate::JSC: {
-        if (JSC::JSImmediate::isUndefinedOrNull(d->jscValue))
-            return QScriptValue();
-        QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        Q_ASSERT(eng_p != 0);
-        JSC::ExecState *exec = eng_p->currentFrame;
-        JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
-        JSC::JSObject *result = d->jscValue.toObject(exec);
-        QScriptValuePrivate::restoreException(exec, savedException);
-        return eng_p->scriptValueFromJSCValue(result);
-    }
-    case QScriptValuePrivate::Number:
-    case QScriptValuePrivate::String:
-        Q_ASSERT_X(false, Q_FUNC_INFO, "you should not get here");
-        break;
-    }
-    return QScriptValue();
+    return engine()->toObject(*this);
 }
 
 /*!
