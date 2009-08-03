@@ -58,6 +58,19 @@
 
 QT_BEGIN_NAMESPACE
 
+class QmlMetaObjectCache
+{
+public:
+    struct Data {
+        int propType;
+        int coreIndex;
+    };
+
+    QHash<QString, Data> properties;
+
+    Data property(const QString &, const QMetaObject *);
+};
+
 class QmlContext;
 class QmlMetaPropertyPrivate
 {
@@ -85,6 +98,9 @@ public:
     int propType;
 
     mutable QmlMetaProperty::PropertyCategory category;
+
+    void initProperty(QObject *obj, const QString &name);
+    void initDefault(QObject *obj);
 
     QObject *attachedObject() const;
     void findSignalInt(QObject *, const QString &);

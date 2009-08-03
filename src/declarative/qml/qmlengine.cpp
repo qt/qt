@@ -196,7 +196,7 @@ QmlEnginePrivate::queryObject(const QString &propName,
 {
     QScriptClass::QueryFlags rv = 0;
 
-    QmlMetaProperty prop(obj, propName);
+    QmlMetaProperty prop(obj, propName, rootContext);
     if (prop.type() == QmlMetaProperty::Invalid) {
         QPair<const QMetaObject *, QString> key =
             qMakePair(obj->metaObject(), propName);
