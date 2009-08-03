@@ -985,7 +985,11 @@ HRESULT WINAPI QAxClientSite::TranslateAccelerator(LPMSG lpMsg, DWORD /*grfModif
 
     bool ActiveQtDetected = false;
     bool fromInProcServer = false;
+#ifdef GWLP_USERDATA
     LONG_PTR serverType = GetWindowLongPtr(lpMsg->hwnd, GWLP_USERDATA);
+#else
+    LONG serverType = GetWindowLong(lpMsg->hwnd, GWL_USERDATA);
+#endif
     if (serverType == QAX_INPROC_SERVER) {
         ActiveQtDetected = true;
         fromInProcServer = true;
