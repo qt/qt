@@ -455,7 +455,7 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
     \list
     \o Null - no image has been set
     \o Ready - the image has been loaded
-    \o Loading - the images is currently being loaded
+    \o Loading - the image is currently being loaded
     \o Error - an error occurred while loading the image
     \endlist
 
@@ -484,7 +484,7 @@ qreal QFxImage::progress() const
 }
 
 /*!
-    \qmlproperty string Image::source
+    \qmlproperty url Image::source
 
     Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 

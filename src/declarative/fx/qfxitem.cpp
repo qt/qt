@@ -911,8 +911,6 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyPress(&ke);
     event->setAccepted(ke.isAccepted());
-    if (parentItem() && !ke.isAccepted())
-        parentItem()->keyPressEvent(event);
 }
 
 /*!
@@ -923,8 +921,6 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyRelease(&ke);
     event->setAccepted(ke.isAccepted());
-    if (parentItem() && !ke.isAccepted())
-        parentItem()->keyReleaseEvent(event);
 }
 
 /*!

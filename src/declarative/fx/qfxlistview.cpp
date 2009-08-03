@@ -697,9 +697,11 @@ void QFxListViewPrivate::updateSections()
         if (visibleIndex > 0)
             prevSection = sectionAt(visibleIndex-1);
         for (int i = 0; i < visibleItems.count(); ++i) {
-            QFxListViewAttached *attached = visibleItems.at(i)->attached;
-            attached->setPrevSection(prevSection);
-            prevSection = attached->section();
+            if (visibleItems.at(i)->index != -1) {
+                QFxListViewAttached *attached = visibleItems.at(i)->attached;
+                attached->setPrevSection(prevSection);
+                prevSection = attached->section();
+            }
         }
     }
 }
@@ -1528,6 +1530,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
             d->updateCurrent(qMin(modelIndex, d->model->count()-1));
         }
         d->layout();
+        d->updateSections();
         emit countChanged();
         return;
     }
@@ -1590,6 +1593,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
     } else {
         // Correct the positioning of the items
         d->layout();
+        d->updateSections();
     }
 
     emit countChanged();

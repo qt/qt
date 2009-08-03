@@ -60,19 +60,19 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Palette,QmlPalette)
     \brief The Palette item gives access to the Qt palettes.
     \sa QPalette
 
-
+    Example:
     \code
-        Palette { id: MyPalette; colorGroup: "Active" }
+    Palette { id: MyPalette; colorGroup: "Active" }
 
-        Rect {
-            width: 640; height: 480
-            color: MyPalette.window
-            Text {
-                anchors.fill: parent
-                text: "Hello!"; color: MyPalette.windowText
-            }
+    Rect {
+        width: 640; height: 480
+        color: MyPalette.window
+        Text {
+            anchors.fill: parent
+            text: "Hello!"; color: MyPalette.windowText
         }
-     \endcode
+    }
+    \endcode
 */
 QmlPalette::QmlPalette(QObject *parent)
     : QObject(*(new QmlPalettePrivate), parent)
@@ -88,8 +88,10 @@ QmlPalette::~QmlPalette()
 }
 
 /*!
-    \qmlproperty Palette::window
-    \brief The window (general background) color of the current color group.
+    \qmlproperty color Palette::window
+    The window (general background) color of the current color group.
+
+    \sa QPalette::ColorRole
 */
 QColor QmlPalette::window() const
 {
@@ -98,8 +100,10 @@ QColor QmlPalette::window() const
 }
 
 /*!
-    \qmlproperty Palette::windowText
-    \brief The window text (general foreground) color of the current color group.
+    \qmlproperty color Palette::windowText
+    The window text (general foreground) color of the current color group.
+
+    \sa QPalette::ColorRole
 */
 QColor QmlPalette::windowText() const
 {
@@ -107,82 +111,166 @@ QColor QmlPalette::windowText() const
     return d->palette.color(d->group, QPalette::WindowText);
 }
 
+/*!
+    \qmlproperty color Palette::base
+    The base color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::base() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Base);
 }
 
+/*!
+    \qmlproperty color Palette::alternateBase
+    The alternate base color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::alternateBase() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::AlternateBase);
 }
 
+/*!
+    \qmlproperty color Palette::button
+    The button color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::button() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Button);
 }
 
+/*!
+    \qmlproperty color Palette::buttonText
+    The button text foreground color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::buttonText() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::ButtonText);
 }
 
+/*!
+    \qmlproperty color Palette::light
+    The light color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::light() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Light);
 }
 
+/*!
+    \qmlproperty color Palette::midlight
+    The midlight color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::midlight() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Midlight);
 }
 
+/*!
+    \qmlproperty color Palette::dark
+    The dark color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::dark() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Dark);
 }
 
+/*!
+    \qmlproperty color Palette::mid
+    The mid color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::mid() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Mid);
 }
 
+/*!
+    \qmlproperty color Palette::shadow
+    The shadow color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::shadow() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Shadow);
 }
 
+/*!
+    \qmlproperty color Palette::highlight
+    The highlight color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::highlight() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::Highlight);
 }
 
+/*!
+    \qmlproperty color Palette::highlightedText
+    The highlighted text color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
 QColor QmlPalette::highlightedText() const
 {
     Q_D(const QmlPalette);
     return d->palette.color(d->group, QPalette::HighlightedText);
 }
 
+/*!
+    \qmlproperty color Palette::lighter
+*/
 QColor QmlPalette::lighter(const QColor& color) const
 {
     return color.lighter();
 }
 
+/*!
+    \qmlproperty color Palette::darker
+*/
 QColor QmlPalette::darker(const QColor& color) const
 {
     return color.darker();
 }
 
+/*!
+    \qmlproperty enum Palette::colorGroup
+
+    The color group of the palette. It can be one of:
+    \list
+    \o Active - used for the window that has focus.
+    \o Inactive - used for other windows.
+    \o Disabled - used for widgets that are disabled for some reason.
+    \endlist
+
+    \sa QPalette::ColorGroup
+*/
 QmlPalette::ColorGroup QmlPalette::colorGroup() const
 {
     Q_D(const QmlPalette);
