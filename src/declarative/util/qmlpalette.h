@@ -62,6 +62,7 @@ class Q_DECLARATIVE_EXPORT QmlPalette : public QObject
     Q_PROPERTY(QColor window READ window NOTIFY paletteChanged)
     Q_PROPERTY(QColor windowText READ windowText NOTIFY paletteChanged)
     Q_PROPERTY(QColor base READ base NOTIFY paletteChanged)
+    Q_PROPERTY(QColor text READ text NOTIFY paletteChanged)
     Q_PROPERTY(QColor alternateBase READ alternateBase NOTIFY paletteChanged)
     Q_PROPERTY(QColor button READ button NOTIFY paletteChanged)
     Q_PROPERTY(QColor buttonText READ buttonText NOTIFY paletteChanged)
@@ -81,6 +82,7 @@ public:
     QColor windowText() const;
 
     QColor base() const;
+    QColor text() const;
     QColor alternateBase() const;
 
     QColor button() const;

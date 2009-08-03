@@ -124,6 +124,18 @@ QColor QmlPalette::base() const
 }
 
 /*!
+    \qmlproperty color Palette::text
+    The text color of the current color group.
+
+    \sa QPalette::ColorRole
+*/
+QColor QmlPalette::text() const
+{
+    Q_D(const QmlPalette);
+    return d->palette.color(d->group, QPalette::Text);
+}
+
+/*!
     \qmlproperty color Palette::alternateBase
     The alternate base color of the current color group.
 
