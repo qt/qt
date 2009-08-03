@@ -95,6 +95,7 @@ private slots:
     void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
     void menuSizeHint();
+    void task258920_mouseBorder();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -762,6 +763,41 @@ void tst_QMenu::menuSizeHint()
 
     QCOMPARE(resSize, menu.sizeHint());
 }
+
+class Menu258920 : public QMenu
+{
+    Q_OBJECT
+public slots:
+    void paintEvent(QPaintEvent *e)
+    {
+        QMenu::paintEvent(e);
+        painted = true;
+    }
+
+public:
+    bool painted;
+};
+
+void tst_QMenu::task258920_mouseBorder()
+{
+    Menu258920 menu;
+    QAction *action = menu.addAction("test");
+
+    menu.popup(QPoint());
+    QTest::qWait(100);
+    QRect actionRect = menu.actionGeometry(action);
+    QTest::mouseMove(&menu, actionRect.center());
+    QTest::qWait(30);
+    QTest::mouseMove(&menu, actionRect.center() + QPoint(10, 0));
+    QTest::qWait(30);
+    QCOMPARE(action, menu.activeAction());
+    menu.painted = false;
+    QTest::mouseMove(&menu, QPoint(actionRect.center().x(), actionRect.bottom() + 1));
+    QTest::qWait(30);
+    QCOMPARE(static_cast<QAction*>(0), menu.activeAction());
+    QVERIFY(menu.painted);
+}
+
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"
