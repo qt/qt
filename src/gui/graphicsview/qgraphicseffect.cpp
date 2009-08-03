@@ -726,6 +726,8 @@ void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
         // Clip to device rect to avoid huge pixmaps.
         effectRect &= source->deviceRect();
         effectRect |= effectRect.translated(-shadowOffset);
+        if (effectRect.isEmpty())
+            return; // nothing to paint;
     }
 
     QPixmap pixmap(effectRect.size());
