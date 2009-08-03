@@ -3897,19 +3897,12 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     Synonym for QList<QObject *>.
 */
 
-#ifdef QT_JAMBI_BUILD
-class QDPtrAccessor : public QObject {
-public:
-    QObjectData *d() const { return d_ptr; }
-};
-#endif
-
 void qDeleteInEventHandler(QObject *o)
 {
 #ifdef QT_JAMBI_BUILD
     if (!o)
         return;
-    ((QDPtrAccessor *) o)->d()->inEventHandler = false;
+    QObjectPrivate::get(o)->inEventHandler = false;
 #endif
     delete o;
 }
