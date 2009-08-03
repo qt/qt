@@ -57,9 +57,8 @@ class Q_DECLARATIVE_EXPORT QmlPalette : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPalette)
-    Q_ENUMS(ColorGroup)
 
-    Q_PROPERTY(ColorGroup colorGroup READ colorGroup WRITE setColorGroup NOTIFY paletteChanged)
+    Q_PROPERTY(QPalette::ColorGroup colorGroup READ colorGroup WRITE setColorGroup NOTIFY paletteChanged)
     Q_PROPERTY(QColor window READ window NOTIFY paletteChanged)
     Q_PROPERTY(QColor windowText READ windowText NOTIFY paletteChanged)
     Q_PROPERTY(QColor base READ base NOTIFY paletteChanged)
@@ -77,9 +76,6 @@ class Q_DECLARATIVE_EXPORT QmlPalette : public QObject
 public:
     QmlPalette(QObject *parent=0);
     ~QmlPalette();
-
-    enum ColorGroup { Disabled = QPalette::Disabled, Active = QPalette::Active,
-                      Inactive = QPalette::Inactive, Normal = QPalette::Normal };
 
     QColor window() const;
     QColor windowText() const;
@@ -99,8 +95,8 @@ public:
     QColor highlight() const;
     QColor highlightedText() const;
 
-    ColorGroup colorGroup() const;
-    void setColorGroup(ColorGroup);
+    QPalette::ColorGroup colorGroup() const;
+    void setColorGroup(QPalette::ColorGroup);
 
     // FIXME: Move to utility class?
     Q_INVOKABLE QColor lighter(const QColor&) const;
