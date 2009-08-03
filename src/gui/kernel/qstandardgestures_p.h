@@ -85,20 +85,6 @@ public:
 #endif
 };
 
-class QTapAndHoldGesturePrivate : public QGesturePrivate
-{
-    Q_DECLARE_PUBLIC(QTapAndHoldGesture)
-
-public:
-    QTapAndHoldGesturePrivate()
-        : iteration(0) { }
-
-    QBasicTimer timer;
-    int iteration;
-    static const int iterationCount;
-    static const int iterationTimeout;
-};
-
 QT_END_NAMESPACE
 
 #endif // QSTANDARDGESTURES_P_H

@@ -295,106 +295,37 @@ QSize QPanGesture::lastOffset() const
 #endif
 }
 
+/*!
+    \property QPanGesture::startPos
+
+    \brief The start position of the gesture.
+*/
 QPoint QPanGesture::startPos() const
 {
     Q_D(const QPanGesture);
     return d->startPos;
 }
+
+/*!
+    \property QPanGesture::lastPos
+
+    \brief The last recorded position of the gesture.
+*/
 QPoint QPanGesture::lastPos() const
 {
     Q_D(const QPanGesture);
     return d->lastPos;
 }
 
+/*!
+    \property QPanGesture::pos
+
+    \brief The current position of the gesture.
+*/
 QPoint QPanGesture::pos() const
 {
     Q_D(const QPanGesture);
     return d->pos;
-}
-
-/*!
-    \class QTapAndHoldGesture
-    \since 4.6
-
-    \brief The QTapAndHoldGesture class represents a Tap-and-Hold gesture,
-    providing additional information.
-*/
-
-const int QTapAndHoldGesturePrivate::iterationCount = 40;
-const int QTapAndHoldGesturePrivate::iterationTimeout = 50;
-
-/*!
-    Creates a new Tap and Hold gesture handler object and marks it as a child
-    of \a parent.
-
-    On some platforms like Windows there is a system-wide tap and hold gesture
-    that cannot be overriden, hence the gesture might never trigger and default
-    context menu will be shown instead.
-*/
-QTapAndHoldGesture::QTapAndHoldGesture(QWidget *parent)
-    : QGesture(*new QTapAndHoldGesturePrivate, parent)
-{
-}
-
-/*! \internal */
-bool QTapAndHoldGesture::filterEvent(QEvent *event)
-{
-    Q_D(QTapAndHoldGesture);
-    if (!event->spontaneous())
-        return false;
-    const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
-    switch (event->type()) {
-    case QEvent::TouchBegin: {
-        if (d->timer.isActive())
-            d->timer.stop();
-        d->timer.start(QTapAndHoldGesturePrivate::iterationTimeout, this);
-        const QPoint p = ev->touchPoints().at(0).pos().toPoint();
-        setStartPos(p);
-        setLastPos(p);
-        setPos(p);
-        break;
-    }
-    case QEvent::TouchUpdate:
-        if (ev->touchPoints().size() != 1)
-            reset();
-        else if ((startPos() - ev->touchPoints().at(0).pos().toPoint()).manhattanLength() > 15)
-            reset();
-        break;
-    case QEvent::TouchEnd:
-        reset();
-        break;
-    default:
-        break;
-    }
-    return false;
-}
-
-/*! \internal */
-void QTapAndHoldGesture::timerEvent(QTimerEvent *event)
-{
-    Q_D(QTapAndHoldGesture);
-    if (event->timerId() != d->timer.timerId())
-        return;
-    if (d->iteration == QTapAndHoldGesturePrivate::iterationCount) {
-        d->timer.stop();
-        setState(Qt::GestureFinished);
-        emit triggered();
-    } else {
-        setState(Qt::GestureStarted);
-        emit triggered();
-    }
-    ++d->iteration;
-}
-
-/*! \internal */
-void QTapAndHoldGesture::reset()
-{
-    Q_D(QTapAndHoldGesture);
-    if (state() != Qt::NoGesture)
-        emit cancelled();
-    setState(Qt::NoGesture);
-    d->timer.stop();
-    d->iteration = 0;
 }
 
 QT_END_NAMESPACE

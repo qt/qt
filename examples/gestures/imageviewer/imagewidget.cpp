@@ -65,7 +65,7 @@ ImageWidget::ImageWidget(QWidget *parent)
     panGesture = new QPanGesture(this);
     connect(panGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
 
-    tapAndHoldGesture = new QTapAndHoldGesture(this);
+    tapAndHoldGesture = new TapAndHoldGesture(this);
     connect(tapAndHoldGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
 }
 
@@ -186,6 +186,19 @@ void ImageWidget::gestureTriggered()
                     goPrevImage();
                 updateImage();
             }
+        }
+        feedbackFadeOutTimer.start(500, this);
+    } else if (sender() == tapAndHoldGesture) {
+        if (tapAndHoldGesture->state() == Qt::GestureFinished) {
+            qDebug() << "tap and hold detected";
+            touchFeedback.reset();
+            update();
+
+            QMenu menu;
+            menu.addAction("Action 1");
+            menu.addAction("Action 2");
+            menu.addAction("Action 3");
+            menu.exec(mapToGlobal(tapAndHoldGesture->pos()));
         }
         feedbackFadeOutTimer.start(500, this);
     }
