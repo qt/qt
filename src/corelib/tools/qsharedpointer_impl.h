@@ -350,9 +350,7 @@ namespace QtSharedPointer {
             this->value = d && d->strongref ? actual : 0;
         }
 
-#if defined(QT_BUILD_INTERNAL)
-    public:
-#endif
+    protected:
         Data *d;
 
     private:

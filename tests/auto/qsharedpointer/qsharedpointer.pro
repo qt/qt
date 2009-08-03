@@ -4,6 +4,5 @@ SOURCES += tst_qsharedpointer.cpp \
     forwarddeclared.cpp
 QT = core
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
-requires(contains(QT_CONFIG,private_tests))
 include(externaltests.pri)
 HEADERS += forwarddeclared.h
