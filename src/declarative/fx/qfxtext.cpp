@@ -750,21 +750,6 @@ void QFxTextPrivate::checkImgCache()
     imgDirty = false;
 }
 
-bool QFxText::smoothTransform() const
-{
-    Q_D(const QFxText);
-    return d->smooth;
-}
-
-void QFxText::setSmoothTransform(bool s)
-{
-    Q_D(QFxText);
-    if (d->smooth == s)
-        return;
-    d->smooth = s;
-    update();
-}
-
 void QFxText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QFxText);

@@ -61,7 +61,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     \inherits Item
 
     The Image element supports untransformed, stretched, tiled, and grid-scaled images.
-    
+
     For an explanation of stretching and tiling, see the fillMode property description.
 
     For an explanation of grid-scaling see the scaleGrid property description
@@ -270,44 +270,6 @@ void QFxImage::componentComplete()
     \property QFxImage::scaleGrid
     \brief the 3x3 grid used to scale an image, excluding the corners.
 */
-
-/*!
-    \qmlproperty bool Image::smooth
-
-    Set this property if you want the image to be smoothly filtered when scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
-    the Image is displayed at its natural size, this property has no visual or
-    performance effect.
-
-    \note Generally scaling artifacts are only visible if the image is stationary on
-    the screen.  A common pattern when animating an image is to disable smooth
-    filtering at the beginning of the animation and reenable it at the conclusion.
- */
-
-/*!
-    \property QFxImage::smooth
-    \brief whether the image is smoothly transformed.
-
-    This property is provided purely for the purpose of optimization. Turning
-    smooth transforms off is faster, but looks worse; turning smooth
-    transformations on is slower, but looks better.
-
-    By default smooth transformations are off.
-*/
-bool QFxImage::smoothTransform() const
-{
-    Q_D(const QFxImage);
-    return d->smooth;
-}
-
-void QFxImage::setSmoothTransform(bool s)
-{
-    Q_D(QFxImage);
-    if (d->smooth == s)
-        return;
-    d->smooth = s;
-    update();
-}
 
 void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {

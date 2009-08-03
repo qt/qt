@@ -58,7 +58,6 @@ class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
     Q_OBJECT
 
     Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
-    Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth)
     Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor NOTIFY fillColorChanged)
     Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
 
@@ -66,10 +65,7 @@ public:
     QFxPaintedItem(QFxItem *parent=0);
     ~QFxPaintedItem();
 
-    bool isSmooth() const;
     QSize contentsSize() const;
-
-    void setSmooth(bool);
     void setContentsSize(const QSize &);
 
     int cacheSize() const;

@@ -473,7 +473,7 @@ void QFxLineEditPrivate::init()
         control->setCursorWidth(1);
         control->setPasswordCharacter(QLatin1Char('*'));
         control->setLayoutDirection(Qt::LeftToRight);
-        q->setSmooth(true);
+        q->setSmoothTransform(true);
         q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setFlag(QGraphicsItem::ItemHasNoContents, false);
         q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
