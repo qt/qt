@@ -241,12 +241,14 @@ case 14: {
     sym(1).UiImport->versionToken = loc(2);
     sym(1).UiImport->asToken = loc(3);
     sym(1).UiImport->importIdToken = loc(4);
+    sym(1).UiImport->importId = sym(4).sval;
     sym(1).UiImport->semicolonToken = loc(5);
 } break;
 
 case 16: {
     sym(1).UiImport->asToken = loc(2);
     sym(1).UiImport->importIdToken = loc(3);
+    sym(1).UiImport->importId = sym(3).sval;
     sym(1).UiImport->semicolonToken = loc(4);
 } break;
 
