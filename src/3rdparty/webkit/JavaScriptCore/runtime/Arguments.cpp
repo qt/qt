@@ -227,7 +227,7 @@ void Arguments::put(ExecState* exec, const Identifier& propertyName, JSValue val
     JSObject::put(exec, propertyName, value, slot);
 }
 
-bool Arguments::deleteProperty(ExecState* exec, unsigned i) 
+bool Arguments::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete)
 {
     if (i < d->numArguments) {
         if (!d->deletedArguments) {
@@ -240,10 +240,10 @@ bool Arguments::deleteProperty(ExecState* exec, unsigned i)
         }
     }
 
-    return JSObject::deleteProperty(exec, Identifier(exec, UString::from(i)));
+    return JSObject::deleteProperty(exec, Identifier(exec, UString::from(i)), checkDontDelete);
 }
 
-bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName) 
+bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     bool isArrayIndex;
     unsigned i = propertyName.toArrayIndex(&isArrayIndex);
@@ -268,7 +268,7 @@ bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName)
         return true;
     }
 
-    return JSObject::deleteProperty(exec, propertyName);
+    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 bool Arguments::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const

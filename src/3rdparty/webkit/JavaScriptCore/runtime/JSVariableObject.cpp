@@ -33,12 +33,12 @@
 
 namespace JSC {
 
-bool JSVariableObject::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSVariableObject::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     if (symbolTable().contains(propertyName.ustring().rep()))
         return false;
 
-    return JSObject::deleteProperty(exec, propertyName);
+    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 void JSVariableObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)

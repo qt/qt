@@ -110,8 +110,8 @@ namespace JSC {
         bool hasProperty(ExecState*, unsigned propertyName) const;
         bool hasOwnProperty(ExecState*, const Identifier& propertyName) const;
 
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
-        virtual bool deleteProperty(ExecState*, unsigned propertyName);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
+        virtual bool deleteProperty(ExecState*, unsigned propertyName, bool checkDontDelete = true);
 
         virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const;
 

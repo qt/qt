@@ -375,20 +375,20 @@ NEVER_INLINE void JSArray::putSlowCase(ExecState* exec, unsigned i, JSValue valu
     checkConsistency();
 }
 
-bool JSArray::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSArray::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     bool isArrayIndex;
     unsigned i = propertyName.toArrayIndex(&isArrayIndex);
     if (isArrayIndex)
-        return deleteProperty(exec, i);
+        return deleteProperty(exec, i, checkDontDelete);
 
     if (propertyName == exec->propertyNames().length)
         return false;
 
-    return JSObject::deleteProperty(exec, propertyName);
+    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
-bool JSArray::deleteProperty(ExecState* exec, unsigned i)
+bool JSArray::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete)
 {
     checkConsistency();
 
@@ -422,7 +422,7 @@ bool JSArray::deleteProperty(ExecState* exec, unsigned i)
     checkConsistency();
 
     if (i > MAX_ARRAY_INDEX)
-        return deleteProperty(exec, Identifier::from(exec, i));
+        return deleteProperty(exec, Identifier::from(exec, i), checkDontDelete);
 
     return false;
 }

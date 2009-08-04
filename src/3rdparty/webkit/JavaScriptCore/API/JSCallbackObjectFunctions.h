@@ -224,7 +224,7 @@ void JSCallbackObject<Base>::put(ExecState* exec, const Identifier& propertyName
 }
 
 template <class Base>
-bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     JSContextRef ctx = toRef(exec);
     JSObjectRef thisRef = toRef(this);
@@ -262,13 +262,13 @@ bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, const Identifier& p
         }
     }
     
-    return Base::deleteProperty(exec, propertyName);
+    return Base::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 template <class Base>
-bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, unsigned propertyName)
+bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, unsigned propertyName, bool checkDontDelete)
 {
-    return deleteProperty(exec, Identifier::from(exec, propertyName));
+    return deleteProperty(exec, Identifier::from(exec, propertyName), checkDontDelete);
 }
 
 template <class Base>

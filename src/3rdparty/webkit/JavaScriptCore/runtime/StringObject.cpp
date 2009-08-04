@@ -68,7 +68,7 @@ void StringObject::put(ExecState* exec, const Identifier& propertyName, JSValue 
     JSObject::put(exec, propertyName, value, slot);
 }
 
-bool StringObject::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool StringObject::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     if (propertyName == exec->propertyNames().length)
         return false;
@@ -76,7 +76,7 @@ bool StringObject::deleteProperty(ExecState* exec, const Identifier& propertyNam
     unsigned i = propertyName.toStrictUInt32(&isStrictUInt32);
     if (isStrictUInt32 && internalValue()->canGetIndex(i))
         return false;
-    return JSObject::deleteProperty(exec, propertyName);
+    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 void StringObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)

@@ -133,12 +133,12 @@ void JSActivation::putWithAttributes(ExecState* exec, const Identifier& property
     JSObject::putWithAttributes(exec, propertyName, value, attributes, true, slot);
 }
 
-bool JSActivation::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSActivation::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     if (propertyName == exec->propertyNames().arguments)
         return false;
 
-    return Base::deleteProperty(exec, propertyName);
+    return Base::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 JSObject* JSActivation::toThisObject(ExecState* exec) const

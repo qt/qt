@@ -61,8 +61,8 @@ private:
     
     virtual void put(ExecState*, const Identifier&, JSValue, PutPropertySlot&);
 
-    virtual bool deleteProperty(ExecState*, const Identifier&);
-    virtual bool deleteProperty(ExecState*, unsigned);
+    virtual bool deleteProperty(ExecState*, const Identifier&, bool checkDontDelete = true);
+    virtual bool deleteProperty(ExecState*, unsigned, bool checkDontDelete = true);
 
     virtual bool hasInstance(ExecState* exec, JSValue value, JSValue proto);
 
