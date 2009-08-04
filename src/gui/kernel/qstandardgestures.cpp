@@ -73,11 +73,17 @@ QPanGesture::QPanGesture(QWidget *parent)
         qAppPriv->widgetGestures[parent].pan = this;
     }
 #endif
+
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    d_func()->panFinishedTimer = 0;
+#endif
 }
 
 /*! \internal */
 bool QPanGesture::event(QEvent *event)
 {
+    Q_D(QPanGesture);
+
 #ifdef Q_WS_WIN
     QApplicationPrivate* getQApplicationPrivateInternal();
     switch (event->type()) {
@@ -93,6 +99,21 @@ bool QPanGesture::event(QEvent *event)
         break;
     }
 #endif
+
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    if (event->type() == QEvent::Timer) {
+        const QTimerEvent *te = static_cast<QTimerEvent *>(event);
+        if (te->timerId() == d->panFinishedTimer) {
+            killTimer(d->panFinishedTimer);
+            d->panFinishedTimer = 0;
+            d->lastOffset = QSize(0, 0);
+            setState(Qt::GestureFinished);
+            emit triggered();
+            setState(Qt::NoGesture);
+        }
+    }
+#endif
+
     return QObject::event(event);
 }
 
@@ -133,6 +154,36 @@ bool QPanGesture::filterEvent(QEvent *event)
             emit triggered();
         }
     }
+#ifdef Q_OS_MAC
+    else if (event->type() == QEvent::Wheel) {
+        // On Mac, there is really no native panning gesture. Instead, a two 
+        // finger pan is delivered as mouse wheel events. Otoh, on Windows, you
+        // either get mouse wheel events or pan events. We have decided to make this
+        // the Qt behaviour as well, meaning that on Mac, wheel
+        // events will be masked away when listening for pan events.
+#ifndef QT_MAC_USE_COCOA
+        // In Carbon we receive neither touch-, nor pan gesture events.
+        // So we create pan gestures by converting wheel events. After all, this
+        // is how things are supposed to work on mac in the first place.
+        const QWheelEvent *wev = static_cast<const QWheelEvent*>(event);
+        int offset = wev->delta() / -120;
+        d->lastOffset = wev->orientation() == Qt::Horizontal ? QSize(offset, 0) : QSize(0, offset);
+
+        if (state() == Qt::NoGesture) {
+            setState(Qt::GestureStarted);
+            d->totalOffset = d->lastOffset;
+        } else {
+            setState(Qt::GestureUpdated);
+            d->totalOffset += d->lastOffset;
+        }
+
+        killTimer(d->panFinishedTimer);
+        d->panFinishedTimer = startTimer(200);
+        emit triggered();
+#endif
+        return true;
+    }
+#endif
     return false;
 }
 
@@ -150,8 +201,13 @@ void QPanGesture::reset()
 */
 QSize QPanGesture::totalOffset() const
 {
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    Q_D(const QPanGesture);
+    return d->totalOffset;
+#else
     QPoint pt = pos() - startPos();
     return QSize(pt.x(), pt.y());
+#endif
 }
 
 /*!
@@ -162,8 +218,13 @@ QSize QPanGesture::totalOffset() const
 */
 QSize QPanGesture::lastOffset() const
 {
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    Q_D(const QPanGesture);
+    return d->lastOffset;
+#else
     QPoint pt = pos() - lastPos();
     return QSize(pt.x(), pt.y());
+#endif
 }
 
 /*!
@@ -252,3 +313,6 @@ void QTapAndHoldGesture::reset()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qstandardgestures.cpp"
+
