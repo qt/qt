@@ -795,7 +795,6 @@ QScriptPushScopeHelper::~QScriptPushScopeHelper()
     exec->setScopeChain(exec->scopeChain()->pop());
     exec->scopeChain()->deref();
     engine->currentFrame = previousFrame;
-    engine->releaseContextForFrame(exec);
 }
 
 } // namespace QScript
@@ -1027,9 +1026,6 @@ QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
     return reinterpret_cast<QScriptContext *>(frame);
 }
 
-void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
-{
-}
 
 JSC::JSGlobalObject *QScriptEnginePrivate::originalGlobalObject() const
 {
@@ -2248,7 +2244,6 @@ void QScriptEngine::popContext()
     JSC::RegisterFile &registerFile = d->currentFrame->interpreter()->registerFile();
     JSC::Register *const newEnd = d->currentFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->currentFrame->argumentCount();
     d->currentFrame->scopeChain()->pop()->deref();
-    d->releaseContextForFrame(d->currentFrame);
     d->currentFrame = d->currentFrame->callerFrame();
     registerFile.shrink(newEnd);
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY

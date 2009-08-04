@@ -146,7 +146,6 @@ public:
     void setDefaultPrototype(int metaTypeId, JSC::JSValue prototype);
 
     QScriptContext *contextForFrame(JSC::ExecState *frame);
-    void releaseContextForFrame(JSC::ExecState *frame);
 
     JSC::JSGlobalObject *originalGlobalObject() const;
     JSC::JSObject *getOriginalGlobalObjectProxy();

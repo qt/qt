@@ -142,7 +142,6 @@ JSC::JSValue FunctionWithArgWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObje
 {
     FunctionWithArgWrapper *self = static_cast<FunctionWithArgWrapper*>(callee);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
-    QScriptContext *ctx = eng_p->contextForFrame(exec);
 
     //We might have nested eval inside our function so we should create another scope
     QScriptPushScopeHelper scope(exec);
