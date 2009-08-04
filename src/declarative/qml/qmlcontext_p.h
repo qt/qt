@@ -88,9 +88,6 @@ public:
     QScriptValueList scopeChain;
 
     QUrl url;
-    QByteArray typeName; 
-    int startLine;
-    int endLine;
 
     void init();
 
@@ -109,7 +106,6 @@ public:
 
     QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;
-
 
     struct ContextGuard : public QGuard<QObject>
     {

@@ -55,8 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
 : parent(0), engine(0), isInternal(false), notifyIndex(-1), 
-  highPriorityCount(0), startLine(-1), endLine(-1), idValues(0),
-  idValueCount(0)
+  highPriorityCount(0), idValues(0), idValueCount(0)
 {
 }
 
