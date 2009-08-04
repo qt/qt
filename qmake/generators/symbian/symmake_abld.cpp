@@ -64,7 +64,6 @@ SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 
 bool SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
-
     QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
     removeSpecialCharacters(gnuMakefileName);
     gnuMakefileName.append(".mk");
@@ -204,9 +203,9 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "endif" << endl;
     t << endl;
     t << "DEFINES" << '\t' << " = "
-        << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-        << varGlue("QMAKE_COMPILER_DEFINES", "-D", "-D", " ")
-        << varGlue("DEFINES","-D"," -D","") << endl;
+      << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
+      << varGlue("QMAKE_COMPILER_DEFINES", "-D", "-D", " ")
+      << varGlue("DEFINES","-D"," -D","") << endl;
 
     t << "INCPATH" << '\t' << " = ";
 
@@ -365,7 +364,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "\t-bldmake clean" << endl;
     t << endl;
 
-    // create execution target
+    // Create execution target
     if (debugPlatforms.contains("winscw") && getTargetExtension() == "exe") {
         t << "run:" << endl;
         t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
@@ -391,7 +390,7 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
         t << "\t-echo Deploying changed files..." << endl;
 
     for (int i=0; i<depList.size(); ++i) {
-        // xcopy prompts for selecting file or directory if target doesn't exist,
+        // Xcopy prompts for selecting file or directory if target doesn't exist,
         // and doesn't provide switch to force file selection. It does provide dir forcing, though,
         // so strip the last part of the destination.
         t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \"" << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\")+1) << "\"" << endl;
@@ -425,4 +424,3 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
         t << "gnumakefile " << gnuMakefileName << endl;
     }
 }
-
