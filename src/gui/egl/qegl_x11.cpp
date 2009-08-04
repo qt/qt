@@ -39,15 +39,18 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qdebug.h>
+
+#include <private/qt_x11_p.h>
+#include <QtGui/qx11info_x11.h>
+#include <private/qpixmapdata_p.h>
+#include <private/qpixmap_x11_p.h>
+
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
-#include <QtCore/qdebug.h>
 #include "qegl_p.h"
 
-#include <QtGui/qx11info_x11.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 QT_BEGIN_NAMESPACE
 
