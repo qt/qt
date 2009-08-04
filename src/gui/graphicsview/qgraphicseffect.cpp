@@ -163,7 +163,13 @@ QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsEffect::setEnabled(bool enable)
 {
     Q_D(QGraphicsEffect);
+    if (d->isEnabled == enable)
+        return;
+
     d->isEnabled = enable;
+
+    if (d->source)
+        d->source->update();
 }
 
 bool QGraphicsEffect::isEnabled() const
