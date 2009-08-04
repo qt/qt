@@ -1459,6 +1459,7 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
     if (path.elementCount() > 0 && lastMoveTo != last)
         lineTo_clipped(result, transform, last, lastMoveTo, needsMoveTo, false);
 
+    result.setFillRule(path.fillRule());
     return result;
 }
 
