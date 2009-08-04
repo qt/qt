@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = 
+TARGET =
 INCLUDEPATH += .
 
 HEADERS += desktopwidget.h contenttab.h linktab.h
@@ -18,6 +18,6 @@ DEPLOYMENT += music image
 include($$QT_SOURCE_TREE/demos/demobase.pri)
 
 symbian {
-    TARGET.UID3 = 0xA000C611 
+    TARGET.UID3 = 0xA000C611
     ICON = ./resources/heart.svg
 }

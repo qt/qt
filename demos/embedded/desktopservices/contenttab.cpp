@@ -53,32 +53,32 @@
 #include "contenttab.h"
 
 
-// CONSTRUCTORS & DESTRUCTORS  
-ContentTab::ContentTab(QWidget *parent) : 
+// CONSTRUCTORS & DESTRUCTORS
+ContentTab::ContentTab(QWidget *parent) :
     QListWidget(parent)
-{             
+{
     setDragEnabled(false);
     setIconSize(QSize(45, 45));
 }
-        
-ContentTab::~ContentTab() 
+
+ContentTab::~ContentTab()
 {
 }
 
 // NEW PUBLIC METHODS
-void ContentTab::init(const QDesktopServices::StandardLocation &location, 
-                      const QString &filter, 
+void ContentTab::init(const QDesktopServices::StandardLocation &location,
+                      const QString &filter,
                       const QString &icon)
 {
     setContentDir(location);
     QStringList filterList;
     filterList = filter.split(";");
-    m_ContentDir.setNameFilters(filterList); 
-    setIcon(icon);    
-    
+    m_ContentDir.setNameFilters(filterList);
+    setIcon(icon);
+
     connect(this, SIGNAL(itemClicked(QListWidgetItem *)),
-            this, SLOT(openItem(QListWidgetItem *)));            
-    
+            this, SLOT(openItem(QListWidgetItem *)));
+
     populateListWidget();
 }
 
@@ -98,7 +98,7 @@ void ContentTab::populateListWidget()
     QFileInfoList fileList = m_ContentDir.entryInfoList(QDir::Files, QDir::Time);
     foreach(QFileInfo item, fileList) {
         new QListWidgetItem(m_Icon, itemName(item), this);
-    }   
+    }
 }
 
 QString ContentTab::itemName(const QFileInfo &item)
@@ -111,21 +111,21 @@ QUrl ContentTab::itemUrl(QListWidgetItem *item)
     return QUrl("file:///" + m_ContentDir.absolutePath() + "/" + item->text());
 }
 
-void ContentTab::keyPressEvent(QKeyEvent *event)  
+void ContentTab::keyPressEvent(QKeyEvent *event)
 {
     switch(event->key()) {
     case Qt::Key_Up:
         if(currentRow() == 0) {
             setCurrentRow(count()-1);
         } else {
-            setCurrentRow(currentRow()-1);      
+            setCurrentRow(currentRow()-1);
         }
         break;
     case Qt::Key_Down:
         if(currentRow() == (count()-1)) {
-            setCurrentRow(0);   
+            setCurrentRow(0);
         } else {
-            setCurrentRow(currentRow()+1);      
+            setCurrentRow(currentRow()+1);
         }
         break;
     case Qt::Key_Select:
@@ -138,7 +138,7 @@ void ContentTab::keyPressEvent(QKeyEvent *event)
 
 void ContentTab::handleErrorInOpen(QListWidgetItem *item)
 {
-    Q_UNUSED(item);    
+    Q_UNUSED(item);
     QMessageBox::warning( this, tr("Operation Failed"), tr("Unkown error!"), QMessageBox::Close);
 }
 
