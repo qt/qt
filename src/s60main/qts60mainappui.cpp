@@ -211,4 +211,3 @@ void CQtS60MainAppUi::RestoreMenuL(CCoeControl* aMenuWindow, TInt aMenuId, TMenu
 }
 
 // End of File
-

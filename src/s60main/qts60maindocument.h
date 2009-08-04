@@ -120,4 +120,3 @@ class CQtS60MainDocument : public CAknDocument
 #endif // __QTS60MAINDOCUMENT_H__
 
 // End of File
-
