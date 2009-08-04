@@ -182,6 +182,7 @@ public:
 #endif
 
     QList<QPointer<QObject> > eventFilters;
+    QObject *currentChildBeingDeleted;
 
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
