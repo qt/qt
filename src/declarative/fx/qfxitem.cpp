@@ -135,7 +135,7 @@ QFxContents::QFxContents() : m_height(0), m_width(0)
 
     The contents properties allow an item access to the size of its
     children. This property is useful if you have an item that needs to be
-    sized to fit its children.    
+    sized to fit its children.
 */
 
 /*!
@@ -257,7 +257,7 @@ void QFxContents::setItem(QFxItem *item)
     }
     \endqml
     \endqmltext
-    
+
     \ingroup group_coreitems
 */
 
@@ -458,10 +458,10 @@ QFxItem *QFxItem::parentItem() const
     \qmlproperty list<Item> Item::children
     \qmlproperty list<Object> Item::resources
 
-    The children property contains the list of visual children of this item. 
-    The resources property contains non-visual resources that you want to 
+    The children property contains the list of visual children of this item.
+    The resources property contains non-visual resources that you want to
     reference by name.
-    
+
     Generally you can rely on Item's default property to handle all this for
     you, but it can come in handy in some cases.
 
@@ -484,20 +484,20 @@ QFxItem *QFxItem::parentItem() const
 /*!
     \property QFxItem::children
 
-    This property contains the list of visual children of this item. 
+    This property contains the list of visual children of this item.
 */
 
 /*!
     \property QFxItem::resources
 
-    This property contains non-visual resources that you want to 
+    This property contains non-visual resources that you want to
     reference by name.
 */
 
 /*!
     Returns true if construction of the QML component is complete; otherwise
     returns false.
-    
+
     It is often desireable to delay some processing until the component is
     completed.
 
@@ -691,7 +691,7 @@ void QFxItemPrivate::transform_clear()
     }
     \endqml
 
-    data is a behind-the-scenes property: you should never need to explicitly 
+    data is a behind-the-scenes property: you should never need to explicitly
     specify it.
  */
 
@@ -790,12 +790,12 @@ void QFxItem::setClip(bool c)
   \qmlproperty real Item::z
 
   Sets the stacking order of the item.  By default the stacking order is 0.
-    
+
   Items with a higher stacking value are drawn on top of items with a
   lower stacking order.  Items with the same stacking value are drawn
   bottom up in the order they appear.  Items with a negative stacking
   value are drawn under their parent's content.
-    
+
   The following example shows the various effects of stacking order.
 
   \table
@@ -869,7 +869,7 @@ void QFxItem::setClip(bool c)
   geometry from \a oldGeometry to \a newGeometry. If the two
   geometries are the same, it doesn't do anything.
  */
-void QFxItem::geometryChanged(const QRectF &newGeometry, 
+void QFxItem::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QFxItem);
@@ -880,11 +880,11 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     if (transformOrigin() != QFxItem::TopLeft)
         setTransformOriginPoint(d->computeTransformOrigin());
 
-    if (newGeometry.x() != oldGeometry.x()) 
+    if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
         emit widthChanged();
-    if (newGeometry.y() != oldGeometry.y()) 
+    if (newGeometry.y() != oldGeometry.y())
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
@@ -911,8 +911,6 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyPress(&ke);
     event->setAccepted(ke.isAccepted());
-    if (parentItem() && !ke.isAccepted())
-        parentItem()->keyPressEvent(event);
 }
 
 /*!
@@ -923,14 +921,12 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit keyRelease(&ke);
     event->setAccepted(ke.isAccepted());
-    if (parentItem() && !ke.isAccepted())
-        parentItem()->keyReleaseEvent(event);
 }
 
 /*!
   \qmlproperty string Item::id
   This property holds the identifier for the item.
-  
+
   The identifier can be used in bindings and other expressions to
   refer to the item. For example:
 
@@ -1087,7 +1083,7 @@ QFxAnchorLine QFxItem::baseline() const
   \qmlproperty real Item::anchors.horizontalCenterOffset
   \qmlproperty real Item::anchors.verticalCenterOffset
   \qmlproperty real Item::anchors.baselineOffset
-  
+
   Anchors provide a way to position an item by specifying its
   relationship with other items.
 
@@ -1555,7 +1551,7 @@ void QFxItem::componentComplete()
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
     if (d->_anchors) {
-        d->_anchors->componentComplete(); 
+        d->_anchors->componentComplete();
         d->_anchors->d_func()->updateOnComplete();
     }
 }
@@ -1629,7 +1625,7 @@ bool QFxItem::sceneEvent(QEvent *event)
     return rv;
 }
 
-QVariant QFxItem::itemChange(GraphicsItemChange change, 
+QVariant QFxItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
     if (change == ItemParentHasChanged) {
@@ -1686,6 +1682,45 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
     }
 }
 
+/*!
+    \qmlproperty bool Item::smooth
+
+    Set this property if you want the item to be smoothly scaled or
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the item is displayed at its natural size, this property has no visual or
+    performance effect.
+    Currently, only the \c Image, \c Text , \c TextEdit and \c LineEdit items implement smooth filtering.
+
+    \note Generally scaling artifacts are only visible if the item is stationary on
+    the screen.  A common pattern when animating an item is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+ */
+
+/*!
+    \property QFxItem::smooth
+    \brief whether the item is smoothly transformed.
+
+    This property is provided purely for the purpose of optimization. Turning
+    smooth transforms off is faster, but looks worse; turning smooth
+    transformations on is slower, but looks better.
+
+    By default smooth transformations are off.
+*/
+bool QFxItem::smoothTransform() const
+{
+    Q_D(const QFxItem);
+    return d->smooth;
+}
+
+void QFxItem::setSmoothTransform(bool s)
+{
+    Q_D(QFxItem);
+    if (d->smooth == s)
+        return;
+    d->smooth = s;
+    update();
+}
+
 qreal QFxItem::width() const
 {
     Q_D(const QFxItem);
@@ -1705,7 +1740,7 @@ void QFxItem::setWidth(qreal w)
     d->width = w;
     update();
 
-    geometryChanged(QRectF(x(), y(), width(), height()), 
+    geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
 }
 
@@ -1721,7 +1756,7 @@ void QFxItem::setImplicitWidth(qreal w)
     d->width = w;
     update();
 
-    geometryChanged(QRectF(x(), y(), width(), height()), 
+    geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
 }
 
@@ -1750,7 +1785,7 @@ void QFxItem::setHeight(qreal h)
     d->height = h;
     update();
 
-    geometryChanged(QRectF(x(), y(), width(), height()), 
+    geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
 }
 
@@ -1766,7 +1801,7 @@ void QFxItem::setImplicitHeight(qreal h)
     d->height = h;
     update();
 
-    geometryChanged(QRectF(x(), y(), width(), height()), 
+    geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
 }
 
@@ -1817,7 +1852,7 @@ void QFxItem::setFocus(bool focus)
 
     if (current->focusProxy() && current->focusProxy() != this) {
         QFxItem *currentItem = qobject_cast<QFxItem *>(current->focusProxy());
-        if (currentItem) 
+        if (currentItem)
             currentItem->setFocus(false);
     }
 

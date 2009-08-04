@@ -6,7 +6,7 @@
 When a key is pressed or released, a key event is generated and delivered to the
 focused fluid UI \l Item.  To facilitate the construction of reusable components
 and to address some of the cases unique to fluid UIs, the fluid UI atoms add a 
-"realm" based extension to Qt's traditional keyboard focus model.
+"scope" based extension to Qt's traditional keyboard focus model.
 
 \section1 Key Handling Overview
 
@@ -44,7 +44,7 @@ Text {
 }
 \endcode
 
-\section1 Acquiring Focus and Focus Realms
+\section1 Acquiring Focus and Focus Scopes
 
 An \l Item requests focus by setting the \c {Item::focus} property to true.  
 
@@ -135,17 +135,17 @@ of code knows everything about the other, which is exactly how it should be.
 
 To solve this problem - allowing components to care about what they know about
 and ignore everything else - the fluid UI atoms introduce a concept known as a 
-\e {focus realm}.  For existing Qt users, a \e {focus realm} is like an 
-automatic focus proxy.  A \e {focus realm} is created using the \l FocusRealm
+\e {focus scope}.  For existing Qt users, a \e {focus scope} is like an 
+automatic focus proxy.  A \e {focus scope} is created using the \l FocusScope
 element.
 
-In the next example, a \l FocusRealm is added to the component, and the visual
+In the next example, a \l FocusScope is added to the component, and the visual
 result shown.
 
 \table
 \row
 \o \code
-FocusRealm {
+FocusScope {
     width: 240; height: 25
     Rect {
         color: "lightsteelblue"; width: 240; height: 25
@@ -162,12 +162,12 @@ FocusRealm {
 \o \image declarative-qmlfocus2.png
 \endtable
 
-Conceptually \e {focus realms} are quite simple.  
+Conceptually \e {focus scopes} are quite simple.  
 \list
-\o Within each \e {focus realm} one element may have \c {Item::focus} set to true.  If more than one \l Item has the \c {Item::focus} property set, the first is selected and the others are unset, just like when there are no \e {focus realms}. 
-\o When a \e {focus realm} receives \e {active focus}, the contained element with \c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
-also a \l FocusRealm, the proxying behaviour continues.  Both the 
-\e {focus realm} and the sub-focused item will have \c {Item::activeFocus} set.
+\o Within each \e {focus scope} one element may have \c {Item::focus} set to true.  If more than one \l Item has the \c {Item::focus} property set, the first is selected and the others are unset, just like when there are no \e {focus scopes}. 
+\o When a \e {focus scope} receives \e {active focus}, the contained element with \c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
+also a \l FocusScope, the proxying behaviour continues.  Both the 
+\e {focus scope} and the sub-focused item will have \c {Item::activeFocus} set.
 \endlist
 
 So far the example has the second component statically selected.  It is trivial
@@ -185,7 +185,7 @@ Rect {
 }
 \endcode
 \o \code
-FocusRealm {
+FocusScope {
     id: Page; width: 240; height: 25
     MyWidget { focus: true }
     MouseRegion { anchors.fill: parent; onClicked: { Page.focus = true } }
@@ -200,14 +200,14 @@ When a fluid UI atom explicitly relinquishes focus (by setting its
 does not automatically select another element to receive focus.  That is, it
 is possible for there to be no currently \e {active focus}.
 
-\section1 Advanced uses of Focus Realms
+\section1 Advanced uses of Focus Scopes
 
-Focus realms allow focus to allocation to be easily partitioned.  Several 
+Focus scopes allow focus to allocation to be easily partitioned.  Several 
 fluid UI atoms use it to this effect.
 
-\l ListView, for example, is itself a focus realm.  Generally this isn't 
+\l ListView, for example, is itself a focus scope.  Generally this isn't 
 noticable as \l ListView doesn't usually have manually added visual children.
-By being a focus realm, \l ListView can focus the current list item without 
+By being a focus scope, \l ListView can focus the current list item without 
 worrying about how that will effect the rest of the application.  This allows
 the current item delegate to react to key presses.
 
@@ -227,7 +227,7 @@ Rect {
             ListElement { name: "John" }
             ListElement { name: "Michael" }
         }
-        delegate: FocusRealm {
+        delegate: FocusScope {
             width: contents.width; height: contents.height
             Text { text: name }
             KeyActions { return: "print(name)"; focus: true }
@@ -240,10 +240,10 @@ Rect {
 
 While the example is simple, there's a lot going on behind the scenes.  Whenever
 the current item changes, the \l ListView sets the delegate's \c {Item::focus}
-property.  As the \l ListView is a \e {focus realm}, this doesn't effect the 
+property.  As the \l ListView is a \e {focus scope}, this doesn't effect the 
 rest of the application.  However, if the \l ListView itself has 
 \e {active focus} this causes the delegate itself to receive \e {active focus}.
-In this example, the root element of the delegate is also a \e {focus realm},
+In this example, the root element of the delegate is also a \e {focus scope},
 which in turn gives \e {active focus} to the \c {KeyActions} element that
 actually performs the work of handling the \e {Return} key.
 

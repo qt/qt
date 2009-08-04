@@ -33,9 +33,10 @@ Item {
             id: Wrapper; width: 85; height: 85
             scale: Wrapper.PathView.scale; z: Wrapper.PathView.z
 
-            transform: [
-                Rotation3D { id: Rotation; origin.x: 30; axis.x: 30; axis.y: 60; angle: Wrapper.PathView.angle }
-            ]
+            transform: Rotation3D {
+                id: Rotation; origin.x: Wrapper.width/2; origin.y: Wrapper.height/2
+                axis.y: 1; angle: Wrapper.PathView.angle
+            }
 
             Connection {
                 sender: ImageDetails; signal: "closed()"
@@ -112,14 +113,14 @@ Item {
                     }
                 }
             ]
-         
+
         }
         }
     ]
 
     Item {
         id: Background
-    
+
         anchors.fill: parent
 
         Image { source: "content/pics/background.png"; anchors.fill: parent }

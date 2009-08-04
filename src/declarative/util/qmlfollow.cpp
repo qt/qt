@@ -66,13 +66,13 @@ public:
     qreal velocityms;
     int lastTime;
     qreal mass;
+    bool useMass;
     qreal spring;
     qreal damping;
     qreal velocity;
     qreal epsilon;
     qreal modulus;
     bool haveModulus;
-    bool useMass;
     bool enabled;
 
     enum Mode {

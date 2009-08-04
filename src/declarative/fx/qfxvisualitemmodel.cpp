@@ -58,16 +58,136 @@ QML_DECLARE_TYPE(QListModelInterface)
 
 QT_BEGIN_NAMESPACE
 
-class QFxVisualItemModelParts;
-class QFxVisualItemModelData;
 class QFxVisualItemModelPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QFxVisualItemModel);
 public:
-    QFxVisualItemModelPrivate(QmlContext *);
+    QFxVisualItemModelPrivate() : QObjectPrivate(), children(this) {}
+
+    struct ItemList : public QmlConcreteList<QFxItem *>
+    {
+        ItemList(QFxVisualItemModelPrivate *m) : QmlConcreteList<QFxItem *>(), model(m) {}
+
+        void append(QFxItem *item);
+
+        QFxVisualItemModelPrivate *model;
+    };
+
+    void itemAppended() {
+        Q_Q(QFxVisualItemModel);
+        emit q->itemsInserted(children.count()-1, 1);
+        emit q->countChanged();
+    }
+
+    ItemList children;
+};
+
+
+/*!
+    \qmlclass VisualItemModel QFxVisualItemModel
+    \brief The VisualItemModel allows items to be provided to a view.
+
+    The children of the VisualItemModel are provided in a model which
+    can be used in a view.
+
+    The example below places three colored rectangles in a ListView.
+    \code
+    Item {
+        VisualItemModel {
+            id: ItemModel
+            Rect { height: 30; width: 80; color: "red" }
+            Rect { height: 30; width: 80; color: "green" }
+            Rect { height: 30; width: 80; color: "blue" }
+        }
+
+        ListView {
+            anchors.fill: parent
+            model: ItemModel
+        }
+    }
+    \endcode
+*/
+QFxVisualItemModel::QFxVisualItemModel()
+    : QFxVisualModel(*(new QFxVisualItemModelPrivate))
+{
+}
+
+QmlList<QFxItem *> *QFxVisualItemModel::children()
+{
+    Q_D(QFxVisualItemModel);
+    return &(d->children);
+}
+
+/*!
+    \qmlproperty int VisualItemModel::count
+
+    The number of items in the model.  This property is readonly.
+*/
+int QFxVisualItemModel::count() const
+{
+    Q_D(const QFxVisualItemModel);
+    return d->children.count();
+}
+
+bool QFxVisualItemModel::isValid() const
+{
+    return true;
+}
+
+QFxItem *QFxVisualItemModel::item(int index, bool)
+{
+    Q_D(QFxVisualItemModel);
+    return d->children.at(index);
+}
+
+QFxVisualModel::ReleaseFlags QFxVisualItemModel::release(QFxItem *)
+{
+    // Nothing to do
+    return 0;
+}
+
+void QFxVisualItemModel::completeItem()
+{
+    // Nothing to do
+}
+
+QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
+{
+    Q_D(QFxVisualItemModel);
+    QmlContext *ccontext = qmlContext(this);
+    QmlContext *ctxt = new QmlContext(ccontext);
+    ctxt->addDefaultObject(d->children.at(index));
+    QmlExpression e(ctxt, expression, objectContext);
+    e.setTrackChange(false);
+    QVariant value = e.value();
+    delete ctxt;
+    return value;
+}
+
+int QFxVisualItemModel::indexOf(QFxItem *item, QObject *) const
+{
+    Q_D(const QFxVisualItemModel);
+    return d->children.indexOf(item);
+}
+
+void QFxVisualItemModelPrivate::ItemList::append(QFxItem *item)
+{
+    QmlConcreteList<QFxItem*>::append(item);
+    item->QObject::setParent(model->q_ptr);
+    model->itemAppended();
+}
+
+
+class QFxVisualDataModelParts;
+class QFxVisualDataModelData;
+class QFxVisualDataModelPrivate : public QObjectPrivate
+{
+public:
+    QFxVisualDataModelPrivate(QmlContext *);
 
     QGuard<QListModelInterface> m_listModelInterface;
     QGuard<QAbstractItemModel> m_abstractItemModel;
-    QGuard<QFxVisualItemModel> m_visualItemModel;
+    QGuard<QFxVisualDataModel> m_visualItemModel;
     QString m_part;
 
     QmlComponent *m_delegate;
@@ -120,10 +240,10 @@ public:
     Cache m_cache;
     QHash<QObject *, QmlPackage*> m_packaged;
 
-    QFxVisualItemModelParts *m_parts;
+    QFxVisualDataModelParts *m_parts;
     friend class QFxVisualItemParts;
 
-    QFxVisualItemModelData *data(QObject *item); 
+    QFxVisualDataModelData *data(QObject *item);
 
     QVariant m_modelVariant;
     QmlListAccessor *m_modelList;
@@ -141,25 +261,25 @@ public:
     }
 };
 
-class QFxVisualItemModelDataMetaObject : public QmlOpenMetaObject
+class QFxVisualDataModelDataMetaObject : public QmlOpenMetaObject
 {
 public:
-    QFxVisualItemModelDataMetaObject(QObject *parent)
+    QFxVisualDataModelDataMetaObject(QObject *parent)
     : QmlOpenMetaObject(parent) {}
 
     virtual QVariant propertyCreated(int, QMetaPropertyBuilder &);
     virtual int createProperty(const char *, const char *);
 
 private:
-    friend class QFxVisualItemModelData;
+    friend class QFxVisualDataModelData;
     QList<int> roles;
 };
 
-class QFxVisualItemModelData : public QObject
+class QFxVisualDataModelData : public QObject
 {
 Q_OBJECT
 public:
-    QFxVisualItemModelData(int index, QFxVisualItemModelPrivate *model);
+    QFxVisualDataModelData(int index, QFxVisualDataModelPrivate *model);
 
     Q_PROPERTY(int index READ index NOTIFY indexChanged)
     int index() const;
@@ -173,32 +293,32 @@ Q_SIGNALS:
     void indexChanged();
 
 private:
-    friend class QFxVisualItemModelDataMetaObject;
+    friend class QFxVisualDataModelDataMetaObject;
     int m_index;
-    QFxVisualItemModelPrivate *m_model;
-    QFxVisualItemModelDataMetaObject *m_meta;
+    QFxVisualDataModelPrivate *m_model;
+    QFxVisualDataModelDataMetaObject *m_meta;
 };
 
-int QFxVisualItemModelData::count() const
+int QFxVisualDataModelData::count() const
 {
     return m_meta->count();
 }
 
-int QFxVisualItemModelData::role(int id) const
+int QFxVisualDataModelData::role(int id) const
 {
     Q_ASSERT(id >= 0 && id < count());
     return m_meta->roles.at(id);
 }
 
-void QFxVisualItemModelData::setValue(int id, const QVariant &val)
+void QFxVisualDataModelData::setValue(int id, const QVariant &val)
 {
     m_meta->setValue(id, val);
 }
 
-int QFxVisualItemModelDataMetaObject::createProperty(const char *name, const char *type)
+int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const char *type)
 {
-    QFxVisualItemModelData *data = 
-        static_cast<QFxVisualItemModelData *>(object());
+    QFxVisualDataModelData *data =
+        static_cast<QFxVisualDataModelData *>(object());
 
     if ((!data->m_model->m_listModelInterface || !data->m_model->m_abstractItemModel)
             && data->m_model->m_modelList) {
@@ -217,12 +337,12 @@ int QFxVisualItemModelDataMetaObject::createProperty(const char *name, const cha
 }
 
 QVariant 
-QFxVisualItemModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
+QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
 {
     prop.setWritable(false);
 
-    QFxVisualItemModelData *data = 
-        static_cast<QFxVisualItemModelData *>(object());
+    QFxVisualDataModelData *data =
+        static_cast<QFxVisualDataModelData *>(object());
     QString name = QLatin1String(prop.name());
     if ((!data->m_model->m_listModelInterface || !data->m_model->m_abstractItemModel)
             && data->m_model->m_modelList) {
@@ -255,105 +375,105 @@ QFxVisualItemModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
     return QVariant();
 }
 
-QFxVisualItemModelData::QFxVisualItemModelData(int index,  
-                                               QFxVisualItemModelPrivate *model)
+QFxVisualDataModelData::QFxVisualDataModelData(int index,
+                                               QFxVisualDataModelPrivate *model)
 : m_index(index), m_model(model), 
-  m_meta(new QFxVisualItemModelDataMetaObject(this))
+  m_meta(new QFxVisualDataModelDataMetaObject(this))
 {
 }
 
-int QFxVisualItemModelData::index() const
+int QFxVisualDataModelData::index() const
 {
     return m_index;
 }
 
 // This is internal only - it should not be set from qml
-void QFxVisualItemModelData::setIndex(int index)
+void QFxVisualDataModelData::setIndex(int index)
 {
     m_index = index;
     emit indexChanged();
 }
 
-class QFxVisualItemModelPartsMetaObject : public QmlOpenMetaObject
+class QFxVisualDataModelPartsMetaObject : public QmlOpenMetaObject
 {
 public:
-    QFxVisualItemModelPartsMetaObject(QObject *parent)
+    QFxVisualDataModelPartsMetaObject(QObject *parent)
     : QmlOpenMetaObject(parent) {}
 
     virtual QVariant propertyCreated(int, QMetaPropertyBuilder &);
 };
 
-class QFxVisualItemModelParts : public QObject
+class QFxVisualDataModelParts : public QObject
 {
 Q_OBJECT
 public:
-    QFxVisualItemModelParts(QFxVisualItemModel *parent);
+    QFxVisualDataModelParts(QFxVisualDataModel *parent);
 
 private:
-    friend class QFxVisualItemModelPartsMetaObject;
-    QFxVisualItemModel *model;
+    friend class QFxVisualDataModelPartsMetaObject;
+    QFxVisualDataModel *model;
 };
 
 QVariant 
-QFxVisualItemModelPartsMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
+QFxVisualDataModelPartsMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
 {
     prop.setWritable(false);
 
-    QFxVisualItemModel *m = new QFxVisualItemModel;
+    QFxVisualDataModel *m = new QFxVisualDataModel;
     m->setParent(object());
     m->setPart(QLatin1String(prop.name()));
-    m->setModel(QVariant::fromValue(static_cast<QFxVisualItemModelParts *>(object())->model));
+    m->setModel(QVariant::fromValue(static_cast<QFxVisualDataModelParts *>(object())->model));
 
     QVariant var = QVariant::fromValue((QObject *)m);
     return var;
 }
 
-QFxVisualItemModelParts::QFxVisualItemModelParts(QFxVisualItemModel *parent)
+QFxVisualDataModelParts::QFxVisualDataModelParts(QFxVisualDataModel *parent)
 : QObject(parent), model(parent) 
 {
-    new QFxVisualItemModelPartsMetaObject(this);
+    new QFxVisualDataModelPartsMetaObject(this);
 }
 
-QFxVisualItemModelPrivate::QFxVisualItemModelPrivate(QmlContext *ctxt)
+QFxVisualDataModelPrivate::QFxVisualDataModelPrivate(QmlContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
 , m_context(ctxt), m_parts(0), m_modelList(0)
 {
 }
 
-QFxVisualItemModelData *QFxVisualItemModelPrivate::data(QObject *item)
+QFxVisualDataModelData *QFxVisualDataModelPrivate::data(QObject *item)
 {
-    QList<QFxVisualItemModelData *> dataList = 
-        item->findChildren<QFxVisualItemModelData *>();
+    QList<QFxVisualDataModelData *> dataList =
+        item->findChildren<QFxVisualDataModelData *>();
     Q_ASSERT(dataList.count() == 1);
     return dataList.first();
 }
 
-QFxVisualItemModel::QFxVisualItemModel()
-: QObject(*(new QFxVisualItemModelPrivate(0)))
+QFxVisualDataModel::QFxVisualDataModel()
+: QFxVisualModel(*(new QFxVisualDataModelPrivate(0)))
 {
 }
 
-QFxVisualItemModel::QFxVisualItemModel(QmlContext *ctxt)
-: QObject(*(new QFxVisualItemModelPrivate(ctxt)))
+QFxVisualDataModel::QFxVisualDataModel(QmlContext *ctxt)
+: QFxVisualModel(*(new QFxVisualDataModelPrivate(ctxt)))
 {
 }
 
-QFxVisualItemModel::~QFxVisualItemModel()
+QFxVisualDataModel::~QFxVisualDataModel()
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     if (d->m_modelList)
         delete d->m_modelList;
 }
 
-QVariant QFxVisualItemModel::model() const
+QVariant QFxVisualDataModel::model() const
 {
-    Q_D(const QFxVisualItemModel);
+    Q_D(const QFxVisualDataModel);
     return d->m_modelVariant;
 }
 
-void QFxVisualItemModel::setModel(const QVariant &model)
+void QFxVisualDataModel::setModel(const QVariant &model)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     d->m_modelVariant = model;
     if (d->m_listModelInterface) {
         // Assume caller has released all items.
@@ -426,7 +546,7 @@ void QFxVisualItemModel::setModel(const QVariant &model)
                             this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
         return;
     }
-    if ((d->m_visualItemModel = qvariant_cast<QFxVisualItemModel *>(model))) {
+    if ((d->m_visualItemModel = qvariant_cast<QFxVisualDataModel *>(model))) {
         QObject::connect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
                          this, SIGNAL(itemsInserted(int,int)));
         QObject::connect(d->m_visualItemModel, SIGNAL(itemsRemoved(int,int)),
@@ -442,47 +562,51 @@ void QFxVisualItemModel::setModel(const QVariant &model)
     if (!d->m_modelList)
         d->m_modelList = new QmlListAccessor;
     d->m_modelList->setList(model);
-    if (d->m_delegate && d->modelCount())
+    if (d->m_delegate && d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
+        emit countChanged();
+    }
 }
 
-QmlComponent *QFxVisualItemModel::delegate() const
+QmlComponent *QFxVisualDataModel::delegate() const
 {
-    Q_D(const QFxVisualItemModel);
+    Q_D(const QFxVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->delegate();
     return d->m_delegate;
 }
 
-void QFxVisualItemModel::setDelegate(QmlComponent *delegate)
+void QFxVisualDataModel::setDelegate(QmlComponent *delegate)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     d->m_delegate = delegate;
-    if (d->modelCount())
+    if (d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
+        emit countChanged();
+    }
 }
 
-QString QFxVisualItemModel::part() const
+QString QFxVisualDataModel::part() const
 {
-    Q_D(const QFxVisualItemModel);
+    Q_D(const QFxVisualDataModel);
     return d->m_part;
 }
 
-void QFxVisualItemModel::setPart(const QString &part)
+void QFxVisualDataModel::setPart(const QString &part)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     d->m_part = part;
 }
 
-int QFxVisualItemModel::count() const
+int QFxVisualDataModel::count() const
 {
-    Q_D(const QFxVisualItemModel);
+    Q_D(const QFxVisualDataModel);
     return d->modelCount();
 }
 
-QFxItem *QFxVisualItemModel::item(int index, bool complete)
+QFxItem *QFxVisualDataModel::item(int index, bool complete)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->item(index, d->m_part.toLatin1(), complete);
     return item(index, QByteArray(), complete);
@@ -491,9 +615,9 @@ QFxItem *QFxVisualItemModel::item(int index, bool complete)
 /*
   Returns ReleaseStatus flags.
 */
-QFxVisualItemModel::ReleaseFlags QFxVisualItemModel::release(QFxItem *item)
+QFxVisualDataModel::ReleaseFlags QFxVisualDataModel::release(QFxItem *item)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->release(item);
 
@@ -523,17 +647,17 @@ QFxVisualItemModel::ReleaseFlags QFxVisualItemModel::release(QFxItem *item)
     return stat;
 }
 
-QObject *QFxVisualItemModel::parts() 
+QObject *QFxVisualDataModel::parts()
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     if (!d->m_parts) 
-        d->m_parts = new QFxVisualItemModelParts(this);
+        d->m_parts = new QFxVisualDataModelParts(this);
     return d->m_parts;
 }
 
-QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool complete)
+QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool complete)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->item(index, viewId, complete);
 
@@ -545,7 +669,7 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
         QmlContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
-        QFxVisualItemModelData *data = new QFxVisualItemModelData(index, d);
+        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, d);
         ctxt->setContextProperty(QLatin1String("model"), data);
         ctxt->addDefaultObject(data);
         nobj = d->m_delegate->beginCreate(ctxt);
@@ -576,9 +700,9 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
     return item;
 }
 
-void QFxVisualItemModel::completeItem()
+void QFxVisualDataModel::completeItem()
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     if (d->m_visualItemModel) {
         d->m_visualItemModel->completeItem();
         return;
@@ -587,9 +711,9 @@ void QFxVisualItemModel::completeItem()
     d->m_delegate->completeCreate();
 }
 
-QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
+QVariant QFxVisualDataModel::evaluate(int index, const QString &expression, QObject *objectContext)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->evaluate(index, expression, objectContext);
 
@@ -609,7 +733,7 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
         QmlContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
-        QFxVisualItemModelData *data = new QFxVisualItemModelData(index, d);
+        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, d);
         ctxt->addDefaultObject(data);
         QmlExpression e(ctxt, expression, objectContext);
         e.setTrackChange(false);
@@ -621,7 +745,7 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
     return value;
 }
 
-int QFxVisualItemModel::indexOf(QFxItem *item, QObject *objectContext) const
+int QFxVisualDataModel::indexOf(QFxItem *item, QObject *objectContext) const
 {
     QmlExpression e(qmlContext(item), QLatin1String("index"), objectContext);
     e.setTrackChange(false);
@@ -631,15 +755,15 @@ int QFxVisualItemModel::indexOf(QFxItem *item, QObject *objectContext) const
     return -1;
 }
 
-void QFxVisualItemModel::_q_itemsChanged(int index, int count, 
+void QFxVisualDataModel::_q_itemsChanged(int index, int count,
                                          const QList<int> &roles)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     // XXX - highly inefficient
     for (int ii = index; ii < index + count; ++ii) {
 
         if (QObject *item = d->m_cache.item(ii)) {
-            QFxVisualItemModelData *data = d->data(item);
+            QFxVisualDataModelData *data = d->data(item);
 
             for (int prop = 0; prop < data->count(); ++prop) {
 
@@ -658,22 +782,22 @@ void QFxVisualItemModel::_q_itemsChanged(int index, int count,
     }
 }
 
-void QFxVisualItemModel::_q_itemsInserted(int index, int count)
+void QFxVisualDataModel::_q_itemsInserted(int index, int count)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     // XXX - highly inefficient
-    QHash<int,QFxVisualItemModelPrivate::ObjectRef> items;
-    for (QHash<int,QFxVisualItemModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+    QHash<int,QFxVisualDataModelPrivate::ObjectRef> items;
+    for (QHash<int,QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
         if (iter.key() >= index) {
-            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
+            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() + count;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);
 
-            QFxVisualItemModelData *data = d->data(objRef.obj);
+            QFxVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -682,27 +806,28 @@ void QFxVisualItemModel::_q_itemsInserted(int index, int count)
     d->m_cache.unite(items);
 
     emit itemsInserted(index, count);
+    emit countChanged();
 }
 
-void QFxVisualItemModel::_q_itemsRemoved(int index, int count)
+void QFxVisualDataModel::_q_itemsRemoved(int index, int count)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     // XXX - highly inefficient
-    QHash<int, QFxVisualItemModelPrivate::ObjectRef> items;
-    for (QHash<int, QFxVisualItemModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+    QHash<int, QFxVisualDataModelPrivate::ObjectRef> items;
+    for (QHash<int, QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
         if (iter.key() >= index && iter.key() < index + count) {
-            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
+            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
             iter = d->m_cache.erase(iter);
             items.insertMulti(-1, objRef); //XXX perhaps better to maintain separately
-            QFxVisualItemModelData *data = d->data(objRef.obj);
+            QFxVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(-1);
         } else if (iter.key() >= index + count) {
-            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
+            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - count;
             iter = d->m_cache.erase(iter);
             items.insert(index, objRef);
-            QFxVisualItemModelData *data = d->data(objRef.obj);
+            QFxVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -711,24 +836,25 @@ void QFxVisualItemModel::_q_itemsRemoved(int index, int count)
 
     d->m_cache.unite(items);
     emit itemsRemoved(index, count);
+    emit countChanged();
 }
 
-void QFxVisualItemModel::_q_itemsMoved(int from, int to, int count)
+void QFxVisualDataModel::_q_itemsMoved(int from, int to, int count)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     // XXX - highly inefficient
-    QHash<int,QFxVisualItemModelPrivate::ObjectRef> items;
-    for (QHash<int,QFxVisualItemModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+    QHash<int,QFxVisualDataModelPrivate::ObjectRef> items;
+    for (QHash<int,QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
         if (iter.key() >= from && iter.key() < from + count) {
-            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
+            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - from + to;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);
 
-            QFxVisualItemModelData *data = d->data(objRef.obj);
+            QFxVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -739,35 +865,36 @@ void QFxVisualItemModel::_q_itemsMoved(int from, int to, int count)
     emit itemsMoved(from, to, count);
 }
 
-void QFxVisualItemModel::_q_rowsInserted(const QModelIndex &, int begin, int end)
+void QFxVisualDataModel::_q_rowsInserted(const QModelIndex &, int begin, int end)
 {
     _q_itemsInserted(begin, end - begin + 1);
 }
 
-void QFxVisualItemModel::_q_rowsRemoved(const QModelIndex &, int begin, int end)
+void QFxVisualDataModel::_q_rowsRemoved(const QModelIndex &, int begin, int end)
 {
     _q_itemsRemoved(begin, end - begin + 1);
 }
 
-void QFxVisualItemModel::_q_dataChanged(const QModelIndex &begin, const QModelIndex &end)
+void QFxVisualDataModel::_q_dataChanged(const QModelIndex &begin, const QModelIndex &end)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
 }
 
-void QFxVisualItemModel::_q_createdPackage(int index, QmlPackage *package)
+void QFxVisualDataModel::_q_createdPackage(int index, QmlPackage *package)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     emit createdItem(index, qobject_cast<QFxItem*>(package->part(d->m_part)));
 }
 
-void QFxVisualItemModel::_q_destroyingPackage(QmlPackage *package)
+void QFxVisualDataModel::_q_destroyingPackage(QmlPackage *package)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QFxVisualDataModel);
     emit destroyingItem(qobject_cast<QFxItem*>(package->part(d->m_part)));
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualModel,QFxVisualItemModel)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualItemModel,QFxVisualItemModel)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualDataModel,QFxVisualDataModel)
 
 QT_END_NAMESPACE
 #include "qfxvisualitemmodel.moc"

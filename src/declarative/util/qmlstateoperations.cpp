@@ -457,22 +457,22 @@ QList<Action> QmlSetAnchors::extraActions()
     if (d->target) {
         Action a;
         a.fromValue = d->origX;
-        a.property = QmlMetaProperty(d->target, "x");
+        a.property = QmlMetaProperty(d->target, QLatin1String("x"));
         extra << a;
 
         a.fromValue = d->origY;
-        a.property = QmlMetaProperty(d->target, "y");
+        a.property = QmlMetaProperty(d->target, QLatin1String("y"));
         extra << a;
 
         a.fromValue = d->origWidth;
-        a.property = QmlMetaProperty(d->target, "width");
+        a.property = QmlMetaProperty(d->target, QLatin1String("width"));
         extra << a;
 
         a.fromValue = d->origHeight;
-        a.property = QmlMetaProperty(d->target, "height");
+        a.property = QmlMetaProperty(d->target, QLatin1String("height"));
         extra << a;
     }
-    
+
     return extra;
 }
 

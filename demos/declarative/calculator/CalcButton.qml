@@ -1,62 +1,41 @@
 import Qt 4.6
 
-Item {
+Rect {
     property string operation
     property bool toggable : false
     property bool toggled : false
+    signal clicked
 
     id: Button; width: 50; height: 30
-
-    Script {
-        function buttonClicked(operation) {
-            if (Button.toggable == true) {
-                if (Button.toggled == true) {
-                    Button.toggled = false;
-                    Button.state = 'Toggled';
-                } else {
-                    Button.toggled = true;
-                    Button.state = '';
-                }
-            }
-            else
-                doOp(operation);
-        }
+    border.color: Palette.mid; radius: 6
+    gradient: Gradient {
+        GradientStop { id: G1; position: 0.0; color: Palette.lighter(Palette.button) }
+        GradientStop { id: G2; position: 1.0; color: Palette.button }
     }
 
-    Image {
-        id: Image
-        source: "pics/button.sci"
-        width: Button.width; height: Button.height
-    }
-
-    Image {
-        id: ImagePressed
-        source: "pics/button-pressed.sci"
-        width: Button.width; height: Button.height
-        opacity: 0
-    }
-
-    Text {
-        anchors.centerIn: Image
-        text: Button.operation
-        color: "white"
-        font.bold: true
-    }
+    Text { anchors.centerIn: parent; text: operation; color: Palette.buttonText }
 
     MouseRegion {
         id: MouseRegion
-        anchors.fill: Button
-        onClicked: { buttonClicked(Button.operation) }
+        anchors.fill: parent
+        onClicked: {
+            doOp(operation);
+            Button.clicked();
+            if (!Button.toggable) return;
+            Button.toggled ? Button.toggled = false : Button.toggled = true
+        }
     }
 
     states: [
         State {
             name: "Pressed"; when: MouseRegion.pressed == true
-            SetProperties { target: ImagePressed; opacity: 1 }
+            SetProperties { target: G1; color: Palette.dark }
+            SetProperties { target: G2; color: Palette.button }
         },
         State {
             name: "Toggled"; when: Button.toggled == true
-            SetProperties { target: ImagePressed; opacity: 1 }
+            SetProperties { target: G1; color: Palette.dark }
+            SetProperties { target: G2; color: Palette.button }
         }
     ]
 }

@@ -85,11 +85,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QFxPaintedItem::smooth
-    \brief Setting for whether smooth scaling is enabled.
-*/
-
-/*!
     Marks areas of the cache that intersect with the given \a rect as dirty and
     in need of being refreshed.
 
@@ -120,17 +115,6 @@ void QFxPaintedItem::clearCache()
 }
 
 /*!
-    Returns if smooth scaling of the cache contents is enabled.
-
-    \sa setSmooth()
-*/
-bool QFxPaintedItem::isSmooth() const
-{
-    Q_D(const QFxPaintedItem);
-    return d->smooth;
-}
-
-/*!
     Returns the size of the contents.
 
     \sa setContentsSize()
@@ -139,20 +123,6 @@ QSize QFxPaintedItem::contentsSize() const
 {
     Q_D(const QFxPaintedItem);
     return d->contentsSize;
-}
-
-/*!
-    If \a smooth is true sets the image item to enable smooth scaling of
-    the cache contents.
-
-    \sa isSmooth()
-*/
-void QFxPaintedItem::setSmooth(bool smooth)
-{
-    Q_D(QFxPaintedItem);
-    if (d->smooth == smooth) return;
-    d->smooth = smooth;
-    update();
 }
 
 /*!

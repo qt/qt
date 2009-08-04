@@ -1,4 +1,4 @@
-import Qt 4.6
+import Test 1.0
 
 MyContainer {
     property int x

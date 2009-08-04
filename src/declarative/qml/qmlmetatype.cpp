@@ -104,7 +104,7 @@ class QmlTypePrivate
 {
 public:
     QmlTypePrivate();
-    
+
     void init() const;
 
     bool m_isInterface : 1;
@@ -128,7 +128,7 @@ public:
 QmlTypePrivate::QmlTypePrivate()
 : m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_qmlListId(0),
   m_opFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
-  m_parserStatusCast(-1), m_extFunc(0), m_extMetaObject(0), m_index(-1), 
+  m_parserStatusCast(-1), m_extFunc(0), m_extMetaObject(0), m_index(-1),
   m_customParser(0), m_isSetup(false)
 {
 }
@@ -149,11 +149,11 @@ QmlType::QmlType(int type, int listType, int qmlListType,
 }
 
 QmlType::QmlType(int type, int listType, int qmlListType,
-                 QmlPrivate::Func opFunc, const char *qmlName, 
-                 const QMetaObject *metaObject, 
-                 QmlAttachedPropertiesFunc attachedPropertiesFunc, 
+                 QmlPrivate::Func opFunc, const char *qmlName,
+                 const QMetaObject *metaObject,
+                 QmlAttachedPropertiesFunc attachedPropertiesFunc,
                  const QMetaObject *attachedType,
-                 int parserStatusCast, QmlPrivate::CreateFunc extFunc, 
+                 int parserStatusCast, QmlPrivate::CreateFunc extFunc,
                  const QMetaObject *extMetaObject, int index,
                  QmlCustomParser *customParser)
 : d(new QmlTypePrivate)
@@ -195,7 +195,7 @@ void QmlTypePrivate::init() const
         QMetaObject *mmo = new QMetaObject;
         *mmo = *m_extMetaObject;
         mmo->d.superdata = mo;
-        QmlProxyMetaObject::ProxyData data = { mmo, m_extFunc, 0 };
+        QmlProxyMetaObject::ProxyData data = { mmo, m_extFunc, 0, 0 };
         m_metaObjects << data;
     }
 
@@ -207,9 +207,9 @@ void QmlTypePrivate::init() const
                 QMetaObject *mmo = new QMetaObject;
                 *mmo = *t->d->m_extMetaObject;
                 mmo->d.superdata = m_baseMetaObject;
-                if (!m_metaObjects.isEmpty()) 
+                if (!m_metaObjects.isEmpty())
                     m_metaObjects.last().metaObject->d.superdata = mmo;
-                QmlProxyMetaObject::ProxyData data = { mmo, t->d->m_extFunc, 0 };
+                QmlProxyMetaObject::ProxyData data = { mmo, t->d->m_extFunc, 0, 0 };
                 m_metaObjects << data;
             }
         }
@@ -217,9 +217,9 @@ void QmlTypePrivate::init() const
     }
 
     for (int ii = 0; ii < m_metaObjects.count(); ++ii) {
-        m_metaObjects[ii].propertyOffset = 
+        m_metaObjects[ii].propertyOffset =
             m_metaObjects.at(ii).metaObject->propertyOffset();
-        m_metaObjects[ii].methodOffset = 
+        m_metaObjects[ii].methodOffset =
             m_metaObjects.at(ii).metaObject->methodOffset();
     }
 
@@ -276,7 +276,7 @@ QObject *QmlType::create() const
     QObject *rv = 0;
     d->m_opFunc(QmlPrivate::Create, 0, v, v, (void **)&rv);
 
-    if (rv && !d->m_metaObjects.isEmpty()) 
+    if (rv && !d->m_metaObjects.isEmpty())
         (void *)new QmlProxyMetaObject(rv, &d->m_metaObjects);
 
     return rv;
@@ -386,7 +386,7 @@ int QmlType::index() const
 }
 
 int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
-                                    QmlPrivate::Func listFunction, 
+                                    QmlPrivate::Func listFunction,
                                     const char *iid)
 {
     QWriteLocker lock(metaTypeDataLock());
@@ -404,11 +404,11 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     if (!type->qmlTypeName().isEmpty())
         data->nameToType.insert(type->qmlTypeName(), type);
 
-    if (data->interfaces.size() < id.typeId) 
+    if (data->interfaces.size() < id.typeId)
         data->interfaces.resize(id.typeId + 16);
-    if (data->qmllists.size() < id.qmlListId) 
+    if (data->qmllists.size() < id.qmlListId)
         data->qmllists.resize(id.qmlListId + 16);
-    if (data->lists.size() < id.listId) 
+    if (data->lists.size() < id.listId)
         data->lists.resize(id.listId + 16);
     data->interfaces.setBit(id.typeId, true);
     data->qmllists.setBit(id.qmlListId, true);
@@ -448,16 +448,20 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
         int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
     Q_UNUSED(object);
-    QByteArray name = cname;
-
+    QByteArray name;
     if (uri) {
+        // Convert to path
+        name = uri;
+        name.replace('.','/');
         if (version) {
-            name = QByteArray(uri) + '/' + version + '/' + name;
-        } else {
-            name = QByteArray(uri) + '/' + name;
+            name += '/';
+            name += version;
         }
+        name += '/';
+        name += cname;
     } else {
         // No URI? No version!
+        name = cname;
         Q_ASSERT(!version);
     }
 
@@ -484,16 +488,16 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     data->idToType.insert(type->qListTypeId(), type);
     data->idToType.insert(type->qmlListTypeId(), type);
 
-    if (!type->qmlTypeName().isEmpty()) 
+    if (!type->qmlTypeName().isEmpty())
         data->nameToType.insert(type->qmlTypeName(), type);
 
     data->metaObjectToType.insert(type->baseMetaObject(), type);
-   
-    if (data->objects.size() <= id.typeId) 
+
+    if (data->objects.size() <= id.typeId)
         data->objects.resize(id.typeId + 16);
-    if (data->qmllists.size() <= id.qmlListId) 
+    if (data->qmllists.size() <= id.qmlListId)
         data->qmllists.resize(id.qmlListId + 16);
-    if (data->lists.size() <= id.listId) 
+    if (data->lists.size() <= id.listId)
         data->lists.resize(id.listId + 16);
     data->objects.setBit(id.typeId, true);
     data->qmllists.setBit(id.qmlListId, true);
@@ -518,7 +522,7 @@ QObject *QmlMetaType::toQObject(const QVariant &v)
     if (!isObject(v.userType()))
         return 0;
 
-    // NOTE: This assumes a cast to QObject does not alter the 
+    // NOTE: This assumes a cast to QObject does not alter the
     // object pointer
     QObject *rv = *(QObject **)v.constData();
     return rv;
@@ -527,7 +531,7 @@ QObject *QmlMetaType::toQObject(const QVariant &v)
 /*
     Returns the item type for a list of type \a id.
  */
-int QmlMetaType::listType(int id) 
+int QmlMetaType::listType(int id)
 {
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
@@ -574,7 +578,7 @@ bool QmlMetaType::append(const QVariant &list, const QVariant &item)
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->idToType.value(userType);
     lock.unlock();
-    if (type && type->qListTypeId() == userType && 
+    if (type && type->qListTypeId() == userType &&
        item.userType() == type->typeId()) {
         type->listAppend(list, item);
         return true;
@@ -703,7 +707,7 @@ QmlAttachedPropertiesFunc QmlMetaType::attachedPropertiesFuncById(int id)
     return data->types.at(id)->attachedPropertiesFunction();
 }
 
-QmlAttachedPropertiesFunc 
+QmlAttachedPropertiesFunc
 QmlMetaType::attachedPropertiesFunc(const QByteArray &name)
 {
     QReadLocker lock(metaTypeDataLock());
@@ -876,8 +880,8 @@ QVariant QmlMetaType::listAt(const QVariant &v, int idx)
         return 0;
 }
 
-/*! 
-    A custom string convertor allows you to specify a function pointer that 
+/*!
+    A custom string convertor allows you to specify a function pointer that
     returns a variant of \a type. For example, if you have written your own icon
     class that you want to support as an object property assignable in QML:
 
@@ -902,7 +906,7 @@ void QmlMetaType::registerCustomStringConverter(int type, StringConverter conver
 }
 
 /*!
-    Return the custom string converter for \a type, previously installed through 
+    Return the custom string converter for \a type, previously installed through
     registerCustomStringConverter()
  */
 QmlMetaType::StringConverter QmlMetaType::customStringConverter(int type)

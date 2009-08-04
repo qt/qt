@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxVisualItemModel;
+class QFxVisualModel;
 class QFxListViewAttached;
 class QFxListViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable

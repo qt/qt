@@ -71,7 +71,6 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(Qt::TextElideMode elide READ elideMode WRITE setElideMode)
     Q_PROPERTY(QString activeLink READ activeLink)
-    Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
 
 public:
     QFxText(QFxItem *parent=0);
@@ -80,8 +79,8 @@ public:
     enum HAlignment { AlignLeft = Qt::AlignLeft,
                        AlignRight = Qt::AlignRight,
                        AlignHCenter = Qt::AlignHCenter };
-    enum VAlignment { AlignTop = Qt::AlignTop, 
-                       AlignBottom = Qt::AlignBottom, 
+    enum VAlignment { AlignTop = Qt::AlignTop,
+                       AlignBottom = Qt::AlignBottom,
                        AlignVCenter = Qt::AlignVCenter };
     enum TextStyle { Normal,
                       Outline,
@@ -122,9 +121,6 @@ public:
 
     QString activeLink() const;
 
-    bool smoothTransform() const;
-    void setSmoothTransform(bool);
-
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
     virtual void componentComplete();
@@ -141,7 +137,7 @@ protected:
     QFxText(QFxTextPrivate &dd, QFxItem *parent);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    virtual void geometryChanged(const QRectF &newGeometry, 
+    virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
 private:

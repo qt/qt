@@ -94,12 +94,12 @@ struct StaticQtMetaObject : public QObject
 };
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
-: rootContext(0), currentBindContext(0), currentExpression(0), 
+: rootContext(0), currentBindContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0),
   scriptEngine(this), rootComponent(0), networkAccessManager(0), typeManager(e),
   uniqueId(1)
 {
-    QScriptValue qtObject = 
+    QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 }
@@ -115,7 +115,7 @@ QmlEnginePrivate::~QmlEnginePrivate()
     delete networkAccessManager;
     networkAccessManager = 0;
 
-    for(int ii = 0; ii < bindValues.count(); ++ii) 
+    for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);
     for(int ii = 0; ii < parserStatus.count(); ++ii)
         clear(parserStatus[ii]);
@@ -126,7 +126,7 @@ void QmlEnginePrivate::clear(SimpleList<QmlBinding> &bvs)
     for (int ii = 0; ii < bvs.count; ++ii) {
         QmlBinding *bv = bvs.at(ii);
         if(bv) {
-            QmlBindingPrivate *p = 
+            QmlBindingPrivate *p =
                 static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bv));
             p->mePtr = 0;
         }
@@ -138,7 +138,7 @@ void QmlEnginePrivate::clear(SimpleList<QmlParserStatus> &pss)
 {
     for (int ii = 0; ii < pss.count; ++ii) {
         QmlParserStatus *ps = pss.at(ii);
-        if(ps) 
+        if(ps)
             ps->d = 0;
     }
     pss.clear();
@@ -166,7 +166,7 @@ void QmlEnginePrivate::init()
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
 
-    if (QCoreApplication::instance()->thread() == q->thread() && 
+    if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {
         qmlEngineDebugServer();
         isDebugging = true;
@@ -196,7 +196,7 @@ QmlEnginePrivate::queryObject(const QString &propName,
 {
     QScriptClass::QueryFlags rv = 0;
 
-    QmlMetaProperty prop(obj, propName);
+    QmlMetaProperty prop(obj, propName, rootContext);
     if (prop.type() == QmlMetaProperty::Invalid) {
         QPair<const QMetaObject *, QString> key =
             qMakePair(obj->metaObject(), propName);
@@ -279,14 +279,14 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
     \brief The QmlEngine class provides an environment for instantiating QML components.
     \mainclass
 
-    Each QML component is instantiated in a QmlContext.  QmlContext's are 
+    Each QML component is instantiated in a QmlContext.  QmlContext's are
     essential for passing data to QML components.  In QML, contexts are arranged
     hierarchically and this hierarchy is managed by the QmlEngine.
 
     Prior to creating any QML components, an application must have created a
     QmlEngine to gain access to a QML context.  The following example shows how
     to create a simple Text item.
-    
+
     \code
     QmlEngine engine;
     QmlComponent component(&engine, "Text { text: \"Hello world!\" }");
@@ -317,7 +317,7 @@ QmlEngine::QmlEngine(QObject *parent)
 /*!
     Destroys the QmlEngine.
 
-    Any QmlContext's created on this engine will be invalidated, but not 
+    Any QmlContext's created on this engine will be invalidated, but not
     destroyed (unless they are parented to the QmlEngine object).
 */
 QmlEngine::~QmlEngine()
@@ -340,13 +340,13 @@ void QmlEngine::clearComponentCache()
 }
 
 /*!
-    Returns the engine's root context.  
+    Returns the engine's root context.
 
-    The root context is automatically created by the QmlEngine.  Data that 
+    The root context is automatically created by the QmlEngine.  Data that
     should be available to all QML component instances instantiated by the
     engine should be put in the root context.
 
-    Additional data that should only be available to a subset of component 
+    Additional data that should only be available to a subset of component
     instances should be added to sub-contexts parented to the root context.
 */
 QmlContext *QmlEngine::rootContext()
@@ -374,13 +374,13 @@ void QmlEngine::setNetworkAccessManager(QNetworkAccessManager *network)
     Returns the common QNetworkAccessManager used by all QML elements
     instantiated by this engine.
 
-    The default implements no caching, cookiejar, etc., just a default 
+    The default implements no caching, cookiejar, etc., just a default
     QNetworkAccessManager.
 */
 QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
-    if (!d->networkAccessManager) 
+    if (!d->networkAccessManager)
         d->networkAccessManager = new QNetworkAccessManager;
     return d->networkAccessManager;
 }
@@ -389,7 +389,7 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
     Return the base URL for this engine.  The base URL is only used to resolve
     components when a relative URL is passed to the QmlComponent constructor.
 
-    If a base URL has not been explicitly set, this method returns the 
+    If a base URL has not been explicitly set, this method returns the
     application's current working directory.
 
     \sa setBaseUrl()
@@ -405,7 +405,7 @@ QUrl QmlEngine::baseUrl() const
 }
 
 /*!
-    Set the  base URL for this engine to \a url.  
+    Set the  base URL for this engine to \a url.
 
     \sa baseUrl()
 */
@@ -427,7 +427,7 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
 
     QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
 
-    QmlSimpleDeclarativeData *data = 
+    QmlSimpleDeclarativeData *data =
         static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
 
     return data?data->context:0;
@@ -444,7 +444,7 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 {
     QObjectPrivate *priv = QObjectPrivate::get(object);
 
-    QmlSimpleDeclarativeData *data = 
+    QmlSimpleDeclarativeData *data =
         static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
 
     if (data && data->context) {
@@ -487,7 +487,7 @@ QmlEngine *qmlEngine(const QObject *obj)
 
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool create)
 {
-    QmlExtendedDeclarativeData *edata = 
+    QmlExtendedDeclarativeData *edata =
         QmlExtendedDeclarativeData::get(const_cast<QObject *>(object), true);
 
     QObject *rv = edata->attachedProperties.value(id);
@@ -500,7 +500,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 
     rv = pf(const_cast<QObject *>(object));
 
-    if (rv) 
+    if (rv)
         edata->attachedProperties.insert(id, rv);
 
     return rv;
@@ -508,7 +508,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 
 void QmlSimpleDeclarativeData::destroyed(QObject *object)
 {
-    if (context) 
+    if (context)
         context->d_func()->contextObjects.removeAll(object);
 }
 
@@ -537,7 +537,7 @@ QScriptEngine *QmlEngine::scriptEngine()
     to the special needs of QML requiring more functionality than a standard
     QtScript QObject.
 */
-QScriptValue QmlEnginePrivate::qmlScriptObject(QObject* object, 
+QScriptValue QmlEnginePrivate::qmlScriptObject(QObject* object,
                                                QmlEngine* engine)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
@@ -597,12 +597,12 @@ QScriptValue QmlEnginePrivate::qmlScriptObject(QObject* object,
     If you want to just create an arbitrary string of QML, instead of
     loading a qml file, consider the createQmlObject() function.
 */
-QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt, 
+QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
                                                QScriptEngine *engine)
 {
     QmlComponentJS* c;
 
-    QmlEnginePrivate *activeEnginePriv = 
+    QmlEnginePrivate *activeEnginePriv =
         static_cast<QmlScriptEngine*>(engine)->p;
     QmlEngine* activeEngine = activeEnginePriv->q_func();
 
@@ -646,11 +646,11 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
 */
 QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    QmlEnginePrivate *activeEnginePriv = 
+    QmlEnginePrivate *activeEnginePriv =
         static_cast<QmlScriptEngine*>(engine)->p;
     QmlEngine* activeEngine = activeEnginePriv->q_func();
 
-    if(ctxt->argumentCount() < 2) 
+    if(ctxt->argumentCount() < 2)
         return engine->nullValue();
 
     QString qml = ctxt->argument(0).toString();
@@ -664,7 +664,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         qWarning() <<"QmlEngine::createQmlObject():";
-        foreach (const QmlError &error, errors) 
+        foreach (const QmlError &error, errors)
             qWarning() << "    " << error;
 
         return engine->nullValue();
@@ -675,7 +675,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         qWarning() <<"QmlEngine::createQmlObject():";
-        foreach (const QmlError &error, errors) 
+        foreach (const QmlError &error, errors)
             qWarning() << "    " << error;
 
         return engine->nullValue();
@@ -690,14 +690,14 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
 }
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
-: QScriptClass(QmlEnginePrivate::getScriptEngine(bindengine)), 
+: QScriptClass(QmlEnginePrivate::getScriptEngine(bindengine)),
   engine(bindengine)
 {
 }
 
 QVariant QmlScriptClass::toVariant(QmlEngine *engine, const QScriptValue &val)
 {
-    QmlEnginePrivate *ep = 
+    QmlEnginePrivate *ep =
         static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
 
     QScriptClass *sc = val.scriptClass();
@@ -708,12 +708,12 @@ QVariant QmlScriptClass::toVariant(QmlEngine *engine, const QScriptValue &val)
     } else if (sc == ep->objectClass) {
         return QVariant::fromValue(val.data().toQObject());
     } else if (sc == ep->valueTypeClass) {
-        QmlValueTypeReference ref = 
+        QmlValueTypeReference ref =
             qvariant_cast<QmlValueTypeReference>(val.data().toVariant());
 
         if (!ref.object)
             return QVariant();
-        
+
         QMetaProperty p = ref.object->metaObject()->property(ref.property);
         return p.read(ref.object);
     }
@@ -735,13 +735,13 @@ QmlContextScriptClass::~QmlContextScriptClass()
 {
 }
 
-QScriptClass::QueryFlags 
+QScriptClass::QueryFlags
 QmlContextScriptClass::queryProperty(const QScriptValue &object,
                                          const QScriptString &name,
                                          QueryFlags flags, uint *id)
 {
     Q_UNUSED(flags);
-    QmlContext *bindContext = 
+    QmlContext *bindContext =
         static_cast<QmlContext*>(object.data().toQObject());
     QueryFlags rv = 0;
 
@@ -755,11 +755,11 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
     if (bindContext->d_func()->propertyNames.contains(propName)) {
         rv |= HandlesReadAccess;
         *id = VariantPropertyId;
-    } 
+    }
 
     for (int ii = 0; !rv && ii < bindContext->d_func()->defaultObjects.count(); ++ii) {
         rv = QmlEnginePrivate::get(engine)->queryObject(propName, id, bindContext->d_func()->defaultObjects.at(ii));
-        if (rv) 
+        if (rv)
             *id |= (ii << 24);
     }
 
@@ -767,10 +767,10 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
 }
 
 QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
-                                                 const QScriptString &name, 
+                                                 const QScriptString &name,
                                                  uint id)
 {
-    QmlContext *bindContext = 
+    QmlContext *bindContext =
         static_cast<QmlContext*>(object.data().toQObject());
 
 #ifdef PROPERTY_DEBUG
@@ -829,7 +829,7 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
 {
     Q_UNUSED(name);
 
-    QmlContext *bindContext = 
+    QmlContext *bindContext =
         static_cast<QmlContext*>(object.data().toQObject());
 
 #ifdef PROPERTY_DEBUG
@@ -863,12 +863,13 @@ QmlValueTypeScriptClass::~QmlValueTypeScriptClass()
 {
 }
 
-QmlValueTypeScriptClass::QueryFlags 
+QmlValueTypeScriptClass::QueryFlags
 QmlValueTypeScriptClass::queryProperty(const QScriptValue &object,
                                        const QScriptString &name,
                                        QueryFlags flags, uint *id)
 {
-    QmlValueTypeReference ref = 
+    Q_UNUSED(flags);
+    QmlValueTypeReference ref =
         qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
 
     if (!ref.object)
@@ -883,7 +884,7 @@ QmlValueTypeScriptClass::queryProperty(const QScriptValue &object,
 
     QMetaProperty prop = ref.object->metaObject()->property(idx);
 
-    QmlValueTypeScriptClass::QueryFlags rv = 
+    QmlValueTypeScriptClass::QueryFlags rv =
         QmlValueTypeScriptClass::HandlesReadAccess;
     if (prop.isWritable())
         rv |= QmlValueTypeScriptClass::HandlesWriteAccess;
@@ -892,10 +893,11 @@ QmlValueTypeScriptClass::queryProperty(const QScriptValue &object,
 }
 
 QScriptValue QmlValueTypeScriptClass::property(const QScriptValue &object,
-                                               const QScriptString &name, 
+                                               const QScriptString &name,
                                                uint id)
 {
-    QmlValueTypeReference ref = 
+    Q_UNUSED(name);
+    QmlValueTypeReference ref =
         qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
 
     if (!ref.object)
@@ -914,7 +916,8 @@ void QmlValueTypeScriptClass::setProperty(QScriptValue &object,
                                           uint id,
                                           const QScriptValue &value)
 {
-    QmlValueTypeReference ref = 
+    Q_UNUSED(name);
+    QmlValueTypeReference ref =
         qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
 
     if (!ref.object)
@@ -983,7 +986,7 @@ QScriptClass::QueryFlags QmlObjectScriptClass::queryProperty(const QScriptValue 
 }
 
 QScriptValue QmlObjectScriptClass::property(const QScriptValue &object,
-                                const QScriptString &name, 
+                                const QScriptString &name,
                                 uint id)
 {
     QObject *obj = object.data().toQObject();
@@ -993,7 +996,7 @@ QScriptValue QmlObjectScriptClass::property(const QScriptValue &object,
     qWarning() << "QmlObject Property:" << propName << obj;
 #endif
 
-    QScriptValue rv = 
+    QScriptValue rv =
         QmlEnginePrivate::get(engine)->propertyObject(name, obj, id);
     if (rv.isValid()) {
 #ifdef PROPERTY_DEBUG
@@ -1227,7 +1230,7 @@ void QmlEnginePrivate::Imports::setBaseUrl(const QUrl& url)
 */
 void QmlEngine::addImportPath(const QString& path)
 {
-    if (qmlImportTrace()) 
+    if (qmlImportTrace())
         qDebug() << "QmlEngine::addImportPath" << path;
     Q_D(QmlEngine);
     d->fileImportPath.prepend(path);
@@ -1250,7 +1253,7 @@ void QmlEngine::addImportPath(const QString& path)
 bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, const QString& version, QmlScriptParser::Import::Type importType) const
 {
     bool ok = imports->d->add(imports->base,uri,prefix,version,importType,fileImportPath);
-    if (qmlImportTrace()) 
+    if (qmlImportTrace())
         qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << version << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;
 }
@@ -1279,7 +1282,7 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
         if (!t) t = QmlMetaType::qmlType(type);
         if (t) {
             if (type_return) *type_return = t;
-            if (qmlImportTrace()) 
+            if (qmlImportTrace())
                 qDebug() << "QmlEngine::resolveType" << type << "= (builtin)";
             return true;
         }
@@ -1291,12 +1294,12 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
 
         if (url.isValid()) {
             if (url_return) *url_return = url;
-            if (qmlImportTrace()) 
+            if (qmlImportTrace())
                 qDebug() << "QmlEngine::resolveType" << type << "=" << url;
             return true;
         }
     }
-    if (qmlImportTrace()) 
+    if (qmlImportTrace())
         qDebug() << "QmlEngine::resolveType" << type << " not found";
     return false;
 }

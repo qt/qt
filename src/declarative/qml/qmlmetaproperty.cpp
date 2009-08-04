@@ -56,31 +56,27 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-class QMetaPropertyEx : public QMetaProperty
+QmlMetaObjectCache::Data 
+QmlMetaObjectCache::property(const QString &name, const QMetaObject *metaObject)
 {
-public:
-    QMetaPropertyEx()
-        : propertyType(-1) {}
+    QHash<QString, Data>::ConstIterator iter = properties.find(name);
+    if (iter != properties.end()) {
+        return *iter;
+    } else {
+        Data cacheData = { -1, -1 };
 
-    QMetaPropertyEx(const QMetaProperty &p)
-        : QMetaProperty(p), propertyType(p.userType()) {}
+        int idx = metaObject->indexOfProperty(name.toUtf8().constData());
+        if (idx == -1)
+            return cacheData;
 
-    QMetaPropertyEx(const QMetaPropertyEx &o)
-        : QMetaProperty(o),
-          propertyType(o.propertyType) {}
+        QMetaProperty property = metaObject->property(idx);
+        cacheData.propType = property.userType();
+        cacheData.coreIndex = idx;
+        properties.insert(name, cacheData);
 
-    QMetaPropertyEx &operator=(const QMetaPropertyEx &o)
-    {
-        static_cast<QMetaProperty *>(this)->operator=(o);
-        propertyType = o.propertyType;
-        return *this;
+        return cacheData;
     }
-
-    private:
-    friend class QmlMetaProperty;
-    int propertyType;
-};
-
+}
 
 /*!
     \class QmlMetaProperty
@@ -111,16 +107,13 @@ struct CachedPropertyData {
     int coreIdx;
 };
 
-// ### not thread safe
-static QHash<const QMetaObject *, CachedPropertyData> qmlCacheDefProp;
-
 /*!
     Creates a QmlMetaProperty for the default property of \a obj. If there is no
     default property, an invalid QmlMetaProperty will be created.
  */
 QmlMetaProperty::QmlMetaProperty(QObject *obj)
 {
-    initDefault(obj);
+    d->initDefault(obj);
 }
 
 /*!
@@ -132,32 +125,24 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
     d->context = ctxt;
-    initDefault(obj);
+    d->initDefault(obj);
 }
 
-void QmlMetaProperty::initDefault(QObject *obj)
+/*!
+    Initialize from the default property of \a obj
+*/
+void QmlMetaPropertyPrivate::initDefault(QObject *obj)
 {
     if (!obj)
         return;
 
-    d->object = obj;
-    QHash<const QMetaObject *, CachedPropertyData>::ConstIterator iter =
-        qmlCacheDefProp.find(obj->metaObject());
-    if (iter != qmlCacheDefProp.end()) {
-        d->name = iter->name;
-        d->propType = iter->propType;
-        d->coreIdx = iter->coreIdx;
-    } else {
-        QMetaPropertyEx p(QmlMetaType::defaultProperty(obj));
-        d->name = QLatin1String(p.name());
-        d->propType = p.propertyType;
-        d->coreIdx = p.propertyIndex();
-        if (!QObjectPrivate::get(obj)->metaObject)
-            qmlCacheDefProp.insert(obj->metaObject(), CachedPropertyData(d->name, d->propType, d->coreIdx));
-    }
-    if (!d->name.isEmpty()) {
-        d->type = Property | Default;
-    }
+    object = obj;
+    QMetaProperty p = QmlMetaType::defaultProperty(obj);
+    name = QLatin1String(p.name());
+    propType = p.userType();;
+    coreIdx = p.propertyIndex();
+    if (!name.isEmpty()) 
+        type = QmlMetaProperty::Property | QmlMetaProperty::Default;
 }
 
 /*!
@@ -171,22 +156,20 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, int idx, QmlContext *ctxt)
     d->context = ctxt;
     d->object = obj;
     d->type = Property;
-    QMetaPropertyEx p(obj->metaObject()->property(idx));
-    d->propType = p.propertyType;
+    QMetaProperty p = obj->metaObject()->property(idx);
+    d->propType = p.userType();
     d->coreIdx = idx;
     if (p.name() != 0)
         d->name = QLatin1String(p.name());
 }
 
-// ### Not thread safe!!!!
-static QHash<const QMetaObject *, QHash<QString, CachedPropertyData> > qmlCacheProps;
 /*!
     Creates a QmlMetaProperty for the property \a name of \a obj.
  */
 QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name)
 : d(new QmlMetaPropertyPrivate)
 {
-    initProperty(obj, name);
+    d->initProperty(obj, name);
 }
 
 /*!
@@ -197,51 +180,62 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name, QmlContext *
 : d(new QmlMetaPropertyPrivate)
 {
     d->context = ctxt;
-    initProperty(obj, name);
+    d->initProperty(obj, name);
 }
 
-void QmlMetaProperty::initProperty(QObject *obj, const QString &name)
+void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 {
-    d->name = name;
-    d->object = obj;
+    QmlEnginePrivate *enginePrivate = 0;
+    if (context && context->engine())
+        enginePrivate = QmlEnginePrivate::get(context->engine());
+
+    this->name = name;
+    object = obj;
+
     if (name.isEmpty() || !obj)
         return;
 
     if (name.at(0).isUpper()) {
         // Attached property
-        d->attachedFunc = QmlMetaType::attachedPropertiesFuncId(name.toLatin1());
-        if (d->attachedFunc != -1)
-            d->type  = Property | Attached;
+        attachedFunc = QmlMetaType::attachedPropertiesFuncId(name.toLatin1());
+        if (attachedFunc != -1)
+            type  = QmlMetaProperty::Property | QmlMetaProperty::Attached;
         return;
-    } else if (name.count() >= 3 && name.startsWith(QLatin1String("on")) && name.at(2).isUpper()) {
+
+    } else if (name.count() >= 3 && 
+               name.at(0) == QChar(QLatin1Char('o')) && 
+               name.at(1) == QChar(QLatin1Char('n')) && 
+               name.at(2).isUpper()) {
         // Signal
         QString signalName = name.mid(2);
         signalName[0] = signalName.at(0).toLower();
 
-        d->findSignalInt(obj, signalName);
-        if (d->signal.signature() != 0) {
-            d->type = SignalProperty;
+        findSignalInt(obj, signalName);
+        if (signal.signature() != 0) {
+            type = QmlMetaProperty::SignalProperty;
             return;
         }
     } 
 
     // Property
-    QHash<QString, CachedPropertyData> &props = qmlCacheProps[obj->metaObject()];
-    QHash<QString, CachedPropertyData>::ConstIterator iter = props.find(name);
-    if (iter != props.end()) {
-        d->name = iter->name;
-        d->propType = iter->propType;
-        d->coreIdx = iter->coreIdx;
+    if (!QObjectPrivate::get(obj)->metaObject && enginePrivate) {
+        // Can cache
+        QmlMetaObjectCache &cache = 
+            enginePrivate->propertyCache[obj->metaObject()];
+        QmlMetaObjectCache::Data data = cache.property(name, obj->metaObject());
+        if (data.coreIndex != -1) {
+            type = QmlMetaProperty::Property;
+            propType = data.propType;
+            coreIdx = data.coreIndex;
+        }
     } else {
-        QMetaPropertyEx p = QmlMetaType::property(obj, name.toLatin1().constData());
-        d->name = QLatin1String(p.name());
-        d->propType = p.propertyType;
-        d->coreIdx = p.propertyIndex();
-        if (!QObjectPrivate::get(obj)->metaObject)
-            props.insert(name, CachedPropertyData(d->name, d->propType, d->coreIdx));
+        // Can't cache
+        QMetaProperty p = QmlMetaType::property(obj, name.toUtf8().constData());
+        propType = p.userType();
+        coreIdx = p.propertyIndex();
+        if (p.name())
+            type = QmlMetaProperty::Property;
     }
-    if (!d->name.isEmpty())
-        d->type = Property;
 }
 
 /*!
@@ -1037,18 +1031,18 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
 
         QmlValueType *valueType = qmlValueTypes()->valueTypes[p.type()];
 
-        QMetaPropertyEx p2(valueType->metaObject()->property(valueTypeIdx));
+        QMetaProperty p2(valueType->metaObject()->property(valueTypeIdx));
 
         d->name = QLatin1String(p2.name());
-        d->propType = p2.propertyType;
+        d->propType = p2.userType();
         d->coreIdx = coreIdx;
         d->valueTypeIdx = valueTypeIdx;
         d->valueTypeId = p.type();
 
     } else if (d->type & Property) {
-        QMetaPropertyEx p(obj->metaObject()->property(id));
+        QMetaProperty p(obj->metaObject()->property(id));
         d->name = QLatin1String(p.name());
-        d->propType = p.propertyType;
+        d->propType = p.userType();
         d->coreIdx = id;
     } else if (d->type & SignalProperty) {
         d->signal = obj->metaObject()->method(id);
@@ -1086,7 +1080,7 @@ QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj,
         QmlMetaProperty prop(object, pathName);
 
         if (jj == path.count() - 2 && 
-            prop.propertyType() < QVariant::UserType &&
+            prop.propertyType() < (int)QVariant::UserType &&
             qmlValueTypes()->valueTypes[prop.propertyType()]) {
             // We're now at a value type property
             QObject *typeObject = 

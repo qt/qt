@@ -71,7 +71,7 @@ class QFxImagePrivate : public QFxItemPrivate
 
 public:
     QFxImagePrivate()
-      : scaleGrid(0), smooth(false),
+      : scaleGrid(0),
         fillMode(QFxImage::Stretch),
         status(QFxImage::Null), sciReply(0),
         progress(0.0)
@@ -94,7 +94,6 @@ public:
 
     QFxScaleGrid *scaleGrid;
     QPixmap pix;
-    bool smooth : 1;
 
     QFxImage::FillMode fillMode;
     QFxImage::Status status;

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXFOCUSREALM_H
-#define QFXFOCUSREALM_H
+#ifndef QFXFOCUSSCOPE_H
+#define QFXFOCUSSCOPE_H
 
 #include <QtDeclarative/qfxitem.h>
 
@@ -50,18 +50,18 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QFxFocusRealm : public QFxItem
+class Q_DECLARATIVE_EXPORT QFxFocusScope : public QFxItem
 {
     Q_OBJECT
 public:
-    QFxFocusRealm(QFxItem *parent=0);
-    virtual ~QFxFocusRealm();
+    QFxFocusScope(QFxItem *parent=0);
+    virtual ~QFxFocusScope();
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxFocusRealm)
+QML_DECLARE_TYPE(QFxFocusScope)
 
 QT_END_HEADER
 
-#endif // QFXFOCUSREALM_H
+#endif // QFXFOCUSSCOPE_H

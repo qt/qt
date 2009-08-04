@@ -73,12 +73,12 @@ QFxFlowView::QFxFlowView()
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
-QFxVisualItemModel *QFxFlowView::model() const
+QFxVisualModel *QFxFlowView::model() const
 {
     return m_model;
 }
 
-void QFxFlowView::setModel(QFxVisualItemModel *m)
+void QFxFlowView::setModel(QFxVisualModel *m)
 {
     m_model = m;
     refresh();

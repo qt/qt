@@ -495,7 +495,7 @@
     For an item to have key focus in QML it is required that:
 
     \list
-    \o If there is a FocusRealm ancestor of the component that it has focus as well.
+    \o If there is a FocusScope ancestor of the component that it has focus as well.
     \o That it is the most recent component within the focus realms descendent's
         to receive focus
     \endlist
@@ -505,7 +505,7 @@
     the components parent, which in turn will pass keys it doesn't handle up to its
     own ancestors.
 
-    Some components such as ListView components are also FocusRealm components, as they
+    Some components such as ListView components are also FocusScope components, as they
     handle focus among the child list items.
 
     At this stage of the tutorial it is sufficient to use the setting of 'focus'

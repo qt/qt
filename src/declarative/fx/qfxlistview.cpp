@@ -265,7 +265,7 @@ public:
     }
 
     bool isValid() const {
-        return model && model->count() && (!ownModel || model->delegate());
+        return model && model->count() && model->isValid();
     }
 
     int snapIndex() {
@@ -357,7 +357,7 @@ public:
     virtual void fixupY();
     virtual void fixupX();
 
-    QFxVisualItemModel *model;
+    QFxVisualModel *model;
     QVariant modelVariant;
     QList<FxListItem*> visibleItems;
     QHash<QFxItem*,int> unrequestedItems;
@@ -697,9 +697,11 @@ void QFxListViewPrivate::updateSections()
         if (visibleIndex > 0)
             prevSection = sectionAt(visibleIndex-1);
         for (int i = 0; i < visibleItems.count(); ++i) {
-            QFxListViewAttached *attached = visibleItems.at(i)->attached;
-            attached->setPrevSection(prevSection);
-            prevSection = attached->section();
+            if (visibleItems.at(i)->index != -1) {
+                QFxListViewAttached *attached = visibleItems.at(i)->attached;
+                attached->setPrevSection(prevSection);
+                prevSection = attached->section();
+            }
         }
     }
 }
@@ -908,8 +910,8 @@ void QFxListView::setModel(const QVariant &model)
     d->clear();
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
-    QFxVisualItemModel *vim = 0;
-    if (object && (vim = qobject_cast<QFxVisualItemModel *>(object))) {
+    QFxVisualModel *vim = 0;
+    if (object && (vim = qobject_cast<QFxVisualModel *>(object))) {
         if (d->ownModel) {
             delete d->model;
             d->ownModel = false;
@@ -917,10 +919,11 @@ void QFxListView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualItemModel(qmlContext(this));
+            d->model = new QFxVisualDataModel(qmlContext(this));
             d->ownModel = true;
         }
-        d->model->setModel(model);
+        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+            dataModel->setModel(model);
     }
     if (d->model) {
         if (d->currentIndex >= d->model->count() || d->currentIndex < 0)
@@ -947,19 +950,26 @@ void QFxListView::setModel(const QVariant &model)
 QmlComponent *QFxListView::delegate() const
 {
     Q_D(const QFxListView);
-    return d->model ? d->model->delegate() : 0;
+    if (d->model) {
+        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+            return dataModel->delegate();
+    }
+
+    return 0;
 }
 
 void QFxListView::setDelegate(QmlComponent *delegate)
 {
     Q_D(QFxListView);
     if (!d->ownModel) {
-        d->model = new QFxVisualItemModel(qmlContext(this));
+        d->model = new QFxVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
-    d->model->setDelegate(delegate);
-    d->updateCurrent(d->currentIndex);
-    refill();
+    if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model)) {
+        dataModel->setDelegate(delegate);
+        d->updateCurrent(d->currentIndex);
+        refill();
+    }
 }
 
 /*!
@@ -1528,6 +1538,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
             d->updateCurrent(qMin(modelIndex, d->model->count()-1));
         }
         d->layout();
+        d->updateSections();
         emit countChanged();
         return;
     }
@@ -1590,6 +1601,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
     } else {
         // Correct the positioning of the items
         d->layout();
+        d->updateSections();
     }
 
     emit countChanged();

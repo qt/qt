@@ -46,13 +46,13 @@ QT_BEGIN_NAMESPACE
 QmlValueTypeFactory::QmlValueTypeFactory()
 {
     // ### Optimize
-    for (int ii = 0; ii < (QVariant::UserType - 1); ++ii)
+    for (unsigned int ii = 0; ii < (QVariant::UserType - 1); ++ii)
         valueTypes[ii] = valueType(ii);
 }
 
 QmlValueTypeFactory::~QmlValueTypeFactory()
 {
-    for (int ii = 0; ii < (QVariant::UserType - 1); ++ii)
+    for (unsigned int ii = 0; ii < (QVariant::UserType - 1); ++ii)
         delete valueTypes[ii];
 }
 
