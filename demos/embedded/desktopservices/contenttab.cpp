@@ -55,7 +55,7 @@
 
 // CONSTRUCTORS & DESTRUCTORS
 ContentTab::ContentTab(QWidget *parent) :
-    QListWidget(parent)
+        QListWidget(parent)
 {
     setDragEnabled(false);
     setIconSize(QSize(45, 45));
@@ -113,19 +113,19 @@ QUrl ContentTab::itemUrl(QListWidgetItem *item)
 
 void ContentTab::keyPressEvent(QKeyEvent *event)
 {
-    switch(event->key()) {
+    switch (event->key()) {
     case Qt::Key_Up:
-        if(currentRow() == 0) {
-            setCurrentRow(count()-1);
+        if (currentRow() == 0) {
+            setCurrentRow(count() - 1);
         } else {
-            setCurrentRow(currentRow()-1);
+            setCurrentRow(currentRow() - 1);
         }
         break;
     case Qt::Key_Down:
-        if(currentRow() == (count()-1)) {
+        if (currentRow() == (count() - 1)) {
             setCurrentRow(0);
         } else {
-            setCurrentRow(currentRow()+1);
+            setCurrentRow(currentRow() + 1);
         }
         break;
     case Qt::Key_Select:
@@ -139,14 +139,14 @@ void ContentTab::keyPressEvent(QKeyEvent *event)
 void ContentTab::handleErrorInOpen(QListWidgetItem *item)
 {
     Q_UNUSED(item);
-    QMessageBox::warning( this, tr("Operation Failed"), tr("Unkown error!"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Operation Failed"), tr("Unkown error!"), QMessageBox::Close);
 }
 
 // NEW SLOTS
 void ContentTab::openItem(QListWidgetItem *item)
 {
     bool ret = QDesktopServices::openUrl(itemUrl(item));
-    if(!ret)
+    if (!ret)
         handleErrorInOpen(item);
 }
 
