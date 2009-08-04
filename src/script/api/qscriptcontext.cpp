@@ -357,8 +357,11 @@ bool QScriptContext::isCalledAsConstructor() const
 
     if (returnPC[-JSC::op_construct_length].u.opcode == frame->interpreter()->getOpcode(JSC::op_construct)) {
         //We are maybe called from the op_construct opcode which has 6 opperands.
-        //But we need to check we are not called from op_call with 4 opperands (by checking the argc operand)
-        return returnPC[-4].u.operand == frame->argumentCount();
+        //But we need to check we are not called from op_call with 4 opperands
+
+        //we make sure that the returnPC[-1] (thisRegister) is smaller than the returnPC[-3] (registerOffset)
+        //as if it was an op_call, the returnPC[-1] would be the registerOffset, bigger than returnPC[-3] (funcRegister)
+        return returnPC[-1].u.operand < returnPC[-3].u.operand;
     }
     return false;
 }
