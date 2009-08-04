@@ -227,7 +227,7 @@ Rect {
         autoHighlight: true
         focus: false
     }
-    FocusRealm {
+    FocusScope {
         id: newContactWrapper
         anchors.fill: contactListView
         opacity: 0
@@ -257,7 +257,7 @@ Rect {
             }
         }
     }
-    FocusRealm {
+    FocusScope {
         id: searchBarWrapper
         height: 30
         anchors.bottom: parent.bottom

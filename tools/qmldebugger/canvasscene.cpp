@@ -104,7 +104,7 @@ void CanvasScene::clone(QTreeWidgetItem *item, QSimpleCanvasItem *me,
             rect->setColor(QColor(0, 0, 0, 10));
         else if(options & QSimpleCanvasItem::IsFocusPanel)
             rect->setColor(QColor(0, 255, 0, 10));
-        else if(options & QSimpleCanvasItem::IsFocusRealm)
+        else if(options & QSimpleCanvasItem::IsFocusScope)
             rect->setColor(QColor(0, 0, 255, 10));
         else
             rect->setColor(QColor(255, 0, 0, 10));
