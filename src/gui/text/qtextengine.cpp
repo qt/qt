@@ -2637,6 +2637,11 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     : justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
       num_chars(0), chars(0), logClusters(0), f(0), fontEngine(0)
 {
+    init(si, font, format);
+}
+
+void QTextItemInt::init(const QScriptItem &si, QFont *font, const QTextCharFormat &format)
+{
     // explicitly initialize flags so that initFontAttributes can be called
     // multiple times on the same TextItem
     flags = 0;

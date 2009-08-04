@@ -73,6 +73,8 @@ public:
 
     QString toString() const;
 
+    bool isEmpty() const;
+
 private:
     void detach();
 

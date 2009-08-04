@@ -5724,14 +5724,18 @@ void QPainter::drawText(const QPointF &p, const QString &str)
 */
 void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
 {
+    Q_D(QPainter);
+    if (!d->engine || staticText.isEmpty() || pen().style() == Qt::NoPen)
+        return;
+
     const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);
 
     QFixed x = QFixed::fromReal(position.x());
-    for (int i=0; i<staticText_d->items.size();++i) {
-        QTextItemInt *gf = staticText_d->items.at(i);
-        if (gf->num_chars != 0)
-            drawTextItem(QPointF(x.toReal(), position.y()), *gf);
-        x += gf->width;
+    for (int i=0; i<staticText_d->itemCount; ++i) {
+        const QTextItemInt &gf = staticText_d->items[i];
+        if (gf.num_chars != 0)
+            drawTextItem(QPointF(x.toReal(), position.y()), gf);
+        x += gf.width;
     }
 }
 

@@ -227,7 +227,13 @@ QString QStaticText::toString() const
     return text();
 }
 
-QStaticTextPrivate::QStaticTextPrivate() : glyphLayoutMemory(0), logClusterMemory(0)
+bool QStaticText::isEmpty() const
+{
+    return d_ptr->text.isEmpty();
+}
+
+QStaticTextPrivate::QStaticTextPrivate()
+        : glyphLayoutMemory(0), logClusterMemory(0), items(0), itemCount(0)
 {
     ref = 1;    
 }
@@ -244,7 +250,7 @@ QStaticTextPrivate::~QStaticTextPrivate()
 {
     delete[] glyphLayoutMemory;
     delete[] logClusterMemory;
-    qDeleteAll(items);
+    delete[] items;
 }
 
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
@@ -256,7 +262,7 @@ void QStaticTextPrivate::init()
 {
     delete[] glyphLayoutMemory;
     delete[] logClusterMemory;
-    qDeleteAll(items);
+    delete[] items;
 
     QStackTextEngine engine(text, font);
     engine.itemize();
@@ -276,6 +282,8 @@ void QStaticTextPrivate::init()
     int numGlyphs = engine.layoutData->used;
     glyphLayoutMemory = new char[QGlyphLayout::spaceNeededForGlyphLayout(numGlyphs)];
     logClusterMemory = new unsigned short[numGlyphs];
+    items = new QTextItemInt[nItems];
+    itemCount = nItems;
 
     char *currentGlyphLayout = glyphLayoutMemory;
     unsigned short *currentLogCluster = logClusterMemory;
@@ -285,29 +293,24 @@ void QStaticTextPrivate::init()
 
         QFont f = engine.font(si);
         if (si.analysis.flags >= QScriptAnalysis::TabOrObject) {
-            QTextItemInt *gf = new QTextItemInt(si, &f);
-            gf->width = si.width;
-            items.append(gf);
+            items[i].width = si.width;
             continue;
         }        
 
-        QTextItemInt *gf = new QTextItemInt(si, &f);
+        items[i].init(si, &f);
+
         QGlyphLayout l = engine.shapedGlyphs(&si);
-        gf->glyphs = l.clone(currentGlyphLayout);
+        items[i].glyphs = l.clone(currentGlyphLayout);
         currentGlyphLayout += QGlyphLayout::spaceNeededForGlyphLayout(l.numGlyphs);
 
-        gf->chars = text.unicode() + si.position;
-        gf->num_chars = engine.length(item);
-        gf->width = si.width;
+        items[i].chars = text.unicode() + si.position;
+        items[i].num_chars = engine.length(item);
+        items[i].width = si.width;
 
         memmove(currentLogCluster, engine.logClusters(&si), sizeof(unsigned short) * l.numGlyphs);
-        gf->logClusters = currentLogCluster;
-        currentLogCluster += l.numGlyphs;
-
-        items.append(gf);
+        items[i].logClusters = currentLogCluster;
+        currentLogCluster += l.numGlyphs;        
     }
-
-    items.squeeze();
 }
 
 QT_END_NAMESPACE

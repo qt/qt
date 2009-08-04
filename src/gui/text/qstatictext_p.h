@@ -68,7 +68,8 @@ public:
     void init();
 
     QAtomicInt ref;
-    QVector<QTextItemInt *> items;
+    QTextItemInt *items;
+    int itemCount;
     QString text;
     QFont font;
     char *glyphLayoutMemory;
