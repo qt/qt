@@ -2031,6 +2031,10 @@ void tst_QScriptValue::getSetProperty()
             "} found");
         QCOMPARE(ret.strictlyEquals(QScriptValue(&eng, true)), true);
     }
+    // should still be deletable from C++
+    object.setProperty("undeletableProperty", QScriptValue());
+    QVERIFY(!object.property("undeletableProperty").isValid());
+    QCOMPARE(object.propertyFlags("undeletableProperty"), 0);
 
   // SkipInEnumeration
     object.setProperty("dontEnumProperty", num, QScriptValue::SkipInEnumeration);
@@ -2071,7 +2075,6 @@ void tst_QScriptValue::getSetProperty()
     QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::ReadOnly | QScriptValue::Undeletable);
 
     object.setProperty("flagProperty", str, QScriptValue::UserRange);
-    QEXPECT_FAIL("", "User-range flags are not retained for normal properties (JSC discards them?)", Continue);
     QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::UserRange);
 
     // using interned strings
@@ -2083,15 +2086,6 @@ void tst_QScriptValue::getSetProperty()
     object.setProperty(foo, num);
     QVERIFY(object.property(foo).strictlyEquals(num));
     QVERIFY(object.property("foo").strictlyEquals(num));
-
-    // can't set length property of native function objects
-    {
-        QScriptValue fun = eng.newFunction(getterSetter, /*length=*/2);
-        for (int x = 0; x < 2; ++x) {
-            QVERIFY(fun.property("length").strictlyEquals(QScriptValue(&eng, 2)));
-            fun.setProperty("length", QScriptValue());
-        }
-    }
 }
 
 void tst_QScriptValue::getSetPrototype()

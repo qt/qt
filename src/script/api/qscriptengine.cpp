@@ -365,7 +365,8 @@ public:
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(JSC::ExecState*,
-                                const JSC::Identifier& propertyName);
+                                const JSC::Identifier& propertyName,
+                                bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
@@ -400,8 +401,8 @@ public:
                      JSC::JSValue value, JSC::PutPropertySlot& slot)
     { originalGlobalObject->JSC::JSGlobalObject::put(exec, propertyName, value, slot); }
     virtual bool deleteProperty(JSC::ExecState* exec,
-                                const JSC::Identifier& propertyName)
-    { return originalGlobalObject->JSC::JSGlobalObject::deleteProperty(exec, propertyName); }
+                                const JSC::Identifier& propertyName, bool checkDontDelete = true)
+    { return originalGlobalObject->JSC::JSGlobalObject::deleteProperty(exec, propertyName, checkDontDelete); }
     virtual bool getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                        unsigned& attributes) const
     { return originalGlobalObject->JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes); }
@@ -727,11 +728,11 @@ void GlobalObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName
 }
 
 bool GlobalObject::deleteProperty(JSC::ExecState* exec,
-                                  const JSC::Identifier& propertyName)
+                                  const JSC::Identifier& propertyName, bool checkDontDelete)
 {
     if (customGlobalObject)
-        return customGlobalObject->deleteProperty(exec, propertyName);
-    return JSC::JSGlobalObject::deleteProperty(exec, propertyName);
+        return customGlobalObject->deleteProperty(exec, propertyName, checkDontDelete);
+    return JSC::JSGlobalObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,

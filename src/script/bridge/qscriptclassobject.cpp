@@ -125,7 +125,8 @@ void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
 }
 
 bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *exec,
-                                         const JSC::Identifier &propertyName)
+                                         const JSC::Identifier &propertyName,
+                                         bool checkDontDelete)
 {
     // ### avoid duplication of put()
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
@@ -141,7 +142,7 @@ bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *
         m_scriptClass->setProperty(scriptObject, scriptName, id, QScriptValue());
         return true;
     }
-    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName);
+    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName, checkDontDelete);
 }
 
 bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC::ExecState *exec,

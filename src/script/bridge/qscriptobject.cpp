@@ -117,11 +117,12 @@ void QScriptObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyNam
 }
 
 bool QScriptObject::deleteProperty(JSC::ExecState* exec,
-                                   const JSC::Identifier& propertyName)
+                                   const JSC::Identifier& propertyName,
+                                   bool checkDontDelete)
 {
     if (!d || !d->delegate)
-        return JSC::JSObject::deleteProperty(exec, propertyName);
-    return d->delegate->deleteProperty(this, exec, propertyName);
+        return JSC::JSObject::deleteProperty(exec, propertyName, checkDontDelete);
+    return d->delegate->deleteProperty(this, exec, propertyName, checkDontDelete);
 }
 
 bool QScriptObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
@@ -203,9 +204,10 @@ void QScriptObjectDelegate::put(QScriptObject* object, JSC::ExecState* exec,
 }
 
 bool QScriptObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState* exec,
-                                           const JSC::Identifier& propertyName)
+                                           const JSC::Identifier& propertyName,
+                                           bool checkDontDelete)
 {
-    return object->JSC::JSObject::deleteProperty(exec, propertyName);
+    return object->JSC::JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 bool QScriptObjectDelegate::getPropertyAttributes(const QScriptObject* object,

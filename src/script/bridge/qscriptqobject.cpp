@@ -1368,7 +1368,8 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
 }
 
 bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec,
-                                     const JSC::Identifier& propertyName)
+                                     const JSC::Identifier& propertyName,
+                                     bool checkDontDelete)
 {
     QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
@@ -1407,7 +1408,7 @@ bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec
         return true;
     }
 
-    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName);
+    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName, checkDontDelete);
 }
 
 bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
@@ -1723,7 +1724,8 @@ void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& 
 }
 
 bool QMetaObjectWrapperObject::deleteProperty(
-    JSC::ExecState *exec, const JSC::Identifier& propertyName)
+    JSC::ExecState *exec, const JSC::Identifier& propertyName,
+    bool checkDontDelete)
 {
     if (propertyName == exec->propertyNames().prototype)
         return false;
@@ -1738,7 +1740,7 @@ bool QMetaObjectWrapperObject::deleteProperty(
             }
         }
     }
-    return JSC::JSObject::deleteProperty(exec, propertyName);
+    return JSC::JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,

@@ -102,7 +102,8 @@ public:
                      const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(QScriptObject*, JSC::ExecState*,
-                                const JSC::Identifier& propertyName);
+                                const JSC::Identifier& propertyName,
+                                bool checkDontDelete = true);
     virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
                                        const JSC::Identifier&,
                                        unsigned&) const;
@@ -291,7 +292,8 @@ public:
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(JSC::ExecState*,
-                                const JSC::Identifier& propertyName);
+                                const JSC::Identifier& propertyName,
+                                bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,

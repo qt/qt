@@ -1786,7 +1786,7 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
     JSC::ExecState *exec = eng_p->currentFrame;
     JSC::JSValue jscValue = eng_p->scriptValueToJSCValue(value);
     if (!jscValue) {
-        JSC::asObject(d->jscValue)->deleteProperty(exec, arrayIndex);
+        JSC::asObject(d->jscValue)->deleteProperty(exec, arrayIndex, /*checkDontDelete=*/false);
     } else {
         if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
             Q_ASSERT_X(false, Q_FUNC_INFO, "property getters and setters not implemented");
@@ -1870,15 +1870,15 @@ void QScriptValue::setProperty(const QScriptString &name,
             // deleting getter/setter
             if ((flags & QScriptValue::PropertyGetter) && (flags & QScriptValue::PropertySetter)) {
                 // deleting both: just delete the property
-                thisObject->deleteProperty(exec, id);
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
             } else if (flags & QScriptValue::PropertyGetter) {
                 // preserve setter, if there is one
-                thisObject->deleteProperty(exec, id);
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
                 if (setter && setter.isObject())
                     thisObject->defineSetter(exec, id, JSC::asObject(setter));
             } else { // flags & QScriptValue::PropertySetter
                 // preserve getter, if there is one
-                thisObject->deleteProperty(exec, id);
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
                 if (getter && getter.isObject())
                     thisObject->defineGetter(exec, id, JSC::asObject(getter));
             }
@@ -1908,10 +1908,10 @@ void QScriptValue::setProperty(const QScriptString &name,
         }
         if (!jscValue) {
             // ### check if it's a getter/setter property
-            thisObject->deleteProperty(exec, id);
+            thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
         } else if (flags != QScriptValue::KeepExistingFlags) {
             if (thisObject->hasOwnProperty(exec, id))
-                thisObject->deleteProperty(exec, id); // ### hmmm - can't we just update the attributes?
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false); // ### hmmm - can't we just update the attributes?
             unsigned attribs = 0;
             if (flags & QScriptValue::ReadOnly)
                 attribs |= JSC::ReadOnly;
