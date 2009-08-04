@@ -8,7 +8,8 @@ SOURCES += \
            extra/qfxflowview.cpp \
            extra/qfxparticles.cpp \
            extra/qmlbehaviour.cpp \
-           extra/qbindablemap.cpp
+           extra/qbindablemap.cpp \
+           extra/qmlfontfamily.cpp
 
 HEADERS += \
            extra/qnumberformat.h \
@@ -21,7 +22,8 @@ HEADERS += \
            extra/qfxflowview.h \
            extra/qfxparticles.h \
            extra/qmlbehaviour.h \
-           extra/qbindablemap.h
+           extra/qbindablemap.h \
+           extra/qmlfontfamily.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns
