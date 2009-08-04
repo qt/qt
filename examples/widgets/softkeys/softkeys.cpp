@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     toggleButton = new QPushButton(tr("Custom softkeys"), this);
     toggleButton->setContextMenuPolicy(Qt::NoContextMenu);
-    toggleButton->setCheckable(true); 
+    toggleButton->setCheckable(true);
 
     pushButton = new QPushButton(tr("Open File Dialog"), this);
     pushButton->setContextMenuPolicy(Qt::NoContextMenu);

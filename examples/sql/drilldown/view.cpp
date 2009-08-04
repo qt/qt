@@ -62,15 +62,15 @@ View::View(const QString &offices, const QString &images, QWidget *parent)
 
     QGraphicsPixmapItem *logo = scene->addPixmap(QPixmap(":/logo.png"));
     logo->setPos(30, 515);
-    
+
 #ifndef Q_OS_SYMBIAN
     setMinimumSize(470, 620);
-    setMaximumSize(470, 620);    
+    setMaximumSize(470, 620);
 #else
-    setDragMode(QGraphicsView::ScrollHandDrag);  
-#endif    
+    setDragMode(QGraphicsView::ScrollHandDrag);
+#endif
 
-   setWindowTitle(tr("Offices World Wide"));   
+   setWindowTitle(tr("Offices World Wide"));
 }
 //! [1]
 
@@ -135,7 +135,7 @@ void View::showInformation(ImageItem *image)
         window->show();
 #else
         window->showFullScreen();
-#endif        
+#endif
     } else {
         InformationWindow *window;
         window = new InformationWindow(id, officeTable, this);
@@ -148,7 +148,7 @@ void View::showInformation(ImageItem *image)
         window->show();
 #else
         window->showFullScreen();
-#endif    
+#endif
         informationWindows.append(window);
     }
 }

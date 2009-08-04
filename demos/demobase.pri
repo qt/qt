@@ -1,6 +1,6 @@
 symbian {
-    RSS_RULES ="group_name=\"QtDemos\";" 
-    
+    RSS_RULES ="group_name=\"QtDemos\";"
+
     vendorinfo = \
         "; Localised Vendor name" \
         "%{\"Nokia, Qt Software\"}" \
