@@ -733,7 +733,24 @@ static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
             QGtk::gtk_file_filter_set_name(gtkFilter, qPrintable(name.isEmpty() ? extensions.join(QLS(", ")) : name));
 
             foreach (const QString &fileExtension, extensions) {
-                QGtk::gtk_file_filter_add_pattern (gtkFilter, qPrintable(fileExtension));
+                // Note Gtk file dialogs are by default case sensitive
+                // and only supports basic glob syntax so we
+                // rewrite .xyz to .[xX][yY][zZ]
+                QString caseInsensitive;
+                for (int i = 0 ; i < fileExtension.length() ; ++i) {
+                    QChar ch = fileExtension.at(i);
+                    if (ch.isLetter()) {
+                        caseInsensitive.append(
+                                QLatin1Char('[') +
+                                ch.toLower() +
+                                ch.toUpper() +
+                                QLatin1Char(']'));
+                    } else {
+                        caseInsensitive.append(ch);
+                    }
+                }
+                QGtk::gtk_file_filter_add_pattern (gtkFilter, qPrintable(caseInsensitive));
+
             }
             QGtk::gtk_file_chooser_add_filter((GtkFileChooser*)gtkFileChooser, gtkFilter);
             if (selectedFilter && (rawfilter == *selectedFilter))
