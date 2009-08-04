@@ -242,8 +242,8 @@ QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
 
 QStaticTextPrivate::~QStaticTextPrivate()
 {
-    delete glyphLayoutMemory;
-    delete logClusterMemory;
+    delete[] glyphLayoutMemory;
+    delete[] logClusterMemory;
     qDeleteAll(items);
 }
 
@@ -254,11 +254,11 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
 
 void QStaticTextPrivate::init()
 {
-    delete glyphLayoutMemory;
-    delete logClusterMemory;
+    delete[] glyphLayoutMemory;
+    delete[] logClusterMemory;
     qDeleteAll(items);
 
-    QStackTextEngine engine = QStackTextEngine(text, font);
+    QStackTextEngine engine(text, font);
     engine.itemize();
 
     engine.option.setTextDirection(QApplication::layoutDirection());
@@ -273,7 +273,7 @@ void QStaticTextPrivate::init()
         levels[i] = engine.layoutData->items[i].analysis.bidiLevel;
     QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
 
-    int numGlyphs = engine.layoutData->glyphLayout.numGlyphs;
+    int numGlyphs = engine.layoutData->used;
     glyphLayoutMemory = new char[QGlyphLayout::spaceNeededForGlyphLayout(numGlyphs)];
     logClusterMemory = new unsigned short[numGlyphs];
 
@@ -289,10 +289,9 @@ void QStaticTextPrivate::init()
             gf->width = si.width;
             items.append(gf);
             continue;
-        }
+        }        
 
         QTextItemInt *gf = new QTextItemInt(si, &f);
-
         QGlyphLayout l = engine.shapedGlyphs(&si);
         gf->glyphs = l.clone(currentGlyphLayout);
         currentGlyphLayout += QGlyphLayout::spaceNeededForGlyphLayout(l.numGlyphs);

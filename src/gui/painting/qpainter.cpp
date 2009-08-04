@@ -5729,12 +5729,8 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     QFixed x = QFixed::fromReal(position.x());
     for (int i=0; i<staticText_d->items.size();++i) {
         QTextItemInt *gf = staticText_d->items.at(i);
-        if (gf->num_chars == 0) {
-            x += gf->width;
-            continue;
-        }
-
-        drawTextItem(QPointF(x.toReal(), position.y()), *gf);
+        if (gf->num_chars != 0)
+            drawTextItem(QPointF(x.toReal(), position.y()), *gf);
         x += gf->width;
     }
 }
