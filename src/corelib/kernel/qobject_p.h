@@ -84,13 +84,12 @@ extern QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set;
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
-class Q_CORE_EXPORT QObjectDeletionNotification
+class Q_CORE_EXPORT QDeclarativeData
 {
 public:
-    virtual ~QObjectDeletionNotification();
+    virtual ~QDeclarativeData();
     virtual void destroyed(QObject *) = 0;
 };
-typedef QObjectDeletionNotification QDeclarativeData; // remove me when Declarative UI updates
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
@@ -186,7 +185,7 @@ public:
 
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
-    QObjectDeletionNotification *deletionNotification;
+    QDeclarativeData *declarativeData;
     QGuard<QObject> *objectGuards;
     int *deleteWatch;
 };

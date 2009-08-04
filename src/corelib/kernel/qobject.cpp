@@ -123,10 +123,10 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 }
 
 QObjectData::~QObjectData() {}
-QObjectDeletionNotification::~QObjectDeletionNotification() {}
+QDeclarativeData::~QDeclarativeData() {}
 
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0), deletionNotification(0), objectGuards(0)
+    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0), declarativeData(0), objectGuards(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -769,8 +769,8 @@ QObject::~QObject()
     }
 
     emit destroyed(this);
-    if (d->deletionNotification)
-        d->deletionNotification->destroyed(this);
+    if (d->declarativeData)
+        d->declarativeData->destroyed(this);
 
     {
         QMutexLocker locker(signalSlotLock(this));
