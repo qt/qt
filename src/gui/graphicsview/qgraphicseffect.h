@@ -102,10 +102,6 @@ public:
     virtual QRectF boundingRectFor(const QRectF &rect) const;
     QRectF boundingRect() const;
 
-    void setSourcePixmap(const QPixmap &pixmap);
-    QPixmap sourcePixmap() const;
-    bool hasSourcePixmap() const;
-
     QGraphicsEffectSource *source() const;
 
     bool isEnabled() const;
@@ -116,7 +112,7 @@ public Q_SLOTS:
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);
     virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
-    virtual void sourceChanged(QGraphicsEffectSource *newSource);
+    virtual void sourceChanged();
     virtual void sourceBoundingRectChanged();
     void updateBoundingRect();
 

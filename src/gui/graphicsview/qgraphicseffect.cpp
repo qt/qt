@@ -155,25 +155,6 @@ QRectF QGraphicsEffect::boundingRect() const
     return QRectF();
 }
 
-void QGraphicsEffect::setSourcePixmap(const QPixmap &pixmap)
-{
-    Q_D(QGraphicsEffect);
-    d->sourcePixmap = pixmap;
-    d->hasSourcePixmap = !pixmap.isNull();
-}
-
-QPixmap QGraphicsEffect::sourcePixmap() const
-{
-    Q_D(const QGraphicsEffect);
-    return d->sourcePixmap;
-}
-
-bool QGraphicsEffect::hasSourcePixmap() const
-{
-    Q_D(const QGraphicsEffect);
-    return d->hasSourcePixmap;
-}
-
 QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
 {
     return rect;
@@ -204,7 +185,7 @@ void QGraphicsEffect::updateBoundingRect()
         d->source->update();
 }
 
-void QGraphicsEffect::sourceChanged(QGraphicsEffectSource *) {}
+void QGraphicsEffect::sourceChanged() {}
 void QGraphicsEffect::sourceBoundingRectChanged() {}
 
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()

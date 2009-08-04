@@ -90,7 +90,7 @@ class Q_GUI_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:
-    QGraphicsEffectPrivate() : source(0), hasSourcePixmap(0), isEnabled(1) {}
+    QGraphicsEffectPrivate() : source(0), isEnabled(1) {}
 
     inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)
     {
@@ -99,15 +99,13 @@ public:
             delete source;
         }
         source = newSource;
-        q_func()->sourceChanged(newSource);
+        q_func()->sourceChanged();
     }
 
     QGraphicsEffectSource *source;
     QRectF boundingRect;
-    QPixmap sourcePixmap;
-    quint32 hasSourcePixmap : 1;
     quint32 isEnabled : 1;
-    quint32 padding : 30; // feel free to use
+    quint32 padding : 31; // feel free to use
 };
 
 class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
