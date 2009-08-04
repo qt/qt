@@ -82,8 +82,6 @@ QPanGesture::QPanGesture(QWidget *parent)
 /*! \internal */
 bool QPanGesture::event(QEvent *event)
 {
-    Q_D(QPanGesture);
-
 #ifdef Q_WS_WIN
     QApplicationPrivate* getQApplicationPrivateInternal();
     switch (event->type()) {
@@ -101,6 +99,7 @@ bool QPanGesture::event(QEvent *event)
 #endif
 
 #if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    Q_D(QPanGesture);
     if (event->type() == QEvent::Timer) {
         const QTimerEvent *te = static_cast<QTimerEvent *>(event);
         if (te->timerId() == d->panFinishedTimer) {
