@@ -6384,7 +6384,7 @@ void QGraphicsItem::inputMethodEvent(QInputMethodEvent *event)
     surrounding text and reconversions. \a query specifies which
     property is queried.
 
-    \sa inputMethodEvent()
+    \sa inputMethodEvent(), QInputMethodEvent, QInputContext
 */
 QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -6397,6 +6397,39 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 
     Q_UNUSED(query);
     return QVariant();
+}
+
+/*!
+    Returns the current input method hints of this item.
+
+    Input method hints are only relevant for input items.
+    The hints are used by the input method to indicate how it should operate.
+    For example, if the Qt::ImhNumbersOnly flag is set, the input method may change
+    its visual components to reflect that only numbers can be entered.
+
+    The effect may vary between input method implementations.
+
+    \since 4.6
+
+    \sa setInputMethodHints(), inputMethodQuery(), QInputContext
+*/
+Qt::InputMethodHints QGraphicsItem::inputMethodHints() const
+{
+    Q_D(const QGraphicsItem);
+    return d->imHints;
+}
+
+/*!
+    Sets the current input method hints of this item to \a hints.
+
+    \since 4.6
+
+    \sa inputMethodHints(), inputMethodQuery(), QInputContext
+*/
+void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
+{
+    Q_D(QGraphicsItem);
+    d->imHints = hints;
 }
 
 /*!

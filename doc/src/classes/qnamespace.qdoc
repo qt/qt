@@ -2418,6 +2418,30 @@
 */
 
 /*!
+    \enum Qt::InputMethodHint
+
+    \value ImhNone                   No hints.
+    \value ImhHiddenText             Characters should be hidden, as is typically used when entering passwords.
+                                     This is automatically set when setting QLineEdit::echoMode to \c Password.
+    \value ImhNumbersOnly            Only number input is allowed.
+    \value ImhUppercaseOnly          Only upper case letter input is allowed.
+    \value ImhLowercaseOnly          Only lower case letter input is allowed.
+    \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
+                                     when a sentence ends.
+    \value ImhPreferNumbers          Numbers are preferred (but not required).
+    \value ImhPreferUppercase        Upper case letters are preferred (but not required).
+    \value ImhPreferLowercase        Lower case letters are preferred (but not required).
+    \value ImhNoPredictiveText       Do not use predictive text (i.e. dictionary lookup) while typing.
+    \value ImhDialableCharactersOnly Only characters suitable for phone dialling are allowed.
+
+    \note If several flags ending with \c Only are ORed together, the resulting character set will
+          consist of the union of the specified sets. For instance specifying \c ImhNumbersOnly and
+          \c ImhUppercaseOnly would yield a set consisting of numbers and uppercase letters.
+
+    \sa QGraphicsItem::inputMethodHints()
+*/
+
+/*!
     \enum Qt::InputMethodQuery
 
     \value ImMicroFocus       The rectangle covering the area of the input cursor in widget coordinates.

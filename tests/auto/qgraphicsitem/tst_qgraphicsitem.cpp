@@ -169,6 +169,7 @@ private slots:
     void setParentItem();
     void children();
     void flags();
+    void inputMethodHints();
     void toolTip();
     void visible();
     void explicitlyVisible();
@@ -760,6 +761,18 @@ void tst_QGraphicsItem::flags()
         QApplication::sendEvent(&scene, &event5);
         QCOMPARE(item->pos(), QPointF(10, 10));
     }
+}
+
+class ImhTester : public QGraphicsItem
+{
+    QRectF boundingRect() const { return QRectF(); }
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
+};
+
+void tst_QGraphicsItem::inputMethodHints()
+{
+    ImhTester item;
+    QCOMPARE(item.inputMethodHints(), Qt::ImhNone);
 }
 
 void tst_QGraphicsItem::toolTip()
