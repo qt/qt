@@ -240,7 +240,7 @@ namespace QmlPrivate
        InstanceType(int);
     };
 
-    template<typename T>
+    template<typename T, int VMAJ, int VMIN1, int VMIN2>
     struct Define {
         static InstanceType instance;
     };

@@ -113,7 +113,7 @@ public:
     virtual void setCustomData(QObject *, const QByteArray &);
 };
 #define QML_DEFINE_CUSTOM_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MAJ_TO, NAME, TYPE, CUSTOMTYPE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterCustomType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MAJ_TO, #NAME, #TYPE, new CUSTOMTYPE));
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN_FROM), (VERSION_MAJ_TO)>::instance(qmlRegisterCustomType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MAJ_TO, #NAME, #TYPE, new CUSTOMTYPE));
 
 QT_END_NAMESPACE
 
