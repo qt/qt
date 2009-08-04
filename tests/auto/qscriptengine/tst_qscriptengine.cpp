@@ -2536,6 +2536,13 @@ void tst_QScriptEngine::abortEvaluation()
     eng.abortEvaluation();
     QVERIFY(!eng.hasUncaughtException());
 
+    eng.abortEvaluation(123);
+    {
+        QScriptValue ret = eng.evaluate("'ciao'");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("ciao"));
+    }
+
     EventReceiver3 receiver(&eng);
 
     eng.setProcessEventsInterval(100);

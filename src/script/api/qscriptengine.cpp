@@ -2150,6 +2150,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::JSValue thisValue = d->thisForContext(exec);
     JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
     JSC::JSValue exceptionValue;
+    dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->setShouldAbort(false);
     JSC::JSValue result = exec->interpreter()->execute(evalNode.get(), exec, thisObject, exec->scopeChain(), &exceptionValue);
 
     if (dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->shouldAbort()) {
