@@ -4,4 +4,3 @@ EXPORTS
 	_Z28defaultGetLongDateFormatSpecR15TExtendedLocale @ 3 NONAME
 	_Z29defaultGetShortDateFormatSpecR15TExtendedLocale @ 4 NONAME
 	_Z22localizedDirectoryNameR7QString @ 5 NONAME
-

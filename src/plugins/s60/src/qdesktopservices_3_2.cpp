@@ -77,4 +77,3 @@ EXPORT_C QString localizedDirectoryName(QString& /* rawPath */)
     return QString();
 }
 #endif
-
