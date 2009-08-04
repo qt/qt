@@ -165,9 +165,9 @@ void tst_ExceptionSafetyObjects::objects_data()
 
 // create and destructs an object, and lets each and every allocation
 // during construction and destruction fail.
-static void doOOMTest(AbstractObjectCreator *creator, QObject *parent)
+static void doOOMTest(AbstractObjectCreator *creator, QObject *parent, int start=0)
 {
-    int currentOOMIndex = 0;
+    int currentOOMIndex = start;
     bool caught = false;
     bool done = false;
 
@@ -278,7 +278,9 @@ void tst_ExceptionSafetyObjects::initTestCase()
     (void) std::set_new_handler(nh_func);
 #endif
 
-    doOOMTest(new ObjectCreator<SelfTestObject>, 0);
+    ObjectCreator<SelfTestObject> *selfTest = new ObjectCreator<SelfTestObject>;
+    doOOMTest(selfTest, 0);
+    delete selfTest;
     QCOMPARE(alloc1Failed, 1);
     QCOMPARE(alloc2Failed, 1);
     QCOMPARE(alloc3Failed, 2);
@@ -292,6 +294,8 @@ void tst_ExceptionSafetyObjects::objects()
     QFETCH(AbstractObjectCreator *, objectCreator);
 
     doOOMTest(objectCreator, 0);
+    
+    delete objectCreator;
 }
 
 template <typename T>
@@ -391,10 +395,12 @@ void tst_ExceptionSafetyObjects::widgets()
 {
     QFETCH(AbstractObjectCreator *, widgetCreator);
 
-    doOOMTest(widgetCreator, 0);
+    doOOMTest(widgetCreator, 0, 00000);
 
     QWidget parent;
-    doOOMTest(widgetCreator, &parent);
+    doOOMTest(widgetCreator, &parent, 00000);
+
+    delete widgetCreator;
 
     // if the test reaches here without crashing, we passed :)
     QVERIFY(true);
