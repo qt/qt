@@ -665,6 +665,22 @@ void tst_QGraphicsItem::flags()
         QApplication::sendEvent(&scene, &event5);
         QCOMPARE(item->pos(), QPointF(10, 10));
     }
+    {
+        QGraphicsItem* clippingParent = new QGraphicsRectItem;
+        clippingParent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+
+        QGraphicsItem* nonClippingParent = new QGraphicsRectItem;
+        nonClippingParent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+
+        QGraphicsItem* child = new QGraphicsRectItem(nonClippingParent);
+        QVERIFY(!child->isClipped());
+
+        child->setParentItem(clippingParent);
+        QVERIFY(child->isClipped());
+
+        child->setParentItem(nonClippingParent);
+        QVERIFY(!child->isClipped());
+    }
 }
 
 void tst_QGraphicsItem::toolTip()
