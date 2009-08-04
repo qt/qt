@@ -640,7 +640,9 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
 
         if (parent) {
             // Inherit the enabled-state from our parents.
-            if ((parent->d_ptr->ancestorFlags & flag) || (int(parent->d_ptr->flags & childFlag) == childFlag) || (childFlag == -1 && parent->d_ptr->handlesChildEvents)) {
+            if ((parent->d_ptr->ancestorFlags & flag)
+                    || (int(parent->d_ptr->flags & childFlag) == childFlag)
+                    || (childFlag == -1 && parent->d_ptr->handlesChildEvents)) {
                 enabled = true;
                 ancestorFlags |= flag;
             } else {
