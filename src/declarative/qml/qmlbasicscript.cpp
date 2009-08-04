@@ -668,7 +668,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
         switch(instr.type) {
             case ScriptInstruction::LoadIdObject:
             {
-                stack.push(contextPrivate->propertyValues.at(instr.fetch.idx));
+                stack.push(QVariant::fromValue(contextPrivate->idValues[instr.fetch.idx].data()));
                 enginePrivate->capturedProperties <<
                     QmlEnginePrivate::CapturedProperty(context, -1, contextPrivate->notifyIndex + instr.fetch.idx);
                 state = Reset;

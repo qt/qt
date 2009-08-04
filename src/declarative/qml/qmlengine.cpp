@@ -747,10 +747,6 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
 
     QString propName = name.toString();
 
-#ifdef PROPERTY_DEBUG
-    qWarning() << "Query Context:" << propName << bindContext;
-#endif
-
     *id = InvalidId;
     if (bindContext->d_func()->propertyNames.contains(propName)) {
         rv |= HandlesReadAccess;
@@ -767,16 +763,11 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
 }
 
 QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
-                                                 const QScriptString &name,
-                                                 uint id)
+                                             const QScriptString &name,
+                                             uint id)
 {
     QmlContext *bindContext =
         static_cast<QmlContext*>(object.data().toQObject());
-
-#ifdef PROPERTY_DEBUG
-    QString propName = name.toString();
-    qWarning() << "Context Property:" << propName << bindContext;
-#endif
 
     uint basicId = id & QmlScriptClass::ClassIdMask;
 
@@ -786,18 +777,20 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
     switch (basicId) {
     case VariantPropertyId:
     {
+        QmlContextPrivate *contextPrivate = bindContext->d_func();
         QString propName = name.toString();
-        int index = bindContext->d_func()->propertyNames.value(propName);
-        QVariant value = bindContext->d_func()->propertyValues.at(index);
-#ifdef PROPERTY_DEBUG
-        qWarning() << "Context Property: Resolved property" << propName
-                   << "to context variant property list" << bindContext <<".  Value:" << rv.toVariant();
-#endif
+        int index = contextPrivate->propertyNames.value(propName);
+
         QScriptValue rv;
-        if (QmlMetaType::isObject(value.userType())) {
-            rv = scriptEngine->newObject(ep->objectClass, scriptEngine->newVariant(value));
+        if (index < contextPrivate->idValueCount) {
+            rv = scriptEngine->newObject(ep->objectClass, scriptEngine->newVariant(QVariant::fromValue(contextPrivate->idValues[index].data())));
         } else {
-            rv = scriptEngine->newVariant(value);
+            QVariant value = contextPrivate->propertyValues.at(index);
+            if (QmlMetaType::isObject(value.userType())) {
+                rv = scriptEngine->newObject(ep->objectClass, scriptEngine->newVariant(value));
+            } else {
+                rv = scriptEngine->newVariant(value);
+            }
         }
         ep->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, -1, index + bindContext->d_func()->notifyIndex);
         return rv;
@@ -809,10 +802,6 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
         QScriptValue rv = ep->propertyObject(name, obj,
                 id & ~QmlScriptClass::ClassIdSelectorMask);
         if (rv.isValid()) {
-#ifdef PROPERTY_DEBUG
-            qWarning() << "~Property: Resolved property" << propName
-                       << "to context default object" << bindContext << obj <<".  Value:" << rv.toVariant();
-#endif
             return rv;
         }
         break;
@@ -832,10 +821,6 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
     QmlContext *bindContext =
         static_cast<QmlContext*>(object.data().toQObject());
 
-#ifdef PROPERTY_DEBUG
-    QString propName = name.toString();
-    qWarning() << "Set QmlObject Property" << name.toString() << value.toVariant();
-#endif
 
     int objIdx = (id & QmlScriptClass::ClassIdSelectorMask) >> 24;
     QObject *obj = bindContext->d_func()->defaultObjects.at(objIdx);
@@ -975,10 +960,6 @@ QScriptClass::QueryFlags QmlObjectScriptClass::queryProperty(const QScriptValue 
     QueryFlags rv = 0;
     QString propName = name.toString();
 
-#ifdef PROPERTY_DEBUG
-    qWarning() << "Query QmlObject:" << propName << obj;
-#endif
-
     if (obj)
         rv = QmlEnginePrivate::get(engine)->queryObject(propName, id, obj);
 
@@ -991,20 +972,10 @@ QScriptValue QmlObjectScriptClass::property(const QScriptValue &object,
 {
     QObject *obj = object.data().toQObject();
 
-#ifdef PROPERTY_DEBUG
-    QString propName = name.toString();
-    qWarning() << "QmlObject Property:" << propName << obj;
-#endif
-
     QScriptValue rv =
         QmlEnginePrivate::get(engine)->propertyObject(name, obj, id);
-    if (rv.isValid()) {
-#ifdef PROPERTY_DEBUG
-        qWarning() << "~Property: Resolved property" << propName
-                   << "to object" << obj <<".  Value:" << rv.toVariant();
-#endif
+    if (rv.isValid()) 
         return rv;
-    }
 
     return QScriptValue();
 }
@@ -1017,11 +988,6 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
     Q_UNUSED(name);
 
     QObject *obj = object.data().toQObject();
-
-#ifdef PROPERTY_DEBUG
-    QString propName = name.toString();
-    qWarning() << "Set QmlObject Property" << name.toString() << value.toVariant();
-#endif
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QScriptValue oldact = scriptEngine->currentContext()->activationObject();

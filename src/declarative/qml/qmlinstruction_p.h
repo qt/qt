@@ -163,6 +163,7 @@ public:
         struct {
             int bindingsSize;
             int parserStatusSize;
+            int idSize;
         } init;
         struct {
             int type;
@@ -175,6 +176,7 @@ public:
         } storeMeta;
         struct {
             int value;
+            int index;
         } setId;
         struct {
             int property;

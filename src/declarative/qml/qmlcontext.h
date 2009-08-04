@@ -77,9 +77,6 @@ public:
 
     void setBaseUrl(const QUrl &);
 
-private Q_SLOTS:
-    void objectDestroyed(QObject *);
-
 private:
     friend class QmlVME;
     friend class QmlEngine;

@@ -603,6 +603,7 @@ void QmlCompiler::compileTree(Object *tree)
     init.line = 0;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
+    init.init.idSize = compileState.ids.count();
     output->bytecode << init;
 
     genObject(tree);
@@ -774,6 +775,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         id.type = QmlInstruction::SetId;
         id.line = -1;
         id.setId.value = output->indexForString(obj->id);
+        id.setId.index = obj->idIndex;
         output->bytecode << id;
     }
 
@@ -917,6 +919,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     init.type = QmlInstruction::Init;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
+    init.init.idSize = compileState.ids.count();
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -936,7 +939,8 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
         id.line = -1;
-        id.setId.value = output->indexForString(obj->id);;
+        id.setId.value = output->indexForString(obj->id);
+        id.setId.index = obj->idIndex;
         output->bytecode << id;
     }
 }
