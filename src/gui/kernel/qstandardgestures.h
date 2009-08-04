@@ -71,27 +71,11 @@ public:
     QSize totalOffset() const;
     QSize lastOffset() const;
 
-protected:
-    bool event(QEvent *event);
-
 private:
+    bool event(QEvent *event);
+    bool eventFilter(QObject *receiver, QEvent *event);
+
     friend class QWidget;
-};
-
-class QTapAndHoldGesturePrivate;
-class Q_GUI_EXPORT QTapAndHoldGesture : public QGesture
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTapAndHoldGesture)
-
-public:
-    QTapAndHoldGesture(QWidget *parent);
-
-    bool filterEvent(QEvent *event);
-    void reset();
-
-protected:
-    void timerEvent(QTimerEvent *event);
 };
 
 QT_END_NAMESPACE

@@ -214,7 +214,8 @@ void QParallelAnimationGroup::updateState(QAbstractAnimation::State oldState,
         d->connectUncontrolledAnimations();
         for (int i = 0; i < d->animations.size(); ++i) {
             QAbstractAnimation *animation = d->animations.at(i);
-            animation->stop();
+            if (oldState == Stopped)
+                animation->stop();
             animation->setDirection(d->direction);
             animation->start();
         }

@@ -531,7 +531,7 @@ bool axc_FilterProc(void *m)
 }
 
 QAxClientSite::QAxClientSite(QAxWidget *c)
-: ref(1), widget(c), host(0), eventTranslated(true)
+: eventTranslated(true), ref(1), widget(c), host(0)
 {
     aggregatedObject = widget->createAggregate();
     if (aggregatedObject) {

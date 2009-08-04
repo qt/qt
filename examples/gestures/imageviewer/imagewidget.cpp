@@ -65,7 +65,7 @@ ImageWidget::ImageWidget(QWidget *parent)
     panGesture = new QPanGesture(this);
     connect(panGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
 
-    tapAndHoldGesture = new QTapAndHoldGesture(this);
+    tapAndHoldGesture = new TapAndHoldGesture(this);
     connect(tapAndHoldGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
 }
 
@@ -100,7 +100,7 @@ void ImageWidget::paintEvent(QPaintEvent*)
         p.setPen(QPen(Qt::gray, 2));
         p.drawEllipse(touchFeedback.position, 5, 5);
         if (touchFeedback.doubleTapped) {
-            p.setPen(QPen(Qt::gray, 2, Qt::DotLine));
+            p.setPen(QPen(Qt::darkGray, 2, Qt::DotLine));
             p.drawEllipse(touchFeedback.position, 15, 15);
         } else if (touchFeedback.tapAndHoldState != 0) {
             QPoint pts[8] = {
@@ -159,40 +159,37 @@ void ImageWidget::gestureTriggered()
     touchFeedback.tapped = false;
     touchFeedback.doubleTapped = false;
 
-    QGesture *g = qobject_cast<QGesture*>(sender());
     if (sender() == panGesture) {
+        QPanGesture *pg = qobject_cast<QPanGesture*>(sender());
         if (zoomedIn) {
-            // usual panning
 #ifndef QT_NO_CURSOR
-            if (g->state() == Qt::GestureStarted)
-                setCursor(Qt::SizeAllCursor);
-            else
-                setCursor(Qt::ArrowCursor);
+            switch (pg->state()) {
+                case Qt::GestureStarted:
+                case Qt::GestureUpdated:
+                    setCursor(Qt::SizeAllCursor);
+                    break;
+                default:
+                    setCursor(Qt::ArrowCursor);
+            }
 #endif
-            const int dx = g->pos().x() - g->lastPos().x();
-            const int dy = g->pos().y() - g->lastPos().y();
-            horizontalOffset += dx;
-            verticalOffset += dy;
+            horizontalOffset += pg->lastOffset().width();
+            verticalOffset += pg->lastOffset().height();
             update();
         } else {
             // only slide gesture should be accepted
-            const QPanGesture *pg = static_cast<const QPanGesture*>(g);
-            if (g->state() == Qt::GestureFinished) {
+            if (pg->state() == Qt::GestureFinished) {
                 touchFeedback.sliding = false;
                 zoomed = rotated = false;
-                if (pg->totalOffset().width() > 0) {
-                    qDebug() << "slide right";
+                if (pg->totalOffset().width() > 0)
                     goNextImage();
-                } else {
-                    qDebug() << "slide left";
+                else
                     goPrevImage();
-                }
                 updateImage();
             }
         }
         feedbackFadeOutTimer.start(500, this);
     } else if (sender() == tapAndHoldGesture) {
-        if (g->state() == Qt::GestureFinished) {
+        if (tapAndHoldGesture->state() == Qt::GestureFinished) {
             qDebug() << "tap and hold detected";
             touchFeedback.reset();
             update();
@@ -201,7 +198,7 @@ void ImageWidget::gestureTriggered()
             menu.addAction("Action 1");
             menu.addAction("Action 2");
             menu.addAction("Action 3");
-            menu.exec(mapToGlobal(g->pos()));
+            menu.exec(mapToGlobal(tapAndHoldGesture->pos()));
         }
         feedbackFadeOutTimer.start(500, this);
     }

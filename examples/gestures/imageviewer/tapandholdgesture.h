@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,62 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QGESTURE_H
-#define QGESTURE_H
+#ifndef TAPANDHOLDGESTURE_H
+#define TAPANDHOLDGESTURE_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qdatetime.h>
-#include <QtCore/qpoint.h>
-#include <QtCore/qrect.h>
-#include <QtCore/qmetatype.h>
+#include <QtCore/QBasicTimer>
+#include <QtGui/QGesture>
+#include <QtGui/QWidget>
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class QGraphicsItem;
-class QGesturePrivate;
-class Q_GUI_EXPORT QGesture : public QObject
+class TapAndHoldGesture : public QGesture
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QGesture)
-
-    Q_PROPERTY(Qt::GestureState state READ state)
+    Q_PROPERTY(QPoint pos READ pos)
 
 public:
-    explicit QGesture(QObject *parent = 0);
-    ~QGesture();
+    TapAndHoldGesture(QWidget *parent);
 
-    virtual bool filterEvent(QEvent *event) = 0;
+    bool filterEvent(QEvent *event);
+    void reset();
 
-    void setGraphicsItem(QGraphicsItem *);
-    QGraphicsItem *graphicsItem() const;
-
-    virtual void reset();
-
-    Qt::GestureState state() const;
+    QPoint pos() const;
 
 protected:
-    QGesture(QGesturePrivate &dd, QObject *parent);
-    bool eventFilter(QObject*, QEvent*);
-
-    void setState(Qt::GestureState state);
-
-Q_SIGNALS:
-    void started();
-    void triggered();
-    void finished();
-    void cancelled();
+    void timerEvent(QTimerEvent *event);
 
 private:
-    friend class QWidget;
+    QBasicTimer timer;
+    int iteration;
+    QPoint position;
+    static const int iterationCount;
+    static const int iterationTimeout;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QGESTURE_H
+#endif // TAPANDHOLDGESTURE_H

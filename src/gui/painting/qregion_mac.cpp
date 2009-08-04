@@ -173,7 +173,6 @@ RgnHandle QRegion::toQDRgnForUpdate_sys() const
             // detect overflow. Tested for use with HIViewSetNeedsDisplayInRegion
             // in QWidgetPrivate::update_sys().
             enum { HIViewSetNeedsDisplayInRegionOverflow = 10000 }; // empirically determined conservative value
-            qDebug() << qt_r->x() << qt_r->y() << qt_r->right() << qt_r->bottom();
             if (qt_r->right() > HIViewSetNeedsDisplayInRegionOverflow || qt_r->bottom() > HIViewSetNeedsDisplayInRegionOverflow) {
                 qt_mac_dispose_rgn(tmp_rgn);
                 qt_mac_dispose_rgn(rgnHandle);
