@@ -1824,7 +1824,7 @@ QChar QDir::separator()
 {
 #if defined (Q_FS_FAT) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
     return QLatin1Char('\\');
-#elif defined(Q_OS_UNIX) 
+#elif defined(Q_OS_UNIX)
     return QLatin1Char('/');
 #elif defined (Q_OS_MAC)
     return QLatin1Char(':');

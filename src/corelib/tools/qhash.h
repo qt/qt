@@ -150,10 +150,10 @@ struct Q_CORE_EXPORT QHashData
 };
 
 inline void QHashData::mightGrow() // ### Qt 5: eliminate
-{ 
+{
     if (size >= numBuckets)
         rehash(numBits + 1);
-}  
+}
 
 inline bool QHashData::willGrow()
 {
@@ -992,12 +992,12 @@ Q_INLINE_TEMPLATE int QMultiHash<Key, T>::remove(const Key &key, const T &value)
     typename QHash<Key, T>::iterator end(QHash<Key, T>::end());
     while (i != end && i.key() == key) {
         if (i.value() == value) {
-#if defined(Q_CC_RVCT)  
-            // RVCT has problems with scoping, apparently.      
+#if defined(Q_CC_RVCT)
+            // RVCT has problems with scoping, apparently.
             i = QHash<Key, T>::erase(i);
 #else
             i = erase(i);
-#endif            
+#endif
             ++n;
         } else {
             ++i;
