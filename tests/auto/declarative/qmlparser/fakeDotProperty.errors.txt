@@ -1,1 +1,1 @@
-2:5:Invalid property access
+3:5:Invalid property access

@@ -1,1 +1,1 @@
-2:12:Invalid property assignment: int expected
+3:12:Invalid property assignment: int expected
