@@ -419,6 +419,8 @@ void Tree::addPropertyFunction(PropertyNode *property,
 }
 
 /*!
+  This function adds the \a node to the \a group. The group
+  can be listed anywhere using the \e{annotated list} command.
  */
 void Tree::addToGroup(Node *node, const QString &group)
 {

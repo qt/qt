@@ -70,6 +70,12 @@ public:
     QPanGesturePrivate() { }
 
     QList<QTouchEvent::TouchPoint> touchPoints;
+    QSize totalOffset;
+    QSize lastOffset;
+
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    int panFinishedTimer;
+#endif
 };
 
 class QTapAndHoldGesturePrivate : public QGesturePrivate

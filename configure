@@ -5707,17 +5707,23 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
-# Set the default arch. Select 32-bit/carbon if nothing else has 
-# been specified on the configure line.
+# Set the default arch.
+# Carbon builds: 32 bit x86/ppc.
+# For "-cocoa" builds on snow leopard : compiler default (64-bit).
+# For "-cocoa" builds on leopard : compiler default (32-bit).
 if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" == "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
-    if [ "$QT_MAC_DEFUALT_ARCH" == "x86_64" ]; then
-        CFG_MAC_ARCHS=" x86"
-    elif [ "$QT_MAC_DEFUALT_ARCH" == "ppc64" ]; then
-        CFG_MAC_ARCHS=" ppc"
-    else
-        CFG_MAC_ARCHS=" $QT_MAC_DEFUALT_ARCH"
+	if [ "$CFG_MAC_COCOA" != "yes" ]; then
+		if [ "$QT_MAC_DEFAULT_ARCH" == "x86_64" ]; then
+			CFG_MAC_ARCHS=" x86"
+		elif [ "$QT_MAC_DEFAULT_ARCH" == "ppc64" ]; then
+			CFG_MAC_ARCHS=" ppc"
+		else
+			CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
+		fi
+	else
+		CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
     fi
 
     [ "$OPT_VERBOSE" == "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."

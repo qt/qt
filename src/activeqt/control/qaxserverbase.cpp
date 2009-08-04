@@ -3605,15 +3605,26 @@ HRESULT WINAPI QAxServerBase::TranslateAcceleratorW(MSG *pMsg)
         return S_FALSE;
     bool resetUserData = false;
     // set server type in the user-data of the window.
+#ifdef GWLP_USERDATA
     LONG_PTR serverType = QAX_INPROC_SERVER;
+#else
+    LONG serverType = QAX_INPROC_SERVER;
+#endif
     if (qAxOutProcServer)
         serverType = QAX_OUTPROC_SERVER;
+#ifdef GWLP_USERDATA
     LONG_PTR oldData = SetWindowLongPtr(pMsg->hwnd, GWLP_USERDATA, serverType);
+#else
+    LONG oldData = SetWindowLong(pMsg->hwnd, GWL_USERDATA, serverType);
+#endif
     HRESULT hres = controlSite->TranslateAcceleratorW(pMsg, dwKeyMod);
     controlSite->Release();
     // reset the user-data for the window.
+#ifdef GWLP_USERDATA
     SetWindowLongPtr(pMsg->hwnd, GWLP_USERDATA, oldData);
-
+#else
+    SetWindowLong(pMsg->hwnd, GWL_USERDATA, oldData);
+#endif
     return hres;
 }
 
