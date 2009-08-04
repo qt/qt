@@ -2112,6 +2112,7 @@ void QTextEngine::LayoutData::reallocate(int totalGlyphs)
 QGlyphLayout QGlyphLayout::clone(char *address) const
 {   
     QGlyphLayout layout(address, numGlyphs);
+    memmove(layout.offsets, offsets, numGlyphs * sizeof(QFixedPoint));
     memmove(layout.attributes, attributes, numGlyphs * sizeof(HB_GlyphAttributes));
     memmove(layout.justifications, justifications, numGlyphs * sizeof(QGlyphJustification));
     memmove(layout.advances_y, advances_y, numGlyphs * sizeof(QFixed));
