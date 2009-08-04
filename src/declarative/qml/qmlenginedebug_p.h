@@ -81,6 +81,7 @@ public:
         Type type;
         QString name;
         QVariant value;
+        QString binding;
     };
 
     static void addEngine(QmlEngine *);
