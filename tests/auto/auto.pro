@@ -140,6 +140,7 @@ SUBDIRS += _networkselftest \
            qgetputenv \
            qgl \
            qglobal \
+           qgraphicseffect \
            qgraphicsitem \
            qgraphicsitemanimation \
            qgraphicslayout \
