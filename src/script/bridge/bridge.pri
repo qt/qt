@@ -4,6 +4,7 @@ SOURCES += \
     $$PWD/qscriptclassobject.cpp \
     $$PWD/qscriptvariant.cpp \
     $$PWD/qscriptqobject.cpp \
+    $$PWD/qscriptglobalobject.cpp \
     $$PWD/qscriptactivationobject.cpp
 
 HEADERS += \
@@ -12,4 +13,5 @@ HEADERS += \
     $$PWD/qscriptclassobject_p.h \
     $$PWD/qscriptvariant_p.h \
     $$PWD/qscriptqobject_p.h \
+    $$PWD/qscriptglobalobject_p.h \
     $$PWD/qscriptactivationobject_p.h

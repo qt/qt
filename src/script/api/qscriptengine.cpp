@@ -79,6 +79,7 @@
 #include "bridge/qscriptclassobject_p.h"
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
+#include "bridge/qscriptglobalobject_p.h"
 #include "bridge/qscriptactivationobject_p.h"
 
 #ifndef QT_NO_QOBJECT
@@ -350,66 +351,6 @@ struct GlobalClientData : public JSC::JSGlobalData::ClientData
     virtual void mark() { engine->mark(); }
 
     QScriptEnginePrivate *engine;
-};
-
-class GlobalObject : public JSC::JSGlobalObject
-{
-public:
-    GlobalObject();
-    virtual ~GlobalObject();
-    virtual JSC::UString className() const { return "global"; }
-    virtual void mark();
-    virtual bool getOwnPropertySlot(JSC::ExecState*,
-                                    const JSC::Identifier& propertyName,
-                                    JSC::PropertySlot&);
-    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                     JSC::JSValue, JSC::PutPropertySlot&);
-    virtual bool deleteProperty(JSC::ExecState*,
-                                const JSC::Identifier& propertyName,
-                                bool checkDontDelete = true);
-    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
-                                       unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
-
-public:
-    JSC::JSObject *customGlobalObject;
-};
-
-class OriginalGlobalObjectProxy : public JSC::JSObject
-{
-public:
-    explicit OriginalGlobalObjectProxy(WTF::PassRefPtr<JSC::Structure> sid,
-                                       JSC::JSGlobalObject *object)
-        : JSC::JSObject(sid), originalGlobalObject(object)
-    {}
-    virtual ~OriginalGlobalObjectProxy()
-    {}
-    virtual JSC::UString className() const
-    { return originalGlobalObject->className(); }
-    virtual void mark()
-    {
-        Q_ASSERT(!marked());
-        if (!originalGlobalObject->marked())
-            originalGlobalObject->JSC::JSGlobalObject::mark();
-        JSC::JSObject::mark();
-    }
-    virtual bool getOwnPropertySlot(JSC::ExecState* exec,
-                                    const JSC::Identifier& propertyName,
-                                    JSC::PropertySlot& slot)
-    { return originalGlobalObject->JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot); }
-    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                     JSC::JSValue value, JSC::PutPropertySlot& slot)
-    { originalGlobalObject->JSC::JSGlobalObject::put(exec, propertyName, value, slot); }
-    virtual bool deleteProperty(JSC::ExecState* exec,
-                                const JSC::Identifier& propertyName, bool checkDontDelete = true)
-    { return originalGlobalObject->JSC::JSGlobalObject::deleteProperty(exec, propertyName, checkDontDelete); }
-    virtual bool getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                                       unsigned& attributes) const
-    { return originalGlobalObject->JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes); }
-    virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable = false)
-    { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, includeNonEnumerable); }
-private:
-    JSC::JSGlobalObject *originalGlobalObject;
 };
 
 class TimeoutCheckerProxy : public JSC::TimeoutChecker
@@ -686,71 +627,6 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
 #endif // QT_NO_QOBJECT
 }
 
-GlobalObject::GlobalObject()
-    : JSC::JSGlobalObject(), customGlobalObject(0)
-{
-}
-
-GlobalObject::~GlobalObject()
-{
-}
-
-void GlobalObject::mark()
-{
-    Q_ASSERT(!marked());
-    JSC::JSGlobalObject::mark();
-    if (customGlobalObject && !customGlobalObject->marked())
-        customGlobalObject->mark();
-}
-
-bool GlobalObject::getOwnPropertySlot(JSC::ExecState* exec,
-                                      const JSC::Identifier& propertyName,
-                                      JSC::PropertySlot& slot)
-{
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
-    if (propertyName == exec->propertyNames().arguments && engine->currentFrame->argumentCount() > 0) {
-        JSC::JSValue args = engine->scriptValueToJSCValue(engine->contextForFrame(engine->currentFrame)->argumentsObject());
-        slot.setValue(args);
-        return true;
-    }
-    if (customGlobalObject)
-        return customGlobalObject->getOwnPropertySlot(exec, propertyName, slot);
-    return JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot);
-}
-
-void GlobalObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                       JSC::JSValue value, JSC::PutPropertySlot& slot)
-{
-    if (customGlobalObject)
-        customGlobalObject->put(exec, propertyName, value, slot);
-    else
-        JSC::JSGlobalObject::put(exec, propertyName, value, slot);
-}
-
-bool GlobalObject::deleteProperty(JSC::ExecState* exec,
-                                  const JSC::Identifier& propertyName, bool checkDontDelete)
-{
-    if (customGlobalObject)
-        return customGlobalObject->deleteProperty(exec, propertyName, checkDontDelete);
-    return JSC::JSGlobalObject::deleteProperty(exec, propertyName, checkDontDelete);
-}
-
-bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                                         unsigned& attributes) const
-{
-    if (customGlobalObject)
-        return customGlobalObject->getPropertyAttributes(exec, propertyName, attributes);
-    return JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes);
-}
-
-void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable)
-{
-    if (customGlobalObject)
-        customGlobalObject->getPropertyNames(exec, propertyNames, includeNonEnumerable);
-    else
-        JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
-}
-
 static JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionGC(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionVersion(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -923,13 +799,6 @@ QScriptPushScopeHelper::~QScriptPushScopeHelper()
 }
 
 } // namespace QScript
-
-namespace JSC {
-
-ASSERT_CLASS_FITS_IN_CELL(QScript::GlobalObject);
-ASSERT_CLASS_FITS_IN_CELL(QScript::OriginalGlobalObjectProxy);
-
-} // namespace JSC
 
 QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 {
