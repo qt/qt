@@ -74,7 +74,7 @@ protected:
 private:
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
-    Q_DECLARE_PRIVATE(QGraphicsTransform)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsTransform)
 };
 
 class QGraphicsScalePrivate;
@@ -106,7 +106,7 @@ Q_SIGNALS:
     void scaleChanged();
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsScale)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsScale)
 };
 
 class QGraphicsRotationPrivate;
@@ -136,7 +136,7 @@ Q_SIGNALS:
 protected:
     QGraphicsRotation(QGraphicsRotationPrivate &p, QObject *parent);
 private:
-    Q_DECLARE_PRIVATE(QGraphicsRotation)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsRotation)
 };
 
 class QGraphicsRotation3DPrivate;
@@ -159,7 +159,7 @@ Q_SIGNALS:
     void axisChanged();
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsRotation3D)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsRotation3D)
 };
 
 QT_END_NAMESPACE

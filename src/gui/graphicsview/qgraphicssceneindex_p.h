@@ -122,7 +122,7 @@ protected:
     friend class QGraphicsSceneBspTreeIndex;
 private:
     Q_DISABLE_COPY(QGraphicsSceneIndex)
-    Q_DECLARE_PRIVATE(QGraphicsSceneIndex)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneIndex)
 };
 
 class QGraphicsSceneIndexPrivate : public QObjectPrivate
