@@ -114,6 +114,7 @@ private:
     CFRunLoopRef threadsRunLoop;
     QMutex mutex;
     QWaitCondition waitCondition;
+    QWaitCondition waitForStop;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
     PathHash filePathInfoHash;
     PathHash dirPathInfoHash;

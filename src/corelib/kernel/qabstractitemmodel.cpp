@@ -1884,6 +1884,8 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 }
 
 /*!
+  \since 4.6
+  
   Sets the model's role names to \a roleNames.
 
   This function is provided to allow mapping of role identifiers to
@@ -1900,6 +1902,8 @@ void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
 }
 
 /*!
+  \since 4.6
+
   Returns the model's role names.
 
   \sa setRoleNames()
