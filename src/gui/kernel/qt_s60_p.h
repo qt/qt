@@ -73,10 +73,10 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #endif
-    
+
 QT_BEGIN_NAMESPACE
 
-// Application internal HandleResourceChangeL events, 
+// Application internal HandleResourceChangeL events,
 // system evens seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
 
@@ -115,7 +115,7 @@ QS60Data* qGlobalS60Data();
 class QAbstractLongTapObserver
 {
 public:
-    virtual void HandleLongTapEventL( const TPoint& aPenEventLocation, 
+    virtual void HandleLongTapEventL( const TPoint& aPenEventLocation,
                                       const TPoint& aPenEventScreenLocation ) = 0;
 };
 class QLongTapTimer;

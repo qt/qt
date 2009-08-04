@@ -896,22 +896,22 @@ void QWidget::setAutoFillBackground(bool enabled)
     \endlist
 
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
-    
+
     \section1 SoftKeys
     \since 4.6
     \preliminary
 
-    Softkeys API is a platform independent way of mapping actions to (hardware)keys 
+    Softkeys API is a platform independent way of mapping actions to (hardware)keys
     and toolbars provided by the underlying platform.
-    
-    There are three major use cases supported. First one is a mobile device 
+
+    There are three major use cases supported. First one is a mobile device
     with keypad navigation and no touch ui. Second use case is a mobile
-    device with touch ui. Third use case is desktop. For now the softkey API is 
+    device with touch ui. Third use case is desktop. For now the softkey API is
     only implemented for Series60.
-    
-    QActions are set to widget(s) via softkey API. Actions in focused widget are 
+
+    QActions are set to widget(s) via softkey API. Actions in focused widget are
     mapped to native toolbar or hardware keys. Even though the API allows to set
-    any amount of widgets there might be physical restrictions to amount of 
+    any amount of widgets there might be physical restrictions to amount of
     softkeys that can be used by the device.
 
     \o Series60: For series60 menu button is automatically mapped to left
@@ -919,7 +919,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \sa softKeys()
     \sa setSoftKey()
-        
+
 */
 
 QWidgetMapper *QWidgetPrivate::mapper = 0;          // widget with wid
@@ -5768,7 +5768,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
     if (!isEnabled())
         return;
-    
+
     QWidget *f = this;
     while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
         f = f->d_func()->extra->focus_proxy;
@@ -11698,7 +11698,7 @@ void QWidget::clearMask()
 /*!
     \preliminary
     \since 4.6
-    
+
     Returns the (possibly empty) list of this widget's softkeys.
     Returned list cannot be changed. Softkeys should be added
     and removed via method called setSoftKeys
@@ -11719,7 +11719,7 @@ const QList<QAction*>& QWidget::softKeys() const
 /*!
     \preliminary
     \since 4.6
-    
+
     Sets the softkey \a softkey to this widget's list of softkeys,
     Setting 0 as softkey will clear all the existing softkeys set
     to the widget

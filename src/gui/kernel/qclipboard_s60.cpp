@@ -76,10 +76,10 @@ public:
     QMimeData* source()
     { return src; }
     bool connected()
-    { return connection; }    
+    { return connection; }
     void clear();
     RFs fsSession();
-    
+
 
 private:
     QMimeData* src;
@@ -134,7 +134,7 @@ static QClipboardData *clipboardData()
                 delete internalCbData;
                 internalCbData = 0;
             }
-            else 
+            else
             {
                 qAddPostRoutine(cleanupClipboardData);
             }
@@ -161,7 +161,7 @@ void writeToStreamLX(const QMimeData* aData, RWriteStream& aStream)
         aStream << TCardinality(ba.size());
         aStream.WriteL(reinterpret_cast<const uchar*>(ba.constData()),ba.size());
         CleanupStack::PopAndDestroy(stringData);
-    }    
+    }
 }
 
 void readFromStreamLX(QMimeData* aData,RReadStream& aStream)
@@ -169,7 +169,7 @@ void readFromStreamLX(QMimeData* aData,RReadStream& aStream)
     // This function both leaves and throws exceptions. There must be no destructor
     // dependencies between cleanup styles, and no cleanup stack dependencies on stacked objects.
     TCardinality mimeTypeCount;
-    aStream >> mimeTypeCount;    
+    aStream >> mimeTypeCount;
     for (int i = 0; i< mimeTypeCount;i++)
     {
         // mime type
@@ -220,7 +220,7 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
         if (err != KErrNone){
             qDebug()<< "clipboard is empty/err: " << err;
         }
-            
+
     }
     return 0;
 }
@@ -249,7 +249,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
             qDebug()<< "clipboard write err :" << err;
         }
     }
-    emitChanged(QClipboard::Clipboard);      
+    emitChanged(QClipboard::Clipboard);
 }
 
 bool QClipboard::supportsMode(Mode mode) const

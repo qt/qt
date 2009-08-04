@@ -270,7 +270,7 @@ public:
         SP_QsnFrButtonSideBInactive,
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
-        SP_QsnFrButtonCenterInactive,        
+        SP_QsnFrButtonCenterInactive,
         SP_QsnFrNotepadCornerTl,
         SP_QsnFrNotepadCornerTr,
         SP_QsnFrNotepadCornerBl,

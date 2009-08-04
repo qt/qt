@@ -105,4 +105,3 @@ QColormap &QColormap::operator=(const QColormap &colormap)
 { qAtomicAssign(d, colormap.d); return *this; }
 
 QT_END_NAMESPACE
-

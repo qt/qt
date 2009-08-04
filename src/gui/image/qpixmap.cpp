@@ -1915,7 +1915,6 @@ int QPixmap::defaultDepth()
 #elif defined(Q_OS_SYMBIAN)
     return S60->screenDepth;
 #endif
-    
 }
 
 typedef void (*_qt_pixmap_cleanup_hook_64)(qint64);

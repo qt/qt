@@ -287,10 +287,10 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
 
     \note The storage location returned can be a directory that does not exist; i.e., it
     may need to be created by the system or the user.
-    
+
     \note On Symbian OS, DataLocation and ApplicationsLocation always point to appropriate
     folder on same drive with executable. FontsLocation always points to folder on ROM drive.
-    Rest of the standard locations point to folder on same drive with executable, except 
+    Rest of the standard locations point to folder on same drive with executable, except
     that if executable is in ROM the folder from C drive is returned.
 
     \note On Mac OS X, DataLocation does not include QCoreApplication::organizationName.
