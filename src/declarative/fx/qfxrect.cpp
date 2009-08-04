@@ -475,10 +475,17 @@ void QFxRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QFxRect);
     if (d->radius > 0 || (d->pen && d->pen->isValid())
-           || (d->gradient && d->gradient->gradient()) )
+        || (d->gradient && d->gradient->gradient()) ) {
         drawRect(*p);
-    else
+    }
+    else {
+        bool oldAA = p->testRenderHint(QPainter::Antialiasing);
+        if (d->smooth)
+            p->setRenderHints(QPainter::Antialiasing, true);
         p->fillRect(QRect(0, 0, width(), height()), d->getColor());
+        if (d->smooth)
+            p->setRenderHint(QPainter::Antialiasing, oldAA);
+    }
 }
 
 void QFxRect::drawRect(QPainter &p)
@@ -502,6 +509,11 @@ void QFxRect::drawRect(QPainter &p)
             p.drawRect(0, 0, width(), height());
         p.setRenderHint(QPainter::Antialiasing, oldAA);
     } else {
+        bool oldAA = p.testRenderHint(QPainter::Antialiasing);
+        bool oldSmooth = p.testRenderHint(QPainter::SmoothPixmapTransform);
+        if (d->smooth)
+            p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+
         int offset = 0;
         const int pw = d->pen && d->pen->isValid() ? (d->pen->width()+1)/2*2 : 0;
 
@@ -569,6 +581,11 @@ void QFxRect::drawRect(QPainter &p)
         // Lower Right
         p.drawPixmap(QPoint(width()-xOffset+pw/2, height() - yOffset+pw/2), d->rectImage,
                         QRect(d->rectImage.width()-xOffset, d->rectImage.height() - yOffset, xOffset, yOffset));
+
+        if (d->smooth) {
+            p.setRenderHint(QPainter::Antialiasing, oldAA);
+            p.setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
+        }
     }
 }
 
