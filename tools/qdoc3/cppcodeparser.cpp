@@ -1724,6 +1724,9 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
             value = "?";
         }
 
+        /*
+          Task 259071 requires work here. See gui/widgets/qdatetime.h, for example.
+         */
         if (key == "READ")
             tre->addPropertyFunction(property, value, PropertyNode::Getter);
         else if (key == "WRITE")
