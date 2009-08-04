@@ -448,16 +448,20 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
         int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
     Q_UNUSED(object);
-    QByteArray name = cname;
-
+    QByteArray name;
     if (uri) {
+        // Convert to path
+        name = uri;
+        name.replace('.','/');
         if (version) {
-            name = QByteArray(uri) + '/' + version + '/' + name;
-        } else {
-            name = QByteArray(uri) + '/' + name;
+            name += '/';
+            name += version;
         }
+        name += '/';
+        name += cname;
     } else {
         // No URI? No version!
+        name = cname;
         Q_ASSERT(!version);
     }
 

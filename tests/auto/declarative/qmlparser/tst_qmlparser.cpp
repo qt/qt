@@ -46,6 +46,9 @@ private slots:
     void customVariantTypes();
     void valueTypes();
 
+    void imports_data();
+    void imports();
+
     // regression tests for crashes
     void crash1();
 
@@ -55,6 +58,8 @@ private:
 
 #define VERIFY_ERRORS(errorfile) \
     if (!errorfile) { \
+        if (qgetenv("DEBUG") != "" && !component.errors().isEmpty()) \
+            qWarning() << "Unexpected Errors:" << component.errors(); \
         QVERIFY(!component.isError()); \
         QVERIFY(component.errors().isEmpty()); \
     } else { \
@@ -94,12 +99,12 @@ void tst_qmlparser::errors_data()
     QTest::addColumn<QString>("errorFile");
     QTest::addColumn<bool>("create");
 
-    QTest::newRow("nonExistantProperty.1") << "nonexistantProperty.1.txt" << "nonexistantProperty.1.errors.txt" << false;
-    QTest::newRow("nonExistantProperty.2") << "nonexistantProperty.2.txt" << "nonexistantProperty.2.errors.txt" << false;
-    QTest::newRow("nonExistantProperty.3") << "nonexistantProperty.3.txt" << "nonexistantProperty.3.errors.txt" << false;
-    QTest::newRow("nonExistantProperty.4") << "nonexistantProperty.4.txt" << "nonexistantProperty.4.errors.txt" << false;
-    QTest::newRow("nonExistantProperty.5") << "nonexistantProperty.5.txt" << "nonexistantProperty.5.errors.txt" << false;
-    QTest::newRow("nonExistantProperty.6") << "nonexistantProperty.6.txt" << "nonexistantProperty.6.errors.txt" << false;
+    QTest::newRow("nonexistantProperty.1") << "nonexistantProperty.1.txt" << "nonexistantProperty.1.errors.txt" << false;
+    QTest::newRow("nonexistantProperty.2") << "nonexistantProperty.2.txt" << "nonexistantProperty.2.errors.txt" << false;
+    QTest::newRow("nonexistantProperty.3") << "nonexistantProperty.3.txt" << "nonexistantProperty.3.errors.txt" << false;
+    QTest::newRow("nonexistantProperty.4") << "nonexistantProperty.4.txt" << "nonexistantProperty.4.errors.txt" << false;
+    QTest::newRow("nonexistantProperty.5") << "nonexistantProperty.5.txt" << "nonexistantProperty.5.errors.txt" << false;
+    QTest::newRow("nonexistantProperty.6") << "nonexistantProperty.6.txt" << "nonexistantProperty.6.errors.txt" << false;
 
     QTest::newRow("wrongType (string for int)") << "wrongType.1.txt" << "wrongType.1.errors.txt" << false;
     QTest::newRow("wrongType (int for bool)") << "wrongType.2.txt" << "wrongType.2.errors.txt" << false;
@@ -168,6 +173,7 @@ void tst_qmlparser::simpleObject()
 void tst_qmlparser::simpleContainer()
 {
     QmlComponent component(&engine, TEST_FILE("simpleContainer.txt"));
+    VERIFY_ERRORS(0);
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QCOMPARE(container->children()->count(),2);
@@ -176,6 +182,7 @@ void tst_qmlparser::simpleContainer()
 void tst_qmlparser::interfaceProperty()
 {
     QmlComponent component(&engine, TEST_FILE("interfaceProperty.txt"));
+    VERIFY_ERRORS(0);
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QVERIFY(object->interface());
@@ -185,6 +192,7 @@ void tst_qmlparser::interfaceProperty()
 void tst_qmlparser::interfaceQmlList()
 {
     QmlComponent component(&engine, TEST_FILE("interfaceQmlList.txt"));
+    VERIFY_ERRORS(0);
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QVERIFY(container->qmllistAccessor().count() == 2);
@@ -195,6 +203,7 @@ void tst_qmlparser::interfaceQmlList()
 void tst_qmlparser::interfaceQList()
 {
     QmlComponent component(&engine, TEST_FILE("interfaceQList.txt"));
+    VERIFY_ERRORS(0);
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QVERIFY(container->qlistInterfaces()->count() == 2);
@@ -205,6 +214,7 @@ void tst_qmlparser::interfaceQList()
 void tst_qmlparser::assignObjectToSignal()
 {
     QmlComponent component(&engine, TEST_FILE("assignObjectToSignal.txt"));
+    VERIFY_ERRORS(0);
     MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
@@ -214,6 +224,7 @@ void tst_qmlparser::assignObjectToSignal()
 void tst_qmlparser::assignObjectToVariant()
 {
     QmlComponent component(&engine, TEST_FILE("assignObjectToVariant.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
     QVariant v = object->property("a");
@@ -223,6 +234,7 @@ void tst_qmlparser::assignObjectToVariant()
 void tst_qmlparser::assignLiteralSignalProperty()
 {
     QmlComponent component(&engine, TEST_FILE("assignLiteralSignalProperty.txt"));
+    VERIFY_ERRORS(0);
     MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->onLiteralSignal(), 10);
@@ -232,6 +244,7 @@ void tst_qmlparser::assignLiteralSignalProperty()
 void tst_qmlparser::assignQmlComponent()
 {
     QmlComponent component(&engine, TEST_FILE("assignQmlComponent.txt"));
+    VERIFY_ERRORS(0);
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
     QVERIFY(object->children()->count() == 1);
@@ -244,6 +257,7 @@ void tst_qmlparser::assignQmlComponent()
 void tst_qmlparser::assignBasicTypes()
 {
     QmlComponent component(&engine, TEST_FILE("assignBasicTypes.txt"));
+    VERIFY_ERRORS(0);
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->flagProperty(), MyTypeObject::FlagVal1 | MyTypeObject::FlagVal3);
@@ -275,6 +289,7 @@ void tst_qmlparser::assignBasicTypes()
 void tst_qmlparser::assignTypeExtremes()
 {
     QmlComponent component(&engine, TEST_FILE("assignTypeExtremes.txt"));
+    VERIFY_ERRORS(0);
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->uintProperty(), 0xEE6B2800);
@@ -285,6 +300,7 @@ void tst_qmlparser::assignTypeExtremes()
 void tst_qmlparser::customParserTypes()
 {
     QmlComponent component(&engine, TEST_FILE("customParserTypes.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
     QVERIFY(object->property("count") == QVariant(2));
@@ -294,6 +310,7 @@ void tst_qmlparser::customParserTypes()
 void tst_qmlparser::rootAsQmlComponent()
 {
     QmlComponent component(&engine, TEST_FILE("rootAsQmlComponent.txt"));
+    VERIFY_ERRORS(0);
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->property("x"), QVariant(11));
@@ -304,6 +321,7 @@ void tst_qmlparser::rootAsQmlComponent()
 void tst_qmlparser::inlineQmlComponents()
 {
     QmlComponent component(&engine, TEST_FILE("inlineQmlComponents.txt"));
+    VERIFY_ERRORS(0);
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->children()->count(), 1);
@@ -318,6 +336,7 @@ void tst_qmlparser::inlineQmlComponents()
 void tst_qmlparser::idProperty()
 {
     QmlComponent component(&engine, TEST_FILE("idProperty.txt"));
+    VERIFY_ERRORS(0);
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->children()->count(), 1);
@@ -332,6 +351,7 @@ void tst_qmlparser::idProperty()
 void tst_qmlparser::assignSignal()
 {
     QmlComponent component(&engine, TEST_FILE("assignSignal.txt"));
+    VERIFY_ERRORS(0);
     MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
@@ -342,6 +362,7 @@ void tst_qmlparser::assignSignal()
 void tst_qmlparser::dynamicProperties()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicProperties.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("intProperty"), QVariant(10));
@@ -359,6 +380,7 @@ void tst_qmlparser::dynamicProperties()
 void tst_qmlparser::dynamicSignalsAndSlots()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicSignalsAndSlots.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
     QVERIFY(object->metaObject()->indexOfMethod("signal1()") != -1);
@@ -370,6 +392,7 @@ void tst_qmlparser::dynamicSignalsAndSlots()
 void tst_qmlparser::simpleBindings()
 {
     QmlComponent component(&engine, TEST_FILE("simpleBindings.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("value1"), QVariant(10));
@@ -382,6 +405,7 @@ void tst_qmlparser::simpleBindings()
 void tst_qmlparser::autoComponentCreation()
 {
     QmlComponent component(&engine, TEST_FILE("autoComponentCreation.txt"));
+    VERIFY_ERRORS(0);
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
     QVERIFY(object->componentProperty() != 0);
@@ -393,6 +417,7 @@ void tst_qmlparser::autoComponentCreation()
 void tst_qmlparser::propertyValueSource()
 {
     QmlComponent component(&engine, TEST_FILE("propertyValueSource.txt"));
+    VERIFY_ERRORS(0);
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
     QList<QmlPropertyValueSource *> valueSources = 
@@ -408,6 +433,7 @@ void tst_qmlparser::propertyValueSource()
 void tst_qmlparser::attachedProperties()
 {
     QmlComponent component(&engine, TEST_FILE("attachedProperties.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
     QObject *attached = qmlAttachedPropertiesObject<MyQmlObject>(object);
@@ -419,6 +445,7 @@ void tst_qmlparser::attachedProperties()
 void tst_qmlparser::dynamicObjects()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicObject.1.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
 }
@@ -427,6 +454,7 @@ void tst_qmlparser::dynamicObjects()
 void tst_qmlparser::customVariantTypes()
 {
     QmlComponent component(&engine, TEST_FILE("customVariantTypes.txt"));
+    VERIFY_ERRORS(0);
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->customType().a, 10);
@@ -435,6 +463,7 @@ void tst_qmlparser::customVariantTypes()
 void tst_qmlparser::valueTypes()
 {
     QmlComponent component(&engine, TEST_FILE("valueTypes.txt"));
+    VERIFY_ERRORS(0);
     MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
     QVERIFY(object != 0);
 
@@ -455,6 +484,64 @@ void tst_qmlparser::valueTypes()
     QmlMetaProperty p2;
     p2.restore(r, object);
     QCOMPARE(p2.read(), QVariant(13));
+}
+
+class TestType : public QObject {
+    Q_OBJECT
+public:
+    TestType(QObject *p=0) : QObject(p) {}
+};
+
+class TestType2 : public QObject {
+    Q_OBJECT
+public:
+    TestType2(QObject *p=0) : QObject(p) {}
+};
+
+QML_DECLARE_TYPE(TestType)
+QML_DECLARE_TYPE(TestType2)
+
+QML_DEFINE_TYPE(com.nokia.Test, 1, 0, 3, Test, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 5, 7, Test, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 8, 9, Test, TestType2)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 12, 13, Test, TestType2)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 9, 11, OldTest, TestType)
+
+void tst_qmlparser::imports_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("type");
+
+    QTest::newRow("missing import") << "Test {}" << "";
+    QTest::newRow("not in version 0.0") << "import com.nokia.Test 0.0\nTest {}" << "";
+    QTest::newRow("in version 1.0") << "import com.nokia.Test 1.0\nTest {}" << "TestType";
+    QTest::newRow("in version 1.1") << "import com.nokia.Test 1.1\nTest {}" << "TestType";
+    QTest::newRow("in version 1.3") << "import com.nokia.Test 1.3\nTest {}" << "TestType";
+    QTest::newRow("not in version 1.4") << "import com.nokia.Test 1.4\nTest {}" << "";
+    QTest::newRow("in version 1.5") << "import com.nokia.Test 1.5\nTest {}" << "TestType";
+    QTest::newRow("changed in version 1.8") << "import com.nokia.Test 1.8\nTest {}" << "TestType2";
+    QTest::newRow("not in version 1.10") << "import com.nokia.Test 1.10\nTest {}" << "";
+    QTest::newRow("back in version 1.12") << "import com.nokia.Test 1.12\nTest {}" << "TestType2";
+    QTest::newRow("old in version 1.9") << "import com.nokia.Test 1.9\nOldTest {}" << "TestType";
+    QTest::newRow("old in version 1.11") << "import com.nokia.Test 1.11\nOldTest {}" << "TestType";
+    QTest::newRow("no old in version 1.12") << "import com.nokia.Test 1.12\nOldTest {}" << "";
+}
+
+// Tests the registration of custom variant string converters
+void tst_qmlparser::imports()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, type);
+
+    QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.txt"));
+
+    if (type.isEmpty()) {
+        QVERIFY(component.isError());
+    } else {
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(QString(object->metaObject()->className()), type);
+    }
 }
 
 void tst_qmlparser::crash1()
