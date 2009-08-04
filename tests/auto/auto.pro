@@ -141,6 +141,7 @@ SUBDIRS += _networkselftest \
            qgl \
            qglobal \
            qgraphicseffect \
+           qgraphicseffectsource \
            qgraphicsitem \
            qgraphicsitemanimation \
            qgraphicslayout \
