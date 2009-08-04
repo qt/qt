@@ -172,6 +172,10 @@ public:
     qint64 readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out);
     qint64 getChunkSize(QIODevice *in, qint64 *chunkSize);
 
+    void appendUncompressedReplyData(QByteArray &qba);
+    void appendUncompressedReplyData(QByteDataBuffer &data);
+    void appendCompressedReplyData(QByteDataBuffer &data);
+
     qint64 bytesAvailable() const;
     bool isChunked();
     bool connectionCloseEnabled();

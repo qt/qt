@@ -197,10 +197,6 @@ public:
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
-    void appendUncompressedData(QHttpNetworkReply &reply, QByteArray &qba);
-    void appendUncompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
-    void appendCompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
-
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
     qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;

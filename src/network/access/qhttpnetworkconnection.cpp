@@ -129,35 +129,6 @@ bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) con
     return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::ReadingState));
 }
 
-void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, QByteArray &qba)
-{
-    reply.d_func()->responseData.append(qba);
-
-    // clear the original! helps with implicit sharing and
-    // avoiding memcpy when the user is reading the data
-    qba.clear();
-}
-
-void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data)
-{
-    reply.d_func()->responseData.append(data);
-
-    // clear the original! helps with implicit sharing and
-    // avoiding memcpy when the user is reading the data
-    data.clear();
-}
-
-void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data)
-{
-    // Work in progress: Later we will directly use a list of QByteArray or a QRingBuffer
-    // instead of one QByteArray.
-    for(int i = 0; i < data.bufferCount(); i++) {
-        QByteArray &byteData = data[i];
-        reply.d_func()->compressedData.append(byteData.constData(), byteData.size());
-    }
-    data.clear();
-}
-
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
     return reply.d_func()->responseData.byteAmount();
@@ -517,7 +488,7 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
         if (ret >= retCheck) {
             if (inflated.size()) {
                 reply->d_func()->totalProgress += inflated.size();
-                appendUncompressedData(*reply, inflated);
+                reply->d_func()->appendUncompressedReplyData(inflated);
                 if (shouldEmitSignals(reply)) {
                     // important: At the point of this readyRead(), inflated must be cleared,
                     // else implicit sharing will trigger memcpy when the user is reading data!
@@ -638,9 +609,9 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                 bytes = reply->d_func()->readBody(socket, &byteDatas);
                 if (bytes) {
                     if (reply->d_func()->autoDecompress)
-                        appendCompressedData(*reply, byteDatas);
+                        reply->d_func()->appendCompressedReplyData(byteDatas);
                     else
-                        appendUncompressedData(*reply, byteDatas);
+                        reply->d_func()->appendUncompressedReplyData(byteDatas);
 
                     if (!reply->d_func()->autoDecompress) {
                         reply->d_func()->totalProgress += bytes;
