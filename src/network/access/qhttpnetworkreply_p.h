@@ -149,6 +149,7 @@ private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
     friend class QHttpNetworkConnection;
     friend class QHttpNetworkConnectionPrivate;
+    friend class QHttpNetworkConnectionChannel;
 };
 
 

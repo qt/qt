@@ -138,23 +138,10 @@ private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY(QHttpNetworkConnection)
     friend class QHttpNetworkReply;
+    friend class QHttpNetworkConnectionChannel;
 
-    Q_PRIVATE_SLOT(d_func(), void _q_bytesWritten(qint64))
-    Q_PRIVATE_SLOT(d_func(), void _q_readyRead())
-    Q_PRIVATE_SLOT(d_func(), void _q_disconnected())
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_restartAuthPendingRequests())
-    Q_PRIVATE_SLOT(d_func(), void _q_connected())
-    Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))
-#ifndef QT_NO_NETWORKPROXY
-    Q_PRIVATE_SLOT(d_func(), void _q_proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*))
-#endif
-    Q_PRIVATE_SLOT(d_func(), void _q_uploadDataReadyRead())
-
-#ifndef QT_NO_OPENSSL
-    Q_PRIVATE_SLOT(d_func(), void _q_encrypted())
-    Q_PRIVATE_SLOT(d_func(), void _q_sslErrors(const QList<QSslError>&))
-#endif
 };
 
 
@@ -169,7 +156,6 @@ public:
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
     ~QHttpNetworkConnectionPrivate();
     void init();
-    void connectSignals(QAbstractSocket *socket);
 
     enum { ChunkSize = 4096 };
 
@@ -189,18 +175,8 @@ public:
     void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
 
     // private slots
-    void _q_bytesWritten(qint64 bytes); // proceed sending
-    void _q_readyRead(); // pending data to read
-    void _q_disconnected(); // disconnected from host
     void _q_startNextRequest(); // send the next request from the queue
     void _q_restartAuthPendingRequests(); // send the currently blocked request
-    void _q_connected(); // start sending request
-    void _q_error(QAbstractSocket::SocketError); // error from socket
-#ifndef QT_NO_NETWORKPROXY
-    void _q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth); // from transparent proxy
-#endif
-
-    void _q_uploadDataReadyRead();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
     bool ensureConnection(QAbstractSocket *socket);
@@ -237,8 +213,6 @@ public:
     inline bool expectContent(QHttpNetworkReply *reply);
 
 #ifndef QT_NO_OPENSSL
-    void _q_encrypted(); // start sending request (https)
-    void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
     QSslConfiguration sslConfiguration(const QHttpNetworkReply &reply) const;
 #endif
 
@@ -249,6 +223,8 @@ public:
     //The request queues
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;
+
+    friend class QHttpNetworkConnectionChannel;
 };
 
 
