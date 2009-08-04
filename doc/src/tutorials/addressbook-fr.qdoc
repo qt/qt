@@ -220,7 +220,7 @@
     On remarque que le label \c AddressLabel est positionné en utilisant Qt::AlignTop
     comme argument optionnel. Ceci est destiné à assurer qu'il ne sera pas centré
     verticalement dans la cellule (1,0). Pour un aperçu rapide des layouts de Qt,
-    consultez la section \l{Layout Classes}.
+    consultez la section \l{Layout Management}.
 
     Afin d'installer l'objet layout dans un widget, il faut appeler la méthode
     \l{QWidget::setLayout()}{setLayout()} du widget en question:

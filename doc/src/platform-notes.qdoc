@@ -60,6 +60,10 @@
     \tableofcontents{1 Platform Notes - Embedded Linux}
     \o \l{Platform Notes - Windows CE}
     \tableofcontents{1 Platform Notes - Windows CE}
+    \o \l{Platform Notes - QNX}
+    \tableofcontents{1 Platform Notes - QNX}
+    \o \l{Platform Notes - VxWorks}
+    \tableofcontents{1 Platform Notes - VxWorks}
     \endlist
 
     See also the \l{Compiler Notes} for information about compiler-specific
@@ -373,7 +377,6 @@
     Also, consider filing a bug report with Apple so that they can
     improve support for this feature.
 */
-
 
 /*!
     \page platform-notes-windows-ce.html

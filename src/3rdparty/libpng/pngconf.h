@@ -344,7 +344,7 @@
 #  endif /* __linux__ */
 #endif /* PNG_SETJMP_SUPPORTED */
 
-#ifdef BSD
+#if defined(BSD) && !defined(VXWORKS)
 #  include <strings.h>
 #else
 #  include <string.h>

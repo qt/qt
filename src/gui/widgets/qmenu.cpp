@@ -2748,7 +2748,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
 
     QAction *action = d->actionAt(e->pos());
     if (!action) {
-        if (d->hasHadMouse && !rect().contains(e->pos()))
+        if (d->hasHadMouse)
             d->setCurrentAction(0);
         return;
     } else if(e->buttons()) {

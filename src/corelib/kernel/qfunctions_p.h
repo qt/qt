@@ -57,6 +57,8 @@
 
 #if defined(Q_OS_WINCE)
 #  include "QtCore/qfunctions_wince.h"
+#elif defined(Q_OS_VXWORKS)
+#  include "QtCore/qfunctions_vxworks.h"
 #endif
 
 #ifdef Q_CC_RVCT

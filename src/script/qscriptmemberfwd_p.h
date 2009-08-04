@@ -53,6 +53,10 @@
 // We mean it.
 //
 
+#if defined(Q_OS_VXWORKS) && defined(m_flags)
+#  undef m_flags
+#endif
+
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE

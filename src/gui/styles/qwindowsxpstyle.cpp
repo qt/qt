@@ -134,6 +134,7 @@ static const int windowsRightBorder      = 12; // right border on windows
 
 // External function calls
 extern Q_GUI_EXPORT HDC qt_win_display_dc();
+extern QRegion qt_region_from_HRGN(HRGN rgn);
 
 
 
@@ -445,6 +446,7 @@ bool QWindowsXPStylePrivate::isTransparent(XPThemeData &themeData)
                                                   themeData.stateId);
 }
 
+
 /*! \internal
     Returns a QRegion of the region of the part
 */
@@ -456,12 +458,18 @@ QRegion QWindowsXPStylePrivate::region(XPThemeData &themeData)
                                              themeData.stateId, &rect, &hRgn)))
         return QRegion();
 
-    QRegion rgn = QRegion(0,0,1,1);
-    const bool success = CombineRgn(rgn.handle(), hRgn, 0, RGN_COPY) != ERROR;
-    DeleteObject(hRgn);
+    HRGN dest = CreateRectRgn(0, 0, 0, 0);
+    const bool success = CombineRgn(dest, hRgn, 0, RGN_COPY) != ERROR;
+
+    QRegion region;
+
     if (success)
-        return rgn;
-    return QRegion();
+        region = qt_region_from_HRGN(dest);
+
+    DeleteObject(hRgn);
+    DeleteObject(dest);
+
+    return region;
 }
 
 /*! \internal

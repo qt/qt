@@ -154,6 +154,18 @@
 #ifdef SELF
 #  undef SELF
 #endif
+/* These tokens are defined in VxWorks kernel mode
+ *
+ * Hence this un-break fix. Note that this file was auto generated. */
+#ifdef ERROR
+#  undef ERROR
+#endif
+#ifdef IMPORT
+#  undef IMPORT
+#endif
+#ifdef MAP
+#  undef MAP
+#endif
 
 /* These tokens are defined to nothing on Windows because they're
  * used in their documentation parser, for use in things like:

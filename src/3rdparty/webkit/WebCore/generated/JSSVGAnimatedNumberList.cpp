@@ -73,9 +73,8 @@ JSObject* JSSVGAnimatedNumberListPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGAnimatedNumberList::s_info = { "SVGAnimatedNumberList", 0, &JSSVGAnimatedNumberListTable, 0 };
 
-JSSVGAnimatedNumberList::JSSVGAnimatedNumberList(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimatedNumberList> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGAnimatedNumberList::JSSVGAnimatedNumberList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedNumberList> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -97,21 +96,23 @@ bool JSSVGAnimatedNumberList::getOwnPropertySlot(ExecState* exec, const Identifi
 
 JSValue jsSVGAnimatedNumberListBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedNumberList* castedThis = static_cast<JSSVGAnimatedNumberList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedNumberList* imp = static_cast<SVGAnimatedNumberList*>(static_cast<JSSVGAnimatedNumberList*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->baseVal()), static_cast<JSSVGAnimatedNumberList*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedNumberList* imp = static_cast<SVGAnimatedNumberList*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), WTF::getPtr(imp->baseVal()), castedThis->context());
 }
 
 JSValue jsSVGAnimatedNumberListAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedNumberList* castedThis = static_cast<JSSVGAnimatedNumberList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedNumberList* imp = static_cast<SVGAnimatedNumberList*>(static_cast<JSSVGAnimatedNumberList*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->animVal()), static_cast<JSSVGAnimatedNumberList*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedNumberList* imp = static_cast<SVGAnimatedNumberList*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), WTF::getPtr(imp->animVal()), castedThis->context());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedNumberList* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedNumberList* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGAnimatedNumberList>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGAnimatedNumberList>(exec, globalObject, object, context);
 }
 SVGAnimatedNumberList* toSVGAnimatedNumberList(JSC::JSValue value)
 {

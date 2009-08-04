@@ -72,8 +72,8 @@ JSObject* JSSVGPathSegLinetoHorizontalAbsPrototype::self(ExecState* exec, JSGlob
 
 const ClassInfo JSSVGPathSegLinetoHorizontalAbs::s_info = { "SVGPathSegLinetoHorizontalAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoHorizontalAbsTable, 0 };
 
-JSSVGPathSegLinetoHorizontalAbs::JSSVGPathSegLinetoHorizontalAbs(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegLinetoHorizontalAbs> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegLinetoHorizontalAbs::JSSVGPathSegLinetoHorizontalAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoHorizontalAbs> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -89,8 +89,9 @@ bool JSSVGPathSegLinetoHorizontalAbs::getOwnPropertySlot(ExecState* exec, const 
 
 JSValue jsSVGPathSegLinetoHorizontalAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegLinetoHorizontalAbs* castedThis = static_cast<JSSVGPathSegLinetoHorizontalAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegLinetoHorizontalAbs* imp = static_cast<SVGPathSegLinetoHorizontalAbs*>(static_cast<JSSVGPathSegLinetoHorizontalAbs*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegLinetoHorizontalAbs* imp = static_cast<SVGPathSegLinetoHorizontalAbs*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 

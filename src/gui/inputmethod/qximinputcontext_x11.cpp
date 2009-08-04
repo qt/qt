@@ -53,6 +53,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qdebug.h"
 #include "qximinputcontext_p.h"
 

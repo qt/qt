@@ -67,6 +67,11 @@
 
 #ifndef QT_NO_CSSPARSER
 
+// VxWorks defines NONE as (-1) "for times when NULL won't do"
+#if defined(Q_OS_VXWORKS) && defined(NONE)
+#  undef NONE
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QCss

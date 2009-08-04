@@ -52,6 +52,8 @@
 #include <qt_windows.h>
 #endif
 
+#include "private/qfunctions_p.h"
+
 
 #ifndef QT_NO_CONCURRENT
 

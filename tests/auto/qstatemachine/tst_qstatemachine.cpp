@@ -192,6 +192,7 @@ private slots:
 //    void overrideDefaultTargetAnimationWithSource();
 
     void nestedStateMachines();
+    void goToState();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -225,7 +226,8 @@ class TestTransition : public QAbstractTransition
 {
 public:
     TestTransition(QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target) {}
+        : QAbstractTransition()
+    { setTargetState(target); }
     QList<int> triggers;
 protected:
     virtual bool eventTest(QEvent *) {
@@ -248,7 +250,8 @@ class EventTransition : public QAbstractTransition
 {
 public:
     EventTransition(QEvent::Type type, QAbstractState *target, QState *parent = 0)
-        : QAbstractTransition(QList<QAbstractState*>() << target, parent), m_type(type) {}
+        : QAbstractTransition(parent), m_type(type)
+    { setTargetState(target); }
 protected:
     virtual bool eventTest(QEvent *e) {
         return (e->type() == m_type);
@@ -1513,7 +1516,8 @@ class StringTransition : public QAbstractTransition
 {
 public:
     StringTransition(const QString &value, QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target), m_value(value) {}
+        : QAbstractTransition(), m_value(value)
+    { setTargetState(target); }
 
 protected:
     virtual bool eventTest(QEvent *e) 
@@ -1736,7 +1740,8 @@ public:
         : QSignalTransition(sourceState) {}
     TestSignalTransition(QObject *sender, const char *signal,
                          QAbstractState *target)
-        : QSignalTransition(sender, signal, QList<QAbstractState*>() << target) {}
+        : QSignalTransition(sender, signal)
+    { setTargetState(target); }
     QVariantList argumentsReceived() const {
         return m_args;
     }
@@ -2021,20 +2026,15 @@ void tst_QStateMachine::signalTransitions()
 void tst_QStateMachine::eventTransitions()
 {
     QPushButton button;
-    for (int x = 0; x < 2; ++x) {
+    {
         QStateMachine machine;
         QState *s0 = new QState(&machine);
         QFinalState *s1 = new QFinalState(&machine);
 
         QMouseEventTransition *trans;
-        if (x == 0) {
-            trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress, Qt::LeftButton);
-            QCOMPARE(trans->targetState(), (QAbstractState*)0);
-            trans->setTargetState(s1);
-        } else {
-            trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress,
-                                              Qt::LeftButton, QList<QAbstractState*>() << s1);
-        }
+        trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress, Qt::LeftButton);
+        QCOMPARE(trans->targetState(), (QAbstractState*)0);
+        trans->setTargetState(s1);
         QCOMPARE(trans->eventType(), QEvent::MouseButtonPress);
         QCOMPARE(trans->button(), Qt::LeftButton);
         QCOMPARE(trans->targetState(), (QAbstractState*)s1);
@@ -2070,7 +2070,7 @@ void tst_QStateMachine::eventTransitions()
         QTest::mousePress(&button2, Qt::LeftButton);
         QTRY_COMPARE(finishedSpy.count(), 4);
     }
-    for (int x = 0; x < 3; ++x) {
+    for (int x = 0; x < 2; ++x) {
         QStateMachine machine;
         QState *s0 = new QState(&machine);
         QFinalState *s1 = new QFinalState(&machine);
@@ -2086,9 +2086,6 @@ void tst_QStateMachine::eventTransitions()
         } else if (x == 1) {
             trans = new QEventTransition(&button, QEvent::MouseButtonPress);
             trans->setTargetState(s1);
-        } else {
-            trans = new QEventTransition(&button, QEvent::MouseButtonPress,
-                                         QList<QAbstractState*>() << s1);
         }
         QCOMPARE(trans->eventObject(), (QObject*)&button);
         QCOMPARE(trans->eventType(), QEvent::MouseButtonPress);
@@ -3898,6 +3895,46 @@ void tst_QStateMachine::nestedStateMachines()
         subMachines[i]->postEvent(new QEvent(QEvent::User));
 
     QTRY_COMPARE(finishedSpy.count(), 1);
+}
+
+void tst_QStateMachine::goToState()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QState *s2 = new QState(&machine);
+    machine.setInitialState(s1);
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+
+    QStateMachinePrivate::get(&machine)->goToState(s2);
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+
+    QStateMachinePrivate::get(&machine)->goToState(s2);
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+
+    QStateMachinePrivate::get(&machine)->goToState(s1);
+    QStateMachinePrivate::get(&machine)->goToState(s2);
+    QStateMachinePrivate::get(&machine)->goToState(s1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    // go to state in group
+    QState *s2_1 = new QState(s2);
+    s2->setInitialState(s2_1);
+    QStateMachinePrivate::get(&machine)->goToState(s2_1);
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 2);
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s2_1));
 }
 
 QTEST_MAIN(tst_QStateMachine)

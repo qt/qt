@@ -690,6 +690,13 @@ QT_BEGIN_NAMESPACE
     Returns a textual representation of the given \a rectangle.
 */
 
+/*!
+    \fn char *QTest::toString(const QVariant &variant)
+    \overload
+
+    Returns a textual representation of the given \a variant.
+*/
+
 /*! \fn void QTest::qWait(int ms)
 
     Waits for \a ms milliseconds. While waiting, events will be processed and
@@ -806,6 +813,53 @@ namespace QTest
     static int eventDelay = -1;
     static int keyVerbose = -1;
 
+void filter_unprintable(char *str)
+{
+    char *idx = str;
+    while (*idx) {
+        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
+            *idx = '?';
+        ++idx;
+    }
+}
+
+/*! \internal
+ */
+int qt_asprintf(char **str, const char *format, ...)
+{
+    static const int MAXSIZE = 1024*1024*2;
+
+    int size = 32;
+    delete[] *str;
+    *str = new char[size];
+
+    va_list ap;
+    int res = 0;
+
+    for (;;) {
+        va_start(ap, format);
+        res = qvsnprintf(*str, size, format, ap);
+        va_end(ap);
+        (*str)[size - 1] = '\0';
+        if (res >= 0 && res < size) {
+            // We succeeded
+            break;
+        }
+        // buffer wasn't big enough, try again.
+        // Note, we're assuming that a result of -1 is always due to running out of space.
+        size *= 2;
+        if (size > MAXSIZE) {
+            break;
+        }
+        delete[] *str;
+        *str = new char[size];
+    }
+
+    filter_unprintable(*str);
+
+    return res;
+}
+
 /*! \internal
  */
 int qt_snprintf(char *str, int size, const char *format, ...)
@@ -818,12 +872,8 @@ int qt_snprintf(char *str, int size, const char *format, ...)
     va_end(ap);
     str[size - 1] = '\0';
 
-    char *idx = str;
-    while (*idx) {
-        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
-            *idx = '?';
-        ++idx;
-    }
+    filter_unprintable(str);
+
     return res;
 }
 

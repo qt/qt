@@ -26,6 +26,7 @@
 #include "HTMLAnchorElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLInputElement.h"
+#include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "RenderImage.h"
 #include "Scrollbar.h"
@@ -145,17 +146,20 @@ bool HitTestResult::isSelected() const
     return frame->selection()->contains(m_point);
 }
 
-String HitTestResult::spellingToolTip() const
+String HitTestResult::spellingToolTip(TextDirection& dir) const
 {
+    dir = LTR;
     // Return the tool tip string associated with this point, if any. Only markers associated with bad grammar
     // currently supply strings, but maybe someday markers associated with misspelled words will also.
     if (!m_innerNonSharedNode)
         return String();
     
-     DocumentMarker* marker = m_innerNonSharedNode->document()->markerContainingPoint(m_point, DocumentMarker::Grammar);
+    DocumentMarker* marker = m_innerNonSharedNode->document()->markerContainingPoint(m_point, DocumentMarker::Grammar);
     if (!marker)
         return String();
 
+    if (RenderObject* renderer = m_innerNonSharedNode->renderer())
+        dir = renderer->style()->direction();
     return marker->description;
 }
 
@@ -173,15 +177,19 @@ String HitTestResult::replacedString() const
     return marker->description;
 }    
     
-String HitTestResult::title() const
+String HitTestResult::title(TextDirection& dir) const
 {
+    dir = LTR;
     // Find the title in the nearest enclosing DOM node.
     // For <area> tags in image maps, walk the tree for the <area>, not the <img> using it.
     for (Node* titleNode = m_innerNode.get(); titleNode; titleNode = titleNode->parentNode()) {
         if (titleNode->isElementNode()) {
             String title = static_cast<Element*>(titleNode)->title();
-            if (!title.isEmpty())
+            if (!title.isEmpty()) {
+                if (RenderObject* renderer = titleNode->renderer())
+                    dir = renderer->style()->direction();
                 return title;
+            }
         }
     }
     return String();
@@ -208,7 +216,7 @@ String HitTestResult::altDisplayString() const
         HTMLInputElement* input = static_cast<HTMLInputElement*>(m_innerNonSharedNode.get());
         return displayString(input->alt(), m_innerNonSharedNode.get());
     }
-    
+
 #if ENABLE(WML)
     if (m_innerNonSharedNode->hasTagName(WMLNames::imgTag)) {
         WMLImageElement* image = static_cast<WMLImageElement*>(m_innerNonSharedNode.get());
@@ -266,7 +274,29 @@ KURL HitTestResult::absoluteImageURL() const
     } else
         return KURL();
 
-    return m_innerNonSharedNode->document()->completeURL(parseURL(urlString));
+    return m_innerNonSharedNode->document()->completeURL(deprecatedParseURL(urlString));
+}
+
+KURL HitTestResult::absoluteMediaURL() const
+{
+#if ENABLE(VIDEO)
+    if (!(m_innerNonSharedNode && m_innerNonSharedNode->document()))
+        return KURL();
+
+    if (!(m_innerNonSharedNode->renderer() && m_innerNonSharedNode->renderer()->isMedia()))
+        return KURL();
+
+    AtomicString urlString;
+    if (m_innerNonSharedNode->hasTagName(HTMLNames::videoTag) || m_innerNonSharedNode->hasTagName(HTMLNames::audioTag)) {
+        HTMLMediaElement* mediaElement = static_cast<HTMLMediaElement*>(m_innerNonSharedNode.get());
+        urlString = mediaElement->currentSrc();
+    } else
+        return KURL();
+
+    return m_innerNonSharedNode->document()->completeURL(deprecatedParseURL(urlString));
+#else
+    return KURL();
+#endif
 }
 
 KURL HitTestResult::absoluteLinkURL() const
@@ -288,7 +318,7 @@ KURL HitTestResult::absoluteLinkURL() const
     else
         return KURL();
 
-    return m_innerURLElement->document()->completeURL(parseURL(urlString));
+    return m_innerURLElement->document()->completeURL(deprecatedParseURL(urlString));
 }
 
 bool HitTestResult::isLiveLink() const

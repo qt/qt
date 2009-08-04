@@ -1338,8 +1338,8 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
     if (!isOpen())
         return idx;
 
-    prepQ = d->preparedQuerys;
-    d->preparedQuerys = false;
+    prepQ = d->preparedQuerysEnabled;
+    d->preparedQuerysEnabled = false;
 
     QSqlQuery i(createResult());
     QString stmt(QLatin1String("show index from %1;"));
@@ -1353,7 +1353,7 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
         }
     }
 
-    d->preparedQuerys = prepQ;
+    d->preparedQuerysEnabled = prepQ;
     return idx;
 }
 

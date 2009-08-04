@@ -32,7 +32,8 @@ HEADERS += \
         kernel/qsharedmemory_p.h \
         kernel/qsystemsemaphore.h \
         kernel/qsystemsemaphore_p.h \
-        kernel/qfunctions_p.h
+        kernel/qfunctions_p.h \
+        kernel/qguard_p.h
 
 SOURCES += \
 	kernel/qabstracteventdispatcher.cpp \
@@ -54,7 +55,7 @@ SOURCES += \
         kernel/qcoreglobaldata.cpp \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
-        kernel/qpointer.cpp
+        kernel/qpointer.cpp 
 
 win32 {
 	SOURCES += \
@@ -126,5 +127,12 @@ symbian {
                 kernel/qcrashhandler_p.h \
                 kernel/qeventdispatcher_symbian_p.h \
                 kernel/qcore_symbian_p.h
+}
+
+vxworks {
+	SOURCES += \
+		kernel/qfunctions_vxworks.cpp
+	HEADERS += \
+		kernel/qfunctions_vxworks.h
 }
 

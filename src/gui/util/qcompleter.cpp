@@ -824,6 +824,9 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
     Q_Q(QCompleter);
     QString completion;
 
+    if (!(index.flags() & Qt::ItemIsEnabled))
+        return;
+
     if (!index.isValid() || (!proxy->showAll && (index.row() >= proxy->engine->matchCount()))) {
         completion = prefix;
     } else {
@@ -1102,7 +1105,8 @@ void QCompleter::setPopup(QAbstractItemView *popup)
 
     QObject::connect(popup, SIGNAL(clicked(QModelIndex)),
                      this, SLOT(_q_complete(QModelIndex)));
-    QObject::connect(popup, SIGNAL(clicked(QModelIndex)), popup, SLOT(hide()));
+    QObject::connect(this, SIGNAL(activated(QModelIndex)),
+                     popup, SLOT(hide()));
 
     QObject::connect(popup->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this, SLOT(_q_completionSelected(QItemSelection)));

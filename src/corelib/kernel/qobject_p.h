@@ -60,6 +60,7 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qvariant.h"
+#include "private/qguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -84,6 +85,13 @@ extern QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set;
 inline QObjectData::~QObjectData() {}
 
 enum { QObjectPrivateVersion = QT_VERSION };
+
+class QDeclarativeData 
+{
+public:
+    virtual ~QDeclarativeData() {}
+    virtual void destroyed(QObject *) {}
+};
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
@@ -117,7 +125,7 @@ public:
     // object currently activating the object
     Sender *currentSender;
 
-    QObject *currentChildBeingDeleted;
+    QDeclarativeData *declarativeData;
 
     bool isSender(const QObject *receiver, const char *signal) const;
     QObjectList receiverList(const char *signal) const;
@@ -140,7 +148,7 @@ public:
         QList<QVariant> propertyValues;
     };
     ExtraData *extraData;
-    mutable quint32 connectedSignals;
+    mutable quint32 connectedSignals[2];
 
     QString objectName;
 
@@ -174,11 +182,36 @@ public:
     static void resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch);
 
     int *deleteWatch;
+    QGuard<QObject> *objectGuards;
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();
     }
 };
+
+inline void q_guard_addGuard(QGuard<QObject> *g)
+{
+    QObjectPrivate *p = QObjectPrivate::get(g->o);
+    if (p->wasDeleted) {
+        qWarning("QGuard: cannot add guard to deleted object");
+        g->o = 0;
+        return;
+    }
+
+    g->next = p->objectGuards;
+    p->objectGuards = g;
+    g->prev = &p->objectGuards;
+    if (g->next)
+        g->next->prev = &g->next;
+}
+
+inline void q_guard_removeGuard(QGuard<QObject> *g)
+{
+    if (g->next) g->next->prev = g->prev;
+    *g->prev = g->next;
+    g->next = 0;
+    g->prev = 0;
+}
 
 Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);
@@ -219,6 +252,14 @@ private:
 };
 
 void Q_CORE_EXPORT qDeleteInEventHandler(QObject *o);
+
+
+struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QMetaObject
+{
+    virtual ~QAbstractDynamicMetaObject() {}
+    virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; }
+    virtual int createProperty(const char *, const char *) { return -1; }
+};
 
 QT_END_NAMESPACE
 

@@ -2028,8 +2028,8 @@ void tst_QSqlDatabase::mysql_multiselect()
     QVERIFY_SQL(q, exec("select version()"));
     QVERIFY_SQL(q, next());
     QString version=tst_Databases::getMySqlVersion( db );
-    int ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
-    if (ver >= 4.1)
+    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
+    if (ver < 4.1)
         QSKIP("Test requires MySQL >= 4.1", SkipSingle);
 
     QVERIFY_SQL(q, exec("SELECT * FROM " + qTableName("qtest") + "; SELECT * FROM " + qTableName("qtest")));

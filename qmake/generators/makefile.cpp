@@ -2174,8 +2174,6 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
         ret += " -unix";
     else if(Option::target_mode == Option::TARG_WIN_MODE)
         ret += " -win32";
-    else if(Option::target_mode == Option::TARG_QNX6_MODE)
-        ret += " -qnx6";
 
     //configs
     for(QStringList::Iterator it = Option::user_configs.begin();

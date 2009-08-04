@@ -49,44 +49,46 @@
 
 QT_BEGIN_NAMESPACE
 
-void executeCommand( const Location& location, const QString& format,
-		     const QStringList& args )
+void executeCommand(const Location& location,
+                    const QString& format,
+                    const QStringList& args)
 {
     QString actualCommand;
-    for ( int i = 0; i < (int) format.length(); i++ ) {
+    for (int i = 0; i < (int) format.length(); i++) {
 	int ch = format[i].unicode();
-	if ( ch > 0 && ch < 8 ) {
+	if (ch > 0 && ch < 8) {
 	    actualCommand += args[ch - 1];
-	} else {
+	}
+        else {
 	    actualCommand += format[i];
 	}
     }
 
     QString toolName = actualCommand;
-    int space = toolName.indexOf( QLatin1Char(' ') );
-    if ( space != -1 )
-	toolName.truncate( space );
+    int space = toolName.indexOf(QLatin1Char(' '));
+    if (space != -1)
+	toolName.truncate(space);
 
     QProcess process;
     process.start(QLatin1String("sh"),
-        QStringList() << QLatin1String("-c") << actualCommand );
+        QStringList() << QLatin1String("-c") << actualCommand);
     process.waitForFinished();
 
     if (process.exitCode() == 127)
-	location.fatal( tr("Couldn't launch the '%1' tool")
-			.arg(toolName),
-			tr("Make sure the tool is installed and in the"
-			   " path.") );
+	location.fatal(tr("Couldn't launch the '%1' tool")
+                       .arg(toolName),
+                       tr("Make sure the tool is installed and in the"
+                          " path."));
 
     QString errors = QString::fromLocal8Bit(process.readAllStandardError());
-    while ( errors.endsWith(QLatin1Char('\n')) )
-        errors.truncate( errors.length() - 1 );
-    if ( !errors.isEmpty() )
-	location.fatal( tr("The '%1' tool encountered some problems")
-			.arg(toolName),
-			tr("The tool was invoked like this:\n%1\n"
-			   "It emitted these errors:\n%2")
-			.arg(actualCommand).arg(errors) );
+    while (errors.endsWith(QLatin1Char('\n')))
+        errors.truncate(errors.length() - 1);
+    if (!errors.isEmpty())
+	location.fatal(tr("The '%1' tool encountered some problems")
+                       .arg(toolName),
+                       tr("The tool was invoked like this:\n%1\n"
+                          "It emitted these errors:\n%2")
+                       .arg(actualCommand).arg(errors));
 }
 
 QT_END_NAMESPACE

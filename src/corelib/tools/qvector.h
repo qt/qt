@@ -253,11 +253,7 @@ public:
     typedef const value_type* const_pointer;
     typedef value_type& reference;
     typedef const value_type& const_reference;
-#ifndef QT_NO_STL
     typedef ptrdiff_t difference_type;
-#else
-    typedef int difference_type;
-#endif
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
     typedef int size_type;

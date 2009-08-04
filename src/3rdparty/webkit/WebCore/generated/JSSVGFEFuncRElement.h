@@ -33,7 +33,7 @@ class SVGFEFuncRElement;
 class JSSVGFEFuncRElement : public JSSVGComponentTransferFunctionElement {
     typedef JSSVGComponentTransferFunctionElement Base;
 public:
-    JSSVGFEFuncRElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEFuncRElement>);
+    JSSVGFEFuncRElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFEFuncRElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

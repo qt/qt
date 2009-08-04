@@ -118,6 +118,8 @@ public:
     QSize minimumSizeHint() const;
 
     int qt_metacall(QMetaObject::Call, int isignal, void **argv);
+    void* qt_metacast(const char *clname);
+
     inline QAxClientSite *clientSite() const
     {
         return axhost;
@@ -478,7 +480,9 @@ bool axc_FilterProc(void *m)
         QAxWidget *ax = 0;
         QAxHostWidget *host = 0;
         while (!host && hwnd) {
-            host = qobject_cast<QAxHostWidget*>(QWidget::find(hwnd));
+            QWidget *widget = QWidget::find(hwnd);
+            if (widget && widget->inherits("QAxHostWidget"))
+                host = qobject_cast<QAxHostWidget*>(widget);
             hwnd = ::GetParent(hwnd);
         }
         if (host)
@@ -976,10 +980,38 @@ HRESULT WINAPI QAxClientSite::TransformCoords(POINTL* /*pPtlHimetric*/, POINTF* 
 
 HRESULT WINAPI QAxClientSite::TranslateAccelerator(LPMSG lpMsg, DWORD /*grfModifiers*/)
 {
-    eventTranslated = false;
     if (lpMsg->message == WM_KEYDOWN && !lpMsg->wParam)
         return S_OK;
+
+    bool ActiveQtDetected = false;
+    bool fromInProcServer = false;
+#ifdef GWLP_USERDATA
+    LONG_PTR serverType = GetWindowLongPtr(lpMsg->hwnd, GWLP_USERDATA);
+#else
+    LONG serverType = GetWindowLong(lpMsg->hwnd, GWL_USERDATA);
+#endif
+    if (serverType == QAX_INPROC_SERVER) {
+        ActiveQtDetected = true;
+        fromInProcServer = true;
+    } else if (serverType == QAX_OUTPROC_SERVER) {
+        ActiveQtDetected = true;
+        fromInProcServer = false;
+    }
+
+    eventTranslated = false;
+    if (!ActiveQtDetected || !fromInProcServer) {
+        // if the request is coming from an out-of-proc server or a non ActiveQt server,
+        // we send the message to the host window. This will make sure this key event
+        // comes to Qt for processing.
         SendMessage(host->winId(), lpMsg->message, lpMsg->wParam, lpMsg->lParam);
+        if (ActiveQtDetected && !fromInProcServer) {
+            // ActiveQt based servers will need further processing of the event
+            // (eg. <SPACE> key for a checkbox), so we return false.
+            return S_FALSE;
+        }
+    }
+    // ActiveQt based in-processes-servers will handle the event properly, so
+    // we dont need to send this key event to the host.
     return S_OK;
 }
 
@@ -1615,6 +1647,14 @@ int QAxHostWidget::qt_metacall(QMetaObject::Call call, int isignal, void **argv)
     if (axhost)
         return axhost->qt_metacall(call, isignal, argv);
     return -1;
+}
+
+void* QAxHostWidget::qt_metacast(const char *clname)
+{
+    if (!clname) return 0;
+    if (!qstrcmp(clname,"QAxHostWidget"))
+        return static_cast<void*>(const_cast< QAxHostWidget*>(this));
+    return QWidget::qt_metacast(clname);
 }
 
 QSize QAxHostWidget::sizeHint() const

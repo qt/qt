@@ -138,6 +138,7 @@ private slots:
     void setters();
 
     void dynamicSortOrder();
+    void disabledItems();
 
     // task-specific tests below me
     void task178797_activatedOnReturn();
@@ -147,7 +148,6 @@ private slots:
 
     void task253125_lineEditCompletion_data();
     void task253125_lineEditCompletion();
-
     void task247560_keyboardNavigation();
 
 private:
@@ -1107,6 +1107,31 @@ void tst_QCompleter::dynamicSortOrder()
     QCOMPARE(completer.completionCount(), 2);
     completer.setCompletionPrefix("1");
     QCOMPARE(completer.completionCount(), 12);
+}
+
+void tst_QCompleter::disabledItems()
+{
+    QLineEdit lineEdit;
+    QStandardItemModel *model = new QStandardItemModel(&lineEdit);
+    QStandardItem *suggestions = new QStandardItem("suggestions");
+    suggestions->setEnabled(false);
+    model->appendRow(suggestions);
+    model->appendRow(new QStandardItem("suggestions Enabled"));
+    QCompleter *completer = new QCompleter(model, &lineEdit);
+    QSignalSpy spy(completer, SIGNAL(activated(const QString &)));
+    lineEdit.setCompleter(completer);
+    lineEdit.show();
+
+    QTest::keyPress(&lineEdit, Qt::Key_S);
+    QTest::keyPress(&lineEdit, Qt::Key_U);
+    QAbstractItemView *view = lineEdit.completer()->popup();
+    QVERIFY(view->isVisible());
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->visualRect(view->model()->index(0, 0)).center());
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(view->isVisible());
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->visualRect(view->model()->index(1, 0)).center());
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(!view->isVisible());
 }
 
 void tst_QCompleter::task178797_activatedOnReturn()

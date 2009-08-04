@@ -21,6 +21,7 @@
 #ifndef JSXMLHttpRequestException_h
 #define JSXMLHttpRequestException_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class XMLHttpRequestException;
 
-class JSXMLHttpRequestException : public DOMObject {
-    typedef DOMObject Base;
+class JSXMLHttpRequestException : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXMLHttpRequestException(PassRefPtr<JSC::Structure>, PassRefPtr<XMLHttpRequestException>);
+    JSXMLHttpRequestException(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XMLHttpRequestException>);
     virtual ~JSXMLHttpRequestException();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     XMLHttpRequestException* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<XMLHttpRequestException> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, XMLHttpRequestException*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, XMLHttpRequestException*);
 XMLHttpRequestException* toXMLHttpRequestException(JSC::JSValue);
 
 class JSXMLHttpRequestExceptionPrototype : public JSC::JSObject {

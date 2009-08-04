@@ -56,7 +56,7 @@ class QDirectFBPaintEngine;
 class QDirectFBPixmapData : public QPixmapData, public QDirectFBPaintDevice
 {
 public:
-    QDirectFBPixmapData(PixelType pixelType);
+    QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixelType);
     ~QDirectFBPixmapData();
 
     // Re-implemented from QPixmapData:
@@ -79,7 +79,6 @@ public:
     inline bool hasAlphaChannel() const { return alpha; }
 private:
     void invalidate();
-    QDirectFBPaintEngine *engine;
     QImage::Format format;
     bool alpha;
 };

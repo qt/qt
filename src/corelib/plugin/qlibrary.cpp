@@ -694,12 +694,15 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
         }
 
+        // Qt 4.5 compatibility: stl doesn't affect binary compatibility
+        key.replace(" no-stl", "");
+
+#ifndef QT_NO_SETTINGS
         QStringList queried;
         queried << QString::number(qt_version,16)
                 << QString::number((int)debug)
                 << QLatin1String(key)
                 << lastModified;
-#ifndef QT_NO_SETTINGS
         settings->setValue(regkey, queried);
 #endif
     }

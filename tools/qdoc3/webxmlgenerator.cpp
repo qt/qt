@@ -191,7 +191,7 @@ void WebXMLGenerator::generateIndexSections(QXmlStreamWriter &writer,
 
             generateRelations(writer, node, marker);
 
-            if (fake->subType() == FakeNode::Module) {
+            if (fake->subType() == Node::Module) {
                 writer.writeStartElement("generatedlist");
                 writer.writeAttribute("contents", "classesbymodule");
 
@@ -264,7 +264,7 @@ void WebXMLGenerator::generateInnerNode(const InnerNode *node, CodeMarker *marke
 
     if (node->type() == Node::Fake) {
         const FakeNode *fakeNode = static_cast<const FakeNode *>(node);
-        if (fakeNode->subType() == FakeNode::ExternalPage)
+        if (fakeNode->subType() == Node::ExternalPage)
             return;
     }
 

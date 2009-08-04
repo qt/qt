@@ -21,6 +21,7 @@
 #ifndef JSRect_h
 #define JSRect_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Rect;
 
-class JSRect : public DOMObject {
-    typedef DOMObject Base;
+class JSRect : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSRect(PassRefPtr<JSC::Structure>, PassRefPtr<Rect>);
+    JSRect(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Rect>);
     virtual ~JSRect();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     Rect* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<Rect> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Rect*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Rect*);
 Rect* toRect(JSC::JSValue);
 
 class JSRectPrototype : public JSC::JSObject {

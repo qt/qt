@@ -77,8 +77,8 @@ bool JSTimeRangesPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
 
 const ClassInfo JSTimeRanges::s_info = { "TimeRanges", 0, &JSTimeRangesTable, 0 };
 
-JSTimeRanges::JSTimeRanges(PassRefPtr<Structure> structure, PassRefPtr<TimeRanges> impl)
-    : DOMObject(structure)
+JSTimeRanges::JSTimeRanges(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TimeRanges> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -100,8 +100,9 @@ bool JSTimeRanges::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsTimeRangesLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTimeRanges* castedThis = static_cast<JSTimeRanges*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TimeRanges* imp = static_cast<TimeRanges*>(static_cast<JSTimeRanges*>(asObject(slot.slotBase()))->impl());
+    TimeRanges* imp = static_cast<TimeRanges*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
@@ -137,9 +138,9 @@ JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionEnd(ExecState* exec, JSObject
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, TimeRanges* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, TimeRanges* object)
 {
-    return getDOMObjectWrapper<JSTimeRanges>(exec, object);
+    return getDOMObjectWrapper<JSTimeRanges>(exec, globalObject, object);
 }
 TimeRanges* toTimeRanges(JSC::JSValue value)
 {

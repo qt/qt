@@ -1675,34 +1675,6 @@ void QRasterPaintEngine::drawRects(const QRectF *rects, int rectCount)
     QPaintEngineEx::drawRects(rects, rectCount);
 }
 
-void QRasterPaintEnginePrivate::strokeProjective(const QPainterPath &path)
-{
-    Q_Q(QRasterPaintEngine);
-    QRasterPaintEngineState *s = q->state();
-
-    const QPen &pen = s->lastPen;
-    QPainterPathStroker pathStroker;
-    pathStroker.setWidth(pen.width() == 0 ? qreal(1) : pen.width());
-    pathStroker.setCapStyle(pen.capStyle());
-    pathStroker.setJoinStyle(pen.joinStyle());
-    pathStroker.setMiterLimit(pen.miterLimit());
-    pathStroker.setDashOffset(pen.dashOffset());
-
-    if (qpen_style(pen) == Qt::CustomDashLine)
-        pathStroker.setDashPattern(pen.dashPattern());
-    else
-        pathStroker.setDashPattern(qpen_style(pen));
-
-    outlineMapper->setMatrix(QTransform());
-    const QPainterPath stroke = pen.isCosmetic()
-        ? pathStroker.createStroke(s->matrix.map(path))
-        : s->matrix.map(pathStroker.createStroke(path));
-
-    rasterize(outlineMapper->convertPath(stroke), s->penData.blend, &s->penData, rasterBuffer);
-    outlinemapper_xform_dirty = true;
-}
-
-
 
 /*!
     \internal
@@ -1767,6 +1739,8 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
+            if (path.shape() == QVectorPath::LinesHint)
+                dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -1970,67 +1944,6 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QColor &color)
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
     fillRect(r, &d->solid_color_filler);
-}
-
-/*!
-    \reimp
-*/
-void QRasterPaintEngine::drawPath(const QPainterPath &path)
-{
-#ifdef QT_DEBUG_DRAW
-    QRectF bounds = path.boundingRect();
-    qDebug(" - QRasterPaintEngine::drawPath(), [%.2f, %.2f, %.2f, %.2f]",
-           bounds.x(), bounds.y(), bounds.width(), bounds.height());
-#endif
-
-    if (path.isEmpty())
-        return;
-
-    // Filling..,
-    Q_D(QRasterPaintEngine);
-    QRasterPaintEngineState *s = state();
-
-    ensureBrush();
-    if (s->brushData.blend) {
-        ensureOutlineMapper();
-        fillPath(path, &s->brushData);
-    }
-
-    // Stroking...
-    ensurePen();
-    if (!s->penData.blend)
-        return;
-    {
-        if (s->matrix.type() >= QTransform::TxProject) {
-            d->strokeProjective(path);
-        } else {
-            Q_ASSERT(s->stroker);
-            d->outlineMapper->beginOutline(Qt::WindingFill);
-            qreal txscale = 1;
-            if (s->pen.isCosmetic() || (qt_scaleForTransform(s->matrix, &txscale) && txscale != 1)) {
-                const qreal strokeWidth = d->basicStroker.strokeWidth();
-                const QRectF clipRect = d->dashStroker ? d->dashStroker->clipRect() : QRectF();
-                if (d->dashStroker)
-                    d->dashStroker->setClipRect(d->deviceRect);
-                d->basicStroker.setStrokeWidth(strokeWidth * txscale);
-                d->outlineMapper->setMatrix(QTransform());
-                s->stroker->strokePath(path, d->outlineMapper, s->matrix);
-                d->outlinemapper_xform_dirty = true;
-                d->basicStroker.setStrokeWidth(strokeWidth);
-                if (d->dashStroker)
-                    d->dashStroker->setClipRect(clipRect);
-            } else {
-                ensureOutlineMapper();
-                s->stroker->strokePath(path, d->outlineMapper, QTransform());
-            }
-            d->outlineMapper->endOutline();
-
-            ProcessSpans blend = d->getPenFunc(d->outlineMapper->controlPointRect,
-                    &s->penData);
-            d->rasterize(d->outlineMapper->outline(), blend, &s->penData, d->rasterBuffer);
-        }
-    }
-
 }
 
 static inline bool isAbove(const QPointF *a, const QPointF *b)
@@ -3546,8 +3459,8 @@ void QRasterPaintEngine::drawLines(const QLine *lines, int lineCount)
         int m22 = int(s->matrix.m22());
         int dx = qFloor(s->matrix.dx() + aliasedCoordinateDelta);
         int dy = qFloor(s->matrix.dy() + aliasedCoordinateDelta);
-        int dashOffset = int(s->lastPen.dashOffset());
         for (int i=0; i<lineCount; ++i) {
+            int dashOffset = int(s->lastPen.dashOffset());
             if (s->flags.int_xform) {
                 const QLine &l = lines[i];
                 int x1 = l.x1() * m11 + dx;
@@ -3646,8 +3559,8 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
                             ? LineDrawNormal
                             : LineDrawIncludeLastPixel;
 
-        int dashOffset = int(s->lastPen.dashOffset());
         for (int i=0; i<lineCount; ++i) {
+            int dashOffset = int(s->lastPen.dashOffset());
             QLineF line = (lines[i] * s->matrix).translated(aliasedCoordinateDelta, aliasedCoordinateDelta);
             const QRectF brect(QPointF(line.x1(), line.y1()),
                                QPointF(line.x2(), line.y2()));

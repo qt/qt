@@ -396,7 +396,7 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
     uchar* data = (uchar*)mmap( 0, // any address
                                 st.st_size, // whole file
                                 PROT_READ, // read-only memory
-#if !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX4) && !defined(Q_OS_INTEGRITY)
+#if !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX4) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
                                 MAP_FILE | MAP_PRIVATE, // swap-backed map from file
 #else
                                 MAP_PRIVATE,

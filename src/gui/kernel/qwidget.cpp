@@ -511,7 +511,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     been outlined to indicate their full sizes.
 
     If you want to use a QWidget to hold child widgets you will usually want to
-    add a layout to the parent QWidget. See \l{Layout Classes} for more
+    add a layout to the parent QWidget. See \l{Layout Management} for more
     information.
 
 
@@ -1437,6 +1437,12 @@ QWidget::~QWidget()
 
     // set all QPointers for this object to zero
     QObjectPrivate::clearGuards(this);
+
+    if(d->declarativeData) {
+        QDeclarativeData *dd = d->declarativeData;
+        d->declarativeData = 0;
+        dd->destroyed(this);
+    }
 
     if (!d->children.isEmpty())
         d->deleteChildren();
@@ -3567,11 +3573,16 @@ bool QWidgetPrivate::setMinimumSize_helper(int &minw, int &minh)
         minh = qMax(minh, 0);
     }
     createExtra();
-    if (extra->minw == minw && extra->minh == minh)
+    int mw = minw, mh = minh;
+    if (mw == QWIDGETSIZE_MAX)
+        mw = 0;
+    if (mh == QWIDGETSIZE_MAX)
+        mh = 0;
+    if (extra->minw == mw && extra->minh == mh)
         return false;
-    extra->minw = minw;
-    extra->minh = minh;
-    extra->explicitMinSize = (minw ? Qt::Horizontal : 0) | (minh ? Qt::Vertical : 0);
+    extra->minw = mw;
+    extra->minh = mh;
+    extra->explicitMinSize = (mw ? Qt::Horizontal : 0) | (mh ? Qt::Vertical : 0);
     return true;
 }
 
@@ -3631,7 +3642,8 @@ bool QWidgetPrivate::setMaximumSize_helper(int &maxw, int &maxh)
         return false;
     extra->maxw = maxw;
     extra->maxh = maxh;
-    extra->explicitMaxSize = (maxw != QWIDGETSIZE_MAX ? Qt::Horizontal : 0) | (maxh != QWIDGETSIZE_MAX ? Qt::Vertical : 0);
+    extra->explicitMaxSize = (maxw != QWIDGETSIZE_MAX ? Qt::Horizontal : 0) |
+                             (maxh != QWIDGETSIZE_MAX ? Qt::Vertical : 0);
     return true;
 }
 
@@ -3710,6 +3722,8 @@ void QWidget::setBaseSize(int basew, int baseh)
 
     This will override the default size constraints set by QLayout.
 
+    To remove constraints, set the size to QWIDGETSIZE_MAX.
+
     Alternatively, if you want the widget to have a
     fixed size based on its contents, you can call
     QLayout::setSizeConstraint(QLayout::SetFixedSize);
@@ -3751,7 +3765,8 @@ void QWidget::setFixedSize(int w, int h)
     else
         d->updateGeometry_helper(true);
 
-    resize(w, h);
+    if (w != QWIDGETSIZE_MAX || h != QWIDGETSIZE_MAX)
+        resize(w, h);
 }
 
 void QWidget::setMinimumWidth(int w)
@@ -8993,7 +9008,7 @@ QRegion QWidget::mask() const
     The layout manager sets the geometry of the widget's children
     that have been added to the layout.
 
-    \sa setLayout(), sizePolicy(), {Layout Classes}
+    \sa setLayout(), sizePolicy(), {Layout Management}
 */
 QLayout *QWidget::layout() const
 {
@@ -9023,7 +9038,7 @@ QLayout *QWidget::layout() const
 
     The QWidget will take ownership of \a layout.
 
-    \sa layout(), {Layout Classes}
+    \sa layout(), {Layout Management}
 */
 
 void QWidget::setLayout(QLayout *l)
@@ -9989,6 +10004,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             data->window_modality = (w && w->testAttribute(Qt::WA_GroupLeader))
                                     ? Qt::WindowModal
                                     : Qt::ApplicationModal;
+            // Some window managers does not allow us to enter modal after the
+            // window is showing. Therefore, to be consistent, we cannot call
+            // QApplicationPrivate::enterModal(this) here. The window must be
+            // hidden before changing modality.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
             // don't call setModal_sys() before create_sys()

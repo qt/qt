@@ -146,10 +146,13 @@ PreferencesDialog::~PreferencesDialog()
         emit updateBrowserFont();
     }
 
-    if (!m_ui.homePageLineEdit->text().isEmpty()) {
-        key = QLatin1String("homepage");
-        m_helpEngine->setCustomValue(key, m_ui.homePageLineEdit->text());
-    }
+    QString homePage = m_ui.homePageLineEdit->text();
+    if (homePage.isEmpty())
+        homePage = QLatin1String("help");
+    m_helpEngine->setCustomValue(QLatin1String("homepage"), homePage);
+
+    int option = m_ui.helpStartComboBox->currentIndex();
+    m_helpEngine->setCustomValue(QLatin1String("StartOption"), option);
 }
 
 void PreferencesDialog::showDialog()
@@ -379,6 +382,8 @@ void PreferencesDialog::applyChanges()
     CentralWidget* widget = CentralWidget::instance();
     for (int i = m_TabsToClose.count(); --i >= 0;)
         widget->closeTabAt(m_TabsToClose.at(i));
+    if (widget->availableHelpViewer()== 0)
+        widget->setSource(QUrl(QLatin1String("about:blank")));
 
     if (m_unregDocs.count()) {
         foreach (const QString &doc, m_unregDocs)
@@ -483,27 +488,35 @@ void PreferencesDialog::updateOptionsPage()
         homepage = m_helpEngine->customValue(QLatin1String("defaultHomepage"),
             QLatin1String("help")).toString();
     }
-
     m_ui.homePageLineEdit->setText(homepage);
-    connect(m_ui.currentPageButton, SIGNAL(pressed()), this,
-        SLOT(currentHomepageChanged()));
-    connect(m_ui.restoreDefaultHomePageButton, SIGNAL(pressed()), this,
-        SLOT(restoreDefaultHomepage()));
+
+    int option = m_helpEngine->customValue(QLatin1String("StartOption"),
+        ShowLastPages).toInt();
+    m_ui.helpStartComboBox->setCurrentIndex(option);
+
+    connect(m_ui.blankPageButton, SIGNAL(clicked()), this, SLOT(setBlankPage()));
+    connect(m_ui.currentPageButton, SIGNAL(clicked()), this, SLOT(setCurrentPage()));
+    connect(m_ui.defaultPageButton, SIGNAL(clicked()), this, SLOT(setDefaultPage()));
 }
 
-void PreferencesDialog::restoreDefaultHomepage()
+void PreferencesDialog::setBlankPage()
 {
-    QString homepage = m_helpEngine->customValue(QLatin1String("defaultHomepage"),
-        QLatin1String("help")).toString();
-    m_ui.homePageLineEdit->setText(homepage);
+    m_ui.homePageLineEdit->setText(QLatin1String("about:blank"));
 }
 
-void PreferencesDialog::currentHomepageChanged()
+void PreferencesDialog::setCurrentPage()
 {
     QString homepage = CentralWidget::instance()->currentSource().toString();
     if (homepage.isEmpty())
         homepage = QLatin1String("help");
 
+    m_ui.homePageLineEdit->setText(homepage);
+}
+
+void PreferencesDialog::setDefaultPage()
+{
+    QString homepage = m_helpEngine->customValue(QLatin1String("defaultHomepage"),
+        QLatin1String("help")).toString();
     m_ui.homePageLineEdit->setText(homepage);
 }
 

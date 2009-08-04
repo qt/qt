@@ -244,8 +244,6 @@ namespace QT_NAMESPACE {}
 #elif defined(__DGUX__)
 #  define Q_OS_DGUX
 #elif defined(__QNXNTO__)
-#  define Q_OS_QNX6
-#elif defined(__QNX__)
 #  define Q_OS_QNX
 #elif defined(_SEQUENT_)
 #  define Q_OS_DYNIX
@@ -257,6 +255,8 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_UNIXWARE
 #elif defined(__INTEGRITY)
 #  define Q_OS_INTEGRITY
+#elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */
+#  define Q_OS_VXWORKS
 #elif defined(__MAKEDEPEND__)
 #else
 #  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
@@ -436,25 +436,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
-#  if defined(Q_OS_QNX4)
-/* compiler flags */
-#    define Q_TYPENAME
-#    define Q_NO_BOOL_TYPE
-#    define Q_CANNOT_DELETE_CONSTANT
-#    define mutable
-/* ??? */
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-/* no template classes in QVariant */
-#    define QT_NO_TEMPLATE_VARIANT
-/* Wcc does not fill in functions needed by valuelists, maps, and
-   valuestacks implicitly */
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-/* can we just compare the structures? */
-#    define Q_FULL_TEMPLATE_INSTANTIATION_MEMCMP
-/* these are not useful to our customers */
-#    define QT_NO_QWS_MULTIPROCESS
-#    define QT_NO_QWS_CURSOR
-#  endif
 
 /* Symbian GCCE */
 #elif defined(__GCCE__)
@@ -630,6 +611,13 @@ namespace QT_NAMESPACE {}
 #  elif defined(__ghs)
 #    define Q_CC_GHS
 
+#  elif defined(__DCC__)
+#    define Q_CC_DIAB
+#    undef Q_NO_BOOL_TYPE
+#    if !defined(__bool)
+#      define Q_NO_BOOL_TYPE
+#    endif
+
 /* The UnixWare 7 UDK compiler is based on EDG and does define __EDG__ */
 #  elif defined(__USLC__) && defined(__SCO_VERSION__)
 #    define Q_CC_USLC
@@ -660,6 +648,11 @@ namespace QT_NAMESPACE {}
 #      pragma set woff 3624,3625,3649 /* turn off some harmless warnings */
 #    endif
 #  endif
+
+/* VxWorks' DIAB toolchain has an additional EDG type C++ compiler
+   (see __DCC__ above). This one is for C mode files (__EDG is not defined) */
+#elif defined(_DIAB_TOOL)
+#  define Q_CC_DIAB
 
 /* Never tested! */
 #elif defined(__HIGHC__)
@@ -1148,6 +1141,15 @@ class QDataStream;
 
 #if !defined(Q_WS_QWS) && !defined(QT_NO_COP)
 #  define QT_NO_COP
+#endif
+
+#if defined(Q_OS_VXWORKS)
+#  define QT_NO_CRASHHANDLER     // no popen
+#  define QT_NO_PROCESS          // no exec*, no fork
+#  define QT_NO_LPR
+#  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
+#  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
+#  define QT_NO_QWS_MULTIPROCESS // no processes
 #endif
 
 # include <QtCore/qfeatures.h>
@@ -1649,7 +1651,7 @@ Q_CORE_EXPORT void qBadAlloc();
 #  define Q_CHECK_PTR(p) do { if (!(p)) qBadAlloc(); } while (0)
 #endif
 
-#if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC)
+#if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC) || defined(Q_CC_DIAB)
 #  define Q_FUNC_INFO __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
     /* MSVC 2002 doesn't have __FUNCSIG__ nor can it handle QT_STRINGIFY. */
@@ -2239,6 +2241,17 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
              qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk;           \
              --qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk)
 
+#elif defined(Q_CC_DIAB)
+// VxWorks DIAB generates unresolvable symbols, if container is a function call
+#  define Q_FOREACH(variable,container)                                                             \
+    if(0){}else                                                                                     \
+    for (const QForeachContainerBase &_container_ = qForeachContainerNew(container);                \
+         qForeachContainer(&_container_, (__typeof__(container) *) 0)->condition();       \
+         ++qForeachContainer(&_container_, (__typeof__(container) *) 0)->i)               \
+        for (variable = *qForeachContainer(&_container_, (__typeof__(container) *) 0)->i; \
+             qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk;           \
+             --qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk)
+
 #else
 #  define Q_FOREACH(variable, container) \
     for (const QForeachContainerBase &_container_ = qForeachContainerNew(container); \
@@ -2556,6 +2569,17 @@ QT_LICENSED_MODULE(DBus)
 #if defined(Q_CC_GNU) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
+#endif
+
+#ifdef Q_OS_QNX
+// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
+// shared fonts and QSystemSemaphore + QSharedMemory are not available
+#  define QT_NO_QWS_MULTIPROCESS
+#  define QT_NO_QWS_SHARE_FONTS
+#  define QT_NO_SYSTEMSEMAPHORE
+#  define QT_NO_SHAREDMEMORY
+// QNX currently doesn't support forking in a thread, so disable QProcess
+#  define QT_NO_PROCESS
 #endif
 
 QT_END_NAMESPACE

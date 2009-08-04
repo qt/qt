@@ -198,32 +198,8 @@ void QOutlineMapper::endOutline()
                                           m_m22 * e.y() + m_m12 * e.x() + m_dy);
             }
         } else {
-            // ## TODO: this case needs to be plain code polygonal paths
-            QPainterPath path;
-            if (m_element_types.isEmpty()) {
-                if (!m_elements.isEmpty())
-                    path.moveTo(m_elements.at(0));
-                for (int i=1; i<m_elements.size(); ++i)
-                    path.lineTo(m_elements.at(i));
-            } else {
-                for (int i=0; i<m_elements.size(); ++i) {
-                    switch (m_element_types.at(i)) {
-                    case QPainterPath::MoveToElement:
-                        path.moveTo(m_elements.at(i));
-                        break;
-                    case QPainterPath::LineToElement:
-                        path.lineTo(m_elements.at(i));
-                        break;
-                    case QPainterPath::CurveToElement:
-                        path.cubicTo(m_elements.at(i), m_elements.at(i+1), m_elements.at(i+2));
-                        i += 2;
-                        break;
-                    default:
-                        Q_ASSERT(false);
-                        break;
-                    }
-                }
-            }
+            const QVectorPath vp((qreal *)m_elements.data(), m_elements.size(), m_element_types.data());
+            QPainterPath path = vp.convertToPainterPath();
             path = QTransform(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33).map(path);
             uint old_txop = m_txop;
             m_txop = QTransform::TxNone;

@@ -2201,8 +2201,6 @@ void Configure::generateBuildKey()
     QStringList build_options;
     if (!dictionary["QCONFIG"].isEmpty())
         build_options += dictionary["QCONFIG"] + "-config ";
-    if (dictionary["STL"] == "no")
-        build_options += "no-stl";
     build_options.sort();
 
     // Sorted defines that start with QT_NO_

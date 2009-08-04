@@ -335,6 +335,9 @@ Document::Document(Frame* frame, bool isXHTML)
     , m_hasOpenDatabases(false)
 #endif
     , m_usingGeolocation(false)
+#if ENABLE(WML)
+    , m_containsWMLContent(false)
+#endif
 {
     m_document.resetSkippingRef(this);
 
@@ -361,11 +364,14 @@ Document::Document(Frame* frame, bool isXHTML)
     m_inDocument = true;
     m_inStyleRecalc = false;
     m_closeAfterStyleRecalc = false;
+
     m_usesDescendantRules = false;
     m_usesSiblingRules = false;
     m_usesFirstLineRules = false;
     m_usesFirstLetterRules = false;
     m_usesBeforeAfterRules = false;
+    m_usesRemUnits = false;
+
     m_gotoAnchorNeededAfterStylesheetsLoad = false;
  
     m_styleSelector = 0;
@@ -1132,6 +1138,11 @@ void Document::styleRecalcTimerFired(Timer<Document>*)
     updateStyleIfNeeded();
 }
 
+bool Document::childNeedsAndNotInStyleRecalc()
+{
+    return childNeedsStyleRecalc() && !m_inStyleRecalc;
+}
+
 void Document::recalcStyle(StyleChange change)
 {
     // we should not enter style recalc while painting
@@ -1678,13 +1689,14 @@ void Document::implicitClose()
     }
 
 #if PLATFORM(MAC)
-    if (f && renderObject && this == topDocument() && AXObjectCache::accessibilityEnabled())
+    if (f && renderObject && this == topDocument() && AXObjectCache::accessibilityEnabled()) {
         // The AX cache may have been cleared at this point, but we need to make sure it contains an
         // AX object to send the notification to. getOrCreate will make sure that an valid AX object
         // exists in the cache (we ignore the return value because we don't need it here). This is 
         // only safe to call when a layout is not in progress, so it can not be used in postNotification.    
         axObjectCache()->getOrCreate(renderObject);
         axObjectCache()->postNotification(renderObject, "AXLoadComplete", true);
+    }
 #endif
 
 #if ENABLE(SVG)

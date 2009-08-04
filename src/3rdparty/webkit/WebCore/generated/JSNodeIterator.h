@@ -21,6 +21,7 @@
 #ifndef JSNodeIterator_h
 #define JSNodeIterator_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class NodeIterator;
 
-class JSNodeIterator : public DOMObject {
-    typedef DOMObject Base;
+class JSNodeIterator : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNodeIterator(PassRefPtr<JSC::Structure>, PassRefPtr<NodeIterator>);
+    JSNodeIterator(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<NodeIterator>);
     virtual ~JSNodeIterator();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,7 +47,7 @@ public:
 
     virtual void mark();
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue nextNode(JSC::ExecState*, const JSC::ArgList&);
@@ -57,7 +58,7 @@ private:
     RefPtr<NodeIterator> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, NodeIterator*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, NodeIterator*);
 NodeIterator* toNodeIterator(JSC::JSValue);
 
 class JSNodeIteratorPrototype : public JSC::JSObject {

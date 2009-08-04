@@ -21,6 +21,7 @@
 #ifndef JSMimeTypeArray_h
 #define JSMimeTypeArray_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class MimeTypeArray;
 
-class JSMimeTypeArray : public DOMObject {
-    typedef DOMObject Base;
+class JSMimeTypeArray : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMimeTypeArray(PassRefPtr<JSC::Structure>, PassRefPtr<MimeTypeArray>);
+    JSMimeTypeArray(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MimeTypeArray>);
     virtual ~JSMimeTypeArray();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,7 +47,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     MimeTypeArray* impl() const { return m_impl.get(); }
 
 private:
@@ -57,7 +58,7 @@ private:
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, MimeTypeArray*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, MimeTypeArray*);
 MimeTypeArray* toMimeTypeArray(JSC::JSValue);
 
 class JSMimeTypeArrayPrototype : public JSC::JSObject {

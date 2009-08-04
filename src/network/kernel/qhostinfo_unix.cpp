@@ -55,7 +55,11 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <resolv.h>
+#if defined(Q_OS_VXWORKS)
+#  include <hostLib.h>
+#else
+#  include <resolv.h>
+#endif
 
 #if defined (QT_NO_GETADDRINFO)
 #include <qmutex.h>
@@ -273,10 +277,12 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             results.setError(QHostInfo::UnknownError);
             results.setErrorString(tr("Unknown address type"));
         }
+#if !defined(Q_OS_VXWORKS)
     } else if (h_errno == HOST_NOT_FOUND || h_errno == NO_DATA
                || h_errno == NO_ADDRESS) {
         results.setError(QHostInfo::HostNotFound);
         results.setErrorString(tr("Host not found"));
+#endif
     } else {
         results.setError(QHostInfo::UnknownError);
         results.setErrorString(tr("Unknown error"));
@@ -313,6 +319,7 @@ QString QHostInfo::localHostName()
 
 QString QHostInfo::localDomainName()
 {
+#if !defined(Q_OS_VXWORKS)
     resolveLibrary();
     if (local_res_ninit) {
         // using thread-safe version
@@ -343,7 +350,7 @@ QString QHostInfo::localDomainName()
             domainName = QUrl::fromAce(local_res->dnsrch[0]);
         return domainName;
     }
-
+#endif
     // nothing worked, try doing it by ourselves:
     QFile resolvconf;
 #if defined(_PATH_RESCONF)

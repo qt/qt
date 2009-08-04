@@ -60,6 +60,10 @@
 
 #include <private/qfontengineglyphcache_p.h>
 
+#if defined(Q_OS_VXWORKS) && defined(m_type)
+#  undef m_type
+#endif
+
 struct glyph_metrics_t;
 typedef unsigned int glyph_t;
 

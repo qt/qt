@@ -3,8 +3,8 @@ SUBDIRS   = styledemo
 
 contains(QT_CONFIG, svg) {
     SUBDIRS += embeddedsvgviewer \
-               fluidlauncher \
                desktopservices
+    !vxworks:!qnx:SUBDIRS += fluidlauncher
 }
 
 contains(QT_CONFIG, webkit) {

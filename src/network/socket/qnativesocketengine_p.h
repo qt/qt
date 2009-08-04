@@ -55,9 +55,9 @@
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
-# include "qplatformdefs.h"
+#  include "qplatformdefs.h"
 #else
-# include <winsock2.h>
+#  include <winsock2.h>
 #endif
 
 #ifdef Q_OS_SYMBIAN

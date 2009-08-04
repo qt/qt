@@ -335,9 +335,8 @@ void tst_QLocale::emptyCtor()
     { \
     /* Test constructor without arguments. Needs separate process */ \
     /* because of caching of the system locale. */ \
-    QString oldEnv = QString::fromLocal8Bit(qgetenv("LANG")); \
-	qputenv("LANG", QString(req_lc).toLocal8Bit()); \
     QProcess process; \
+    process.setEnvironment(QStringList(env) << QString("LANG=%1").arg(req_lc)); \
     process.start("syslocaleapp/syslocaleapp"); \
     process.waitForReadyRead(); \
     QString ret = QString(process.readAll()); \
@@ -345,18 +344,23 @@ void tst_QLocale::emptyCtor()
     QVERIFY2(!ret.isEmpty(), "Cannot launch external process"); \
     QVERIFY2(QString(exp_str) == ret, QString("Expected: " + QString(exp_str) + ", got: " \
             + ret + ". Requested: " + QString(req_lc)).toLatin1().constData()); \
-	qputenv("LANG", oldEnv.toLocal8Bit()); \
+    }
+
+    // Get an environment free of any locale-related variables
+    QStringList env;
+    foreach (QString const& entry, QProcess::systemEnvironment()) {
+        if (entry.startsWith("LANG=") || entry.startsWith("LC_"))
+            continue;
+        env << entry;
     }
 
     // Get default locale.
-    QString old = QString::fromLocal8Bit(qgetenv("LANG"));
-    qputenv("LANG", "");
     QProcess p;
+    p.setEnvironment(env);
     p.start("syslocaleapp/syslocaleapp");
     p.waitForReadyRead();
     QString defaultLoc = QString(p.readAll());
     p.waitForFinished();
-    qputenv("LANG", old.toLocal8Bit());
 
     TEST_CTOR("C", "C")
     TEST_CTOR("bla", "C")

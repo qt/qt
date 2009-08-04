@@ -225,3 +225,52 @@ span.string,span.char
 {
     font-size: 0.65em
 }
+
+.qmlitem {
+    padding: 0;
+}
+
+.qmlname {
+    white-space: nowrap;
+    font-weight: bold;
+    font-size: 125%;
+}
+
+.qmltype {
+    font-weight: bold;
+    font-size: 125%;
+}
+
+.qmlproto, .qmldoc {
+   // border-top: 1px solid #84b0c7;
+}
+
+.qmlproto {
+    padding: 0;
+    //background-color: #e4e4e4;//#d5e1e8;
+    //font-weight: bold;
+    //-webkit-border-top-left-radius: 8px;
+    //-webkit-border-top-right-radius: 8px;
+    //-moz-border-radius-topleft: 8px;
+    //-moz-border-radius-topright: 8px;
+}
+
+.qmldoc {
+    border-top: 1px solid #e4e4e4;
+    //padding: 2px 5px;
+    //background-color: #eef3f5;
+    //border-top-width: 0;
+    //-webkit-border-bottom-left-radius: 8px;
+    //-webkit-border-bottom-right-radius: 8px;
+    //-moz-border-radius-bottomleft: 8px;
+    //-moz-border-radius-bottomright: 8px;
+}
+
+.qmldoc p, .qmldoc dl, .qmldoc ul {
+    //margin: 6px 0;
+}
+
+*.qmlitem p {
+    //margin-top: 0px;
+    //margin-bottom: 0px;
+}

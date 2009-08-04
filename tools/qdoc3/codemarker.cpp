@@ -168,7 +168,8 @@ const Node *CodeMarker::nodeForString(const QString& string)
 {
     if (sizeof(const Node *) == sizeof(uint)) {
         return reinterpret_cast<const Node *>(string.toUInt());
-    } else {
+    }
+    else {
         return reinterpret_cast<const Node *>(string.toULongLong());
     }
 }
@@ -177,7 +178,8 @@ QString CodeMarker::stringForNode(const Node *node)
 {
     if (sizeof(const Node *) == sizeof(ulong)) {
         return QString::number(reinterpret_cast<ulong>(node));
-    } else {
+    }
+    else {
         return QString::number(reinterpret_cast<qulonglong>(node));
     }
 }
@@ -220,7 +222,8 @@ QString CodeMarker::typified(const QString &string)
             || ch.digitValue() >= 0 || ch == QLatin1Char('_')
                 || ch == QLatin1Char(':')) {
             pendingWord += ch;
-        } else {
+        }
+        else {
             if (!pendingWord.isEmpty()) {
                 bool isProbablyType = (pendingWord != QLatin1String("const"));
                 if (isProbablyType)
@@ -251,7 +254,7 @@ QString CodeMarker::typified(const QString &string)
     return result;
 }
 
-QString CodeMarker::taggedNode(const Node *node)
+QString CodeMarker::taggedNode(const Node* node)
 {
     QString tag;
 
@@ -276,10 +279,34 @@ QString CodeMarker::taggedNode(const Node *node)
         break;
     default:
         tag = QLatin1String("@unknown");
+        break;
     }
     return QLatin1Char('<') + tag + QLatin1Char('>') + protect(node->name())
         + QLatin1String("</") + tag + QLatin1Char('>');
 }
+
+#ifdef QDOC_QML
+QString CodeMarker::taggedQmlNode(const Node* node)
+{
+    QString tag;
+    switch (node->type()) {
+    case Node::QmlProperty:
+        tag = QLatin1String("@property");
+        break;
+    case Node::QmlSignal:
+        tag = QLatin1String("@signal");
+        break;
+    case Node::QmlMethod:
+        tag = QLatin1String("@method");
+        break;
+    default:
+        tag = QLatin1String("@unknown");
+        break;
+    }
+    return QLatin1Char('<') + tag + QLatin1Char('>') + protect(node->name())
+        + QLatin1String("</") + tag + QLatin1Char('>');
+}
+#endif
 
 QString CodeMarker::linkTag(const Node *node, const QString& body)
 {
@@ -308,9 +335,11 @@ QString CodeMarker::sortName(const Node *node)
         QString sortNo;
         if (func->metaness() == FunctionNode::Ctor) {
             sortNo = QLatin1String("C");
-        } else if (func->metaness() == FunctionNode::Dtor) {
+        }
+        else if (func->metaness() == FunctionNode::Dtor) {
             sortNo = QLatin1String("D");
-        } else {
+        }
+        else {
             if (nodeName.startsWith(QLatin1String("operator"))
                     && nodeName.length() > 8
                     && !nodeName[8].isLetterOrNumber())
@@ -336,9 +365,14 @@ void CodeMarker::insert(FastSection &fastSection,
                         SynopsisStyle style,
                         Status status)
 {
-    bool inheritedMember = (!node->relates() &&
-			    (node->parent() != (const InnerNode *)fastSection.innerNode));
     bool irrelevant = false;
+    bool inheritedMember = false;
+    if (!node->relates()) {
+        if (node->parent() != (const InnerNode*)fastSection.innerNode) {
+            if (node->type() != Node::QmlProperty)
+                inheritedMember = true;
+        }
+    }
 
     if (node->access() == Node::Private) {
 	irrelevant = true;
@@ -462,7 +496,8 @@ QStringList CodeMarker::macRefsForNode(const Node *node)
 #if 0
             if (!classe->templateStuff().isEmpty()) {
                  result += QLatin1String("tmplt/");
-            } else
+            }
+            else
 #endif
             {
                  result += QLatin1String("cl/");
@@ -499,14 +534,18 @@ QStringList CodeMarker::macRefsForNode(const Node *node)
                 result += QLatin1String("macro/");
                 isMacro = true;
 #if 0
-            } else if (!func->templateStuff().isEmpty()) {
+            }
+            else if (!func->templateStuff().isEmpty()) {
                 result += QLatin1String("ftmplt/");
 #endif
-            } else if (func->isStatic()) {
+            }
+            else if (func->isStatic()) {
                 result += QLatin1String("clm/");
-            } else if (!func->parent()->name().isEmpty()) {
+            }
+            else if (!func->parent()->name().isEmpty()) {
                 result += QLatin1String("instm/");
-            } else {
+            }
+            else {
                 result += QLatin1String("func/");
             }
 
@@ -520,7 +559,8 @@ QStringList CodeMarker::macRefsForNode(const Node *node)
                 result += "/" + QLatin1String(QMetaObject::normalizedSignature(func->returnType().toLatin1().constData())) + "/(";
                 const QList<Parameter> &params = func->parameters();
                 for (int i = 0; i < params.count(); ++i) {
-                    QString type = params.at(i).leftType() + params.at(i).rightType();
+                    QString type = params.at(i).leftType() +
+                        params.at(i).rightType();
                     type = QLatin1String(QMetaObject::normalizedSignature(type.toLatin1().constData()));
                     if (i != 0)
                         result += ",";
@@ -563,10 +603,21 @@ QString CodeMarker::macName(const Node *node, const QString &name)
 
     if (node->name().isEmpty()) {
         return QLatin1Char('/') + myName;
-    } else {
+    }
+    else {
         return plainFullName(node) + QLatin1Char('/') + myName;
     }
 }
 
+#ifdef QDOC_QML
+/*!
+  Get the list of documentation sections for the children of
+  the specified QmlClassNode.
+ */
+QList<Section> CodeMarker::qmlSections(const QmlClassNode* , SynopsisStyle )
+{
+    return QList<Section>();
+}
+#endif
 
 QT_END_NAMESPACE

@@ -987,7 +987,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
 #endif
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        d->edit->d_func()->modifiedState = d->edit->d_func()->undoState = 0;
+        d->edit->d_func()->control->clearUndo();
         d->interpret(d->keyboardTracking ? AlwaysEmit : EmitIfChanged);
         selectAll();
         event->ignore();

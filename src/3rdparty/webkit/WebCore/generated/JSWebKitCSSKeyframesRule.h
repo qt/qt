@@ -30,7 +30,7 @@ class WebKitCSSKeyframesRule;
 class JSWebKitCSSKeyframesRule : public JSCSSRule {
     typedef JSCSSRule Base;
 public:
-    JSWebKitCSSKeyframesRule(PassRefPtr<JSC::Structure>, PassRefPtr<WebKitCSSKeyframesRule>);
+    JSWebKitCSSKeyframesRule(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebKitCSSKeyframesRule>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertySlot(JSC::ExecState*, unsigned propertyName, JSC::PropertySlot&);
@@ -44,7 +44,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 

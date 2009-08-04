@@ -33,7 +33,7 @@ class SVGMaskElement;
 class JSSVGMaskElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGMaskElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGMaskElement>);
+    JSSVGMaskElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGMaskElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

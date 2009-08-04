@@ -64,6 +64,10 @@
 #  endif
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#  include <envLib.h>
+#endif
+
 #if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
 #include <CoreServices/CoreServices.h>
 #endif
@@ -1100,7 +1104,7 @@ bool qSharedBuild()
     \value WV_XP    Windows XP (operating system version 5.1)
     \value WV_2003  Windows Server 2003, Windows Server 2003 R2, Windows Home Server, Windows XP Professional x64 Edition (operating system version 5.2)
     \value WV_VISTA Windows Vista, Windows Server 2008 (operating system version 6.0)
-    \value WV_WINDOWS7 Windows 7 (operating system version 6.1)
+    \value WV_WINDOWS7 Windows 7, Windows Server 2008 R2 (operating system version 6.1)
 
     Alternatively, you may use the following macros which correspond directly to the Windows operating system version number:
 
@@ -1109,7 +1113,7 @@ bool qSharedBuild()
     \value WV_5_1   Operating system version 5.1, corresponds to Windows XP
     \value WV_5_2   Operating system version 5.2, corresponds to Windows Server 2003, Windows Server 2003 R2, Windows Home Server, and Windows XP Professional x64 Edition
     \value WV_6_0   Operating system version 6.0, corresponds to Windows Vista and Windows Server 2008
-    \value WV_6_1   Operating system version 6.1, corresponds to Windows 7
+    \value WV_6_1   Operating system version 6.1, corresponds to Windows 7 and Windows Server 2008 R2
 
     CE-based versions:
 
@@ -1397,14 +1401,7 @@ bool qSharedBuild()
     \macro Q_OS_QNX
     \relates <QtGlobal>
 
-    Defined on QNX.
-*/
-
-/*!
-    \macro Q_OS_QNX6
-    \relates <QtGlobal>
-
-    Defined on QNX RTP 6.1.
+    Defined on QNX Neutrino.
 */
 
 /*!
@@ -2059,7 +2056,7 @@ QString qt_error_string(int errorCode)
         if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
             ret = QString::fromLatin1("The specified module could not be found.");
 
-#elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L && !defined(Q_OS_INTEGRITY)
+#elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX)
 
         QByteArray buf(1024, '\0');
         strerror_r(errorCode, buf.data(), buf.size());

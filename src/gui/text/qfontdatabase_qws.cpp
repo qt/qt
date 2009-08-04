@@ -257,7 +257,7 @@ static QString qwsFontPath()
     return fontpath;
 }
 
-#ifdef QFONTDATABASE_DEBUG
+#if defined(QFONTDATABASE_DEBUG) && defined(QT_FONTS_ARE_RESOURCES)
 class FriendlyResource : public QResource
 {
 public:
@@ -591,8 +591,12 @@ QFontEngine *loadSingleEngine(int script, const QFontPrivate *fp,
         QFontDef def = request;
         def.pixelSize = pixelSize;
 
+#ifdef QT_NO_QWS_SHARE_FONTS
+        bool shareFonts = false;
+#else
         static bool dontShareFonts = !qgetenv("QWS_NO_SHARE_FONTS").isEmpty();
         bool shareFonts = !dontShareFonts;
+#endif
 
         QScopedPointer<QFontEngine> engine;
 

@@ -145,6 +145,21 @@ class HtmlGenerator : public PageGenerator
                              const Node *relative,
 			     CodeMarker *marker, 
                              CodeMarker::SynopsisStyle style);
+#ifdef QDOC_QML
+    void generateQmlSummary(const Section& section,
+                            const Node *relative,
+                            CodeMarker *marker);
+    void generateQmlItem(const Node *node,
+                         const Node *relative,
+                         CodeMarker *marker,
+                         bool summary);
+    void generateDetailedQmlMember(const Node *node,
+                                   const InnerNode *relative,
+                                   CodeMarker *marker);
+    void generateQmlInherits(const QmlClassNode* cn, CodeMarker* marker);
+    void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
+    void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
+#endif
 #ifdef QDOC_NAME_ALIGNMENT
     void generateSection(const NodeList& nl,
                          const Node *relative,
@@ -180,8 +195,12 @@ class HtmlGenerator : public PageGenerator
                           const Node *relative, 
                           CodeMarker *marker,
 			  const Node *actualNode = 0);
-    void generateDetailedMember(const Node *node, const InnerNode *relative, CodeMarker *marker);
-    void generateLink(const Atom *atom, const Node *relative, CodeMarker *marker);
+    void generateDetailedMember(const Node *node, 
+                                const InnerNode *relative, 
+                                CodeMarker *marker);
+    void generateLink(const Atom *atom, 
+                      const Node *relative, 
+                      CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
     
     QString registerRef(const QString& ref);
@@ -252,6 +271,7 @@ class HtmlGenerator : public PageGenerator
     QStringList customHeadElements;
     const Tree *tre;
     bool slow;
+    bool obsoleteLinks;
     QMap<QString, QMap<QString, const Node *> > moduleClassMap;
     QMap<QString, QMap<QString, const Node *> > moduleNamespaceMap;
     QMap<QString, const Node *> nonCompatClasses;

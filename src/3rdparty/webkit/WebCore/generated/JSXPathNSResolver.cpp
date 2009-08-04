@@ -66,8 +66,8 @@ bool JSXPathNSResolverPrototype::getOwnPropertySlot(ExecState* exec, const Ident
 
 const ClassInfo JSXPathNSResolver::s_info = { "XPathNSResolver", 0, 0, 0 };
 
-JSXPathNSResolver::JSXPathNSResolver(PassRefPtr<Structure> structure, PassRefPtr<XPathNSResolver> impl)
-    : DOMObject(structure)
+JSXPathNSResolver::JSXPathNSResolver(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathNSResolver> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -96,9 +96,9 @@ JSValue JSC_HOST_CALL jsXPathNSResolverPrototypeFunctionLookupNamespaceURI(ExecS
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, XPathNSResolver* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XPathNSResolver* object)
 {
-    return getDOMObjectWrapper<JSXPathNSResolver>(exec, object);
+    return getDOMObjectWrapper<JSXPathNSResolver>(exec, globalObject, object);
 }
 XPathNSResolver* toXPathNSResolver(JSC::JSValue value)
 {

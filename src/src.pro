@@ -10,7 +10,7 @@ wince*:{
   SRC_SUBDIRS += $$QT_SOURCE_TREE/src/s60installs/qt_libs.pro
 } else {
     SRC_SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_corelib src_xml src_network src_gui src_sql src_script src_testlib
-    contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
+    !vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
     contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
     !cross_compile {
         contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_tools_uic3

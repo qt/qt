@@ -232,8 +232,10 @@ private Q_SLOTS:
     void rateControl();
     void downloadPerformance();
     void uploadPerformance();
-    void httpUploadPerformance();
     void performanceControlRate();
+    void httpUploadPerformance();
+    void httpDownloadPerformance_data();
+    void httpDownloadPerformance();
 
     void downloadProgress_data();
     void downloadProgress();
@@ -257,8 +259,6 @@ private Q_SLOTS:
     void authorizationError();
 
     void httpConnectionCount();
-    void httpDownloadPerformance_data();
-    void httpDownloadPerformance();
 
 #ifndef QT_NO_OPENSSL
     void ignoreSslErrorsList_data();
@@ -523,10 +523,10 @@ public:
         QTcpSocket *active = new QTcpSocket(this);
         active->connectToHost("127.0.0.1", server.serverPort());
 #ifndef Q_OS_SYMBIAN
-        if (!active->waitForConnected(10))
+        if (!active->waitForConnected(100))
             return false;
 
-        if (!server.waitForNewConnection(10))
+        if (!server.waitForNewConnection(100))
             return false;
 #else
         if (!active->waitForConnected(5000))
@@ -853,6 +853,92 @@ protected:
     }
 };
 
+class HttpDownloadPerformanceClient : QObject {
+    Q_OBJECT;
+    QIODevice *device;
+    public:
+    HttpDownloadPerformanceClient (QIODevice *dev) : device(dev){
+        connect(dev, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+    }
+
+    public slots:
+    void readyReadSlot() {
+        device->readAll();
+    }
+
+};
+
+class HttpDownloadPerformanceServer : QObject {
+    Q_OBJECT;
+    qint64 dataSize;
+    qint64 dataSent;
+    QTcpServer server;
+    QTcpSocket *client;
+    bool serverSendsContentLength;
+    bool chunkedEncoding;
+
+public:
+    HttpDownloadPerformanceServer (qint64 ds, bool sscl, bool ce) : dataSize(ds), dataSent(0),
+    client(0), serverSendsContentLength(sscl), chunkedEncoding(ce) {
+        server.listen();
+        connect(&server, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
+    }
+
+    int serverPort() {
+        return server.serverPort();
+    }
+
+public slots:
+
+    void newConnectionSlot() {
+        client = server.nextPendingConnection();
+        client->setParent(this);
+        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+        connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot(qint64)));
+    }
+
+    void readyReadSlot() {
+        client->readAll();
+        client->write("HTTP/1.0 200 OK\n");
+        if (serverSendsContentLength)
+            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toAscii());
+        if (chunkedEncoding)
+            client->write(QString("Transfer-Encoding: chunked\n").toAscii());
+        client->write("Connection: close\n\n");
+    }
+
+    void bytesWrittenSlot(qint64 amount) {
+        Q_UNUSED(amount);
+        if (dataSent == dataSize && client) {
+            // close eventually
+
+            // chunked encoding: we have to send a last "empty" chunk
+            if (chunkedEncoding)
+                client->write(QString("0\r\n\r\n").toAscii());
+
+            client->disconnectFromHost();
+            server.close();
+            client = 0;
+            return;
+        }
+
+        // send data
+        if (client && client->bytesToWrite() < 100*1024 && dataSent < dataSize) {
+            qint64 amount = qMin(qint64(16*1024), dataSize - dataSent);
+            QByteArray data(amount, '@');
+
+            if (chunkedEncoding) {
+                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toAscii());
+                client->write(data.constData(), amount);
+                client->write(QString("\r\n").toAscii());
+            } else {
+                client->write(data.constData(), amount);
+            }
+
+            dataSent += amount;
+        }
+    }
+};
 
 
 tst_QNetworkReply::tst_QNetworkReply()
@@ -3228,7 +3314,7 @@ void tst_QNetworkReply::uploadPerformance()
 
 void tst_QNetworkReply::httpUploadPerformance()
 {
-      enum {UploadSize = 1000*1024*1024}; // 1000 MB
+      enum {UploadSize = 128*1024*1024}; // 128 MB
       ThreadedDataReaderHttpServer reader;
       FixedSizeDataGenerator generator(UploadSize);
 
@@ -3250,7 +3336,7 @@ void tst_QNetworkReply::httpUploadPerformance()
               << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
 
       reader.exit();
-      reader.wait(3000);
+      reader.wait();
 }
 
 
@@ -3276,6 +3362,41 @@ void tst_QNetworkReply::performanceControlRate()
     qint64 receivedBytes = reader.totalBytes;
     qDebug() << "tst_QNetworkReply::performanceControlRate" << "receive rate:" << (receivedBytes * 1000 / elapsedTime / 1024) << "kB/s and"
              << elapsedTime << "ms";
+}
+
+void tst_QNetworkReply::httpDownloadPerformance_data()
+{
+    QTest::addColumn<bool>("serverSendsContentLength");
+    QTest::addColumn<bool>("chunkedEncoding");
+
+    QTest::newRow("Server sends no Content-Length") << false << false;
+    QTest::newRow("Server sends Content-Length")     << true << false;
+    QTest::newRow("Server uses chunked encoding")     << false << true;
+
+}
+
+void tst_QNetworkReply::httpDownloadPerformance()
+{
+    QFETCH(bool, serverSendsContentLength);
+    QFETCH(bool, chunkedEncoding);
+
+    enum {UploadSize = 128*1024*1024}; // 128 MB
+    HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
+
+    QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    HttpDownloadPerformanceClient client(reply);
+
+    QTime time;
+    time.start();
+    QTestEventLoop::instance().enterLoop(40);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    qint64 elapsed = time.elapsed();
+    qDebug() << "tst_QNetworkReply::httpDownloadPerformance" << elapsed << "msec, "
+            << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
 }
 
 void tst_QNetworkReply::downloadProgress_data()
@@ -3788,130 +3909,6 @@ void tst_QNetworkReply::httpConnectionCount()
     QCOMPARE(pendingConnectionCount, 6);
 }
 
-class HttpDownloadPerformanceClient : QObject {
-    Q_OBJECT;
-    QIODevice *device;
-    public:
-    HttpDownloadPerformanceClient (QIODevice *dev) : device(dev){
-        connect(dev, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-    }
-
-    public slots:
-    void readyReadSlot() {
-        device->readAll();
-    }
-
-};
-
-class HttpDownloadPerformanceServer : QObject {
-    Q_OBJECT;
-    qint64 dataSize;
-    qint64 dataSent;
-    QTcpServer server;
-    QTcpSocket *client;
-    bool serverSendsContentLength;
-    bool chunkedEncoding;
-
-public:
-    HttpDownloadPerformanceServer (qint64 ds, bool sscl, bool ce) : dataSize(ds), dataSent(0),
-    client(0), serverSendsContentLength(sscl), chunkedEncoding(ce) {
-        server.listen();
-        connect(&server, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
-    }
-
-    int serverPort() {
-        return server.serverPort();
-    }
-
-public slots:
-
-    void newConnectionSlot() {
-        client = server.nextPendingConnection();
-        client->setParent(this);
-        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-        connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot(qint64)));
-    }
-
-    void readyReadSlot() {
-        client->readAll();
-        client->write("HTTP/1.0 200 OK\n");
-        if (serverSendsContentLength)
-            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toAscii());
-        if (chunkedEncoding)
-            client->write(QString("Transfer-Encoding: chunked\n").toAscii());
-        client->write("Connection: close\n\n");
-    }
-
-    void bytesWrittenSlot(qint64 amount) {
-        Q_UNUSED(amount);
-        if (dataSent == dataSize && client) {
-            // close eventually
-
-            // chunked encoding: we have to send a last "empty" chunk
-            if (chunkedEncoding)
-                client->write(QString("0\r\n\r\n").toAscii());
-
-            client->disconnectFromHost();
-            server.close();
-            client = 0;
-            return;
-        }
-
-        // send data
-        if (client && client->bytesToWrite() < 100*1024 && dataSent < dataSize) {
-            qint64 amount = qMin(qint64(16*1024), dataSize - dataSent);
-            QByteArray data(amount, '@');
-
-            if (chunkedEncoding) {
-                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toAscii());
-                client->write(data.constData(), amount);
-                client->write(QString("\r\n").toAscii());
-            } else {
-                client->write(data.constData(), amount);
-            }
-
-            dataSent += amount;
-        }
-    }
-};
-
-void tst_QNetworkReply::httpDownloadPerformance_data()
-{
-    QTest::addColumn<bool>("serverSendsContentLength");
-    QTest::addColumn<bool>("chunkedEncoding");
-
-    QTest::newRow("Server sends no Content-Length") << false << false;
-    QTest::newRow("Server sends Content-Length")     << true << false;
-    QTest::newRow("Server uses chunked encoding")     << false << true;
-
-}
-
-void tst_QNetworkReply::httpDownloadPerformance()
-{
-    QFETCH(bool, serverSendsContentLength);
-    QFETCH(bool, chunkedEncoding);
-
-    enum {UploadSize = 1000*1024*1024}; // 1000 MB
-    HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
-
-    QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
-    QNetworkReply* reply = manager.get(request);
-
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-    HttpDownloadPerformanceClient client(reply);
-
-    QTime time;
-    time.start();
-    QTestEventLoop::instance().enterLoop(40);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-
-    qint64 elapsed = time.elapsed();
-    qDebug() << "tst_QNetworkReply::httpDownloadPerformance" << elapsed << "msec, "
-            << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
-
-    delete reply;
-}
-
 #ifndef QT_NO_OPENSSL
 void tst_QNetworkReply::ignoreSslErrorsList_data()
 {
@@ -3940,7 +3937,7 @@ void tst_QNetworkReply::ignoreSslErrorsList()
 {
     QFETCH(QString, url);
     QNetworkRequest request(url);
-    QNetworkReply *reply = manager.get(request);
+    QNetworkReplyPtr reply = manager.get(request);
 
     QFETCH(QList<QSslError>, expectedSslErrors);
     reply->ignoreSslErrors(expectedSslErrors);
@@ -3969,7 +3966,7 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
 {
     QFETCH(QString, url);
     QNetworkRequest request(url);
-    QNetworkReply *reply = manager.get(request);
+    QNetworkReplyPtr reply = manager.get(request);
 
     QFETCH(QList<QSslError>, expectedSslErrors);
     // store the errors to ignore them later in the slot connected below

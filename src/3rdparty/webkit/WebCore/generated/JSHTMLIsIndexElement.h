@@ -30,7 +30,7 @@ class HTMLIsIndexElement;
 class JSHTMLIsIndexElement : public JSHTMLInputElement {
     typedef JSHTMLInputElement Base;
 public:
-    JSHTMLIsIndexElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLIsIndexElement>);
+    JSHTMLIsIndexElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLIsIndexElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -42,7 +42,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 };
 
 

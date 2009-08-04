@@ -72,8 +72,8 @@ JSObject* JSSVGPathSegLinetoVerticalRelPrototype::self(ExecState* exec, JSGlobal
 
 const ClassInfo JSSVGPathSegLinetoVerticalRel::s_info = { "SVGPathSegLinetoVerticalRel", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoVerticalRelTable, 0 };
 
-JSSVGPathSegLinetoVerticalRel::JSSVGPathSegLinetoVerticalRel(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegLinetoVerticalRel> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegLinetoVerticalRel::JSSVGPathSegLinetoVerticalRel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoVerticalRel> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -89,8 +89,9 @@ bool JSSVGPathSegLinetoVerticalRel::getOwnPropertySlot(ExecState* exec, const Id
 
 JSValue jsSVGPathSegLinetoVerticalRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegLinetoVerticalRel* castedThis = static_cast<JSSVGPathSegLinetoVerticalRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegLinetoVerticalRel* imp = static_cast<SVGPathSegLinetoVerticalRel*>(static_cast<JSSVGPathSegLinetoVerticalRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegLinetoVerticalRel* imp = static_cast<SVGPathSegLinetoVerticalRel*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 

@@ -108,25 +108,8 @@ private:
 };
 Q_DECLARE_TYPEINFO(QNetworkCookie, Q_MOVABLE_TYPE);
 
-class QNetworkCookieJarPrivate;
-class Q_NETWORK_EXPORT QNetworkCookieJar: public QObject
-{
-    Q_OBJECT
-public:
-    QNetworkCookieJar(QObject *parent = 0);
-    virtual ~QNetworkCookieJar();
-
-    virtual QList<QNetworkCookie> cookiesForUrl(const QUrl &url) const;
-    virtual bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url);
-
-protected:
-    QList<QNetworkCookie> allCookies() const;
-    void setAllCookies(const QList<QNetworkCookie> &cookieList);
-
-private:
-    Q_DECLARE_PRIVATE(QNetworkCookieJar)
-    Q_DISABLE_COPY(QNetworkCookieJar)
-};
+// ### Qt5 remove this include
+#include "qnetworkcookiejar.h"
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

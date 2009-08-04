@@ -47,7 +47,7 @@ namespace WebCore {
     class Worker;
     class WorkerThread;
 
-    class WorkerMessagingProxy : public WorkerContextProxy, public WorkerObjectProxy, public WorkerLoaderProxy, Noncopyable {
+    class WorkerMessagingProxy : public WorkerContextProxy, public WorkerObjectProxy, public WorkerLoaderProxy, public Noncopyable {
     public:
         WorkerMessagingProxy(Worker*);
 
@@ -82,6 +82,7 @@ namespace WebCore {
     private:
         friend class MessageWorkerTask;
         friend class WorkerContextDestroyedTask;
+        friend class WorkerExceptionTask;
         friend class WorkerThreadActivityReportTask;
 
         virtual ~WorkerMessagingProxy();

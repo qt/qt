@@ -111,7 +111,7 @@ public:
     CentralWidget(QHelpEngine *engine, MainWindow *parent);
     ~CentralWidget();
 
-    void setLastShownPages();
+    void setupWidget();
     bool hasSelection() const;
     QUrl currentSource() const;
     QString currentTitle() const;
@@ -188,6 +188,7 @@ private:
     void initPrinter();
     QString quoteTabTitle(const QString &title) const;
     void highlightSearchTerms();
+    void setLastShownPages();
 
 private:
     int lastTabPage;

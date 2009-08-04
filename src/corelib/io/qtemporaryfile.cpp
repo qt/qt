@@ -73,7 +73,10 @@
 
 #if defined(Q_OS_WINCE)
 #  include <types.h>
-#  include "qfunctions_wince.h"
+#endif
+
+#if defined(Q_OS_VXWORKS)
+#  include <taskLib.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -133,6 +136,8 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
     }
 #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
     pid = _getpid();
+#elif defined(Q_OS_VXWORKS)
+    pid = (pid_t) taskIdCurrent;
 #else
     pid = getpid();
 #endif
@@ -234,7 +239,7 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 #ifdef Q_OS_WIN
             if (QT_MKDIR(path) == 0)
 #else
-            if (mkdir(path, 0700) == 0)
+            if (QT_MKDIR(path, 0700) == 0)
 #endif
                 return 1;
             if (errno != EEXIST)

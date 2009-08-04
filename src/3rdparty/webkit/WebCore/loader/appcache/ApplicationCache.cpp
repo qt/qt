@@ -39,6 +39,7 @@ namespace WebCore {
 ApplicationCache::ApplicationCache()
     : m_group(0)
     , m_manifest(0)
+    , m_estimatedSizeInStorage(0)
     , m_storageID(0)
 {
 }
@@ -86,7 +87,9 @@ void ApplicationCache::addResource(PassRefPtr<ApplicationCacheResource> resource
         // Add the resource to the storage.
         cacheStorage().store(resource.get(), this);
     }
-    
+
+    m_estimatedSizeInStorage += resource->estimatedSizeInStorage();
+
     m_resources.set(url, resource);
 }
 
@@ -100,12 +103,15 @@ unsigned ApplicationCache::removeResource(const String& url)
     unsigned type = it->second->type();
 
     m_resources.remove(it);
-    
+
+    m_estimatedSizeInStorage -= it->second->estimatedSizeInStorage();
+
     return type;
 }    
     
 ApplicationCacheResource* ApplicationCache::resourceForURL(const String& url)
 {
+    ASSERT(!KURL(url).hasRef());
     return m_resources.get(url).get();
 }    
 
@@ -125,8 +131,12 @@ ApplicationCacheResource* ApplicationCache::resourceForRequest(const ResourceReq
     // We only care about HTTP/HTTPS GET requests.
     if (!requestIsHTTPOrHTTPSGet(request))
         return false;
-    
-    return resourceForURL(request.url());
+
+    KURL url(request.url());
+    if (url.hasRef())
+        url.removeRef();
+
+    return resourceForURL(url);
 }
 
 void ApplicationCache::setOnlineWhitelist(const Vector<KURL>& onlineWhitelist)

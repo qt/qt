@@ -49,9 +49,9 @@
 
 static int global_ser_no = 0;
 
-QDirectFBPixmapData::QDirectFBPixmapData(PixelType pixelType)
-    : QPixmapData(pixelType, DirectFBClass),
-      engine(0), format(QImage::Format_Invalid), alpha(false)
+QDirectFBPixmapData::QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixelType)
+    : QPixmapData(pixelType, DirectFBClass), QDirectFBPaintDevice(screen),
+      format(QImage::Format_Invalid), alpha(false)
 {
     setSerialNumber(0);
 }
@@ -61,7 +61,6 @@ QDirectFBPixmapData::~QDirectFBPixmapData()
     unlockDirectFB();
     if (dfbSurface && QDirectFBScreen::instance())
         screen->releaseDFBSurface(dfbSurface);
-    delete engine;
 }
 
 void QDirectFBPixmapData::resize(int width, int height)
@@ -304,7 +303,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         Q_ASSERT(image);
         const QImage transformed = image->transformed(transform, mode);
         that->unlockDirectFB();
-        QDirectFBPixmapData *data = new QDirectFBPixmapData(QPixmapData::PixmapType);
+        QDirectFBPixmapData *data = new QDirectFBPixmapData(screen, QPixmapData::PixmapType);
         data->fromImage(transformed, Qt::AutoColor);
         return QPixmap(data);
     }
@@ -314,7 +313,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
     if (size.isEmpty())
         return QPixmap();
 
-    QDirectFBPixmapData *data = new QDirectFBPixmapData(QPixmapData::PixmapType);
+    QDirectFBPixmapData *data = new QDirectFBPixmapData(screen, QPixmapData::PixmapType);
     DFBSurfaceBlittingFlags flags = DSBLIT_NOFX;
     data->alpha = alpha;
     if (alpha) {
@@ -372,6 +371,8 @@ QImage QDirectFBPixmapData::toImage() const
     const QImage *img = that->buffer();
     return img->copy();
 }
+
+/* This is QPixmapData::paintEngine(), not QPaintDevice::paintEngine() */
 
 QPaintEngine *QDirectFBPixmapData::paintEngine() const
 {

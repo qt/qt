@@ -114,4 +114,4 @@ HEADERS += tools/qharfbuzz_p.h
 INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/md4
 
-!macx-icc:unix:!symbian:LIBS += -lm
+!macx-icc:unix:!symbian:!vxworks:LIBS += -lm

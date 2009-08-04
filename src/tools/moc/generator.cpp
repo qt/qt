@@ -56,6 +56,8 @@ enum PropertyFlags  {
     EnumOrFlag = 0x00000008,
     StdCppSet = 0x00000100,
 //     Override = 0x00000200,
+    Constant = 0x00000400,
+    Final = 0x00000800,
     Designable = 0x00001000,
     ResolveDesignable = 0x00002000,
     Scriptable = 0x00004000,
@@ -68,6 +70,7 @@ enum PropertyFlags  {
     ResolveUser = 0x00200000,
     Notify = 0x00400000
 };
+
 enum MethodFlags {
     AccessPrivate = 0x00,
     AccessProtected = 0x01,
@@ -202,10 +205,10 @@ void Generator::generateCode()
     QByteArray qualifiedClassNameIdentifier = cdef->qualified;
     qualifiedClassNameIdentifier.replace(':', '_');
 
-    int index = 12;
+    int index = 13;
     fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
-    fprintf(out, "    %4d,       // revision\n", 2);
+    fprintf(out, "    %4d,       // revision\n", 3);
     fprintf(out, "    %4d,       // classname\n", strreg(cdef->qualified));
     fprintf(out, "    %4d, %4d, // classinfo\n", cdef->classInfoList.count(), cdef->classInfoList.count() ? index : 0);
     index += cdef->classInfoList.count() * 2;
@@ -224,6 +227,9 @@ void Generator::generateCode()
         index += 4 + (cdef->enumList.at(i).values.count() * 2);
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? cdef->constructorList.count() : 0,
             isConstructible ? index : 0);
+
+    fprintf(out, "    %4d,       // flags\n", 0);
+
 
 //
 // Build classinfo array
@@ -379,7 +385,7 @@ void Generator::generateCode()
     if (isQt || !cdef->hasQObject)
         return;
 
-    fprintf(out, "\nconst QMetaObject *%s::metaObject() const\n{\n    return &staticMetaObject;\n}\n",
+    fprintf(out, "\nconst QMetaObject *%s::metaObject() const\n{\n    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;\n}\n",
             cdef->qualified.constData());
 //
 // Generate smart cast function
@@ -596,6 +602,11 @@ void Generator::generateProperties()
 
         if (p.notifyId != -1)
             flags |= Notify;
+
+        if (p.constant)
+            flags |= Constant;
+        if (p.final)
+            flags |= Final;
 
         fprintf(out, "    %4d, %4d, ",
                 strreg(p.name),

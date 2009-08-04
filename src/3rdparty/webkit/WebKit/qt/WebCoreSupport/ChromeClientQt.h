@@ -110,11 +110,14 @@ namespace WebCore {
 
         virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags);
 
-        virtual void setToolTip(const String&);
+        virtual void setToolTip(const String&, TextDirection);
 
         virtual void print(Frame*);
 #if ENABLE(DATABASE)
         virtual void exceededDatabaseQuota(Frame*, const String&);
+#endif
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+        virtual void reachedMaxAppCacheSize(int64_t spaceNeeded);
 #endif
         virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>);
 

@@ -31,7 +31,7 @@ class Attr;
 class JSAttr : public JSNode {
     typedef JSNode Base;
 public:
-    JSAttr(PassRefPtr<JSC::Structure>, PassRefPtr<Attr>);
+    JSAttr(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Attr>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -43,7 +43,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom attributes
     void setValue(JSC::ExecState*, JSC::JSValue);

@@ -130,6 +130,8 @@ public:
 
     static inline uint polygonFlags(QPaintEngine::PolygonDrawMode mode);
 
+    QPainterPath convertToPainterPath() const;
+
 private:
     Q_DISABLE_COPY(QVectorPath)
 

@@ -92,8 +92,8 @@ namespace Phonon
                     return E_POINTER;
                 }
 
-                int nbfetched = 0;
-                while (nbfetched < int(count) && m_index < m_pins.count()) {
+                uint nbfetched = 0;
+                while (nbfetched < count && m_index < m_pins.count()) {
                     IPin *current = m_pins[m_index];
                     current->AddRef();
                     ret[nbfetched] = current;
@@ -211,7 +211,8 @@ namespace Phonon
             }
             else if (iid == IID_IMediaPosition || iid == IID_IMediaSeeking) {
                 if (inputPins().isEmpty()) {
-                    if (*out = getUpStreamInterface(iid)) {
+                    *out = getUpStreamInterface(iid);
+                    if (*out) {
                         return S_OK; //we return here to avoid adding a reference
                     } else {
                         hr = E_NOINTERFACE;

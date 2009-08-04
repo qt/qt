@@ -56,8 +56,8 @@ JSObject* JSSVGHKernElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGHKernElement::s_info = { "SVGHKernElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGHKernElement::JSSVGHKernElement(PassRefPtr<Structure> structure, PassRefPtr<SVGHKernElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGHKernElement::JSSVGHKernElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGHKernElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 

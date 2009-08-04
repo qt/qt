@@ -44,6 +44,11 @@
 
 #include <QtCore/qglobal.h>
 
+#if defined(Q_OS_VXWORKS) && defined(m_data)
+#  undef m_data
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 //

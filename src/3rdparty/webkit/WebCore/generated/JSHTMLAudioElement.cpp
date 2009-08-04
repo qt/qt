@@ -62,12 +62,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLAudioElementConstructorTable =
     { 1, 0, JSHTMLAudioElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLAudioElementConstructor : public DOMObject {
+class JSHTMLAudioElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLAudioElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLAudioElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLAudioElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLAudioElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLAudioElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLAudioElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,8 +109,8 @@ JSObject* JSHTMLAudioElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLAudioElement::s_info = { "HTMLAudioElement", &JSHTMLMediaElement::s_info, &JSHTMLAudioElementTable, 0 };
 
-JSHTMLAudioElement::JSHTMLAudioElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLAudioElement> impl)
-    : JSHTMLMediaElement(structure, impl)
+JSHTMLAudioElement::JSHTMLAudioElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAudioElement> impl)
+    : JSHTMLMediaElement(structure, globalObject, impl)
 {
 }
 
@@ -126,11 +126,12 @@ bool JSHTMLAudioElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLAudioElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLAudioElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLAudioElement* domObject = static_cast<JSHTMLAudioElement*>(asObject(slot.slotBase()));
+    return JSHTMLAudioElement::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSHTMLAudioElement::getConstructor(ExecState* exec)
+JSValue JSHTMLAudioElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLAudioElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLAudioElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

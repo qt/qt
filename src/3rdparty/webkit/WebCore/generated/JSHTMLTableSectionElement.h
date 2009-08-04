@@ -31,7 +31,7 @@ class HTMLTableSectionElement;
 class JSHTMLTableSectionElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLTableSectionElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLTableSectionElement>);
+    JSHTMLTableSectionElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLTableSectionElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -43,7 +43,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     HTMLTableSectionElement* impl() const
     {
         return static_cast<HTMLTableSectionElement*>(Base::impl());

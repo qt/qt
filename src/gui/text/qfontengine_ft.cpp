@@ -1380,8 +1380,8 @@ bool QFontEngineFT::loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs, G
     FT_Face face = 0;
 
     for (int i = 0; i < num_glyphs; ++i) {
-        if (!gs->glyph_data.contains(glyphs[i])
-            || gs->glyph_data.value(glyphs[i])->format != format) {
+        Glyph *glyph = gs->glyph_data.value(glyphs[i]);
+        if (glyph == 0 || glyph->format != format) {
             if (!face) {
                 face = lockFace();
                 FT_Matrix m = matrix;
