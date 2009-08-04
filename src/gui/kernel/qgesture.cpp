@@ -205,51 +205,6 @@ void QGesture::setState(Qt::GestureState state)
 }
 
 /*!
-    \property QGesture::startPos
-
-    \brief The start position of the gesture (if relevant).
-*/
-QPoint QGesture::startPos() const
-{
-    return d_func()->startPos;
-}
-
-void QGesture::setStartPos(const QPoint &point)
-{
-    d_func()->startPos = point;
-}
-
-/*!
-    \property QGesture::lastPos
-
-    \brief The last recorded position of the gesture (if relevant).
-*/
-QPoint QGesture::lastPos() const
-{
-    return d_func()->lastPos;
-}
-
-void QGesture::setLastPos(const QPoint &point)
-{
-    d_func()->lastPos = point;
-}
-
-/*!
-    \property QGesture::pos
-
-    \brief The current position of the gesture (if relevant).
-*/
-QPoint QGesture::pos() const
-{
-    return d_func()->pos;
-}
-
-void QGesture::setPos(const QPoint &point)
-{
-    d_func()->pos = point;
-}
-
-/*!
     Sets the \a graphicsItem the gesture is filtering events for.
 
     The gesture will install an event filter to the \a graphicsItem and

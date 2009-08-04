@@ -2625,12 +2625,12 @@ void QTextEditPrivate::_q_gestureTriggered()
         return;
     QScrollBar *hBar = q->horizontalScrollBar();
     QScrollBar *vBar = q->verticalScrollBar();
-    QPoint delta = g->pos() - (g->lastPos().isNull() ? g->pos() : g->lastPos());
+    QSize delta = g->lastOffset();
     if (!delta.isNull()) {
         if (QApplication::isRightToLeft())
-            delta.rx() *= -1;
-        int newX = hBar->value() - delta.x();
-        int newY = vBar->value() - delta.y();
+            delta.rwidth() *= -1;
+        int newX = hBar->value() - delta.width();
+        int newY = vBar->value() - delta.height();
         hbar->setValue(newX);
         vbar->setValue(newY);
     }

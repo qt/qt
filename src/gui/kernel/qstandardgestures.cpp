@@ -269,13 +269,8 @@ void QPanGesture::reset()
 */
 QSize QPanGesture::totalOffset() const
 {
-#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
     Q_D(const QPanGesture);
     return d->totalOffset;
-#else
-    QPoint pt = pos() - startPos();
-    return QSize(pt.x(), pt.y());
-#endif
 }
 
 /*!
@@ -286,46 +281,8 @@ QSize QPanGesture::totalOffset() const
 */
 QSize QPanGesture::lastOffset() const
 {
-#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
     Q_D(const QPanGesture);
     return d->lastOffset;
-#else
-    QPoint pt = pos() - lastPos();
-    return QSize(pt.x(), pt.y());
-#endif
-}
-
-/*!
-    \property QPanGesture::startPos
-
-    \brief The start position of the gesture.
-*/
-QPoint QPanGesture::startPos() const
-{
-    Q_D(const QPanGesture);
-    return d->startPos;
-}
-
-/*!
-    \property QPanGesture::lastPos
-
-    \brief The last recorded position of the gesture.
-*/
-QPoint QPanGesture::lastPos() const
-{
-    Q_D(const QPanGesture);
-    return d->lastPos;
-}
-
-/*!
-    \property QPanGesture::pos
-
-    \brief The current position of the gesture.
-*/
-QPoint QPanGesture::pos() const
-{
-    Q_D(const QPanGesture);
-    return d->pos;
 }
 
 QT_END_NAMESPACE

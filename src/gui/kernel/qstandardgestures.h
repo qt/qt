@@ -70,9 +70,6 @@ public:
 
     QSize totalOffset() const;
     QSize lastOffset() const;
-    QPoint startPos() const;
-    QPoint lastPos() const;
-    QPoint pos() const;
 
 private:
     bool event(QEvent *event);
