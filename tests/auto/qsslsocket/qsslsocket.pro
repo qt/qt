@@ -17,7 +17,7 @@ win32 {
 
 wince* {
     DEFINES += SRCDIR=\\\"./\\\"
-    
+
     certFiles.sources = certs ssl.tar.gz
     certFiles.path    = .
     DEPLOYMENT += certFiles
@@ -25,7 +25,7 @@ wince* {
     DEFINES += QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     TARGET.EPOCHEAPSIZE="0x100 0x1000000"
     TARGET.CAPABILITY="ALL -TCB"
-    
+
     certFiles.sources = certs ssl.tar.gz
     certFiles.path    = .
     DEPLOYMENT += certFiles

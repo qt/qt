@@ -43,7 +43,7 @@ qdirmodel
 qdockwidget
 qdoublespinbox
 qdoublevalidator
-qdrag 
+qdrag
 qerrormessage
 qfiledialog
 qfileiconprovider
@@ -166,7 +166,7 @@ qtextlist
 qtextobject
 qtextodfwriter
 #This test can only be compiled on HW currently, because it does not use reduced exports
-#Because we are planning to use class level exports also in HW later on, there is no 
+#Because we are planning to use class level exports also in HW later on, there is no
 #sense to enable this at all
 #qtextpiecetable
 qtextscriptengine

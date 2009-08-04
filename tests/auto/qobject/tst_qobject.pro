@@ -15,4 +15,3 @@ symbian: {
     addFiles.path = \sys\bin
     DEPLOYMENT += addFiles
 }
-

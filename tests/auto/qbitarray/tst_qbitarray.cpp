@@ -646,7 +646,7 @@ void tst_QBitArray::resize()
     // grow the array back and check the new bit
     a.resize(10);
     QCOMPARE( a, QStringToQBitArray(QString("1100000000")) );
-    
+
     // other test with and
     a.resize(9);
     QBitArray b = QStringToQBitArray(QString("1111111111"));

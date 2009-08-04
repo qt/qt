@@ -197,7 +197,7 @@ void tst_QClipboard::copy_exit_paste()
     // ### It's still possible to test copy/paste - just keep the apps running
 #elif defined (Q_OS_SYMBIAN) && defined (Q_CC_NOKIAX86)
     QSKIP("emulator cannot launch multiple processes",SkipAll);
-#endif    
+#endif
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup", SkipAll);
     const QStringList stringArgument = QStringList() << "Test string.";
@@ -240,7 +240,7 @@ void tst_QClipboard::setMimeData()
     QApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
     QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
     QApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
-    
+
     QSignalSpy spySelection(QApplication::clipboard(), SIGNAL(selectionChanged()));
     QSignalSpy spyData(QApplication::clipboard(), SIGNAL(dataChanged()));
     QSignalSpy spyFindBuffer(QApplication::clipboard(), SIGNAL(findBufferChanged()));
@@ -277,7 +277,7 @@ void tst_QClipboard::setMimeData()
     spySelection.clear();
     spyData.clear();
     spyFindBuffer.clear();
-    
+
     QApplication::clipboard()->setMimeData(newData, QClipboard::Clipboard);
     QApplication::clipboard()->setMimeData(newData, QClipboard::Selection); // used to crash on X11
     QApplication::clipboard()->setMimeData(newData, QClipboard::FindBuffer);

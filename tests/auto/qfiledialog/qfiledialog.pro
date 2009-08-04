@@ -15,6 +15,4 @@ wince*|symbian: {
 }
 
 symbian:TARGET.EPOCHEAPSIZE="0x100 0x1000000"
-
 symbian:HEADERS += ../../../include/qtgui/private/qfileinfogatherer_p.h
-

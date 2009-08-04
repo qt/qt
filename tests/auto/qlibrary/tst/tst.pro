@@ -22,7 +22,7 @@ wince*: {
         system.trolltech.test.mylib.dll
    binDep.path = /sys/bin
 #mylib.dl2 nonstandard binary deployment will cause warning in emulator,
-#but it can be safely ignored.        
+#but it can be safely ignored.
    custBinDep.sources = mylib.dl2
    custBinDep.path = /sys/bin
 

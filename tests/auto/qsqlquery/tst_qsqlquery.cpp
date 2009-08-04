@@ -302,7 +302,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     tablenames <<  qTableName( "qtest_lockedtable" );
 
     tablenames <<  qTableName( "Planet" );
-    
+
     tablenames << qTableName( "task_250026" );
     tablenames << qTableName( "task_234422" );
 

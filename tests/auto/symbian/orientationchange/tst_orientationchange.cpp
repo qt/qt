@@ -61,11 +61,11 @@ class TestWidget : public QWidget
 {
 public:
     TestWidget(QWidget *parent = 0);
-    
+
     void reset();
 public:
     void resizeEvent(QResizeEvent *event);
-    
+
 public:
     QSize resizeEventSize;
     int resizeEventCount;
@@ -86,58 +86,58 @@ void TestWidget::reset()
 void TestWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    
+
     // Size delivered in first resize event is stored.
-    if (!resizeEventCount) 
+    if (!resizeEventCount)
         resizeEventSize = event->size();
 
-    resizeEventCount++;    
+    resizeEventCount++;
 }
 
 void tst_orientationchange::resizeEventOnOrientationChange()
 {
     // This will test that when orientation 'changes', then
     // at most one resize event is generated.
-    
+
     TestWidget *normalWidget = new TestWidget();
     TestWidget *fullScreenWidget = new TestWidget();
     TestWidget *maximizedWidget = new TestWidget();
-    
+
     fullScreenWidget->showFullScreen();
     maximizedWidget->showMaximized();
     normalWidget->show();
-    
+
     QCoreApplication::sendPostedEvents();
     QCoreApplication::sendPostedEvents();
-    
+
     QCOMPARE(fullScreenWidget->resizeEventCount, 1);
     QCOMPARE(fullScreenWidget->size(), fullScreenWidget->resizeEventSize);
     QCOMPARE(maximizedWidget->resizeEventCount, 1);
     QCOMPARE(maximizedWidget->size(), maximizedWidget->resizeEventSize);
     QCOMPARE(normalWidget->resizeEventCount, 1);
     QCOMPARE(normalWidget->size(), normalWidget->resizeEventSize);
-    
+
     fullScreenWidget->reset();
     maximizedWidget->reset();
     normalWidget->reset();
-    
+
     // Assumes that Qt application is AVKON application.
     CAknAppUi *appUi = static_cast<CAknAppUi*>(CEikonEnv::Static()->EikAppUi());
-    
+
     // Determine 'opposite' orientation to the current orientation.
-    
+
     CAknAppUi::TAppUiOrientation orientation = CAknAppUi::EAppUiOrientationLandscape;
     if (fullScreenWidget->size().width() > fullScreenWidget->size().height()) {
         orientation = CAknAppUi::EAppUiOrientationPortrait;
     }
-    
+
     TRAPD(err, appUi->SetOrientationL(orientation));
 
     QCoreApplication::sendPostedEvents();
     QCoreApplication::sendPostedEvents();
 
-    // setOrientationL is not guaranteed to change orientation 
-    // (if emulator configured to support just portrait or landscape, then 
+    // setOrientationL is not guaranteed to change orientation
+    // (if emulator configured to support just portrait or landscape, then
     //  setOrientationL call shouldn't do anything).
     // So let's ensure that we do not get resize event twice.
 
@@ -150,9 +150,9 @@ void tst_orientationchange::resizeEventOnOrientationChange()
         QCOMPARE(maximizedWidget->size(), maximizedWidget->resizeEventSize);
     }
     QCOMPARE(normalWidget->resizeEventCount, 0);
-    
+
     TRAP(err, appUi->SetOrientationL(CAknAppUi::EAppUiOrientationUnspecified));
-    
+
     delete normalWidget;
     delete fullScreenWidget;
     delete maximizedWidget;

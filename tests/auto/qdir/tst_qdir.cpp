@@ -382,20 +382,20 @@ void tst_QDir::entryList_data()
     QTest::addColumn<int>("sortspec");
     QTest::addColumn<QStringList>("expected");
     QTest::newRow("spaces1") << SRCDIR "testdir/spaces" << QStringList("*. bar")
-			  << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
-			  << QStringList("foo. bar"); // notice how spaces5 works
+              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
+              << QStringList("foo. bar"); // notice how spaces5 works
     QTest::newRow("spaces2") << SRCDIR "testdir/spaces" << QStringList("*.bar")
-			  << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
-			  << QStringList("foo.bar");
+              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
+              << QStringList("foo.bar");
     QTest::newRow("spaces3") << SRCDIR "testdir/spaces" << QStringList("foo.*")
-			  << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
-			  << QString("foo. bar,foo.bar").split(',');
+              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
+              << QString("foo. bar,foo.bar").split(',');
     QTest::newRow("files1")  << SRCDIR "testdir/dir" << QString("*r.cpp *.pro").split(" ")
-			  << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
-			  << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(',');
+              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
+              << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(',');
     QTest::newRow("testdir1")  << SRCDIR "testdir" << QStringList()
-			  << (int)(QDir::AllDirs) << (int)(QDir::NoSort)
-			  << QString(".,..,dir,spaces").split(',');
+              << (int)(QDir::AllDirs) << (int)(QDir::NoSort)
+              << QString(".,..,dir,spaces").split(',');
 // #### this test uses filenames that cannot be represented on all filesystems we test, in
 // particular HFS+ on the Mac. When checking out the files with perforce it silently ignores the
 // error that it cannot represent the file names stored in the repository and the test fails. That
@@ -404,8 +404,8 @@ void tst_QDir::entryList_data()
 // ignored but git reports an error. The test only tried to prevent QDir from _hanging_ when listing
 // the directory.
 //    QTest::newRow("unprintablenames")  << SRCDIR "unprintablenames" << QStringList("*")
-//			  << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
-//			  << QString(".,..").split(",");
+//              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
+//              << QString(".,..").split(",");
     QTest::newRow("resources1") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
                              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
                              << QString("file1.data,file2.data,file3.data").split(',');
@@ -540,10 +540,10 @@ void tst_QDir::entryList()
     QFile::remove(SRCDIR "entrylist/brokenlink.lnk");
     QFile::remove(SRCDIR "entrylist/brokenlink");
 
-	// WinCE/Symbian does not have . and .. in the directory listing
+    // WinCE/Symbian does not have . and .. in the directory listing
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-	expected.removeAll(".");
-	expected.removeAll("..");
+    expected.removeAll(".");
+    expected.removeAll("..");
 #endif
 
 #if defined(Q_OS_WIN)
@@ -553,7 +553,7 @@ void tst_QDir::entryList()
     QFile::link(SRCDIR "entryList/nothing", SRCDIR "entrylist/brokenlink.lnk");
 #elif defined(Q_OS_SYMBIAN)
     // Symbian doesn't support links to directories
-  	expected.removeAll("linktodirectory.lnk");
+      expected.removeAll("linktodirectory.lnk");
 
     // Expecting failures from a couple of OpenC bugs. Do checks only once.
     static int xFailChecked = false;
@@ -737,7 +737,7 @@ void tst_QDir::canonicalPath_data()
     }
 #endif
 
-	QTest::newRow("relative") << "." << appPath;
+    QTest::newRow("relative") << "." << appPath;
     QTest::newRow("relativeSubDir") << "./testData/../testData" << appPath + "/testData";
 
 #ifndef Q_WS_WIN
@@ -784,10 +784,10 @@ void tst_QDir::current_data()
     else
         appPath.chop(1);        // remove the ending slash
 #if defined Q_WS_WIN
-	if (appPath.endsWith("release", Qt::CaseInsensitive))
-		appPath = appPath.left(appPath.length()-8);
+    if (appPath.endsWith("release", Qt::CaseInsensitive))
+        appPath = appPath.left(appPath.length()-8);
     else if (appPath.endsWith("debug", Qt::CaseInsensitive))
-		appPath = appPath.left(appPath.length()-6);
+        appPath = appPath.left(appPath.length()-6);
 #endif
 
     QTest::newRow("startup") << QString() << appPath;
@@ -821,9 +821,9 @@ void tst_QDir::current()
         QDir newCurrent = QDir::current();
         QDir::setCurrent(oldDir);
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-	QCOMPARE(newCurrent.absolutePath().toLower(), currentDir.toLower());
+    QCOMPARE(newCurrent.absolutePath().toLower(), currentDir.toLower());
 #else
-	QCOMPARE(newCurrent.absolutePath(), currentDir);
+    QCOMPARE(newCurrent.absolutePath(), currentDir);
 #endif
     }
 
@@ -838,8 +838,8 @@ void tst_QDir::cd_data()
     QTest::addColumn<QString>("newDir");
 
     QString appPath = QDir::currentPath();
-	int index = appPath.lastIndexOf("/");
-	QTest::newRow("cdUp") << QDir::currentPath() << ".." << true << appPath.left(index==0?1:index);
+    int index = appPath.lastIndexOf("/");
+    QTest::newRow("cdUp") << QDir::currentPath() << ".." << true << appPath.left(index==0?1:index);
     QTest::newRow("noChange") << QDir::currentPath() << "." << true << appPath;
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN) // on windows QDir::root() is usually c:/ but cd "/" will not force it to be root
     QTest::newRow("absolute") << QDir::currentPath() << "/" << true << "/";
@@ -881,11 +881,11 @@ void tst_QDir::setNameFilters_data()
     QTest::newRow("spaces1") << appPath + "testdir/spaces" << QStringList("*. bar")
                           << QStringList("foo. bar");
     QTest::newRow("spaces2") << appPath + "testdir/spaces" << QStringList("*.bar")
-			              << QStringList("foo.bar");
+                          << QStringList("foo.bar");
     QTest::newRow("spaces3") << appPath + "testdir/spaces" << QStringList("foo.*")
-			  			  << QString("foo. bar,foo.bar").split(",");
+                            << QString("foo. bar,foo.bar").split(",");
     QTest::newRow("files1")  << appPath + "testdir/dir" << QString("*r.cpp *.pro").split(" ")
-						  << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(",");
+                          << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(",");
     QTest::newRow("resources1") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
                              << QString("file1.data,file2.data,file3.data").split(',');
 }
@@ -1172,7 +1172,7 @@ void tst_QDir::operator_eq()
 void tst_QDir::dotAndDotDot()
 {
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-	QSKIP("WinCE and Symbian do not have . nor ..", SkipAll);
+    QSKIP("WinCE and Symbian do not have . nor ..", SkipAll);
 #endif
     QDir dir(QString(SRCDIR "testdir/"));
     QStringList entryList = dir.entryList(QDir::Dirs);

@@ -124,7 +124,7 @@ private slots:
     void setPath();
     void setDefaultFormat();
     void dontCreateNeedlessPaths();
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN) 
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     void dontReorderIniKeysNeedlessly();
 #endif
 
@@ -3673,7 +3673,7 @@ void tst_QSettings::dontCreateNeedlessPaths()
     QVERIFY(!fileInfo.dir().exists());
 }
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN) 
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
 void tst_QSettings::dontReorderIniKeysNeedlessly()
 {
 #ifdef  QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER

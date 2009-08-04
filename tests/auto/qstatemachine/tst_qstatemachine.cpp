@@ -128,7 +128,7 @@ private slots:
     void targetStateDeleted();
     void transitionToRootState();
     void transitionEntersParent();
-    
+
     void defaultErrorState();
     void customGlobalErrorState();
     void customLocalErrorStateInBrokenState();
@@ -147,16 +147,16 @@ private slots:
     void customErrorStateNotInGraph();
     void transitionToStateNotInGraph();
     void restoreProperties();
-    
+
     void defaultGlobalRestorePolicy();
     void globalRestorePolicySetToRestore();
     void globalRestorePolicySetToDoNotRestore();
 
     void noInitialStateForInitialState();
-    
+
     //void restorePolicyNotInherited();
     //void mixedRestoreProperties();
-    //void setRestorePolicyToDoNotRestore();    
+    //void setRestorePolicyToDoNotRestore();
     //void setGlobalRestorePolicyToGlobalRestore();
     //void restorePolicyOnChildState();
 
@@ -185,7 +185,7 @@ private slots:
 //    void removeDefaultAnimationForSource();
 //    void removeDefaultAnimationForTarget();
 //    void overrideDefaultAnimationWithSource();
-//    void overrideDefaultAnimationWithTarget();    
+//    void overrideDefaultAnimationWithTarget();
 //    void overrideDefaultSourceAnimationWithSpecific();
 //    void overrideDefaultTargetAnimationWithSpecific();
 //    void overrideDefaultTargetAnimationWithSource();
@@ -372,14 +372,14 @@ void tst_QStateMachine::defaultErrorState()
 class CustomErrorState: public QState
 {
 public:
-    CustomErrorState(QStateMachine *machine, QState *parent = 0) 
+    CustomErrorState(QStateMachine *machine, QState *parent = 0)
         : QState(parent), error(QStateMachine::NoError), m_machine(machine)
     {
     }
 
     void onEntry(QEvent *)
     {
-        error = m_machine->error();        
+        error = m_machine->error();
         errorString = m_machine->errorString();
     }
 
@@ -423,7 +423,7 @@ void tst_QStateMachine::customGlobalErrorState()
     QVERIFY(machine.configuration().contains(initialState));
 
     QCoreApplication::processEvents();
-    
+
     QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(customErrorState));
@@ -434,7 +434,7 @@ void tst_QStateMachine::customGlobalErrorState()
 }
 
 void tst_QStateMachine::customLocalErrorStateInBrokenState()
-{    
+{
     QStateMachine machine;
     CustomErrorState *customErrorState = new CustomErrorState(&machine);
     machine.addState(customErrorState);
@@ -446,15 +446,15 @@ void tst_QStateMachine::customLocalErrorStateInBrokenState()
 
     QState *brokenState = new QState();
     brokenState->setObjectName("brokenState");
-    machine.addState(brokenState);        
-    brokenState->setErrorState(customErrorState);    
+    machine.addState(brokenState);
+    brokenState->setErrorState(customErrorState);
 
     QState *childState = new QState(brokenState);
     childState->setObjectName("childState");
 
     initialState->addTransition(new EventTransition(QEvent::Type(QEvent::User + 1), brokenState));
 
-    machine.start();    
+    machine.start();
     QCoreApplication::processEvents();
 
     machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 1)));
@@ -474,15 +474,15 @@ void tst_QStateMachine::customLocalErrorStateInOtherState()
 
     QState *initialState = new QState();
     initialState->setObjectName("initialState");
-    QTest::ignoreMessage(QtWarningMsg, "QState::setErrorState: error state cannot belong to a different state machine");    
+    QTest::ignoreMessage(QtWarningMsg, "QState::setErrorState: error state cannot belong to a different state machine");
     initialState->setErrorState(customErrorState);
     machine.addState(initialState);
     machine.setInitialState(initialState);
 
     QState *brokenState = new QState();
     brokenState->setObjectName("brokenState");
-    
-    machine.addState(brokenState);    
+
+    machine.addState(brokenState);
 
     QState *childState = new QState(brokenState);
     childState->setObjectName("childState");
@@ -513,7 +513,7 @@ void tst_QStateMachine::customLocalErrorStateInParentOfBrokenState()
     QState *parentOfBrokenState = new QState();
     machine.addState(parentOfBrokenState);
     parentOfBrokenState->setObjectName("parentOfBrokenState");
-    parentOfBrokenState->setErrorState(customErrorState);    
+    parentOfBrokenState->setErrorState(customErrorState);
 
     QState *brokenState = new QState(parentOfBrokenState);
     brokenState->setObjectName("brokenState");
@@ -553,7 +553,7 @@ void tst_QStateMachine::customLocalErrorStateOverridesParent()
     machine.addState(parentOfBrokenState);
     parentOfBrokenState->setObjectName("parentOfBrokenState");
     parentOfBrokenState->setErrorState(customErrorStateForParent);
-    
+
     QState *brokenState = new QState(parentOfBrokenState);
     brokenState->setObjectName("brokenState");
     brokenState->setErrorState(customErrorStateForBrokenState);
@@ -592,10 +592,10 @@ void tst_QStateMachine::errorStateHasChildren()
     QState *initialState = new QState();
     initialState->setObjectName("initialState");
     machine.addState(initialState);
-    machine.setInitialState(initialState);    
+    machine.setInitialState(initialState);
 
     QState *brokenState = new QState();
-    brokenState->setObjectName("brokenState");    
+    brokenState->setObjectName("brokenState");
     machine.addState(brokenState);
 
     QState *childState = new QState(brokenState);
@@ -612,7 +612,7 @@ void tst_QStateMachine::errorStateHasChildren()
     QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.configuration().count(), 2);
     QVERIFY(machine.configuration().contains(customErrorState));
-    QVERIFY(machine.configuration().contains(childOfErrorState)); 
+    QVERIFY(machine.configuration().contains(childOfErrorState));
 }
 
 
@@ -631,10 +631,10 @@ void tst_QStateMachine::errorStateHasErrors()
     QState *initialState = new QState();
     initialState->setObjectName("initialState");
     machine.addState(initialState);
-    machine.setInitialState(initialState);    
+    machine.setInitialState(initialState);
 
     QState *brokenState = new QState();
-    brokenState->setObjectName("brokenState");    
+    brokenState->setObjectName("brokenState");
     machine.addState(brokenState);
 
     QState *childState = new QState(brokenState);
@@ -663,10 +663,10 @@ void tst_QStateMachine::errorStateIsRootState()
     QState *initialState = new QState();
     initialState->setObjectName("initialState");
     machine.addState(initialState);
-    machine.setInitialState(initialState);    
-    
+    machine.setInitialState(initialState);
+
     QState *brokenState = new QState();
-    brokenState->setObjectName("brokenState");    
+    brokenState->setObjectName("brokenState");
     machine.addState(brokenState);
 
     QState *childState = new QState(brokenState);
@@ -703,7 +703,7 @@ void tst_QStateMachine::errorStateEntersParentFirst()
 
     QState *grandParent = new QState(greatGrandParent);
     grandParent->setObjectName("grandParent");
-    grandParent->assignProperty(entryController, "grandParentEntered", true);    
+    grandParent->assignProperty(entryController, "grandParentEntered", true);
 
     QState *parent = new QState(grandParent);
     parent->setObjectName("parent");
@@ -718,7 +718,7 @@ void tst_QStateMachine::errorStateEntersParentFirst()
     initialStateOfGreatGrandParent->setObjectName("initialStateOfGreatGrandParent");
     greatGrandParent->setInitialState(initialStateOfGreatGrandParent);
 
-    QState *brokenState = new QState(greatGrandParent);    
+    QState *brokenState = new QState(greatGrandParent);
     brokenState->setObjectName("brokenState");
 
     QState *childState = new QState(brokenState);
@@ -784,9 +784,9 @@ void tst_QStateMachine::customErrorStateIsNull()
 
 void tst_QStateMachine::clearError()
 {
-    QStateMachine machine;    
+    QStateMachine machine;
     machine.setErrorState(new QState(machine.rootState())); // avoid warnings
-    
+
     QState *brokenState = new QState(machine.rootState());
     brokenState->setObjectName("brokenState");
     machine.setInitialState(brokenState);
@@ -819,10 +819,10 @@ void tst_QStateMachine::historyStateAsInitialState()
 
     QHistoryState *s2h = new QHistoryState(s2);
     s2->setInitialState(s2h);
-    
+
     QState *s21 = new QState(s2);
     s2h->setDefaultState(s21);
-    
+
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
     machine.start();
@@ -877,17 +877,17 @@ void tst_QStateMachine::brokenStateIsNeverEntered()
     entryController->setProperty("childStateEntered", false);
     entryController->setProperty("errorStateEntered", false);
 
-    QState *initialState = new QState(machine.rootState());    
+    QState *initialState = new QState(machine.rootState());
     machine.setInitialState(initialState);
 
     QState *errorState = new QState(machine.rootState());
     errorState->assignProperty(entryController, "errorStateEntered", true);
-    machine.setErrorState(errorState); 
+    machine.setErrorState(errorState);
 
     QState *brokenState = new QState(machine.rootState());
     brokenState->assignProperty(entryController, "brokenStateEntered", true);
     brokenState->setObjectName("brokenState");
-    
+
     QState *childState = new QState(brokenState);
     childState->assignProperty(entryController, "childStateEntered", true);
 
@@ -906,7 +906,7 @@ void tst_QStateMachine::brokenStateIsNeverEntered()
 
 void tst_QStateMachine::transitionToStateNotInGraph()
 {
-    QStateMachine machine;    
+    QStateMachine machine;
 
     QState *initialState = new QState(machine.rootState());
     initialState->setObjectName("initialState");
@@ -1017,7 +1017,7 @@ void tst_QStateMachine::addAndRemoveState()
 {
     QStateMachine machine;
     QStatePrivate *root_d = QStatePrivate::get(machine.rootState());
-    QCOMPARE(root_d->childStates().size(), 0); 
+    QCOMPARE(root_d->childStates().size(), 0);
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::addState: cannot add null state");
     machine.addState(0);
@@ -1499,7 +1499,7 @@ public:
         : QAbstractTransition(QList<QAbstractState*>() << target), m_value(value) {}
 
 protected:
-    virtual bool eventTest(QEvent *e) 
+    virtual bool eventTest(QEvent *e)
     {
         if (e->type() != QEvent::Type(QEvent::User+2))
             return false;
@@ -2387,7 +2387,7 @@ void tst_QStateMachine::targetStateWithNoParent()
     machine.start();
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 's1'");
     QTRY_COMPARE(startedSpy.count(), 1);
-    QCOMPARE(machine.isRunning(), false);    
+    QCOMPARE(machine.isRunning(), false);
     QCOMPARE(stoppedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 0);
     QCOMPARE(machine.error(), QStateMachine::NoCommonAncestorForTransitionError);
@@ -2407,7 +2407,7 @@ void tst_QStateMachine::targetStateDeleted()
 
 void tst_QStateMachine::defaultGlobalRestorePolicy()
 {
-    QStateMachine machine;    
+    QStateMachine machine;
 
     QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("a", 1);
@@ -2427,7 +2427,7 @@ void tst_QStateMachine::defaultGlobalRestorePolicy()
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
-    
+
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
     QCOMPARE(propertyHolder->property("b").toInt(), 2);
 
@@ -2441,7 +2441,7 @@ void tst_QStateMachine::defaultGlobalRestorePolicy()
     QCoreApplication::processEvents();
 
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
-    QCOMPARE(propertyHolder->property("b").toInt(), 4);    
+    QCOMPARE(propertyHolder->property("b").toInt(), 4);
 }
 
 void tst_QStateMachine::noInitialStateForInitialState()
@@ -2466,7 +2466,7 @@ void tst_QStateMachine::noInitialStateForInitialState()
 /*
 void tst_QStateMachine::restorePolicyNotInherited()
 {
-    QStateMachine machine;    
+    QStateMachine machine;
 
     QObject *propertyHolder = new QObject();
     propertyHolder->setProperty("a", 1);
@@ -2494,7 +2494,7 @@ void tst_QStateMachine::restorePolicyNotInherited()
     machine.setInitialState(parentState);
     machine.start();
     QCoreApplication::processEvents();
-    
+
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
     QCOMPARE(propertyHolder->property("b").toInt(), 2);
 
@@ -2508,7 +2508,7 @@ void tst_QStateMachine::restorePolicyNotInherited()
     QCoreApplication::processEvents();
 
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
-    QCOMPARE(propertyHolder->property("b").toInt(), 4);    
+    QCOMPARE(propertyHolder->property("b").toInt(), 4);
 
 }*/
 
@@ -2535,7 +2535,7 @@ void tst_QStateMachine::globalRestorePolicySetToDoNotRestore()
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
-    
+
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
     QCOMPARE(propertyHolder->property("b").toInt(), 2);
 
@@ -2549,7 +2549,7 @@ void tst_QStateMachine::globalRestorePolicySetToDoNotRestore()
     QCoreApplication::processEvents();
 
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
-    QCOMPARE(propertyHolder->property("b").toInt(), 4);       
+    QCOMPARE(propertyHolder->property("b").toInt(), 4);
 }
 
 /*
@@ -2655,7 +2655,7 @@ void tst_QStateMachine::restorePolicyOnChildState()
     machine.setInitialState(parentState);
     machine.start();
     QCoreApplication::processEvents();
-    
+
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
     QCOMPARE(propertyHolder->property("b").toInt(), 2);
 
@@ -2669,13 +2669,13 @@ void tst_QStateMachine::restorePolicyOnChildState()
     QCoreApplication::processEvents();
 
     QCOMPARE(propertyHolder->property("a").toInt(), 1);
-    QCOMPARE(propertyHolder->property("b").toInt(), 2);    
+    QCOMPARE(propertyHolder->property("b").toInt(), 2);
 }
 */
 
 void tst_QStateMachine::globalRestorePolicySetToRestore()
 {
-    QStateMachine machine;    
+    QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
     QObject *propertyHolder = new QObject(&machine);
@@ -2696,7 +2696,7 @@ void tst_QStateMachine::globalRestorePolicySetToRestore()
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
-    
+
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
     QCOMPARE(propertyHolder->property("b").toInt(), 2);
 
@@ -2710,16 +2710,16 @@ void tst_QStateMachine::globalRestorePolicySetToRestore()
     QCoreApplication::processEvents();
 
     QCOMPARE(propertyHolder->property("a").toInt(), 1);
-    QCOMPARE(propertyHolder->property("b").toInt(), 2);    
+    QCOMPARE(propertyHolder->property("b").toInt(), 2);
 }
 
 /*
 void tst_QStateMachine::mixedRestoreProperties()
 {
-    QStateMachine machine;    
+    QStateMachine machine;
 
     QObject *propertyHolder = new QObject();
-    propertyHolder->setProperty("a", 1);    
+    propertyHolder->setProperty("a", 1);
 
     QState *s1 = new QState(machine.rootState());
     s1->setRestorePolicy(QState::RestoreProperties);
@@ -2746,7 +2746,7 @@ void tst_QStateMachine::mixedRestoreProperties()
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
-    
+
     // Enter s1, save current
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
 
@@ -2822,7 +2822,7 @@ void tst_QStateMachine::simpleAnimation()
     QCOREAPPLICATION_EXEC(5000);
 
     QVERIFY(machine.configuration().contains(s3));
-    QCOMPARE(object->property("fooBar").toDouble(), 2.0);    
+    QCOMPARE(object->property("fooBar").toDouble(), 2.0);
 }
 
 class SlotCalledCounter: public QObject
@@ -2855,7 +2855,7 @@ void tst_QStateMachine::twoAnimations()
     animationBar->setDuration(900);
 
     SlotCalledCounter counter;
-    connect(animationFoo, SIGNAL(finished()), &counter, SLOT(slot())); 
+    connect(animationFoo, SIGNAL(finished()), &counter, SLOT(slot()));
     connect(animationBar, SIGNAL(finished()), &counter, SLOT(slot()));
 
     EventTransition *et = new EventTransition(QEvent::User, s2);
@@ -2877,7 +2877,7 @@ void tst_QStateMachine::twoAnimations()
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(object->property("foo").toDouble(), 2.0);
     QCOMPARE(object->property("bar").toDouble(), 10.0);
-    
+
     QCOMPARE(counter.counter, 2);
 }
 
@@ -2990,12 +2990,12 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     QState *s2Child2 = new QState(s2);
     s2Child2->assignProperty(object, "bar", 11.0);
     QAbstractTransition *at = s2Child->addTransition(new EventTransition(QEvent::User, s2Child2));
-    
+
     QPropertyAnimation *animation = new QPropertyAnimation(object, "bar", s2);
     animation->setDuration(2000);
     connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
     at->addAnimation(animation);
-    
+
     at = s1->addTransition(new EventTransition(QEvent::User, s2));
 
     animation = new QPropertyAnimation(object, "foo", s2);
@@ -3005,7 +3005,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     animation = new QPropertyAnimation(object, "bar", s2);
     connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
     at->addAnimation(animation);
-    
+
     QState *s3 = new QState(machine.rootState());
     s2->addTransition(s2Child, SIGNAL(polished()), s3);
 
@@ -3047,7 +3047,7 @@ void tst_QStateMachine::animatedGlobalRestoreProperty()
     QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", s2);
     connect(pa, SIGNAL(finished()), &counter, SLOT(slot()));
     at->addAnimation(pa);
-   
+
     at = s2->addTransition(pa, SIGNAL(finished()), s3);
     pa = new QPropertyAnimation(object, "foo", s3);
     connect(pa, SIGNAL(finished()), &counter, SLOT(slot()));
@@ -3089,7 +3089,7 @@ void tst_QStateMachine::specificTargetValueOfAnimation()
 
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    s2->addTransition(anim, SIGNAL(finished()), s3);    
+    s2->addTransition(anim, SIGNAL(finished()), s3);
 
     machine.setInitialState(s1);
     machine.start();
@@ -3117,7 +3117,7 @@ void tst_QStateMachine::addDefaultAnimation()
 
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    
+
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
     QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", &machine);
@@ -3152,7 +3152,7 @@ void tst_QStateMachine::addDefaultAnimationWithUnusedAnimation()
 
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    
+
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
     QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", &machine);
@@ -3197,7 +3197,7 @@ void tst_QStateMachine::removeDefaultAnimation()
     QCOMPARE(machine.defaultAnimations().size(), 0);
 
     machine.addDefaultAnimation(anim);
-    
+
     QPropertyAnimation *anim2 = new QPropertyAnimation(&propertyHolder, "foo");
     machine.addDefaultAnimation(anim2);
 
@@ -3233,8 +3233,8 @@ void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
-    
-    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
+
+    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
@@ -3269,7 +3269,7 @@ void tst_QStateMachine::addDefaultAnimationForSource()
 
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    
+
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
     QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", &machine);
@@ -3301,7 +3301,7 @@ void tst_QStateMachine::addDefaultAnimationForTarget()
 
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    
+
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
     QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", &machine);
@@ -3346,7 +3346,7 @@ void tst_QStateMachine::removeDefaultAnimationForSource()
     QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 0);
 
     machine.addDefaultAnimationForSourceState(machine.rootState(), anim);
-    
+
     QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
     machine.addDefaultAnimationForSourceState(machine.rootState(), anim2);
 
@@ -3390,7 +3390,7 @@ void tst_QStateMachine::removeDefaultAnimationForTarget()
     QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 0);
 
     machine.addDefaultAnimationForTargetState(machine.rootState(), anim);
-    
+
     QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
     machine.addDefaultAnimationForTargetState(machine.rootState(), anim2);
 
@@ -3425,9 +3425,9 @@ void tst_QStateMachine::overrideDefaultAnimationWithSource()
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
-    s1->addTransition(new EventTransition(QEvent::User, s2));    
-    
-    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
@@ -3465,9 +3465,9 @@ void tst_QStateMachine::overrideDefaultAnimationWithTarget()
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
-    s1->addTransition(new EventTransition(QEvent::User, s2));    
-    
-    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
@@ -3507,8 +3507,8 @@ void tst_QStateMachine::overrideDefaultSourceAnimationWithSpecific()
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
-    
-    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
+
+    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
@@ -3547,8 +3547,8 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSpecific()
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
-    
-    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
+
+    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
@@ -3587,8 +3587,8 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSource()
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     s1->addTransition(new EventTransition(QEvent::User, s2));
-    
-    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
+
+    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
@@ -3638,7 +3638,7 @@ void tst_QStateMachine::parallelStateAssignmentsDone()
     QCOMPARE(propertyHolder->property("foo").toInt(), 123);
     QCOMPARE(propertyHolder->property("bar").toInt(), 456);
     QCOMPARE(propertyHolder->property("zoot").toInt(), 789);
-    
+
     machine.postEvent(new QEvent(QEvent::User));
     QCoreApplication::processEvents();
 
@@ -3650,13 +3650,13 @@ void tst_QStateMachine::parallelStateAssignmentsDone()
 void tst_QStateMachine::transitionsFromParallelStateWithNoChildren()
 {
     QStateMachine machine;
-    
+
     QState *parallelState = new QState(QState::ParallelStates, machine.rootState());
     machine.setInitialState(parallelState);
 
-    QState *s1 = new QState(machine.rootState());    
+    QState *s1 = new QState(machine.rootState());
     parallelState->addTransition(new EventTransition(QEvent::User, s1));
-    
+
     machine.start();
     QCoreApplication::processEvents();
 
@@ -3687,7 +3687,7 @@ void tst_QStateMachine::parallelStateTransition()
     QState *s2InitialChild = new QState(s2);
     s2->setInitialState(s2InitialChild);
 
-    QState *s1OtherChild = new QState(s1);    
+    QState *s1OtherChild = new QState(s1);
 
     s1->addTransition(new EventTransition(QEvent::User, s1OtherChild));
 
@@ -3707,12 +3707,12 @@ void tst_QStateMachine::parallelStateTransition()
     QVERIFY(machine.configuration().contains(parallelState));
 
     QVERIFY(machine.configuration().contains(s1));
-    
+
     QVERIFY(machine.configuration().contains(s2));
     QVERIFY(machine.configuration().contains(s1OtherChild));
     QVERIFY(machine.configuration().contains(s2InitialChild));
     QCOMPARE(machine.configuration().size(), 5);
-    
+
 }
 
 void tst_QStateMachine::nestedRestoreProperties()
@@ -3783,7 +3783,7 @@ void tst_QStateMachine::nestedRestoreProperties2()
     s2->assignProperty(propertyHolder, "foo", 3);
 
     QState *s21 = new QState(s2);
-    s21->assignProperty(propertyHolder, "bar", 4);    
+    s21->assignProperty(propertyHolder, "bar", 4);
     s2->setInitialState(s21);
 
     QState *s22 = new QState(s2);

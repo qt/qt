@@ -55,7 +55,7 @@
 #ifdef Q_OS_SYMBIAN
     #define STRINGIFY(x) #x
     #define TOSTRING(x) STRINGIFY(x)
-    #define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"   
+    #define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
 #endif
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
@@ -377,7 +377,7 @@ void tst_QLocalSocket::listenAndConnect()
         QSignalSpy spyReadyRead(socket, SIGNAL(readyRead()));
 
         socket->connectToServer(name);
-#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN) 
+#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN)
         QTest::qWait(250);
 #endif
 
@@ -579,10 +579,10 @@ void tst_QLocalSocket::fullPath()
 
     LocalSocket socket;
     socket.connectToServer(serverName);
-#if defined (Q_OS_SYMBIAN) 
+#if defined (Q_OS_SYMBIAN)
     QTest::qWait(250);
-#endif    
-    
+#endif
+
     QCOMPARE(socket.serverName(), serverName);
     QCOMPARE(socket.fullServerName(), serverName);
     socket.disconnectFromServer();
@@ -730,16 +730,16 @@ void tst_QLocalSocket::threadedConnection()
     Server server;
 #if defined(Q_OS_SYMBIAN)
     server.setStackSize(0x14000);
-#endif    
+#endif
     server.clients = threads;
     server.start();
 
     QList<Client*> clients;
     for (int i = 0; i < threads; ++i) {
         clients.append(new Client());
-#if defined(Q_OS_SYMBIAN)        
+#if defined(Q_OS_SYMBIAN)
         clients.last()->setStackSize(0x14000);
-#endif        
+#endif
         clients.last()->start();
     }
 
@@ -951,7 +951,7 @@ void tst_QLocalSocket::unlink(QString name)
     int result = ::unlink(fullName.toUtf8().data());
 
     if(result != 0) {
-        qWarning() << "Unlinking " << fullName << " failed with " << strerror(errno); 
+        qWarning() << "Unlinking " << fullName << " failed with " << strerror(errno);
     }
 }
 #endif

@@ -6,7 +6,7 @@ QT = core
 symbian {
     testData.sources = tst_qtemporaryfile.cpp
     testData.path = .
-    DEPLOYMENT += testData    
+    DEPLOYMENT += testData
 }else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

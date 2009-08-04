@@ -6,7 +6,7 @@ QT += sql
 wince*: {
    plugFiles.sources = ../../../plugins/sqldrivers
    plugFiles.path    = .
-   DEPLOYMENT += plugFiles 
+   DEPLOYMENT += plugFiles
 } else {
    win32-g++ {
         LIBS += -lws2_32

@@ -193,7 +193,7 @@ void tst_QFontDatabase::addAppFont()
 {
 #ifdef Q_OS_SYMBIAN
     QSKIP( "Symbian: Application fonts are not yet supported", SkipAll );
-#else 
+#else
     QFETCH(bool, useMemoryFont);
     QSignalSpy fontDbChangedSpy(QApplication::instance(), SIGNAL(fontDatabaseChanged()));
 
@@ -243,7 +243,7 @@ void tst_QFontDatabase::addAppFont()
     QCOMPARE(fontDbChangedSpy.count(), 2);
 
     QVERIFY(db.families() == oldFamilies);
-#endif       
+#endif
 }
 
 QTEST_MAIN(tst_QFontDatabase)

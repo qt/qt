@@ -3464,7 +3464,7 @@ QString textPropertyToString(Display *display, XTextProperty& text_prop)
 static CCoeControl* GetStatusPaneControl( TInt aPaneId )
 {
     const TUid paneUid = { aPaneId };
-    
+
     CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     if (statusPane && statusPane->PaneCapabilities(paneUid).IsPresent()){
 		CCoeControl* control = NULL;
@@ -3474,17 +3474,17 @@ static CCoeControl* GetStatusPaneControl( TInt aPaneId )
     }
     return NULL;
 }
-// Returns the application's title pane, if not present returns NULL. 
+// Returns the application's title pane, if not present returns NULL.
 static CAknTitlePane* TitlePane()
 {
     return static_cast<CAknTitlePane*>(GetStatusPaneControl(EEikStatusPaneUidTitle));
 }
-    
-// Returns the application's title pane, if not present returns NULL. 
+
+// Returns the application's title pane, if not present returns NULL.
 static CAknContextPane* ContextPane()
 {
     return static_cast<CAknContextPane*>(GetStatusPaneControl(EEikStatusPaneUidContext));
-}    
+}
 #endif
 
 static QString visibleWindowTitle(QWidget *window, Qt::WindowState state = Qt::WindowNoState)
@@ -3549,7 +3549,7 @@ static QString visibleWindowTitle(QWidget *window, Qt::WindowState state = Qt::W
     if (win)
         vTitle = win->caption();
     }
-#elif defined (Q_WS_S60)    
+#elif defined (Q_WS_S60)
     CAknTitlePane* titlePane = TitlePane();
     if(titlePane)
         {
