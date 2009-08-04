@@ -46,25 +46,16 @@
 
 QT_BEGIN_NAMESPACE
 
-// In the Qt evaluation and educational version, we have a postfix in the
-// library name (e.g. qtmteval301.dll). QTDLL_POSTFIX is used for this.
-// A script modifies these lines when building eval/edu version, so be careful
-// when changing them.
-#ifndef QTDLL_POSTFIX
-#define QTDLL_POSTFIX ""
-#endif
-
 #define BLD_INF_FILENAME "bld.inf"
 #define MAKEFILE_DEPENDENCY_SEPARATOR " \\\n\t"
 
 #define QT_EXTRA_INCLUDE_DIR "tmp"
 
-class SymbianMakefileGenerator : public MakefileGenerator {
-
+class SymbianMakefileGenerator : public MakefileGenerator
+{
 protected:
 
     QString platform;
-    QString uid1;
     QString uid2;
     QString uid3;
     QString privateDirUid;
@@ -92,8 +83,6 @@ protected:
     QString getTargetExtension();
     bool isConfigSetToSymbian();
 
-    QString generateUID1();
-    QString generateUID2();
     QString generateUID3();
 
     bool initMmpVariables();
@@ -150,8 +139,6 @@ public:
 
     SymbianMakefileGenerator();
     ~SymbianMakefileGenerator();
-
 };
 
 #endif // SYMMAKEFILE_H
-

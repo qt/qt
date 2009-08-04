@@ -14,7 +14,7 @@ endif
 CXX	    =	mwccsym2
 CFLAGS	    =	-gccinc \
 		-w on -w nonotused -w nonotinlined -w noimplicit -w nopadding -w noemptydecl \
-                -w nounusedexpr -w nopossible -c -o $@ -O \
+		-w nounusedexpr -w nopossible -c -o $@ -O \
 		-I. -Igenerators -Igenerators\unix \
 		-Igenerators\win32 -Igenerators\mac \
 		-Igenerators\symbian \
@@ -23,8 +23,8 @@ CFLAGS	    =	-gccinc \
 		-I$(BUILD_PATH)\src\corelib\global \
 		-I$(SOURCE_PATH)\mkspecs\win32-mwc  \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_PCRE \
-	       	-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DHAVE_QCONFIG_CPP \
-	       	-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
+		-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DHAVE_QCONFIG_CPP \
+		-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
 		-DQT_NO_LIBRARY -I$(BUILD_PATH)\include\QtScript \
 		-I$(SOURCE_PATH)\corelib\xml -DQT_BOOTSTRAPPED
 
@@ -52,7 +52,7 @@ QTOBJS= \
 	qbitarray.o \
 	qbuffer.o \
 	qbytearray.o \
-        qcryptographichash.o \
+	qcryptographichash.o \
 	qvsnprintf.o \
 	qbytearraymatcher.o \
 	qconfig.o \

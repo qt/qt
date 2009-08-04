@@ -46,8 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class SymbianSbsv2MakefileGenerator : public SymbianMakefileGenerator {
-
+class SymbianSbsv2MakefileGenerator : public SymbianMakefileGenerator
+{
 protected:
 
     // Inherited from parent
@@ -69,4 +69,3 @@ private:
 };
 
 #endif // SYMMAKE_SBSV2_H
-

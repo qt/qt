@@ -78,7 +78,9 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
                 if (QFile::copy(item.absoluteFilePath(), destInfo.absoluteFilePath()))
                     generatedFiles << destInfo.absoluteFilePath();
                 else
-                    fprintf(stderr, "Error: Could not copy '%s' -> '%s'\n", qPrintable(item.absoluteFilePath()), qPrintable(destInfo.absoluteFilePath()));
+                    fprintf(stderr, "Error: Could not copy '%s' -> '%s'\n",
+                        qPrintable(item.absoluteFilePath()),
+                        qPrintable(destInfo.absoluteFilePath()));
             }
         }
         flmExportDone = true;
@@ -354,8 +356,6 @@ bool SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     t << endl;
 
-    // ### TODO: Linux emulator (platsim?) deployment
-
     // Write post link rules
     if(!project->isEmpty("QMAKE_POST_LINK")) {
         t << "START EXTENSION qt/qmake_post_link" << endl;
@@ -418,4 +418,3 @@ void SymbianSbsv2MakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool a
     Q_UNUSED(t);
     Q_UNUSED(addDeploymentExtension);
 }
-

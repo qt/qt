@@ -3339,26 +3339,24 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
 
 
 // UIDs starting with 0xE are test UIDs in symbian
-QString generate_test_uid(const QString& target) {
+QString generate_test_uid(const QString& target) 
+{
     QString tmp = generate_uid(target);
     tmp.replace(0,1,"E");
     tmp.prepend("0x");
-
-    // printf("generate_test_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
 
     return tmp;
 }
 
 
 // UIDs starting with 0xE are test UIDs in symbian
-QString generate_uid(const QString& target) {
-
+QString generate_uid(const QString& target) 
+{
     static QMap<QString, QString> targetToUid;
 
     QString tmp = targetToUid[target];
 
     if(!tmp.isEmpty()) {
-        // printf("generate_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
         return tmp;
     }
 

@@ -118,9 +118,7 @@ void initProjectDeploySymbian(QMakeProject* project,
     }
     QString deploymentDrive = targetPathHasDriveLetter ? targetPath.left(2) : QLatin1String("c:");
 
-    // foreach item in DEPLOYMENT
     foreach(QString item, project->values("DEPLOYMENT")) {
-        // get item.path
         QString devicePath = project->first(item + ".path");
         if (!deployBinaries
             && !devicePath.isEmpty()
@@ -172,7 +170,6 @@ void initProjectDeploySymbian(QMakeProject* project,
                 continue;
             }
 
-        // foreach d in item.sources
         foreach(QString source, project->values(item + ".sources")) {
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
@@ -216,7 +213,7 @@ void initProjectDeploySymbian(QMakeProject* project,
             QDirIterator iterator(searchPath, QStringList() << nameFilter
                                   , QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks
                                   , dirSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags );
-            // foreach dirIterator-entry in d
+
             while(iterator.hasNext()) {
                 iterator.next();
                 QFileInfo iteratorInfo(iterator.filePath());
