@@ -58,7 +58,7 @@ class QLocalServerPrivate;
 class Q_NETWORK_EXPORT QLocalServer : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QLocalServer)
+    Q_DECLARE_SCOPED_PRIVATE(QLocalServer)
 
 Q_SIGNALS:
     void newConnection();

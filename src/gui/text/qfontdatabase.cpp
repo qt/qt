@@ -226,7 +226,9 @@ struct QtFontStyle
         delete [] setwidthName;
 #endif
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
-        while (count--) {
+        while (count) {
+            // bitfield count-- in while condition does not work correctly in mwccsym2
+            count--;
 #ifdef Q_WS_X11
             free(pixelSizes[count].encodings);
 #endif

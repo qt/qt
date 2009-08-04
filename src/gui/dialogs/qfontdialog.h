@@ -59,7 +59,7 @@ class QFontDialogPrivate;
 class Q_GUI_EXPORT QFontDialog : public QDialog
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFontDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QFontDialog)
     Q_ENUMS(FontDialogOption)
     Q_PROPERTY(QFont currentFont READ currentFont WRITE setCurrentFont NOTIFY currentFontChanged)
     Q_PROPERTY(FontDialogOptions options READ options WRITE setOptions)

@@ -82,7 +82,7 @@ public:
     static inline QT3_SUPPORT bool available() { return isAvailable(); }
 #endif
 private:
-    Q_DECLARE_PRIVATE(QSound)
+    Q_DECLARE_SCOPED_PRIVATE(QSound)
     friend class QAuServer;
 };
 

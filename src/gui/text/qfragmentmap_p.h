@@ -222,13 +222,19 @@ QFragmentMapData<Fragment>::QFragmentMapData()
 template <class Fragment>
 void QFragmentMapData<Fragment>::init()
 {
-    fragments = (Fragment *)malloc(64*fragmentSize);
+    // the following code will realloc an existing fragment or create a new one.
+    // it will also ignore errors when shrinking an existing fragment.
+    Fragment *newFragments = (Fragment *)realloc(fragments, 64*fragmentSize);
+    if (newFragments) {
+        fragments = newFragments;
+        head->allocated = 64;
+    }
     Q_CHECK_PTR(fragments);
+
     head->tag = (((quint32)'p') << 24) | (((quint32)'m') << 16) | (((quint32)'a') << 8) | 'p'; //TAG('p', 'm', 'a', 'p');
     head->root = 0;
     head->freelist = 1;
     head->node_count = 0;
-    head->allocated = 64;
     // mark all items to the right as unused
     F(head->freelist).right = 0;
 }
@@ -236,7 +242,7 @@ void QFragmentMapData<Fragment>::init()
 template <class Fragment>
 QFragmentMapData<Fragment>::~QFragmentMapData()
 {
-    free(head);
+    free(fragments);
 }
 
 template <class Fragment>
@@ -800,7 +806,6 @@ public:
     inline void clear() {
         for (Iterator it = begin(); !it.atEnd(); ++it)
             it.value()->free();
-        ::free(data.head);
         data.init();
     }
 

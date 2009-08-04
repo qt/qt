@@ -221,6 +221,11 @@ QConfFile::QConfFile(const QString &fileName, bool _userPerms)
     usedHashFunc()->insert(name, this);
 }
 
+QConfFile::~QConfFile()
+{
+    usedHashFunc()->remove(name);
+}
+
 ParsedSettingsMap QConfFile::mergedKeyMap() const
 {
     ParsedSettingsMap result = originalKeys;
@@ -267,7 +272,7 @@ QConfFile *QConfFile::fromName(const QString &fileName, bool _userPerms)
     ConfFileHash *usedHash = usedHashFunc();
     ConfFileCache *unusedCache = unusedCacheFunc();
 
-    QConfFile *confFile;
+    QConfFile *confFile = 0;
     QMutexLocker locker(globalMutex());
 
     if (!(confFile = usedHash->value(absPath))) {
@@ -1219,12 +1224,11 @@ QConfFileSettingsPrivate::~QConfFileSettingsPrivate()
 
     for (int i = 0; i < NumConfFiles; ++i) {
         if (confFiles[i] && !confFiles[i]->ref.deref()) {
-            if (usedHash)
-                usedHash->remove(confFiles[i]->name);
-
             if (confFiles[i]->size == 0) {
                 delete confFiles[i].take();
             } else if (unusedCache) {
+                if (usedHash)
+                    usedHash->remove(confFiles[i]->name);
                 QT_TRY {
                     // compute a better size?
                     unusedCache->insert(confFiles[i]->name, confFiles[i].data(),

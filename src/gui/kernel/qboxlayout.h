@@ -60,7 +60,7 @@ class QBoxLayoutPrivate;
 class Q_GUI_EXPORT QBoxLayout : public QLayout
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QBoxLayout)
+    Q_DECLARE_SCOPED_PRIVATE(QBoxLayout)
 public:
     enum Direction { LeftToRight, RightToLeft, TopToBottom, BottomToTop,
                      Down = TopToBottom, Up = BottomToTop };

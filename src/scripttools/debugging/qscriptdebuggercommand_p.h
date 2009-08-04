@@ -257,7 +257,7 @@ public:
 private:
     QScopedPointer<QScriptDebuggerCommandPrivate> d_ptr;
 
-    Q_DECLARE_PRIVATE(QScriptDebuggerCommand)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerCommand)
 };
 
 Q_AUTOTEST_EXPORT QDataStream &operator<<(QDataStream &, const QScriptDebuggerCommand &);

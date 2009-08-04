@@ -2556,7 +2556,11 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                     qt_mac_destructWindow(window);
             }
         }
-        d->setWinId(0);
+        QT_TRY {
+            d->setWinId(0);
+        } QT_CATCH (const std::bad_alloc &) {
+            // swallow - destructors must not throw
+	}
     }
 }
 

@@ -152,7 +152,7 @@ public:
     static void finish(void *, bool lockAnyway=true);
 #endif // Q_OS_WIN32
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)  
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
     bool terminationEnabled, terminatePending;
 # endif
     QThreadData *data;
@@ -214,7 +214,7 @@ public:
 // thread wrapper for the main() thread
 class QAdoptedThread : public QThread
 {
-    Q_DECLARE_PRIVATE(QThread)
+    Q_DECLARE_SCOPED_PRIVATE(QThread)
 
 public:
     QAdoptedThread(QThreadData *data = 0);

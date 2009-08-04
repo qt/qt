@@ -1,4 +1,7 @@
+exceptionsafety_objects
+gestures
 languagechange
+math3d
 modeltest
 qabstractbutton
 qabstractitemview
@@ -59,6 +62,7 @@ qgraphicsitemanimation
 qgraphicslayout
 qgraphicslayoutitem
 qgraphicslinearlayout
+qgraphicsobject
 qgraphicspixmapitem
 qgraphicspolygonitem
 qgraphicsproxywidget
@@ -75,6 +79,7 @@ qimage
 qimageiohandler
 qimagereader
 qimagewriter
+qinputcontext
 qinputdialog
 qintvalidator
 qitemdelegate
@@ -170,6 +175,7 @@ qtoolbar
 qtoolbox
 qtoolbutton
 qtooltip
+qtouchevent
 qtransform
 qtransformedscreen
 qtreeview

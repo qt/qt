@@ -157,9 +157,9 @@
 #endif
 
 
-#if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#if defined(__ISO_C_VISIBLE) && (__ISO_C_VISIBLE >= 1999)
+#define QT_SNPRINTF     ::snprintf
+#define QT_VSNPRINTF    ::vsnprintf
 #endif
 
 

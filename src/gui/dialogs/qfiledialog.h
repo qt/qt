@@ -283,7 +283,7 @@ protected:
     void changeEvent(QEvent *e);
 
 private:
-    Q_DECLARE_PRIVATE(QFileDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QFileDialog)
     Q_DISABLE_COPY(QFileDialog)
 
     Q_PRIVATE_SLOT(d_func(), void _q_pathChanged(const QString &))

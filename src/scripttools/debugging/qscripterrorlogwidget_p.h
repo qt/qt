@@ -74,7 +74,7 @@ public:
     void clear();
 
 private:
-    Q_DECLARE_PRIVATE(QScriptErrorLogWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptErrorLogWidget)
     Q_DISABLE_COPY(QScriptErrorLogWidget)
 };
 

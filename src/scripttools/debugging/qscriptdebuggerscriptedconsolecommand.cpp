@@ -359,7 +359,7 @@ public:
                         int commandId);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerScriptedConsoleCommandJob)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerScriptedConsoleCommandJob)
     Q_DISABLE_COPY(QScriptDebuggerScriptedConsoleCommandJob)
 };
 

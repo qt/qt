@@ -63,7 +63,7 @@ class Q3SVGPaintEnginePrivate;
 
 class Q3SVGPaintEngine : public QPaintEngine
 {
-    Q_DECLARE_PRIVATE(Q3SVGPaintEngine)
+    Q_DECLARE_SCOPED_PRIVATE(Q3SVGPaintEngine)
 
 public:
     Q3SVGPaintEngine();

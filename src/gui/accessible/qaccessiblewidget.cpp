@@ -269,7 +269,7 @@ QT_END_INCLUDE_NAMESPACE
 
 class QACConnectionObject : public QObject
 {
-    Q_DECLARE_PRIVATE(QObject)
+    Q_DECLARE_SCOPED_PRIVATE(QObject)
 public:
     inline bool isSender(const QObject *receiver, const char *signal) const
     { return d_func()->isSender(receiver, signal); }

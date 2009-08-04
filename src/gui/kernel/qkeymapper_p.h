@@ -85,7 +85,7 @@ public:
 
 private:
     friend QKeyMapperPrivate *qt_keymapper_private();
-    Q_DECLARE_PRIVATE(QKeyMapper)
+    Q_DECLARE_SCOPED_PRIVATE(QKeyMapper)
     Q_DISABLE_COPY(QKeyMapper)
 };
 
@@ -161,6 +161,7 @@ public:
     bool translateKeyEvent(QWidget *receiver, const MSG &msg, bool grab);
     void updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32 scancode, quint32 vk_key);
     bool isADeadKey(unsigned int vk_key, unsigned int modifiers);
+    void deleteLayouts();
 
     KeyboardLayoutItem *keyLayout[256];
 
@@ -189,6 +190,7 @@ public:
     bool updateKeyboard();
     void updateKeyMap(EventHandlerCallRef, EventRef, void *);
     bool translateKeyEvent(QWidget *, EventHandlerCallRef, EventRef, void *, bool);
+    void deleteLayouts();
 
     enum { NullMode, UnicodeMode, OtherMode } keyboard_mode;
     union {

@@ -1382,14 +1382,36 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 128
 
-    In Symbian, dependencies to other packages can also be created using
-    this variable. The strings defined as dependencies are not parsed by 
-    qmake, so they should be in a format understood by Symbian package 
-    generation tools. Please consult Symbian documentation for correct syntax.
+    In Symbian, generic PKG file content can also be specified with this
+    variable. You can use either \c pkg_prerules or \c pkg_postrules to 
+    pass raw data to PKG file. The strings in \c pkg_prerules are added before
+    package-body and \c pkg_postrules after. The strings defined in 
+    \c pkg_postrules or \c pkg_prerules are not parsed by qmake, so they 
+    should be in a format understood by Symbian package generation tools. 
+    Please consult Symbian documentation for correct syntax.
     
-    For example: 
+    For example, to deploy DLL and add a new dependency: 
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 140
+
+    Please note that \c pkg_prerules can also replace default statements in
+    pkg file. If no pkg_prerules is defined, qmake makes sure that PKG file
+    syntax is correct and it contains all mandatory statements such as:
+    
+    \list
+    \o languages, for example \BR
+        &EN,FR
+    \o package-header, for example \BR
+        #{"MyApp-EN", "MyApp-FR"}, (0x1000001F), 1, 2, 3, TYPE=SA
+    \o localized and unique vendor, for example \BR
+        %{"Vendor-EN", ..., "Vendor-FR"}
+        :"Unique vendor name"
+    \endlist    
+    
+    If you decide to override any of these statements, you need to pay 
+    attention that also other statements stay valid. For example if you
+    override languages statement, you must override also package-header
+    statement and all other statements which are language specific.
     
     In Symbian, the \c default_deployment item specifies 
     default platform dependencies. It can be overwritten if a more 

@@ -102,7 +102,7 @@ protected Q_SLOTS:
                                     Qt::Orientation orientation, const QStyleOption *option = 0, const QWidget *widget = 0) const;
 private:
     Q_DISABLE_COPY(QProxyStyle)
-    Q_DECLARE_PRIVATE(QProxyStyle)
+    Q_DECLARE_SCOPED_PRIVATE(QProxyStyle)
 };
 
 #endif // QT_NO_STYLE_PROXY

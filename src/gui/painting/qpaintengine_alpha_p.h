@@ -62,7 +62,7 @@ class QAlphaPaintEnginePrivate;
 
 class QAlphaPaintEngine : public QPaintEngine
 {
-    Q_DECLARE_PRIVATE(QAlphaPaintEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QAlphaPaintEngine)
 public:
     ~QAlphaPaintEngine();
 

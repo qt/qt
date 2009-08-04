@@ -245,7 +245,7 @@ protected:
     void emitDataChanged();
 
 private:
-    Q_DECLARE_PRIVATE(QStandardItem)
+    Q_DECLARE_SCOPED_PRIVATE(QStandardItem)
     friend class QStandardItemModelPrivate;
     friend class QStandardItemModel;
 };
@@ -422,7 +422,7 @@ private:
     friend class QStandardItemPrivate;
     friend class QStandardItem;
     Q_DISABLE_COPY(QStandardItemModel)
-    Q_DECLARE_PRIVATE(QStandardItemModel)
+    Q_DECLARE_SCOPED_PRIVATE(QStandardItemModel)
 
     Q_PRIVATE_SLOT(d_func(), void _q_emitItemChanged(const QModelIndex &topLeft,
                                                      const QModelIndex &bottomRight))

@@ -36,6 +36,7 @@ symbian: SUBDIRS = \
                 mainwindows \
                 script \
                 sql \
+                uitools \
                 xml
 
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon

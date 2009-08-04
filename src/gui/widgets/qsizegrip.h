@@ -82,7 +82,7 @@ public:
 #endif
 
 private:
-    Q_DECLARE_PRIVATE(QSizeGrip)
+    Q_DECLARE_SCOPED_PRIVATE(QSizeGrip)
     Q_DISABLE_COPY(QSizeGrip)
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
 };

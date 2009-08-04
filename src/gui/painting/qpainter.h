@@ -79,11 +79,11 @@ class QTextItem;
 class QMatrix;
 class QTransform;
 
-class QPainterPrivateCleaner;
+class QPainterPrivateDeleter;
 
 class Q_GUI_EXPORT QPainter
 {
-    Q_DECLARE_PRIVATE(QPainter)
+    Q_DECLARE_SCOPED_PRIVATE(QPainter)
     Q_GADGET
     Q_FLAGS(RenderHint RenderHints)
 
@@ -500,7 +500,7 @@ private:
     Q_DISABLE_COPY(QPainter)
     friend class Q3Painter;
 
-    QScopedCustomPointer<QPainterPrivate, QPainterPrivateCleaner> d_ptr;
+    QCustomScopedPointer<QPainterPrivate> d_ptr;
 
     friend class QFontEngine;
     friend class QFontEngineBox;

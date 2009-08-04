@@ -62,7 +62,7 @@ class QEventDispatcherX11Private;
 class QEventDispatcherX11 : public QEventDispatcherUNIX
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventDispatcherX11)
+    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherX11)
 
 public:
     explicit QEventDispatcherX11(QObject *parent = 0);

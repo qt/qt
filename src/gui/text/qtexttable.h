@@ -134,7 +134,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QTextTable)
-    Q_DECLARE_PRIVATE(QTextTable)
+    Q_DECLARE_SCOPED_PRIVATE(QTextTable)
     friend class QTextTableCell;
 };
 

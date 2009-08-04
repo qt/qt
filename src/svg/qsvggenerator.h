@@ -61,7 +61,7 @@ class QSvgGeneratorPrivate;
 
 class Q_SVG_EXPORT QSvgGenerator : public QPaintDevice
 {
-    Q_DECLARE_PRIVATE(QSvgGenerator)
+    Q_DECLARE_SCOPED_PRIVATE(QSvgGenerator)
 
     Q_PROPERTY(QSize size READ size WRITE setSize)
     Q_PROPERTY(QRectF viewBox READ viewBoxF WRITE setViewBox)

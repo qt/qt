@@ -51,13 +51,13 @@
 #ifdef __ARMCC__
 __asm int CallMain(int argc, char *argv[], char *envp[])
 {
-       import main
-       code32
-       b main
+    import main
+    code32
+    b main
 }
 #define CALLMAIN(argc, argv, envp) CallMain(argc, argv, envp)
 #else
-extern "C" int main (int argc, char *argv[], char *envp[]);
+extern "C" int main(int argc, char *argv[], char *envp[]);
 #define CALLMAIN(argc, argv, envp) main(argc, argv, envp)
 #endif
 
@@ -67,28 +67,21 @@ extern "C" GLDEF_C int __GccGlueInit()
     return 0;
 }
 
-extern "C" IMPORT_C void exit (int ret);
+extern "C" IMPORT_C void exit(int ret);
 
 GLDEF_C TInt QtMainWrapper()
 {
-    int argc=0;
-    char **argv=0;
-    char **envp=0;
+    int argc = 0;
+    char **argv = 0;
+    char **envp = 0;
     // get args & environment
-    __crt0(argc,argv,envp);
+    __crt0(argc, argv, envp);
     CleanupArrayDelete<char*>::PushL(argv);
     CleanupArrayDelete<char*>::PushL(envp);
     //Call user(application)'s main
-	int ret = 0;
-	try
-		{
-		ret = CALLMAIN(argc, argv, envp);
-    	}
-    catch (...)
-    	{
-    	User::Leave(KErrGeneral);
-    	}
-    CleanupStack::PopAndDestroy(2,argv);
+    int ret = 0;
+    QT_TRYCATCH_LEAVING(ret = CALLMAIN(argc, argv, envp););
+    CleanupStack::PopAndDestroy(2, argv);
     return ret;
 }
 
@@ -96,10 +89,10 @@ GLDEF_C TInt QtMainWrapper()
 #ifdef __GCC32__
 
 /* stub function inserted into main() by GCC */
-extern "C" void __gccmain (void) {}
+extern "C" void __gccmain(void) {}
 
 /* Default GCC entrypoint */
-extern "C" TInt _mainCRTStartup (void) 
+extern "C" TInt _mainCRTStartup(void)
 {
     extern TInt _E32Startup();
     return _E32Startup();

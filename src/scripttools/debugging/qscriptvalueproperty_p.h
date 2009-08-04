@@ -84,7 +84,7 @@ public:
 private:
     QScopedSharedPointer<QScriptValuePropertyPrivate> d_ptr;
 
-    Q_DECLARE_PRIVATE(QScriptValueProperty)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptValueProperty)
 };
 
 typedef QList<QScriptValueProperty> QScriptValuePropertyList;

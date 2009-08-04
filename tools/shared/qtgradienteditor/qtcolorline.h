@@ -115,7 +115,7 @@ protected:
 private:
 
     QScopedPointer<class QtColorLinePrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtColorLine)
+    Q_DECLARE_SCOPED_PRIVATE(QtColorLine)
     Q_DISABLE_COPY(QtColorLine)
 };
 

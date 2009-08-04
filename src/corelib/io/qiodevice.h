@@ -165,7 +165,7 @@ protected:
 #endif
 
 private:
-    Q_DECLARE_PRIVATE(QIODevice)
+    Q_DECLARE_SCOPED_PRIVATE(QIODevice)
     Q_DISABLE_COPY(QIODevice)
 
 #ifdef QT3_SUPPORT

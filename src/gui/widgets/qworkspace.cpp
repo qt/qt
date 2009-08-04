@@ -228,7 +228,7 @@ void QMDIControl::paintEvent(QPaintEvent *)
 class QWorkspaceTitleBar : public QWidget
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QWorkspaceTitleBar)
+    Q_DECLARE_SCOPED_PRIVATE(QWorkspaceTitleBar)
     Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
     Q_PROPERTY(bool movable READ isMovable WRITE setMovable)
 

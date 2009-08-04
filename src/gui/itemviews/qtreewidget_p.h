@@ -162,7 +162,7 @@ private:
     bool isChanging() const;
 
 private:
-    Q_DECLARE_PRIVATE(QTreeModel)
+    Q_DECLARE_SCOPED_PRIVATE(QTreeModel)
 public:
     struct SkipSorting
     {

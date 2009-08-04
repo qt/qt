@@ -81,7 +81,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_onCurrentChanged(const QModelIndex &))
     Q_PRIVATE_SLOT(d_func(), void _q_onNewBreakpointRequest(const QString &, int))
 
-    Q_DECLARE_PRIVATE(QScriptBreakpointsWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptBreakpointsWidget)
     Q_DISABLE_COPY(QScriptBreakpointsWidget)
 };
 

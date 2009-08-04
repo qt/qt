@@ -89,7 +89,7 @@ public:
 
 
     explicit QNetworkRequest();
-    explicit QNetworkRequest(const QUrl &url);     
+    explicit QNetworkRequest(const QUrl &url);
     QNetworkRequest(const QNetworkRequest &other);
     ~QNetworkRequest();
     QNetworkRequest &operator=(const QNetworkRequest &other);

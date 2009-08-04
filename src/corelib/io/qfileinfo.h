@@ -168,7 +168,7 @@ public:
 protected:
     QScopedPointer<QFileInfoPrivate> d_ptr;
 private:
-    Q_DECLARE_PRIVATE(QFileInfo)
+    Q_DECLARE_SCOPED_PRIVATE(QFileInfo)
 };
 Q_DECLARE_TYPEINFO(QFileInfo, Q_MOVABLE_TYPE);
 

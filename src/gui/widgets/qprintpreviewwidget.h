@@ -58,7 +58,7 @@ class QPrintPreviewWidgetPrivate;
 class Q_GUI_EXPORT QPrintPreviewWidget : public QWidget
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPrintPreviewWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QPrintPreviewWidget)
 public:
 
     enum ViewMode {

@@ -71,7 +71,7 @@ struct QBrushData;
 class QPixmap;
 class QGradient;
 class QVariant;
-struct QBrushDataPointerHandler;
+struct QBrushDataPointerDeleter;
 
 class Q_GUI_EXPORT QBrush
 {
@@ -137,7 +137,7 @@ private:
     friend bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush);
     void detach(Qt::BrushStyle newStyle);
     void init(const QColor &color, Qt::BrushStyle bs);
-    QScopedCustomPointer<QBrushData, QBrushDataPointerHandler> d;
+    QCustomScopedPointer<QBrushData, QBrushDataPointerDeleter> d;
     void cleanUp(QBrushData *x);
 
 public:

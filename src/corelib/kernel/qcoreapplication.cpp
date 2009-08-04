@@ -1119,6 +1119,9 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         event->d = reinterpret_cast<QEventPrivate *>(quintptr(data->loopLevel));
     }
 
+    // delete the event on exceptions to protect against memory leaks till the event is 
+    // properly owned in the postEventList
+    QScopedPointer<QEvent> eventDeleter(event);
     if (data->postEventList.isEmpty() || data->postEventList.last().priority >= priority) {
         // optimization: we can simply append if the last event in
         // the queue has higher or equal priority
@@ -1133,6 +1136,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         QPostEventList::iterator at = qUpperBound(begin, end, priority);
         data->postEventList.insert(at, QPostEvent(receiver, event, priority));
     }
+    eventDeleter.take();
     event->posted = true;
     ++receiver->d_func()->postedEvents;
     data->canWait = false;

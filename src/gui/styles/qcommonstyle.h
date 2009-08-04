@@ -98,7 +98,7 @@ protected:
     QCommonStyle(QCommonStylePrivate &dd);
 
 private:
-    Q_DECLARE_PRIVATE(QCommonStyle)
+    Q_DECLARE_SCOPED_PRIVATE(QCommonStyle)
     Q_DISABLE_COPY(QCommonStyle)
 };
 

@@ -287,7 +287,7 @@ protected:
     void setRoleNames(const QHash<int,QByteArray> &roleNames);
 
 private:
-    Q_DECLARE_PRIVATE(QAbstractItemModel)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)
 };
 

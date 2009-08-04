@@ -82,7 +82,7 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h )
         return QPixmap();
 
     TDisplayMode displayMode = screenDevice->DisplayMode();
-    CFbsBitmap* temporary = new (ELeave) CFbsBitmap();
+    CFbsBitmap* temporary = q_check_ptr(new CFbsBitmap());		// CBase derived object needs check on new
     TInt error = temporary->Create(srcRect.Size(), displayMode);
     if (error == KErrNone)
         error = screenDevice->CopyScreenToBitmap(temporary, srcRect);
@@ -171,7 +171,7 @@ CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
         return 0;
     }
 
-    CFbsBitmap* bitmap = new (ELeave) CFbsBitmap();
+    CFbsBitmap* bitmap = q_check_ptr(new CFbsBitmap());		// CBase derived object needs check on new
     TSize size(width(), height());
     if (bitmap->Create(size, mode) != KErrNone) {
         CBase::Delete(bitmap);

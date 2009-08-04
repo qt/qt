@@ -969,6 +969,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     face->tmpAttributes = 0;
     face->tmpLogClusters = 0;
     face->glyphs_substituted = false;
+    face->buffer = 0;
 
     HB_Error error;
     HB_Stream stream;
@@ -1004,7 +1005,10 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     for (unsigned int i = 0; i < HB_ScriptCount; ++i)
         face->supported_scripts[i] = checkScript(face, i);
 
-    hb_buffer_new(&face->buffer);
+    if (hb_buffer_new(&face->buffer) != HB_Err_Ok) {
+        HB_FreeFace(face);
+        return 0;
+    }
 
     return face;
 }
@@ -1124,6 +1128,8 @@ HB_Bool HB_SelectScript(HB_ShaperItem *shaper_item, const HB_OpenTypeFeature *fe
 
 HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
 {
+    HB_GlyphAttributes *tmpAttributes;
+    unsigned int *tmpLogClusters;
 
     HB_Face face = item->face;
 
@@ -1131,8 +1137,16 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
 
     hb_buffer_clear(face->buffer);
 
-    face->tmpAttributes = (HB_GlyphAttributes *) realloc(face->tmpAttributes, face->length*sizeof(HB_GlyphAttributes));
-    face->tmpLogClusters = (unsigned int *) realloc(face->tmpLogClusters, face->length*sizeof(unsigned int));
+    tmpAttributes = (HB_GlyphAttributes *) realloc(face->tmpAttributes, face->length*sizeof(HB_GlyphAttributes));
+    if (!tmpAttributes)
+        return false;
+    face->tmpAttributes = tmpAttributes;
+
+    tmpLogClusters = (unsigned int *) realloc(face->tmpLogClusters, face->length*sizeof(unsigned int));
+    if (!tmpLogClusters)
+        return false;
+    face->tmpLogClusters = tmpLogClusters;
+
     for (int i = 0; i < face->length; ++i) {
         hb_buffer_add_glyph(face->buffer, item->glyphs[i], properties ? properties[i] : 0, i);
         face->tmpAttributes[i] = item->attributes[i];

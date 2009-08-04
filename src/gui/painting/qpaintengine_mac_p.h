@@ -69,7 +69,7 @@ extern int qt_defaultDpiY();
 class QCoreGraphicsPaintEnginePrivate;
 class QCoreGraphicsPaintEngine : public QPaintEngine
 {
-    Q_DECLARE_PRIVATE(QCoreGraphicsPaintEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QCoreGraphicsPaintEngine)
 
 public:
     QCoreGraphicsPaintEngine();

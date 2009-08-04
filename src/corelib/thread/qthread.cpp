@@ -183,7 +183,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
     id = 0;
     waiters = 0;
 #endif
-#if defined (Q_WS_WIN) || defined (Q_OS_SYMBIAN)  
+#if defined (Q_WS_WIN) || defined (Q_OS_SYMBIAN)
     terminationEnabled = true;
     terminatePending = false;
 #endif

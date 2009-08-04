@@ -78,7 +78,7 @@ public:
     QVariant headerData(int section, Qt::Orientation, int role) const;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerStackModel)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerStackModel)
     Q_DISABLE_COPY(QScriptDebuggerStackModel)
 };
 

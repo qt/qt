@@ -94,7 +94,7 @@ protected:
     QScopedPointer<QScriptDebuggerConsoleCommandPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerConsoleCommand)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerConsoleCommand)
     Q_DISABLE_COPY(QScriptDebuggerConsoleCommand)
 };
 

@@ -172,7 +172,7 @@ public:
     QStringList mimeTypes() const;
     Qt::DropActions supportedDropActions() const;
 private:
-    Q_DECLARE_PRIVATE(QSortFilterProxyModel)
+    Q_DECLARE_SCOPED_PRIVATE(QSortFilterProxyModel)
     Q_DISABLE_COPY(QSortFilterProxyModel)
 
     Q_PRIVATE_SLOT(d_func(), void _q_sourceDataChanged(const QModelIndex &source_top_left, const QModelIndex &source_bottom_right))

@@ -39,10 +39,29 @@
 **
 ****************************************************************************/
 
+#ifndef Q_OS_SYMBIAN
 #include <malloc.h>
+#endif
 #include <limits.h>
-#include "3rdparty/memcheck.h"
+#include <stdio.h>
+#include <exception>
 
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#  include "3rdparty/memcheck.h"
+#endif
+
+static bool mallocFailActive = false;
+static int mallocFailIndex = 0;
+static int mallocCount = 0;
+
+static void my_terminate_handler()
+{
+    // set a breakpoint here to get a backtrace for your uncaught exceptions
+    fprintf(stderr, "Uncaught Exception Detected. Set a breakpoint in my_terminate_handler()\n");
+    exit(1);
+}
+
+#ifdef __GLIBC__
 /* Use glibc's memory allocation hooks */
 
 /* our hooks */
@@ -87,40 +106,6 @@ void my_init_hook()
     old_free_hook = __free_hook;
     enableHooks();
 }
-
-static bool mallocFailActive = false;
-static int mallocFailIndex = 0;
-static int mallocCount = 0;
-
-struct AllocFailer
-{
-    inline AllocFailer() { mallocFailActive = true; setAllocFailIndex(0); }
-    inline ~AllocFailer() { deactivate(); }
-
-    inline void setAllocFailIndex(int index)
-    {
-        if (RUNNING_ON_VALGRIND) {
-            VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(VALGRIND_GET_ALLOC_INDEX + index + 1);
-        } else {
-            mallocFailIndex = index;
-        }
-    }
-
-    inline void deactivate()
-    {
-        mallocFailActive = false;
-        VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(INT_MAX);
-    }
-
-    inline int currentAllocIndex() const
-    {
-        if (RUNNING_ON_VALGRIND) {
-            return VALGRIND_GET_ALLOC_INDEX;
-        } else {
-            return mallocCount;
-        }
-    }
-};
 
 void *my_malloc_hook(size_t size, const void *)
 {
@@ -173,6 +158,98 @@ void my_free_hook(void *ptr, const void *)
     __free_hook = my_free_hook;
 }
 
+#elif defined(Q_CC_MSVC)
+
+#include "crtdbg.h"
+
+static int qCrtAllocHook(int allocType, void * /*userData*/, size_t /*size*/,
+                         int blockType, long /*requestNumber*/,
+                         const unsigned char * /*filename*/, int /*lineNumber*/)
+{
+    if (blockType == _CRT_BLOCK)
+        return TRUE; // ignore allocations from the C library
+
+    switch (allocType) {
+        case _HOOK_ALLOC:
+        case _HOOK_REALLOC:
+            ++mallocCount;
+            if (mallocFailActive && --mallocFailIndex < 0)
+                return FALSE; // simulate OOM
+    }
+
+    return TRUE;
+}
+
+static struct QCrtDebugRegistrator
+{
+    QCrtDebugRegistrator()
+    {
+        _CrtSetAllocHook(qCrtAllocHook);
+    }
+
+} crtDebugRegistrator;
+
+#endif
+
+struct AllocFailer
+{
+    inline AllocFailer(int index) { reactivateAt(index); }
+    inline ~AllocFailer() { deactivate(); }
+
+    inline void reactivateAt(int index)
+    {
+#ifdef RUNNING_ON_VALGRIND
+        if (RUNNING_ON_VALGRIND)
+            VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(VALGRIND_GET_ALLOC_INDEX + index + 1);
+#elif defined(Q_OS_SYMBIAN)
+        // symbian alloc fail index is 1 based
+        __UHEAP_BURSTFAILNEXT(index+1, KMaxTUint16);
+#endif
+        mallocFailIndex = index;
+        mallocFailActive = true;
+    }
+
+    inline void deactivate()
+    {
+        mallocFailActive = false;
+#ifdef RUNNING_ON_VALGRIND
+        VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(0);
+#elif defined(Q_OS_SYMBIAN)
+        __UHEAP_RESET;
+#endif
+    }
+
+    inline int currentAllocIndex() const
+    {
+#ifdef RUNNING_ON_VALGRIND
+        if (RUNNING_ON_VALGRIND)
+            return VALGRIND_GET_ALLOC_INDEX;
+#endif
+        return mallocCount;
+    }
+
+    static bool initialize()
+    {
+        std::set_terminate(my_terminate_handler);
+#ifdef RUNNING_ON_VALGRIND
+        if (RUNNING_ON_VALGRIND) {
+            if (VALGRIND_GET_ALLOC_INDEX == -1u) {
+                qWarning("You must use a valgrind with oom simulation support");
+                return false;
+            }
+            // running in valgrind - don't use glibc hooks
+            disableHooks();
+
+            // never stop simulating OOM
+            VALGRIND_DISABLE_OOM_AT_ALLOC_INDEX(-1u);
+        }
+#endif
+         return true;
+    }
+};
+
+#ifndef Q_OS_SYMBIAN
+
 static void *new_helper(std::size_t size)
 {
     void *ptr = malloc(size);
@@ -180,6 +257,11 @@ static void *new_helper(std::size_t size)
         throw std::bad_alloc();
     return ptr;
 }
+
+#ifdef Q_CC_MSVC
+#  pragma warning(push)
+#  pragma warning(disable: 4290)
+#endif
 
 // overload operator new
 void* operator new(size_t size) throw (std::bad_alloc) { return new_helper(size); }
@@ -192,6 +274,12 @@ void operator delete(void *ptr) throw() { if (ptr) free(ptr); }
 void operator delete[](void *ptr) throw() { if (ptr) free(ptr); }
 void operator delete(void *ptr, const std::nothrow_t&) throw() { if (ptr) free(ptr); }
 void operator delete[](void *ptr, const std::nothrow_t&) throw() { if (ptr) free (ptr); }
+
+#ifdef Q_CC_MSVC
+#  pragma warning(pop)
+#endif
+
+#endif
 
 // ignore placement new and placement delete - those don't allocate.
 

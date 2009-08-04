@@ -66,7 +66,7 @@ class QTextEdit;
 class Q_GUI_EXPORT QSyntaxHighlighter : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QSyntaxHighlighter)
+    Q_DECLARE_SCOPED_PRIVATE(QSyntaxHighlighter)
 public:
     QSyntaxHighlighter(QObject *parent);
     QSyntaxHighlighter(QTextDocument *parent);

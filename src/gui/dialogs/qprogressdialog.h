@@ -61,7 +61,7 @@ class QProgressDialogPrivate;
 class Q_GUI_EXPORT QProgressDialog : public QDialog
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QProgressDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QProgressDialog)
     Q_PROPERTY(bool wasCanceled READ wasCanceled)
     Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
     Q_PROPERTY(int maximum READ maximum WRITE setMaximum)

@@ -197,7 +197,7 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
     else
 #endif
 #ifdef Q_OS_SYMBIAN
-    	data->eventDispatcher = new QEventDispatcherSymbian;
+        data->eventDispatcher = new QEventDispatcherSymbian;
 #else
         data->eventDispatcher = new QEventDispatcherUNIX;
 #endif
@@ -212,7 +212,7 @@ void *QThreadPrivate::start(void *arg)
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
     pthread_cleanup_push(QThreadPrivate::finish, arg);
 #endif
-    
+
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
 
@@ -245,7 +245,7 @@ void *QThreadPrivate::start(void *arg)
 #ifndef Q_OS_SYMBIAN
     pthread_cleanup_pop(1);
 #else
-    QThreadPrivate::finish(arg);    
+    QThreadPrivate::finish(arg);
 #endif
 
     return 0;
@@ -285,7 +285,7 @@ void QThreadPrivate::finish(void *arg)
     d->thread_id = 0;
 #ifdef Q_OS_SYMBIAN
     if (closeNativeHandle)
-    	d->data->symbian_thread_handle.Close();
+        d->data->symbian_thread_handle.Close();
 #endif
     d->thread_done.wakeAll();
 #ifdef Q_OS_SYMBIAN
@@ -582,10 +582,10 @@ void QThread::terminate()
         d->terminatePending = true;
         return;
     }
-   
+
     d->terminated = true;
     QThreadPrivate::finish(this, false, false);
-    d->data->symbian_thread_handle.Terminate(KErrNone);         
+    d->data->symbian_thread_handle.Terminate(KErrNone);
     d->data->symbian_thread_handle.Close();
 #endif
 
@@ -629,7 +629,7 @@ void QThread::setTerminationEnabled(bool enabled)
         d->terminated = true;
         QThreadPrivate::finish(thr, false);
         locker.unlock(); // don't leave the mutex locked!
-	    pthread_exit(NULL);    
+        pthread_exit(NULL);
     }
 #endif
 }

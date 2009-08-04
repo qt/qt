@@ -147,7 +147,7 @@ protected:
     QScopedPointer<QScriptDebuggerBackendPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerBackend)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerBackend)
     Q_DISABLE_COPY(QScriptDebuggerBackend)
 };
 

@@ -117,7 +117,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     //
     // As an workaround, we set the socket to non blocking so possible
     // subsequent call to accept will not block in any case
-    // 
+    //
     // This change can be removed once more generic fix to select thread
     // syncronization problem is implemented.
     int flags = fcntl(listenSocket, F_GETFL, 0);
@@ -125,10 +125,10 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         || -1 == (fcntl(listenSocket, F_SETFL, flags | O_NONBLOCK))) {
         setError(QLatin1String("QLocalServer::listen"));
         closeServer();
-        return false;        
-    }    
-#endif    
-    
+        return false;
+    }
+#endif
+
     // bind
     if(-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
         setError(QLatin1String("QLocalServer::listen"));

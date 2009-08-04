@@ -47,7 +47,7 @@
 #include <qcore_symbian_p.h>
 #include <e32cmn.h>
 QT_BEGIN_NAMESPACE
-        
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
@@ -65,7 +65,7 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function, int err)
         errorString = QCoreApplication::tr("%1: already exists", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::AlreadyExists;
     break;
-    case KErrNotFound:    
+    case KErrNotFound:
         errorString = QCoreApplication::tr("%1: doesn't exists", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::NotFound;
     break;

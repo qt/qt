@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     : QInputContext(parent),
-      m_fepState(new (ELeave) CAknEdwinState),
+      m_fepState(q_check_ptr(new CAknEdwinState)),		// CBase derived object needs check on new
       m_lastImHints(Qt::ImhNone),
       m_textCapabilities(TCoeInputCapabilities::EAllText),
       m_isEditing(false),
@@ -100,6 +100,11 @@ void QCoeFepInputContext::reset()
     CCoeEnv::Static()->Fep()->CancelTransaction();
 }
 
+void QCoeFepInputContext::ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType)
+{
+	QT_TRAP_THROWING(m_fepState->ReportAknEdStateEventL(QT_EAknCursorPositionChanged));
+}
+
 void QCoeFepInputContext::update()
 {
     updateHints(false);
@@ -112,7 +117,7 @@ void QCoeFepInputContext::update()
     // Don't be fooled (as I was) by the name of this enumeration.
     // What it really does is tell the virtual keyboard UI that the text has been
     // updated and it should be reflected in the internal display of the VK.
-    m_fepState->ReportAknEdStateEventL(QT_EAknCursorPositionChanged);
+    ReportAknEdStateEvent(QT_EAknCursorPositionChanged);
 }
 
 void QCoeFepInputContext::setFocusWidget(QWidget *w)
@@ -394,7 +399,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         flags = EAknEditorAllInputModes;
     }
     m_fepState->SetPermittedInputModes(flags);
-    m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
+    ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
 
     if (hints & ImhPreferLowercase) {
         m_fepState->SetDefaultCase(EAknEditorLowerCase);
@@ -423,7 +428,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         }
     }
     m_fepState->SetPermittedCases(flags);
-    m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateCaseModeUpdate);
+    ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateCaseModeUpdate);
 
     flags = 0;
     if (hints & ImhUppercaseOnly && !(hints & ImhLowercaseOnly)
@@ -435,7 +440,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         flags |= EAknEditorFlagNoT9;
     }
     m_fepState->SetFlags(flags);
-    m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
+    ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
 
     if (hints & ImhFormattedNumbersOnly) {
         flags = EAknEditorCalculatorNumberModeKeymap;
@@ -525,7 +530,7 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
 
     m_cursorVisibility = aCursorVisibility ? 1 : 0;
     m_inlinePosition = aPositionOfInsertionPointInInlineText;
-    m_preeditString = qt_TDesC2QStringL(aInitialInlineText);
+    m_preeditString = qt_TDesC2QString(aInitialInlineText);
 
     m_formatRetriever = &aInlineTextFormatRetriever;
     m_pointerHandler = &aPointerEventHandlerDuringInlineEdit;
@@ -555,7 +560,7 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
                                                    m_inlinePosition,
                                                    m_cursorVisibility,
                                                    QVariant()));
-    m_preeditString = qt_TDesC2QStringL(aNewInlineText);
+    m_preeditString = qt_TDesC2QString(aNewInlineText);
     QInputMethodEvent event(m_preeditString, attributes);
     sendEvent(event);
 }

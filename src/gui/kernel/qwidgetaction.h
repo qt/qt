@@ -57,7 +57,7 @@ class QWidgetActionPrivate;
 class Q_GUI_EXPORT QWidgetAction : public QAction
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QWidgetAction)
+    Q_DECLARE_SCOPED_PRIVATE(QWidgetAction)
 
 public:
     explicit QWidgetAction(QObject *parent);

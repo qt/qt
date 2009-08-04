@@ -289,7 +289,7 @@ static int qt_mkstemps(char *path, int slen)
 //************* QTemporaryFileEngine
 class QTemporaryFileEngine : public QFSFileEngine
 {
-    Q_DECLARE_PRIVATE(QFSFileEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QFSFileEngine)
 public:
     QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
         : QFSFileEngine(file), filePathIsTemplate(fileIsTemplate)
@@ -517,7 +517,7 @@ QTemporaryFile::QTemporaryFile()
 #ifdef Q_OS_SYMBIAN
     //Just for verify that folder really exist on hardware
     fileEngine()->mkdir( QDir::tempPath(), true  );
-#endif    
+#endif
 }
 
 /*!

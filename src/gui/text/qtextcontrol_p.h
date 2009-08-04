@@ -86,7 +86,7 @@ class QTimerEvent;
 class Q_GUI_EXPORT QTextControl : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTextControl)
+    Q_DECLARE_SCOPED_PRIVATE(QTextControl)
 #ifndef QT_NO_TEXTHTMLPARSER
     Q_PROPERTY(QString html READ toHtml WRITE setHtml NOTIFY textChanged USER true)
 #endif

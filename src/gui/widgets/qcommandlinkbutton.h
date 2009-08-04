@@ -75,7 +75,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QCommandLinkButton)
-    Q_DECLARE_PRIVATE(QCommandLinkButton)
+    Q_DECLARE_SCOPED_PRIVATE(QCommandLinkButton)
 };
 
 QT_END_NAMESPACE

@@ -17,5 +17,5 @@ symbian {
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
     TARGET.CAPABILITY="NetworkServices ReadUserData WriteUserData"
     TARGET.UID3 = 0xA000A648
-    LIBS+=-lesock -lcommdb # For IAP selection
+    LIBS+=-lesock -lcommdb -linsock # For IAP selection
 }

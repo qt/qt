@@ -337,8 +337,8 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
 {
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug("QNativeSocketEnginePrivate::nativeConnect() : %d ", socketDescriptor);
-#endif	
-	
+#endif
+
     struct sockaddr_in sockAddrIPv4;
     struct sockaddr *sockAddrPtr = 0;
     QT_SOCKLEN_T sockAddrSize = 0;
@@ -678,23 +678,23 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 #if !defined(QT_NO_IPV6)
     struct sockaddr_in6 sockAddrIPv6;
     if (host.protocol() == QAbstractSocket::IPv6Protocol) {
-	memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
-	sockAddrIPv6.sin6_family = AF_INET6;
-	sockAddrIPv6.sin6_port = htons(port);
+    memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
+    sockAddrIPv6.sin6_family = AF_INET6;
+    sockAddrIPv6.sin6_port = htons(port);
 
-	Q_IPV6ADDR tmp = host.toIPv6Address();
-	memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &tmp, sizeof(tmp));
-	sockAddrSize = sizeof(sockAddrIPv6);
-	sockAddrPtr = (struct sockaddr *)&sockAddrIPv6;
+    Q_IPV6ADDR tmp = host.toIPv6Address();
+    memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &tmp, sizeof(tmp));
+    sockAddrSize = sizeof(sockAddrIPv6);
+    sockAddrPtr = (struct sockaddr *)&sockAddrIPv6;
     } else
 #endif
     if (host.protocol() == QAbstractSocket::IPv4Protocol) {
-	memset(&sockAddrIPv4, 0, sizeof(sockAddrIPv4));
-	sockAddrIPv4.sin_family = AF_INET;
-	sockAddrIPv4.sin_port = htons(port);
-	sockAddrIPv4.sin_addr.s_addr = htonl(host.toIPv4Address());
-	sockAddrSize = sizeof(sockAddrIPv4);
-	sockAddrPtr = (struct sockaddr *)&sockAddrIPv4;
+    memset(&sockAddrIPv4, 0, sizeof(sockAddrIPv4));
+    sockAddrIPv4.sin_family = AF_INET;
+    sockAddrIPv4.sin_port = htons(port);
+    sockAddrIPv4.sin_addr.s_addr = htonl(host.toIPv4Address());
+    sockAddrSize = sizeof(sockAddrIPv4);
+    sockAddrPtr = (struct sockaddr *)&sockAddrIPv4;
     }
 
     // ignore the SIGPIPE signal
@@ -916,14 +916,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 #ifndef Q_OS_SYMBIAN
         retval = qt_safe_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
 #else
-        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, &fdexec, timeout < 0 ? 0 : &tv);
+        retval = qt_socket_select(socketDescriptor + 1, &fds, 0, &fdexec, timeout < 0 ? 0 : &tv);
 #endif
     else
 #ifndef Q_OS_SYMBIAN
         retval = qt_safe_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
 #else
-        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, &fdexec, timeout < 0 ? 0 : &tv);
+        retval = qt_socket_select(socketDescriptor + 1, 0, &fds, &fdexec, timeout < 0 ? 0 : &tv);
 #endif
+
 
 #ifdef Q_OS_SYMBIAN
         bool selectForExec = false;
@@ -934,16 +935,16 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
             selectForExec = FD_ISSET(socketDescriptor, &fdexec);
         }
         if(selectForExec) {
-            qWarning("nativeSelect (selectForRead %d, retVal %d, errno %d) Unexpected expectfds ready in fd %d", 
+            qWarning("nativeSelect (selectForRead %d, retVal %d, errno %d) Unexpected expectfds ready in fd %d",
                     selectForRead, retval, errno, socketDescriptor);
-			}
+            }
 #endif
 
     return retval;
 }
 
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
-				      bool *selectForRead, bool *selectForWrite) const
+                       bool *selectForRead, bool *selectForWrite) const
 {
     fd_set fdread;
     FD_ZERO(&fdread);

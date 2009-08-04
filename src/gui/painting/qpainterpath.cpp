@@ -73,7 +73,7 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QPainterPathPrivateHandler
+struct QPainterPathPrivateDeleter
 {
     static inline void cleanup(QPainterPathPrivate *d)
     {
@@ -81,13 +81,6 @@ struct QPainterPathPrivateHandler
         // has a non-virtual destructor!
         if (d && !d->ref.deref())
             delete static_cast<QPainterPathData *>(d);
-    }
-
-    static inline void reset(QPainterPathPrivate *&d, QPainterPathPrivate *other)
-    {
-        QPainterPathPrivate *oldD = d;
-        d = other;
-        cleanup(oldD);
     }
 };
 

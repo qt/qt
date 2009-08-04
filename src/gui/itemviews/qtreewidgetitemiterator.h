@@ -109,7 +109,7 @@ private:
     QScopedPointer<QTreeWidgetItemIteratorPrivate> d_ptr;
     QTreeWidgetItem *current;
     IteratorFlags flags;
-    Q_DECLARE_PRIVATE(QTreeWidgetItemIterator)
+    Q_DECLARE_SCOPED_PRIVATE(QTreeWidgetItemIterator)
 };
 
 inline const QTreeWidgetItemIterator QTreeWidgetItemIterator::operator++(int)

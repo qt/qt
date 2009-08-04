@@ -106,7 +106,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAbstractTransition)
-    Q_DECLARE_PRIVATE(QAbstractTransition)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

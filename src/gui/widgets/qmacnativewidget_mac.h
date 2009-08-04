@@ -64,7 +64,7 @@ protected:
     bool event(QEvent *ev);
 
 private:
-    Q_DECLARE_PRIVATE(QMacNativeWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QMacNativeWidget)
 };
 
 QT_END_NAMESPACE

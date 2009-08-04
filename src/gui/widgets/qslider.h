@@ -122,7 +122,7 @@ private:
     friend Q_GUI_EXPORT QStyleOptionSlider qt_qsliderStyleOption(QSlider *slider);
 
     Q_DISABLE_COPY(QSlider)
-    Q_DECLARE_PRIVATE(QSlider)
+    Q_DECLARE_SCOPED_PRIVATE(QSlider)
 };
 
 #endif // QT_NO_SLIDER

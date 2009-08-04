@@ -680,7 +680,7 @@ void QWSDisplay::Data::sendSynchronousCommand(QWSCommand & cmd)
 int QWSDisplay::Data::takeId()
 {
     int unusedIdCount = unused_identifiers.count();
-    if (unusedIdCount == 10)
+    if (unusedIdCount <= 10)
         create(15);
     if (unusedIdCount == 0) {
         create(1); // Make sure we have an incoming id to wait for, just in case we're recursive
@@ -3772,5 +3772,15 @@ void QApplicationPrivate::initializeMultitouch_sys()
 { }
 void QApplicationPrivate::cleanupMultitouch_sys()
 { }
+
+/* \internal
+   This is used to clean up the qws server
+   in case the QApplication constructor threw an exception
+*/
+QWSServerCleaner::~QWSServerCleaner()
+{
+    if (qwsServer && qws_single_process)
+        QWSServer::closedown();
+}
 
 QT_END_NAMESPACE

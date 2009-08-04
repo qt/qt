@@ -896,22 +896,22 @@ void QWidget::setAutoFillBackground(bool enabled)
     \endlist
 
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
-    
+
     \section1 SoftKeys
     \since 4.6
     \preliminary
 
-    Softkeys API is a platform independent way of mapping actions to (hardware)keys 
+    Softkeys API is a platform independent way of mapping actions to (hardware)keys
     and toolbars provided by the underlying platform.
-    
-    There are three major use cases supported. First one is a mobile device 
+
+    There are three major use cases supported. First one is a mobile device
     with keypad navigation and no touch ui. Second use case is a mobile
-    device with touch ui. Third use case is desktop. For now the softkey API is 
+    device with touch ui. Third use case is desktop. For now the softkey API is
     only implemented for Series60.
-    
-    QActions are set to widget(s) via softkey API. Actions in focused widget are 
+
+    QActions are set to widget(s) via softkey API. Actions in focused widget are
     mapped to native toolbar or hardware keys. Even though the API allows to set
-    any amount of widgets there might be physical restrictions to amount of 
+    any amount of widgets there might be physical restrictions to amount of
     softkeys that can be used by the device.
 
     \o Series60: For series60 menu button is automatically mapped to left
@@ -919,11 +919,11 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \sa softKeys()
     \sa setSoftKey()
-        
+
 */
 
-QWidgetMapper *QWidgetPrivate::mapper = 0;                // widget with wid
-QWidgetSet *QWidgetPrivate::uncreatedWidgets = 0;         // widgets with no wid
+QWidgetMapper *QWidgetPrivate::mapper = 0;          // widget with wid
+QWidgetSet *QWidgetPrivate::allWidgets = 0;         // widgets with no wid
 
 
 /*****************************************************************************
@@ -969,7 +969,7 @@ struct QWidgetExceptionCleaner
     static inline void cleanup(QWidget *that, QWidgetPrivate *d)
     {
 #ifndef QT_NO_EXCEPTIONS
-        QWidgetPrivate::uncreatedWidgets->remove(that);
+        QWidgetPrivate::allWidgets->remove(that);
         if (d->focus_next != that) {
             if (d->focus_next)
                 d->focus_next->d_func()->focus_prev = d->focus_prev;
@@ -1121,8 +1121,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (QApplication::type() == QApplication::Tty)
         qFatal("QWidget: Cannot create a QWidget when no GUI is being used");
 
-    Q_ASSERT(uncreatedWidgets);
-    uncreatedWidgets->insert(q);
+    Q_ASSERT(allWidgets);
+    allWidgets->insert(q);
 
     QWidget *desktopWidget = 0;
     if (parentWidget && parentWidget->windowType() == Qt::Desktop) {
@@ -1415,15 +1415,31 @@ QWidget::~QWidget()
     }
 #endif
 
-    clearFocus();
+    QT_TRY {
+        clearFocus();
+    } QT_CATCH(...) {
+        // swallow this problem because we are in a destructor
+    }
 
     d->setDirtyOpaqueRegion();
 
-    if (isWindow() && isVisible() && internalWinId())
-        d->close_helper(QWidgetPrivate::CloseNoEvent);
+    if (isWindow() && isVisible() && internalWinId()) {
+        QT_TRY {
+            d->close_helper(QWidgetPrivate::CloseNoEvent);
+        } QT_CATCH(...) {
+            // if we're out of memory, at least hide the window.
+            QT_TRY {
+                hide();
+            } QT_CATCH(...) {
+                // and if that also doesn't work, then give up
+            }
+        }
+    }
+
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
-    else if (!internalWinId() && isVisible())
+    else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
+    }
 #endif
 
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
@@ -1449,12 +1465,15 @@ QWidget::~QWidget()
 
     QApplication::removePostedEvents(this);
 
-    destroy();                                        // platform-dependent cleanup
-
+    QT_TRY {
+        destroy();                                        // platform-dependent cleanup
+    } QT_CATCH(...) {
+        // if this fails we can't do anything about it but at least we are not allowed to throw.
+    }
     --QWidgetPrivate::instanceCounter;
 
-    if (QWidgetPrivate::uncreatedWidgets) // might have been deleted by ~QApplication
-        QWidgetPrivate::uncreatedWidgets->remove(this);
+    if (QWidgetPrivate::allWidgets) // might have been deleted by ~QApplication
+        QWidgetPrivate::allWidgets->remove(this);
 
     QEvent e(QEvent::Destroy);
     QCoreApplication::sendEvent(this, &e);
@@ -1474,7 +1493,6 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
     bool userDesktopWidget = qt_desktopWidget != 0 && qt_desktopWidget != q && q->windowType() == Qt::Desktop;
     if (mapper && data.winid && !userDesktopWidget) {
         mapper->remove(data.winid);
-        uncreatedWidgets->insert(q);
     }
 
     data.winid = id;
@@ -1483,7 +1501,6 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 #endif
     if (mapper && id && !userDesktopWidget) {
         mapper->insert(data.winid, q);
-        uncreatedWidgets->remove(q);
     }
 }
 
@@ -4681,8 +4698,9 @@ void QWidget::setCursor(const QCursor &cursor)
 #endif
     {
         d->createExtra();
+        QCursor *newCursor = new QCursor(cursor);
         delete d->extra->curs;
-        d->extra->curs = new QCursor(cursor);
+        d->extra->curs = newCursor;
     }
     setAttribute(Qt::WA_SetCursor);
     d->setCursor_sys(cursor);
@@ -5383,6 +5401,17 @@ QString QWidget::windowTitle() const
     return QString();
 }
 
+/*!
+    Returns a modified window title with the [*] place holder
+    replaced according to the rules described in QWidget::setWindowTitle
+
+    This function assumes that "[*]" can be quoted by another
+    "[*]", so it will replace two place holders by one and
+    a single last one by either "*" or nothing depending on
+    the modified flag.
+
+    \internal
+*/
 QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widget)
 {
     Q_ASSERT(widget);
@@ -5394,16 +5423,21 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
     QString cap = title;
 #endif
 
-    QString placeHolder(QLatin1String("[*]"));
+    if (cap.isEmpty())
+        return cap;
+
+    QLatin1String placeHolder("[*]");
+    int placeHolderLength = 3; // QLatin1String doesn't have length()
 
     int index = cap.indexOf(placeHolder);
 
+    // here the magic begins
     while (index != -1) {
-        index += placeHolder.length();
+        index += placeHolderLength;
         int count = 1;
         while (cap.indexOf(placeHolder, index) == index) {
             ++count;
-            index += placeHolder.length();
+            index += placeHolderLength;
         }
 
         if (count%2) { // odd number of [*] -> replace last one
@@ -5418,7 +5452,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
         index = cap.indexOf(placeHolder, index);
     }
 
-    cap.replace(QLatin1String("[*][*]"), QLatin1String("[*]"));
+    cap.replace(QLatin1String("[*][*]"), placeHolder);
 
     return cap;
 }
@@ -5756,7 +5790,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
     if (!isEnabled())
         return;
-    
+
     QWidget *f = this;
     while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
         f = f->d_func()->extra->focus_proxy;
@@ -11639,7 +11673,7 @@ void QWidget::clearMask()
 /*!
     \preliminary
     \since 4.6
-    
+
     Returns the (possibly empty) list of this widget's softkeys.
     Returned list cannot be changed. Softkeys should be added
     and removed via method called setSoftKeys
@@ -11660,7 +11694,7 @@ const QList<QAction*>& QWidget::softKeys() const
 /*!
     \preliminary
     \since 4.6
-    
+
     Sets the softkey \a softkey to this widget's list of softkeys,
     Setting 0 as softkey will clear all the existing softkeys set
     to the widget

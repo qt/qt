@@ -52,14 +52,16 @@ EXPORT_C QString localizedDirectoryName(QString& rawPath)
     QString ret;
 
     TRAPD(err,
-        CDirectoryLocalizer* localizer = CDirectoryLocalizer::NewL();
-        CleanupStack::PushL(localizer);
-        localizer->SetFullPath(qt_QString2TPtrC(QDir::toNativeSeparators(rawPath)));
-        if(localizer->IsLocalized()){
-            TPtrC locName(localizer->LocalizedName());
-            ret = qt_TDesC2QStringL(locName);
-        }
-        CleanupStack::PopAndDestroy(localizer);
+        QT_TRYCATCH_LEAVING(
+            CDirectoryLocalizer* localizer = CDirectoryLocalizer::NewL();
+            CleanupStack::PushL(localizer);
+            localizer->SetFullPath(qt_QString2TPtrC(QDir::toNativeSeparators(rawPath)));
+            if(localizer->IsLocalized()){
+                TPtrC locName(localizer->LocalizedName());
+                ret = qt_TDesC2QString(locName);
+            }
+            CleanupStack::PopAndDestroy(localizer);
+        )
     )
 
     if (err != KErrNone)
@@ -75,4 +77,3 @@ EXPORT_C QString localizedDirectoryName(QString& /* rawPath */)
     return QString();
 }
 #endif
-

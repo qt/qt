@@ -129,7 +129,11 @@ namespace QTest {
 
     static const char *messageType2String(QAbstractTestLogger::MessageTypes type)
     {
+#ifdef Q_OS_WIN
         static bool colored = (!qgetenv("QTEST_COLORED").isEmpty());
+#else
+        static bool colored = ::getenv("QTEST_COLORED");
+#endif
         switch (type) {
         case QAbstractTestLogger::Skip:
             return COLORED_MSG(0, 37, "SKIP   "); //white
@@ -165,10 +169,16 @@ namespace QTest {
         LeaveCriticalSection(&outputCriticalSection);
 #elif defined(Q_OS_SYMBIAN)
         TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
-        HBufC* hbuffer = HBufC::NewL(ptr.Length());
-        hbuffer->Des().Copy(ptr);
-        RDebug::Print(_L("[QTestLib Message] %S"), hbuffer);
-        delete hbuffer;
+        HBufC* hbuffer = HBufC::New(ptr.Length());
+        if (hbuffer) {
+            hbuffer->Des().Copy(ptr);
+            RDebug::Print(_L("[QTestLib Message] %S"), hbuffer);
+            delete hbuffer;
+        } else {
+            TBuf<256> tmp;
+            tmp.Copy(ptr.Left(Min(256, ptr.Length())));
+            RDebug::Print(_L("[QTestLib Message] %S"), &tmp);
+        }
 #endif
         QAbstractTestLogger::outputString(str);
     }

@@ -61,7 +61,7 @@ class QDragManager;
 class Q_GUI_EXPORT QDrag : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDrag)
+    Q_DECLARE_SCOPED_PRIVATE(QDrag)
 public:
     explicit QDrag(QWidget *dragSource);
     ~QDrag();

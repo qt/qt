@@ -4,4 +4,3 @@ EXPORTS
 	?defaultGetLongDateFormatSpec@@YA?AVTPtrC16@@AAVTExtendedLocale@@@Z @ 3 NONAME ; class TPtrC16 defaultGetLongDateFormatSpec(class TExtendedLocale &)
 	?defaultGetShortDateFormatSpec@@YA?AVTPtrC16@@AAVTExtendedLocale@@@Z @ 4 NONAME ; class TPtrC16 defaultGetShortDateFormatSpec(class TExtendedLocale &)
 	?localizedDirectoryName@@YA?AVQString@@AAV1@@Z @ 5 NONAME ; class QString localizedDirectoryName(class QString &)
-

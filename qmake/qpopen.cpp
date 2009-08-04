@@ -69,7 +69,6 @@ bool QPopen::init(const char *command, const char* /* mode */)
     // Ensure that the write handle to the child process's pipe for STDIN is not inherited.
     SetHandleInformation( childStdInW, HANDLE_FLAG_INHERIT, 0);
 
-    //TCHAR szCmdline[strlen(command)]=TEXT(command);
     TCHAR *szCmdLine = new TCHAR[strlen(command)+1];
     strcpy(szCmdLine, command);
 
@@ -126,7 +125,6 @@ int QPopen::fwrite(char* buffer, int maxBytes)
     return 0;
 }
 
-
 int QPopen::fread(char* buffer, int maxBytes)
 {
     DWORD bytesRead;
@@ -140,4 +138,3 @@ int QPopen::fread(char* buffer, int maxBytes)
 
     return 0;
 }
-

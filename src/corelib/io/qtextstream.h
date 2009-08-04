@@ -72,7 +72,7 @@ class QTextDecoder;
 class QTextStreamPrivate;
 class Q_CORE_EXPORT QTextStream                                // text stream class
 {
-    Q_DECLARE_PRIVATE(QTextStream)
+    Q_DECLARE_SCOPED_PRIVATE(QTextStream)
 
 public:
     enum RealNumberNotation {

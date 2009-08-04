@@ -311,7 +311,7 @@ void QPluginLoader::setFileName(const QString &fileName)
             QFileInfoList driveList(QDir::drives());
             foreach(const QFileInfo& drive, driveList) {
                 QString testFilePath(drive.absolutePath() + stubPath);
-                testFilePath = QDir::cleanPath(testFilePath);            
+                testFilePath = QDir::cleanPath(testFilePath);
                 if (QFile::exists(testFilePath)) {
                     fn = testFilePath;
                     break;
@@ -319,7 +319,7 @@ void QPluginLoader::setFileName(const QString &fileName)
             }
         }
     }
-    
+
 #else
     QString fn = QFileInfo(fileName).canonicalFilePath();
 #endif

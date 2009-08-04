@@ -194,7 +194,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QWizard)
-    Q_DECLARE_PRIVATE(QWizard)
+    Q_DECLARE_SCOPED_PRIVATE(QWizard)
     Q_PRIVATE_SLOT(d_func(), void _q_emitCustomButtonClicked())
     Q_PRIVATE_SLOT(d_func(), void _q_updateButtonStates())
     Q_PRIVATE_SLOT(d_func(), void _q_handleFieldObjectDestroyed(QObject *))
@@ -246,7 +246,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QWizardPage)
-    Q_DECLARE_PRIVATE(QWizardPage)
+    Q_DECLARE_SCOPED_PRIVATE(QWizardPage)
     Q_PRIVATE_SLOT(d_func(), void _q_maybeEmitCompleteChanged())
     Q_PRIVATE_SLOT(d_func(), void _q_updateCachedCompleteState())
 

@@ -275,7 +275,7 @@ MakefileGenerator::initOutPaths()
                 int slash = path.lastIndexOf(Option::dir_sep);
                 if(slash != -1) {
                     path = path.left(slash);
-                    // Make out path only if it does not contains makefile variables
+                    // Make out path only if it does not contain makefile variables
                     if(!path.contains("${"))
                         if(path != "." &&
                            !mkdir(fileFixify(path, qmake_getpwd(), Option::output_dir)))

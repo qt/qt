@@ -94,12 +94,12 @@
 
     This enum describes the different flags you can pass to modify the
     behavior of QUdpSocket::bind().
-    
+
     \note On Symbian OS bind flags behaviour depends on process capabilties.
-    If process has NetworkControl capability, the bind attempt with 
+    If process has NetworkControl capability, the bind attempt with
     ReuseAddressHint will always succeed even the address and port is already
-    bound by another socket with any flags. If process does not have 
-    NetworkControl capability, the bind attempt to address and port already 
+    bound by another socket with any flags. If process does not have
+    NetworkControl capability, the bind attempt to address and port already
     bound by another socket will always fail.
 
     \value ShareAddress Allow other services to bind to the same address
@@ -356,7 +356,7 @@ qint64 QUdpSocket::pendingDatagramSize() const
     as even if they are sent successfully, they are likely to be
     fragmented by the IP layer before arriving at their final
     destination.
-    
+
     \warning In S60 5.0 and earlier versions, the writeDatagram return
     value is not reliable for large datagrams.
 
@@ -386,8 +386,8 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
         // As an workaround, we just set sent = size
         if( sent == 0 )
             sent = size;
-    }            
-#endif    
+    }
+#endif
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
     if (sent >= 0) {
@@ -400,7 +400,7 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
     return sent;
 }
 
-/*! 
+/*!
     \fn qint64 QUdpSocket::writeDatagram(const QByteArray &datagram,
                                              const QHostAddress &host, quint16 port)
     \overload

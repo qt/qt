@@ -93,7 +93,7 @@ public:
 private:
     QScopedSharedPointer<QScriptScriptDataPrivate> d_ptr;
 
-    Q_DECLARE_PRIVATE(QScriptScriptData)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptScriptData)
 };
 
 typedef QMap<qint64, QScriptScriptData> QScriptScriptMap;

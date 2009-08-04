@@ -138,7 +138,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFrame)
-    Q_DECLARE_PRIVATE(QFrame)
+    Q_DECLARE_SCOPED_PRIVATE(QFrame)
 };
 
 QT_END_NAMESPACE

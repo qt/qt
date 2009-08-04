@@ -80,7 +80,7 @@ protected:
     void resizeEvent(QResizeEvent *);
 
 private:
-    Q_DECLARE_PRIVATE(QX11EmbedWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QX11EmbedWidget)
     Q_DISABLE_COPY(QX11EmbedWidget)
 };
 
@@ -121,7 +121,7 @@ protected:
     bool event(QEvent *);
 
 private:
-    Q_DECLARE_PRIVATE(QX11EmbedContainer)
+    Q_DECLARE_SCOPED_PRIVATE(QX11EmbedContainer)
     Q_DISABLE_COPY(QX11EmbedContainer)
 };
 

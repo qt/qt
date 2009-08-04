@@ -86,7 +86,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QTranslator)
-    Q_DECLARE_PRIVATE(QTranslator)
+    Q_DECLARE_SCOPED_PRIVATE(QTranslator)
 };
 
 #endif // QT_NO_TRANSLATION

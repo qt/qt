@@ -1251,8 +1251,12 @@ QComboBox::~QComboBox()
     // ### check delegateparent and delete delegate if us?
     Q_D(QComboBox);
 
-    disconnect(d->model, SIGNAL(destroyed()),
-               this, SLOT(_q_modelDestroyed()));
+    QT_TRY {
+        disconnect(d->model, SIGNAL(destroyed()),
+                this, SLOT(_q_modelDestroyed()));
+    } QT_CATCH(...) {
+        ; // objects can't throw in destructor
+    }
 }
 
 /*!

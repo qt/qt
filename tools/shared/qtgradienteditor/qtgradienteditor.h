@@ -79,7 +79,7 @@ signals:
 
 private:
     QScopedPointer<class QtGradientEditorPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtGradientEditor)
+    Q_DECLARE_SCOPED_PRIVATE(QtGradientEditor)
     Q_DISABLE_COPY(QtGradientEditor)
     Q_PRIVATE_SLOT(d_func(), void slotGradientStopsChanged(const QGradientStops &stops))
     Q_PRIVATE_SLOT(d_func(), void slotTypeChanged(int type))

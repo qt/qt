@@ -96,7 +96,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QDesktopWidget)
-    Q_DECLARE_PRIVATE(QDesktopWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QDesktopWidget)
 
     friend class QApplication;
     friend class QApplicationPrivate;

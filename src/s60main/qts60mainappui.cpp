@@ -63,6 +63,11 @@
 //
 void CQtS60MainAppUi::ConstructL()
 {
+    // Cone's heap and handle checks on app destruction are not suitable for Qt apps, as many
+    // objects can still exist in static data at that point. Instead we will print relevant information
+    // so that comparative checks may be made for memory leaks, using ~SPrintExitInfo in corelib.
+    iEikonEnv->DisableExitChecks(ETrue);
+
     // Initialise app UI with standard value.
     // ENoAppResourceFile and ENonStandardResourceFile makes UI to work without
     // resource files in most SDKs. S60 3rd FP1 public seems to require resource file
@@ -71,11 +76,11 @@ void CQtS60MainAppUi::ConstructL()
 
     CEikButtonGroupContainer* nativeContainer = Cba();
     nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
-    
+
     // Create async callback to call Qt main,
     // this is required to give S60 app FW to finish starting correctly
-    TCallBack callBack( OpenCMainStaticCallBack, this );
-    iAsyncCallBack = new(ELeave) CAsyncCallBack( callBack, CActive::EPriorityIdle );
+    TCallBack callBack(OpenCMainStaticCallBack, this);
+    iAsyncCallBack = new(ELeave) CAsyncCallBack(callBack, CActive::EPriorityIdle);
     iAsyncCallBack->Call();
 }
 
@@ -104,7 +109,7 @@ CQtS60MainAppUi::~CQtS60MainAppUi()
 // Takes care of command handling.
 // -----------------------------------------------------------------------------
 //
-void CQtS60MainAppUi::HandleCommandL( TInt aCommand )
+void CQtS60MainAppUi::HandleCommandL(TInt aCommand)
 {
     if (qApp)
         qApp->symbianHandleCommand(aCommand);
@@ -118,7 +123,7 @@ void CQtS60MainAppUi::HandleCommandL( TInt aCommand )
 void CQtS60MainAppUi::HandleResourceChangeL(TInt aType)
 {
     CAknAppUi::HandleResourceChangeL(aType);
-    
+
     if (qApp)
         qApp->symbianResourceChange(aType);
 }
@@ -127,7 +132,7 @@ void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *contro
 {
     int result = 0;
     if (qApp)
-        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(
+        QT_TRYCATCH_LEAVING(
             result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&aEvent))
         );
 
@@ -152,9 +157,9 @@ void CQtS60MainAppUi::HandleStatusPaneSizeChange()
 //  Called asynchronously from ConstructL() - passes call to nan static method
 // -----------------------------------------------------------------------------
 //
-TInt CQtS60MainAppUi::OpenCMainStaticCallBack(  TAny* aObject )
+TInt CQtS60MainAppUi::OpenCMainStaticCallBack(TAny* aObject)
 {
-    CQtS60MainAppUi* myObj = static_cast<CQtS60MainAppUi*>( aObject );
+    CQtS60MainAppUi* myObj = static_cast<CQtS60MainAppUi*>(aObject);
     myObj->OpenCMainCallBack();
     return 0;
 }
@@ -181,30 +186,28 @@ void CQtS60MainAppUi::DynInitMenuBarL(TInt, CEikMenuBar *)
 
 void CQtS60MainAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane)
 {
-    if (aResourceId == R_QT_WRAPPERAPP_MENU){
+    if (aResourceId == R_QT_WRAPPERAPP_MENU) {
         if (aMenuPane->NumberOfItemsInPane() <= 1)
             qt_symbian_show_toplevel(aMenuPane);
-        
-    }
-    else if( aResourceId != R_AVKON_MENUPANE_FEP_DEFAULT && aResourceId != R_AVKON_MENUPANE_EDITTEXT_DEFAULT && aResourceId != R_AVKON_MENUPANE_LANGUAGE_DEFAULT  ){
+
+    } else if (aResourceId != R_AVKON_MENUPANE_FEP_DEFAULT && aResourceId != R_AVKON_MENUPANE_EDITTEXT_DEFAULT && aResourceId != R_AVKON_MENUPANE_LANGUAGE_DEFAULT) {
         qt_symbian_show_submenu(aMenuPane, aResourceId);
     }
 }
 
-void CQtS60MainAppUi::RestoreMenuL(CCoeControl* aMenuWindow,TInt aMenuId,TMenuType aMenuType)
+void CQtS60MainAppUi::RestoreMenuL(CCoeControl* aMenuWindow, TInt aMenuId, TMenuType aMenuType)
 {
-    if ((aMenuId==R_QT_WRAPPERAPP_MENUBAR) || (aMenuId == R_AVKON_MENUPANE_FEP_DEFAULT)) {
+    if ((aMenuId == R_QT_WRAPPERAPP_MENUBAR) || (aMenuId == R_AVKON_MENUPANE_FEP_DEFAULT)) {
         TResourceReader reader;
-        iCoeEnv->CreateResourceReaderLC(reader,aMenuId);
+        iCoeEnv->CreateResourceReaderLC(reader, aMenuId);
         aMenuWindow->ConstructFromResourceL(reader);
         CleanupStack::PopAndDestroy();
     }
 
-    if (aMenuType==EMenuPane)
-        DynInitMenuPaneL(aMenuId,(CEikMenuPane*)aMenuWindow);
+    if (aMenuType == EMenuPane)
+        DynInitMenuPaneL(aMenuId, (CEikMenuPane*)aMenuWindow);
     else
-        DynInitMenuBarL(aMenuId,(CEikMenuBar*)aMenuWindow);
-   }
+        DynInitMenuBarL(aMenuId, (CEikMenuBar*)aMenuWindow);
+}
 
 // End of File
-

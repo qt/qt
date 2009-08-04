@@ -906,9 +906,9 @@ QT_END_INCLUDE_NAMESPACE
 */
 
 #ifndef QT_LINUXBASE /* the LSB defines TRUE and FALSE for us */
-/* Symbian OS defines TRUE = 1 and FALSE = 0, 
+/* Symbian OS defines TRUE = 1 and FALSE = 0,
 redefine to built-in booleans to make autotests work properly */
-#ifdef Q_OS_SYMBIAN  
+#ifdef Q_OS_SYMBIAN
     #undef TRUE
     #undef FALSE
 #endif
@@ -1651,6 +1651,9 @@ Q_CORE_EXPORT void qBadAlloc();
 #  define Q_CHECK_PTR(p) do { if (!(p)) qBadAlloc(); } while (0)
 #endif
 
+template <typename T>
+inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
+
 #if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC) || defined(Q_CC_DIAB)
 #  define Q_FUNC_INFO __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
@@ -2283,6 +2286,11 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #endif
 
 #define Q_DECLARE_PRIVATE(Class) \
+    inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(d_ptr); } \
+    inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(d_ptr); } \
+    friend class Class##Private;
+
+#define Q_DECLARE_SCOPED_PRIVATE(Class) \
     inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(d_ptr.data()); } \
     inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(d_ptr.data()); } \
     friend class Class##Private;
@@ -2390,33 +2398,32 @@ QT_END_NAMESPACE
 namespace std { class exception; }
 #endif
 QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT void qt_translateSymbianErrorToException(int error);
-Q_CORE_EXPORT void qt_translateExceptionToSymbianErrorL(const std::exception& ex);
-Q_CORE_EXPORT int qt_translateExceptionToSymbianError(const std::exception& ex);
+Q_CORE_EXPORT void qt_throwIfError(int error);
+Q_CORE_EXPORT void qt_exception2SymbianLeaveL(const std::exception& ex);
+Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
 
-#define QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(f)  \
+#define QT_TRAP_THROWING(_f)                        \
     {                                               \
-        TInt error;                                 \
-        TRAP(error, f);                             \
-        if (error)                                    \
-            qt_translateSymbianErrorToException(error); \
+        TInt ____error;                             \
+        TRAP(____error, _f);                        \
+        qt_throwIfError(____error);                 \
      }
 
-#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
+#define QT_TRYCATCH_ERROR(_err, _f)                         \
     {                                                       \
-        err = KErrNone;                                     \
+        _err = KErrNone;                                    \
         try {                                               \
-            f;                                              \
-        } catch (const std::exception &ex) {                \
-            err = qt_translateExceptionToSymbianError(ex);  \
+            _f;                                             \
+        } catch (const std::exception &____ex) {            \
+            _err = qt_exception2SymbianError(____ex);       \
         }                                                   \
     }
 
-#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(f)      \
+#define QT_TRYCATCH_LEAVING(_f)                         \
     {                                                   \
-    TInt err;                                           \
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
-    User::LeaveIfError(err);                            \
+    TInt ____err;                                       \
+    QT_TRYCATCH_ERROR(____err, _f)                      \
+    User::LeaveIfError(____err);                        \
     }
 #endif
 

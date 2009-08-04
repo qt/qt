@@ -65,7 +65,7 @@ class QPrinterInfo;
 
 class Q_GUI_EXPORT QPrinter : public QPaintDevice
 {
-    Q_DECLARE_PRIVATE(QPrinter)
+    Q_DECLARE_SCOPED_PRIVATE(QPrinter)
 public:
     enum PrinterMode { ScreenResolution, PrinterResolution, HighResolution };
 

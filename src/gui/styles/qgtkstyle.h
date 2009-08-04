@@ -60,7 +60,7 @@ class QGtkStylePrivate;
 class Q_GUI_EXPORT QGtkStyle : public QCleanlooksStyle
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QGtkStyle)
+    Q_DECLARE_SCOPED_PRIVATE(QGtkStyle)
 
 public:
     QGtkStyle();

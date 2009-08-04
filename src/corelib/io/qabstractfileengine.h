@@ -196,7 +196,7 @@ protected:
 
     QScopedPointer<QAbstractFileEnginePrivate> d_ptr;
 private:
-    Q_DECLARE_PRIVATE(QAbstractFileEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QAbstractFileEngine)
     Q_DISABLE_COPY(QAbstractFileEngine)
 };
 

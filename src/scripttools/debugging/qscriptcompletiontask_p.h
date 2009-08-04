@@ -81,7 +81,7 @@ public:
     void start();
 
 private:
-    Q_DECLARE_PRIVATE(QScriptCompletionTask)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptCompletionTask)
     Q_DISABLE_COPY(QScriptCompletionTask)
 };
 

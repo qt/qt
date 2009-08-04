@@ -76,7 +76,7 @@ class Q_CORE_EXPORT QCoreApplication : public QObject
     Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName)
     Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain)
 
-    Q_DECLARE_PRIVATE(QCoreApplication)
+    Q_DECLARE_SCOPED_PRIVATE(QCoreApplication)
 public:
     QCoreApplication(int &argc, char **argv);
     ~QCoreApplication();

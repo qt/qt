@@ -71,7 +71,7 @@ protected:
     void initStyleOption(QStyleOption *option) const;
 
 private:
-    Q_DECLARE_PRIVATE(QFocusFrame)
+    Q_DECLARE_SCOPED_PRIVATE(QFocusFrame)
     Q_DISABLE_COPY(QFocusFrame)
 };
 

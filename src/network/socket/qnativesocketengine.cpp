@@ -381,13 +381,13 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
         return false;
     }
 
-    
+
     // Make sure we receive out-of-band data
     // On Symbian OS this works only with native IP stack, not with WinSock
     if (socketType == QAbstractSocket::TcpSocket
         && !setOption(ReceiveOutOfBandData, 1)) {
         qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
-    }   
+    }
 
     // Set the send and receive buffer sizes to a magic size, found
     // most optimal for our platforms.
@@ -913,7 +913,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
         d_func()->fetchConnectionParameters();
         return true;
     }
-#endif    
+#endif
     if (ret == 0) {
         if (timedOut)
             *timedOut = true;
@@ -1094,7 +1094,7 @@ bool QExceptionNotifier::event(QEvent *e)
             engine->exceptionNotification();
         return true;
     }
-    return QSocketNotifier::event(e);    
+    return QSocketNotifier::event(e);
 }
 
 void QNativeSocketEngine::setReadNotificationEnabled(bool enable)

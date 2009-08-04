@@ -1019,12 +1019,12 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::remove(const Key &key, const T &value)
     typename QMap<Key, T>::iterator end(QMap<Key, T>::end());
     while (i != end && !qMapLessThanKey<Key>(key, i.key())) {
         if (i.value() == value) {
-#if defined(Q_CC_RVCT)  
-            // RVCT has problems with scoping, apparently.      
+#if defined(Q_CC_RVCT)
+            // RVCT has problems with scoping, apparently.
             i = QMap<Key, T>::erase(i);
 #else
             i = erase(i);
-#endif            
+#endif
             ++n;
         } else {
             ++i;

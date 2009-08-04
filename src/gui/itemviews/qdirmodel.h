@@ -146,7 +146,7 @@ protected:
     friend class QFileDialogPrivate;
 
 private:
-    Q_DECLARE_PRIVATE(QDirModel)
+    Q_DECLARE_SCOPED_PRIVATE(QDirModel)
     Q_DISABLE_COPY(QDirModel)
     Q_PRIVATE_SLOT(d_func(), void _q_refresh())
 };

@@ -1761,10 +1761,16 @@ void QWSServerPrivate::cleanupFonts(bool force)
 #if defined(QWS_DEBUG_FONTCLEANUP)
             qDebug() << "removing unused font file" << fontName;
 #endif
-            QFile::remove(QFile::decodeName(fontName));
-            sendFontRemovedEvent(fontName);
+            QT_TRY {
+                QFile::remove(QFile::decodeName(fontName));
+                sendFontRemovedEvent(fontName);
 
-            it = fontReferenceCount.erase(it);
+                it = fontReferenceCount.erase(it);
+            } QT_CATCH(...) {
+                // so we were not able to remove the font.
+                // don't be angry and just continue with the next ones.
+                ++it;
+            }
         }
     }
 

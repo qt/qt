@@ -53,7 +53,7 @@ QT_MODULE(Core)
 class Q_CORE_EXPORT QSocketNotifier : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QObject)
+    Q_DECLARE_SCOPED_PRIVATE(QObject)
 
 public:
     enum Type { Read, Write, Exception };

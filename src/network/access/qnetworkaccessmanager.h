@@ -119,7 +119,7 @@ protected:
 
 private:
     friend class QNetworkReplyImplPrivate;
-    Q_DECLARE_PRIVATE(QNetworkAccessManager)
+    Q_DECLARE_SCOPED_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
 };

@@ -84,7 +84,7 @@ public:
     virtual void item(const QPatternist::Item &item);
 private:
     inline void startFormattingContent();
-    Q_DECLARE_PRIVATE(QXmlFormatter)
+    Q_DECLARE_SCOPED_PRIVATE(QXmlFormatter)
 };
 
 QT_END_NAMESPACE

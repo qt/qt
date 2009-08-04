@@ -76,7 +76,7 @@ private:
     QScopedPointer<QScriptStdMessageHandlerPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptStdMessageHandler)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptStdMessageHandler)
     Q_DISABLE_COPY(QScriptStdMessageHandler)
 };
 

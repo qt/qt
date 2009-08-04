@@ -271,7 +271,7 @@ void QXRenderTessellator::addTrap(const Trapezoid &trap)
 {
     if (size == allocated) {
         allocated = qMax(2*allocated, 64);
-        traps = (XTrapezoid *)realloc(traps, allocated * sizeof(XTrapezoid));
+        traps = q_check_ptr((XTrapezoid *)realloc(traps, allocated * sizeof(XTrapezoid)));
     }
     traps[size].top = Q27Dot5ToXFixed(trap.top);
     traps[size].bottom = Q27Dot5ToXFixed(trap.bottom);

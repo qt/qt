@@ -109,7 +109,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QGroupBox)
-    Q_DECLARE_PRIVATE(QGroupBox)
+    Q_DECLARE_SCOPED_PRIVATE(QGroupBox)
     Q_PRIVATE_SLOT(d_func(), void _q_setChildrenEnabled(bool b))
 };
 

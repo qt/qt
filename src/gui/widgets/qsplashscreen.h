@@ -87,7 +87,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QSplashScreen)
-    Q_DECLARE_PRIVATE(QSplashScreen)
+    Q_DECLARE_SCOPED_PRIVATE(QSplashScreen)
 };
 
 #endif // QT_NO_SPLASHSCREEN

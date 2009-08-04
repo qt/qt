@@ -66,7 +66,7 @@ protected:
     bool autoRelaySignals() const;
 
 private:
-    Q_DECLARE_PRIVATE(QDBusAbstractAdaptor)
+    Q_DECLARE_SCOPED_PRIVATE(QDBusAbstractAdaptor)
 };
 
 QT_END_NAMESPACE

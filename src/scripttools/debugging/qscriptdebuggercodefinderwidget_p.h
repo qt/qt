@@ -78,7 +78,7 @@ protected:
     void keyPressEvent(QKeyEvent *e);
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerCodeFinderWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerCodeFinderWidget)
     Q_DISABLE_COPY(QScriptDebuggerCodeFinderWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_updateButtons())

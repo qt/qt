@@ -92,7 +92,7 @@ protected:
 
 private:
     QScopedPointer<QtGradientStopsWidgetPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtGradientStopsWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QtGradientStopsWidget)
     Q_DISABLE_COPY(QtGradientStopsWidget)
     Q_PRIVATE_SLOT(d_func(), void slotStopAdded(QtGradientStop *stop))
     Q_PRIVATE_SLOT(d_func(), void slotStopRemoved(QtGradientStop *stop))

@@ -3884,7 +3884,13 @@ QString QLocalePrivate::doubleToString(double d,
 
         char *rve = 0;
         char *buff = 0;
-        digits = QLatin1String(qdtoa(d, mode, pr, &decpt, &sign, &rve, &buff));
+        QT_TRY {
+            digits = QLatin1String(qdtoa(d, mode, pr, &decpt, &sign, &rve, &buff));
+        } QT_CATCH(...) {
+            if (buff != 0)
+                free(buff);
+            QT_RETHROW;
+        }
         if (buff != 0)
             free(buff);
 #endif // QT_QLOCALE_USES_FCVT
@@ -6734,8 +6740,13 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         if (i <= 0)
             i = 1;
     }
-    *resultp = static_cast<char *>(malloc(i + 1));
-    Q_CHECK_PTR(resultp);
+    QT_TRY {
+        *resultp = static_cast<char *>(malloc(i + 1));
+        Q_CHECK_PTR(*resultp);
+    } QT_CATCH(...) {
+        Bfree(b);
+        QT_RETHROW;
+    }
     s = s0 = *resultp;
 
     if (ilim >= 0 && ilim <= Quick_max && try_quick) {

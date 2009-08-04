@@ -119,7 +119,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QSpinBox)
-    Q_DECLARE_PRIVATE(QSpinBox)
+    Q_DECLARE_SCOPED_PRIVATE(QSpinBox)
 };
 
 class QDoubleSpinBoxPrivate;
@@ -176,7 +176,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QDoubleSpinBox)
-    Q_DECLARE_PRIVATE(QDoubleSpinBox)
+    Q_DECLARE_SCOPED_PRIVATE(QDoubleSpinBox)
 };
 
 #endif // QT_NO_SPINBOX

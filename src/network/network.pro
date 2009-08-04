@@ -28,4 +28,3 @@ symbian {
    TARGET.UID3=0x2001B2DE
    LIBS += -lesock -linsock
 }
-        

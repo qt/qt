@@ -162,7 +162,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QFtp)
-    Q_DECLARE_PRIVATE(QFtp)
+    Q_DECLARE_SCOPED_PRIVATE(QFtp)
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextCommand())
     Q_PRIVATE_SLOT(d_func(), void _q_piFinished(const QString&))

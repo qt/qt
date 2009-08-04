@@ -420,8 +420,8 @@ SubdirsMetaMakefileGenerator::~SubdirsMetaMakefileGenerator()
     subs.clear();
 }
 
-class SymbianSubdirsMetaMakefileGenerator : public SubdirsMetaMakefileGenerator {
-
+class SymbianSubdirsMetaMakefileGenerator : public SubdirsMetaMakefileGenerator
+{
 public:
     SymbianSubdirsMetaMakefileGenerator(QMakeProject *p, const QString &n, bool op) : SubdirsMetaMakefileGenerator(p, n, op) { }
     virtual ~SymbianSubdirsMetaMakefileGenerator();
@@ -441,29 +441,23 @@ protected:
 
 private:
     QString cleanFromSpecialCharacters(QString& str);
-
 };
 
 QMap<QString, QString> SymbianSubdirsMetaMakefileGenerator::mmpPaths;
 
 QMultiMap<QString, QString> SymbianSubdirsMetaMakefileGenerator::mmpDependency;
 
-QStringList SymbianSubdirsMetaMakefileGenerator::getDependencyList(QString mmpFilename, int recursionDepth) {
-
+QStringList SymbianSubdirsMetaMakefileGenerator::getDependencyList(QString mmpFilename, int recursionDepth)
+{
     QStringList list;
-
-    // printf("Entering recursion mmpFilename = %s and depth = %d \n", qPrintable(mmpFilename), recursionDepth);
 
     QList<QString> values = mmpDependency.values(mmpFilename);
     if(recursionDepth < 0) {
-        // special case
-        // just first dependency level
+        // special case; just first dependency level
         list = values;
         return list;
-
     }
     if(values.size() == 0) {
-
         //reached recursion END condition
         if(recursionDepth == 0) {
             --recursionDepth;
@@ -477,16 +471,13 @@ QStringList SymbianSubdirsMetaMakefileGenerator::getDependencyList(QString mmpFi
     } else {
         recursionDepth++;
         for (int i = 0; i < values.size(); ++i) {
-               QString current = values.at(i);
-               QStringList tailList = getDependencyList(current, recursionDepth);
-               for(int j = 0; j < tailList.size(); ++j) {
-                   //QString path = mmpFilename + tailList.at(j);
-                   QString path = tailList.at(j);
-                   list.append(path);
-                   //printf("MMPDEPENDENCY:  %s\n", path.toAscii().data());
-               }// for(int j = 0; j < values.size(); ++j)
-               //list.append(current);
-        } // for (int i = 0; i < values.size(); ++i)
+            QString current = values.at(i);
+            QStringList tailList = getDependencyList(current, recursionDepth);
+            for(int j = 0; j < tailList.size(); ++j) {
+               QString path = tailList.at(j);
+               list.append(path);
+            }
+        }
 
         if(recursionDepth > 0) {
             //for mmp somewhere in middle
@@ -495,15 +486,17 @@ QStringList SymbianSubdirsMetaMakefileGenerator::getDependencyList(QString mmpFi
         recursionDepth--;
         return list;
     }
-
 }
+
 SymbianSubdirsMetaMakefileGenerator::~SymbianSubdirsMetaMakefileGenerator() { }
 
-bool SymbianSubdirsMetaMakefileGenerator::write(const QString &oldpwd) {
+bool SymbianSubdirsMetaMakefileGenerator::write(const QString &oldpwd)
+{
     return SubdirsMetaMakefileGenerator::write(oldpwd);
 }
 
-QString SymbianSubdirsMetaMakefileGenerator::cleanFromSpecialCharacters(QString& str) {
+QString SymbianSubdirsMetaMakefileGenerator::cleanFromSpecialCharacters(QString& str)
+{
     QString tmp = str;
 
     tmp.replace(QString("/"), QString("_"));
@@ -515,26 +508,14 @@ QString SymbianSubdirsMetaMakefileGenerator::cleanFromSpecialCharacters(QString&
     return tmp;
 }
 
-bool SymbianSubdirsMetaMakefileGenerator::init() {
-
+bool SymbianSubdirsMetaMakefileGenerator::init()
+{
     if(init_flag)
         return false;
 
     init_flag = true;
 
-    /*
-        Not neccessary as it was
-        causing second pass through
-        subdir elements
-
-        SubdirsMetaMakefileGenerator::init();
-    */
-
-    /*
-        if we are here then we have template = subdirs
-
-        so...   go for it ...
-    */
+    // If we are here then we have template == subdirs
 
     Option::recursive = true;
 
@@ -577,7 +558,6 @@ bool SymbianSubdirsMetaMakefileGenerator::init() {
             if(subdir.isDir()) {
                 subdir = QFileInfo(subdir.filePath() + "/" + subdir.fileName() + Option::pro_ext);
                 childMmpFilename = subdir.fileName();
-                // TODO: create Option::mmp_ext
                 childMmpFilename = subdir.absoluteFilePath();
                 childMmpFilename.replace(Option::pro_ext, QString(""));
                 childMmpFilename.append(".mmp");
@@ -599,7 +579,7 @@ bool SymbianSubdirsMetaMakefileGenerator::init() {
             if(subdir.isRelative() && old_output_dir != oldpwd) {
                 sub->output_dir = old_output_dir + "/" + subdir.path();
                 printf("Reading %s [%s]\n", subdir.absoluteFilePath().toLatin1().constData(), sub->output_dir.toLatin1().constData());
-            } else { //what about shadow builds?
+            } else {
                 sub->output_dir = sub->input_dir;
                 printf("Reading %s\n", subdir.absoluteFilePath().toLatin1().constData());
             }
@@ -654,10 +634,8 @@ bool SymbianSubdirsMetaMakefileGenerator::init() {
     Subdir *self = new Subdir;
     self->input_dir = qmake_getpwd();
 
-    // to fully expand find all dependencies
-    // do as recursion, then
-    // insert result
-    // as subdirs data in project
+    // To fully expand find all dependencies:
+    // Do as recursion, then insert result as subdirs data in project
     QString newpwd = qmake_getpwd();
     if(!newpwd.endsWith('/'))
         newpwd += '/';
@@ -667,7 +645,7 @@ bool SymbianSubdirsMetaMakefileGenerator::init() {
     mmpFilename.prepend(newpwd);
     mmpFilename = mmpFilename.append(".mmp");
 
-    // map mmpfile to its absolut filepath
+    // map mmpfile to its absolute filepath
     mmpPaths.insert(mmpFilename, newpwd);
 
     QStringList directDependencyList = getDependencyList(mmpFilename, -1);
@@ -676,27 +654,14 @@ bool SymbianSubdirsMetaMakefileGenerator::init() {
     }
 
     QStringList dependencyList = getDependencyList(mmpFilename, 0);
-/*
-    printf("\n \n PRINTING DEPENDENCY FOR: %s \n", mmpFilename.toAscii().data());
-    // print it for debug
-    for(int i = 0; i < dependencyList.size(); ++i) {
-        printf("FINAL MMP DEPENDENCIES: %s\n", dependencyList.at(i).toAscii().data());
-    }
-    printf("\n \n");
 
-    printf("\n \n PRINTING DIRECT DEPENDENCY FOR: %s \n", mmpFilename.toAscii().data());
-    // print it for debug
-    for(int i = 0; i < directDependencyList.size(); ++i) {
-        printf("DIRECT MMP DEPENDENCIES: %s\n", directDependencyList.at(i).toAscii().data());
-    }
-    printf("\n \n");
-*/
     self->output_dir = Option::output_dir;
     if(!Option::recursive || (!Option::output.fileName().endsWith(Option::dir_sep) && !QFileInfo(Option::output).isDir()))
 	self->output_file = Option::output.fileName();
     self->makefile = new BuildsMetaMakefileGenerator(project, name, false);
     self->makefile->init();
     subs.append(self);
+
     return true;
 }
 
@@ -714,7 +679,6 @@ QStringList SymbianSubdirsMetaMakefileGenerator::calculateRelativePaths(QString 
                 mmpRelativePaths.append(childDir);
             else
                 directory.relativeFilePath(relativePath);
-            //mmpRelativePaths.append(directory.relativeFilePath(childDir) + "/" + mmpChildren.at(i));
         }
     }
     return mmpRelativePaths;

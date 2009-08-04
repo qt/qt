@@ -214,7 +214,6 @@ class QCompletionModel : public QAbstractProxyModel
 
 public:
     QCompletionModel(QCompleterPrivate *c, QObject *parent);
-    ~QCompletionModel() { delete engine; }
 
     void createEngine();
     void setFiltered(bool);
@@ -237,10 +236,10 @@ public:
     QModelIndex mapFromSource(const QModelIndex& sourceIndex) const;
 
     QCompleterPrivate *c;
-    QCompletionEngine *engine;
+    QScopedPointer<QCompletionEngine> engine;
     bool showAll;
 
-    Q_DECLARE_PRIVATE(QCompletionModel)
+    Q_DECLARE_SCOPED_PRIVATE(QCompletionModel)
 
 signals:
     void rowsAdded();

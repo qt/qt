@@ -1358,7 +1358,7 @@ void tst_QFiledialog::heapCorruption()
 struct FriendlyQFileDialog : public QFileDialog
 {
     friend class tst_QFileDialog;
-    Q_DECLARE_PRIVATE(QFileDialog)
+    Q_DECLARE_SCOPED_PRIVATE(QFileDialog)
 };
 
 

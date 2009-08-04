@@ -183,7 +183,7 @@ class QPdfBaseEnginePrivate;
 
 class QPdfBaseEngine : public QAlphaPaintEngine, public QPrintEngine
 {
-    Q_DECLARE_PRIVATE(QPdfBaseEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QPdfBaseEngine)
 public:
     QPdfBaseEngine(QPdfBaseEnginePrivate &d, PaintEngineFeatures f);
     ~QPdfBaseEngine() {}

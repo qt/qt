@@ -266,7 +266,7 @@ Q_OPENGL_EXPORT bool operator!=(const QGLFormat&, const QGLFormat&);
 
 class Q_OPENGL_EXPORT QGLContext
 {
-    Q_DECLARE_PRIVATE(QGLContext)
+    Q_DECLARE_SCOPED_PRIVATE(QGLContext)
 public:
     QGLContext(const QGLFormat& format, QPaintDevice* device);
     QGLContext(const QGLFormat& format);
@@ -388,7 +388,7 @@ private:
 class Q_OPENGL_EXPORT QGLWidget : public QWidget
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QGLWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QGLWidget)
 public:
     explicit QGLWidget(QWidget* parent=0,
                        const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);

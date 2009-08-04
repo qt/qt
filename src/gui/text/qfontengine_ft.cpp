@@ -205,7 +205,9 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
         FT_Init_FreeType(&freetypeData->library);
 
     QFreetypeFace *freetype = freetypeData->faces.value(face_id, 0);
-    if (!freetype) {
+    if (freetype) {
+        freetype->ref.ref();
+    } else {
         QScopedPointer<QFreetypeFace> newFreetype(new QFreetypeFace);
         FT_Face face;
         QFile file(QString::fromUtf8(face_id.filename));
@@ -234,7 +236,8 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
         newFreetype->face = face;
 
         newFreetype->hbFace = qHBNewFace(face, hb_getSFntTable);
-        newFreetype->ref = 0;
+        Q_CHECK_PTR(newFreetype->hbFace);
+        newFreetype->ref = 1;
         newFreetype->xsize = 0;
         newFreetype->ysize = 0;
         newFreetype->matrix.xx = 0x10000;
@@ -289,10 +292,15 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
 #endif
 
         FT_Set_Charmap(newFreetype->face, newFreetype->unicode_map);
-        freetypeData->faces.insert(face_id, newFreetype.data());
+        QT_TRY {
+            freetypeData->faces.insert(face_id, newFreetype.data());
+        } QT_CATCH(...) {
+            newFreetype.take()->release(face_id);
+            // we could return null in principle instead of throwing
+            QT_RETHROW;
+        }
         freetype = newFreetype.take();
     }
-    freetype->ref.ref();
     return freetype;
 }
 
@@ -306,7 +314,8 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
         if (charset)
             FcCharSetDestroy(charset);
 #endif
-        freetypeData->faces.take(face_id);
+        if(freetypeData->faces.contains(face_id))
+            freetypeData->faces.take(face_id);
         delete this;
     }
     if (freetypeData->faces.isEmpty()) {

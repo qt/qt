@@ -94,7 +94,7 @@ protected:
     QScopedPointer<QResourcePrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QResource)
+    Q_DECLARE_SCOPED_PRIVATE(QResource)
 };
 
 QT_END_NAMESPACE

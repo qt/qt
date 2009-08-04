@@ -149,7 +149,7 @@ private:
 
     Q_PRIVATE_SLOT(d_func(), void slotPropertyInserted(QtProperty *, QtProperty *, QtProperty *))
     Q_PRIVATE_SLOT(d_func(), void slotPropertyRemoved(QtProperty *, QtProperty *))
-    Q_DECLARE_PRIVATE(QtVariantPropertyManager)
+    Q_DECLARE_SCOPED_PRIVATE(QtVariantPropertyManager)
     Q_DISABLE_COPY(QtVariantPropertyManager)
 };
 
@@ -166,7 +166,7 @@ protected:
     void disconnectPropertyManager(QtVariantPropertyManager *manager);
 private:
     QScopedPointer<class QtVariantEditorFactoryPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtVariantEditorFactory)
+    Q_DECLARE_SCOPED_PRIVATE(QtVariantEditorFactory)
     Q_DISABLE_COPY(QtVariantEditorFactory)
 };
 

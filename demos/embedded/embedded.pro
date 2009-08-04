@@ -17,4 +17,3 @@ sources.path = $$[QT_INSTALL_DEMOS]/embedded
 INSTALLS += sources
 
 include($$QT_SOURCE_TREE/demos/demobase.pri)
-

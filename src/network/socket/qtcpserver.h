@@ -99,7 +99,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QTcpServer)
-    Q_DECLARE_PRIVATE(QTcpServer)
+    Q_DECLARE_SCOPED_PRIVATE(QTcpServer)
 };
 
 QT_END_NAMESPACE

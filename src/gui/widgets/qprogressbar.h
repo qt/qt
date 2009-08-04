@@ -117,7 +117,7 @@ protected:
     void initStyleOption(QStyleOptionProgressBar *option) const;
 
 private:
-    Q_DECLARE_PRIVATE(QProgressBar)
+    Q_DECLARE_SCOPED_PRIVATE(QProgressBar)
     Q_DISABLE_COPY(QProgressBar)
 };
 

@@ -753,7 +753,9 @@ QKeySequence::QKeySequence(StandardKey key)
 */
 QKeySequence::QKeySequence()
 {
-    d = new QKeySequencePrivate();
+    static QKeySequencePrivate shared_empty;
+    d = &shared_empty;
+    d->ref.ref();
 }
 
 /*!

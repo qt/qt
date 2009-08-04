@@ -109,7 +109,7 @@ Q_SIGNALS:
 #endif
 
 private:
-    Q_DECLARE_PRIVATE(QDial)
+    Q_DECLARE_SCOPED_PRIVATE(QDial)
     Q_DISABLE_COPY(QDial)
 };
 

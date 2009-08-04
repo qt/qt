@@ -42,6 +42,37 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
 
+#include <e32debug.h>
+
+// Heap and handle info printer. This code is placed here as it happens to make it the very last static to be destroyed in a Qt app.
+// This way we can report on heap cells and handles that are really not owned by anything which still exists.
+// This information can be used to detect whether memory leaks are happening, particularly if these numbers grow as the app is used more.
+struct SPrintExitInfo
+{
+    SPrintExitInfo()
+    {
+        RThread().HandleCount(initProcessHandleCount,initThreadHandleCount);
+        initCells = User::CountAllocCells();
+    }
+    ~SPrintExitInfo()
+    {
+        RProcess myProc;
+        TFullName fullName = myProc.FileName();
+        TInt cells = User::CountAllocCells();
+        TInt processHandleCount=0;
+        TInt threadHandleCount=0;
+        RThread().HandleCount(processHandleCount,threadHandleCount);
+        RDebug::Print(_L("%S exiting with %d allocated cells, %d handles"),
+                &fullName,
+                cells - initCells,
+                (processHandleCount + threadHandleCount) - (initProcessHandleCount + initThreadHandleCount));
+    }
+    TInt initCells;
+    TInt initProcessHandleCount;
+    TInt initThreadHandleCount;
+} printExitInfo;
+
+
 #if defined(Q_CC_RVCT)
 
 #include "../arm/qatomic_arm.cpp"
@@ -76,4 +107,3 @@ __declspec(dllexport) __asm int QBasicAtomicInt::fetchAndStoreOrdered(int newVal
 QT_END_NAMESPACE
 
 #endif // Q_CC_RVCT
-

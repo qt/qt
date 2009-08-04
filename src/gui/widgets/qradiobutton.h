@@ -77,7 +77,7 @@ public:
 #endif
 
 private:
-    Q_DECLARE_PRIVATE(QRadioButton)
+    Q_DECLARE_SCOPED_PRIVATE(QRadioButton)
     Q_DISABLE_COPY(QRadioButton)
 };
 

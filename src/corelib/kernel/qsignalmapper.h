@@ -56,7 +56,7 @@ class QSignalMapperPrivate;
 class Q_CORE_EXPORT QSignalMapper : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QSignalMapper)
+    Q_DECLARE_SCOPED_PRIVATE(QSignalMapper)
 public:
     explicit QSignalMapper(QObject *parent = 0);
     ~QSignalMapper();

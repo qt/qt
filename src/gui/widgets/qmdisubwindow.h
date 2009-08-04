@@ -137,7 +137,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QMdiSubWindow)
-    Q_DECLARE_PRIVATE(QMdiSubWindow)
+    Q_DECLARE_SCOPED_PRIVATE(QMdiSubWindow)
     Q_PRIVATE_SLOT(d_func(), void _q_updateStaysOnTopHint())
     Q_PRIVATE_SLOT(d_func(), void _q_enterInteractiveMode())
     Q_PRIVATE_SLOT(d_func(), void _q_processFocusChanged(QWidget *, QWidget *))

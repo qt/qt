@@ -72,7 +72,7 @@ class QPrinterPrivate;
 class QMacPrintEnginePrivate;
 class QMacPrintEngine : public QPaintEngine, public QPrintEngine
 {
-    Q_DECLARE_PRIVATE(QMacPrintEngine)
+    Q_DECLARE_SCOPED_PRIVATE(QMacPrintEngine)
 public:
     QMacPrintEngine(QPrinter::PrinterMode mode);
 

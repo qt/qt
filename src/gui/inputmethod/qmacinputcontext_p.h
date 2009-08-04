@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QMacInputContext : public QInputContext
 {
     Q_OBJECT
-    //Q_DECLARE_PRIVATE(QMacInputContext)
+    //Q_DECLARE_SCOPED_PRIVATE(QMacInputContext)
     void createTextDocument();
 public:
     explicit QMacInputContext(QObject* parent = 0);

@@ -96,7 +96,7 @@ class CQtS60MainAppUi : public CAknAppUi
         * @param aType event type.
         */
         void HandleResourceChangeL(TInt aType);
-        
+
         /**
         *  HandleStatusPaneSizeChange.
         *  Called by the framework when the application status pane
@@ -133,4 +133,3 @@ class CQtS60MainAppUi : public CAknAppUi
 #endif // __QtS60MainAPPUI_H__
 
 // End of File
-

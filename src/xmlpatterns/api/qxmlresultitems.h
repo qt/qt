@@ -66,7 +66,7 @@ public:
 
 private:
     friend class QXmlQuery;
-    Q_DECLARE_PRIVATE(QXmlResultItems)
+    Q_DECLARE_SCOPED_PRIVATE(QXmlResultItems)
     QScopedPointer<QXmlResultItemsPrivate> d_ptr;
     Q_DISABLE_COPY(QXmlResultItems)
 };

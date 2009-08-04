@@ -269,7 +269,7 @@ protected:
                            const QStyleOptionGraphicsItem options[]);
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsView)
+    Q_DECLARE_SCOPED_PRIVATE(QGraphicsView)
     Q_DISABLE_COPY(QGraphicsView)
 #ifndef QT_NO_CURSOR
     Q_PRIVATE_SLOT(d_func(), void _q_setViewportCursor(const QCursor &))

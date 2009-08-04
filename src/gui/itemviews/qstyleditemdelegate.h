@@ -101,7 +101,7 @@ protected:
                      const QStyleOptionViewItem &option, const QModelIndex &index);
 
 private:
-    Q_DECLARE_PRIVATE(QStyledItemDelegate)
+    Q_DECLARE_SCOPED_PRIVATE(QStyledItemDelegate)
     Q_DISABLE_COPY(QStyledItemDelegate)
 
     Q_PRIVATE_SLOT(d_func(), void _q_commitDataAndCloseEditor(QWidget*))

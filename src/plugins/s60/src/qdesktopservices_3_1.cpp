@@ -47,4 +47,3 @@ EXPORT_C QString localizedDirectoryName(QString&)
     qWarning("QDesktopServices::displayName() not implemented for this platform version");
     return QString();
 }
-

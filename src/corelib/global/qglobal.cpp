@@ -1903,6 +1903,15 @@ QSysInfo::SymVersion QSysInfo::symbianVersion()
 */
 
 /*!
+    T *q_check_ptr(T *pointer)
+    \relates <QtGlobal>
+
+	Users Q_CHECK_PTR on \a pointer, then returns \a pointer.
+
+	This can be used as an inline version of Q_CHECK_PTR.
+*/
+
+/*!
     \macro const char* Q_FUNC_INFO()
     \relates <QtGlobal>
 
@@ -2086,8 +2095,8 @@ QString qt_error_string(int errorCode)
     warnings, critical and fatal error messages. The Qt library (debug
     mode) contains hundreds of warning messages that are printed
     when internal errors (usually invalid function arguments)
-    occur. Qt built in release mode also contains such warnings unless 
-    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during 
+    occur. Qt built in release mode also contains such warnings unless
+    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during
     compilation. If you implement your own message handler, you get total
     control of these messages.
 
@@ -2142,7 +2151,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         _LIT(format, "[Qt Message] %S");
         const int maxBlockSize = 256 - ((const TDesC &)format).Length();
         const TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
-        HBufC* hbuffer = HBufC::NewL(qMin(maxBlockSize, ptr.Length()));
+        HBufC* hbuffer = q_check_ptr(HBufC::New(qMin(maxBlockSize, ptr.Length())));
         for (int i = 0; i < ptr.Length(); i += hbuffer->Length()) {
             hbuffer->Des().Copy(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
             RDebug::Print(format, hbuffer);
@@ -2444,7 +2453,11 @@ bool qputenv(const char *varName, const QByteArray& value)
     QByteArray buffer(varName);
     buffer += '=';
     buffer += value;
-    return putenv(qstrdup(buffer.constData())) == 0;
+    char* envVar = qstrdup(buffer.constData());
+    int result = putenv(envVar);
+    if (result != 0) // error. we have to delete the string.
+        delete[] envVar;
+    return result == 0;
 #endif
 }
 
@@ -2483,7 +2496,7 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)	
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
     SeedStorageType *pseed = randTLS()->localData();
     if (!pseed)
         randTLS()->setLocalData(pseed = new SeedStorageType);
@@ -3202,7 +3215,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
  Compares the floating point value \a p1 and \a p2 and
  returns \c true if they are considered equal, otherwise \c false.
 
- Note that comparing values where either \a p1 or \a p2 is 0.0 will not work. 
+ Note that comparing values where either \a p1 or \a p2 is 0.0 will not work.
  The solution to this is to compare against values greater than or equal to 1.0.
 
  \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 46
@@ -3267,7 +3280,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
 #include <typeinfo>
 
-/*! \macro QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(function)
+/*! \macro QT_TRAP_THROWING(function)
     \relates <QtGlobal>
     \ingroup qts60
 
@@ -3287,14 +3300,14 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     CAknTitlePane* titlePane = S60->titlePane();
     if (titlePane) {
         TPtrC captionPtr(qt_QString2TPtrC(caption));
-        QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(titlePane->SetTextL(captionPtr));
+        QT_TRAP_THROWING(titlePane->SetTextL(captionPtr));
     }
     \endcode
 
-    \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE()
+    \sa QT_TRYCATCH_ERROR(), QT_TRYCATCH_LEAVING()
 */
 
-/*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(error, function)
+/*! \macro QT_TRYCATCH_ERROR(error, function)
     \relates <QtGlobal>
     \ingroup qts60
 
@@ -3314,7 +3327,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     {
         TPtrC name;
         TInt err;
-        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, name.Set(qt_QString2TPtrC(serverName)));
+        QT_TRYCATCH_ERROR(err, name.Set(qt_QString2TPtrC(serverName)));
         if (err != KErrNone)
             return err;
         return iServer.Connect(name);
@@ -3322,10 +3335,10 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     \endcode
 }
 
-    \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(), QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION()
+    \sa QT_TRYCATCH_LEAVING(), QT_TRAP_THROWING()
 */
 
-/*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(function)
+/*! \macro QT_TRYCATCH_LEAVING(function)
     \relates <QtGlobal>
     \ingroup qts60
 
@@ -3345,11 +3358,11 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     {
         iStatus = KRequestPending;
         SetActive();
-        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->wakeUpWasCalled());
+        QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
     }
     \endcode
 
-    \sa QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR()
+    \sa QT_TRAP_THROWING(), QT_TRYCATCH_ERROR()
 */
 
 #include <stdexcept>
@@ -3372,15 +3385,21 @@ public:
 
     \warning This function is only available on Symbian.
 
-    \sa qt_translateExceptionToSymbianErrorL(), qt_translateExceptionToSymbianError()
+    \sa qt_exception2SymbianLeaveL(), qt_exception2SymbianError()
 */
-void qt_translateSymbianErrorToException(int error)
+void qt_throwIfError(int error)
 {
     if (error >= KErrNone)
         return;  // do nothing - not an exception
     switch (error) {
     case KErrNoMemory:
         throw std::bad_alloc();
+    case KErrArgument:
+        throw std::invalid_argument("from Symbian error");
+    case KErrOverflow:
+        throw std::overflow_error("from Symbian error");
+    case KErrUnderflow:
+        throw std::underflow_error("from Symbian error");
     default:
         throw QSymbianLeaveException(error);
     }
@@ -3393,11 +3412,11 @@ void qt_translateSymbianErrorToException(int error)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_translateSymbianErrorToException(), qt_translateExceptionToSymbianError()
+    \sa qt_throwIfError(), qt_exception2SymbianError()
 */
-void qt_translateExceptionToSymbianErrorL(const std::exception& aThrow)
+void qt_exception2SymbianLeaveL(const std::exception& aThrow)
 {
-    User::Leave(qt_translateExceptionToSymbianError(aThrow));
+    User::Leave(qt_exception2SymbianError(aThrow));
 }
 
 /*! \relates <QtGlobal>
@@ -3407,9 +3426,9 @@ void qt_translateExceptionToSymbianErrorL(const std::exception& aThrow)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_translateSymbianErrorToException(), qt_translateExceptionToSymbianErrorL()
+    \sa qt_throwIfError(), qt_exception2SymbianLeaveL()
 */
-int qt_translateExceptionToSymbianError(const std::exception& aThrow)
+int qt_exception2SymbianError(const std::exception& aThrow)
 {
     const std::type_info& atype = typeid(aThrow);
     int err = KErrGeneral;
@@ -3418,18 +3437,21 @@ int qt_translateExceptionToSymbianError(const std::exception& aThrow)
         err = KErrNoMemory;
     else if(atype == typeid(QSymbianLeaveException))
         err = static_cast<const QSymbianLeaveException&>(aThrow).error;
-    else if(atype == typeid(std::invalid_argument))
-        err =  KErrArgument;
-    else if(atype == typeid(std::out_of_range))
-        // std::out_of_range is of type logic_error which by definition means that it is
-        // "presumably detectable before the program executes".
-        // std::out_of_range is used to report an argument is not within the expected range.
-        // The description of KErrArgument says an argument is out of range. Hence the mapping.
-        err =  KErrArgument;
-    else if(atype == typeid(std::overflow_error))
-        err =  KErrOverflow;
-    else if(atype == typeid(std::underflow_error))
-        err =  KErrUnderflow;
+    else {
+        if(atype == typeid(std::invalid_argument))
+            err =  KErrArgument;
+        else if(atype == typeid(std::out_of_range))
+            // std::out_of_range is of type logic_error which by definition means that it is
+            // "presumably detectable before the program executes".
+            // std::out_of_range is used to report an argument is not within the expected range.
+            // The description of KErrArgument says an argument is out of range. Hence the mapping.
+            err =  KErrArgument;
+        else if(atype == typeid(std::overflow_error))
+            err =  KErrOverflow;
+        else if(atype == typeid(std::underflow_error))
+            err =  KErrUnderflow;
+        qWarning("translation from std exception \"%s\" to %d", aThrow.what(), err);
+    }
 
     return err;
 }

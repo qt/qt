@@ -114,7 +114,7 @@ private:
 
     QScopedPointer<QScriptContextPrivate> d_ptr;
 
-    Q_DECLARE_PRIVATE(QScriptContext)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptContext)
     Q_DISABLE_COPY(QScriptContext)
 };
 

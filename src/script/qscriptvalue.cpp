@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal
  */
-struct QScriptValuePrivatePointerHandler
+struct QScriptValuePrivatePointerDeleter
 {
     static inline void cleanup(QScriptValuePrivate *d)
     {
@@ -70,12 +70,6 @@ struct QScriptValuePrivatePointerHandler
         } else {
             delete d;
         }
-    }
-
-    static inline void reset(QScriptValuePrivate *&d, QScriptValuePrivate *other)
-    {
-        cleanup(d);
-        d = other;
     }
 };
 

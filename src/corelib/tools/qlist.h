@@ -363,15 +363,16 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
     Node *current = from;
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
         QT_TRY {
-            while(current != to)
+            while(current != to) {
                 (current++)->v = new T(*reinterpret_cast<T*>((src++)->v));
+            }
         } QT_CATCH(...) {
             while (current != from)
                 delete reinterpret_cast<T*>(current--);
             QT_RETHROW;
         }
-    }
-    else if (QTypeInfo<T>::isComplex) {
+
+    } else if (QTypeInfo<T>::isComplex) {
         QT_TRY {
             while(current != to)
                 new (current++) T(*reinterpret_cast<T*>(src++));
@@ -380,6 +381,9 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
                 (reinterpret_cast<T*>(current--))->~T();
             QT_RETHROW;
         }
+    } else {
+        if (src != from && to - from > 0)
+            memcpy(from, src, (to - from) * sizeof(Node *));
     }
 }
 
@@ -408,11 +412,12 @@ Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 template <typename T>
 inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
 {
-    Node *n = reinterpret_cast<Node *>(p.insert(before.i - reinterpret_cast<Node *>(p.begin())));
+    int iBefore = before.i - reinterpret_cast<Node *>(p.begin());
+    Node *n = reinterpret_cast<Node *>(p.insert(iBefore));
     QT_TRY {
         node_construct(n, t);
     } QT_CATCH(...) {
-        p.remove(before.i - reinterpret_cast<Node *>(p.begin()));
+        p.remove(iBefore);
         QT_RETHROW;
     }
     return n;
@@ -689,7 +694,13 @@ Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
     detach();
     Node *n = reinterpret_cast<Node *>(p.append(l.p));
-    node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
+    QT_TRY{
+        node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
+    } QT_CATCH(...) {
+        // restore the old end
+        d->end -= (reinterpret_cast<Node *>(p.end()) - n);
+        QT_RETHROW;
+    }
     return *this;
 }
 

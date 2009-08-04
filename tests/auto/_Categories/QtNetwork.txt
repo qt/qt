@@ -11,6 +11,8 @@ qhttpnetworkreply
 qhttpsocketengine
 qlocalsocket cetest-subdir: test
 qnativesocketengine
+#requires gui, but is more network test
+qnetworkaccessmanager_and_qprogressdialog
 qnetworkaddressentry
 qnetworkcachemetadata
 qnetworkcookie

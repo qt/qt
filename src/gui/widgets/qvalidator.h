@@ -90,7 +90,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QValidator)
-    Q_DECLARE_PRIVATE(QValidator)
+    Q_DECLARE_SCOPED_PRIVATE(QValidator)
 };
 
 class Q_GUI_EXPORT QIntValidator : public QValidator
@@ -168,7 +168,7 @@ public:
                                            QObject * parent, const char *name);
 #endif
 private:
-    Q_DECLARE_PRIVATE(QDoubleValidator)
+    Q_DECLARE_SCOPED_PRIVATE(QDoubleValidator)
     Q_DISABLE_COPY(QDoubleValidator)
 
     double b;

@@ -154,7 +154,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QCompleter)
-    Q_DECLARE_PRIVATE(QCompleter)
+    Q_DECLARE_SCOPED_PRIVATE(QCompleter)
 
     Q_PRIVATE_SLOT(d_func(), void _q_complete(QModelIndex))
     Q_PRIVATE_SLOT(d_func(), void _q_completionSelected(const QItemSelection&))

@@ -82,7 +82,7 @@ public:
     QScriptDebuggerCodeViewInterface *currentView() const;
 
 private:
-    Q_DECLARE_PRIVATE(QScriptDebuggerCodeWidget)
+    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerCodeWidget)
     Q_DISABLE_COPY(QScriptDebuggerCodeWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_onBreakpointToggleRequest(int,bool))

@@ -1225,7 +1225,7 @@ private:
     int yyPos; // the position of the next character to read
     int yyLen; // the length of yyIn
     int yyCh; // the last character read
-    QRegExpCharClass *yyCharClass; // attribute for Tok_CharClass tokens
+    QScopedPointer<QRegExpCharClass> yyCharClass; // attribute for Tok_CharClass tokens
     int yyMinRep; // attribute for Tok_Quantifier
     int yyMaxRep; // ditto
     QString yyError; // syntax error or overflow during parsing?
@@ -1316,8 +1316,7 @@ void QRegExpMatchState::prepareForMatch(QRegExpEngine *eng)
 #endif
     int numCaptures = eng->numCaptures();
     int newCapturedSize = 2 + 2 * numCaptures;
-    bigArray = (int *)realloc(bigArray, ((3 + 4 * ncap) * ns + 4 * ncap + newSlideTabSize + newCapturedSize)*sizeof(int));
-    Q_CHECK_PTR(bigArray);
+    bigArray = q_check_ptr((int *)realloc(bigArray, ((3 + 4 * ncap) * ns + 4 * ncap + newSlideTabSize + newCapturedSize)*sizeof(int)));
 
     // set all internal variables only _after_ bigArray is realloc'ed
     // to prevent a broken regexp in oom case
@@ -3124,7 +3123,7 @@ void QRegExpEngine::startTokenizer(const QChar *rx, int len)
     yyPos = 0;
     yyLen = len;
     yyCh = getChar();
-    yyCharClass = new QRegExpCharClass;
+    yyCharClass.reset(new QRegExpCharClass);
     yyMinRep = 0;
     yyMaxRep = 0;
     yyError = QString();
@@ -3318,8 +3317,7 @@ int QRegExpEngine::parse(const QChar *pattern, int len)
 #endif
     box.cat(middleBox);
     box.cat(rightBox);
-    delete yyCharClass;
-    yyCharClass = 0;
+    yyCharClass.reset(0);
 
 #ifndef QT_NO_REGEXP_CAPTURE
     for (int i = 0; i < nf; ++i) {

@@ -113,7 +113,7 @@ protected:
     bool eventFilter(QObject *o, QEvent *e);
 
 private:
-    Q_DECLARE_PRIVATE(QMotifStyle)
+    Q_DECLARE_SCOPED_PRIVATE(QMotifStyle)
     Q_DISABLE_COPY(QMotifStyle)
 
     bool highlightCols;

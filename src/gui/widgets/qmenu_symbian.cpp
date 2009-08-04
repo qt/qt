@@ -87,7 +87,7 @@ bool menuExists()
 {
     QWidget *w = qApp->activeWindow();
     QMenuBarPrivate *mb = menubars()->value(w);
-    if ((!mb) && !menubars()->count()) 
+    if ((!mb) && !menubars()->count())
         return false;
     return true;
 }
@@ -196,7 +196,7 @@ static void qt_symbian_insert_action(QSymbianMenuAction* action, QList<SymbianMe
             if (!action->action->isEnabled()){
                 menuItem->menuItemData.iFlags += EEikMenuItemDimmed;
             }
-            
+
             if (action->action->isCheckable()) {
                 if (action->action->isChecked())
                     menuItem->menuItemData.iFlags += EEikMenuItemCheckBox | EEikMenuItemSymbolOn;
@@ -244,7 +244,7 @@ Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
         return;
     rebuildMenu();
     for (int i = 0; i < symbianMenus.count(); ++i)
-        menuPane->AddMenuItemL(symbianMenus.at(i)->menuItemData);
+        QT_TRAP_THROWING(menuPane->AddMenuItemL(symbianMenus.at(i)->menuItemData));
 }
 
 Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
@@ -252,7 +252,7 @@ Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
     SymbianMenuItem* menu = qt_symbian_find_menu(id, symbianMenus);
     if (menu) {
         for (int i = 0; i < menu->children.count(); ++i)
-            menuPane->AddMenuItemL(menu->children.at(i)->menuItemData);
+            QT_TRAP_THROWING(menuPane->AddMenuItemL(menu->children.at(i)->menuItemData));
     }
 }
 
@@ -262,7 +262,7 @@ void QMenuBarPrivate::symbianCommands(int command)
         QContextMenuEvent* event = new QContextMenuEvent(QContextMenuEvent::Keyboard, QPoint(0,0));
         QCoreApplication::postEvent(widgetWithContextMenu, event);
     }
-    
+
     int size = nativeMenuBars.size();
     for (int i = 0; i < nativeMenuBars.size(); ++i) {
     SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);

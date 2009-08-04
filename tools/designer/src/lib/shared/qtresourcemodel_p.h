@@ -89,7 +89,7 @@ private:
     friend class QtResourceModel;
 
     QScopedPointer<class QtResourceSetPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtResourceSet)
+    Q_DECLARE_SCOPED_PRIVATE(QtResourceSet)
     Q_DISABLE_COPY(QtResourceSet)
 };
 
@@ -134,7 +134,7 @@ private:
     friend class QtResourceSet;
 
     QScopedPointer<class QtResourceModelPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QtResourceModel)
+    Q_DECLARE_SCOPED_PRIVATE(QtResourceModel)
     Q_DISABLE_COPY(QtResourceModel)
 
     Q_PRIVATE_SLOT(d_func(), void slotFileChanged(const QString &))

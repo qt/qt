@@ -60,7 +60,7 @@ class QGesturePrivate;
 class Q_GUI_EXPORT QGesture : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QGesture)
+    Q_DECLARE_SCOPED_PRIVATE(QGesture)
 
     Q_PROPERTY(Qt::GestureState state READ state)
 

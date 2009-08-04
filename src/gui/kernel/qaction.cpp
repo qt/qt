@@ -1414,7 +1414,7 @@ QAction::MenuRole QAction::menuRole() const
 
     This indicates what softkey action this action is. Usually used on mobile
     platforms to map QActions to hardware keys.
-    
+
     The softkey role can be changed any time.
 */
 void QAction::setSoftKeyRole(SoftKeyRole softKeyRole)
