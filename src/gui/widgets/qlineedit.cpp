@@ -1665,12 +1665,12 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImMaximumTextLength:
         return QVariant(maxLength());
     case Qt::ImAnchorPosition:
-        if (d->selstart == d->selend)
-            return QVariant(d->cursor);
-        else if (d->selstart == d->cursor)
-            return QVariant(d->selend);
+        if (d->control->selectionStart() == d->control->selectionEnd())
+            return QVariant(d->control->cursor());
+        else if (d->control->selectionStart() == d->control->cursor())
+            return QVariant(d->control->selectionEnd());
         else
-            return QVariant(d->selstart);
+            return QVariant(d->control->selectionStart());
     default:
         return QVariant();
     }
@@ -1695,8 +1695,10 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason))
 #endif
-    int cft = QApplication::cursorFlashTime();
-    d->control->setCursorBlinkPeriod(cft/2);
+    {
+        int cft = QApplication::cursorFlashTime();
+        d->control->setCursorBlinkPeriod(cft/2);
+    }
     QStyleOptionFrameV2 opt;
     initStyleOption(&opt);
     if((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
@@ -1707,7 +1709,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
         qt_mac_secure_keyboard(true);
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-    d->control->setCancelText(d->text);
+    d->control->setCancelText(d->control->text());
 #endif
 #ifndef QT_NO_COMPLETER
     if (d->control->completer()) {
