@@ -516,7 +516,7 @@ struct QGraphicsItemPrivate::TransformData {
 
 struct QGraphicsItemPaintInfo
 {
-    inline QGraphicsItemPaintInfo(const QTransform *const xform1, QTransform *xform2,
+    inline QGraphicsItemPaintInfo(const QTransform *const xform1, const QTransform *const xform2,
                                   QRegion *r, QWidget *w, QStyleOptionGraphicsItem *opt,
                                   QPainter *p, qreal o, bool b1, bool b2)
         : viewTransform(xform1), transformPtr(xform2), exposedRegion(r), widget(w),
@@ -524,7 +524,7 @@ struct QGraphicsItemPaintInfo
     {}
 
     const QTransform *viewTransform;
-    QTransform *transformPtr;
+    const QTransform *transformPtr;
     QRegion *exposedRegion;
     QWidget *widget;
     QStyleOptionGraphicsItem *option;

@@ -4366,8 +4366,9 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 }
 
 void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const QTransform *const viewTransform,
-                                 QTransform *transformPtr, QRegion *exposedRegion, QWidget *widget, qreal opacity,
-                                 const QTransform *effectTransform, bool wasDirtyParentSceneTransform, bool drawItem)
+                                 const QTransform *const transformPtr, QRegion *exposedRegion, QWidget *widget,
+                                 qreal opacity, const QTransform *effectTransform,
+                                 bool wasDirtyParentSceneTransform, bool drawItem)
 {
     const bool itemIsFullyTransparent = (opacity < 0.0001);
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
@@ -4381,8 +4382,9 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
             painter->save();
             Q_ASSERT(transformPtr);
             if (effectTransform)
-                *transformPtr *= *effectTransform;
-            painter->setWorldTransform(*transformPtr);
+                painter->setWorldTransform(*transformPtr * *effectTransform);
+            else
+                painter->setWorldTransform(*transformPtr);
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         }
 
@@ -4414,8 +4416,9 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 
         if (!itemHasChildren || !itemClipsChildrenToShape) {
             if (effectTransform)
-                *transformPtr *= *effectTransform;
-            painter->setWorldTransform(*transformPtr);
+                painter->setWorldTransform(*transformPtr * *effectTransform);
+            else
+                painter->setWorldTransform(*transformPtr);
         }
 
         if (itemClipsToShape)
