@@ -487,12 +487,8 @@ void tst_QScriptContext::pushAndPopContext()
     QCOMPARE(eng.currentContext(), topLevel);
 
     // popping the top-level context is not allowed
-    QEXPECT_FAIL("", "Crashes", Continue);
-#if 1
-    QVERIFY(false);
-#else
-    eng.popContext()
-#endif
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::popContext() doesn't match with pushContext()");
+    eng.popContext();
     QCOMPARE(eng.currentContext(), topLevel);
 
     {

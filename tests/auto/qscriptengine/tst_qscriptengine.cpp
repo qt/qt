@@ -193,9 +193,9 @@ void tst_QScriptEngine::pushPopContext()
 
     eng.popContext();
     eng.popContext();
-    QEXPECT_FAIL("", "cannot pop more context than it pushes", Abort);
-    QVERIFY(false);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::popContext() doesn't match with pushContext()");
     eng.popContext(); // ignored
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::popContext() doesn't match with pushContext()");
     eng.popContext(); // ignored
 }
 

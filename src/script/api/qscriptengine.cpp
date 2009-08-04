@@ -2369,6 +2369,11 @@ QScriptContext *QScriptEngine::pushContext()
 void QScriptEngine::popContext()
 {
     Q_D(QScriptEngine);
+    if (d->currentFrame->returnPC() != 0 || d->currentFrame->codeBlock() != 0
+        || d->currentFrame->returnValueRegister() != 0 || !currentContext()->parentContext()) {
+        qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
+        return;
+    }
     JSC::RegisterFile &registerFile = d->currentFrame->interpreter()->registerFile();
     JSC::Register *const newEnd = d->currentFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->currentFrame->argumentCount();
     d->currentFrame->scopeChain()->pop()->deref();
