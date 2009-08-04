@@ -4358,6 +4358,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         painter->setWorldTransform(*transformPtr);
         item->d_ptr->graphicsEffect->draw(painter, source);
         painter->setWorldTransform(restoreTransform);
+        sourced->info = 0;
     } else {
         draw(item, painter, viewTransform, transformPtr, exposedRegion, widget, opacity,
              effectTransform, wasDirtyParentSceneTransform, drawItem);
