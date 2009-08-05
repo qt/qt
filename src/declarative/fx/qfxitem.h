@@ -274,6 +274,8 @@ T qobject_cast(QGraphicsItem *item)
     return qobject_cast<T>(o);
 }
 
+QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, QFxItem *item);
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxContents)

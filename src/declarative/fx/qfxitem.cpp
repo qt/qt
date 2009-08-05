@@ -1876,4 +1876,18 @@ bool QFxItem::event(QEvent *ev)
     return QGraphicsObject::event(ev);
 }
 
+QDebug operator<<(QDebug debug, QFxItem *item)
+{
+    if (!item) {
+        debug << "QFxItem(0)";
+        return debug;
+    }
+
+    debug << item->metaObject()->className() << "(this =" << ((void*)item)
+          << ", parent =" << ((void*)item->parentItem())
+          << ", geometry =" << QRectF(item->pos(), QSizeF(item->width(), item->height()))
+          << ", z =" << item->zValue() << ")";
+    return debug;
+}
+
 QT_END_NAMESPACE
