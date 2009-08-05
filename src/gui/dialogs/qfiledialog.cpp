@@ -219,7 +219,7 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
     the native file dialog is used unless you use a subclass of QFileDialog that contains the
     Q_OBJECT macro.
     \value ReadOnly Indicates that the model is readonly.
-    \value HideNameFilterDetails Indicates if the is hidden or not.
+    \value HideNameFilterDetails Indicates if the filter extension (e.g. *.bmp) is hidden or not.
 
     This value is obsolete and does nothing since Qt 4.5:
 
