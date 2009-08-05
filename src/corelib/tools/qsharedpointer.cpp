@@ -365,7 +365,7 @@
     Returns a weak reference object that shares the pointer referenced
     by this object.
 
-    \sa QWeakPointer::QWeakPointer(const QSharedPointer<T> &)
+    \sa QWeakPointer::QWeakPointer()
 */
 
 /*!
@@ -553,7 +553,7 @@
             qDebug() << "The value has already been deleted";
     \endcode
 
-    \sa QSharedPointer::QSharedPointer(const QWeakPointer<T> &)
+    \sa QSharedPointer::QSharedPointer()
 */
 
 /*!
