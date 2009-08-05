@@ -2097,6 +2097,11 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     currentOffsetInParagraph[i] = 0;
                 }
 
+                if (currentParagraphNo[i] >= NumParagraphs) {
+                    qDebug() << "### Internal error ###" << __FILE__ << __LINE__;
+                    currentParagraphNo[i] = NumParagraphs - 1;
+                }
+
                 out() << "<td align=\"right\">";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
