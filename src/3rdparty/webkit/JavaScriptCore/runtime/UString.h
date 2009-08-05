@@ -77,6 +77,18 @@ namespace JSC {
         friend class JIT;
 
     public:
+
+#if PLATFORM(QT)
+
+            QString toQString() const
+            {
+                // Not sure with method is better, 2nd is shorter
+                //UString string
+                //QString::fromUtf8(string.toString().UTF8String().c_str())
+
+                return QString(reinterpret_cast<const QChar*>(this->data()), this->size());
+            }
+#endif
         typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
         struct BaseString;
         struct Rep : Noncopyable {
