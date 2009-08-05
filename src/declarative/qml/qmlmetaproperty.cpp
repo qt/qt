@@ -490,7 +490,7 @@ QmlBinding *QmlMetaProperty::binding() const
         QObject *child = *iter;
         if (child->metaObject() == &QmlBinding::staticMetaObject) {
             QmlBinding *v = static_cast<QmlBinding *>(child);
-            if (v->property() == *this)
+            if (v->property() == *this && v->enabled())
                 return v;
         }
     }
