@@ -44,7 +44,7 @@
 #include <qfile.h>
 #include <qfileinfo>
 
-static const QString ceTcpSyncProgram = ceTcpSyncProgram + "";
+static const QString ceTcpSyncProgram = "cetcpsync";
 extern void debugOutput(const QString& text, int level);
 
 CeTcpSyncConnection::CeTcpSyncConnection()
@@ -63,7 +63,8 @@ bool CeTcpSyncConnection::connect(QVariantList&)
 {
     // We connect with each command, so this is always true
     // The command itself will fail then
-    if (system(ceTcpSyncProgram + " noop") != 0)
+    const QString cmd = ceTcpSyncProgram + " noop";
+    if (system(qPrintable(cmd)) != 0)
         return false;
     connected = true;
     return true;
