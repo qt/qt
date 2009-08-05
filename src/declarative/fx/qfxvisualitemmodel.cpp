@@ -58,6 +58,47 @@ QML_DECLARE_TYPE(QListModelInterface)
 
 QT_BEGIN_NAMESPACE
 
+class QFxVisualItemModelAttached : public QObject
+{
+    Q_OBJECT
+
+public:
+    QFxVisualItemModelAttached(QObject *parent)
+        : QObject(parent), m_index(0) {}
+    ~QFxVisualItemModelAttached() {
+        attachedProperties.remove(parent());
+    }
+
+    Q_PROPERTY(int index READ index NOTIFY indexChanged)
+    int index() const { return m_index; }
+    void setIndex(int idx) {
+        if (m_index != idx) {
+            m_index = idx;
+            emit indexChanged();
+        }
+    }
+
+    static QFxVisualItemModelAttached *properties(QObject *obj) {
+        QFxVisualItemModelAttached *rv = attachedProperties.value(obj);
+        if (!rv) {
+            rv = new QFxVisualItemModelAttached(obj);
+            attachedProperties.insert(obj, rv);
+        }
+        return rv;
+    }
+
+signals:
+    void indexChanged();
+
+public:
+    int m_index;
+
+    static QHash<QObject*, QFxVisualItemModelAttached*> attachedProperties;
+};
+
+QHash<QObject*, QFxVisualItemModelAttached*> QFxVisualItemModelAttached::attachedProperties;
+
+
 class QFxVisualItemModelPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFxVisualItemModel);
@@ -75,6 +116,8 @@ public:
 
     void itemAppended() {
         Q_Q(QFxVisualItemModel);
+        QFxVisualItemModelAttached *attached = QFxVisualItemModelAttached::properties(children.last());
+        attached->setIndex(children.count()-1);
         emit q->itemsInserted(children.count()-1, 1);
         emit q->countChanged();
     }
@@ -88,7 +131,8 @@ public:
     \brief The VisualItemModel allows items to be provided to a view.
 
     The children of the VisualItemModel are provided in a model which
-    can be used in a view.
+    can be used in a view.  An item can determine its index within the
+    model via the VisualItemModel.index attached property.
 
     The example below places three colored rectangles in a ListView.
     \code
@@ -175,6 +219,11 @@ void QFxVisualItemModelPrivate::ItemList::append(QFxItem *item)
     QmlConcreteList<QFxItem*>::append(item);
     item->QObject::setParent(model->q_ptr);
     model->itemAppended();
+}
+
+QFxVisualItemModelAttached *QFxVisualItemModel::qmlAttachedProperties(QObject *obj)
+{
+    return QFxVisualItemModelAttached::properties(obj);
 }
 
 
