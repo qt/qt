@@ -35,7 +35,7 @@ SOURCES += \
         deployment.cpp \
         main.cpp
 
-win32-msvc*:LIBS += ole32.lib advapi32.lib
+LIBS += ole32.lib advapi32.lib
 
 isEmpty(QT_CE_RAPI_INC) {
     DEFINES += QT_CETEST_NO_ACTIVESYNC
@@ -44,7 +44,7 @@ isEmpty(QT_CE_RAPI_INC) {
 } else {
     HEADERS += activesyncconnection.h
     SOURCES += activesyncconnection.cpp
-    win32-msvc*:LIBS += rapi.lib
+    LIBS += rapi.lib
     INCLUDEPATH += $$QT_CE_RAPI_INC
     LIBS += -L$$QT_CE_RAPI_LIB
 }

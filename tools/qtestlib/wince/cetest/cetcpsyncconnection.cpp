@@ -44,6 +44,7 @@
 #include <qfile.h>
 #include <qfileinfo>
 
+static const QString ceTcpSyncProgram = ceTcpSyncProgram + "";
 extern void debugOutput(const QString& text, int level);
 
 CeTcpSyncConnection::CeTcpSyncConnection()
@@ -62,7 +63,7 @@ bool CeTcpSyncConnection::connect(QVariantList&)
 {
     // We connect with each command, so this is always true
     // The command itself will fail then
-    if (system("cetcpsync noop") != 0)
+    if (system(ceTcpSyncProgram + " noop") != 0)
         return false;
     connected = true;
     return true;
@@ -103,56 +104,56 @@ static QString fileTimeToString(FILETIME& ft)
 
 bool CeTcpSyncConnection::copyFileToDevice(const QString &localSource, const QString &deviceDest, bool failIfExists)
 {
-    QString cmd = "cetcpsync copyFileToDevice \"" + localSource + "\" \"" + deviceDest + "\" " + boolToString(failIfExists);
+    QString cmd = ceTcpSyncProgram + " copyFileToDevice \"" + localSource + "\" \"" + deviceDest + "\" " + boolToString(failIfExists);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::copyDirectoryToDevice(const QString &localSource, const QString &deviceDest, bool recursive)
 {
-    QString cmd = "cetcpsync copyDirectoryToDevice \"" + localSource + "\" \"" + deviceDest + "\" " + boolToString(recursive);
+    QString cmd = ceTcpSyncProgram + " copyDirectoryToDevice \"" + localSource + "\" \"" + deviceDest + "\" " + boolToString(recursive);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::copyFileFromDevice(const QString &deviceSource, const QString &localDest, bool failIfExists)
 {
-    QString cmd = "cetcpsync copyFileFromDevice \"" + deviceSource + "\" \"" + localDest + "\" " + boolToString(failIfExists);
+    QString cmd = ceTcpSyncProgram + " copyFileFromDevice \"" + deviceSource + "\" \"" + localDest + "\" " + boolToString(failIfExists);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::copyDirectoryFromDevice(const QString &deviceSource, const QString &localDest, bool recursive)
 {
-    QString cmd = "cetcpsync copyDirectoryFromDevice \"" + deviceSource + "\" \"" + localDest + "\" " + boolToString(recursive);
+    QString cmd = ceTcpSyncProgram + " copyDirectoryFromDevice \"" + deviceSource + "\" \"" + localDest + "\" " + boolToString(recursive);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::copyFile(const QString &srcFile, const QString &destFile, bool failIfExists)
 {
-    QString cmd = "cetcpsync copyFile \"" + srcFile + "\" \"" + destFile + "\" " + boolToString(failIfExists);
+    QString cmd = ceTcpSyncProgram + " copyFile \"" + srcFile + "\" \"" + destFile + "\" " + boolToString(failIfExists);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::copyDirectory(const QString &srcDirectory, const QString &destDirectory,
                                         bool recursive)
 {
-    QString cmd = "cetcpsync copyDirectory \"" + srcDirectory + "\" \"" + destDirectory + "\" " + boolToString(recursive);
+    QString cmd = ceTcpSyncProgram + " copyDirectory \"" + srcDirectory + "\" \"" + destDirectory + "\" " + boolToString(recursive);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::deleteFile(const QString &fileName)
 {
-    QString cmd = "cetcpsync deleteFile \"" + fileName + "\"";
+    QString cmd = ceTcpSyncProgram + " deleteFile \"" + fileName + "\"";
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::deleteDirectory(const QString &directory, bool recursive, bool failIfContentExists)
 {
-    QString cmd = "cetcpsync deleteDirectory \"" + directory + "\" " + boolToString(recursive) + " " + boolToString(failIfContentExists);
+    QString cmd = ceTcpSyncProgram + " deleteDirectory \"" + directory + "\" " + boolToString(recursive) + " " + boolToString(failIfContentExists);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::execute(QString program, QString arguments, int timeout, int *returnValue)
 {
-    QString cmd = "cetcpsync execute \"" + program + "\" \"" + arguments + "\" " + QString::number(timeout);
+    QString cmd = ceTcpSyncProgram + " execute \"" + program + "\" \"" + arguments + "\" " + QString::number(timeout);
     int exitCode = system(qPrintable(cmd));
     if (returnValue)
         *returnValue = exitCode;
@@ -161,17 +162,17 @@ bool CeTcpSyncConnection::execute(QString program, QString arguments, int timeou
 
 bool CeTcpSyncConnection::createDirectory(const QString &path, bool deleteBefore)
 {
-    QString cmd = "cetcpsync createDirectory \"" + path + "\" " + boolToString(deleteBefore);
+    QString cmd = ceTcpSyncProgram + " createDirectory \"" + path + "\" " + boolToString(deleteBefore);
     return system(qPrintable(cmd)) == 0;
 }
 
 bool CeTcpSyncConnection::timeStampForLocalFileTime(FILETIME* fTime) const
 {
-    QString cmd = "cetcpsync timeStampForLocalFileTime " + fileTimeToString(*fTime) + " >filetime.txt";
+    QString cmd = ceTcpSyncProgram + " timeStampForLocalFileTime " + fileTimeToString(*fTime) + " >qt_cetcpsyncdata.txt";
     if (system(qPrintable(cmd)) != 0)
         return false;
 
-    QFile file("filetime.txt");
+    QFile file("qt_cetcpsyncdata.txt");
     if (!file.open(QIODevice::ReadOnly))
         return false;
 
@@ -183,11 +184,11 @@ bool CeTcpSyncConnection::timeStampForLocalFileTime(FILETIME* fTime) const
 
 bool CeTcpSyncConnection::fileCreationTime(const QString &fileName, FILETIME* deviceCreationTime) const
 {
-    QString cmd = "cetcpsync fileCreationTime \"" + fileName + "\" >filetime.txt";
+    QString cmd = ceTcpSyncProgram + " fileCreationTime \"" + fileName + "\" >qt_cetcpsyncdata.txt";
     if (system(qPrintable(cmd)) != 0)
         return false;
 
-    QFile file("filetime.txt");
+    QFile file("qt_cetcpsyncdata.txt");
     if (!file.open(QIODevice::ReadOnly))
         return false;
 
