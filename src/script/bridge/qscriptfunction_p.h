@@ -79,6 +79,12 @@ public:
                     QScriptEngine::FunctionSignature);
     ~FunctionWrapper();
 
+    virtual const JSC::ClassInfo* classInfo() const { return &info; }
+    static const JSC::ClassInfo info;
+
+    QScriptEngine::FunctionSignature function() const
+    { return data->function; }
+
 private:
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
 
@@ -104,6 +110,15 @@ public:
     FunctionWithArgWrapper(JSC::ExecState*, int length, const JSC::Identifier&,
                            QScriptEngine::FunctionWithArgSignature, void *);
     ~FunctionWithArgWrapper();
+
+    virtual const JSC::ClassInfo* classInfo() const { return &info; }
+    static const JSC::ClassInfo info;
+
+    QScriptEngine::FunctionWithArgSignature function() const
+    { return data->function; }
+
+    void *arg() const
+    { return data->arg; }
 
 private:
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);

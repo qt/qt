@@ -60,6 +60,8 @@ ASSERT_CLASS_FITS_IN_CELL(QScript::FunctionWithArgWrapper);
 namespace QScript
 {
 
+const JSC::ClassInfo FunctionWrapper::info = { "QtNativeFunctionWrapper", &PrototypeFunction::info, 0, 0 };
+const JSC::ClassInfo FunctionWithArgWrapper::info = { "QtNativeFunctionWithArgWrapper", &PrototypeFunction::info, 0, 0 };
 
 FunctionWrapper::FunctionWrapper(JSC::ExecState *exec, int length, const JSC::Identifier &name,
                                  QScriptEngine::FunctionSignature function)
