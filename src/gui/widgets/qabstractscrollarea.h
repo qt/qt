@@ -130,6 +130,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_showOrHideScrollBars())
 
     friend class QStyleSheetStyle;
+    friend class QWidgetPrivate;
 };
 
 #endif // QT_NO_SCROLLAREA

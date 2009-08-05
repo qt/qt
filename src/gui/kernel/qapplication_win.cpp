@@ -815,8 +815,6 @@ void qt_init(QApplicationPrivate *priv, int)
         ptrSetProcessDPIAware();
 #endif
 
-    priv->lastGestureId = 0;
-
     priv->GetGestureInfo =
         (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
                                              "GetGestureInfo");

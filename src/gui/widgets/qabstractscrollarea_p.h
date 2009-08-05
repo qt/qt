@@ -103,7 +103,6 @@ public:
 #ifdef Q_WS_WIN
     bool singleFingerPanEnabled;
 #endif
-    void setupGestures();
 };
 
 class QAbstractScrollAreaFilter : public QObject

@@ -11114,8 +11114,6 @@ Q_GUI_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
 }
 
 
-
-
 #ifndef QT_NO_GRAPHICSVIEW
 /*!
    \since 4.5

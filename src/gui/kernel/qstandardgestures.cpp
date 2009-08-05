@@ -46,11 +46,13 @@
 #include <qscrollbar.h>
 #include <private/qapplication_p.h>
 #include <private/qevent_p.h>
+#include <private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
 QApplicationPrivate* getQApplicationPrivateInternal();
+QWidgetPrivate *qt_widget_private(QWidget *widget);
 #endif
 
 /*!
@@ -71,32 +73,38 @@ QApplicationPrivate* getQApplicationPrivateInternal();
 QPanGesture::QPanGesture(QWidget *parent)
     : QGesture(*new QPanGesturePrivate, parent)
 {
-#ifdef Q_WS_WIN
     if (parent) {
         QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
         qAppPriv->widgetGestures[parent].pan = this;
-    }
+#ifdef Q_WS_WIN
+        qt_widget_private(parent)->winSetupGestures();
 #endif
+    }
 }
 
 /*! \internal */
 bool QPanGesture::event(QEvent *event)
 {
-#ifdef Q_WS_WIN
-    QApplicationPrivate* getQApplicationPrivateInternal();
     switch (event->type()) {
     case QEvent::ParentAboutToChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent()))
+        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
             getQApplicationPrivateInternal()->widgetGestures[w].pan = 0;
+#ifdef Q_WS_WIN
+            qt_widget_private(w)->winSetupGestures();
+#endif
+        }
         break;
     case QEvent::ParentChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent()))
+        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
             getQApplicationPrivateInternal()->widgetGestures[w].pan = this;
+#ifdef Q_WS_WIN
+            qt_widget_private(w)->winSetupGestures();
+#endif
+        }
         break;
     default:
         break;
     }
-#endif
 
 #if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
     Q_D(QPanGesture);
