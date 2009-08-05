@@ -170,12 +170,7 @@ QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
         return rv;
     } else {
         Q_ASSERT(component);
-        QObject *rv = component->create(ctxt);
-        QmlContext *ctxt = qmlContext(rv);
-        if(ctxt) {
-            static_cast<QmlContextPrivate *>(QObjectPrivate::get(ctxt))->typeName = className;
-        }
-        return rv;
+        return component->create(ctxt);
     } 
 }
 

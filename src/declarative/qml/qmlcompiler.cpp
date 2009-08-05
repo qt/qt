@@ -64,7 +64,9 @@
 #include <private/qmlcomponent_p.h>
 #include "parser/qmljsast_p.h"
 #include <private/qmlvmemetaobject_p.h>
+#include <private/qmlexpression_p.h>
 #include "qmlmetaproperty_p.h"
+#include "qmlrewrite_p.h"
 
 #include "qmlscriptparser_p.h"
 
@@ -603,6 +605,7 @@ void QmlCompiler::compileTree(Object *tree)
     init.line = 0;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
+    init.init.idSize = compileState.ids.count();
     output->bytecode << init;
 
     genObject(tree);
@@ -774,6 +777,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         id.type = QmlInstruction::SetId;
         id.line = -1;
         id.setId.value = output->indexForString(obj->id);
+        id.setId.index = obj->idIndex;
         output->bytecode << id;
     }
 
@@ -917,6 +921,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     init.type = QmlInstruction::Init;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
+    init.init.idSize = compileState.ids.count();
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -936,7 +941,8 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
         id.line = -1;
-        id.setId.value = output->indexForString(obj->id);;
+        id.setId.value = output->indexForString(obj->id);
+        id.setId.index = obj->idIndex;
         output->bytecode << id;
     }
 }
@@ -2058,14 +2064,11 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     const BindingReference &ref = compileState.bindings.value(binding);
 
     QmlInstruction store;
-    int dataRef;
-    if (ref.compiledData.isEmpty()) {
-        dataRef = output->indexForString(ref.expression.asScript());
-        store.type = QmlInstruction::StoreBinding;
-    } else {
-        dataRef = output->indexForByteArray(ref.compiledData);
-        store.type = QmlInstruction::StoreCompiledBinding;
-    }
+    store.type = QmlInstruction::StoreCompiledBinding;
+    store.assignBinding.value = output->indexForByteArray(ref.compiledData);
+    store.assignBinding.context = ref.bindingContext.stack;
+    store.assignBinding.owner = ref.bindingContext.owner;
+    store.line = prop->location.end.line;
 
     Q_ASSERT(ref.bindingContext.owner == 0 ||
              (ref.bindingContext.owner != 0 && valueTypeProperty));
@@ -2077,18 +2080,12 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
         store.assignBinding.property =
             QmlMetaPropertyPrivate::saveProperty(prop->index);
     }
-    store.assignBinding.value = dataRef;
-    store.assignBinding.context = ref.bindingContext.stack;
-    store.assignBinding.owner = ref.bindingContext.owner;
-    store.line = prop->location.end.line;
 
     output->bytecode << store;
 }
 
 bool QmlCompiler::completeComponentBuild()
 {
-    saveComponentState();
-
     for (int ii = 0; ii < compileState.aliasingObjects.count(); ++ii) {
         Object *aliasObject = compileState.aliasingObjects.at(ii);
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
@@ -2107,10 +2104,30 @@ bool QmlCompiler::completeComponentBuild()
         expr.expression = binding.expression;
 
         bs.compile(expr);
-        if (bs.isValid())
+        quint32 type;
+        if (bs.isValid()) {
             binding.compiledData =
                 QByteArray(bs.compileData(), bs.compileDataSize());
+            type = QmlExpressionPrivate::BasicScriptEngineData;
+        } else {
+            type = QmlExpressionPrivate::PreTransformedQtScriptData;
+
+            // Pre-rewrite the expression
+            QString expression = binding.expression.asScript();
+            QmlRewrite::RewriteBinding rewriteBinding;
+            expression = rewriteBinding(expression);
+
+            quint32 length = expression.length();
+            binding.compiledData =
+                QByteArray((const char *)&length, sizeof(quint32)) +
+                QByteArray((const char *)expression.constData(), 
+                           expression.length() * sizeof(QChar));
+        }
+        binding.compiledData.prepend(QByteArray((const char *)&type, 
+                                                sizeof(quint32)));
     }
+
+    saveComponentState();
 
     return true;
 }

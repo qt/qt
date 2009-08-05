@@ -97,7 +97,6 @@ private Q_SLOTS:
 
 private:
     Q_DECLARE_PRIVATE(QmlExpression)
-    friend class QmlExpressionBindProxy;
     friend class QmlDebugger;
     friend class QmlContext;
 };

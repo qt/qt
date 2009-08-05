@@ -53,7 +53,6 @@
 #include <QtDeclarative/qmlengine.h>
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
-#include "qfxanchors_p.h"
 
 #include "qfxview.h"
 #include "qmlstategroup.h"
@@ -362,6 +361,14 @@ void QFxContents::setItem(QFxItem *item)
     \sa QFxItem::setFocus()
 */
 
+static inline void qfxitem_registerAnchorLine() {
+    static bool registered = false;
+    if (!registered) {
+        qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
+        registered = true;
+    }
+}
+
 /*!
     \fn QFxItem::QFxItem(QFxItem *parent)
 
@@ -371,6 +378,7 @@ QFxItem::QFxItem(QFxItem* parent)
   : QGraphicsObject(*(new QFxItemPrivate), parent, 0)
 {
     Q_D(QFxItem);
+    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
@@ -380,6 +388,7 @@ QFxItem::QFxItem(QFxItemPrivate &dd, QFxItem *parent)
   : QGraphicsObject(dd, parent, 0)
 {
     Q_D(QFxItem);
+    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
@@ -1280,8 +1289,10 @@ void QFxItem::setBaselineOffset(qreal offset)
 */
 
 /*!
-  Returns a value indicating whether the mouse should
-  remain with this item.
+  Returns a value indicating whether mouse input should
+  remain with this item exclusively.
+
+  \sa setKeepMouseGrab
  */
 bool QFxItem::keepMouseGrab() const
 {
@@ -1292,6 +1303,20 @@ bool QFxItem::keepMouseGrab() const
 /*!
   The flag indicating whether the mouse should remain
   with this item is set to \a keep.
+
+  This is useful for items that wish to grab and keep mouse
+  interaction following a predefined gesture.  For example,
+  an item that is interested in horizontal mouse movement
+  may set keepMouseGrab to true once a threshold has been
+  exceeded.  Once keepMouseGrab has been set to true, filtering
+  items will not react to mouse events.
+
+  If the item does not indicate that it wishes to retain mouse grab,
+  a filtering item may steal the grab. For example, Flickable may attempt
+  to steal a mouse grab if it detects that the user has begun to
+  move the viewport.
+
+  \sa keepMouseGrab
  */
 void QFxItem::setKeepMouseGrab(bool keep)
 {
@@ -1891,3 +1916,6 @@ QDebug operator<<(QDebug debug, QFxItem *item)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfxitem.cpp"
+

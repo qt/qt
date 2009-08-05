@@ -56,6 +56,7 @@ void tst_qmlcomponent::creation_data()
     QTest::addColumn<QString>("file");
 
     QTest::newRow("Object") << "object.txt";
+    QTest::newRow("Object - Id") << "object_id.txt";
     QTest::newRow("MyQmlObject") << "myqmlobject.txt";
     QTest::newRow("MyQmlObject: basic binding") << "myqmlobject_binding.txt";
     QTest::newRow("Synthesized properties") << "synthesized_properties.txt";
@@ -69,6 +70,9 @@ void tst_qmlcomponent::creation()
 
     QmlComponent c(&engine, file);
     QVERIFY(c.isReady());
+
+    QObject *obj = c.create();
+    delete obj;
 
     QBENCHMARK {
         QObject *obj = c.create();

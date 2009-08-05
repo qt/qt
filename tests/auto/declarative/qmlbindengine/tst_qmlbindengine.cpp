@@ -276,11 +276,6 @@ void tst_qmlbindengine::contextPropertiesTriggerReeval()
         MyExpression expr(&context, "testObj2");
         QCOMPARE(expr.changed, false);
         QCOMPARE(expr.value(), QVariant::fromValue((QObject *)object3));
-
-        delete object3;
-
-        QCOMPARE(expr.changed, true);
-        QCOMPARE(expr.value(), QVariant());
     }
 
 }

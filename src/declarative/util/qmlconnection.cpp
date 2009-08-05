@@ -193,7 +193,9 @@ void QmlConnection::connectIfValid()
             }
         }
         if (sigIdx < 0) {
-            qWarning() << "signal" << d->signal << "not found";
+            // Cannot usefully warn, since could be in middle of
+            // changing sender and signal.
+            // XXX need state change transactions to do better
             return;
         }
 

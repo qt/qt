@@ -64,6 +64,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
 #include <private/qmlbinding_p.h>
+#include <private/qmlcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -144,6 +145,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
     vmeErrors.clear();
     QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
+    QmlContextPrivate *cp = (QmlContextPrivate *)QObjectPrivate::get(ctxt);
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         QmlInstruction &instr = comp->bytecode[ii];
@@ -155,6 +157,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                     bindValues = QmlEnginePrivate::SimpleList<QmlBinding>(instr.init.bindingsSize);
                 if (instr.init.parserStatusSize)
                     parserStatus = QmlEnginePrivate::SimpleList<QmlParserStatus>(instr.init.parserStatusSize);
+
+                if (instr.init.idSize)
+                    cp->setIdPropertyCount(instr.init.idSize);
             }
             break;
 
@@ -194,7 +199,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
         case QmlInstruction::SetId:
             {
                 QObject *target = stack.top();
-                ctxt->setContextProperty(primitives.at(instr.setId.value), target);
+//                ctxt->setContextProperty(primitives.at(instr.setId.value), target);
+                cp->setIdProperty(primitives.at(instr.setId.value), instr.setId.index, target);
             }
             break;
 
@@ -540,28 +546,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-            }
-            break;
-
-        case QmlInstruction::StoreBinding:
-            {
-                QObject *target = 
-                    stack.at(stack.count() - 1 - instr.assignBinding.owner);
-                QObject *context = 
-                    stack.at(stack.count() - 1 - instr.assignBinding.context);
-
-                QmlMetaProperty mp;
-                mp.restore(instr.assignBinding.property, target, ctxt);
-
-                QmlBinding *bind = new QmlBinding(primitives.at(instr.assignBinding.value), context, ctxt);
-                bindValues.append(bind);
-                QmlBindingPrivate *p = 
-                    static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bind));
-                p->mePtr = &bindValues.values[bindValues.count - 1];
-                QFx_setParent_noEvent(bind, target);
-
-                bind->setTarget(mp);
-                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 

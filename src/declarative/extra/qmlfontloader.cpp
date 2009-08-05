@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlfontfamily.h"
+#include "qmlfontloader.h"
 #include <QUrl>
 #include <QDebug>
 #include <QNetworkRequest>
@@ -52,59 +52,59 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlFontFamilyPrivate : public QObjectPrivate
+class QmlFontLoaderPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlFontFamily);
+    Q_DECLARE_PUBLIC(QmlFontLoader);
 
 public:
-    QmlFontFamilyPrivate() : reply(0), status(QmlFontFamily::Null) {}
+    QmlFontLoaderPrivate() : reply(0), status(QmlFontLoader::Null) {}
 
     void addFontToDatabase(const QByteArray &);
 
     QUrl url;
     QString name;
     QNetworkReply *reply;
-    QmlFontFamily::Status status;
+    QmlFontLoader::Status status;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontFamily,QmlFontFamily)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontLoader,QmlFontLoader)
 
 /*!
-    \qmlclass FontFamily QmlFontFamily
+    \qmlclass FontLoader QmlFontLoader
     \ingroup group_utility
     \brief This item allows using fonts by name or url.
 
     Example:
     \code
-    FontFamily { id: FixedFont; name: "Courier" }
-    FontFamily { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
+    FontLoader { id: FixedFont; name: "Courier" }
+    FontLoader { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
 
     Text { text: "Fixed-size font"; font.family: FixedFont.name }
     Text { text: "Fancy font"; font.family: WebFont.name }
     \endcode
 */
-QmlFontFamily::QmlFontFamily(QObject *parent)
-    : QObject(*(new QmlFontFamilyPrivate), parent)
+QmlFontLoader::QmlFontLoader(QObject *parent)
+    : QObject(*(new QmlFontLoaderPrivate), parent)
 {
 }
 
-QmlFontFamily::~QmlFontFamily()
+QmlFontLoader::~QmlFontLoader()
 {
 }
 
 /*!
-    \qmlproperty url FontFamily::source
+    \qmlproperty url FontLoader::source
     The url of the font to load.
 */
-QUrl QmlFontFamily::source() const
+QUrl QmlFontLoader::source() const
 {
-    Q_D(const QmlFontFamily);
+    Q_D(const QmlFontLoader);
     return d->url;
 }
 
-void QmlFontFamily::setSource(const QUrl &url)
+void QmlFontLoader::setSource(const QUrl &url)
 {
-    Q_D(QmlFontFamily);
+    Q_D(QmlFontLoader);
     if (url == d->url)
         return;
     d->url = qmlContext(this)->resolvedUrl(url);
@@ -128,7 +128,7 @@ void QmlFontFamily::setSource(const QUrl &url)
 }
 
 /*!
-    \qmlproperty string FontFamily::name
+    \qmlproperty string FontLoader::name
 
     This property holds the name of the font family.
     It is set automatically when a font is loaded using the \c url property.
@@ -137,19 +137,19 @@ void QmlFontFamily::setSource(const QUrl &url)
 
     Example:
     \qml
-    FontFamily { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
+    FontLoader { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
     Text { text: "Fancy font"; font.family: WebFont.name }
     \endqml
 */
-QString QmlFontFamily::name() const
+QString QmlFontLoader::name() const
 {
-    Q_D(const QmlFontFamily);
+    Q_D(const QmlFontLoader);
     return d->name;
 }
 
-void QmlFontFamily::setName(const QString &name)
+void QmlFontLoader::setName(const QString &name)
 {
-    Q_D(QmlFontFamily);
+    Q_D(QmlFontLoader);
     if (d->name == name )
         return;
     d->name = name;
@@ -157,7 +157,7 @@ void QmlFontFamily::setName(const QString &name)
 }
 
 /*!
-    \qmlproperty enum FontFamily::status
+    \qmlproperty enum FontLoader::status
 
     This property holds the status of font loading.  It can be one of:
     \list
@@ -167,15 +167,15 @@ void QmlFontFamily::setName(const QString &name)
     \o Error - an error occurred while loading the font
     \endlist
 */
-QmlFontFamily::Status QmlFontFamily::status() const
+QmlFontLoader::Status QmlFontLoader::status() const
 {
-    Q_D(const QmlFontFamily);
+    Q_D(const QmlFontLoader);
     return d->status;
 }
 
-void QmlFontFamily::replyFinished()
+void QmlFontLoader::replyFinished()
 {
-    Q_D(QmlFontFamily);
+    Q_D(QmlFontLoader);
     if (!d->reply->error()) {
         QByteArray ba = d->reply->readAll();
         d->addFontToDatabase(ba);
@@ -187,17 +187,17 @@ void QmlFontFamily::replyFinished()
     d->reply = 0;
 }
 
-void QmlFontFamilyPrivate::addFontToDatabase(const QByteArray &ba)
+void QmlFontLoaderPrivate::addFontToDatabase(const QByteArray &ba)
 {
-    Q_Q(QmlFontFamily);
+    Q_Q(QmlFontLoader);
 
     int id = QFontDatabase::addApplicationFontFromData(ba);
     if (id != -1) {
         name = QFontDatabase::applicationFontFamilies(id).at(0);
         emit q->nameChanged();
-        status = QmlFontFamily::Ready;
+        status = QmlFontLoader::Ready;
     } else {
-        status = QmlFontFamily::Error;
+        status = QmlFontLoader::Error;
         qWarning() << "Cannot load font: " << name << url;
     }
     emit q->statusChanged();

@@ -287,6 +287,8 @@ QmlMetaPropertyPrivate::propertyCategory() const
         int type = propertyType();
         if (type == QmlMetaProperty::Invalid)
             category = QmlMetaProperty::InvalidProperty;
+        else if (type < QVariant::UserType)
+            category = QmlMetaProperty::Normal;
         else if (type == qMetaTypeId<QmlBinding *>())
             category = QmlMetaProperty::Bindable;
         else if (QmlMetaType::isList(type))

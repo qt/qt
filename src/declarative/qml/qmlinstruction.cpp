@@ -140,9 +140,6 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::AssignCustomType:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_CUSTOMTYPE\t\t" << instr->assignCustomType.propertyIndex << "\t" << instr->assignCustomType.valueIndex;
         break;
-    case QmlInstruction::StoreBinding:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_BINDING\t\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t\t" << instr->assignBinding.context << primitives.at(instr->assignBinding.value);
-        break;
     case QmlInstruction::StoreCompiledBinding:
         qWarning() << idx << "\t" << line << "\t" << "STORE_COMPILED_BINDING\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t\t" << instr->assignBinding.context;
         break;

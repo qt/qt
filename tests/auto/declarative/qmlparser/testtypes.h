@@ -56,7 +56,7 @@ class MyQmlObject : public QObject, public MyInterface, public QmlParserStatus
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(QRect rect READ rect WRITE setRect)
     Q_PROPERTY(QMatrix matrix READ matrix WRITE setMatrix)  //assumed to be unsupported by QML
-    Q_PROPERTY(MyInterface *interface READ interface WRITE setInterface)
+    Q_PROPERTY(MyInterface *interfaceProperty READ interface WRITE setInterface)
     Q_PROPERTY(int onLiteralSignal READ onLiteralSignal WRITE setOnLiteralSignal);
     Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType);
     Q_INTERFACES(MyInterface QmlParserStatus)

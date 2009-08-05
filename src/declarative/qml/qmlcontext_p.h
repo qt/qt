@@ -59,6 +59,7 @@
 #include <QtCore/qhash.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qset.h>
+#include <private/qguard_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,6 +67,7 @@ class QmlContext;
 class QmlExpression;
 class QmlEngine;
 class QmlExpression;
+class QmlExpressionPrivate;
 
 class QmlContextPrivate : public QObjectPrivate
 {
@@ -87,16 +89,11 @@ public:
     QScriptValueList scopeChain;
 
     QUrl url;
-    QByteArray typeName; 
-    int startLine;
-    int endLine;
 
     void init();
 
     void dump();
     void dump(int depth);
-
-    void destroyed(QObject *);
 
     enum Priority {
         HighPriority,
@@ -106,10 +103,25 @@ public:
 
     void invalidateEngines();
     QSet<QmlContext *> childContexts;
-    QSet<QmlExpression *> childExpressions;
+
+    QmlExpressionPrivate *expressions;
 
     QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;
+
+    struct ContextGuard : public QGuard<QObject>
+    {
+        QmlContextPrivate *priv;
+        ContextGuard &operator=(QObject *obj) {
+            (QGuard<QObject>&)*this = obj; return *this;
+        }
+        void objectDestroyed(QObject *o) { priv->destroyed(this); }
+    };
+    ContextGuard *idValues;
+    int idValueCount;
+    void setIdProperty(const QString &, int, QObject *);
+    void setIdPropertyCount(int);
+    void destroyed(ContextGuard *);
 
     // Only used for debugging
     QList<QPointer<QObject> > instances;

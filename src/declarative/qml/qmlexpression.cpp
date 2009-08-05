@@ -51,7 +51,7 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 QT_BEGIN_NAMESPACE
 
 QmlExpressionPrivate::QmlExpressionPrivate()
-: ctxt(0), expressionFunctionValid(false), sseData(0), me(0), trackChange(true), line(-1), guardList(0), guardListLength(0)
+: nextExpression(0), prevExpression(0), ctxt(0), expressionFunctionValid(false), expressionRewritten(false), sseData(0), me(0), trackChange(true), line(-1), guardList(0), guardListLength(0)
 {
 }
 
@@ -63,8 +63,12 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr,
     expression = expr;
 
     this->ctxt = ctxt;
-    if (ctxt)
-        ctxt->d_func()->childExpressions.insert(q);
+    if (ctxt) {
+        QmlContextPrivate *cp = ctxt->d_func();
+        nextExpression = cp->expressions;
+        prevExpression = &cp->expressions;
+        cp->expressions = this;
+    }
     this->me = me;
 }
 
@@ -73,11 +77,23 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 {
     Q_Q(QmlExpression);
 
-    sse.load((const char *)expr, rc);
+    quint32 *data = (quint32 *)expr;
+    Q_ASSERT(*data == BasicScriptEngineData || 
+             *data == PreTransformedQtScriptData);
+    if (*data == BasicScriptEngineData) {
+        sse.load((const char *)(data + 1), rc);
+    } else {
+        expression = QString::fromRawData((QChar *)(data + 2), data[1]);
+        expressionRewritten = true;
+    }
 
     this->ctxt = ctxt;
-    if (ctxt)
-        ctxt->d_func()->childExpressions.insert(q);
+    if (ctxt) {
+        QmlContextPrivate *cp = ctxt->d_func();
+        nextExpression = cp->expressions;
+        prevExpression = &cp->expressions;
+        cp->expressions = this;
+    }
     this->me = me;
 }
 
@@ -144,8 +160,11 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
 QmlExpression::~QmlExpression()
 {
     Q_D(QmlExpression);
-    if (d->ctxt)
-        d->ctxt->d_func()->childExpressions.remove(this);
+    if (d->prevExpression) {
+        *(d->prevExpression) = d->nextExpression;
+        if (d->nextExpression) 
+            d->nextExpression->prevExpression = d->prevExpression;
+    }
 }
 
 /*!
@@ -203,6 +222,7 @@ void QmlExpression::setExpression(const QString &expression)
 
     d->expression = expression;
     d->expressionFunctionValid = false;
+    d->expressionRewritten = false;
     d->expressionFunction = QScriptValue();
 
     d->sse.clear();
@@ -250,10 +270,15 @@ QVariant QmlExpressionPrivate::evalQtScript()
         scriptEngine->currentContext()->pushScope(ctxtPriv->scopeChain.at(i));
 
     if (!expressionFunctionValid) {
-        QmlRewrite::RewriteBinding rewriteBinding;
 
-        const QString code = rewriteBinding(expression);
-        expressionFunction = scriptEngine->evaluate(code, fileName, line);
+        if (expressionRewritten) {
+            expressionFunction = scriptEngine->evaluate(expression, fileName, line);
+        } else {
+            QmlRewrite::RewriteBinding rewriteBinding;
+
+            const QString code = rewriteBinding(expression);
+            expressionFunction = scriptEngine->evaluate(code, fileName, line);
+        }
         expressionFunctionValid = true;
     }
 

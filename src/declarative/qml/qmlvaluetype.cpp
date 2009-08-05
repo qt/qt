@@ -60,11 +60,13 @@ QmlValueType *QmlValueTypeFactory::valueType(int t)
 {
     switch (t) {
     case QVariant::Point:
-    case QVariant::PointF:
         return new QmlPointValueType;
+    case QVariant::PointF:
+        return new QmlPointFValueType;
     case QVariant::Rect:
-    case QVariant::RectF:
         return new QmlRectValueType;
+    case QVariant::RectF:
+        return new QmlRectFValueType;
     case QVariant::Vector3D:
         return new QmlVector3DValueType;
     default:
@@ -75,6 +77,43 @@ QmlValueType *QmlValueTypeFactory::valueType(int t)
 QmlValueType::QmlValueType(QObject *parent)
 : QObject(parent)
 {
+}
+
+QmlPointFValueType::QmlPointFValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
+
+void QmlPointFValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &point, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlPointFValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &point, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+qreal QmlPointFValueType::x() const
+{
+    return point.x();
+}
+
+qreal QmlPointFValueType::y() const
+{
+    return point.y();
+}
+
+void QmlPointFValueType::setX(qreal x)
+{
+    point.setX(x);
+}
+
+void QmlPointFValueType::setY(qreal y)
+{
+    point.setY(y);
 }
 
 QmlPointValueType::QmlPointValueType(QObject *parent)
@@ -94,24 +133,81 @@ void QmlPointValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
-qreal QmlPointValueType::x() const
+int QmlPointValueType::x() const
 {
     return point.x();
 }
 
-qreal QmlPointValueType::y() const
+int QmlPointValueType::y() const
 {
     return point.y();
 }
 
-void QmlPointValueType::setX(qreal x)
+void QmlPointValueType::setX(int x)
 {
     point.setX(x);
 }
 
-void QmlPointValueType::setY(qreal y)
+void QmlPointValueType::setY(int y)
 {
     point.setY(y);
+}
+
+QmlRectFValueType::QmlRectFValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
+
+void QmlRectFValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &rect, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlRectFValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &rect, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+qreal QmlRectFValueType::x() const
+{
+    return rect.x();
+}
+
+qreal QmlRectFValueType::y() const
+{
+    return rect.y();
+}
+
+void QmlRectFValueType::setX(qreal x)
+{
+    rect.moveLeft(x);
+}
+
+void QmlRectFValueType::setY(qreal y)
+{
+    rect.moveTop(y);
+}
+
+qreal QmlRectFValueType::width() const
+{
+    return rect.width();
+}
+
+qreal QmlRectFValueType::height() const
+{
+    return rect.height();
+}
+
+void QmlRectFValueType::setWidth(qreal w)
+{
+    rect.setWidth(w);
+}
+
+void QmlRectFValueType::setHeight(qreal h)
+{
+    rect.setHeight(h);
 }
 
 QmlRectValueType::QmlRectValueType(QObject *parent)
@@ -131,42 +227,42 @@ void QmlRectValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
-qreal QmlRectValueType::x() const
+int QmlRectValueType::x() const
 {
     return rect.x();
 }
 
-qreal QmlRectValueType::y() const
+int QmlRectValueType::y() const
 {
     return rect.y();
 }
 
-void QmlRectValueType::setX(qreal x)
+void QmlRectValueType::setX(int x)
 {
     rect.moveLeft(x);
 }
 
-void QmlRectValueType::setY(qreal y)
+void QmlRectValueType::setY(int y)
 {
     rect.moveTop(y);
 }
 
-qreal QmlRectValueType::width() const
+int QmlRectValueType::width() const
 {
     return rect.width();
 }
 
-qreal QmlRectValueType::height() const
+int QmlRectValueType::height() const
 {
     return rect.height();
 }
 
-void QmlRectValueType::setWidth(qreal w)
+void QmlRectValueType::setWidth(int w)
 {
     rect.setWidth(w);
 }
 
-void QmlRectValueType::setHeight(qreal h)
+void QmlRectValueType::setHeight(int h)
 {
     rect.setHeight(h);
 }
