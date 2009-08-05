@@ -508,12 +508,10 @@ void tst_QScriptEngine::newRegExp()
 
         QScriptValue r9 = rxCtor.construct();
         QVERIFY(r9.isRegExp());
-        QEXPECT_FAIL("", "JSC: String representation of regexp with empty pattern is wrong", Continue);
         QCOMPARE(r9.toString(), QString::fromLatin1("/(?:)/"));
 
         QScriptValue r10 = rxCtor.construct(QScriptValueList() << "" << "gim");
         QVERIFY(r10.isRegExp());
-        QEXPECT_FAIL("", "JSC: String representation of regexp with empty pattern is wrong", Continue);
         QCOMPARE(r10.toString(), QString::fromLatin1("/(?:)/gim"));
 
         QScriptValue r11 = rxCtor.construct(QScriptValueList() << "{1.*}" << "g");
