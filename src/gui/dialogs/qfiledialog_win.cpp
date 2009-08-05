@@ -59,7 +59,9 @@
 #endif
 
 #include <shlobj.h>
-
+#if !defined(Q_WS_WINCE)
+#include <shobjidl.h>
+#endif
 #include <objbase.h>
 
 #if defined(__IFileDialog_INTERFACE_DEFINED__) \
