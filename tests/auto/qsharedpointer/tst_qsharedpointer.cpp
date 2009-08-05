@@ -69,6 +69,7 @@ private slots:
     void upCast();
     void qobjectWeakManagement();
     void noSharedPointerFromWeakQObject();
+    void weakQObjectFromSharedPointer();
     void objectCast();
     void differentPointers();
     void virtualBaseDifferentPointers();
@@ -81,6 +82,7 @@ private slots:
     void constCorrectness();
     void customDeleter();
     void creating();
+    void creatingQObject();
     void mixTrackingPointerCode();
     void threadStressTest_data();
     void threadStressTest();
@@ -606,6 +608,19 @@ void tst_QSharedPointer::noSharedPointerFromWeakQObject()
     QVERIFY(strong.isNull());
 
     // is something went wrong, we'll probably crash here
+}
+
+void tst_QSharedPointer::weakQObjectFromSharedPointer()
+{
+    // this is the inverse of the above: you're allowed to create a QWeakPointer
+    // from a managed QObject
+    QSharedPointer<QObject> shared(new QObject);
+    QWeakPointer<QObject> weak = shared.data();
+    QVERIFY(!weak.isNull());
+
+    // delete:
+    shared.clear();
+    QVERIFY(weak.isNull());
 }
 
 void tst_QSharedPointer::objectCast()
@@ -1186,6 +1201,13 @@ void tst_QSharedPointer::customDeleter()
     QCOMPARE(dataDeleter.callCount, 0);
     QCOMPARE(derivedDataDeleter.callCount, 1);
     QCOMPARE(refcount, 2);
+    check();
+}
+
+void customQObjectDeleterFn(QObject *obj)
+{
+    ++customDeleterFnCallCount;
+    delete obj;
 }
 
 void tst_QSharedPointer::creating()
@@ -1252,7 +1274,10 @@ void tst_QSharedPointer::creating()
         QCOMPARE(baseptr->classLevel(), 4);
     }
     check();
+}
 
+void tst_QSharedPointer::creatingQObject()
+{
     {
         QSharedPointer<QObject> ptr = QSharedPointer<QObject>::create();
         QCOMPARE(ptr->metaObject(), &QObject::staticMetaObject);
@@ -1556,6 +1581,12 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "Data *ptr = 0;\n"
            "QWeakPointer<Data> weakptr(ptr);\n";
+
+    QTest::newRow("shared-pointer-from-unmanaged-qobject")
+        << &QTest::QExternalTest::tryRunFail
+        << "QObject *ptr = new QObject;\n"
+           "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
+           "QSharedPointer<QObject> shared(ptr);\n";
 }
 
 void tst_QSharedPointer::invalidConstructs()

@@ -867,6 +867,29 @@
 #if !defined(QT_NO_QOBJECT)
 #include "../kernel/qobject_p.h"
 
+/*!
+    \internal
+    This function is called for a just-created QObject \a obj, to enable
+    the use of QSharedPointer and QWeakPointer.
+
+    When QSharedPointer is active in a QObject, the object must not be deleted
+    directly: the lifetime is managed by the QSharedPointer object. In that case,
+    the deleteLater() and parent-child relationship in QObject only decrease
+    the strong reference count, instead of deleting the object.
+*/
+void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *obj, bool)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+
+    if (d->sharedRefcount)
+        qFatal("QSharedPointer: pointer %p already has reference counting", obj);
+    d->sharedRefcount = this;
+
+    // QObject decreases the refcount too, so increase it up
+    weakref.ref();
+}
+
 QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)
 {
     Q_ASSERT(obj);
