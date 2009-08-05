@@ -163,9 +163,6 @@ public:
 
     QmlList<QGraphicsTransform *> *transform();
 
-    bool keepMouseGrab() const;
-    void setKeepMouseGrab(bool);
-
     qreal width() const;
     void setWidth(qreal);
 
@@ -204,6 +201,9 @@ protected:
     virtual bool event(QEvent *);
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual void mouseUngrabEvent();
+
+    bool keepMouseGrab() const;
+    void setKeepMouseGrab(bool);
 
     void setImplicitWidth(qreal);
     bool widthValid() const; // ### better name?
