@@ -295,7 +295,8 @@ bool QtCesterConnection::deleteFile(const QString &fileName)
     }
     
     if (!_checkResult(socket)) {
-        END_ERROR(socket, "File Deletion failed");
+        //END_ERROR(socket, "File Deletion failed");
+        // This is actually not an error so ignore it.
     }
     
     _freeSocket(socket);
