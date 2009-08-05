@@ -97,7 +97,7 @@ private:
     This is a base class, to create a custom gesture type, you should subclass
     it and implement its pure virtual functions.
 
-    \sa QPanGesture, QTapAndHoldGesture
+    \sa QPanGesture
 */
 
 /*! \fn bool QGesture::filterEvent(QEvent *event)
