@@ -361,6 +361,14 @@ void QFxContents::setItem(QFxItem *item)
     \sa QFxItem::setFocus()
 */
 
+static inline void qfxitem_registerAnchorLine() {
+    static bool registered = false;
+    if (!registered) {
+        qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
+        registered = true;
+    }
+}
+
 /*!
     \fn QFxItem::QFxItem(QFxItem *parent)
 
@@ -370,7 +378,7 @@ QFxItem::QFxItem(QFxItem* parent)
   : QGraphicsObject(*(new QFxItemPrivate), parent, 0)
 {
     Q_D(QFxItem);
-    qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
+    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
@@ -380,7 +388,7 @@ QFxItem::QFxItem(QFxItemPrivate &dd, QFxItem *parent)
   : QGraphicsObject(dd, parent, 0)
 {
     Q_D(QFxItem);
-    qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
+    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
