@@ -282,7 +282,7 @@ public:
     };
 
     explicit QMetaObjectWrapperObject(
-        const QMetaObject *metaobject, JSC::JSValue ctor,
+        JSC::ExecState *, const QMetaObject *metaobject, JSC::JSValue ctor,
         WTF::PassRefPtr<JSC::Structure> sid);
     ~QMetaObjectWrapperObject();
 
@@ -310,7 +310,8 @@ public:
                                            JSC::JSValue, const JSC::ArgList&);
     static JSC::JSObject* construct(JSC::ExecState *, JSC::JSObject *, const JSC::ArgList &);
 
-    JSC::JSValue execute(JSC::ExecState *exec, const JSC::ArgList &args);
+    JSC::JSValue execute(JSC::ExecState *exec, const JSC::ArgList &args,
+                         bool calledAsConstructor);
 
     inline const QMetaObject *value() const { return data->value; }
     inline void setValue(const QMetaObject* value) { data->value = value; }

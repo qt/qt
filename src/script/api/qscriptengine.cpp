@@ -1208,7 +1208,7 @@ JSC::JSValue QScriptEnginePrivate::newQMetaObject(
     if (!metaObject)
         return JSC::jsNull();
     JSC::ExecState* exec = currentFrame;
-    QScript::QMetaObjectWrapperObject *result = new (exec) QScript::QMetaObjectWrapperObject(metaObject, ctor, qmetaobjectWrapperObjectStructure);
+    QScript::QMetaObjectWrapperObject *result = new (exec) QScript::QMetaObjectWrapperObject(exec, metaObject, ctor, qmetaobjectWrapperObjectStructure);
     return result;
 }
 

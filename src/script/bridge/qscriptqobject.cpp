@@ -50,6 +50,7 @@
 #include "../api/qscriptengine_p.h"
 #include "../api/qscriptable_p.h"
 #include "../api/qscriptcontext_p.h"
+#include "qscriptfunction_p.h"
 
 #include "Error.h"
 #include "PrototypeFunction.h"
@@ -500,35 +501,21 @@ struct QScriptMetaArguments
     { return (index != -1); }
 };
 
-JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
-                                 const JSC::ArgList &scriptArgs)
+static QMetaMethod metaMethod(const QMetaObject *meta,
+                              QMetaMethod::MethodType type,
+                              int index)
 {
-    Q_ASSERT(data->object.isObject(&QScriptObject::info));
-    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(data->object));
-    QScriptObjectDelegate *delegate = scriptObject->delegate();
-    Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
-    QObject *qobj = static_cast<QScript::QObjectDelegate*>(delegate)->value();
-    Q_ASSERT_X(qobj != 0, "QtFunction::call", "handle the case when QObject has been deleted");
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
-
-    const QMetaObject *meta = qobj->metaObject();
-    QObject *thisQObject = 0;
-    thisValue = engine->toUsableValue(thisValue);
-    if (thisValue.isObject(&QScriptObject::info)) {
-        delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
-        if (delegate && (delegate->type() == QScriptObjectDelegate::QtObject))
-            thisQObject = static_cast<QScript::QObjectDelegate*>(delegate)->value();
-    }
-    if (!thisQObject)
-        thisQObject = qobj; // ### TypeError
-
-    if (!meta->cast(thisQObject)) {
-        // invoking a function in the prototype
-        thisQObject = qobj;
-    }
-
-    exec->clearException();
-
+    if (type != QMetaMethod::Constructor)
+        return meta->method(index);
+    else
+        return meta->constructor(index);
+}
+    
+static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType callType,
+                                 QObject *thisQObject, const JSC::ArgList &scriptArgs,
+                                 const QMetaObject *meta, int initialIndex,
+                                 bool maybeOverloaded)
+{
     QByteArray funName;
     QScriptMetaMethod chosenMethod;
     int chosenIndex = -1;
@@ -538,10 +525,12 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
     QVector<int> tooFewArgs;
     QVector<int> conversionFailed;
     int index;
-    for (index = data->initialIndex; index >= 0; --index) {
-        QMetaMethod method = meta->method(index);
+    exec->clearException();
+    QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(exec);
+    for (index = initialIndex; index >= 0; --index) {
+        QMetaMethod method = metaMethod(meta, callType, index);
 
-        if (index == data->initialIndex)
+        if (index == initialIndex)
             funName = methodName(method);
         else {
             if (methodName(method) != funName)
@@ -563,9 +552,9 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
                     types.append(QScriptMetaType::unresolved(returnTypeName));
             }
         } else {
-/*            if (callType == QMetaMethod::Constructor)
+            if (callType == QMetaMethod::Constructor)
                 types.append(QScriptMetaType::metaType(QMetaType::QObjectStar, "QObject*"));
-                else*/ if (returnTypeName == "QVariant")
+            else if (returnTypeName == "QVariant")
                 types.append(QScriptMetaType::variant());
             else
                 types.append(QScriptMetaType::metaType(rtype, returnTypeName));
@@ -619,7 +608,11 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
         bool converted = true;
         int matchDistance = 0;
         for (int i = 0; converted && i < mtd.argumentCount(); ++i) {
-            QScriptValue actual = engine->scriptValueFromJSCValue(scriptArgs.at(i));
+            QScriptValue actual;
+            if (i < (int)scriptArgs.size())
+                actual = engine->scriptValueFromJSCValue(scriptArgs.at(i));
+            else
+                actual = QScriptValue::QScriptValue(QScriptValue::UndefinedValue);
             QScriptMetaType argType = mtd.argumentType(i);
             int tid = -1;
             QVariant v;
@@ -823,8 +816,8 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
                 break;
             } else {
                 bool redundant = false;
-                if (/*(callType != QMetaMethod::Constructor)
-                      &&*/ (index < meta->methodOffset())) {
+                if ((callType != QMetaMethod::Constructor)
+                    && (index < meta->methodOffset())) {
                     // it is possible that a virtual method is redeclared in a subclass,
                     // in which case we want to ignore the superclass declaration
                     for (int i = 0; i < candidates.size(); ++i) {
@@ -855,7 +848,7 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
             conversionFailed.append(index);
         }
 
-        if (!data->maybeOverloaded)
+        if (!maybeOverloaded)
             break;
     }
 
@@ -871,7 +864,7 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
             for (int i = 0; i < conversionFailed.size(); ++i) {
                 if (i > 0)
                     message += QLatin1String("\n");
-                QMetaMethod mtd = meta->method(conversionFailed.at(i));
+                QMetaMethod mtd = metaMethod(meta, callType, conversionFailed.at(i));
                 message += QString::fromLatin1("    %0").arg(QString::fromLatin1(mtd.signature()));
             }
             result = JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
@@ -898,7 +891,7 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
             for (int i = 0; i < tooFewArgs.size(); ++i) {
                 if (i > 0)
                     message += QLatin1String("\n");
-                QMetaMethod mtd = meta->method(tooFewArgs.at(i));
+                QMetaMethod mtd = metaMethod(meta, callType, tooFewArgs.at(i));
                 message += QString::fromLatin1("    %0").arg(QString::fromLatin1(mtd.signature()));
             }
             result = JSC::throwError(exec, JSC::SyntaxError, qtStringToJSCUString(message));
@@ -915,7 +908,7 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
                 for (int i = 0; i < candidates.size(); ++i) {
                     if (i > 0)
                         message += QLatin1String("\n");
-                    QMetaMethod mtd = meta->method(candidates.at(i).index);
+                    QMetaMethod mtd = metaMethod(meta, callType, candidates.at(i).index);
                     message += QString::fromLatin1("    %0").arg(QString::fromLatin1(mtd.signature()));
                 }
                 result = JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
@@ -962,11 +955,10 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
 //            engine->notifyFunctionEntry(context);
 //#endif
 
-/*            if (callType == QMetaMethod::Constructor) {
+            if (callType == QMetaMethod::Constructor) {
                 Q_ASSERT(meta != 0);
                 meta->static_metacall(QMetaObject::CreateInstance, chosenIndex, params);
-                } else*/ {
-                Q_ASSERT(thisQObject != 0);
+            } else {
                 thisQObject->qt_metacall(QMetaObject::InvokeMetaMethod, chosenIndex, params);
             }
 
@@ -993,6 +985,37 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
     }
 
     return result;
+}
+
+JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
+                                 const JSC::ArgList &scriptArgs)
+{
+    Q_ASSERT(data->object.isObject(&QScriptObject::info));
+    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(data->object));
+    QScriptObjectDelegate *delegate = scriptObject->delegate();
+    Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
+    QObject *qobj = static_cast<QScript::QObjectDelegate*>(delegate)->value();
+    Q_ASSERT_X(qobj != 0, "QtFunction::call", "handle the case when QObject has been deleted");
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+
+    const QMetaObject *meta = qobj->metaObject();
+    QObject *thisQObject = 0;
+    thisValue = engine->toUsableValue(thisValue);
+    if (thisValue.isObject(&QScriptObject::info)) {
+        delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
+        if (delegate && (delegate->type() == QScriptObjectDelegate::QtObject))
+            thisQObject = static_cast<QScript::QObjectDelegate*>(delegate)->value();
+    }
+    if (!thisQObject)
+        thisQObject = qobj; // ### TypeError
+
+    if (!meta->cast(thisQObject)) {
+        // invoking a function in the prototype
+        thisQObject = qobj;
+    }
+
+    return callQtMethod(exec, QMetaMethod::Method, thisQObject, scriptArgs,
+                        meta, data->initialIndex, data->maybeOverloaded);
 }
 
 const JSC::ClassInfo QtFunction::info = { "QtFunction", &InternalFunction::info, 0, 0 };
@@ -1656,10 +1679,13 @@ QObjectPrototype::QObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::St
 const JSC::ClassInfo QMetaObjectWrapperObject::info = { "QMetaObject", 0, 0, 0 };
 
 QMetaObjectWrapperObject::QMetaObjectWrapperObject(
-    const QMetaObject *metaObject, JSC::JSValue ctor,
+    JSC::ExecState *exec, const QMetaObject *metaObject, JSC::JSValue ctor,
     WTF::PassRefPtr<JSC::Structure> sid)
-    : JSC::JSObject(sid), data(new Data(metaObject, ctor))
+    : JSC::JSObject(sid),
+      data(new Data(metaObject, ctor))
 {
+    if (!ctor)
+        data->prototype = new (exec)JSC::JSObject(exec->lexicalGlobalObject()->emptyObjectStructure());
 }
 
 QMetaObjectWrapperObject::~QMetaObjectWrapperObject()
@@ -1813,7 +1839,7 @@ JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
     QMetaObjectWrapperObject *self =  static_cast<QMetaObjectWrapperObject*>(callee);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
-    JSC::JSValue result = self->execute(exec, args);
+    JSC::JSValue result = self->execute(exec, args, /*calledAsConstructor=*/false);
     eng_p->currentFrame = previousFrame;
     return result;
 }
@@ -1824,7 +1850,7 @@ JSC::JSObject* QMetaObjectWrapperObject::construct(JSC::ExecState *exec, JSC::JS
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
-    JSC::JSValue result = self->execute(exec, args);
+    JSC::JSValue result = self->execute(exec, args, /*calledAsConstructor=*/true);
     eng_p->currentFrame = previousFrame;
     if (!result || !result.isObject())
         return 0;
@@ -1832,28 +1858,43 @@ JSC::JSObject* QMetaObjectWrapperObject::construct(JSC::ExecState *exec, JSC::JS
 }
 
 JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
-                                               const JSC::ArgList &args)
+                                               const JSC::ArgList &args,
+                                               bool calledAsConstructor)
 {
     if (data->ctor) {
+        QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
+        QScriptContext *ctx = eng_p->contextForFrame(exec);
+        QScriptPushScopeHelper scope(exec, calledAsConstructor);
         JSC::CallData callData;
         JSC::CallType callType = data->ctor.getCallData(callData);
-        return JSC::call(exec, data->ctor, callType, callData, /*thisValue=*/JSC::JSValue(), args);
+        Q_ASSERT_X(callType == JSC::CallTypeHost, Q_FUNC_INFO, "script constructors not supported");
+        if (data->ctor.isObject(&FunctionWithArgWrapper::info)) {
+            FunctionWithArgWrapper *wrapper = static_cast<FunctionWithArgWrapper*>(JSC::asObject(data->ctor));
+            QScriptValue result = wrapper->function()(ctx, QScriptEnginePrivate::get(eng_p), wrapper->arg());
+            return eng_p->scriptValueToJSCValue(result);
+        } else {
+            Q_ASSERT(data->ctor.isObject(&FunctionWrapper::info));
+            FunctionWrapper *wrapper = static_cast<FunctionWrapper*>(JSC::asObject(data->ctor));
+            QScriptValue result = wrapper->function()(ctx, QScriptEnginePrivate::get(eng_p));
+            return eng_p->scriptValueToJSCValue(result);
+        }
     } else {
-        if (data->value->constructorCount() > 0) {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-#if 0
-            callQtMethod(context, QMetaMethod::Constructor, /*thisQObject=*/0,
-                         value, value->constructorCount()-1, /*maybeOverloaded=*/true);
-            if (context->state() == QScriptContext::NormalState) {
-                ExtQObject::Instance *inst = ExtQObject::Instance::get(context->m_result);
-                Q_ASSERT(inst != 0);
-                inst->ownership = QScriptEngine::AutoOwnership;
-                context->m_result.setPrototype(prototype);
+        const QMetaObject *meta = data->value;
+        if (meta->constructorCount() > 0) {
+            JSC::JSValue result = callQtMethod(exec, QMetaMethod::Constructor, /*thisQObject=*/0,
+                                               args, meta, meta->constructorCount()-1, /*maybeOverloaded=*/true);
+            if (!exec->hadException()) {
+                Q_ASSERT(result && result.isObject(&QScriptObject::info));
+                QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(result));
+                QScript::QObjectDelegate *delegate = static_cast<QScript::QObjectDelegate*>(object->delegate());
+                delegate->setOwnership(QScriptEngine::AutoOwnership);
+                if (data->prototype)
+                    object->setPrototype(data->prototype);
             }
-#endif
+            return result;
         } else {
             QString message = QString::fromLatin1("no constructor for %0")
-                              .arg(QLatin1String(data->value->className()));
+                              .arg(QLatin1String(meta->className()));
             return JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
         }
     }
@@ -1879,7 +1920,7 @@ static JSC::JSValue JSC_HOST_CALL qmetaobjectProtoFuncClassName(
 QMetaObjectPrototype::QMetaObjectPrototype(
     JSC::ExecState *exec, WTF::PassRefPtr<JSC::Structure> structure,
     JSC::Structure* prototypeFunctionStructure)
-    : QMetaObjectWrapperObject(StaticQtMetaObject::get(), /*ctor=*/JSC::JSValue(), structure)
+    : QMetaObjectWrapperObject(exec, StaticQtMetaObject::get(), /*ctor=*/JSC::JSValue(), structure)
 {
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, JSC::Identifier(exec, "className"), qmetaobjectProtoFuncClassName), JSC::DontEnum);
 }
