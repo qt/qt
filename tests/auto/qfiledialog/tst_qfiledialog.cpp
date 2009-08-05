@@ -161,6 +161,7 @@ private slots:
     void task251341_sideBarRemoveEntries();
     void task254490_selectFileMultipleTimes();
     void task257579_sideBarWithNonCleanUrls();
+    void task259105_filtersCornerCases();
 
 private:
     QByteArray userSettings;
@@ -2057,6 +2058,48 @@ void tst_QFiledialog::task257579_sideBarWithNonCleanUrls()
 #endif
 }
 
+void tst_QFiledialog::task259105_filtersCornerCases()
+{
+    QNonNativeFileDialog fd(0, "TestFileDialog");
+    fd.setNameFilter(QLatin1String("All Files! (*);;Text Files (*.txt)"));
+    fd.setOption(QFileDialog::HideNameFilterDetails, true);
+    fd.show();
+    QTest::qWait(250);
 
+    //Extensions are hidden
+    QComboBox *filters = qFindChild<QComboBox*>(&fd, "fileTypeCombo");
+    QVERIFY(filters);
+    QCOMPARE(filters->currentText(), QLatin1String("All Files!"));
+    filters->setCurrentIndex(1);
+    QCOMPARE(filters->currentText(), QLatin1String("Text Files"));
+
+    //We should have the full names
+    fd.setOption(QFileDialog::HideNameFilterDetails, false);
+    QTest::qWait(250);
+    filters->setCurrentIndex(0);
+    QCOMPARE(filters->currentText(), QLatin1String("All Files! (*)"));
+    filters->setCurrentIndex(1);
+    QCOMPARE(filters->currentText(), QLatin1String("Text Files (*.txt)"));
+
+    //Corner case undocumented of the task
+    fd.setNameFilter(QLatin1String("\352 (I like cheese) All Files! (*);;Text Files (*.txt)"));
+    QCOMPARE(filters->currentText(), QLatin1String("\352 (I like cheese) All Files! (*)"));
+    filters->setCurrentIndex(1);
+    QCOMPARE(filters->currentText(), QLatin1String("Text Files (*.txt)"));
+
+    fd.setOption(QFileDialog::HideNameFilterDetails, true);
+    filters->setCurrentIndex(0);
+    QTest::qWait(500);
+    QCOMPARE(filters->currentText(), QLatin1String("\352 (I like cheese) All Files!"));
+    filters->setCurrentIndex(1);
+    QCOMPARE(filters->currentText(), QLatin1String("Text Files"));
+
+    fd.setOption(QFileDialog::HideNameFilterDetails, true);
+    filters->setCurrentIndex(0);
+    QTest::qWait(500);
+    QCOMPARE(filters->currentText(), QLatin1String("\352 (I like cheese) All Files!"));
+    filters->setCurrentIndex(1);
+    QCOMPARE(filters->currentText(), QLatin1String("Text Files"));
+}
 QTEST_MAIN(tst_QFiledialog)
 #include "tst_qfiledialog.moc"
