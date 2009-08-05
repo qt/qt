@@ -387,7 +387,6 @@ namespace QtSharedPointer {
             this->value = d && d->strongref ? actual : 0;
         }
 
-    protected:
         Data *d;
 
     private:
