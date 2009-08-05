@@ -549,28 +549,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             }
             break;
 
-        case QmlInstruction::StoreBinding:
-            {
-                QObject *target = 
-                    stack.at(stack.count() - 1 - instr.assignBinding.owner);
-                QObject *context = 
-                    stack.at(stack.count() - 1 - instr.assignBinding.context);
-
-                QmlMetaProperty mp;
-                mp.restore(instr.assignBinding.property, target, ctxt);
-
-                QmlBinding *bind = new QmlBinding(primitives.at(instr.assignBinding.value), context, ctxt);
-                bindValues.append(bind);
-                QmlBindingPrivate *p = 
-                    static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bind));
-                p->mePtr = &bindValues.values[bindValues.count - 1];
-                QFx_setParent_noEvent(bind, target);
-
-                bind->setTarget(mp);
-                bind->setSourceLocation(comp->url, instr.line);
-            }
-            break;
-
         case QmlInstruction::StoreValueSource:
             {
                 QmlPropertyValueSource *vs = 
