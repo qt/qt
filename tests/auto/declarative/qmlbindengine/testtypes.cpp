@@ -32,10 +32,10 @@ private:
     int m_value;
 };
 
-QML_DEFINE_TYPE(MyQmlObject,MyQmlObject);
-QML_DEFINE_TYPE(MyDeferredObject,MyDeferredObject);
-QML_DEFINE_TYPE(MyQmlContainer,MyQmlContainer);
-QML_DEFINE_EXTENDED_TYPE(MyBaseExtendedObject,MyBaseExtendedObject,BaseExtensionObject);
-QML_DEFINE_EXTENDED_TYPE(MyExtendedObject,MyExtendedObject,ExtensionObject);
+QML_DEFINE_TYPE(Test,1,0,0,MyQmlObject,MyQmlObject);
+QML_DEFINE_TYPE(Test,1,0,0,MyDeferredObject,MyDeferredObject);
+QML_DEFINE_TYPE(Test,1,0,0,MyQmlContainer,MyQmlContainer);
+QML_DEFINE_EXTENDED_TYPE(Test,1,0,0,MyBaseExtendedObject,MyBaseExtendedObject,BaseExtensionObject);
+QML_DEFINE_EXTENDED_TYPE(Test,1,0,0,MyExtendedObject,MyExtendedObject,ExtensionObject);
 
 #include "testtypes.moc"
