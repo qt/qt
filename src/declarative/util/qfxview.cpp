@@ -140,7 +140,6 @@ QFxView::QFxView(QWidget *parent)
 void QFxViewPrivate::init()
 {
     // XXX: These need to be put in a central location for this kind of thing
-    qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
 
     QmlMetaType::registerCustomStringConverter(QVariant::Pixmap, &stringToPixmap);
     QmlMetaType::registerCustomStringConverter(QVariant::Icon, &stringToIcon);

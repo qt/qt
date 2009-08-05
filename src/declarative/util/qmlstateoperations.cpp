@@ -46,6 +46,7 @@
 #include "qmlstateoperations.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
+#include <private/qfxanchors_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -524,3 +525,6 @@ void QmlSetAnchors::clearReverseBindings()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qmlstateoperations.cpp"
+

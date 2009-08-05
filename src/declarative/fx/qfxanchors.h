@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QFxAnchorsPrivate;
+class QFxAnchorLine;
 class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
 {
     Q_OBJECT
@@ -172,7 +173,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QFxAnchorLine)
 QML_DECLARE_TYPE(QFxAnchors)
 
 QT_END_HEADER
