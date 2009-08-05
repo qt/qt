@@ -268,12 +268,12 @@ CallType JSQuarantinedObjectWrapper::getCallData(CallData& callData)
     return CallTypeHost;
 }
 
-void JSQuarantinedObjectWrapper::getPropertyNames(ExecState*, PropertyNameArray& array, bool includeNonEnumerable)
+void JSQuarantinedObjectWrapper::getPropertyNames(ExecState*, PropertyNameArray& array, unsigned listedAttributes)
 {
     if (!allowsGetPropertyNames())
         return;
 
-    m_unwrappedObject->getPropertyNames(unwrappedExecState(), array, includeNonEnumerable);
+    m_unwrappedObject->getPropertyNames(unwrappedExecState(), array, listedAttributes);
 }
 
 } // namespace WebCore

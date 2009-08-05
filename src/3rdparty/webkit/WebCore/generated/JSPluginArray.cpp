@@ -179,11 +179,11 @@ JSValue jsPluginArrayConstructor(ExecState* exec, const Identifier&, const Prope
     JSPluginArray* domObject = static_cast<JSPluginArray*>(asObject(slot.slotBase()));
     return JSPluginArray::getConstructor(exec, domObject->globalObject());
 }
-void JSPluginArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSPluginArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<PluginArray*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSPluginArray::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -90,7 +90,7 @@ public:
                                        const JSC::Identifier&,
                                        unsigned&) const;
     virtual void getPropertyNames(QScriptObject*, JSC::ExecState*,
-                                  JSC::PropertyNameArray&, bool includeNonEnumerable = false);
+                                  JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
 
     virtual JSC::CallType getCallData(QScriptObject*, JSC::CallData&);
     static JSC::JSValue JSC_HOST_CALL call(JSC::ExecState*, JSC::JSObject*,

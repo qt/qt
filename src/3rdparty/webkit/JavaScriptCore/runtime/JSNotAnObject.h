@@ -87,7 +87,7 @@ namespace JSC {
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
         virtual bool deleteProperty(ExecState*, unsigned propertyName);
 
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+        virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);
 
         JSNotAnObjectErrorStub* m_exception;
     };

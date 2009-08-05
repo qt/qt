@@ -65,7 +65,7 @@ public:
     virtual bool supportsConstruct() const;
     virtual JSValue invokeConstruct(ExecState*, const ArgList&);
 
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
 
     JSValue stringValue(ExecState*) const;
     JSValue numberValue(ExecState*) const;

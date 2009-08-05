@@ -133,13 +133,13 @@ bool QScriptObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Ident
     return d->delegate->getPropertyAttributes(this, exec, propertyName, attributes);
 }
 
-void QScriptObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void QScriptObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     if (!d || !d->delegate) {
-        JSC::JSObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+        JSC::JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
         return;
     }
-    d->delegate->getPropertyNames(this, exec, propertyNames, includeNonEnumerable);
+    d->delegate->getPropertyNames(this, exec, propertyNames, listedAttributes);
 }
 
 void QScriptObject::mark()
@@ -220,9 +220,9 @@ bool QScriptObjectDelegate::getPropertyAttributes(const QScriptObject* object,
 
 void QScriptObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState* exec,
                                              JSC::PropertyNameArray& propertyNames,
-                                             bool includeNonEnumerable)
+                                             unsigned listedAttributes)
 {
-    object->JSC::JSObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+    object->JSC::JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 void QScriptObjectDelegate::mark(QScriptObject* object)

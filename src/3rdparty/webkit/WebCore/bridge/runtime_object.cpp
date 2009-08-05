@@ -241,7 +241,7 @@ ConstructType RuntimeObjectImp::getConstructData(ConstructData& constructData)
     return ConstructTypeHost;
 }
 
-void RuntimeObjectImp::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void RuntimeObjectImp::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     if (!instance) {
         throwInvalidAccessError(exec);
@@ -249,7 +249,7 @@ void RuntimeObjectImp::getPropertyNames(ExecState* exec, PropertyNameArray& prop
     }
     
     instance->begin();
-    instance->getPropertyNames(exec, propertyNames, includeNonEnumerable);
+    instance->getPropertyNames(exec, propertyNames, listedAttributes);
     instance->end();
 }
 

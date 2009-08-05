@@ -166,11 +166,11 @@ JSValue jsCSSValueListConstructor(ExecState* exec, const Identifier&, const Prop
     JSCSSValueList* domObject = static_cast<JSCSSValueList*>(asObject(slot.slotBase()));
     return JSCSSValueList::getConstructor(exec, domObject->globalObject());
 }
-void JSCSSValueList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSCSSValueList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<CSSValueList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSCSSValueList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

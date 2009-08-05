@@ -195,11 +195,11 @@ void setJSMediaListMediaText(ExecState* exec, JSObject* thisObject, JSValue valu
     setDOMException(exec, ec);
 }
 
-void JSMediaList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSMediaList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<MediaList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSMediaList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

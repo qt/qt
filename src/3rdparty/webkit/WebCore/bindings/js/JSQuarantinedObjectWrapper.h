@@ -70,7 +70,7 @@ namespace WebCore {
 
         virtual bool hasInstance(JSC::ExecState*, JSC::JSValue, JSC::JSValue proto);
 
-        virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
+        virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
 
         virtual JSC::UString className() const { return m_unwrappedObject->className(); }
 

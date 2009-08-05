@@ -238,7 +238,7 @@ JSValue CInstance::valueOf(ExecState* exec) const
     return stringValue(exec);
 }
 
-void CInstance::getPropertyNames(ExecState* exec, PropertyNameArray& nameArray, bool includeNonEnumerable)
+void CInstance::getPropertyNames(ExecState* exec, PropertyNameArray& nameArray, unsigned listedAttributes)
 {
     if (!NP_CLASS_STRUCT_VERSION_HAS_ENUM(_object->_class) || !_object->_class->enumerate)
         return;

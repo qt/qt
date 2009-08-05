@@ -38,7 +38,7 @@ namespace JSC {
 
         virtual void put(ExecState* exec, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+        virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);
         virtual bool getPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned& attributes) const;
 
         virtual const ClassInfo* classInfo() const { return &info; }

@@ -49,7 +49,7 @@ public:
 
     virtual JSC::CallType getCallData(JSC::CallData&);
 
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     NodeList* impl() const { return m_impl.get(); }
 

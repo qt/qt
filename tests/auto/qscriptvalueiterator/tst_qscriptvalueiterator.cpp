@@ -225,8 +225,8 @@ void tst_QScriptValueIterator::iterateArray_data()
 
 
     QTest::newRow("0=foo, 3=barr")
-        << (QStringList() << "0" << "3")
-        << (QStringList() << "foo" << "bar")
+        << (QStringList() << "0" << "1" << "2" << "3")
+        << (QStringList() << "foo" << "" << "" << "bar")
         << (QStringList() << "0" << "1" << "2" << "3")
         << (QStringList() << "foo" << "" << "" << "bar");
 }

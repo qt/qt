@@ -190,11 +190,11 @@ void setJSWebKitCSSKeyframesRuleName(ExecState* exec, JSObject* thisObject, JSVa
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
-void JSWebKitCSSKeyframesRule::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSWebKitCSSKeyframesRule::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<WebKitCSSKeyframesRule*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSWebKitCSSKeyframesRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

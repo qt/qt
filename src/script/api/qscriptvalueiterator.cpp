@@ -117,17 +117,6 @@ public:
         for(; propertyNamesIt != propertyNamesArray.end(); ++propertyNamesIt) {
             propertyNames.append(propertyNamesIt->ustring());
         }
-        if (object.isArray() || (QScriptValuePrivate::get(object)->jscValue.isObject(&JSC::JSArray::info))) {
-            const JSC::JSArray *array = JSC::asArray(QScriptValuePrivate::get(object)->jscValue);
-            const int length = array->length();
-            for (int i = 0; i < length; ++i)
-                propertyNames.append(JSC::UString::from(i));
-        } else if (object.isString() || (QScriptValuePrivate::get(object)->jscValue.isObject(&JSC::StringObject::info))) {
-            const JSC::UString string =  QScriptValuePrivate::get(object)->jscValue.toString(exec);
-            const int length = string.size();
-            for (int i = 0; i < length; ++i)
-                propertyNames.append(JSC::UString::from(i));
-        }
         it = propertyNames.begin();
         initialized = true;
     }

@@ -52,7 +52,7 @@ public:
 
     virtual JSValue invokeMethod(ExecState*, const MethodList&, const ArgList&);
 
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
 
     JSValue stringValue(ExecState* exec) const;
     JSValue numberValue(ExecState* exec) const;

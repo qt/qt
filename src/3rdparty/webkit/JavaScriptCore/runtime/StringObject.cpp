@@ -79,12 +79,12 @@ bool StringObject::deleteProperty(ExecState* exec, const Identifier& propertyNam
     return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
-void StringObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void StringObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     int size = internalValue()->value().size();
     for (int i = 0; i < size; ++i)
         propertyNames.add(Identifier(exec, UString::from(i)));
-    return JSObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+    return JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 bool StringObject::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const

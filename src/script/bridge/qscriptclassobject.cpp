@@ -177,7 +177,7 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
 
 void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState *exec,
                                            JSC::PropertyNameArray &propertyNames,
-                                           bool includeNonEnumerable)
+                                           unsigned listedAttributes)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
@@ -190,7 +190,7 @@ void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState
         }
         delete it;
     }
-    QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames, includeNonEnumerable);
+    QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames, listedAttributes);
 }
 
 JSC::CallType ClassObjectDelegate::getCallData(QScriptObject*, JSC::CallData &callData)

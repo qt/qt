@@ -178,11 +178,11 @@ JSValue jsMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const Pro
     JSMimeTypeArray* domObject = static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()));
     return JSMimeTypeArray::getConstructor(exec, domObject->globalObject());
 }
-void JSMimeTypeArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSMimeTypeArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<MimeTypeArray*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSMimeTypeArray::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

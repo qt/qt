@@ -284,11 +284,11 @@ void setJSHTMLFormElementTarget(ExecState* exec, JSObject* thisObject, JSValue v
     imp->setTarget(valueToStringWithNullCheck(exec, value));
 }
 
-void JSHTMLFormElement::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSHTMLFormElement::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<HTMLFormElement*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSHTMLFormElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

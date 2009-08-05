@@ -49,7 +49,7 @@ public:
     }
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
     History* impl() const { return m_impl.get(); }
 
 private:
