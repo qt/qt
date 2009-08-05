@@ -215,6 +215,7 @@ private slots:
     void childrenBoundingRect();
     void childrenBoundingRectTransformed();
     void childrenBoundingRect2();
+    void childrenBoundingRect3();
     void group();
     void setGroup();
     void nestedGroups();
@@ -3050,6 +3051,39 @@ void tst_QGraphicsItem::childrenBoundingRect2()
     QGraphicsLineItem l3(0, 0, 0, 100, &box);
     // Make sure lines (zero with/height) are included in the childrenBoundingRect.
     QCOMPARE(box.childrenBoundingRect(), QRectF(0, 0, 100, 100));
+}
+
+void tst_QGraphicsItem::childrenBoundingRect3()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *rect = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect2 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect3 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect4 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect5 = scene.addRect(QRectF(0, 0, 100, 100));
+    rect2->setParentItem(rect);
+    rect3->setParentItem(rect2);
+    rect4->setParentItem(rect3);
+    rect5->setParentItem(rect4);
+
+    rect2->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect2->setPos(25, 25);
+    rect3->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect3->setPos(25, 25);
+    rect4->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect4->setPos(25, 25);
+    rect5->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect5->setPos(25, 25);
+
+    // Try to mess up the cached bounding rect.
+    (void)rect2->childrenBoundingRect();
+
+    QRectF subTreeRect = rect->childrenBoundingRect();
+    QCOMPARE(subTreeRect.left(), qreal(-206.0660171779821));
+    QCOMPARE(subTreeRect.top(), qreal(75.0));
+    QCOMPARE(subTreeRect.width(), qreal(351.7766952966369));
+    QCOMPARE(subTreeRect.height(), qreal(251.7766952966369));
 }
 
 void tst_QGraphicsItem::group()

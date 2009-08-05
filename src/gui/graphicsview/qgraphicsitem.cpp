@@ -1016,11 +1016,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 */
 void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
 {
-    if (!dirtyChildrenBoundingRect) {
-        *rect |= x->mapRect(childrenBoundingRect);
-        return;
-    }
-
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
         QGraphicsItemPrivate *childd = child->d_ptr;
@@ -1028,19 +1023,20 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
         if (hasPos || childd->transformData) {
             // COMBINE
             QTransform matrix = childd->transformToParent();
-            matrix *= *x;
+            if (x)
+                matrix *= *x;
             *rect |= matrix.mapRect(child->boundingRect());
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(&matrix, rect);
         } else {
-            *rect |= x->mapRect(child->boundingRect());
+            if (x)
+                *rect |= x->mapRect(child->boundingRect());
+            else
+                *rect |= child->boundingRect();
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(x, rect);
         }
     }
-
-    childrenBoundingRect = *rect;
-    dirtyChildrenBoundingRect = 0;
 }
 
 void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
@@ -3930,10 +3926,10 @@ QRectF QGraphicsItem::childrenBoundingRect() const
     if (!d_ptr->dirtyChildrenBoundingRect)
         return d_ptr->childrenBoundingRect;
 
-    QRectF childRect;
-    QTransform x;
-    d_ptr->childrenBoundingRectHelper(&x, &childRect);
-    return childRect;
+    d_ptr->childrenBoundingRect = QRectF();
+    d_ptr->childrenBoundingRectHelper(0, &d_ptr->childrenBoundingRect);
+    d_ptr->dirtyChildrenBoundingRect = 0;
+    return d_ptr->childrenBoundingRect;
 }
 
 /*!
