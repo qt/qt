@@ -99,6 +99,7 @@ public:
     QGraphicsEffect();
     virtual ~QGraphicsEffect();
 
+    // ### make protected?
     virtual QRectF boundingRectFor(const QRectF &rect) const;
     QRectF boundingRect() const;
 
@@ -108,6 +109,7 @@ public:
 
 public Q_SLOTS:
     void setEnabled(bool enable);
+    // ### add update() slot
 
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);

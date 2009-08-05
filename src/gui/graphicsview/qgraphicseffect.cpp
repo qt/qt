@@ -39,6 +39,61 @@
 **
 ****************************************************************************/
 
+/*!
+    \class QGraphicsEffect
+    \brief The QGraphicsEffect class is the base class for all graphics effects.
+    \since 4.6
+    \ingroup multimedia
+    \ingroup graphicsview-api
+
+    Effects alter the appearance of elements by hooking into the rendering
+    pipeline and operating between the source (e.g., a QGraphicsPixmapItem),
+    and the destination device (e.g., QGraphicsView's viewport). Effects can be
+    disabled by calling setEnabled(); if the effect is disabled, the source is
+    rendered directly.
+
+    If you want to add a visual effect to a QGraphicsItem, you can either use
+    one of the standard effects, or create your own effect by making a subclass
+    of QGraphicsEffect.
+
+    Qt provides several standard effects, including:
+
+    \list
+    \o QGraphicsGrayScaleEffect - renders the item in shades of gray
+    \o QGraphicsColorizeEffect - renders the item in shades of any given color
+    \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
+    \o QGraphicsBlurEffect - blurs the item by a given radius
+    \o QGraphicsBloomEffect - applies a blooming / glowing effect
+    \o QGraphicsFrameEffect - adds a frame to the item
+    \o QGraphicsShadowEffect - renders a dropshadow behind the item
+    \endlist
+
+    If all you want is to add an effect to an item, you should visit the
+    documentation for the specific effect to learn more about how each effect
+    can be used.
+
+    If you want to create your own custom effect, you can start by creating a
+    subclass of QGraphicsEffect (or any of the existing effects), and
+    reimplement the virtual function draw(). This function is called whenever
+    the effect needs to redraw. draw() has two arguments: the painter, and a
+    pointer to the source (QGraphicsEffectSource). The source provides extra
+    context information, such as a pointer to the item that is rendering the
+    effect, any cached pixmap data, and the device rect bounds. See the draw()
+    documentation for more details. You can also get a pointer to the current
+    source by calling source().
+
+    If your effect changes, you can call update() to request a redraw. If your
+    custom effect changes the bounding rectangle of the source (e.g., a radial
+    glow effect may need to apply an extra margin), you can reimplement the
+    virtual boundingRectFor() function, and call updateBoundingRect() to notify
+    the framework whenever this rectangle changes. The virtual
+    sourceBoundingRectChanged() function is called to notify the effects that
+    the source's bounding rectangle has changed (e.g., if the source is a
+    QGraphicsRectItem, then if the rectangle parameters have changed).
+
+    \sa QGraphicsItem::setGraphicsEffect()
+*/
+
 #include "qgraphicseffect_p.h"
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -109,44 +164,78 @@ QGraphicsEffectSource::~QGraphicsEffectSource()
 {}
 
 QRect QGraphicsEffectSource::deviceRect() const
-{ return d_func()->deviceRect(); }
+{
+    return d_func()->deviceRect();
+}
 
 QRectF QGraphicsEffectSource::boundingRect(Qt::CoordinateSystem system) const
-{ return d_func()->boundingRect(system); }
+{
+    return d_func()->boundingRect(system);
+}
 
 const QGraphicsItem *QGraphicsEffectSource::graphicsItem() const
-{ return d_func()->graphicsItem(); }
+{
+    return d_func()->graphicsItem();
+}
 
 const QStyleOption *QGraphicsEffectSource::styleOption() const
-{ return d_func()->styleOption(); }
+{
+    return d_func()->styleOption();
+}
 
 void QGraphicsEffectSource::draw(QPainter *painter)
-{ d_func()->draw(painter); }
+{
+    d_func()->draw(painter);
+}
 
 void QGraphicsEffectSource::update()
-{ d_func()->update(); }
+{
+    d_func()->update();
+}
 
 bool QGraphicsEffectSource::isPixmap() const
-{ return d_func()->isPixmap(); }
+{
+    return d_func()->isPixmap();
+}
 
 QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
-{ return d_func()->pixmap(system, offset); }
+{
+    return d_func()->pixmap(system, offset);
+}
 
-
+/*!
+    Constructs a new QGraphicsEffect instance.
+*/
 QGraphicsEffect::QGraphicsEffect()
     : QObject(*new QGraphicsEffectPrivate, 0)
-{}
+{
+    // ### parent?
+}
 
+/*!
+    \internal
+*/
 QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd)
     : QObject(dd, 0)
-{}
+{
+}
 
+/*!
+    Removes the effect from the source, and destroys the graphics effect.
+*/
 QGraphicsEffect::~QGraphicsEffect()
 {
     Q_D(QGraphicsEffect);
     d->setGraphicsEffectSource(0);
 }
 
+/*!
+    Returns the bounding rectangle for this effect (i.e., the bounding
+    rectangle of the source, adjusted by any margins applied by the effect
+    itself).
+
+    \sa boundingRectFor(), updateBoundingRect()
+*/
 QRectF QGraphicsEffect::boundingRect() const
 {
     Q_D(const QGraphicsEffect);
@@ -155,11 +244,35 @@ QRectF QGraphicsEffect::boundingRect() const
     return QRectF();
 }
 
+/*!
+    Returns the bounding rectangle for this effect, given the provided source
+    \a rect. When writing you own custom effect, you must call
+    updateBoundingRect() whenever any parameters are changed that may cause
+    this this function to return a different value.
+
+    \sa boundingRect()
+*/
 QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
 {
     return rect;
 }
 
+/*!
+    \property QGraphicsEffect::enabled
+    \brief whether the effect is enabled or not.
+
+    If an effect is disabled, the source will be rendered with as normal, with
+    no interference from the effect. If the effect is enabled (default), the
+    source will be rendered with the effect applied.
+
+    This property is provided so that you can disable certain effects on slow
+    platforms, in order to ensure that the user interface is responsive.
+*/
+bool QGraphicsEffect::isEnabled() const
+{
+    Q_D(const QGraphicsEffect);
+    return d->isEnabled;
+}
 void QGraphicsEffect::setEnabled(bool enable)
 {
     Q_D(QGraphicsEffect);
@@ -172,18 +285,26 @@ void QGraphicsEffect::setEnabled(bool enable)
         d->source->update();
 }
 
-bool QGraphicsEffect::isEnabled() const
-{
-    Q_D(const QGraphicsEffect);
-    return d->isEnabled;
-}
+/*!
+    Returns a pointer to the source, which provides extra context information
+    that can be useful for the effect.
 
+    \sa draw()
+*/
 QGraphicsEffectSource *QGraphicsEffect::source() const
 {
     Q_D(const QGraphicsEffect);
     return d->source;
 }
 
+/*!
+    This function notifies the effect framework that the effect's bounding
+    rectangle has changed. As a custom effect author, you must call this
+    function whenever you change any parameters that will cause the virtual
+    boundingRectFor() function to return a different value.
+
+    \sa boundingRectFor(), boundingRect()
+*/
 void QGraphicsEffect::updateBoundingRect()
 {
     Q_D(QGraphicsEffect);
@@ -191,15 +312,33 @@ void QGraphicsEffect::updateBoundingRect()
         d->source->update();
 }
 
-void QGraphicsEffect::sourceChanged() {}
-void QGraphicsEffect::sourceBoundingRectChanged() {}
+/*!
+    This virtual function is called by QGraphicsEffect to notify the effect
+    that the source has changed. If the effect applies any cache, then this
+    cache must be purged in order to reflect the new appearance of the source.
+*/
+void QGraphicsEffect::sourceChanged()
+{
+}
+
+/*!
+    This virtual function is called by QGraphicsEffect to notify the effect
+    that the source's bounding rectangle has changed. If the effect applies any
+    cache, then this cache must be purged in order to reflect the new
+    appearance of the source.
+*/
+void QGraphicsEffect::sourceBoundingRectChanged()
+{
+}
 
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
     : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)
-{}
+{
+}
 
 QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
-{}
+{
+}
 
 void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {

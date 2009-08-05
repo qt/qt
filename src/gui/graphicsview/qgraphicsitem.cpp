@@ -2218,6 +2218,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
         return;
 
     if (d_ptr->graphicsEffect && effect) {
+        // ### This seems wrong - the effect should automatically be deleted.
         qWarning("QGraphicsItem::setGraphicsEffect: Attempting to set QGraphicsEffect "
                  "%p on %p, which already has an effect installed", effect, this);
         return;
