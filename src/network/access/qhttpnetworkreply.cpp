@@ -717,6 +717,33 @@ void QHttpNetworkReplyPrivate::appendCompressedReplyData(QByteDataBuffer &data)
 }
 
 
+bool QHttpNetworkReplyPrivate::shouldEmitSignals()
+{
+    // for 401 & 407 don't emit the data signals. Content along with these
+    // responses are send only if the authentication fails.
+    return (statusCode != 401 && statusCode != 407);
+}
+
+bool QHttpNetworkReplyPrivate::expectContent()
+{
+    // check whether we can expect content after the headers (rfc 2616, sec4.4)
+    if ((statusCode >= 100 && statusCode < 200)
+        || statusCode == 204 || statusCode == 304)
+        return false;
+    if (request.operation() == QHttpNetworkRequest::Head)
+        return !shouldEmitSignals();
+    if (contentLength() == 0)
+        return false;
+    return true;
+}
+
+void QHttpNetworkReplyPrivate::eraseData()
+{
+    compressedData.clear();
+    responseData.clear();
+}
+
+
 // SSL support below
 #ifndef QT_NO_OPENSSL
 

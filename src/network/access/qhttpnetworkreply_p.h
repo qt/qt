@@ -177,6 +177,10 @@ public:
     void appendUncompressedReplyData(QByteDataBuffer &data);
     void appendCompressedReplyData(QByteDataBuffer &data);
 
+    bool shouldEmitSignals();
+    bool expectContent();
+    void eraseData();
+
     qint64 bytesAvailable() const;
     bool isChunked();
     bool connectionCloseEnabled();

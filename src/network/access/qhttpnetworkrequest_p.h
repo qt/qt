@@ -113,6 +113,7 @@ private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
     friend class QHttpNetworkConnectionPrivate;
+    friend class QHttpNetworkConnectionChannel;
 };
 
 class QHttpNetworkRequestPrivate : public QHttpNetworkHeaderPrivate

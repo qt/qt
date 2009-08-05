@@ -126,6 +126,12 @@ public:
 
     void init();
     void close();
+    bool sendRequest();
+    void receiveReply();
+    bool ensureConnection();
+    bool expand(bool dataComplete);
+    void allDone(); // reply header + body have been read
+    void handleStatus(); // called from allDone()
 
     protected slots:
     void _q_bytesWritten(qint64 bytes); // proceed sending

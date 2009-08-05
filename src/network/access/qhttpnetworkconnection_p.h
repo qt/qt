@@ -168,10 +168,8 @@ public:
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
     void unqueueAndSendRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
-    bool sendRequest(QAbstractSocket *socket);
-    void receiveReply(QAbstractSocket *socket, QHttpNetworkReply *reply);
     void resendCurrentRequest(QAbstractSocket *socket);
-    void closeChannel(int channel);
+
     void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
 
     // private slots
@@ -179,9 +177,9 @@ public:
     void _q_restartAuthPendingRequests(); // send the currently blocked request
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
-    bool ensureConnection(QAbstractSocket *socket);
+
     QString errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket);
-    void eraseData(QHttpNetworkReply *reply);
+
 #ifndef QT_NO_COMPRESS
     bool expand(QAbstractSocket *socket, QHttpNetworkReply *reply, bool dataComplete);
 #endif
@@ -199,14 +197,11 @@ public:
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
-    qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;
+
 
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
-    void allDone(QAbstractSocket *socket, QHttpNetworkReply *reply);
-    void handleStatus(QAbstractSocket *socket, QHttpNetworkReply *reply);
-    inline bool shouldEmitSignals(QHttpNetworkReply *reply);
-    inline bool expectContent(QHttpNetworkReply *reply);
+
 
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration(const QHttpNetworkReply &reply) const;
