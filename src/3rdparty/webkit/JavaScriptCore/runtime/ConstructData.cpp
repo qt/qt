@@ -68,7 +68,7 @@ JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType
         interp->registerFile().shrink(oldEnd);
         return result;
 #else
-        return constructData.native.function(exec, asObject(object), args);
+        return constructData.native.function(exec, asObject(callee), args);
 #endif
     }
     ASSERT(constructType == ConstructTypeJS);
