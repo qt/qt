@@ -1289,8 +1289,10 @@ void QFxItem::setBaselineOffset(qreal offset)
 */
 
 /*!
-  Returns a value indicating whether the mouse should
-  remain with this item.
+  Returns a value indicating whether mouse input should
+  remain with this item exclusively.
+
+  \sa setKeepMouseGrab
  */
 bool QFxItem::keepMouseGrab() const
 {
@@ -1301,6 +1303,20 @@ bool QFxItem::keepMouseGrab() const
 /*!
   The flag indicating whether the mouse should remain
   with this item is set to \a keep.
+
+  This is useful for items that wish to grab and keep mouse
+  interaction following a predefined gesture.  For example,
+  an item that is interested in horizontal mouse movement
+  may set keepMouseGrab to true once a threshold has been
+  exceeded.  Once keepMouseGrab has been set to true, filtering
+  items will not react to mouse events.
+
+  If the item does not indicate that it wishes to retain mouse grab,
+  a filtering item may steal the grab. For example, Flickable may attempt
+  to steal a mouse grab if it detects that the user has begun to
+  move the viewport.
+
+  \sa keepMouseGrab
  */
 void QFxItem::setKeepMouseGrab(bool keep)
 {

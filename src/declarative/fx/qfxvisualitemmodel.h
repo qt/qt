@@ -101,6 +101,7 @@ private:
     Q_DISABLE_COPY(QFxVisualModel)
 };
 
+class QFxVisualItemModelAttached;
 class QFxVisualItemModelPrivate;
 class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QFxVisualModel
 {
@@ -124,6 +125,8 @@ public:
     virtual int indexOf(QFxItem *item, QObject *objectContext) const;
 
     QmlList<QFxItem *> *children();
+
+    static QFxVisualItemModelAttached *qmlAttachedProperties(QObject *obj);
 
 private:
     Q_DISABLE_COPY(QFxVisualItemModel)

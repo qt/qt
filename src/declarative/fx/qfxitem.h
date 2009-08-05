@@ -163,9 +163,6 @@ public:
 
     QmlList<QGraphicsTransform *> *transform();
 
-    bool keepMouseGrab() const;
-    void setKeepMouseGrab(bool);
-
     qreal width() const;
     void setWidth(qreal);
 
@@ -184,6 +181,9 @@ public:
     virtual bool hasFocus() const;
     void setFocus(bool);
     bool hasActiveFocus() const;
+
+    bool keepMouseGrab() const;
+    void setKeepMouseGrab(bool);
 
 Q_SIGNALS:
     void xChanged();
