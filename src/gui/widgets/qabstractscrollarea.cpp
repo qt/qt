@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
 QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
     :hbar(0), vbar(0), vbarpolicy(Qt::ScrollBarAsNeeded), hbarpolicy(Qt::ScrollBarAsNeeded),
      viewport(0), cornerWidget(0), left(0), top(0), right(0), bottom(0),
-     xoffset(0), yoffset(0), viewportFilter(0)
+     xoffset(0), yoffset(0), viewportFilter(0), panGesture(0)
 #ifdef Q_WS_WIN
      , singleFingerPanEnabled(false)
 #endif
@@ -294,7 +294,18 @@ void QAbstractScrollAreaPrivate::init()
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
+
+    panGesture = new QPanGesture(q);
+    QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
 }
+
+#ifdef Q_WS_WIN
+void QAbstractScrollAreaPrivate::setSingleFingerPanEnabled(bool on)
+{
+    singleFingerPanEnabled = on;
+    winSetupGestures();
+}
+#endif // Q_WS_WIN
 
 void QAbstractScrollAreaPrivate::layoutChildren()
 {
@@ -1308,6 +1319,25 @@ QSize QAbstractScrollArea::sizeHint() const
 void QAbstractScrollArea::setupViewport(QWidget *viewport)
 {
     Q_UNUSED(viewport);
+}
+
+void QAbstractScrollAreaPrivate::_q_gestureTriggered()
+{
+    Q_Q(QAbstractScrollArea);
+    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+    if (!g)
+        return;
+    QScrollBar *hBar = q->horizontalScrollBar();
+    QScrollBar *vBar = q->verticalScrollBar();
+    QSize delta = g->lastOffset();
+    if (!delta.isNull()) {
+        if (QApplication::isRightToLeft())
+            delta.rwidth() *= -1;
+        int newX = hBar->value() - delta.width();
+        int newY = vBar->value() - delta.height();
+        hbar->setValue(newX);
+        vbar->setValue(newY);
+    }
 }
 
 QT_END_NAMESPACE

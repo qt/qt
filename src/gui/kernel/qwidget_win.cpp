@@ -2056,6 +2056,8 @@ void QWidgetPrivate::registerTouchWindow()
 void QWidgetPrivate::winSetupGestures()
 {
     Q_Q(QWidget);
+    if (!q)
+        return;
     QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
     bool needh = false;
     bool needv = false;
@@ -2097,6 +2099,7 @@ void QWidgetPrivate::winSetupGestures()
             gc[1].dwWant = GC_ZOOM;
             gc[1].dwBlock = 0;
         }
+        Q_ASSERT(winid);
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
 }
