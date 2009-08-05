@@ -57,7 +57,7 @@ class Q_GUI_EXPORT QStaticText
 {    
 public:
     QStaticText();
-    QStaticText(const QString &text, const QFont &font = QFont());
+    QStaticText(const QString &text, const QFont &font = QFont(), const QSizeF &maximumSize = QSizeF());
     QStaticText(const QStaticText &other);
     ~QStaticText();
 
@@ -66,6 +66,9 @@ public:
 
     void setFont(const QFont &font);
     QFont font() const;
+
+    void setMaximumSize(const QSizeF &maximumSize);
+    QSizeF maximumSize() const;
 
     QStaticText &operator=(const QStaticText &);
     bool operator==(const QStaticText &) const;

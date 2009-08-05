@@ -43,6 +43,8 @@
 #include "qstatictext_p.h"
 #include <private/qtextengine_p.h>
 
+#include <QtGui/qapplication.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -111,11 +113,12 @@ QStaticText::QStaticText()
     \a font and bounded by the given \a maximumSize. If an invalid size is passed for \a maximumSize
     the text will be unbounded.         
 */
-QStaticText::QStaticText(const QString &text, const QFont &font)
+QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &size)
     : d_ptr(new QStaticTextPrivate) 
 {    
     d_ptr->text = text;
     d_ptr->font = font;
+    d_ptr->size = size;
     d_ptr->init();
 }
 
@@ -162,7 +165,9 @@ QStaticText &QStaticText::operator=(const QStaticText &other)
 bool QStaticText::operator==(const QStaticText &other) const
 {
     return (d_ptr == other.d_ptr
-            || (d_ptr->text == other.d_ptr->text && d_ptr->font == other.d_ptr->font));
+            || (d_ptr->text == other.d_ptr->text
+                && d_ptr->font == other.d_ptr->font
+                && d_ptr->size == other.d_ptr->size));
 }
 
 /*!
@@ -196,6 +201,30 @@ void QStaticText::setText(const QString &text)
 QString QStaticText::text() const 
 {
     return d_ptr->text;
+}
+
+/*!
+    Sets the maximum size of the QStaticText to \a maximumSize.
+
+    \note This function will cause the layout of the text to be recalculated.
+
+    \sa maximumSize()
+*/
+void QStaticText::setMaximumSize(const QSizeF &size)
+{
+    detach();
+    d_ptr->size = size;
+    d_ptr->init();
+}
+
+/*!
+    Returns the maximum size of the QStaticText.
+
+    \sa setMaximumSize
+*/
+QSizeF QStaticText::maximumSize() const
+{
+    return d_ptr->size;
 }
 
 /*!
@@ -233,7 +262,7 @@ bool QStaticText::isEmpty() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : glyphLayoutMemory(0), logClusterMemory(0), items(0), itemCount(0)
+        : glyphLayoutMemory(0), logClusterMemory(0), items(0), itemPositions(0), itemCount(0)
 {
     ref = 1;    
 }
@@ -243,14 +272,16 @@ QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
     ref = 1;
     text = other.text;
     font = other.font;
+    size = other.size;
     init();
 }
 
 QStaticTextPrivate::~QStaticTextPrivate()
 {
     delete[] glyphLayoutMemory;
-    delete[] logClusterMemory;
+    delete[] logClusterMemory;    
     delete[] items;
+    delete[] itemPositions;
 }
 
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
@@ -258,59 +289,199 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
     return q->d_ptr;
 }
 
+
+extern int qt_defaultDpiX();
+extern int qt_defaultDpiY();
+
+namespace {
+
+    class DrawTextItemRecorder: public QPaintEngine
+    {
+    public:
+        DrawTextItemRecorder(int expectedItemCount, int expectedGlyphCount,
+                             QTextItemInt *items,
+                             QPointF *positions,
+                             char *glyphLayoutMemory,
+                             unsigned short *logClusterMemory)
+                : m_items(items),
+                  m_positions(positions),
+                  m_glyphLayoutMemory(glyphLayoutMemory),
+                  m_logClusterMemory(logClusterMemory),
+                  m_glyphLayoutMemoryOffset(0),
+                  m_logClusterMemoryOffset(0),
+                  m_expectedItemCount(expectedItemCount),
+                  m_expectedGlyphCount(expectedGlyphCount),
+                  m_glyphCount(0),
+                  m_itemCount(0)
+        {
+        }
+
+        virtual void drawTextItem(const QPointF &p, const QTextItem &textItem)
+        {
+            const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
+
+            m_itemCount++;
+            m_glyphCount += ti.glyphs.numGlyphs;
+
+            Q_ASSERT(m_expectedItemCount < 0 || m_itemCount <= m_expectedItemCount);
+            Q_ASSERT(m_expectedGlyphCount < 0 || m_glyphCount <= m_expectedGlyphCount);
+
+            if (m_items == 0 || m_glyphLayoutMemory == 0 || m_logClusterMemory == 0 || m_positions == 0)
+                return;
+
+            m_items[m_itemCount - 1] = ti.clone(m_glyphLayoutMemory + m_glyphLayoutMemoryOffset,
+                                                m_logClusterMemory + m_logClusterMemoryOffset);
+            m_positions[m_itemCount - 1] = p;
+
+            m_glyphLayoutMemoryOffset += QGlyphLayout::spaceNeededForGlyphLayout(ti.glyphs.numGlyphs);
+            m_logClusterMemoryOffset += ti.glyphs.numGlyphs;
+        }                
+
+
+        virtual bool begin(QPaintDevice *)  { return true; }
+        virtual bool end() { return true; }
+        virtual void updateState(const QPaintEngineState &) {}
+        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) {}
+        virtual Type type() const
+        {
+            return User;
+        }
+
+        int glyphCount() const
+        {
+            return m_glyphCount;
+        }
+
+        int itemCount() const
+        {
+            return m_itemCount;
+        }
+
+    private:
+        QTextItemInt *m_items;
+        char *m_glyphLayoutMemory;
+        unsigned short *m_logClusterMemory;
+        QPointF *m_positions;
+
+        int m_glyphLayoutMemoryOffset;
+        int m_logClusterMemoryOffset;
+        int m_expectedGlyphCount;
+        int m_expectedItemCount;
+        int m_glyphCount;
+        int m_itemCount;
+    };
+
+    class DrawTextItemDevice: public QPaintDevice
+    {
+    public:
+        DrawTextItemDevice(int expectedItemCount = -1, int expectedGlyphCount = -1,
+                           QTextItemInt *items = 0, QPointF *positions = 0,
+                           char *glyphLayoutMemory = 0, unsigned short *logClusterMemory = 0)
+        {
+            m_paintEngine = new DrawTextItemRecorder(expectedItemCount, expectedGlyphCount,
+                                                     items, positions,glyphLayoutMemory,
+                                                     logClusterMemory);
+        }
+
+        ~DrawTextItemDevice()
+        {
+            delete m_paintEngine;
+        }
+
+        int metric(PaintDeviceMetric m) const
+        {
+            int val;
+            switch (m) {
+            case PdmWidth:
+            case PdmHeight:
+            case PdmWidthMM:
+            case PdmHeightMM:
+                val = 0;
+                break;
+            case PdmDpiX:
+            case PdmPhysicalDpiX:
+                val = qt_defaultDpiX();
+                break;
+            case PdmDpiY:
+            case PdmPhysicalDpiY:
+                val = qt_defaultDpiY();
+                break;
+            case PdmNumColors:
+                val = 16777216;
+                break;
+            case PdmDepth:
+                val = 24;
+                break;
+            default:
+                val = 0;
+                qWarning("DrawTextItemDevice::metric: Invalid metric command");
+            }
+            return val;
+        }
+
+        virtual QPaintEngine *paintEngine() const
+        {
+            return m_paintEngine;
+        }
+
+        int glyphCount() const
+        {
+            return m_paintEngine->glyphCount();
+        }
+
+        int itemCount() const
+        {
+            return m_paintEngine->itemCount();
+        }
+
+
+
+    private:
+        DrawTextItemRecorder *m_paintEngine;
+        QRectF brect;
+    };
+
+}
+
 void QStaticTextPrivate::init()
 {
     delete[] glyphLayoutMemory;
     delete[] logClusterMemory;
     delete[] items;
+    delete[] itemPositions;
 
-    QStackTextEngine engine(text, font);
-    engine.itemize();
+    // Draw once to count number of items and glyphs, so that we can use as little memory
+    // as possible to store the data
+    DrawTextItemDevice counterDevice;
+    {
+        QPainter painter(&counterDevice);
 
-    engine.option.setTextDirection(QApplication::layoutDirection());
-    QScriptLine line;
-    line.length = text.length();
-    engine.shapeLine(line);
-
-    int nItems = engine.layoutData->items.size();
-    QVarLengthArray<int> visualOrder(nItems);
-    QVarLengthArray<uchar> levels(nItems);
-    for (int i = 0; i < nItems; ++i)
-        levels[i] = engine.layoutData->items[i].analysis.bidiLevel;
-    QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
-
-    int numGlyphs = engine.layoutData->used;
-    glyphLayoutMemory = new char[QGlyphLayout::spaceNeededForGlyphLayout(numGlyphs)];
-    logClusterMemory = new unsigned short[numGlyphs];
-    items = new QTextItemInt[nItems];
-    itemCount = nItems;
-
-    char *currentGlyphLayout = glyphLayoutMemory;
-    unsigned short *currentLogCluster = logClusterMemory;
-    for (int i = 0; i < nItems; ++i) {
-        int item = visualOrder[i];
-        const QScriptItem &si = engine.layoutData->items.at(item);
-
-        QFont f = engine.font(si);
-        if (si.analysis.flags >= QScriptAnalysis::TabOrObject) {
-            items[i].width = si.width;
-            continue;
-        }        
-
-        items[i].init(si, &f);
-
-        QGlyphLayout l = engine.shapedGlyphs(&si);
-        items[i].glyphs = l.clone(currentGlyphLayout);
-        currentGlyphLayout += QGlyphLayout::spaceNeededForGlyphLayout(l.numGlyphs);
-
-        items[i].chars = text.unicode() + si.position;
-        items[i].num_chars = engine.length(item);
-        items[i].width = si.width;
-
-        memmove(currentLogCluster, engine.logClusters(&si), sizeof(unsigned short) * l.numGlyphs);
-        items[i].logClusters = currentLogCluster;
-        currentLogCluster += l.numGlyphs;        
+        if (size.isValid())
+            painter.drawText(QRectF(QPointF(0, 0), size), text);
+        else
+            painter.drawText(0, 0, text);
     }
+
+    itemCount = counterDevice.itemCount();
+    items = new QTextItemInt[itemCount];
+    itemPositions = new QPointF[itemCount];
+
+    int glyphCount = counterDevice.glyphCount();
+    glyphLayoutMemory = new char[QGlyphLayout::spaceNeededForGlyphLayout(glyphCount)];
+    logClusterMemory = new unsigned short[glyphCount];
+
+    // Draw again to actually record the items and glyphs
+    DrawTextItemDevice recorderDevice(itemCount, glyphCount, items, itemPositions,
+                                      glyphLayoutMemory, logClusterMemory);
+    {
+        QPainter painter(&recorderDevice);
+
+        if (size.isValid())
+            painter.drawText(QRectF(QPointF(0, 0), size), text);
+        else
+            painter.drawText(0, 0, text);
+    }
+
 }
 
 QT_END_NAMESPACE

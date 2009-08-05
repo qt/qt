@@ -2640,6 +2640,46 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     init(si, font, format);
 }
 
+QTextItemInt::QTextItemInt(const QTextItemInt &other)
+        : descent(other.descent), ascent(other.ascent), width(other.width),
+          flags(other.flags), justified(other.justified), underlineStyle(other.underlineStyle),
+          charFormat(other.charFormat), num_chars(other.num_chars), chars(other.chars),
+          fontEngine(other.fontEngine), f(other.f), glyphs(other.glyphs),
+          logClusters(other.logClusters)
+{
+}
+
+
+QTextItemInt QTextItemInt::clone(char *glyphLayoutMemory, unsigned short *logClusterMemory) const
+{
+    QTextItemInt ti(*this);
+
+    ti.glyphs = glyphs.clone(glyphLayoutMemory);
+    ti.logClusters = logClusterMemory;
+    memmove(logClusterMemory, logClusters, glyphs.numGlyphs * sizeof(unsigned short));
+
+    return ti;
+}
+
+QTextItemInt &QTextItemInt::operator=(const QTextItemInt &other)
+{
+    descent = other.descent;
+    ascent = other.ascent;
+    width = other.width;
+    flags = other.flags;
+    justified = other.justified;
+    underlineStyle = other.underlineStyle;
+    const_cast<QTextCharFormat &>(charFormat) = other.charFormat;
+    num_chars = other.num_chars;
+    chars = other.chars;
+    fontEngine = other.fontEngine;
+    f = other.f;
+    glyphs = other.glyphs;
+    logClusters = other.logClusters;
+
+    return *this;
+}
+
 void QTextItemInt::init(const QScriptItem &si, QFont *font, const QTextCharFormat &format)
 {
     // explicitly initialize flags so that initFontAttributes can be called

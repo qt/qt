@@ -55,7 +55,7 @@
 
 #include <private/qtextengine_p.h>
 
-QT_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE              
 
 class QStaticText;
 class QStaticTextPrivate
@@ -68,10 +68,15 @@ public:
     void init();
 
     QAtomicInt ref;
-    QTextItemInt *items;
-    int itemCount;
+
     QString text;
     QFont font;
+    QSizeF size;
+
+    QTextItemInt *items;
+    QPointF *itemPositions;
+    int itemCount;
+
     char *glyphLayoutMemory;
     unsigned short *logClusterMemory;
     
