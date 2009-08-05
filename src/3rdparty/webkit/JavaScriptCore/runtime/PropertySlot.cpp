@@ -19,8 +19,10 @@
  */
 
 #include "config.h"
+#ifdef QT_BUILD_SCRIPT_LIB
 #include "ExceptionHelpers.h"
 #include "Interpreter.h"
+#endif
 #include "PropertySlot.h"
 
 #include "JSFunction.h"
@@ -38,6 +40,7 @@ JSValue PropertySlot::functionGetter(ExecState* exec, const Identifier&, const P
     CallData callData;
     CallType callType = slot.m_data.getterFunc->getCallData(callData);
     if (callType == CallTypeHost) {
+#ifdef QT_BUILD_SCRIPT_LIB
         ScopeChainNode* scopeChain = exec->scopeChain();
         Interpreter *interp = exec->interpreter();
         Register *oldEnd = interp->registerFile().end();
@@ -51,6 +54,9 @@ JSValue PropertySlot::functionGetter(ExecState* exec, const Identifier&, const P
         JSValue result = callData.native.function(newCallFrame, slot.m_data.getterFunc, slot.slotBase(), exec->emptyList());
         interp->registerFile().shrink(oldEnd);
         return result;
+#else
+        return callData.native.function(exec, slot.m_data.getterFunc, slot.slotBase(), exec->emptyList());
+#endif
     }
     ASSERT(callType == CallTypeJS);
     // FIXME: Can this be done more efficiently using the callData?

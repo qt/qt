@@ -25,8 +25,10 @@
 
 #include "config.h"
 #include "CallData.h"
+#ifdef QT_BUILD_SCRIPT_LIB
 #include "ExceptionHelpers.h"
 #include "Interpreter.h"
+#endif
 
 #include "JSFunction.h"
 
@@ -35,6 +37,7 @@ namespace JSC {
 JSValue call(ExecState* exec, JSValue functionObject, CallType callType, const CallData& callData, JSValue thisValue, const ArgList& args)
 {
     if (callType == CallTypeHost) {
+#ifdef QT_BUILD_SCRIPT_LIB
         ScopeChainNode* scopeChain = exec->scopeChain();
         Interpreter *interp = exec->interpreter();
         Register *oldEnd = interp->registerFile().end();
@@ -52,6 +55,9 @@ JSValue call(ExecState* exec, JSValue functionObject, CallType callType, const C
         JSValue result = callData.native.function(newCallFrame, asObject(functionObject), thisValue, args);
         interp->registerFile().shrink(oldEnd);
         return result;
+#else
+        return callData.native.function(exec, asObject(functionObject), thisValue, args);
+#endif
     }
     ASSERT(callType == CallTypeJS);
     // FIXME: Can this be done more efficiently using the callData?

@@ -25,17 +25,20 @@
 
 #include "config.h"
 #include "ConstructData.h"
+#ifdef QT_BUILD_SCRIPT_LIB
 #include "ExceptionHelpers.h"
 #include "Interpreter.h"
+#include "JSGlobalObject.h"
+#endif
 
 #include "JSFunction.h"
-#include "JSGlobalObject.h"
 
 namespace JSC {
 
 JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType, const ConstructData& constructData, const ArgList& args)
 {
     if (constructType == ConstructTypeHost) {
+#ifdef QT_BUILD_SCRIPT_LIB
         Structure* structure;
         JSValue prototype = callee.get(exec, exec->propertyNames().prototype);
         if (prototype.isObject())
@@ -61,6 +64,9 @@ JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType
         JSObject *result = constructData.native.function(newCallFrame, asObject(callee), args);
         interp->registerFile().shrink(oldEnd);
         return result;
+#else
+        return constructData.native.function(exec, asObject(object), args);
+#endif
     }
     ASSERT(constructType == ConstructTypeJS);
     // FIXME: Can this be done more efficiently using the constructData?
