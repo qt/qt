@@ -2074,6 +2074,8 @@ void QWidgetPrivate::winSetupGestures()
         needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
                  || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
+    } else {
+        winid = q->winId();
     }
     if (qAppPriv->SetGestureConfig) {
         GESTURECONFIG gc[2];

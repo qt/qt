@@ -114,9 +114,7 @@ bool QPanGesture::event(QEvent *event)
             killTimer(d->panFinishedTimer);
             d->panFinishedTimer = 0;
             d->lastOffset = QSize(0, 0);
-            setState(Qt::GestureFinished);
-            emit triggered();
-            setState(Qt::NoGesture);
+            updateState(Qt::GestureFinished);
         }
     }
 #endif
@@ -127,6 +125,7 @@ bool QPanGesture::event(QEvent *event)
 bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
 {
 #ifdef Q_WS_WIN
+    Q_D(QPanGesture);
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
         QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
@@ -135,30 +134,28 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
         if (it == qAppPriv->widgetGestures.end())
             return false;
         QPanGesture *gesture = it.value().pan;
-        if (!gesture)
+        if (this != gesture)
             return false;
-        Qt::GestureState nextState = state();
+        Qt::GestureState nextState = Qt::NoGesture;
         switch(ev->gestureType) {
         case QNativeGestureEvent::GestureBegin:
             // next we might receive the first gesture update event, so we
             // prepare for it.
-            setState(Qt::GestureStarted);
+            d->state = Qt::NoGesture;
             return false;
         case QNativeGestureEvent::Pan:
             nextState = Qt::GestureUpdated;
+            event->accept();
             break;
         case QNativeGestureEvent::GestureEnd:
-            if (state() != QNativeGestureEvent::Pan)
+            if (state() == Qt::NoGesture)
                 return false; // some other gesture has ended
-            setState(Qt::GestureFinished);
             nextState = Qt::GestureFinished;
             break;
         default:
             return false;
         }
-        QPanGesturePrivate *d = gesture->d_func();
-        if (state() == Qt::GestureStarted) {
-            d->lastPosition = ev->position;
+        if (state() == Qt::NoGesture) {
             d->lastOffset = d->totalOffset = QSize();
         } else {
             d->lastOffset = QSize(ev->position.x() - d->lastPosition.x(),
@@ -166,14 +163,7 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
             d->totalOffset += d->lastOffset;
         }
         d->lastPosition = ev->position;
-
-        if (state() == Qt::GestureStarted)
-            emit gesture->started();
-        emit gesture->triggered();
-        if (state() == Qt::GestureFinished)
-            emit gesture->finished();
-        event->accept();
-        gesture->setState(nextState);
+        gesture->updateState(nextState);
         return true;
     }
 #endif
@@ -193,7 +183,6 @@ bool QPanGesture::filterEvent(QEvent *event)
         d->lastOffset = d->totalOffset = QSize();
     } else if (event->type() == QEvent::TouchEnd) {
         if (state() != Qt::NoGesture) {
-            setState(Qt::GestureFinished);
             if (!ev->touchPoints().isEmpty()) {
                 QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
                 const QPoint pos = p.pos().toPoint();
@@ -202,10 +191,8 @@ bool QPanGesture::filterEvent(QEvent *event)
                 d->lastOffset = QSize(pos.x() - lastPos.x(), pos.y() - lastPos.y());
                 d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
             }
-            emit triggered();
-            emit finished();
+            updateState(Qt::GestureFinished);
         }
-        setState(Qt::NoGesture);
         reset();
     } else if (event->type() == QEvent::TouchUpdate) {
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
@@ -216,11 +203,7 @@ bool QPanGesture::filterEvent(QEvent *event)
         d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
         if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
             d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
-            if (state() == Qt::NoGesture)
-                setState(Qt::GestureStarted);
-            else
-                setState(Qt::GestureUpdated);
-            emit triggered();
+            updateState(Qt::GestureUpdated);
         }
     }
 #ifdef Q_OS_MAC
@@ -239,16 +222,14 @@ bool QPanGesture::filterEvent(QEvent *event)
         d->lastOffset = wev->orientation() == Qt::Horizontal ? QSize(offset, 0) : QSize(0, offset);
 
         if (state() == Qt::NoGesture) {
-            setState(Qt::GestureStarted);
             d->totalOffset = d->lastOffset;
         } else {
-            setState(Qt::GestureUpdated);
             d->totalOffset += d->lastOffset;
         }
 
         killTimer(d->panFinishedTimer);
         d->panFinishedTimer = startTimer(200);
-        emit triggered();
+        updateState(Qt::GestureUpdated);
 #endif
         return true;
     }
