@@ -34,7 +34,6 @@ private slots:
     void shear();
     void translate();
     void setRotation();
-    void setRotationXYZ();
 };
 
 tst_QGraphicsItem::tst_QGraphicsItem()
@@ -150,18 +149,7 @@ void tst_QGraphicsItem::setRotation()
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
 
     QBENCHMARK {
-        item->setXRotation(45);
-        item->transform(); // prevent lazy optimizing
-    }
-}
-
-void tst_QGraphicsItem::setRotationXYZ()
-{
-    QGraphicsScene scene;
-    QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
-
-    QBENCHMARK {
-        item->setRotation(45, 45, 45);
+        item->setRotation(45);
         item->transform(); // prevent lazy optimizing
     }
 }
