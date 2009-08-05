@@ -8,7 +8,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdatastream.h>
 #include "canvasframerate.h"
-#include "canvasscene.h"
 #include "engine.h"
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -74,9 +73,6 @@ Shell::Shell(QWidget *parent)
 
     CanvasFrameRate *cfr = new CanvasFrameRate(&client, this);
     tabs->addTab(cfr, tr("Frame Rate"));
-
-    CanvasScene *cs = new CanvasScene(&client, this);
-    tabs->addTab(cs, tr("Scene"));
 
     EnginePane *ep = new EnginePane(&client, this);
     tabs->addTab(ep, tr("QML Engine"));

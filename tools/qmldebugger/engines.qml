@@ -19,7 +19,7 @@ Item {
                 }
                 Text { 
                     anchors.top: Image.bottom; 
-                    text: modelData.name + "(" + modelData.engineId + ")" 
+                    text: modelData.name + "(" + modelData.engineId + ")"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
                 MouseRegion {

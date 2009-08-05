@@ -12,6 +12,9 @@ QT_BEGIN_NAMESPACE
 class QmlDebugConnection;
 class EngineClientPlugin;
 class QLineEdit;
+class QTreeWidget;
+class QTreeWidgetItem;
+class QTableWidget;
 class EnginePane : public QWidget
 {
 Q_OBJECT
@@ -31,9 +34,13 @@ private slots:
 
     void engineSelected(int);
 
+    void itemClicked(QTreeWidgetItem *);
+    void showProperties();
+
 private:
     void dump(const QmlDebugContextReference &, int);
     void dump(const QmlDebugObjectReference &, int);
+    void buildTree(const QmlDebugObjectReference &, QTreeWidgetItem *parent);
 
     QmlEngineDebug m_client;
     QmlDebugEnginesQuery *m_engines;
@@ -41,6 +48,8 @@ private:
     QmlDebugObjectQuery *m_object;
 
     QLineEdit *m_text;
+    QTreeWidget *m_objTree;
+    QTableWidget *m_propTable;
 
     QFxView *m_engineView;
     QList<QObject *> m_engineItems;
