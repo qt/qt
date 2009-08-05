@@ -293,7 +293,7 @@ static QString qt_RouteInfoL() {
     return output;
 }
 
-QString qt_TDesC2QStringL(const TDesC& aDescriptor) 
+QString qt_TDesC2QStringL(const TDesC& aDescriptor)
 {
 #ifdef QT_NO_UNICODE
     return QString::fromLocal8Bit(aDescriptor.Ptr(), aDescriptor.Length());

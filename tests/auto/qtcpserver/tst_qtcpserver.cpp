@@ -134,7 +134,7 @@ tst_QTcpServer::tst_QTcpServer()
 }
 
 tst_QTcpServer::~tst_QTcpServer()
-{  
+{
 }
 
 void tst_QTcpServer::initTestCase_data()
@@ -524,7 +524,7 @@ private:
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::waitForConnectionTest()
 {
-    
+
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
 #ifdef TEST_QNETWORK_PROXY
@@ -628,10 +628,10 @@ protected:
 
 void tst_QTcpServer::addressReusable()
 {
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)    
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
     QSKIP("Symbian: Emulator does not support process launching", SkipAll );
 #endif
-    
+
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
 #else

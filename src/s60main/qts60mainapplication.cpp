@@ -49,7 +49,7 @@
 // ============================ MEMBER FUNCTIONS ===============================
 
 
-_LIT( KQtWrapperResourceFile,"\\resource\\apps\\s60main.rsc" );
+_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
 
 // -----------------------------------------------------------------------------
 // CQtS60MainApplication::CreateDocumentL()
@@ -57,10 +57,10 @@ _LIT( KQtWrapperResourceFile,"\\resource\\apps\\s60main.rsc" );
 // -----------------------------------------------------------------------------
 //
 CApaDocument* CQtS60MainApplication::CreateDocumentL()
-    {
+{
     // Create an QtS60Main document, and return a pointer to it
-    return (static_cast<CApaDocument*>( CQtS60MainDocument::NewL( *this ) ) );
-    }
+    return (static_cast<CApaDocument*>(CQtS60MainDocument::NewL(*this)));
+}
 
 // -----------------------------------------------------------------------------
 // CQtS60MainApplication::AppDllUid()
@@ -68,10 +68,10 @@ CApaDocument* CQtS60MainApplication::CreateDocumentL()
 // -----------------------------------------------------------------------------
 //
 TUid CQtS60MainApplication::AppDllUid() const
-    {
+{
     // Return the UID for the QtS60Main application
     return ProcessUid();
-    }
+}
 
 // -----------------------------------------------------------------------------
 // CQtS60MainApplication::ResourceFileName()
@@ -79,14 +79,13 @@ TUid CQtS60MainApplication::AppDllUid() const
 // -----------------------------------------------------------------------------
 //
 TFileName CQtS60MainApplication::ResourceFileName() const
-    {
+{
     TFindFile finder(iCoeEnv->FsSession());
     TInt err = finder.FindByDir(KQtWrapperResourceFile, KNullDesC);
     if (err == KErrNone)
         return finder.File();
     return KNullDesC();
-    }
+}
 
 
 // End of File
-

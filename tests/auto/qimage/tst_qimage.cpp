@@ -270,7 +270,7 @@ void tst_QImage::formatHandlersInput_data()
     const QString prefix = QLatin1String(SRCDIR) + "images/";
     #else
     const QString prefix = QLatin1String(SRCDIR) + "/images/";
-    #endif    
+    #endif
 
     // add a new line here when a file is added
     QTest::newRow("ICO") << "ICO" << prefix + "image.ico";
@@ -1476,9 +1476,9 @@ void tst_QImage::smoothScale3()
 void tst_QImage::smoothScaleBig()
 {
 #if defined(Q_OS_WINCE)
-    int bigValue = 2000;    
+    int bigValue = 2000;
 #elif defined(Q_OS_SYMBIAN)
-    int bigValue = 2000;    
+    int bigValue = 2000;
 #else
     int bigValue = 200000;
 #endif

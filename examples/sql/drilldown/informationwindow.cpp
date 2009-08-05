@@ -101,9 +101,9 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *offices,
     setWindowFlags(Qt::Window);
     enableButtons(false);
     setWindowTitle(tr("Office: %1").arg(locationText->text()));
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
     resize(320, sizeHint().height());
-#endif    
+#endif
 }
 //! [4]
 

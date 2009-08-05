@@ -5,7 +5,7 @@ exceptionsafety
 qabstractitemmodel
 #Requires STL
 qalgorithms
-qanimationgroup 
+qanimationgroup
 qatomicint
 qatomicpointer
 qbitarray
@@ -80,7 +80,7 @@ qsocketnotifier
 qstate
 qstatemachine
 #Requires STL
-qstl 
+qstl
 qstring
 qstringlist
 qstringmatcher

@@ -876,7 +876,7 @@ tst_QNetworkReply::tst_QNetworkReply()
 }
 
 tst_QNetworkReply::~tst_QNetworkReply()
-{ 
+{
 }
 
 
@@ -1721,11 +1721,11 @@ void tst_QNetworkReply::ioGetFromFtp()
     DataReader reader(reply);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifdef Q_OS_SYMBIAN        
+#ifdef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(20);
 #else
-    QTestEventLoop::instance().enterLoop(10);        
-#endif        
+    QTestEventLoop::instance().enterLoop(10);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), request.url());
@@ -1755,19 +1755,19 @@ void tst_QNetworkReply::ioGetFromFtpWithReuse()
     QSignalSpy spy(reply1, SIGNAL(finished()));
 
     connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifdef Q_OS_SYMBIAN        
+#ifdef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(20);
 #else
-    QTestEventLoop::instance().enterLoop(10);        
-#endif 
+    QTestEventLoop::instance().enterLoop(10);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
     if (spy.count() == 0) {
         connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifdef Q_OS_SYMBIAN        
+#ifdef Q_OS_SYMBIAN
         QTestEventLoop::instance().enterLoop(20);
 #else
-        QTestEventLoop::instance().enterLoop(10);        
-#endif 
+        QTestEventLoop::instance().enterLoop(10);
+#endif
         QVERIFY(!QTestEventLoop::instance().timeout());
     }
 
@@ -2456,11 +2456,11 @@ void tst_QNetworkReply::ioGetWithManyProxies()
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
 
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(10);
-#else   
+#else
     QTestEventLoop::instance().enterLoop(60);
-#endif     
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
@@ -3308,11 +3308,11 @@ void tst_QNetworkReply::downloadProgress()
         QVERIFY2(sender->waitForBytesWritten(2000), "Network timeout");
 
         spy.clear();
-#ifdef Q_OS_SYMBIAN        
+#ifdef Q_OS_SYMBIAN
         QTestEventLoop::instance().enterLoop(5);
 #else
         QTestEventLoop::instance().enterLoop(2);
-#endif            
+#endif
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(spy.count() > 0);
 
@@ -3325,11 +3325,11 @@ void tst_QNetworkReply::downloadProgress()
     delete sender;
 
     spy.clear();
-#ifdef Q_OS_SYMBIAN        
+#ifdef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(5);
 #else
     QTestEventLoop::instance().enterLoop(2);
-#endif    
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(spy.count() > 0);
 
@@ -3344,7 +3344,7 @@ void tst_QNetworkReply::uploadProgress_data()
 }
 
 void tst_QNetworkReply::uploadProgress()
-{  
+{
     QFETCH(QByteArray, data);
     QTcpServer server;
     QVERIFY(server.listen());
@@ -3616,11 +3616,11 @@ void tst_QNetworkReply::httpProxyCommands()
     // wait for the finished signal
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-#ifdef Q_OS_SYMBIAN        
+#ifdef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(5);
 #else
-    QTestEventLoop::instance().enterLoop(1);        
-#endif        
+    QTestEventLoop::instance().enterLoop(1);
+#endif
 
     QVERIFY(!QTestEventLoop::instance().timeout());
 

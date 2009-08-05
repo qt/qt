@@ -174,7 +174,7 @@ void tst_QProgressBar::format()
     bar.repainted = false;
     bar.setFormat("%v of %m (%p%)");
     qApp->processEvents();
-#ifndef Q_WS_MAC 
+#ifndef Q_WS_MAC
     // The Mac scroll bar is animated, which means we get paint events all the time.
     QVERIFY(!bar.repainted);
 #endif

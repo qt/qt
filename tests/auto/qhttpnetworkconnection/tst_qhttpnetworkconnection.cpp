@@ -419,17 +419,17 @@ void tst_QHttpNetworkConnection::post()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    
+
     qint64 cLen = reply->contentLength();
     if (cLen==-1) {
-        // HTTP 1.1 server may respond with chunked encoding and in that 
+        // HTTP 1.1 server may respond with chunked encoding and in that
         // case contentLength is not present in reply -> verify that it is the case
         QByteArray transferEnc = reply->headerField("Transfer-Encoding");
         QCOMPARE(transferEnc, QByteArray("chunked"));
-    } else { 
+    } else {
         QCOMPARE(cLen, qint64(contentLength));
-    }        
-    
+    }
+
     stopWatch.start();
     QByteArray ba;
     do {
@@ -442,7 +442,7 @@ void tst_QHttpNetworkConnection::post()
 
     QVERIFY(reply->isFinished());
     QCOMPARE(ba.size(), downloadSize);
-      
+
     delete reply;
 }
 

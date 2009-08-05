@@ -65,22 +65,22 @@ public:
 
     void play();
     void stop();
-    
+
     inline QSound* sound() const { return m_sound; }
-    
+
 public: // from MMdaAudioPlayerCallback
     void MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds& aDuration);
-    void MapcPlayComplete(TInt aError);    
+    void MapcPlayComplete(TInt aError);
 
 private:
     QSound *m_sound;
-    QAuServerS60 *m_server;    
+    QAuServerS60 *m_server;
     bool m_prepared;
-    bool m_playCalled;    
-    CMdaAudioPlayerUtility* m_playUtility;    
+    bool m_playCalled;
+    CMdaAudioPlayerUtility* m_playUtility;
 };
 
-    
+
 class QAuServerS60 : public QAuServer
 {
 public:
@@ -103,11 +103,11 @@ public:
     }
 
     bool okay() { return true; }
-    
+
 protected:
-    void playCompleted(QAuBucketS60* bucket, int error)  
+    void playCompleted(QAuBucketS60* bucket, int error)
     {
-        QSound *sound = bucket->sound();        
+        QSound *sound = bucket->sound();
         if(!error) {
             // We need to handle repeats by ourselves, since with Symbian API we don't
             // know how many loops have been played when user asks it
@@ -119,14 +119,14 @@ protected:
             // in order that QSound::isFinished will return true;
             while(decLoop(sound)) {}
         }
-    }    
+    }
 
 protected:
     QAuBucketS60* bucket( QSound *s )
     {
         return (QAuBucketS60*)QAuServer::bucket( s );
     }
-    
+
     friend class QAuBucketS60;
 
 };
@@ -160,32 +160,32 @@ void QAuBucketS60::play()
 {
     if(m_prepared) {
         // OpenFileL call is completed we can start playing immediately
-        m_playUtility->Play();      
+        m_playUtility->Play();
     } else {
         m_playCalled = true;
     }
-        
+
 }
 
 void QAuBucketS60::stop()
 {
     m_playCalled = false;
-    m_playUtility->Stop();    
+    m_playUtility->Stop();
 }
 
 void QAuBucketS60::MapcPlayComplete(TInt aError)
 {
     m_server->playCompleted(this, aError);
 }
- 
-void QAuBucketS60::MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds& /*aDuration*/)    
+
+void QAuBucketS60::MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds& /*aDuration*/)
 {
     if(aError) {
         m_server->playCompleted(this, aError);
     } else {
-        m_prepared = true;    
+        m_prepared = true;
         if(m_playCalled){
-            play(); 
+            play();
         }
     }
 }
@@ -196,7 +196,7 @@ QAuBucketS60::~QAuBucketS60()
         m_playUtility->Stop();
         m_playUtility->Close();
     }
-    
+
     delete m_playUtility;
 }
 

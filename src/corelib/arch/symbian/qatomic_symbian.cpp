@@ -62,9 +62,9 @@ struct SPrintExitInfo
         TInt processHandleCount=0;
         TInt threadHandleCount=0;
         RThread().HandleCount(processHandleCount,threadHandleCount);
-        RDebug::Print(_L("%S exiting with %d allocated cells, %d handles"), 
-                &fullName, 
-                cells - initCells, 
+        RDebug::Print(_L("%S exiting with %d allocated cells, %d handles"),
+                &fullName,
+                cells - initCells,
                 (processHandleCount + threadHandleCount) - (initProcessHandleCount + initThreadHandleCount));
     }
     TInt initCells;
@@ -107,4 +107,3 @@ __declspec(dllexport) __asm int QBasicAtomicInt::fetchAndStoreOrdered(int newVal
 QT_END_NAMESPACE
 
 #endif // Q_CC_RVCT
-

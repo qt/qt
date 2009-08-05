@@ -50,7 +50,7 @@
 #include "linktab.h"
 
 LinkTab::LinkTab(QWidget *parent) :
-    ContentTab(parent)
+        ContentTab(parent)
 {
 }
 
@@ -66,9 +66,9 @@ void LinkTab::populateListWidget()
 
 QUrl LinkTab::itemUrl(QListWidgetItem *item)
 {
-    if(m_WebItem == item) {
+    if (m_WebItem == item) {
         return QUrl(tr("http://www.qtsoftware.com"));
-    } else if(m_MailToItem == item) {
+    } else if (m_MailToItem == item) {
         return QUrl(tr("mailto:qts60-feedback@trolltech.com?subject=QtS60 feedback&body=Hello"));
     } else {
         // We should never endup here
@@ -78,8 +78,8 @@ QUrl LinkTab::itemUrl(QListWidgetItem *item)
 }
 void LinkTab::handleErrorInOpen(QListWidgetItem *item)
 {
-    if(m_MailToItem == item) {
-        QMessageBox::warning( this, tr("Operation Failed"), tr("Please check that you have\ne-mail account defined."), QMessageBox::Close);
+    if (m_MailToItem == item) {
+        QMessageBox::warning(this, tr("Operation Failed"), tr("Please check that you have\ne-mail account defined."), QMessageBox::Close);
     } else {
         ContentTab::handleErrorInOpen(item);
     }

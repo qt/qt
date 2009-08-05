@@ -517,7 +517,7 @@ QTemporaryFile::QTemporaryFile()
 #ifdef Q_OS_SYMBIAN
     //Just for verify that folder really exist on hardware
     fileEngine()->mkdir( QDir::tempPath(), true  );
-#endif    
+#endif
 }
 
 /*!

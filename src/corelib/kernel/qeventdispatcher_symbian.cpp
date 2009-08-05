@@ -652,7 +652,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
 
     QT_TRY {
         Q_D(QAbstractEventDispatcher);
-    
+
         // It is safe if this counter overflows. The main importance is that each
         // iteration count is different from the last.
         m_iterationCount++;
@@ -959,7 +959,7 @@ bool QEventDispatcherSymbian::unregisterTimers ( QObject * object )
 {
     if (m_timerList.isEmpty())
         return false;
-    
+
     bool unregistered = false;
     for (QHash<int, SymbianTimerInfoPtr>::iterator i = m_timerList.begin(); i != m_timerList.end(); ) {
         if ((*i)->receiver == object) {
@@ -1002,4 +1002,3 @@ void CQtActiveScheduler::Error(TInt aError) const
 }
 
 QT_END_NAMESPACE
-

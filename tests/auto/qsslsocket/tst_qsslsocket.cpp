@@ -195,9 +195,9 @@ protected slots:
     }
     void untrustedWorkaroundSlot(const QList<QSslError> &errors)
     {
-    	if (errors.size() == 1 && 
-    			(errors.first().error() == QSslError::CertificateUntrusted || 
-    					errors.first().error() == QSslError::SelfSignedCertificate))
+        if (errors.size() == 1 &&
+                (errors.first().error() == QSslError::CertificateUntrusted ||
+                        errors.first().error() == QSslError::SelfSignedCertificate))
             socket->ignoreSslErrors();
     }
 
@@ -223,7 +223,7 @@ tst_QSslSocket::tst_QSslSocket()
 }
 
 tst_QSslSocket::~tst_QSslSocket()
-{  
+{
 }
 
 enum ProxyTests {
@@ -498,7 +498,7 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     if (!socket.canReadLine())
         enterLoop(10);
 
-    QCOMPARE(socket.readAll(), QtNetworkSettings::expectedReplySSL()); 
+    QCOMPARE(socket.readAll(), QtNetworkSettings::expectedReplySSL());
     socket.disconnectFromHost();
 }
 
@@ -946,7 +946,7 @@ void tst_QSslSocket::waitForConnectedEncryptedReadyRead()
     QVERIFY(socket->waitForConnected(10000));
     QVERIFY(socket->waitForEncrypted(10000));
 
-    // dont forget to login 
+    // dont forget to login
     QCOMPARE((int) socket->write("USER ftptest\r\n"), 14);
     QCOMPARE((int) socket->write("PASS ftP2Ptf\r\n"), 14);
 
@@ -1050,7 +1050,7 @@ void tst_QSslSocket::systemCaCertificates()
 
 void tst_QSslSocket::wildcard()
 {
-	QSKIP("TODO: solve wildcard problem", SkipAll);
+    QSKIP("TODO: solve wildcard problem", SkipAll);
 
     if (!QSslSocket::supportsSsl())
         return;
@@ -1305,11 +1305,11 @@ protected:
 
         // delayed acceptance:
         QTest::qSleep(100);
-#ifndef Q_OS_SYMBIAN        
+#ifndef Q_OS_SYMBIAN
         bool ret = server.waitForNewConnection(2000);
 #else
-        bool ret = server.waitForNewConnection(20000);        
-#endif        
+        bool ret = server.waitForNewConnection(20000);
+#endif
 
         // delayed start of encryption
         QTest::qSleep(100);
@@ -1499,13 +1499,13 @@ void tst_QSslSocket::disconnectFromHostWhenConnecting()
     // without proxy, the state will be HostLookupState;
     // with    proxy, the state will be ConnectingState.
     QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
-    		socket->state() == QAbstractSocket::ConnectingState);
+            socket->state() == QAbstractSocket::ConnectingState);
     socket->disconnectFromHost();
     // the state of the socket must be the same before and after calling
     // disconnectFromHost()
     QCOMPARE(state, socket->state());
     QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
-    		socket->state() == QAbstractSocket::ConnectingState);
+            socket->state() == QAbstractSocket::ConnectingState);
     QVERIFY(socket->waitForDisconnected(5000));
     QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     // we did not call close, so the socket must be still open
@@ -1522,16 +1522,16 @@ void tst_QSslSocket::disconnectFromHostWhenConnected()
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 993);
     socket->ignoreSslErrors();
-#ifndef Q_OS_SYMBIAN     
+#ifndef Q_OS_SYMBIAN
     QVERIFY(socket->waitForEncrypted(5000));
-#else    
-    QVERIFY(socket->waitForEncrypted(10000));    
-#endif    
+#else
+    QVERIFY(socket->waitForEncrypted(10000));
+#endif
     socket->write("XXXX LOGOUT\r\n");
     QCOMPARE(socket->state(), QAbstractSocket::ConnectedState);
     socket->disconnectFromHost();
     QCOMPARE(socket->state(), QAbstractSocket::ClosingState);
-#ifdef Q_OS_SYMBIAN   
+#ifdef Q_OS_SYMBIAN
     // I don't understand how socket->waitForDisconnected can work on other platforms
     // since socket->write will end to:
     //   QMetaObject::invokeMethod(this, "_q_flushWriteBuffer", Qt::QueuedConnection);
@@ -1540,9 +1540,9 @@ void tst_QSslSocket::disconnectFromHostWhenConnected()
     connect(socket, SIGNAL(disconnected()), this, SLOT(exitLoop()));
     enterLoop(5);
     QVERIFY(!timeout());
-#else   
-    QVERIFY(socket->waitForDisconnected(5000));    
-#endif 
+#else
+    QVERIFY(socket->waitForDisconnected(5000));
+#endif
     QCOMPARE(socket->bytesToWrite(), qint64(0));
 }
 

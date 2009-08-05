@@ -24,7 +24,6 @@ symbian: {
    libDep.path = /sys/bin
    pluginDep.sources = theplugin.dll
    pluginDep.path = bin
-   
+
    DEPLOYMENT += libDep pluginDep
 }
-

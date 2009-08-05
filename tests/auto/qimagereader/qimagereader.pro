@@ -35,4 +35,3 @@ symbian*: {
 
     DEPLOYMENT += images imagePlugins
 }
-

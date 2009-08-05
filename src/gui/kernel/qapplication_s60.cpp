@@ -124,7 +124,7 @@ private:
 
 QS60Beep::~QS60Beep()
 {
-    delete iToneUtil;   
+    delete iToneUtil;
 }
 
 QS60Beep* QS60Beep::NewL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
@@ -153,7 +153,7 @@ void QS60Beep::Play()
             iState=EBeepPrepared;
         }
     }
-    
+
     iToneUtil->Play();
     iState=EBeepPlaying;
 }
@@ -295,7 +295,7 @@ void QLongTapTimer::PointerEventL(const TPointerEvent& event)
     Cancel();
     m_event = event;
     if (event.iType == TPointerEvent::EButton1Down)
-    {   
+    {
         m_pressedCoordinates = QPoint(event.iPosition.iX,event.iPosition.iY);
         // must be same as KLongTapDelay in aknlongtapdetector.h
         After(800000);
@@ -366,7 +366,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
         }
     if (type == QMouseEvent::None)
         return;
-    
+
     // store events for later sending/saving
     QWidget *alienWidget;
     typedef QPair<QWidget*,QMouseEvent> Event;
@@ -375,7 +375,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     QPoint widgetPos = QPoint(pEvent.iPosition.iX, pEvent.iPosition.iY);
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
-    
+
     if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick)
     {
         // get the button press target
@@ -406,7 +406,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
                 events.append(Event(S60->lastPointerEventTarget,mEventLeave));
             }
             QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos), globalPos,
-                button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));        
+                button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
 
             events.append(Event(alienWidget,mEventEnter));
         }
@@ -672,14 +672,14 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
     case KInternalStatusPaneChange:
-    	qwidget->d_func()->setWindowIcon_sys(true);
-    	break;
+        qwidget->d_func()->setWindowIcon_sys(true);
+        break;
     case KUidValueCoeFontChangeEvent:
         // font change event
         break;
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
-    {        
+    {
         if (qwidget->isFullScreen()) {
             SetExtentToWholeScreen();
         } else if (qwidget->isMaximized()) {
@@ -944,10 +944,10 @@ void QApplication::beep()
     QS60Beep* beep=NULL;
     TRAPD(err, beep=QS60Beep::NewL(frequency, duration));
     if(!err) {
-        beep->Play();    
+        beep->Play();
     }
     delete beep;
-    beep=NULL;       
+    beep=NULL;
 }
 
 int QApplication::s60ProcessEvent(TWsEvent *event)
@@ -1081,8 +1081,8 @@ void QApplication::symbianResourceChange(int type)
     case KEikDynamicLayoutVariantSwitch:
         {
         if (S60)
-            S60->updateScreenSize();            
-        
+            S60->updateScreenSize();
+
 #ifndef QT_NO_STYLE_S60
         QS60Style *s60Style = 0;
 
@@ -1096,7 +1096,7 @@ void QApplication::symbianResourceChange(int type)
 
         if (s60Style)
             s60Style->handleDynamicLayoutVariantSwitch();
-#endif    
+#endif
         }
         break;
 
@@ -1104,7 +1104,7 @@ void QApplication::symbianResourceChange(int type)
     case KAknsMessageSkinChange:
         if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
             s60Style->handleSkinChange();
-        break; 
+        break;
 #endif
 #endif // Q_WS_S60
     default:
@@ -1175,5 +1175,3 @@ void QSessionManager::cancel()
 }
 #endif //QT_NO_SESSIONMANAGER
 QT_END_NAMESPACE
-
-

@@ -3187,7 +3187,7 @@ void tst_QGraphicsProxyWidget::windowFlags()
     QVERIFY((widget->windowFlags() & widgetWFlags) == widgetWFlags);
 
     proxy.setWidget(widget);
- 
+
     if (resultingProxyFlags == 0)
         QVERIFY(!proxy.windowFlags());
     else
@@ -3223,4 +3223,3 @@ QTEST_MAIN(tst_QGraphicsProxyWidget)
 #else // QT_NO_STYLE_CLEANLOOKS
 QTEST_NOOP_MAIN
 #endif
-

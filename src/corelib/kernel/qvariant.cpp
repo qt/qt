@@ -156,7 +156,7 @@ static void construct(QVariant::Private *x, const void *copy)
         x->data.b = copy ? *static_cast<const bool *>(copy) : false;
         break;
     case QVariant::Double:
-#if defined(Q_CC_RVCT) 
+#if defined(Q_CC_RVCT)
         // Using trinary operator with 64bit constants crashes when ran on Symbian device
         if (copy){
             x->data.d = *static_cast<const double*>(copy);
@@ -165,13 +165,13 @@ static void construct(QVariant::Private *x, const void *copy)
         }
 #else
         x->data.d = copy ? *static_cast<const double*>(copy) : 0.0;
-#endif        
+#endif
         break;
     case QMetaType::Float:
         x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
         break;
     case QVariant::LongLong:
-#if defined(Q_CC_RVCT) 
+#if defined(Q_CC_RVCT)
         // Using trinary operator with 64bit constants crashes when ran on Symbian device
         if (copy){
             x->data.ll = *static_cast<const qlonglong *>(copy);
@@ -180,10 +180,10 @@ static void construct(QVariant::Private *x, const void *copy)
         }
 #else
         x->data.ll = copy ? *static_cast<const qlonglong *>(copy) : Q_INT64_C(0);
-#endif        
+#endif
         break;
     case QVariant::ULongLong:
-#if defined(Q_CC_RVCT) 
+#if defined(Q_CC_RVCT)
         // Using trinary operator with 64bit constants crashes when ran on Symbian device
         if (copy){
             x->data.ull = *static_cast<const qulonglong *>(copy);
@@ -192,7 +192,7 @@ static void construct(QVariant::Private *x, const void *copy)
         }
 #else
         x->data.ull = copy ? *static_cast<const qulonglong *>(copy) : Q_UINT64_C(0);
-#endif        
+#endif
         break;
     case QVariant::Invalid:
     case QVariant::UserType:
@@ -618,7 +618,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         ok = &dummy;
 
     switch (uint(t)) {
-    case QVariant::Url: 
+    case QVariant::Url:
         switch (d->type) {
         case QVariant::String:
             *static_cast<QUrl *>(result) = QUrl(*v_cast<QString>(d));
@@ -1214,8 +1214,8 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     and versatile, but may prove less memory and speed efficient than
     storing specific types in standard data structures.
 
-    QVariant also supports the notion of null values, where you can 
-    have a defined type with no value set. However, note that QVariant 
+    QVariant also supports the notion of null values, where you can
+    have a defined type with no value set. However, note that QVariant
     types can only be cast when they have had a value set.
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 1

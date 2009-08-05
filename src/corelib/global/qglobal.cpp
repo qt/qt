@@ -1914,7 +1914,7 @@ QSysInfo::SymVersion QSysInfo::symbianVersion()
     \relates <QtGlobal>
 
 	Users Q_CHECK_PTR on \a pointer, then returns \a pointer.
-	
+
 	This can be used as an inline version of Q_CHECK_PTR.
 */
 
@@ -2115,8 +2115,8 @@ QString qt_error_string(int errorCode)
     warnings, critical and fatal error messages. The Qt library (debug
     mode) contains hundreds of warning messages that are printed
     when internal errors (usually invalid function arguments)
-    occur. Qt built in release mode also contains such warnings unless 
-    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during 
+    occur. Qt built in release mode also contains such warnings unless
+    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during
     compilation. If you implement your own message handler, you get total
     control of these messages.
 
@@ -2516,7 +2516,7 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)	
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
     SeedStorageType *pseed = randTLS()->localData();
     if (!pseed)
         randTLS()->setLocalData(pseed = new SeedStorageType);
@@ -3179,7 +3179,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
  Compares the floating point value \a p1 and \a p2 and
  returns \c true if they are considered equal, otherwise \c false.
 
- Note that comparing values where either \a p1 or \a p2 is 0.0 will not work. 
+ Note that comparing values where either \a p1 or \a p2 is 0.0 will not work.
  The solution to this is to compare against values greater than or equal to 1.0.
 
  \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 46
@@ -3416,7 +3416,7 @@ int qt_exception2SymbianError(const std::exception& aThrow)
             err =  KErrUnderflow;
         qWarning("translation from std exception \"%s\" to %d", aThrow.what(), err);
     }
-    
+
     return err;
 }
 #endif

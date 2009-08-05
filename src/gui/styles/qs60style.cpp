@@ -280,7 +280,7 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         break;
     case SE_Editor:
         drawFrame(SF_Editor, painter, rect, flags | SF_PointNorth);
-        break;        
+        break;
     default:
         break;
     }
@@ -796,12 +796,12 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
     widgetPalette = *palette;
-    
+
     widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QComboBox");
     widgetPalette = *palette;
-    
+
     widgetPalette.setColor(QPalette::WindowText, mainAreaTextColor);
     widgetPalette.setColor(QPalette::Button, QApplication::palette().color(QPalette::Button));
     widgetPalette.setColor(QPalette::Dark, mainAreaTextColor.darker());

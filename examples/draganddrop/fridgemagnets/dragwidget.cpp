@@ -76,7 +76,7 @@ DragWidget::DragWidget(QWidget *parent)
 
 //! [2]
     #ifndef Q_WS_S60
-    //Fridge magnets is used for demoing Qt on S60 and themed backgrounds look better than white 
+    //Fridge magnets is used for demoing Qt on S60 and themed backgrounds look better than white
     QPalette newPalette = palette();
     newPalette.setColor(QPalette::Window, Qt::white);
     setPalette(newPalette);

@@ -55,19 +55,19 @@ QT_END_NAMESPACE
 // CLASS DECLARATION
 /**
 * DesktopWidget class.
-* 
+*
 * Implements the main top level widget for QDesktopServices demo app.
 */
 class DesktopWidget : public QWidget
 {
-    Q_OBJECT        
-        
-public:        // Constructors & Destructors  
+    Q_OBJECT
+
+public:        // Constructors & Destructors
     DesktopWidget(QWidget *parent);
     ~DesktopWidget();
-   
+
 };
-    
-#endif // DESKTOPWIDGET_H_    
-    
+
+#endif // DESKTOPWIDGET_H_
+
 // End of file

@@ -233,7 +233,7 @@ contains(QMAKE_MAC_XARCH, no) {
 
     win32-g++|!win32:!*-icc* {
         mmx {
-            mmx_compiler.commands = $$QMAKE_CXX -c -Winline 
+            mmx_compiler.commands = $$QMAKE_CXX -c -Winline
 
             mac {
                 mmx_compiler.commands += -Xarch_i386 -mmmx
@@ -375,7 +375,7 @@ symbian {
         "SOURCE			qblendfunctions_armv6_rvct.s" \
         "SOURCE			qdrawhelper_armv6_rvct.s" \
         "$${LITERAL_HASH}endif"
-                
+
         MMP_RULES += armccIfdefBlock
         QMAKE_CXXFLAGS.ARMCC *= -O3
 }

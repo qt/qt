@@ -476,7 +476,7 @@ tst_QTextStream::tst_QTextStream()
 }
 
 tst_QTextStream::~tst_QTextStream()
-{  
+{
 }
 
 void tst_QTextStream::init()
@@ -1251,7 +1251,7 @@ void tst_QTextStream::stillOpenWhenAtEnd()
 #endif
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
-#if defined(Q_OS_SYMBIAN)    
+#if defined(Q_OS_SYMBIAN)
     QVERIFY(socket.waitForReadyRead(30000));
 #else
     QVERIFY(socket.waitForReadyRead(5000));

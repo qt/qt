@@ -150,7 +150,7 @@ private slots:
     void preserveCharFormatInAppend();
 #ifndef QT_NO_CLIPBOARD
     void copyAndSelectAllInReadonly();
-#endif    
+#endif
     void ctrlAltInput();
     void noPropertiesOnDefaultTextEditCharFormat();
     void setPlainTextShouldUseCurrentCharFormat();

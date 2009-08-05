@@ -61,41 +61,41 @@ QT_END_NAMESPACE
 
 /**
 * ContentTab class.
-* 
+*
 * This class implements general purpose tab for media files.
 */
 class ContentTab : public QListWidget
 {
     Q_OBJECT
 
-public:         // Constructors & Destructors          
+public:         // Constructors & Destructors
     ContentTab(QWidget *parent);
     virtual ~ContentTab();
-    
+
 public:         // New Methods
-    virtual void init(const QDesktopServices::StandardLocation &location, 
-                      const QString &filter, 
-                      const QString &icon);    
-    
+    virtual void init(const QDesktopServices::StandardLocation &location,
+                      const QString &filter,
+                      const QString &icon);
+
 protected:      // New Methods
     virtual void setContentDir(const QDesktopServices::StandardLocation &location);
-    virtual void setIcon(const QString &icon);    
+    virtual void setIcon(const QString &icon);
     virtual void populateListWidget();
     virtual QString itemName(const QFileInfo &item);
     virtual QUrl itemUrl(QListWidgetItem *item);
     virtual void handleErrorInOpen(QListWidgetItem *item);
 protected:
-    void keyPressEvent(QKeyEvent *event);   
-    
-public slots:   // New Slots
-    virtual void openItem(QListWidgetItem *item);  
+    void keyPressEvent(QKeyEvent *event);
 
-protected:     // Owned variables   
+public slots:   // New Slots
+    virtual void openItem(QListWidgetItem *item);
+
+protected:     // Owned variables
     QDir m_ContentDir;
     QIcon m_Icon;
 };
 
 
-#endif // CONTENTTAB_H_    
+#endif // CONTENTTAB_H_
 
 // End of File

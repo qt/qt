@@ -915,9 +915,9 @@ QT_END_INCLUDE_NAMESPACE
 */
 
 #ifndef QT_LINUXBASE /* the LSB defines TRUE and FALSE for us */
-/* Symbian OS defines TRUE = 1 and FALSE = 0, 
+/* Symbian OS defines TRUE = 1 and FALSE = 0,
 redefine to built-in booleans to make autotests work properly */
-#ifdef Q_OS_SYMBIAN  
+#ifdef Q_OS_SYMBIAN
     #undef TRUE
     #undef FALSE
 #endif

@@ -69,7 +69,7 @@ QFileInfoList alternativeFilePaths(const QString &path, const QStringList &nameF
     const QString zDriveString("Z:/");
     driveStrings.removeAll(zDriveString);
     driveStrings.prepend(zDriveString);
-    
+
     QStringList uniqueFileNameList;
     for (int i = driveStrings.count() - 1; i >= 0; --i) {
         const QDir dirOnDrive(driveStrings.at(i) + path);
@@ -393,7 +393,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 {
     QFontEngine *fe = 0;
     QFontDef req = d->request;
- 
+
     if (!d->engineData) {
         const QFontCache::Key key(cleanedFontDef(req), script);
         getEngineData(d, key);

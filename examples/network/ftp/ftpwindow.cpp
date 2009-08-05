@@ -56,10 +56,10 @@ FtpWindow::FtpWindow(QWidget *parent)
     ftpServerLabel->setBuddy(ftpServerLineEdit);
 
     statusLabel = new QLabel(tr("Please enter the name of an FTP server."));
-#ifdef Q_OS_SYMBIAN    
-    // Use word wrapping to fit the text on screen    
+#ifdef Q_OS_SYMBIAN
+    // Use word wrapping to fit the text on screen
     statusLabel->setWordWrap( true );
-#endif    
+#endif
 
     fileList = new QTreeWidget;
     fileList->setEnabled(false);
@@ -69,7 +69,7 @@ FtpWindow::FtpWindow(QWidget *parent)
 
     connectButton = new QPushButton(tr("Connect"));
     connectButton->setDefault(true);
-    
+
     cdToParentButton = new QPushButton;
     cdToParentButton->setIcon(QPixmap(":/images/cdtoparent.png"));
     cdToParentButton->setEnabled(false);
@@ -105,15 +105,15 @@ FtpWindow::FtpWindow(QWidget *parent)
     // Make app better lookin on small screen
     QHBoxLayout *topLayout2 = new QHBoxLayout;
     topLayout2->addWidget(cdToParentButton);
-    topLayout2->addWidget(connectButton);    
+    topLayout2->addWidget(connectButton);
 #endif
-    
+
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(topLayout);
-#ifdef Q_OS_SYMBIAN    
+#ifdef Q_OS_SYMBIAN
     // Make app better lookin on small screen
     mainLayout->addLayout(topLayout2);
-#endif    
+#endif
     mainLayout->addWidget(fileList);
     mainLayout->addWidget(statusLabel);
     mainLayout->addWidget(buttonBox);
@@ -161,7 +161,7 @@ void FtpWindow::connectOrDisconnect()
     setCursor(Qt::WaitCursor);
 #endif
 
-//![1]    
+//![1]
     ftp = new QFtp(this);
     connect(ftp, SIGNAL(commandFinished(int, bool)),
             this, SLOT(ftpCommandFinished(int, bool)));

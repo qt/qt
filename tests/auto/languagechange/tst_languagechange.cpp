@@ -213,11 +213,11 @@ void tst_languageChange::retranslatability()
                        "get proper widget layout.");
     TransformTranslator translator;
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    // Allow a little extra time or emulator startup delays cause failure 
+    // Allow a little extra time or emulator startup delays cause failure
     QTimer::singleShot(5000, &translator, SLOT(install()));
-#else    
+#else
     QTimer::singleShot(500, &translator, SLOT(install()));
-#endif    
+#endif
     switch (dialogType) {
     case InputDialog:
         (void)QInputDialog::getInteger(0, QLatin1String("title"), QLatin1String("label"));

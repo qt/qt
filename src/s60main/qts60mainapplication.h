@@ -91,4 +91,3 @@ class CQtS60MainApplication : public CAknApplication
 #endif // __QtS60MainAPPLICATION_H__
 
 // End of File
-

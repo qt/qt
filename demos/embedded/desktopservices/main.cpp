@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     DesktopWidget* myWidget = new DesktopWidget(0);
-    myWidget->showMaximized(); 
-    
+    myWidget->showMaximized();
+
     return app.exec();
 }
 

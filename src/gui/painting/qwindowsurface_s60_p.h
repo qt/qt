@@ -81,7 +81,7 @@ public:
     static void unlockBitmapHeap();
 
     CFbsBitmap *symbianBitmap() const;
-    
+
 private:
     void updatePaintDeviceOnBitmap();
 

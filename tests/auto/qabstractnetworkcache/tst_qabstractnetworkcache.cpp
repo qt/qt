@@ -84,7 +84,7 @@ public:
 #ifdef Q_OS_SYMBIAN
         QString location = QLatin1String("./cache/");
 #else
-        QString location = QDesktopServices::storageLocation(QDesktopServices::DataLocation) 
+        QString location = QDesktopServices::storageLocation(QDesktopServices::DataLocation)
                                 + QLatin1String("/cache/");
 #endif
         setCacheDirectory(location);
@@ -111,7 +111,7 @@ tst_QAbstractNetworkCache::tst_QAbstractNetworkCache()
 }
 
 tst_QAbstractNetworkCache::~tst_QAbstractNetworkCache()
-{      
+{
 }
 
 static bool AlwaysTrue = true;

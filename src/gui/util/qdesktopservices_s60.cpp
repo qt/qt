@@ -113,9 +113,9 @@ static void handleMailtoSchemeLX(const QUrl &url)
     QStringList bccs = bcc.split(",", QString::SkipEmptyParts);
 
 
-	RSendAs sendAs;
-	User::LeaveIfError(sendAs.Connect());
-	QAutoClose<RSendAs> sendAsCleanup(sendAs);
+    RSendAs sendAs;
+    User::LeaveIfError(sendAs.Connect());
+    QAutoClose<RSendAs> sendAsCleanup(sendAs);
 
 
     CSendAsAccounts* accounts = CSendAsAccounts::NewL();
@@ -124,43 +124,43 @@ static void handleMailtoSchemeLX(const QUrl &url)
     TInt count = accounts->Count();
     CleanupStack::PopAndDestroy(accounts);
 
-	if(!count) {
+    if(!count) {
         // TODO: we should try to create account if count == 0
         // CSendUi would provide account creation service for us, but it requires ridicilous
         // capabilities: LocalServices NetworkServices ReadDeviceData ReadUserData WriteDeviceData WriteUserData
-        User::Leave(KErrNotSupported);	
-	} else {
-        RSendAsMessage sendAsMessage;    
+        User::Leave(KErrNotSupported);
+    } else {
+        RSendAsMessage sendAsMessage;
         sendAsMessage.CreateL(sendAs, KUidMsgTypeSMTP);
         QAutoClose<RSendAsMessage> sendAsMessageCleanup(sendAsMessage);
-        
-        
+
+
         // Subject
         sendAsMessage.SetSubjectL(qt_QString2TPtrC(subject));
-        
+
         // Body
         sendAsMessage.SetBodyTextL(qt_QString2TPtrC(body));
-        
+
         // To
         foreach(QString item, recipients)
          sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
-        
+
         foreach(QString item, tos)
          sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
-        
+
         // Cc
         foreach(QString item, ccs)
          sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc );
-        
+
         // Bcc
         foreach(QString item, bccs)
          sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc );
-        
+
         // send the message
         sendAsMessage.LaunchEditorAndCloseL();
         // sendAsMessage is already closed
         sendAsMessageCleanup.Forget();
-	}
+    }
 }
 
 static bool handleMailtoScheme(const QUrl &url)
@@ -172,9 +172,9 @@ static bool handleMailtoScheme(const QUrl &url)
 static void handleOtherSchemesL(const TDesC& aUrl)
 {
     // Other schemes are at the moment passed to WEB browser
-	HBufC* buf16 = HBufC::NewLC( aUrl.Length() + KBrowserPrefix.iTypeLength );
-	buf16->Des().Copy( KBrowserPrefix ); // Prefix used to launch correct browser view
-	buf16->Des().Append( aUrl );
+    HBufC* buf16 = HBufC::NewLC( aUrl.Length() + KBrowserPrefix.iTypeLength );
+    buf16->Des().Copy( KBrowserPrefix ); // Prefix used to launch correct browser view
+    buf16->Des().Append( aUrl );
 
     TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
     TApaTask task = taskList.FindApp( KUidBrowser );
@@ -189,12 +189,12 @@ static void handleOtherSchemesL(const TDesC& aUrl)
     else
         {
         // Start a new browser instance
-	    RApaLsSession appArcSession;
-	    User::LeaveIfError( appArcSession.Connect() );
-	    CleanupClosePushL<RApaLsSession>( appArcSession );
-	    TThreadId id;
+        RApaLsSession appArcSession;
+        User::LeaveIfError( appArcSession.Connect() );
+        CleanupClosePushL<RApaLsSession>( appArcSession );
+        TThreadId id;
         appArcSession.StartDocument( *buf16, KUidBrowser , id );
-	    CleanupStack::PopAndDestroy(); // appArcSession
+        CleanupStack::PopAndDestroy(); // appArcSession
         }
 
     CleanupStack::PopAndDestroy( buf16 );
@@ -255,8 +255,8 @@ static void openDocumentL(const TDesC& aUrl)
 {
 #ifndef USE_DOCUMENTHANDLER
     // Start app associated to file MIME type by using RApaLsSession
-	// Apparc base method cannot be used to open app in embedded mode,
-	// but seems to be most stable way at the moment
+    // Apparc base method cannot be used to open app in embedded mode,
+    // but seems to be most stable way at the moment
     RApaLsSession appArcSession;
     User::LeaveIfError( appArcSession.Connect() );
     CleanupClosePushL<RApaLsSession>( appArcSession );
@@ -264,25 +264,25 @@ static void openDocumentL(const TDesC& aUrl)
     // ESwitchFiles means do not start another instance
     // Leaves if file does not exist, leave is trapped in openDocument and false returned to user.
     User::LeaveIfError( appArcSession.StartDocument( aUrl, id,
-    		RApaLsSession::ESwitchFiles ) ); // ELaunchNewApp
+            RApaLsSession::ESwitchFiles ) ); // ELaunchNewApp
     CleanupStack::PopAndDestroy(); // appArcSession
 #else
     // This is an alternative way to launch app associated to MIME type
-	// CDocumentHandler would support opening apps in embedded mode,
-	// but our Qt application window group seems to always get switched on top of embedded one
-	// -> Cannot use menus etc of embedded app -> used
+    // CDocumentHandler would support opening apps in embedded mode,
+    // but our Qt application window group seems to always get switched on top of embedded one
+    // -> Cannot use menus etc of embedded app -> used
 
-	CDocumentHandler* docHandler = CDocumentHandler::NewLC();
-	TDataType temp;
-	//Standalone file opening fails for some file-types at least in S60 3.1 emulator
-	//For example .txt file fails with KErrAlreadyInUse and music files with KERN-EXEC 0
-	//Workaround is to use OpenFileEmbeddedL
-	//docHandler->OpenFileL(aUrl, temp);
+    CDocumentHandler* docHandler = CDocumentHandler::NewLC();
+    TDataType temp;
+    //Standalone file opening fails for some file-types at least in S60 3.1 emulator
+    //For example .txt file fails with KErrAlreadyInUse and music files with KERN-EXEC 0
+    //Workaround is to use OpenFileEmbeddedL
+    //docHandler->OpenFileL(aUrl, temp);
 
-	// Opening file with CDocumentHandler will leave if file does not exist
-	// Leave is trapped in openDocument and false returned to user.
-	docHandler->OpenFileEmbeddedL(aUrl, temp);
-	CleanupStack::PopAndDestroy(docHandler);
+    // Opening file with CDocumentHandler will leave if file does not exist
+    // Leave is trapped in openDocument and false returned to user.
+    docHandler->OpenFileEmbeddedL(aUrl, temp);
+    CleanupStack::PopAndDestroy(docHandler);
 #endif
 }
 
@@ -295,8 +295,8 @@ static void openDocumentL(const TDesC& aUrl)
 // wide range of schemes and is extensible by plugins
 static bool handleUrl(const QUrl &url)
 {
-	if (!url.isValid())
-		return false;
+    if (!url.isValid())
+        return false;
 
     QString urlString(url.toString());
     TPtrC urlPtr(qt_QString2TPtrC(urlString));
@@ -313,12 +313,12 @@ static void handleUrlL(const TDesC& aUrl)
 }
 static bool launchWebBrowser(const QUrl &url)
 {
-	return handleUrl(url);
+    return handleUrl(url);
 }
 
 static bool openDocument(const QUrl &file)
 {
-	return handleUrl(url);
+    return handleUrl(url);
 }
 #endif
 
@@ -391,7 +391,7 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         //return QDir::homePath(); break;
         break;
     case DataLocation:
-    	CEikonEnv::Static()->FsSession().PrivatePath( path );
+        CEikonEnv::Static()->FsSession().PrivatePath( path );
         // TODO: Should we actually return phone mem if data is on ROM?
         path.Insert( 0, exeDrive().Name() );
         break;

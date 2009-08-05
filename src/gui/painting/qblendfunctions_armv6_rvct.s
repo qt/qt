@@ -54,13 +54,13 @@
 		ARM
 		PRESERVE8
 
-		INCLUDE		qdrawhelper_armv6_rvct.inc	
+		INCLUDE		qdrawhelper_armv6_rvct.inc
 
 
 ;-----------------------------------------------------------------------------
 ; qt_blend_rgb32_on_rgb32_arm
-; 
-; @brief 
+;
+; @brief
 ;
 ; @param dest			Destination	pixels						(r0)
 ; @param dbpl			Destination bytes per line				(r1)
@@ -69,25 +69,25 @@
 ; @param w				Width							  (s0 -> r4)
 ; @param h				Height							  (s1 -> r5)
 ; @param const_alpha	Constant alpha					  (s2 -> r6)
-; 
+;
 ;---------------------------------------------------------------------------
 qt_blend_rgb32_on_rgb32_armv6 Function
 		stmfd	sp!, {r4-r12, r14}
-		
+
 		; read arguments off the stack
 		add		r8, sp, #10 * 4
 		ldmia	r8, {r9-r11}
-		
+
 		; Reorganize registers
-		
+
 		mov		r4, r10
 		mov		r5, r1
 		mov		r6, r3
-		
+
 		mov		r1, r2
 		mov		r2, r9
 		mov		r3, r11
-		
+
 		; Now we have registers
 		; @param dest			Destination	pixels						(r0)
 		; @param src			Source pixels							(r1)
@@ -96,53 +96,53 @@ qt_blend_rgb32_on_rgb32_armv6 Function
 		; @param h				Height							  		(r4)
 		; @param dbpl			Destination bytes per line				(r5)
 		; @param sbpl			Source bytes per line					(r6)
-		
+
 		cmp		r3, #256 ; test if we have fully opaque constant alpha value
 		bne		rgb32_blend_const_alpha ; branch if not
-		
+
 rgb32_blend_loop
 
 		subs	r4, r4, #1
 		bmi		rgb32_blend_exit	; while(h--)
-		
-rgb321	PixCpySafe r0, r1, r2		
+
+rgb321	PixCpySafe r0, r1, r2
 
 		add		r0, r0, r5 ; dest = dest + dbpl
-		add		r1, r1, r6 ; src = src + sbpl		
+		add		r1, r1, r6 ; src = src + sbpl
 
-		b		rgb32_blend_loop	
-		
-		
+		b		rgb32_blend_loop
+
+
 rgb32_blend_const_alpha
 
 		;ldr		r14, =ComponentHalf ; load 0x800080 to r14
 		mov		r14, #0x800000
 		add		r14, r14, #0x80
-		
+
 		sub		r3, r3, #1	; const_alpha -= 1;
 
 rgb32_blend_loop_const_alpha
 
 		subs	r4, r4, #1
 		bmi		rgb32_blend_exit	; while(h--)
-		
+
 rgb322	BlendRowSafe PixelSourceOverConstAlpha
 
 		add		r0, r0, r5 ; dest = dest + dbpl
-		add		r1, r1, r6 ; src = src + sbpl		
+		add		r1, r1, r6 ; src = src + sbpl
 
 		b		rgb32_blend_loop_const_alpha
-		
-rgb32_blend_exit		
-		
+
+rgb32_blend_exit
+
 		ldmfd	sp!, {r4-r12, pc}		; pop and return
-	
-	
-	
+
+
+
 ;-----------------------------------------------------------------------------
 ; qt_blend_argb32_on_argb32_arm
-; 
-; @brief 
+;
+; @brief
 ;
 ; @param dest			Destination	pixels						(r0)
 ; @param dbpl			Destination bytes per line				(r1)
@@ -151,25 +151,25 @@ rgb32_blend_exit
 ; @param w				Width							  (s0 -> r4)
 ; @param h				Height							  (s1 -> r5)
 ; @param const_alpha	Constant alpha					  (s2 -> r6)
-; 
+;
 ;---------------------------------------------------------------------------
 qt_blend_argb32_on_argb32_armv6 Function
 		stmfd	sp!, {r4-r12, r14}
-		
+
 	 	; read arguments off the stack
 		add		r8, sp, #10 * 4
 		ldmia	r8, {r9-r11}
-		
+
 		; Reorganize registers
-		
+
 		mov		r4, r10
 		mov		r5, r1
 		mov		r6, r3
-		
+
 		mov		r1, r2
 		mov		r2, r9
 		mov		r3, r11
-		
+
 		; Now we have registers
 		; @param dest			Destination	pixels						(r0)
 		; @param src			Source pixels							(r1)
@@ -178,14 +178,14 @@ qt_blend_argb32_on_argb32_armv6 Function
 		; @param h				Height							  		(r4)
 		; @param dbpl			Destination bytes per line				(r5)
 		; @param sbpl			Source bytes per line					(r6)
-		
+
 		;ldr		r14, =ComponentHalf ; load 0x800080 to r14
 		mov		r14, #0x800000
 		add		r14, r14, #0x80
-		
+
 		cmp		r3, #256 ; test if we have fully opaque constant alpha value
 		bne		argb32_blend_const_alpha ; branch if not
-		
+
 argb32_blend_loop
 
 		subs	r4, r4, #1
@@ -194,10 +194,10 @@ argb32_blend_loop
 argb321	 BlendRowSafe PixelSourceOver
 
 		add		r0, r0, r5 ; dest = dest + dbpl
-		add		r1, r1, r6 ; src = src + sbpl	
+		add		r1, r1, r6 ; src = src + sbpl
 
 		b		argb32_blend_loop
-		
+
 argb32_blend_const_alpha
 
 		sub		r3, r3, #1	; const_alpha -= 1;
@@ -206,18 +206,17 @@ argb32_blend_loop_const_alpha
 
 		subs	r4, r4, #1
 		bmi		argb32_blend_exit	; while(h--)
-		
+
 argb322	 BlendRowSafe PixelSourceOverConstAlpha
 
 		add		r0, r0, r5 ; dest = dest + dbpl
-		add		r1, r1, r6 ; src = src + sbpl		
+		add		r1, r1, r6 ; src = src + sbpl
 
 		b		argb32_blend_loop_const_alpha
-		
-argb32_blend_exit		
-		
+
+argb32_blend_exit
+
 		ldmfd	sp!, {r4-r12, pc}		; pop and return
-		
-		
+
+
 		END ; File end
-		

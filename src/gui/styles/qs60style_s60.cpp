@@ -80,7 +80,7 @@ enum TSupportRelease {
     ES60_5_1      = 0x0008,
     ES60_5_2      = 0x0010,
     // Add all new releases here
-    ES60_AllReleases = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 
+    ES60_AllReleases = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2
 };
 
 typedef struct {
@@ -317,7 +317,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideBInactive */    {KAknsIIDQsnFrButtonTbSideB,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b6},
     /* SP_QsnFrButtonSideLInactive */    {KAknsIIDQsnFrButtonTbSideL,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b7},
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b8},
-    /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},  
+    /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},
 
     /* SP_QsnFrNotepadCornerTl */        {KAknsIIDQsnFrNotepadContCornerTl,     ENoDraw,     ES60_AllReleases,    -1,-1},
     /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadContCornerTr,     ENoDraw,     ES60_AllReleases,    -1,-1},

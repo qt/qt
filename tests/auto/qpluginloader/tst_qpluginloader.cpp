@@ -303,13 +303,13 @@ void tst_QPluginLoader::checkingStubsFromDifferentDrives()
 
     // This test needs C-drive + some additional drive (driveForStubs)
 
-    const QString driveForStubs("E:/");// != "C:/" 
+    const QString driveForStubs("E:/");// != "C:/"
     const QString stubDir("system/temp/stubtest/");
     const QString stubName("dummyStub.qtplugin");
     const QString fullStubFileName(stubDir + stubName);
     QDir dir(driveForStubs);
     bool test1(false); bool test2(false);
-    
+
     // initial clean up
     QFile::remove(driveForStubs + fullStubFileName);
     dir.rmdir(driveForStubs + stubDir);
@@ -317,22 +317,22 @@ void tst_QPluginLoader::checkingStubsFromDifferentDrives()
     // create a stub dir and do stub drive check
     if (!dir.mkpath(stubDir))
         QSKIP("Required drive not available for this test", SkipSingle);
-    
+
     {// test without stub, should not be found
     QPluginLoader loader("C:/" + fullStubFileName);
     test1 = !loader.fileName().length();
-    }    
-    
+    }
+
     // create a stub to defined drive
     QFile tempFile(driveForStubs + fullStubFileName);
     tempFile.open(QIODevice::ReadWrite);
     QFileInfo fileInfo(tempFile);
-    
-    {// now should be found even tried to find from C:   
+
+    {// now should be found even tried to find from C:
     QPluginLoader loader("C:/" + fullStubFileName);
     test2 = (loader.fileName() == fileInfo.absoluteFilePath());
     }
-    
+
     // clean up
     tempFile.close();
     if (!QFile::remove(driveForStubs + fullStubFileName))
@@ -343,10 +343,9 @@ void tst_QPluginLoader::checkingStubsFromDifferentDrives()
     // test after cleanup
     QVERIFY(test1);
     QVERIFY(test2);
-    
+
 #endif//Q_OS_SYMBIAN
 }
 
 QTEST_APPLESS_MAIN(tst_QPluginLoader)
 #include "tst_qpluginloader.moc"
-

@@ -46,8 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class SymbianAbldMakefileGenerator : public SymbianMakefileGenerator {
-
+class SymbianAbldMakefileGenerator : public SymbianMakefileGenerator
+{
 protected:
 
     // Inherited from parent
@@ -62,8 +62,6 @@ public:
 
     SymbianAbldMakefileGenerator();
     ~SymbianAbldMakefileGenerator();
-
 };
 
 #endif // SYMMAKE_ABLD_H
-

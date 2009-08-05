@@ -57,30 +57,30 @@ QT_END_NAMESPACE
 
 /**
 * LinkTab class.
-* 
+*
 * This class implements tab for opening http and mailto links.
 */
 class LinkTab : public ContentTab
 {
     Q_OBJECT
-    
-public:     // Constructors & Destructors   
+
+public:     // Constructors & Destructors
     LinkTab(QWidget *parent);
-    ~LinkTab();    
-    
-protected:  // Derived Methods  
+    ~LinkTab();
+
+protected:  // Derived Methods
     virtual void populateListWidget();
-    virtual QUrl itemUrl(QListWidgetItem *item);    
+    virtual QUrl itemUrl(QListWidgetItem *item);
     virtual void handleErrorInOpen(QListWidgetItem *item);
-    
-private:    // Used variables  
+
+private:    // Used variables
     QListWidgetItem *m_WebItem;
-    QListWidgetItem *m_MailToItem; 
-    
-private:    // Owned variables      
-    
+    QListWidgetItem *m_MailToItem;
+
+private:    // Owned variables
+
 };
 
-#endif // CONTENTTAB_H_    
-    
+#endif // CONTENTTAB_H_
+
 // End of File
