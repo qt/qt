@@ -488,11 +488,6 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
     QmlContext *ctxt = new QmlContext(context, 0, true);
     static_cast<QmlContextPrivate*>(ctxt->d_ptr)->url = d->cc->url;
-    if(d->start != -1) {
-        // ### FIXME
-        static_cast<QmlContextPrivate*>(ctxt->d_ptr)->startLine = d->cc->bytecode.at(d->start - 1).line;
-        static_cast<QmlContextPrivate*>(ctxt->d_ptr)->endLine = d->cc->bytecode.at(d->start - 1).createComponent.endLine;
-    }
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
 : parent(0), engine(0), isInternal(false), notifyIndex(-1), 
-  highPriorityCount(0), startLine(-1), endLine(-1)
+  highPriorityCount(0), idValues(0), idValueCount(0)
 {
 }
 
@@ -71,29 +71,21 @@ void QmlContextPrivate::dump(int depth)
         parent->d_func()->dump(depth + 1);
 }
 
-void QmlContextPrivate::destroyed(QObject *obj)
+void QmlContextPrivate::destroyed(ContextGuard *guard)
 {
     Q_Q(QmlContext);
 
-    defaultObjects.removeAll(obj);
-
-    QVariant variantObject = QVariant::fromValue(obj);
-    QVarLengthArray<int> notifies;
-    for (int ii = 0; ii < propertyValues.count(); ++ii) {
-        if (propertyValues.at(ii) == variantObject) {
-            propertyValues[ii] = QVariant();
-            notifies.append(ii);
-        }
-    }
-
-    // There is no need to emit these notifications if our parent is in the 
     // process of being deleted (which is *probably* why obj has been destroyed
     // anyway), as we're about to get deleted which will invalidate all the
     // expressions that could depend on us
     QObject *parent = q->parent();
-    if (!parent || !QObjectPrivate::get(parent)->wasDeleted) {
-        for (int ii = 0; ii < notifies.count(); ++ii) {
-            QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
+    if (parent && QObjectPrivate::get(parent)->wasDeleted) 
+        return;
+
+    for (int ii = 0; ii < idValueCount; ++ii) {
+        if (&idValues[ii] == guard) {
+            QMetaObject::activate(q, ii + notifyIndex, 0);
+            return;
         }
     }
 }
@@ -131,8 +123,6 @@ void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
     } else {
         defaultObjects.append(object);
     }
-    QObject::connect(object, SIGNAL(destroyed(QObject*)),
-                     q_ptr, SLOT(objectDestroyed(QObject*)));
 }
 
 
@@ -306,6 +296,8 @@ QmlContext::~QmlContext()
         }
     }
     d->contextObjects.clear();
+
+    delete [] d->idValues;
 }
 
 void QmlContextPrivate::invalidateEngines()
@@ -365,13 +357,32 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
     } else {
         QHash<QString, int>::ConstIterator iter = d->propertyNames.find(name);
         if(iter == d->propertyNames.end()) {
-            d->propertyNames.insert(name, d->propertyValues.count());
+            d->propertyNames.insert(name, d->idValueCount + d->propertyValues.count());
             d->propertyValues.append(value);
         } else {
             d->propertyValues[*iter] = value;
             QMetaObject::activate(this, *iter + d->notifyIndex, 0);
         }
     }
+}
+
+void QmlContextPrivate::setIdProperty(const QString &name, int idx, 
+                                      QObject *obj)
+{
+    if (notifyIndex == -1) {
+        Q_Q(QmlContext);
+        notifyIndex = q->metaObject()->methodCount();
+    }
+
+    propertyNames.insert(name, idx);
+    idValues[idx].priv = this;
+    idValues[idx] = obj;
+}
+
+void QmlContextPrivate::setIdPropertyCount(int count)
+{
+    idValues = new ContextGuard[count];
+    idValueCount = count;
 }
 
 /*!
@@ -385,20 +396,12 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
     if (d->notifyIndex == -1)
         d->notifyIndex = this->metaObject()->methodCount();
 
-    QObject::connect(value, SIGNAL(destroyed(QObject*)), 
-                     this, SLOT(objectDestroyed(QObject*)));
-
     QHash<QString, int>::ConstIterator iter = d->propertyNames.find(name);
     if(iter == d->propertyNames.end()) {
-        d->propertyNames.insert(name, d->propertyValues.count());
+        d->propertyNames.insert(name, d->idValueCount  + d->propertyValues.count());
         d->propertyValues.append(QVariant::fromValue(value));
     } else {
         int idx = *iter;
-        if (QmlMetaType::isObject(d->propertyValues.at(idx).userType())) {
-            QObject *old = QmlMetaType::toQObject(d->propertyValues.at(idx));
-            QObject::disconnect(old, SIGNAL(destroyed(QObject*)), 
-                             this, SLOT(objectDestroyed(QObject*)));
-        }
         d->propertyValues[*iter] = QVariant::fromValue(value);
         QMetaObject::activate(this, *iter + d->notifyIndex, 0);
     }
@@ -443,12 +446,6 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
 void QmlContext::setBaseUrl(const QUrl &baseUrl)
 {
     d_func()->url = baseUrl;
-}
-
-void QmlContext::objectDestroyed(QObject *object)
-{
-    Q_D(QmlContext);
-    d->destroyed(object);
 }
 
 QT_END_NAMESPACE

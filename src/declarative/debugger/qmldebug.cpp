@@ -103,6 +103,7 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
         ds >> data;
         QmlDebugPropertyReference prop;
         prop.m_name = data.name;
+        prop.m_binding = data.binding;
         if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic)
             prop.m_value = data.value;
         else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {

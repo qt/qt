@@ -44,6 +44,8 @@
 #include <QtCore/qmetaobject.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlmetatype.h>
+#include <qmlmetaproperty.h>
+#include <qmlbinding.h>
 #include "qmlcontext_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -73,7 +75,7 @@ QDataStream &operator>>(QDataStream &ds,
 QDataStream &operator<<(QDataStream &ds, 
                         const QmlEngineDebugServer::QmlObjectProperty &data)
 {
-    ds << (int)data.type << data.name << data.value;
+    ds << (int)data.type << data.name << data.value << data.binding;
     return ds;
 }
 
@@ -81,7 +83,7 @@ QDataStream &operator>>(QDataStream &ds,
                         QmlEngineDebugServer::QmlObjectProperty &data)
 {
     int type;
-    ds >> type >> data.name >> data.value;
+    ds >> type >> data.name >> data.value >> data.binding;
     data.type = (QmlEngineDebugServer::QmlObjectProperty::Type)type;
     return ds;
 }
@@ -95,6 +97,9 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
     rv.type = QmlObjectProperty::Unknown;
     rv.name = prop.name();
+    QmlBinding *binding = QmlMetaProperty(obj, rv.name).binding();
+    if (binding)
+        rv.binding = binding->expression();
 
     if (prop.type() < QVariant::UserType) {
         rv.type = QmlObjectProperty::Basic;

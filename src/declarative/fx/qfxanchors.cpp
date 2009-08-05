@@ -969,3 +969,6 @@ bool QFxAnchorsPrivate::checkVAnchorValid(QFxAnchorLine anchor) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfxanchors.cpp"
+

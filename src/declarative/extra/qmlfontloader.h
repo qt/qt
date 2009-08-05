@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLFONTFAMILY_H
-#define QMLFONTFAMILY_H
+#ifndef QMLFONTLOADER_H
+#define QMLFONTLOADER_H
 
 #include <QtCore/qobject.h>
 #include <QtDeclarative/qml.h>
@@ -51,11 +51,11 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlFontFamilyPrivate;
-class Q_DECLARATIVE_EXPORT QmlFontFamily : public QObject
+class QmlFontLoaderPrivate;
+class Q_DECLARATIVE_EXPORT QmlFontLoader : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlFontFamily)
+    Q_DECLARE_PRIVATE(QmlFontLoader)
     Q_ENUMS(Status)
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
@@ -65,8 +65,8 @@ class Q_DECLARATIVE_EXPORT QmlFontFamily : public QObject
 public:
     enum Status { Null = 0, Ready, Loading, Error };
 
-    QmlFontFamily(QObject *parent = 0);
-    ~QmlFontFamily();
+    QmlFontLoader(QObject *parent = 0);
+    ~QmlFontLoader();
 
     QUrl source() const;
     void setSource(const QUrl &url);
@@ -86,9 +86,9 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlFontFamily)
+QML_DECLARE_TYPE(QmlFontLoader)
 
 QT_END_HEADER
 
-#endif // QMLFONTFAMILY_H
+#endif // QMLFONTLOADER_H
 

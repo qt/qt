@@ -8,13 +8,13 @@ Rect {
 
     Palette { id: Palette; colorGroup: "Active" }
 
-    FontFamily { id: FixedFont; name: "Courier" }
+    FontLoader { id: FixedFont; name: "Courier" }
 
-    FontFamily { id: LocalFont; source: "fonts/Fontin-Bold.ttf" }
+    FontLoader { id: LocalFont; source: "fonts/Fontin-Bold.ttf" }
     /* A font by Jos Buivenga (exljbris) -> www.exljbris.nl */
 
-    FontFamily { id: WebFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
-    FontFamily { id: WebFont2; source: "http://wrong.address.org" }
+    FontLoader { id: WebFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
+    FontLoader { id: WebFont2; source: "http://wrong.address.org" }
 
     VerticalLayout {
         anchors.fill: parent

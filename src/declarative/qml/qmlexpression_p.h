@@ -70,12 +70,18 @@ public:
     QmlExpressionPrivate();
     ~QmlExpressionPrivate();
 
+    enum CompiledDataType {
+        BasicScriptEngineData = 1,
+        PreTransformedQtScriptData = 2
+    };
+
     void init(QmlContext *, const QString &, QObject *);
     void init(QmlContext *, void *, QmlRefCount *, QObject *);
 
     QmlContext *ctxt;
     QString expression;
-    bool expressionFunctionValid;
+    bool expressionFunctionValid:1;
+    bool expressionRewritten:1;
     QScriptValue expressionFunction;
 
     QmlBasicScript sse;

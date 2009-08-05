@@ -53,7 +53,6 @@
 #include <QtDeclarative/qmlengine.h>
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
-#include "qfxanchors_p.h"
 
 #include "qfxview.h"
 #include "qmlstategroup.h"
@@ -371,6 +370,7 @@ QFxItem::QFxItem(QFxItem* parent)
   : QGraphicsObject(*(new QFxItemPrivate), parent, 0)
 {
     Q_D(QFxItem);
+    qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
     d->init(parent);
 }
 
@@ -380,6 +380,7 @@ QFxItem::QFxItem(QFxItemPrivate &dd, QFxItem *parent)
   : QGraphicsObject(dd, parent, 0)
 {
     Q_D(QFxItem);
+    qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
     d->init(parent);
 }
 
@@ -1884,3 +1885,6 @@ bool QFxItem::event(QEvent *ev)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfxitem.cpp"
+
