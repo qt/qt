@@ -1619,10 +1619,7 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
 
 bool QFxItem::sceneEvent(QEvent *event)
 {
-    bool rv = QGraphicsItem::sceneEvent(event);
-    if (event->type() == QEvent::UngrabMouse)
-        mouseUngrabEvent();
-    return rv;
+    return QGraphicsItem::sceneEvent(event);
 }
 
 QVariant QFxItem::itemChange(GraphicsItemChange change,
@@ -1633,10 +1630,6 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
     }
 
     return QGraphicsItem::itemChange(change, value);
-}
-
-void QFxItem::mouseUngrabEvent()
-{
 }
 
 QRectF QFxItem::boundingRect() const
