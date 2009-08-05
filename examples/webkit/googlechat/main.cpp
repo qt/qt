@@ -40,11 +40,15 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QNetworkProxyFactory>
 #include "googlechat.h"
 
 int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
+
+    QNetworkProxyFactory::setUseSystemConfigurationEnabled(true);
+
     GoogleChat *chat = new GoogleChat;
     chat->show();
     return app.exec();
