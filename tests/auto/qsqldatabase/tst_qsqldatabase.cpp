@@ -1054,6 +1054,7 @@ void tst_QSqlDatabase::recordMySQL()
     int major = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt();
     int minor = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 1, 1 ).toInt();
     int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
+    int vernum = (major << 16) + (minor << 8) + revision;
 
 #ifdef QT3_SUPPORT
     /* The below is broken in mysql below 5.0.15
@@ -1061,7 +1062,7 @@ void tst_QSqlDatabase::recordMySQL()
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
         with space on insert, and trailing spaces are removed on select.
     */
-    if ( major >5 || ( major == 5 && minor > 0) || ( major == 5 && minor == 0 && revision >= 15) ) {
+    if( vernum >= ((5 << 16) + 15) ) {
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
     }
@@ -1591,6 +1592,11 @@ void tst_QSqlDatabase::bug_249059()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
+    QString version=tst_Databases::getPSQLVersion( db );
+    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
+    if (ver < 7.3)
+        QSKIP("Test requires PostgreSQL >= 7.3", SkipSingle);
+
     QSqlQuery q(db);
     QString tableName = qTableName("bug_249059");
     QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dt timestamp, t time)").arg(tableName)));
@@ -2025,11 +2031,9 @@ void tst_QSqlDatabase::mysql_multiselect()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec("select version()"));
-    QVERIFY_SQL(q, next());
     QString version=tst_Databases::getMySqlVersion( db );
-    int ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
-    if (ver >= 4.1)
+    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
+    if (ver < 4.1)
         QSKIP("Test requires MySQL >= 4.1", SkipSingle);
 
     QVERIFY_SQL(q, exec("SELECT * FROM " + qTableName("qtest") + "; SELECT * FROM " + qTableName("qtest")));

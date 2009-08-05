@@ -687,6 +687,36 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QIODevice *in, qint64 *chunkSize)
     return bytes;
 }
 
+void QHttpNetworkReplyPrivate::appendUncompressedReplyData(QByteArray &qba)
+{
+    responseData.append(qba);
+
+    // clear the original! helps with implicit sharing and
+    // avoiding memcpy when the user is reading the data
+    qba.clear();
+}
+
+void QHttpNetworkReplyPrivate::appendUncompressedReplyData(QByteDataBuffer &data)
+{
+    responseData.append(data);
+
+    // clear the original! helps with implicit sharing and
+    // avoiding memcpy when the user is reading the data
+    data.clear();
+}
+
+void QHttpNetworkReplyPrivate::appendCompressedReplyData(QByteDataBuffer &data)
+{
+    // Work in progress: Later we will directly use a list of QByteArray or a QRingBuffer
+    // instead of one QByteArray.
+    for(int i = 0; i < data.bufferCount(); i++) {
+        QByteArray &byteData = data[i];
+        compressedData.append(byteData.constData(), byteData.size());
+    }
+    data.clear();
+}
+
+
 // SSL support below
 #ifndef QT_NO_OPENSSL
 

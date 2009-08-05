@@ -43,14 +43,16 @@
 #define QNETWORKCOOKIEJAR_H
 
 #include <QtCore/QObject>
+#include <QtCore/QUrl>
+
+// ### Qt5 remove this include
+#include "qnetworkcookie.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
-
-class QNetworkCookie;
 
 class QNetworkCookieJarPrivate;
 class Q_NETWORK_EXPORT QNetworkCookieJar: public QObject

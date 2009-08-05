@@ -56,8 +56,9 @@ public:
     {
     }
     KeyPressTransition(GraphicsView *receiver, Qt::Key key, QAbstractState *target)
-        : QSignalTransition(receiver, SIGNAL(keyPressed(int)), QList<QAbstractState*>() << target), m_key(key)
+        : QSignalTransition(receiver, SIGNAL(keyPressed(int))), m_key(key)
     {
+        setTargetState(target);
     }
 
     virtual bool eventTest(QEvent *e)
@@ -78,8 +79,9 @@ class LightningStrikesTransition: public QEventTransition
 {
 public:
     LightningStrikesTransition(QAbstractState *target)
-        : QEventTransition(this, QEvent::Timer, QList<QAbstractState*>() << target)
+        : QEventTransition(this, QEvent::Timer)
     {
+        setTargetState(target);
         qsrand((uint)QDateTime::currentDateTime().toTime_t());
         startTimer(1000);
     }

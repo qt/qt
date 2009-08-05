@@ -1386,7 +1386,7 @@ void tst_QDom::roundTripAttributes() const
     doc.save(stream, 0);
     stream.flush();
 
-    const QByteArray expected("<localName xmlns=\"\" attr=\"   &#xd;&#xa;&#x9;  \" />\n");
+    const QByteArray expected("<localName xmlns=\"\" attr=\"   &#xd;&#xa;&#x9;  \"/>\n");
     QCOMPARE(QString::fromLatin1(serialized.constData()), QString::fromLatin1(expected.constData()));
 }
 
@@ -1671,7 +1671,7 @@ void tst_QDom::appendDocumentNode() const
     doc.appendChild(elem);
 
     Q_ASSERT(!xml.isNull());
-    const QString expected(QLatin1String("<document>\n<test_elem name=\"value\" />\n</document>\n"));
+    const QString expected(QLatin1String("<document>\n<test_elem name=\"value\"/>\n</document>\n"));
 
     elem.appendChild(xml);
     QCOMPARE(doc.childNodes().count(), 1);
@@ -1788,8 +1788,8 @@ void tst_QDom::doubleNamespaceDeclarations() const
     QXmlInputSource source(&file);
     QVERIFY(doc.setContent(&source, &reader));
 
-    QVERIFY(doc.toString(0) == QString::fromLatin1("<a>\n<b p:c=\"\" xmlns:p=\"NS\" p:d=\"\" />\n</a>\n") ||
-            doc.toString(0) == QString::fromLatin1("<a>\n<b p:c=\"\" p:d=\"\" xmlns:p=\"NS\" />\n</a>\n"));
+    QVERIFY(doc.toString(0) == QString::fromLatin1("<a>\n<b p:c=\"\" xmlns:p=\"NS\" p:d=\"\"/>\n</a>\n") ||
+            doc.toString(0) == QString::fromLatin1("<a>\n<b p:c=\"\" p:d=\"\" xmlns:p=\"NS\"/>\n</a>\n"));
 }
 
 void tst_QDom::setContentQXmlReaderOverload() const

@@ -872,6 +872,7 @@ QVariant QFileSystemModel::headerData(int section, Qt::Orientation orientation, 
             pixmap.setAlphaChannel(pixmap.createAlphaMask());
             return pixmap;
         }
+        break;
     case Qt::TextAlignmentRole:
         return Qt::AlignLeft;
     }

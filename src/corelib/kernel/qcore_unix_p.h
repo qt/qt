@@ -73,32 +73,16 @@
 
 struct sockaddr;
 
-#if defined(Q_OS_LINUX) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
-// Linux supports thread-safe FD_CLOEXEC
+#if defined(Q_OS_LINUX) && defined(O_CLOEXEC)
 # define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 1
-
-// add defines for the consts for Linux
-# ifndef O_CLOEXEC
-#  define O_CLOEXEC  02000000
-# endif
-# ifndef FD_DUPFD_CLOEXEC
-#  define F_DUPFD_CLOEXEC 1030
-# endif
-# ifndef SOCK_CLOEXEC
-#  define SOCK_CLOEXEC O_CLOEXEC
-# endif
-# ifndef SOCK_NONBLOCK
-#  define SOCK_NONBLOCK O_NONBLOCK
-# endif
-# ifndef MSG_CMSG_CLOEXEC
-#  define MSG_CMSG_CLOEXEC 0x40000000
-# endif
-
 QT_BEGIN_NAMESPACE
 namespace QtLibcSupplement {
-    Q_CORE_EXPORT int accept4(int, sockaddr *, QT_SOCKLEN_T *, int flags);
-    Q_CORE_EXPORT int dup3(int oldfd, int newfd, int flags);
-    Q_CORE_EXPORT int pipe2(int pipes[], int flags);
+    inline int accept4(int, sockaddr *, QT_SOCKLEN_T *, int)
+    { errno = ENOSYS; return -1; }
+    inline int dup3(int, int, int)
+    { errno = ENOSYS; return -1; }
+    inline int pipe2(int [], int )
+    { errno = ENOSYS; return -1; }
 }
 QT_END_NAMESPACE
 using namespace QT_PREPEND_NAMESPACE(QtLibcSupplement);
@@ -190,7 +174,7 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
 #endif
 
     register int ret;
-#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC
+#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(O_CLOEXEC)
     // use pipe2
     flags |= O_CLOEXEC;
     ret = ::pipe2(pipefd, flags); // pipe2 is Linux-specific and is documented not to return EINTR
@@ -246,7 +230,7 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
 
     register int ret;
-#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC
+#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(O_CLOEXEC)
     // use dup3
     if (flags & FD_CLOEXEC) {
         EINTR_LOOP(ret, ::dup3(oldfd, newfd, O_CLOEXEC));
@@ -322,6 +306,10 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 }
 
 #endif // Q_OS_VXWORKS
+
+#if !defined(_POSIX_MONOTONIC_CLOCK)
+#  define _POSIX_MONOTONIC_CLOCK -1
+#endif
 
 bool qt_gettime_is_monotonic();
 timeval qt_gettime();

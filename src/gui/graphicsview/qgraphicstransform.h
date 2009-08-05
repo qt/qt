@@ -70,6 +70,7 @@ protected Q_SLOTS:
 
 protected:
     QGraphicsTransform(QGraphicsTransformPrivate &p, QObject *parent);
+
 private:
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;

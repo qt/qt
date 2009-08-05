@@ -48,6 +48,8 @@
 
 #include <QtGui>
 
+#include "tapandholdgesture.h"
+
 class ImageWidget : public QWidget
 {
     Q_OBJECT
@@ -79,7 +81,7 @@ private:
     void goToImage(int index);
 
     QPanGesture *panGesture;
-    QTapAndHoldGesture *tapAndHoldGesture;
+    TapAndHoldGesture *tapAndHoldGesture;
 
     QString path;
     QStringList files;

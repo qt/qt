@@ -125,7 +125,7 @@ QNetworkReply *AccelTreeResourceLoader::load(const QUrl &uri,
     networkLoop.connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(error(QNetworkReply::NetworkError)));
     networkLoop.connect(reply, SIGNAL(finished()), SLOT(finished()));
 
-    if(networkLoop.exec())
+    if(networkLoop.exec(QEventLoop::ExcludeUserInputEvents))
     {
         const QString errorMessage(escape(reply->errorString()));
 

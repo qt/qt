@@ -25,7 +25,9 @@ HEADERS += \
 	image/qpixmapcache_p.h \
         image/qpixmapdata_p.h \
         image/qpixmapdatafactory_p.h \
-        image/qpixmapfilter_p.h
+        image/qpixmapfilter_p.h \
+        image/qimagepixmapcleanuphooks_p.h \
+
 
 SOURCES += \
         image/qbitmap.cpp \
@@ -47,6 +49,8 @@ SOURCES += \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qnativeimage.cpp \
+        image/qimagepixmapcleanuphooks.cpp \
+
 
 win32 {
     SOURCES += image/qpixmap_win.cpp

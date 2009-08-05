@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <QtHelpProject version="1.0">
     <virtualFolder>assistant</virtualFolder>
-    <namespace>com.trolltech.com.assistantinternal_1.0.0</namespace>
+    <namespace>com.trolltech.com.assistantinternal-1.0.0</namespace>
       <filterSection>
         <files>
         <file>assistant.html</file>

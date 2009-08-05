@@ -72,7 +72,31 @@ class Node
         Function, 
         Property,
         Variable, 
+#ifdef QDOC_QML
+        Target,
+        QmlProperty,
+        QmlSignal,
+        QmlMethod
+#else
         Target 
+#endif
+    };
+
+    enum SubType { 
+        NoSubType,
+        Example, 
+        HeaderFile, 
+        File,
+        Group,
+        Module,
+        Page,
+#ifdef QDOC_QML
+        ExternalPage,
+        QmlClass,
+        QmlPropertyGroup
+#else
+        ExternalPage
+#endif
     };
     
     enum Access { Public, Protected, Private };
@@ -99,7 +123,8 @@ class Node
         NextLink, 
         PreviousLink,
         ContentsLink, 
-        IndexLink /*, 
+        IndexLink,
+        InheritsLink /*, 
         GlossaryLink, 
         CopyrightLink,
         ChapterLink, 
@@ -125,6 +150,7 @@ class Node
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
     Type type() const { return typ; }
+    virtual SubType subType() const { return NoSubType; }
     InnerNode *parent() const { return par; }
     InnerNode *relates() const { return rel; }
     const QString& name() const { return nam; }
@@ -144,7 +170,7 @@ class Node
 
     void clearRelated() { rel = 0; }
 
-    QString fileBase() const;
+    virtual QString fileBase() const;
 
  protected:
     Node(Type type, InnerNode *parent, const QString& name);
@@ -181,7 +207,7 @@ typedef QList<Node *> NodeList;
 class InnerNode : public Node
 {
  public:
-    ~InnerNode();
+    virtual ~InnerNode();
 
     Node *findNode(const QString& name);
     Node *findNode(const QString& name, Type type);
@@ -203,6 +229,7 @@ class InnerNode : public Node
     const EnumNode *findEnumNodeForValue(const QString &enumValue) const;
     const NodeList & childNodes() const { return children; }
     const NodeList & relatedNodes() const { return related; }
+    int count() const { return children.size(); }
     int overloadNumber(const FunctionNode *func) const;
     int numOverloads(const QString& funcName) const;
     NodeList overloads(const QString &funcName) const;
@@ -232,17 +259,19 @@ class LeafNode : public Node
 {
  public:
     LeafNode();
+    virtual ~LeafNode() { }
 
     virtual bool isInnerNode() const;
 
  protected:
-    LeafNode(Type type, InnerNode *parent, const QString& name);
+    LeafNode(Type type, InnerNode* parent, const QString& name);
 };
 
 class NamespaceNode : public InnerNode
 {
  public:
     NamespaceNode(InnerNode *parent, const QString& name);
+    virtual ~NamespaceNode() { }
 };
 
 class ClassNode;
@@ -266,6 +295,7 @@ class ClassNode : public InnerNode
 {
  public:
     ClassNode(InnerNode *parent, const QString& name);
+    virtual ~ClassNode() { }
 
     void addBaseClass(Access access, 
                       ClassNode *node, 
@@ -280,29 +310,23 @@ class ClassNode : public InnerNode
 
     QString serviceName() const { return sname; }
     void setServiceName(const QString& value) { sname = value; }
+    QString qmlElement() const { return qmlelement; }
+    void setQmlElement(const QString& value) { qmlelement = value; }
 
  private:
     QList<RelatedClass> bas;
     QList<RelatedClass> der;
     bool hidden;
     QString sname;
+    QString qmlelement;
 };
 
 class FakeNode : public InnerNode
 {
  public:
-    enum SubType { 
-        Example, 
-        HeaderFile, 
-        File,
-        Group,
-        Module,
-        Page,
-        ExternalPage,
-        QmlClass
-    };
 
     FakeNode(InnerNode *parent, const QString& name, SubType subType);
+    virtual ~FakeNode() { }
 
     void setTitle(const QString &title) { tle = title; }
     void setSubTitle(const QString &subTitle) { stle = subTitle; }
@@ -321,17 +345,84 @@ class FakeNode : public InnerNode
     NodeList gr;
 };
 
-class QmlNode : public FakeNode
+#ifdef QDOC_QML
+class QmlClassNode : public FakeNode
 {
  public:
-    QmlNode(InnerNode *parent, const QString& name, const ClassNode* cn)
-        : FakeNode(parent, name, QmlClass), cnode(cn) { }
+    QmlClassNode(InnerNode *parent, 
+                 const QString& name, 
+                 const ClassNode* cn);
+    virtual ~QmlClassNode() { }
 
     const ClassNode* classNode() const { return cnode; }
+    virtual QString fileBase() const;
 
  private:
     const ClassNode* cnode;
 };
+
+class QmlPropGroupNode : public FakeNode
+{
+ public:
+    QmlPropGroupNode(QmlClassNode* parent, const QString& name);
+    virtual ~QmlPropGroupNode() { }
+
+    const QString& element() const { return name(); }
+    void setDefault() { isdefault = true; }
+    bool isDefault() const { return isdefault; }
+
+ private:
+    bool    isdefault;
+};
+
+class QmlPropertyNode : public LeafNode
+{
+ public:
+    QmlPropertyNode(QmlPropGroupNode* parent, 
+                    const QString& name,
+                    const QString& type);
+    virtual ~QmlPropertyNode() { }
+
+    void setDataType(const QString& dataType) { dt = dataType; }
+    void setStored(bool stored) { sto = toTrool(stored); }
+    void setDesignable(bool designable) { des = toTrool(designable); }
+
+    const QString &dataType() const { return dt; }
+    QString qualifiedDataType() const { return dt; }
+    bool isStored() const { return fromTrool(sto,true); }
+    bool isDesignable() const { return fromTrool(des,false); }
+
+    const QString& element() const { return parent()->name(); }
+
+ private:
+    enum Trool { Trool_True, Trool_False, Trool_Default };
+
+    static Trool toTrool(bool boolean);
+    static bool fromTrool(Trool troolean, bool defaultValue);
+
+    QString dt;
+    Trool   sto;
+    Trool   des;
+};
+
+class QmlSignalNode : public LeafNode
+{
+ public:
+    QmlSignalNode(QmlClassNode* parent, const QString& name);
+    virtual ~QmlSignalNode() { }
+
+    const QString& element() const { return parent()->name(); }
+};
+
+class QmlMethodNode : public LeafNode
+{
+ public:
+    QmlMethodNode(QmlClassNode* parent, const QString& name);
+    virtual ~QmlMethodNode() { }
+
+    const QString& element() const { return parent()->name(); }
+};
+#endif
 
 class EnumItem
 {
@@ -358,6 +449,7 @@ class EnumNode : public LeafNode
 {
  public:
     EnumNode(InnerNode *parent, const QString& name);
+    virtual ~EnumNode() { }
 
     void addItem(const EnumItem& item);
     void setFlagsType(TypedefNode *typedeff);
@@ -378,6 +470,7 @@ class TypedefNode : public LeafNode
 {
  public:
     TypedefNode(InnerNode *parent, const QString& name);
+    virtual ~TypedefNode() { }
 
     const EnumNode *associatedEnum() const { return ae; }
 
@@ -438,6 +531,7 @@ class FunctionNode : public LeafNode
     enum Virtualness { NonVirtual, ImpureVirtual, PureVirtual };
 
     FunctionNode(InnerNode *parent, const QString &name);
+    virtual ~FunctionNode() { }
 
     void setReturnType(const QString& returnType) { rt = returnType; }
     void setMetaness(Metaness metaness) { met = metaness; }
@@ -500,6 +594,7 @@ class PropertyNode : public LeafNode
     enum { NumFunctionRoles = Resetter + 1 };
 
     PropertyNode(InnerNode *parent, const QString& name);
+    virtual ~PropertyNode() { }
 
     void setDataType(const QString& dataType) { dt = dataType; }
     void addFunction(FunctionNode *function, FunctionRole role);
@@ -557,6 +652,7 @@ class VariableNode : public LeafNode
 {
  public:
     VariableNode(InnerNode *parent, const QString &name);
+    virtual ~VariableNode() { }
 
     void setLeftType(const QString &leftType) { lt = leftType; }
     void setRightType(const QString &rightType) { rt = rightType; }
@@ -582,6 +678,7 @@ class TargetNode : public LeafNode
 {
  public:
     TargetNode(InnerNode *parent, const QString& name);
+    virtual ~TargetNode() { }
 
     virtual bool isInnerNode() const;
 };

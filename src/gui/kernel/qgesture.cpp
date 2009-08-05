@@ -97,7 +97,7 @@ private:
     This is a base class, to create a custom gesture type, you should subclass
     it and implement its pure virtual functions.
 
-    \sa QPanGesture, QTapAndHoldGesture
+    \sa QPanGesture
 */
 
 /*! \fn bool QGesture::filterEvent(QEvent *event)
@@ -153,7 +153,7 @@ QGesture::QGesture(QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
     if (parent)
-        installEventFilter(parent);
+        parent->installEventFilter(this);
 }
 
 /*! \internal
@@ -162,7 +162,7 @@ QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
     if (parent)
-        installEventFilter(parent);
+        parent->installEventFilter(this);
 }
 
 /*!
@@ -202,51 +202,6 @@ Qt::GestureState QGesture::state() const
 void QGesture::setState(Qt::GestureState state)
 {
     d_func()->state = state;
-}
-
-/*!
-    \property QGesture::startPos
-
-    \brief The start position of the gesture (if relevant).
-*/
-QPoint QGesture::startPos() const
-{
-    return d_func()->startPos;
-}
-
-void QGesture::setStartPos(const QPoint &point)
-{
-    d_func()->startPos = point;
-}
-
-/*!
-    \property QGesture::lastPos
-
-    \brief The last recorded position of the gesture (if relevant).
-*/
-QPoint QGesture::lastPos() const
-{
-    return d_func()->lastPos;
-}
-
-void QGesture::setLastPos(const QPoint &point)
-{
-    d_func()->lastPos = point;
-}
-
-/*!
-    \property QGesture::pos
-
-    \brief The current position of the gesture (if relevant).
-*/
-QPoint QGesture::pos() const
-{
-    return d_func()->pos;
-}
-
-void QGesture::setPos(const QPoint &point)
-{
-    d_func()->pos = point;
 }
 
 /*!

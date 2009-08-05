@@ -85,7 +85,7 @@ static inline int qt_safe_socket(int domain, int type, int protocol, int flags =
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
     register int fd;
-#ifdef SOCK_CLOEXEC
+#if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
     int newtype = type | SOCK_CLOEXEC;
     if (flags & O_NONBLOCK)
         newtype |= SOCK_NONBLOCK;

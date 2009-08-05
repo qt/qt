@@ -100,7 +100,7 @@ ByteArrayClass::ByteArrayClass(QScriptEngine *engine)
     QScriptValue global = engine->globalObject();
     proto.setPrototype(global.property("Object").property("prototype"));
 
-    ctor = engine->newFunction(construct);
+    ctor = engine->newFunction(construct, proto);
     ctor.setData(qScriptValueFromValue(engine, this));
 }
 //! [0]
@@ -224,7 +224,10 @@ QScriptValue ByteArrayClass::construct(QScriptContext *ctx, QScriptEngine *)
     ByteArrayClass *cls = qscriptvalue_cast<ByteArrayClass*>(ctx->callee().data());
     if (!cls)
         return QScriptValue();
-    int size = ctx->argument(0).toInt32();
+    QScriptValue arg = ctx->argument(0);
+    if (arg.instanceOf(ctx->callee()))
+        return cls->newInstance(qscriptvalue_cast<QByteArray>(arg));
+    int size = arg.toInt32();
     return cls->newInstance(size);
 }
 //! [2]
@@ -240,7 +243,7 @@ QScriptValue ByteArrayClass::toScriptValue(QScriptEngine *eng, const QByteArray 
 
 void ByteArrayClass::fromScriptValue(const QScriptValue &obj, QByteArray &ba)
 {
-    ba = qscriptvalue_cast<QByteArray>(obj.data());
+    ba = qvariant_cast<QByteArray>(obj.data().toVariant());
 }
 
 

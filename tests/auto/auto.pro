@@ -270,7 +270,8 @@ SUBDIRS += _networkselftest \
            qscriptenginedebugger \
            qscrollarea \
            qsemaphore \
-	   qsharedpointer \
+           qsharedpointer \
+           qsharedpointer_and_qwidget \
            qsequentialanimationgroup \
            qset \
            qsettings \
@@ -284,6 +285,10 @@ SUBDIRS += _networkselftest \
            qsocks5socketengine \
            qsortfilterproxymodel \
            qsound \
+           qaudiodeviceid \
+           qaudioformat \
+           qaudiooutput \
+           qaudioinput \
            qspinbox \
            qsplitter \
            qsql \

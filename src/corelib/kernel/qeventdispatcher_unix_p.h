@@ -69,9 +69,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-#if !defined(_POSIX_MONOTONIC_CLOCK)
-#  define _POSIX_MONOTONIC_CLOCK -1
-#endif
 
 // internal timer info
 struct QTimerInfo {

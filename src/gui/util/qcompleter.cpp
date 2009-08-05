@@ -772,7 +772,7 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
 ///////////////////////////////////////////////////////////////////////////////
 QCompleterPrivate::QCompleterPrivate()
 : widget(0), proxy(0), popup(0), cs(Qt::CaseSensitive), role(Qt::EditRole), column(0),
-  sorting(QCompleter::UnsortedModel), wrap(true), maxVisibleItems(7), eatFocusOut(true)
+  maxVisibleItems(7), sorting(QCompleter::UnsortedModel), wrap(true), eatFocusOut(true)
 {
 }
 
@@ -823,6 +823,9 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
 {
     Q_Q(QCompleter);
     QString completion;
+
+    if (!(index.flags() & Qt::ItemIsEnabled))
+        return;
 
     if (!index.isValid() || (!proxy->showAll && (index.row() >= proxy->engine->matchCount()))) {
         completion = prefix;
@@ -1102,7 +1105,8 @@ void QCompleter::setPopup(QAbstractItemView *popup)
 
     QObject::connect(popup, SIGNAL(clicked(QModelIndex)),
                      this, SLOT(_q_complete(QModelIndex)));
-    QObject::connect(popup, SIGNAL(clicked(QModelIndex)), popup, SLOT(hide()));
+    QObject::connect(this, SIGNAL(activated(QModelIndex)),
+                     popup, SLOT(hide()));
 
     QObject::connect(popup->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this, SLOT(_q_completionSelected(QItemSelection)));

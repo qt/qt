@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #ifndef FREEZETABLEWIDGET_H
 #define FREEZETABLEWIDGET_H
 

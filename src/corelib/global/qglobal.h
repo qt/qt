@@ -279,7 +279,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA)
+#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE)
 #error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
 #endif
 
@@ -311,11 +311,8 @@ namespace QT_NAMESPACE {}
 #  if !defined(MAC_OS_X_VERSION_10_6)
 #       define MAC_OS_X_VERSION_10_6 MAC_OS_X_VERSION_10_5 + 1
 #  endif
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED == MAC_OS_X_VERSION_10_6)
-#    warning "Support for this version of Mac OS X is still preliminary"
-#  endif
 #  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6)
-#    error "This version of Mac OS X is unsupported"
+#    warning "This version of Mac OS X is unsupported"
 #  endif
 #endif
 
@@ -1176,6 +1173,11 @@ class QDataStream;
 #    else
 #      define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_MULTIMEDIA_LIB)
+#      define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_OPENVG_LIB)
 #      define Q_OPENVG_EXPORT Q_DECL_EXPORT
 #    else
@@ -1220,6 +1222,7 @@ class QDataStream;
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
+#    define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
 #    define Q_OPENVG_EXPORT Q_DECL_IMPORT
 #    define Q_XML_EXPORT Q_DECL_IMPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_IMPORT
@@ -1246,6 +1249,7 @@ class QDataStream;
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
+#    define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
 #    define Q_OPENVG_EXPORT Q_DECL_EXPORT
 #    define Q_XML_EXPORT Q_DECL_EXPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
@@ -1259,6 +1263,7 @@ class QDataStream;
 #    define Q_NETWORK_EXPORT
 #    define Q_SVG_EXPORT
 #    define Q_OPENGL_EXPORT
+#    define Q_MULTIMEDIA_EXPORT
 #    define Q_XML_EXPORT
 #    define Q_XMLPATTERNS_EXPORT
 #    define Q_SCRIPT_EXPORT
@@ -2308,12 +2313,14 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define QT_MODULE_DBUS                 0x08000
 #define QT_MODULE_SCRIPTTOOLS          0x10000
 #define QT_MODULE_OPENVG               0x20000
+#define QT_MODULE_MULTIMEDIA           0x40000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
                                  | QT_MODULE_NETWORK \
                                  | QT_MODULE_SQL \
                                  | QT_MODULE_SCRIPT \
+                                 | QT_MODULE_MULTIMEDIA \
                                  | QT_MODULE_XML \
                                  | QT_MODULE_XMLPATTERNS \
                                  | QT_MODULE_TEST \
@@ -2329,6 +2336,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
                                  | QT_MODULE_OPENGL \
                                  | QT_MODULE_OPENVG \
                                  | QT_MODULE_SQL \
+                                 | QT_MODULE_MULTIMEDIA \
                                  | QT_MODULE_XML \
                                  | QT_MODULE_XMLPATTERNS \
                                  | QT_MODULE_SCRIPT \
@@ -2376,6 +2384,9 @@ QT_LICENSED_MODULE(OpenVG)
 #endif
 #if (QT_EDITION & QT_MODULE_SQL)
 QT_LICENSED_MODULE(Sql)
+#endif
+#if (QT_EDITION & QT_MODULE_MULTIMEDIA)
+QT_LICENSED_MODULE(Multimedia)
 #endif
 #if (QT_EDITION & QT_MODULE_XML)
 QT_LICENSED_MODULE(Xml)

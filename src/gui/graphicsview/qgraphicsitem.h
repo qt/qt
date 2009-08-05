@@ -375,6 +375,9 @@ public:
     QVariant data(int key) const;
     void setData(int key, const QVariant &value);
 
+    Qt::InputMethodHints inputMethodHints() const;
+    void setInputMethodHints(Qt::InputMethodHints hints);
+
     enum {
         Type = 1,
         UserType = 65536
