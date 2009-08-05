@@ -80,13 +80,13 @@ public:
     QmlValueType *operator[](int idx) const { return valueTypes[idx]; }
 };
 
-class QmlPointValueType : public QmlValueType
+class QmlPointFValueType : public QmlValueType
 {
     Q_PROPERTY(qreal x READ x WRITE setX);
     Q_PROPERTY(qreal y READ y WRITE setY);
     Q_OBJECT
 public:
-    QmlPointValueType(QObject *parent = 0);
+    QmlPointFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
@@ -100,7 +100,27 @@ private:
     QPointF point;
 };
 
-class QmlRectValueType : public QmlValueType
+class QmlPointValueType : public QmlValueType
+{
+    Q_PROPERTY(int x READ x WRITE setX);
+    Q_PROPERTY(int y READ y WRITE setY);
+    Q_OBJECT
+public:
+    QmlPointValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    int x() const;
+    int y() const;
+    void setX(int);
+    void setY(int);
+
+private:
+    QPoint point;
+};
+
+class QmlRectFValueType : public QmlValueType
 {
     Q_PROPERTY(qreal x READ x WRITE setX);
     Q_PROPERTY(qreal y READ y WRITE setY);
@@ -108,7 +128,7 @@ class QmlRectValueType : public QmlValueType
     Q_PROPERTY(qreal height READ height WRITE setHeight);
     Q_OBJECT
 public:
-    QmlRectValueType(QObject *parent = 0);
+    QmlRectFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
@@ -125,6 +145,33 @@ public:
 
 private:
     QRectF rect;
+};
+
+class QmlRectValueType : public QmlValueType
+{
+    Q_PROPERTY(int x READ x WRITE setX);
+    Q_PROPERTY(int y READ y WRITE setY);
+    Q_PROPERTY(int width READ width WRITE setWidth);
+    Q_PROPERTY(int height READ height WRITE setHeight);
+    Q_OBJECT
+public:
+    QmlRectValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    int x() const;
+    int y() const;
+    void setX(int);
+    void setY(int);
+    
+    int width() const;
+    int height() const;
+    void setWidth(int);
+    void setHeight(int);
+
+private:
+    QRect rect;
 };
 
 class QmlVector3DValueType : public QmlValueType
