@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
 : parent(0), engine(0), isInternal(false), notifyIndex(-1), 
-  highPriorityCount(0), idValues(0), idValueCount(0)
+  highPriorityCount(0), expressions(0), idValues(0), idValueCount(0)
 {
 }
 
@@ -278,11 +278,15 @@ QmlContext::~QmlContext()
         (*iter)->d_func()->parent = 0;
     }
 
-    for (QSet<QmlExpression *>::ConstIterator iter = 
-            d->childExpressions.begin();
-            iter != d->childExpressions.end();
-            ++iter) {
-        (*iter)->d_func()->ctxt = 0;
+    QmlExpressionPrivate *expression = d->expressions;
+    while (expression) {
+        QmlExpressionPrivate *nextExpression = expression->nextExpression;
+
+        expression->ctxt = 0;
+        expression->prevExpression = 0;
+        expression->nextExpression = 0;
+
+        expression = nextExpression;
     }
 
     for (int ii = 0; ii < d->contextObjects.count(); ++ii) {

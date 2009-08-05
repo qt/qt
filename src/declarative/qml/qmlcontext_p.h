@@ -67,6 +67,7 @@ class QmlContext;
 class QmlExpression;
 class QmlEngine;
 class QmlExpression;
+class QmlExpressionPrivate;
 
 class QmlContextPrivate : public QObjectPrivate
 {
@@ -102,7 +103,8 @@ public:
 
     void invalidateEngines();
     QSet<QmlContext *> childContexts;
-    QSet<QmlExpression *> childExpressions;
+
+    QmlExpressionPrivate *expressions;
 
     QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;

@@ -70,6 +70,10 @@ public:
     QmlExpressionPrivate();
     ~QmlExpressionPrivate();
 
+    // Forms the QmlContext "expressions" linked list
+    QmlExpressionPrivate *nextExpression;
+    QmlExpressionPrivate **prevExpression;
+
     enum CompiledDataType {
         BasicScriptEngineData = 1,
         PreTransformedQtScriptData = 2
