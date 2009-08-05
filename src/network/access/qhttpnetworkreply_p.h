@@ -52,6 +52,7 @@
 //
 // We mean it.
 //
+#include <qplatformdefs.h>
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_COMPRESS
