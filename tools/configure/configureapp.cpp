@@ -245,6 +245,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "XMLPATTERNS" ]     = "auto";
     dictionary[ "PHONON" ]          = "auto";
     dictionary[ "PHONON_BACKEND" ]  = "yes";
+    dictionary[ "MULTIMEDIA" ]      = "yes";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
@@ -843,6 +844,10 @@ void Configure::parseCmdLine()
             dictionary[ "XMLPATTERNS" ] = "no";
         } else if( configCmdLine.at(i) == "-xmlpatterns" ) {
             dictionary[ "XMLPATTERNS" ] = "yes";
+        } else if( configCmdLine.at(i) == "-no-multimedia" ) {
+            dictionary[ "MULTIMEDIA" ] = "no";
+        } else if( configCmdLine.at(i) == "-multimedia" ) {
+            dictionary[ "MULTIMEDIA" ] = "yes";
         } else if( configCmdLine.at(i) == "-no-phonon" ) {
             dictionary[ "PHONON" ] = "no";
         } else if( configCmdLine.at(i) == "-phonon" ) {
@@ -1425,6 +1430,7 @@ bool Configure::displayHelp()
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
+                    "[-no-multimedia] [-multimedia]\n"
                     "[-no-webkit] [-webkit]\n"
                     "[-no-scripttools] [-scripttools]\n"
                     "[-graphicssystem raster|opengl]\n\n", 0, 7);
@@ -1599,6 +1605,8 @@ bool Configure::displayHelp()
         desc("PHONON", "yes",   "-phonon",              "Compile the Phonon module (Phonon is built if a decent C++ compiler is used.)");
         desc("PHONON_BACKEND","no", "-no-phonon-backend","Do not compile the platform-specific Phonon backend-plugin");
         desc("PHONON_BACKEND","yes","-phonon-backend",  "Compile in the platform-specific Phonon backend-plugin");
+        desc("MULTIMEDIA", "no", "-no-multimedia",      "Do not compile the multimedia module");
+        desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
         desc("SCRIPTTOOLS", "no", "-no-scripttools",    "Do not build the QtScriptTools module.");
@@ -1867,6 +1875,8 @@ bool Configure::checkAvailability(const QString &part)
             if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
             if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
+    } else if (part == "MULTIMEDIA") {
+        available = true;
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     } else if (part == "SCRIPTTOOLS") {
@@ -2302,6 +2312,9 @@ void Configure::generateOutputVars()
             qtConfig += "phonon-backend";
     }
 
+    if (dictionary["MULTIMEDIA"] == "yes")
+        qtConfig += "multimedia";
+
     if (dictionary["WEBKIT"] == "yes")
         qtConfig += "webkit";
 
@@ -2662,6 +2675,7 @@ void Configure::generateConfigfiles()
         if(dictionary["IPV6"] == "no")              qconfigList += "QT_NO_IPV6";
         if(dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
         if(dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
+        if(dictionary["MULTIMEDIA"] == "no")        qconfigList += "QT_NO_MULTIMEDIA";
         if(dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
 
@@ -2920,6 +2934,7 @@ void Configure::displayConfig()
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
+    cout << "Multimedia support.........." << dictionary[ "MULTIMEDIA" ] << endl;
     cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;

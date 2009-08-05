@@ -284,6 +284,10 @@ SUBDIRS += _networkselftest \
            qsocks5socketengine \
            qsortfilterproxymodel \
            qsound \
+           qaudiodeviceid \
+           qaudioformat \
+           qaudiooutput \
+           qaudioinput \
            qspinbox \
            qsplitter \
            qsql \
