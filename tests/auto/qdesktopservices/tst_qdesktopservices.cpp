@@ -307,7 +307,7 @@ void tst_qdesktopservices::storageLocation()
 
     switch(location) {
     case QDesktopServices::DesktopLocation:
-        QCOMPARE( storageLocation, QString() );
+        QCOMPARE( storageLocation, drive + QString("/data") );
         break;
     case QDesktopServices::DocumentsLocation:
         QCOMPARE( storageLocation, drive + QString("/data") );
