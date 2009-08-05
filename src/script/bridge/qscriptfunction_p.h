@@ -72,18 +72,20 @@ public:
     // work around CELL_SIZE limitation
     struct Data
     {
-        QScriptEngine *engine;
         QScriptEngine::FunctionSignature function;
     };
 
-    FunctionWrapper(QScriptEngine *, int length, const JSC::Identifier&, QScriptEngine::FunctionSignature);
+    FunctionWrapper(JSC::ExecState*, int length, const JSC::Identifier&,
+                    QScriptEngine::FunctionSignature);
     ~FunctionWrapper();
 
 private:
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
 
-    static JSC::JSValue JSC_HOST_CALL proxyCall(JSC::ExecState *, JSC::JSObject *, JSC::JSValue, const JSC::ArgList &);
-    static JSC::JSObject* proxyConstruct(JSC::ExecState *, JSC::JSObject *, const JSC::ArgList &);
+    static JSC::JSValue JSC_HOST_CALL proxyCall(JSC::ExecState *, JSC::JSObject *,
+                                                JSC::JSValue, const JSC::ArgList &);
+    static JSC::JSObject* proxyConstruct(JSC::ExecState *, JSC::JSObject *,
+                                         const JSC::ArgList &);
 
 private:
     Data *data;
@@ -95,19 +97,21 @@ public:
     // work around CELL_SIZE limitation
     struct Data
     {
-        QScriptEngine *engine;
         QScriptEngine::FunctionWithArgSignature function;
         void *arg;
     };
 
-    FunctionWithArgWrapper(QScriptEngine *, int length, const JSC::Identifier&, QScriptEngine::FunctionWithArgSignature, void *);
+    FunctionWithArgWrapper(JSC::ExecState*, int length, const JSC::Identifier&,
+                           QScriptEngine::FunctionWithArgSignature, void *);
     ~FunctionWithArgWrapper();
 
 private:
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
 
-    static JSC::JSValue JSC_HOST_CALL proxyCall(JSC::ExecState *, JSC::JSObject *, JSC::JSValue , const JSC::ArgList &);
-    static JSC::JSObject* proxyConstruct(JSC::ExecState *, JSC::JSObject *, const JSC::ArgList &);
+    static JSC::JSValue JSC_HOST_CALL proxyCall(JSC::ExecState *, JSC::JSObject *,
+                                                JSC::JSValue , const JSC::ArgList &);
+    static JSC::JSObject* proxyConstruct(JSC::ExecState *, JSC::JSObject *,
+                                         const JSC::ArgList &);
 
 private:
     Data *data;

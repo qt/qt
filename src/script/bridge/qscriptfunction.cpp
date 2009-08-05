@@ -61,12 +61,11 @@ namespace QScript
 {
 
 
-FunctionWrapper::FunctionWrapper(QScriptEngine *engine, int length, const JSC::Identifier &name,
-                                   QScriptEngine::FunctionSignature function)
-    : JSC::PrototypeFunction(QScriptEnginePrivate::get(engine)->globalExec(),
-                             length, name, proxyCall), data(new Data())
+FunctionWrapper::FunctionWrapper(JSC::ExecState *exec, int length, const JSC::Identifier &name,
+                                 QScriptEngine::FunctionSignature function)
+    : JSC::PrototypeFunction(exec, length, name, proxyCall),
+      data(new Data())
 {
-    data->engine = engine;
     data->function = function;
 }
 
@@ -85,13 +84,13 @@ JSC::JSValue FunctionWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObject *cal
                                         JSC::JSValue thisObject, const JSC::ArgList &args)
 {
     FunctionWrapper *self = static_cast<FunctionWrapper*>(callee);
-    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
+    QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
     QScriptContext *ctx = eng_p->contextForFrame(exec);
 
     //We might have nested eval inside our function so we should create another scope
     QScriptPushScopeHelper scope(exec);
 
-    QScriptValue result = self->data->function(ctx, self->data->engine);
+    QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p));
     if (!result.isValid())
         result = QScriptValue(QScriptValue::UndefinedValue);
 
@@ -102,26 +101,25 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
                                                const JSC::ArgList &args)
 {
     FunctionWrapper *self = static_cast<FunctionWrapper*>(callee);
-    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
+    QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
     QScriptContext *ctx = eng_p->contextForFrame(exec);
 
     //We might have nested eval inside our function so we should create another scope
     QScriptPushScopeHelper scope(exec, true);
 
     QScriptValue defaultObject = ctx->thisObject();
-    QScriptValue result = self->data->function(ctx, self->data->engine);
+    QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p));
     if (!result.isObject())
         result = defaultObject;
 
     return JSC::asObject(eng_p->scriptValueToJSCValue(result));
 }
 
-FunctionWithArgWrapper::FunctionWithArgWrapper(QScriptEngine *engine, int length, const JSC::Identifier &name,
-                                                 QScriptEngine::FunctionWithArgSignature function, void *arg)
-    : JSC::PrototypeFunction(QScriptEnginePrivate::get(engine)->globalExec(),
-                             length, name, proxyCall), data(new Data())
+FunctionWithArgWrapper::FunctionWithArgWrapper(JSC::ExecState *exec, int length, const JSC::Identifier &name,
+                                               QScriptEngine::FunctionWithArgSignature function, void *arg)
+    : JSC::PrototypeFunction(exec, length, name, proxyCall),
+      data(new Data())
 {
-    data->engine = engine;
     data->function = function;
     data->arg = arg;
 }
@@ -141,12 +139,12 @@ JSC::JSValue FunctionWithArgWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObje
                                                JSC::JSValue thisObject, const JSC::ArgList &args)
 {
     FunctionWithArgWrapper *self = static_cast<FunctionWithArgWrapper*>(callee);
-    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
+    QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
 
     //We might have nested eval inside our function so we should create another scope
     QScriptPushScopeHelper scope(exec);
 
-    QScriptValue result = self->data->function(eng_p->contextForFrame(exec), self->data->engine, self->data->arg);
+    QScriptValue result = self->data->function(eng_p->contextForFrame(exec), QScriptEnginePrivate::get(eng_p), self->data->arg);
 
     return eng_p->scriptValueToJSCValue(result);
 }
@@ -155,14 +153,14 @@ JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *exec, JSC:
                                                       const JSC::ArgList &args)
 {
     FunctionWithArgWrapper *self = static_cast<FunctionWithArgWrapper*>(callee);
-    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
+    QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
     QScriptContext *ctx = eng_p->contextForFrame(exec);
 
     //We might have nested eval inside our function so we should create another scope
     QScriptPushScopeHelper scope(exec, true);
 
     QScriptValue defaultObject = ctx->thisObject();
-    QScriptValue result = self->data->function(ctx, self->data->engine, self->data->arg);
+    QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p) , self->data->arg);
     if (!result.isObject())
         result = defaultObject;
 

@@ -1512,7 +1512,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
 {
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
-    JSC::JSValue function = new (exec)QScript::FunctionWrapper(this, length, JSC::Identifier(exec, ""), fun);
+    JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     result.setProperty(QLatin1String("prototype"), prototype, QScriptValue::Undeletable);
     const_cast<QScriptValue&>(prototype)
@@ -1838,7 +1838,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 {
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
-    JSC::JSValue function = new (exec)QScript::FunctionWrapper(this, length, JSC::Identifier(exec, ""), fun);
+    JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
     result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
@@ -1855,7 +1855,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
 {
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
-    JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(this, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
+    JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(exec, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
     result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
