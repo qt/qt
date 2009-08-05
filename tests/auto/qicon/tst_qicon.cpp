@@ -609,8 +609,7 @@ void tst_QIcon::task184901_badCache()
 
 void tst_QIcon::fromTheme()
 {
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
-    QString searchPath = prefix + QLatin1String("/icons");
+    QString searchPath = QLatin1String(":/icons");
     QIcon::setThemeSearchPaths(QStringList() << searchPath);
     QVERIFY(QIcon::themeSearchPaths().size() == 1);
     QCOMPARE(searchPath, QIcon::themeSearchPaths()[0]);

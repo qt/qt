@@ -187,14 +187,17 @@ QStringList QIconLoader::themeSearchPaths() const
         QDir homeDir(QDir::homePath() + QLatin1String("/.icons"));
         if (homeDir.exists())
             m_iconDirs.prepend(homeDir.path());
-
-#elif defined(Q_WS_WIN)
+#endif
+        
+#if defined(Q_WS_WIN)
         m_iconDirs.append(qApp->applicationDirPath() +
                           QLatin1String("/icons"));
 #elif defined(Q_WS_MAC)
         m_iconDirs.append(qApp->applicationDirPath() +
                           QLatin1String("/../Resources/icons"));
 #endif
+        // Allways add resource directory as search path
+        m_iconDirs.append(QLatin1String(":/icons"));
     }
     return m_iconDirs;
 }
