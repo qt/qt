@@ -132,8 +132,7 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
         it = qAppPriv->widgetGestures.find(static_cast<QWidget*>(receiver));
         if (it == qAppPriv->widgetGestures.end())
             return false;
-        QPanGesture *gesture = it.value().pan;
-        if (this != gesture)
+        if (this != it.value().pan)
             return false;
         Qt::GestureState nextState = Qt::NoGesture;
         switch(ev->gestureType) {
@@ -162,7 +161,7 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
             d->totalOffset += d->lastOffset;
         }
         d->lastPosition = ev->position;
-        gesture->updateState(nextState);
+        updateState(nextState);
         return true;
     }
 #endif
@@ -248,6 +247,7 @@ void QPanGesture::reset()
         d->panFinishedTimer = 0;
     }
 #endif
+    QGesture::reset();
 }
 
 /*!
@@ -271,6 +271,210 @@ QSize QPanGesture::lastOffset() const
 {
     Q_D(const QPanGesture);
     return d->lastOffset;
+}
+
+
+/*!
+    \class QPinchGesture
+    \since 4.6
+
+    \brief The QPinchGesture class represents a Pinch gesture,
+    providing additional information related to zooming and/or rotation.
+*/
+
+/*!
+    Creates a new Pinch gesture handler object and marks it as a child of \a
+    parent.
+
+    On some platform like Windows it's necessary to provide a non-null widget
+    as \a parent to get native gesture support.
+*/
+QPinchGesture::QPinchGesture(QWidget *parent)
+    : QGesture(*new QPinchGesturePrivate, parent)
+{
+    if (parent) {
+        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        qAppPriv->widgetGestures[parent].pinch = this;
+#ifdef Q_WS_WIN
+        qt_widget_private(parent)->winSetupGestures();
+#endif
+    }
+}
+
+/*! \internal */
+bool QPinchGesture::event(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::ParentAboutToChange:
+        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
+            getQApplicationPrivateInternal()->widgetGestures[w].pinch = 0;
+#ifdef Q_WS_WIN
+            qt_widget_private(w)->winSetupGestures();
+#endif
+        }
+        break;
+    case QEvent::ParentChange:
+        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
+            getQApplicationPrivateInternal()->widgetGestures[w].pinch = this;
+#ifdef Q_WS_WIN
+            qt_widget_private(w)->winSetupGestures();
+#endif
+        }
+        break;
+    default:
+        break;
+    }
+    return QObject::event(event);
+}
+
+bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
+{
+#ifdef Q_WS_WIN
+    Q_D(QPinchGesture);
+    if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
+        QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
+        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
+        it = qAppPriv->widgetGestures.find(static_cast<QWidget*>(receiver));
+        if (it == qAppPriv->widgetGestures.end())
+            return false;
+        if (this != it.value().pinch)
+            return false;
+        Qt::GestureState nextState = Qt::NoGesture;
+        switch(ev->gestureType) {
+        case QNativeGestureEvent::GestureBegin:
+            // next we might receive the first gesture update event, so we
+            // prepare for it.
+            d->state = Qt::NoGesture;
+            d->scaleFactor = d->lastScaleFactor = 1;
+            d->rotationAngle = d->lastRotationAngle = 0;
+            d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPoint();
+            d->initialDistance = 0;
+            return false;
+        case QNativeGestureEvent::Rotate:
+            d->lastRotationAngle = d->rotationAngle;
+            d->rotationAngle = -1 * GID_ROTATE_ANGLE_FROM_ARGUMENT(ev->argument);
+            nextState = Qt::GestureUpdated;
+            event->accept();
+            break;
+        case QNativeGestureEvent::Zoom:
+            if (d->initialDistance != 0) {
+                d->lastScaleFactor = d->scaleFactor;
+                int distance = int(qint64(ev->argument));
+                d->scaleFactor = (qreal) distance / d->initialDistance;
+            } else {
+                d->initialDistance = int(qint64(ev->argument));
+            }
+            nextState = Qt::GestureUpdated;
+            event->accept();
+            break;
+        case QNativeGestureEvent::GestureEnd:
+            if (state() == Qt::NoGesture)
+                return false; // some other gesture has ended
+            nextState = Qt::GestureFinished;
+            break;
+        default:
+            return false;
+        }
+        if (d->startCenterPoint.isNull())
+            d->startCenterPoint = d->centerPoint;
+        d->lastCenterPoint = d->centerPoint;
+        d->centerPoint = static_cast<QWidget*>(receiver)->mapFromGlobal(ev->position);
+        updateState(nextState);
+        return true;
+    }
+#endif
+    return QGesture::eventFilter(receiver, event);
+}
+
+/*! \internal */
+bool QPinchGesture::filterEvent(QEvent *event)
+{
+    Q_UNUSED(event);
+    return false;
+}
+
+/*! \internal */
+void QPinchGesture::reset()
+{
+    Q_D(QPinchGesture);
+    d->scaleFactor = d->lastScaleFactor = 0;
+    d->rotationAngle = d->lastRotationAngle = 0;
+    d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPoint();
+    QGesture::reset();
+}
+
+/*!
+    \property QPinchGesture::scaleFactor
+
+    Specifies a scale factor of the pinch gesture.
+*/
+qreal QPinchGesture::scaleFactor() const
+{
+    return d_func()->scaleFactor;
+}
+
+/*!
+    \property QPinchGesture::lastScaleFactor
+
+    Specifies a previous scale factor of the pinch gesture.
+*/
+qreal QPinchGesture::lastScaleFactor() const
+{
+    return d_func()->lastScaleFactor;
+}
+
+/*!
+    \property QPinchGesture::rotationAngle
+
+    Specifies a rotation angle of the gesture.
+*/
+qreal QPinchGesture::rotationAngle() const
+{
+    return d_func()->rotationAngle;
+}
+
+/*!
+    \property QPinchGesture::lastRotationAngle
+
+    Specifies a previous rotation angle of the gesture.
+*/
+qreal QPinchGesture::lastRotationAngle() const
+{
+    return d_func()->lastRotationAngle;
+}
+
+/*!
+    \property QPinchGesture::centerPoint
+
+    Specifies a center point of the gesture. The point can be used as a center
+    point that the object is rotated around.
+*/
+QPoint QPinchGesture::centerPoint() const
+{
+    return d_func()->centerPoint;
+}
+
+/*!
+    \property QPinchGesture::lastCenterPoint
+
+    Specifies a previous center point of the gesture.
+*/
+QPoint QPinchGesture::lastCenterPoint() const
+{
+    return d_func()->lastCenterPoint;
+}
+
+/*!
+    \property QPinchGesture::startCenterPoint
+
+    Specifies an initial center point of the gesture. Difference between the
+    startCenterPoint and the centerPoint is the distance at which pinching
+    fingers has shifted.
+*/
+QPoint QPinchGesture::startCenterPoint() const
+{
+    return d_func()->startCenterPoint;
 }
 
 QT_END_NAMESPACE

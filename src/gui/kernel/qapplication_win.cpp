@@ -3721,17 +3721,18 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
 
     QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
     BOOL bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
-
-    const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
-    QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
-    if (alienWidget && alienWidget->internalWinId())
-        alienWidget = 0;
-    QWidget *widget = alienWidget ? alienWidget : this;
-
-    QNativeGestureEvent event;
-    event.sequenceId = gi.dwSequenceID;
-    event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
     if (bResult) {
+        const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+        QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
+        if (alienWidget && alienWidget->internalWinId())
+            alienWidget = 0;
+        QWidget *widget = alienWidget ? alienWidget : this;
+
+        QNativeGestureEvent event;
+        event.sequenceId = gi.dwSequenceID;
+        event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+        event.argument = gi.ullArguments;
+
         switch (gi.dwID) {
         case GID_BEGIN:
             event.gestureType = QNativeGestureEvent::GestureBegin;
@@ -3746,6 +3747,8 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
             event.gestureType = QNativeGestureEvent::Pan;
             break;
         case GID_ROTATE:
+            event.gestureType = QNativeGestureEvent::Rotate;
+            break;
         case GID_TWOFINGERTAP:
         case GID_ROLLOVER:
         default:
