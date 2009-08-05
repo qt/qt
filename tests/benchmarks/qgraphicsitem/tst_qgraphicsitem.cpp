@@ -25,6 +25,8 @@ public slots:
     void cleanup();
 
 private slots:
+    void setParentItem();
+    void setParentItem_deep();
     void setPos_data();
     void setPos();
     void setTransform_data();
@@ -50,6 +52,30 @@ void tst_QGraphicsItem::init()
 
 void tst_QGraphicsItem::cleanup()
 {
+}
+
+void tst_QGraphicsItem::setParentItem()
+{
+    QBENCHMARK {
+        QGraphicsRectItem rect;
+        QGraphicsRectItem *childRect = new QGraphicsRectItem;
+        childRect->setParentItem(&rect);
+    }
+}
+
+void tst_QGraphicsItem::setParentItem_deep()
+{
+    QBENCHMARK {
+        QGraphicsRectItem rect;
+        QGraphicsRectItem *lastRect = &rect;
+        for (int i = 0; i < 10; ++i) {
+            QGraphicsRectItem *childRect = new QGraphicsRectItem;
+            childRect->setParentItem(lastRect);
+            lastRect = childRect;
+        }
+        QGraphicsItem *first = rect.children().first();
+        first->setParentItem(0);
+    }
 }
 
 void tst_QGraphicsItem::setPos_data()
