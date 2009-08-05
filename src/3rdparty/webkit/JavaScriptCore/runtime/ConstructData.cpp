@@ -29,6 +29,7 @@
 #include "ExceptionHelpers.h"
 #include "Interpreter.h"
 #include "JSGlobalObject.h"
+#include "bridge/qscriptobject_p.h"
 #endif
 
 #include "JSFunction.h"
@@ -45,7 +46,7 @@ JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType
             structure = asObject(prototype)->inheritorID();
         else
             structure = exec->lexicalGlobalObject()->emptyObjectStructure();
-        JSObject* thisObj = new (exec) JSObject(structure);
+        JSObject* thisObj = new (exec) QScriptObject(structure);
 
         ScopeChainNode* scopeChain = exec->scopeChain();
         Interpreter *interp = exec->interpreter();
@@ -62,6 +63,8 @@ JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType
         newCallFrame += argc + RegisterFile::CallFrameHeaderSize;
         newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, 0, argc, asObject(callee));
         JSObject *result = constructData.native.function(newCallFrame, asObject(callee), args);
+        if (!result)
+            result = thisObj;
         interp->registerFile().shrink(oldEnd);
         return result;
 #else
