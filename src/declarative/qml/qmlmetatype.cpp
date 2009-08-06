@@ -794,6 +794,22 @@ QMetaProperty QmlMetaType::property(QObject *obj, const char *name)
     return metaObject->property(idx);
 }
 
+QmlMetaType::TypeCategory QmlMetaType::typeCategory(int userType)
+{
+    if (userType < 0)
+        return Unknown;
+    QReadLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
+    if (userType < data->objects.size() && data->objects.testBit(userType))
+        return Object;
+    else if (userType < data->qmllists.size() && data->qmllists.testBit(userType))
+        return QmlList;
+    else if (userType < data->lists.size() && data->lists.testBit(userType))
+        return List;
+    else
+        return Unknown;
+}
+
 bool QmlMetaType::isObject(int userType)
 {
     QReadLocker lock(metaTypeDataLock());

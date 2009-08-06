@@ -66,6 +66,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr,
     if (ctxt) {
         QmlContextPrivate *cp = ctxt->d_func();
         nextExpression = cp->expressions;
+        if (nextExpression) nextExpression->prevExpression = &nextExpression;
         prevExpression = &cp->expressions;
         cp->expressions = this;
     }
@@ -91,6 +92,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
     if (ctxt) {
         QmlContextPrivate *cp = ctxt->d_func();
         nextExpression = cp->expressions;
+        if (nextExpression) nextExpression->prevExpression = &nextExpression;
         prevExpression = &cp->expressions;
         cp->expressions = this;
     }

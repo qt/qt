@@ -54,14 +54,14 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
 Action::Action()
-: restore(true), actionDone(false), reverseEvent(false), fromBinding(0), toBinding(0), event(0),
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), fromBinding(0), toBinding(0), event(0),
   specifiedObject(0)
 {
 }
 
 Action::Action(QObject *target, const QString &propertyName,
                const QVariant &value)
-: restore(true), actionDone(false), reverseEvent(false), toValue(value), fromBinding(0),
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), toValue(value), fromBinding(0),
   toBinding(0), event(0), specifiedObject(target),
   specifiedProperty(propertyName)
 {
@@ -413,11 +413,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
                 SimpleAction r(action);
                 additionalReverts << r;
             }
-        } else {
-
-            if (!found || d->revertList.at(jj).binding != action.fromBinding) {
-                action.deleteFromBinding();
-            }
+        } else if (d->revertList.at(jj).binding != action.fromBinding) {
+            action.deleteFromBinding();
         }
     }
 
