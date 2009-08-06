@@ -45,6 +45,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QProcess>
 #include <QtCore/QByteArray>
+#include <QtCore/QLibraryInfo>
 
 #ifndef Q_OS_WINCE
 
@@ -77,7 +78,7 @@ private:
 
 tst_uic::tst_uic()
     : uicExists(true)
-    , command(QLatin1String("uic"))
+    , command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
 {
 }
 
