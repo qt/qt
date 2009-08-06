@@ -1586,6 +1586,9 @@ void tst_QMenuBar::menubarSizeHint()
     } style;
 
     QMenuBar mb;
+    if (mb.isNativeMenuBar())
+	    QSKIP("we can't check the geometry of native menubars", SkipAll);
+		
     mb.setStyle(&style);
     //this is a list of arbitrary strings so that we check the geometry
     QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
