@@ -1494,7 +1494,9 @@ QmlPropertyAnimation::~QmlPropertyAnimation()
 void QmlPropertyAnimationPrivate::init()
 {
     Q_Q(QmlPropertyAnimation);
-    va = new QmlTimeLineValueAnimator(q);
+    va = new QmlTimeLineValueAnimator;
+    QFx_setParent_noEvent(va, q);
+
     va->setStartValue(QVariant(0.0f));
     va->setEndValue(QVariant(1.0f));
 }
