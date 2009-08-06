@@ -98,15 +98,14 @@
     access made to the data being guarded: if it's a non-const access,
     it creates a copy atomically for the operation to complete.
 
-    QExplicitlySharedDataPointer behaves like QSharedDataPointer,
-    except that it only detaches if
-    QExplicitlySharedDataPointer::detach() is explicitly called.
+    QExplicitlySharedDataPointer is a variant of QSharedDataPointer, except
+    that it only detaches if QExplicitlySharedDataPointer::detach() is
+    explicitly called (hence the name).
 
-    Finally, QPointer holds a pointer to a QObject-derived object, but
-    it does so weakly. QPointer is similar, in that behaviour, to
-    QWeakPointer: it does not allow you to prevent the object from
-    being destroyed. All you can do is query whether it has been
-    destroyed or not.
+    Finally, QPointer holds a pointer to a QObject-derived object, but it
+    does so weakly. QPointer can be replaced by QWeakPointer in almost all
+    cases, since they have the same functionality. See
+    \l{QWeakPointer#tracking-qobject} for more information.
 
     \sa QSharedDataPointer, QWeakPointer
 */
@@ -123,12 +122,65 @@
     directly, but it can be used to verify if the pointer has been
     deleted or not in another context.
 
-    QWeakPointer objects can only be created by assignment
-    from a QSharedPointer.
+    QWeakPointer objects can only be created by assignment from a
+    QSharedPointer. The exception is pointers derived from QObject: in that
+    case, QWeakPointer serves as a replacement to QPointer.
 
-    To access the pointer that QWeakPointer is tracking, you
-    must first create a QSharedPointer object and verify if the pointer
-    is null or not. See QWeakPointer::toStrongRef() for more information.
+    It's important to note that QWeakPointer provides no automatic casting
+    operators to prevent mistakes from happening. Even though QWeakPointer
+    tracks a pointer, it should not be considered a pointer itself, since it
+    doesn't guarantee that the pointed object remains valid.
+
+    Therefore, to access the pointer that QWeakPointer is tracking, you must
+    first promote it to QSharedPointer and verify if the resulting object is
+    null or not. QSharedPointer guarantees that the object isn't deleted, so
+    if you obtain a non-null object, you may use the pointer. See
+    QWeakPointer::toStrongRef() for more an example.
+
+    QWeakPointer also provides the QWeakPointer::data() method that returns
+    the tracked pointer without ensuring that it remains valid. This function
+    is provided if you can guarantee by external means that the object will
+    not get deleted (or if you only need the pointer value) and the cost of
+    creating a QSharedPointer using toStrongRef() is too high.
+
+    That function can also be used to obtain the tracked pointer for
+    QWeakPointers that cannot be promoted to QSharedPointer, such as those
+    created directly from a QObject pointer (not via QSharedPointer).
+
+    \section1 Tracking QObject
+
+    QWeakPointer can be used to track deletion classes derives from QObject,
+    even if they are not managed by QSharedPointer. When used in that role,
+    QWeakPointer replaces the older QPointer in all use-cases. QWeakPointer
+    is also more efficient than QPointer, so it should be preferred in all
+    new code.
+
+    To do that, QWeakPointer provides a special constructor that is only
+    available if the template parameter \tt T is either QObject or a class
+    deriving from it. Trying to use that constructor if \tt T does not derive
+    from QObject will result in compilation errors.
+
+    To obtain the QObject being tracked by QWeakPointer, you must use the
+    QWeakPointer::data() function, but only if you can guarantee that the
+    object cannot get deleted by another context. It should be noted that
+    QPointer had the same constraint, so use of QWeakPointer forces you to
+    consider whether the pointer is still valid.
+
+    QObject-derived classes can only be deleted in the thread they have
+    affinity to (which is the thread they were created in or moved to, using
+    QObject::moveToThread()). In special, QWidget-derived classes cannot be
+    created in non-GUI threads nor moved there. Therefore, guaranteeing that
+    the tracked QObject has affinity to the current thread is enough to also
+    guarantee that it won't be deleted asynchronously.
+
+    Note that QWeakPointer's size and data layout do not match QPointer, so
+    it cannot replace that class in a binary-compatible manner.
+
+    Care must also be taken with QWeakPointers created directly from QObject
+    pointers when dealing with code that was compiled with Qt versions prior
+    to 4.6. Those versions may not track the reference counters correctly, so
+    QWeakPointers created from QObject should never be passed to code that
+    hasn't been recompiled.
 
     \sa QSharedPointer
 */
@@ -409,6 +461,35 @@
     If \tt T is a derived type of the template parameter of this
     class, QWeakPointer will perform an automatic cast. Otherwise,
     you will get a compiler error.
+*/
+
+/*!
+    \fn QWeakPointer::QWeakPointer(const QObject *obj)
+    \since 4.6
+
+    Creates a QWeakPointer that holds a weak reference directly to the
+    QObject \a obj. This constructor is only available if the template type
+    \tt T is QObject or derives from it (otherwise a compilation error will
+    result).
+
+    You can use this constructor with any QObject, even if they were not
+    created with \l QSharedPointer.
+
+    Note that QWeakPointers created this way on arbitrary QObjects usually
+    cannot be promoted to QSharedPointer.
+
+    \sa QSharedPointer, QWeakPointer#tracking-qobject
+*/
+
+/*!
+    \fn QWeakPointer &QWeakPointer::operator=(const QObject *obj)
+    \since 4.6
+
+    Makes this QWeakPointer hold a weak reference to directly to the QObject
+    \a obj. This function is only available if the template type \tt T is
+    QObject or derives from it.
+
+    \sa QWeakPointer#tracking-qobject
 */
 
 /*!
