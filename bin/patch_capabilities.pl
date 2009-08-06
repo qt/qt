@@ -3,7 +3,7 @@
 # A script for setting binary capabilities based on .pkg file contents.
 #
 # Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-# Contact: Qt Software Information (qt-info@nokia.com)
+# Contact: Nokia Corporation (qt-info@nokia.com)
 #
 #######################################################################
 
