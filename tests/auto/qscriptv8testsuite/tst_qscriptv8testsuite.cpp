@@ -227,40 +227,10 @@ tst_Suite::tst_Suite()
         }
     }
     QString willFixInNextReleaseMessage = QString::fromLatin1("Will fix in next release");
-    addExpectedFailure("apply", "morundefineder", "morseper", willFixInNextReleaseMessage);
     addExpectedFailure("arguments-enum", "2", "0", willFixInNextReleaseMessage);
-    addExpectedFailure("array-concat", "undefined", "baz", willFixInNextReleaseMessage);
-    addExpectedFailure("array-functions-prototype", "undefined", "one", willFixInNextReleaseMessage);
     addExpectedFailure("const-redecl", "undefined", "TypeError", willFixInNextReleaseMessage);
-    addExpectedFailure("const", "2", "1", willFixInNextReleaseMessage);
-    addExpectedFailure("declare-locally", "undefined", "42", willFixInNextReleaseMessage);
-    addExpectedFailure("delay-syntax-error", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("delete-vars-from-eval", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("dont-enum-array-holes", "4", "2", willFixInNextReleaseMessage);
-    addExpectedFailure("fun-as-prototype", "undefined", "Funky", willFixInNextReleaseMessage);
-    addExpectedFailure("fun_name", "function(){}", "functionanonymous(){}", willFixInNextReleaseMessage);
-    addExpectedFailure("function-caller", "undefined", "function f(match) {\n    g(match);\n}", willFixInNextReleaseMessage);
     addExpectedFailure("global-const-var-conflicts", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("length", "3", "1", willFixInNextReleaseMessage);
-    addExpectedFailure("math-min-max", "-Infinity", "Infinity", willFixInNextReleaseMessage);
-    addExpectedFailure("newline-in-string", "asdf\n\nasdf\n?asdf\n\tasdf\n\\\n\n", "asdf\nasdf?asdf\tasdf\\", willFixInNextReleaseMessage);
-    addExpectedFailure("number-tostring", "1111111111111111081984.00000000", "1.1111111111111111e+21", willFixInNextReleaseMessage);
-    addExpectedFailure("parse-int-float", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("regexp-multiline-stack-trace", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("regexp-multiline", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("regexp-standalones", "0", "2", willFixInNextReleaseMessage);
-    addExpectedFailure("regexp-static", "undefined", "abc123.456def", willFixInNextReleaseMessage);
-    addExpectedFailure("sparse-array-reverse", "nopcb", "nopdcba", willFixInNextReleaseMessage);
-    addExpectedFailure("str-to-num", "false", "true", willFixInNextReleaseMessage);
     addExpectedFailure("string-lastindexof", "0", "-1", "test is wrong?");
-    addExpectedFailure("string-split", "5", "13", "regular expression semantics");
-//    addExpectedFailure("substr", "", "abcdefghijklmn", willFixInNextReleaseMessage);
-    addExpectedFailure("to-precision", "1.2345e+27", "1.23450e+27", willFixInNextReleaseMessage);
-    addExpectedFailure("try", "3", "4", "task 209990");
-    addExpectedFailure("try_catch_scopes", "0", "1", "task 227055");
-    addExpectedFailure("unusual-constructor", "false", "true", "no idea");
-    addExpectedFailure("unicode-test", "13792", "13793", "test is wrong?");
-    addExpectedFailure("with-leave", "false", "true", "task 233769");
 
     addTestExclusion("debug-*", "not applicable");
     addTestExclusion("mirror-*", "not applicable");
