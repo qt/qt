@@ -293,12 +293,13 @@ void tst_QFiledialog::filesSelectedSignal()
     QNonNativeFileDialog fd;
     fd.setViewMode(QFileDialog::List);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
-    fd.setDirectory(QDir::currentPath());
+    fd.setDirectory(QDir::homePath());
     QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
     QSignalSpy spyFilesSelected(&fd, SIGNAL(filesSelected(const QStringList &)));
 
     fd.show();
+    QTest::qWait(500);
     QListView *listView = qFindChild<QListView*>(&fd, "listView");
     QVERIFY(listView);
     QModelIndex root = listView->rootIndex();
