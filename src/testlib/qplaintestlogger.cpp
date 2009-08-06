@@ -148,11 +148,13 @@ namespace QTest {
     static void outputMessage(const char *str)
     {
 #if defined(Q_OS_WINCE)
-        int length = strlen(str);
-        for (int pos = 0; pos < length; pos +=255) {
-            QString uniText = QString::fromLatin1(str + pos, 255);
-            OutputDebugString((wchar_t*)uniText.utf16());
-        }
+        QString strUtf16 = QString::fromLatin1(str);
+        const int maxOutputLength = 255;
+        do {
+            QString tmp = strUtf16.left(maxOutputLength);
+            OutputDebugString((wchar_t*)tmp.utf16());
+            strUtf16.remove(0, maxOutputLength);
+        } while (!strUtf16.isEmpty());
         if (QTestLog::outputFileName())
 #elif defined(Q_OS_WIN)
         EnterCriticalSection(&outputCriticalSection);
