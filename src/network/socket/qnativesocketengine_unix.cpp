@@ -77,8 +77,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined QNATIVESOCKETENGINE_DEBUG
-
 static inline int qt_socket_connect(int s, const struct sockaddr * addrptr, socklen_t namelen)
 {
 	return ::connect(s, addrptr, namelen);
@@ -204,6 +202,8 @@ static inline int qt_socket_setsockopt(int socket, int level, int optname, void 
 #if defined(setsockopt)
 # undef setsockopt
 #endif
+
+#if defined QNATIVESOCKETENGINE_DEBUG
 
 /*
     Returns a human readable representation of the first \a len
