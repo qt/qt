@@ -1407,7 +1407,11 @@ void tst_QSharedPointer::threadStressTest()
 
         base.clear();
 
+#ifdef Q_OS_WINCE
+        srand(QDateTime::currentDateTime().toTime_t());
+#else
         srand(time(NULL));
+#endif
         // start threads
         for (int i = 0; i < allThreads.count(); ++i)
             if (allThreads[i]) allThreads[i]->start();
