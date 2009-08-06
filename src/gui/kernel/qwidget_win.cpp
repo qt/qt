@@ -2058,6 +2058,7 @@ void QWidgetPrivate::winSetupGestures()
     Q_Q(QWidget);
     if (!q)
         return;
+    extern QApplicationPrivate* getQApplicationPrivateInternal();
     QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
     bool needh = false;
     bool needv = false;
