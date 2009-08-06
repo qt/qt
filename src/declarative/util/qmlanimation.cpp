@@ -723,7 +723,6 @@ QmlColorAnimation::QmlColorAnimation(QObject *parent)
 : QmlPropertyAnimation(parent)
 {
     Q_D(QmlPropertyAnimation);
-    d->init();
     d->interpolatorType = QMetaType::QColor;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
     d->defaultToInterpolatorType = true;
@@ -1199,7 +1198,6 @@ QmlNumberAnimation::QmlNumberAnimation(QObject *parent)
 : QmlPropertyAnimation(parent)
 {
     Q_D(QmlPropertyAnimation);
-    d->init();
     d->interpolatorType = QMetaType::QReal;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
 }
