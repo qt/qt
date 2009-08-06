@@ -295,7 +295,6 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
             QString absoluteTarget = fileInfo(targetItem).absoluteFilePath();
             if (allPreDeps.contains(absoluteTarget)) {
                 QStringList deps = project->values(QLatin1String("QMAKE_ET_PARSED_DEPS.") + item + targetItem);
-                //QString depsItem = project->values(QLatin1String("QMAKE_ET_PARSED_DEPS.") + item + targetItem).join(" ");
                 QString commandItem =  project->values(QLatin1String("QMAKE_ET_PARSED_CMD.") + item + targetItem).join(" ");
 
 
@@ -311,7 +310,6 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                 t << "START EXTENSION qt/qmake_extra_pre_targetdep" << endl;
                 t << "OPTION PREDEP_TARGET " << absoluteTarget << endl;
                 t << "OPTION DEPS " << absoluteDeps << endl;
-                //t << "OPTION DEPS " << depsItem << endl;
 
                 if (commandItem.indexOf("$(INCPATH)") != -1)
                     commandItem.replace("$(INCPATH)", incPath.join(" "));
