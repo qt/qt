@@ -141,7 +141,8 @@ public:
     bool addSignalHandler(QObject *sender, int signalIndex,
                           JSC::JSValue receiver,
                           JSC::JSValue slot,
-                          JSC::JSValue senderWrapper = 0);
+                          JSC::JSValue senderWrapper,
+                          Qt::ConnectionType type);
     bool removeSignalHandler(QObject *sender, int signalIndex,
                              JSC::JSValue receiver,
                              JSC::JSValue slot);
@@ -2090,13 +2091,14 @@ void QObjectConnectionManager::mark()
 
 bool QObjectConnectionManager::addSignalHandler(
     QObject *sender, int signalIndex, JSC::JSValue receiver,
-    JSC::JSValue function, JSC::JSValue senderWrapper)
+    JSC::JSValue function, JSC::JSValue senderWrapper,
+    Qt::ConnectionType type)
 {
     if (connections.size() <= signalIndex)
         connections.resize(signalIndex+1);
     QVector<QObjectConnection> &cs = connections[signalIndex];
     int absSlotIndex = slotCounter + metaObject()->methodOffset();
-    bool ok = QMetaObject::connect(sender, signalIndex, this, absSlotIndex);
+    bool ok = QMetaObject::connect(sender, signalIndex, this, absSlotIndex, type);
     if (ok) {
         cs.append(QObjectConnection(slotCounter++, receiver, function, senderWrapper));
         QMetaMethod signal = sender->metaObject()->method(signalIndex);
@@ -2168,12 +2170,13 @@ bool QObjectData::addSignalHandler(QObject *sender,
                                    int signalIndex,
                                    JSC::JSValue receiver,
                                    JSC::JSValue slot,
-                                   JSC::JSValue senderWrapper)
+                                   JSC::JSValue senderWrapper,
+                                   Qt::ConnectionType type)
 {
     if (!connectionManager)
         connectionManager = new QObjectConnectionManager(engine);
     return connectionManager->addSignalHandler(
-        sender, signalIndex, receiver, slot, senderWrapper);
+        sender, signalIndex, receiver, slot, senderWrapper, type);
 }
 
 bool QObjectData::removeSignalHandler(QObject *sender,

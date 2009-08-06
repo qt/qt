@@ -168,7 +168,8 @@ public:
                           int signalIndex,
                           JSC::JSValue receiver,
                           JSC::JSValue slot,
-                          JSC::JSValue senderWrapper = 0);
+                          JSC::JSValue senderWrapper,
+                          Qt::ConnectionType type);
     bool removeSignalHandler(QObject *sender,
                              int signalIndex,
                              JSC::JSValue receiver,
