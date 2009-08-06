@@ -50,6 +50,7 @@
 #include <QStatusBar>
 #include <QListWidget>
 #include <QWidgetAction>
+#include <QDesktopWidget>
 
 #include <qmenu.h>
 #include <qstyle.h>
@@ -791,7 +792,7 @@ void tst_QMenu::task258920_mouseBorder()
     Menu258920 menu;
     QAction *action = menu.addAction("test");
 
-    menu.popup(QPoint());
+    menu.popup(QApplication::desktop()->availableGeometry().center());
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     QTest::mouseMove(&menu, actionRect.center());
