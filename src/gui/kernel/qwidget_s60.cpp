@@ -323,7 +323,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             } else {
                 stackingFlags = ECoeStackFlagStandard;
             }
-            control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags);
+            QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
 
             QTLWExtra *topExtra = topData();
             topExtra->rwindow = control->DrawableWindow();
@@ -356,7 +356,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         } else {
             stackingFlags = ECoeStackFlagStandard;
         }
-        control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags);
+        QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
 
         WId parentw = parentWidget->effectiveWinId();
         QT_TRAP_THROWING(control->SetContainerWindowL(*parentw));
@@ -763,10 +763,11 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
         CAknTitlePane* titlePane = S60->titlePane();
         if(titlePane) {
-            if(caption.isEmpty())
-                titlePane->SetTextToDefaultL();
-            else
+            if(caption.isEmpty()) {
+                QT_TRAP_THROWING(titlePane->SetTextToDefaultL());
+            } else {
                 QT_TRAP_THROWING(titlePane->SetTextL(qt_QString2TPtrC(caption)));
+            }
         }
     }
 #else
