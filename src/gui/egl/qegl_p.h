@@ -122,8 +122,8 @@ public:
 
     void dumpAllConfigs();
 
-    QString extensions();
-    bool hasExtension(const char* extensionName);
+    static QString extensions();
+    static bool hasExtension(const char* extensionName);
 
 private:
     QEgl::API apiType;
