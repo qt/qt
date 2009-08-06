@@ -94,6 +94,9 @@ public:
     static QmlAttachedPropertiesFunc attachedPropertiesFuncById(int);
     static QmlAttachedPropertiesFunc attachedPropertiesFunc(const QByteArray &);
 
+    enum TypeCategory { Unknown, Object, List, QmlList };
+    static TypeCategory typeCategory(int);
+        
     static bool isInterface(int);
     static const char *interfaceIId(int);
     static bool isObject(int);

@@ -310,14 +310,23 @@ QmlMetaPropertyPrivate::propertyCategory() const
             category = QmlMetaProperty::Normal;
         else if (type == qMetaTypeId<QmlBinding *>())
             category = QmlMetaProperty::Bindable;
-        else if (QmlMetaType::isList(type))
-            category = QmlMetaProperty::List;
-        else if (QmlMetaType::isQmlList(type))
-            category = QmlMetaProperty::QmlList;
-        else if (QmlMetaType::isObject(type))
-            category = QmlMetaProperty::Object;
-        else 
-            category = QmlMetaProperty::Normal;
+        else {
+            QmlMetaType::TypeCategory tc = QmlMetaType::typeCategory(type);
+            switch(tc) {
+            case QmlMetaType::Object:
+                category = QmlMetaProperty::Object;
+                break;
+            case QmlMetaType::QmlList:
+                category = QmlMetaProperty::QmlList;
+                break;
+            case QmlMetaType::List:
+                category = QmlMetaProperty::List;
+                break;
+            case QmlMetaType::Unknown:
+                category = QmlMetaProperty::Normal;
+                break;
+            }
+        }
     }
     return category;
 }
