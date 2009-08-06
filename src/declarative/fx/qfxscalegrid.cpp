@@ -41,6 +41,7 @@
 
 #include <QBuffer>
 #include <qml.h>
+#include <QDebug>
 #include "qfxscalegrid_p.h"
 
 
@@ -210,6 +211,9 @@ QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s) const
         return QFxScaleGrid::Repeat;
     if (s == QLatin1String("Round"))
         return QFxScaleGrid::Round;
+
+    qWarning() << "Unknown tile rule specified. Using Stretch";
+    return QFxScaleGrid::Stretch;
 }
 
 bool QFxGridScaledImage::isValid() const
