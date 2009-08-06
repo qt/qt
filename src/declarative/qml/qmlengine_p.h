@@ -179,6 +179,10 @@ public:
 
     QmlValueTypeFactory valueTypes;
     QHash<const QMetaObject *, QmlMetaObjectCache> propertyCache;
+    static QmlMetaObjectCache *cache(QmlEnginePrivate *priv, QObject *obj) { 
+        if (!priv || !obj || QObjectPrivate::get(obj)->metaObject) return 0; 
+        return &priv->propertyCache[obj->metaObject()];
+    }
 
     struct Imports {
         Imports();

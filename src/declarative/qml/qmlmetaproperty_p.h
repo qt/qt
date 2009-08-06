@@ -61,14 +61,23 @@ QT_BEGIN_NAMESPACE
 class QmlMetaObjectCache
 {
 public:
+    QmlMetaObjectCache();
+    ~QmlMetaObjectCache();
+
     struct Data {
         int propType;
         int coreIndex;
+        QString name;
     };
 
-    QHash<QString, Data> properties;
+    Data *property(const QString &, const QMetaObject *);
+    Data *property(int, const QMetaObject *);
 
-    Data property(const QString &, const QMetaObject *);
+private:
+    void init(const QMetaObject *);
+
+    Data *propertyCache;
+    QHash<QString, int> propertyNameCache;
 };
 
 class QmlContext;
