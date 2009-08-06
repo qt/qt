@@ -241,10 +241,12 @@ void QFxPathView::setCurrentIndex(int idx)
         idx = qAbs(idx % d->model->count());
     if (d->model && idx != d->currentIndex) {
         d->currentIndex = idx;
-        d->snapToCurrent();
-        int itemIndex = (idx - d->firstIndex + d->model->count()) % d->model->count();
-        if (itemIndex < d->items.count())
-            d->items.at(itemIndex)->setFocus(true);
+        if (d->model->count()) {
+            d->snapToCurrent();
+            int itemIndex = (idx - d->firstIndex + d->model->count()) % d->model->count();
+            if (itemIndex < d->items.count())
+                d->items.at(itemIndex)->setFocus(true);
+        }
         emit currentIndexChanged();
     }
 }
@@ -565,9 +567,34 @@ bool QFxPathView::sceneEventFilter(QGraphicsItem *i, QEvent *e)
     return QFxItem::sceneEventFilter(i, e);
 }
 
+void QFxPathView::componentComplete()
+{
+    Q_D(QFxPathView);
+    QFxItem::componentComplete();
+    d->regenerate();
+
+    // move to correct offset
+    if (d->items.count()) {
+        int itemIndex = (d->currentIndex - d->firstIndex + d->model->count()) % d->model->count();
+
+        itemIndex += d->pathOffset;
+        itemIndex %= d->items.count();
+        qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), 100);
+
+        if (targetOffset < 0)
+            targetOffset = 100.0 + targetOffset;
+        if (targetOffset != d->_offset) {
+            d->moveOffset.setValue(targetOffset);
+        }
+    }
+}
+
 void QFxPathViewPrivate::regenerate()
 {
     Q_Q(QFxPathView);
+    if (!q->isComponentComplete())
+        return;
+
     for (int i=0; i<items.count(); i++){
         QFxItem *p = items[i];
         releaseItem(p);
@@ -612,7 +639,7 @@ void QFxPathViewPrivate::updateItem(QFxItem *item, qreal percent)
 void QFxPathView::refill()
 {
     Q_D(QFxPathView);
-    if (!d->isValid())
+    if (!d->isValid() || !isComponentComplete())
         return;
 
     QList<qreal> positions;
@@ -688,7 +715,7 @@ void QFxPathView::itemsInserted(int modelIndex, int count)
 {
     //XXX support animated insertion
     Q_D(QFxPathView);
-    if (!d->isValid())
+    if (!d->isValid() || !isComponentComplete())
         return;
     if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
@@ -718,7 +745,7 @@ void QFxPathView::itemsRemoved(int modelIndex, int count)
 {
     //XXX support animated removal
     Q_D(QFxPathView);
-    if (!d->isValid())
+    if (!d->isValid() || !isComponentComplete())
         return;
     if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
