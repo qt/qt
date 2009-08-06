@@ -257,6 +257,7 @@ void QLineControl::setSelection(int start, int length)
         m_cursor = m_selstart;
     }
     emit selectionChanged();
+    emitCursorPositionChanged();
 }
 
 void QLineControl::_q_clipboardChanged()
