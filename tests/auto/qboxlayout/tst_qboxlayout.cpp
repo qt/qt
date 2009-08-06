@@ -240,7 +240,6 @@ void tst_QBoxLayout::setStyleShouldChangeSpacing()
     window->setStyle(style2);
     QTest::qWait(100);
     spacing = pb2->geometry().left() - pb1->geometry().right() - 1;
-    QEXPECT_FAIL("", "Fix for next minor release", Continue);
     QCOMPARE(spacing, 10);
 
     delete window;

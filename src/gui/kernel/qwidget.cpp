@@ -7990,10 +7990,12 @@ void QWidget::changeEvent(QEvent * event)
 
     case QEvent::FontChange:
     case QEvent::StyleChange: {
+        Q_D(QWidget);
         update();
         updateGeometry();
+        if (d->layout)
+            d->layout->invalidate();
 #ifdef Q_WS_QWS
-        Q_D(QWidget);
         if (isWindow())
             d->data.fstrut_dirty = true;
 #endif
