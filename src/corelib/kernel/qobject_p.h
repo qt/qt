@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 class QVariant;
 class QThreadData;
 class QObjectConnectionListVector;
-namespace QtSharedPointer { class ExternalRefCountData; }
+namespace QtSharedPointer { struct ExternalRefCountData; }
 
 /* mirrored in QtTestLib, DON'T CHANGE without prior warning */
 struct QSignalSpyCallbackSet
