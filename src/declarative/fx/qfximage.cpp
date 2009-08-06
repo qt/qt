@@ -348,60 +348,10 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
             p->drawPixmap(0, 0, pix);
         }
     } else {
-        if (d->fillMode != Stretch)
-            qWarning("Only fillmode:Stretch supported for scale grid images");
-        int sgl = d->scaleGrid->left();
-        int sgr = d->scaleGrid->right();
-        int sgt = d->scaleGrid->top();
-        int sgb = d->scaleGrid->bottom();
-
-        int w = width();
-        int h = height();
-        if (sgt + sgb > h)
-            sgt = sgb = h/2;
-        if (sgl + sgr > w)
-            sgl = sgr = w/2;
-
-        const int xSide = sgl + sgr;
-        const int ySide = sgt + sgb;
-
-        // Upper left
-        if (sgt && sgl)
-            p->drawPixmap(QRect(0, 0, sgl, sgt), pix, QRect(0, 0, sgl, sgt));
-        // Upper middle
-        if (pix.width() - xSide && sgt)
-            p->drawPixmap(QRect(sgl, 0, w - xSide, sgt), pix,
-                        QRect(sgl, 0, pix.width() - xSide, sgt));
-        // Upper right
-        if (sgt && pix.width() - sgr)
-            p->drawPixmap(QPoint(w-sgr, 0), pix,
-                        QRect(pix.width()-sgr, 0, sgr, sgt));
-        // Middle left
-        if (sgl && pix.height() - ySide)
-            p->drawPixmap(QRect(0, sgt, sgl, h - ySide), pix,
-                        QRect(0, sgt, sgl, pix.height() - ySide));
-
-        // Middle
-        if (pix.width() - xSide && pix.height() - ySide)
-            p->drawPixmap(QRect(sgl, sgt, w - xSide, h - ySide),
-                        pix,
-                        QRect(sgl, sgt, pix.width() - xSide, pix.height() - ySide));
-        // Middle right
-        if (sgr && pix.height() - ySide)
-            p->drawPixmap(QRect(w-sgr, sgt, sgr, h - ySide), pix,
-                        QRect(pix.width()-sgr, sgt, sgr, pix.height() - ySide));
-        // Lower left
-        if (sgl && sgr)
-            p->drawPixmap(QPoint(0, h - sgb), pix,
-                        QRect(0, pix.height() - sgb, sgl, sgb));
-        // Lower Middle
-        if (pix.width() - xSide && sgb)
-            p->drawPixmap(QRect(sgl, h - sgb, w - xSide, sgb), pix,
-                        QRect(sgl, pix.height() - sgb, pix.width() - xSide, sgb));
-        // Lower Right
-        if (sgr && sgb)
-            p->drawPixmap(QPoint(w-sgr, h - sgb), pix,
-                        QRect(pix.width()-sgr, pix.height() - sgb, sgr, sgb));
+        QMargins margins(d->scaleGrid->top(), d->scaleGrid->left(), d->scaleGrid->bottom(), d->scaleGrid->right());
+        QTileRules rules((Qt::TileRule)d->scaleGrid->horizontalTileRule(),
+                         (Qt::TileRule)d->scaleGrid->verticalTileRule());
+        qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, pix, pix.rect(), margins, rules);
     }
 
     if (d->smooth) {
@@ -612,6 +562,8 @@ void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
         sg->setBottom(sci.gridBottom());
         sg->setLeft(sci.gridLeft());
         sg->setRight(sci.gridRight());
+        sg->setHorizontalTileRule(sci.horizontalTileRule());
+        sg->setVerticalTileRule(sci.verticalTileRule());
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
         d->reply = QFxPixmap::get(qmlEngine(this), d->sciurl, this, SLOT(requestFinished()));

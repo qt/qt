@@ -57,11 +57,15 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QFxScaleGrid : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(TileRule)
 
     Q_PROPERTY(int left READ left WRITE setLeft)
     Q_PROPERTY(int top READ top WRITE setTop)
     Q_PROPERTY(int right READ right WRITE setRight)
     Q_PROPERTY(int bottom READ bottom WRITE setBottom)
+    Q_PROPERTY(TileRule horizontalTileRule READ horizontalTileRule WRITE setHorizontalTileRule)
+    Q_PROPERTY(TileRule verticalTileRule READ verticalTileRule WRITE setVerticalTileRule)
+
 public:
     QFxScaleGrid();
     ~QFxScaleGrid();
@@ -80,11 +84,21 @@ public:
     int  bottom() const { return _bottom; }
     void setBottom(int);
 
+    enum TileRule { Stretch = Qt::Stretch, Repeat = Qt::Repeat, Round = Qt::Round };
+
+    TileRule horizontalTileRule() const { return _horizontalTileRule; }
+    void setHorizontalTileRule(TileRule);
+
+    TileRule verticalTileRule() const { return _verticalTileRule; }
+    void setVerticalTileRule(TileRule);
+
 private:
     int _left;
     int _top;
     int _right;
     int _bottom;
+    TileRule _horizontalTileRule;
+    TileRule _verticalTileRule;
 };
 
 class Q_DECLARATIVE_EXPORT QFxGridScaledImage
@@ -99,14 +113,21 @@ public:
     int gridRight() const;
     int gridTop() const;
     int gridBottom() const;
+    QFxScaleGrid::TileRule horizontalTileRule() const { return _h; }
+    QFxScaleGrid::TileRule verticalTileRule() const { return _v; }
 
     QString pixmapUrl() const;
+
+private:
+    QFxScaleGrid::TileRule stringToRule(const QString &) const;
 
 private:
     int _l;
     int _r;
     int _t;
     int _b;
+    QFxScaleGrid::TileRule _h;
+    QFxScaleGrid::TileRule _v;
     QString _pix;
 };
 
