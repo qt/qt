@@ -78,8 +78,6 @@ QT_BEGIN_NAMESPACE
     to use it without one. In that case, you must use waitForNewConnection(),
     which blocks until either a connection is available or a timeout expires.
 
-    Note that this feature is not supported on Windows 9x.
-
     \sa QLocalSocket, QTcpServer
 */
 

@@ -84,7 +84,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <locale.h>
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX6) && !defined(Q_OS_OSF)
+#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF)
 #include <langinfo.h>
 #endif
 
@@ -104,6 +104,10 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QTextCodecFactoryInterface_iid, QLatin1String("/codecs")))
 #endif
 
+static char qtolower(register char c)
+{ if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
+static bool qisalnum(register char c)
+{ return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'z'); }
 
 static bool nameMatch(const QByteArray &name, const QByteArray &test)
 {
@@ -116,21 +120,21 @@ static bool nameMatch(const QByteArray &name, const QByteArray &test)
 
     // if the letters and numbers are the same, we have a match
     while (*n != '\0') {
-        if (isalnum((uchar)*n)) {
+        if (qisalnum(*n)) {
             for (;;) {
                 if (*h == '\0')
                     return false;
-                if (isalnum((uchar)*h))
+                if (qisalnum(*h))
                     break;
                 ++h;
             }
-            if (tolower((uchar)*n) != tolower((uchar)*h))
+            if (qtolower(*n) != qtolower(*h))
                 return false;
             ++h;
         }
         ++n;
     }
-    while (*h && !isalnum((uchar)*h))
+    while (*h && !qisalnum(*h))
            ++h;
     return (*h == '\0');
 }
@@ -246,9 +250,9 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
         return QString();
 
     const int wclen_auto = 4096;
-    WCHAR wc_auto[wclen_auto];
+    wchar_t wc_auto[wclen_auto];
     int wclen = wclen_auto;
-    WCHAR *wc = wc_auto;
+    wchar_t *wc = wc_auto;
     int len;
     QString sp;
     bool prepend = false;
@@ -288,7 +292,7 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
             } else {
                 wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     mb, mblen, 0, 0);
-                wc = new WCHAR[wclen];
+                wc = new wchar_t[wclen];
                 // and try again...
             }
         } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
@@ -354,7 +358,7 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
     const char *next = 0;
     QString s;
     while((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
-        WCHAR wc[2] ={0};
+        wchar_t wc[2] ={0};
         int charlength = next - mb;
         int len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
         if (len>0) {
@@ -541,7 +545,7 @@ static void setupLocaleMapper()
     localeMapper = QTextCodec::codecForName("System");
 #endif
 
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX6) && !defined(Q_OS_OSF)
+#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF)
     if (!localeMapper) {
         char *charset = nl_langinfo (CODESET);
         if (charset)
@@ -1059,16 +1063,10 @@ QList<int> QTextCodec::availableMibs()
     This might be needed for some applications that want to use their
     own mechanism for setting the locale.
 
-    Setting this codec is not supported on DOS based Windows.
-
     \sa codecForLocale()
 */
 void QTextCodec::setCodecForLocale(QTextCodec *c)
 {
-#ifdef Q_WS_WIN
-    if (QSysInfo::WindowsVersion& QSysInfo::WV_DOS_based)
-	return;
-#endif
     localeMapper = c;
     if (!localeMapper)
         setupLocaleMapper();
@@ -1555,9 +1553,13 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
 }
 
 /*!
-  \overload
+    \overload
 
-  If the codec cannot be detected, this overload returns a Latin-1 QTextCodec.
+    Tries to detect the encoding of the provided snippet of HTML in
+    the given byte array, \a ba, by checking the BOM (Byte Order Mark)
+    and the content-type meta header and returns a QTextCodec instance
+    that is capable of decoding the html to unicode. If the codec cannot
+    be detected, this overload returns a Latin-1 QTextCodec.
 */
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 {
@@ -1569,9 +1571,12 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 
     Tries to detect the encoding of the provided snippet \a ba by
     using the BOM (Byte Order Mark) and returns a QTextCodec instance
-    that is capable of decoding the text to unicode.  If the codec
+    that is capable of decoding the text to unicode. If the codec
     cannot be detected from the content provided, \a defaultCodec is
     returned.
+
+    The behavior of this function is undefined if \a ba is not
+    encoded in unicode.
 
     \sa codecForHtml()
 */
@@ -1610,9 +1615,17 @@ QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaul
 }
 
 /*!
-  \overload
+    \overload
 
-  If the codec cannot be detected, this overload returns a Latin-1 QTextCodec.
+    Tries to detect the encoding of the provided snippet \a ba by
+    using the BOM (Byte Order Mark) and returns a QTextCodec instance
+    that is capable of decoding the text to unicode. If the codec
+    cannot be detected, this overload returns a Latin-1 QTextCodec.
+
+    The behavior of this function is undefined if \a ba is not
+    encoded in unicode.
+
+    \sa codecForHtml()
 */
 QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba)
 {

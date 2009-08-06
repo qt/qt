@@ -81,15 +81,21 @@ ScriptController::~ScriptController()
 
 ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode) 
 {
-    if (!m_XSSAuditor->canEvaluate(sourceCode.source())) {
+    const SourceCode& jsSourceCode = sourceCode.jsSourceCode();
+    String sourceURL = jsSourceCode.provider()->url();
+    
+    if (sourceURL.isNull() && !m_XSSAuditor->canEvaluateJavaScriptURL(sourceCode.source())) {
+        // This JavaScript URL is not safe to be evaluated.
+        return JSValue();
+    }
+    
+    if (!sourceURL.isNull() && !m_XSSAuditor->canEvaluate(sourceCode.source())) {
         // This script is not safe to be evaluated.
         return JSValue();
     }
 
     // evaluate code. Returns the JS return value or 0
     // if there was none, an error occured or the type couldn't be converted.
-
-    const SourceCode& jsSourceCode = sourceCode.jsSourceCode();
 
     initScriptIfNeeded();
     // inlineCode is true for <a href="javascript:doSomething()">
@@ -98,10 +104,9 @@ ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode)
     // See smart window.open policy for where this is used.
     ExecState* exec = m_windowShell->window()->globalExec();
     const String* savedSourceURL = m_sourceURL;
-    String sourceURL = jsSourceCode.provider()->url();
     m_sourceURL = &sourceURL;
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     RefPtr<Frame> protect = m_frame;
 
@@ -130,7 +135,7 @@ void ScriptController::clearWindowShell()
     if (!m_windowShell)
         return;
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     // Clear the debugger from the current window before setting the new window.
     attachDebugger(0);
@@ -152,7 +157,7 @@ void ScriptController::initScript()
     if (m_windowShell)
         return;
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     m_windowShell = new JSDOMWindowShell(m_frame->domWindow());
     m_windowShell->window()->updateDocument();
@@ -244,7 +249,7 @@ void ScriptController::updateDocument()
     if (!m_frame->document())
         return;
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
     if (m_windowShell)
         m_windowShell->window()->updateDocument();
 }
@@ -260,7 +265,7 @@ Bindings::RootObject* ScriptController::bindingRootObject()
         return 0;
 
     if (!m_bindingRootObject) {
-        JSLock lock(false);
+        JSLock lock(SilenceAssertionsOnly);
         m_bindingRootObject = Bindings::RootObject::create(0, globalObject());
     }
     return m_bindingRootObject.get();
@@ -286,7 +291,7 @@ NPObject* ScriptController::windowScriptNPObject()
         if (isEnabled()) {
             // JavaScript is enabled, so there is a JavaScript window object.
             // Return an NPObject bound to the window object.
-            JSC::JSLock lock(false);
+            JSC::JSLock lock(SilenceAssertionsOnly);
             JSObject* win = windowShell()->window();
             ASSERT(win);
             Bindings::RootObject* root = bindingRootObject();
@@ -320,9 +325,9 @@ JSObject* ScriptController::jsObjectForPluginElement(HTMLPlugInElement* plugin)
         return 0;
 
     // Create a JSObject bound to this element
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
     ExecState* exec = globalObject()->globalExec();
-    JSValue jsElementValue = toJS(exec, plugin);
+    JSValue jsElementValue = toJS(exec, globalObject(), plugin);
     if (!jsElementValue || !jsElementValue.isObject())
         return 0;
     
@@ -354,7 +359,7 @@ void ScriptController::cleanupScriptObjectsForPlugin(void* nativeHandle)
 
 void ScriptController::clearScriptObjects()
 {
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     RootObjectMap::const_iterator end = m_rootObjects.end();
     for (RootObjectMap::const_iterator it = m_rootObjects.begin(); it != end; ++it)

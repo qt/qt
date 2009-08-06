@@ -6,5 +6,5 @@
         height="300">Tomorrow, and tomorrow, and
         tomorrow; creeps in this petty pace from day to day, until the last syll&#xAD;able of recorded
         time. And all our yesterdays have lighted fools the way to dusty death.</textArea>
-    <rect x="5" y="5" width="210" height="310" stroke-width="3" stroke="#777"/>
+    <rect x="5" y="5" width="210" height="310" stroke-width="3" stroke="#777" fill="none"/>
 </svg>

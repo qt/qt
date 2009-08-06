@@ -161,6 +161,8 @@ public:
         return oldD;
     }
 
+    typedef T *pointer;
+
 protected:
     T *d;
 

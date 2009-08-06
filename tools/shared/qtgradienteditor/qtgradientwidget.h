@@ -111,7 +111,7 @@ protected:
 
 private:
     QScopedPointer<class QtGradientWidgetPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtGradientWidget)
+    Q_DECLARE_PRIVATE(QtGradientWidget)
     Q_DISABLE_COPY(QtGradientWidget)
 };
 

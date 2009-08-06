@@ -1235,6 +1235,8 @@ inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QStringRef
 
 QT_END_NAMESPACE
 
+QT_END_HEADER
+
 #ifdef QT_USE_FAST_CONCATENATION
 #include <QtCore/qstringbuilder.h>
 #endif

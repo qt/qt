@@ -69,7 +69,7 @@ private:
 };
 
 
-template <typename T> class QConcatenable {};
+template <typename T> struct QConcatenable {};
 
 template <typename A, typename B>
 class QStringBuilder
@@ -163,7 +163,7 @@ template <> struct QConcatenable<QString>
     static inline void appendTo(const QString &a, QChar *&out)
     {
         const int n = a.size();
-        memcpy(out, (char*)a.constData(), sizeof(QChar) * n);
+        memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n; 
     }
 };
@@ -175,7 +175,7 @@ template <> struct QConcatenable<QStringRef>
     static inline void appendTo(QStringRef a, QChar *&out)
     {
         const int n = a.size();
-        memcpy(out, (char*)a.constData(), sizeof(QChar) * n);
+        memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n; 
     }
 };
@@ -200,6 +200,18 @@ template <> struct QConcatenable<const char *>
     {
         while (*a)
             *out++ = QLatin1Char(*a++);
+    }
+};
+
+template <> struct QConcatenable<QByteArray>
+{
+    typedef QByteArray type;
+    static int size(const QByteArray &ba) { return qstrnlen(ba.constData(), ba.size()); }
+    static inline void appendTo(const QByteArray &ba, QChar *&out)
+    {
+        const char *data = ba.constData();
+        while (*data)
+            *out++ = QLatin1Char(*data++);
     }
 };
 #endif

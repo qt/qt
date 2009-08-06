@@ -43,12 +43,11 @@
 
 #include "qapplication.h"
 #include "qmousepc_qws.h"
-#include "qmousebus_qws.h"
-#include "qmousevr41xx_qws.h"
-#include "qmouseyopy_qws.h"
 #include "qmouselinuxtp_qws.h"
+#include "qmouselinuxinput_qws.h"
 #include "qmousevfb_qws.h"
 #include "qmousetslib_qws.h"
+#include "qmouseqnx_qws.h"
 #include <stdlib.h>
 #include "private/qfactoryloader_p.h"
 #include "qmousedriverplugin_qws.h"
@@ -104,17 +103,13 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 QWSMouseHandler *QMouseDriverFactory::create(const QString& key, const QString &device)
 {
     QString driver = key.toLower();
+#if defined(Q_OS_QNX) && !defined(QT_NO_QWS_MOUSE_QNX)
+    if (driver == QLatin1String("qnx") || driver.isEmpty())
+        return new QQnxMouseHandler(key, device);
+#endif
 #ifndef QT_NO_QWS_MOUSE_LINUXTP
     if (driver == QLatin1String("linuxtp") || driver.isEmpty())
         return new QWSLinuxTPMouseHandler(key, device);
-#endif
-#ifndef QT_NO_QWS_MOUSE_YOPY
-    if (driver == QLatin1String("yopy") || driver.isEmpty())
-        return new QWSYopyMouseHandler(key, device);
-#endif
-#ifndef QT_NO_QWS_MOUSE_VR41XX
-    if (driver == QLatin1String("vr41xx") || driver.isEmpty())
-        return new QWSVr41xxMouseHandler(key, device);
 #endif
 #ifndef QT_NO_QWS_MOUSE_PC
     if (driver == QLatin1String("auto")
@@ -126,14 +121,16 @@ QWSMouseHandler *QMouseDriverFactory::create(const QString& key, const QString &
         return new QWSPcMouseHandler(key, device);
     }
 #endif
-#ifndef QT_NO_QWS_MOUSE_BUS
-    if (driver == QLatin1String("bus"))
-        return new QWSBusMouseHandler(key, device);
-#endif
 #ifndef QT_NO_QWS_MOUSE_TSLIB
     if (driver == QLatin1String("tslib") || driver.isEmpty())
         return new QWSTslibMouseHandler(key, device);
 #endif
+# ifndef QT_NO_QWS_MOUSE_LINUXINPUT
+    if (driver == QLatin1String("linuxinput") || \
+        driver == QLatin1String("usb") || \
+        driver == QLatin1String("linuxis"))
+        return new QWSLinuxInputMouseHandler(device);
+# endif
 #ifndef QT_NO_QWS_MOUSE_QVFB
     if (driver == QLatin1String("qvfbmouse") || driver == QLatin1String("qvfb"))
         return new QVFbMouseHandler(key, device);
@@ -157,14 +154,11 @@ QStringList QMouseDriverFactory::keys()
 {
     QStringList list;
 
+#if defined(Q_OS_QNX) && !defined(QT_NO_QWS_MOUSE_QNX)
+    list << QLatin1String("QNX");
+#endif
 #ifndef QT_NO_QWS_MOUSE_LINUXTP
     list << QLatin1String("LinuxTP");
-#endif
-#ifndef QT_NO_QWS_MOUSE_YOPY
-    list << QLatin1String("Yopy");
-#endif
-#ifndef QT_NO_QWS_MOUSE_VR41XX
-    list << QLatin1String("VR41xx");
 #endif
 #ifndef QT_NO_QWS_MOUSE_PC
     list << QLatin1String("Auto")
@@ -173,11 +167,11 @@ QStringList QMouseDriverFactory::keys()
          << QLatin1String("MouseSystems")
          << QLatin1String("MouseMan");
 #endif
-#ifndef QT_NO_QWS_MOUSE_BUS
-    list << QLatin1String("Bus");
-#endif
 #ifndef QT_NO_QWS_MOUSE_TSLIB
     list << QLatin1String("Tslib");
+#endif
+#ifndef QT_NO_QWS_MOUSE_LINUXINPUT
+    list << QLatin1String("LinuxInput");
 #endif
 
 #if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)

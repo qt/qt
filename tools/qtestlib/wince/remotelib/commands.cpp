@@ -56,6 +56,7 @@ int qRemoteLaunch(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream)
     wchar_t* arguments = 0;
     int timeout = -1;
     int returnValue = -2;
+    DWORD error = 0;
 
     if (S_OK != stream->Read(&appLength, sizeof(appLength), &bytesRead))
         CLEAN_FAIL(-2);
@@ -74,11 +75,13 @@ int qRemoteLaunch(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream)
     if (S_OK != stream->Read(&timeout, sizeof(timeout), &bytesRead))
         CLEAN_FAIL(-2);
 
-    bool result = qRemoteExecute(appName, arguments, &returnValue, timeout);
+    bool result = qRemoteExecute(appName, arguments, &returnValue, &error, timeout);
 
     if (timeout != 0) {
         if (S_OK != stream->Write(&returnValue, sizeof(returnValue), &bytesRead))
             CLEAN_FAIL(-4);
+        if (S_OK != stream->Write(&error, sizeof(error), &bytesRead))
+            CLEAN_FAIL(-5);
     }
     delete appName;
     delete arguments;
@@ -90,13 +93,16 @@ int qRemoteLaunch(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream)
 }
 
 
-bool qRemoteExecute(const wchar_t* program, const wchar_t* arguments, int *returnValue, int timeout)
+bool qRemoteExecute(const wchar_t* program, const wchar_t* arguments, int *returnValue, DWORD* error, int timeout)
 {
+    *error = 0;
+
     if (!program)
         return false;
 
     PROCESS_INFORMATION pid;
     if (!CreateProcess(program, arguments, NULL, NULL, false, 0, NULL, NULL, NULL, &pid)) {
+        *error = GetLastError();
         wprintf(L"Could not launch: %s\n", program);
         return false;
     }

@@ -69,7 +69,7 @@ class QMimeData;
 class Q_GUI_EXPORT QPlainTextEdit : public QAbstractScrollArea
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QPlainTextEdit)
+    Q_DECLARE_PRIVATE(QPlainTextEdit)
     Q_ENUMS(LineWrapMode)
     Q_PROPERTY(bool tabChangesFocus READ tabChangesFocus WRITE setTabChangesFocus)
     Q_PROPERTY(QString documentTitle READ documentTitle WRITE setDocumentTitle)
@@ -269,6 +269,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_adjustScrollbars())
     Q_PRIVATE_SLOT(d_func(), void _q_verticalScrollbarActionTriggered(int))
     Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged())
+    Q_PRIVATE_SLOT(d_func(), void _q_gestureTriggered())
     friend class QPlainTextEditControl;
 };
 
@@ -277,7 +278,7 @@ class QPlainTextDocumentLayoutPrivate;
 class Q_GUI_EXPORT QPlainTextDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QPlainTextDocumentLayout)
+    Q_DECLARE_PRIVATE(QPlainTextDocumentLayout)
     Q_PROPERTY(int cursorWidth READ cursorWidth WRITE setCursorWidth)
 
 public:

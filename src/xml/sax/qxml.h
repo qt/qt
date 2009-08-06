@@ -194,6 +194,7 @@ class Q_XML_EXPORT QXmlParseException
 public:
     explicit QXmlParseException(const QString &name = QString(), int c = -1, int l = -1,
                                 const QString &p = QString(), const QString &s = QString());
+    QXmlParseException(const QXmlParseException &other);
     ~QXmlParseException();
 
     int columnNumber() const;
@@ -271,7 +272,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QXmlSimpleReader)
-    Q_DECLARE_SCOPED_PRIVATE(QXmlSimpleReader)
+    Q_DECLARE_PRIVATE(QXmlSimpleReader)
     QScopedPointer<QXmlSimpleReaderPrivate> d_ptr;
 
     friend class QXmlSimpleReaderLocator;

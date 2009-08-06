@@ -334,12 +334,17 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   from the PrematureEndOfDocumentError error and continues parsing the
   new data with the next call to readNext().
 
-  For example, if you read data from the network using QHttp, you
-  would connect its \l{QHttp::readyRead()}{readyRead()} signal to a
-  custom slot. In this slot, you read all available data with
-  \l{QHttp::readAll()}{readAll()} and pass it to the XML stream reader
-  using addData(). Then you call your custom parsing function that
-  reads the XML events from the reader.
+  For example, if your application reads data from the network using a
+  \l{QNetworkAccessManager} {network access manager}, you would issue
+  a \l{QNetworkRequest} {network request} to the manager and receive a
+  \l{QNetworkReply} {network reply} in return. Since a QNetworkReply
+  is a QIODevice, you connect its \l{QNetworkReply::readyRead()}
+  {readyRead()} signal to a custom slot, e.g. \c{slotReadyRead()} in
+  the code snippet shown in the discussion for QNetworkAccessManager.
+  In this slot, you read all available data with
+  \l{QNetworkReply::readAll()} {readAll()} and pass it to the XML
+  stream reader using addData(). Then you call your custom parsing
+  function that reads the XML events from the reader.
 
   \section1 Performance and memory consumption
 
@@ -567,7 +572,7 @@ bool QXmlStreamReader::atEnd() const
   returns true, hasError() returns true, and this function returns
   QXmlStreamReader::Invalid.
 
-  The exception is when error() return PrematureEndOfDocumentError.
+  The exception is when error() returns PrematureEndOfDocumentError.
   This error is reported when the end of an otherwise well-formed
   chunk of XML is reached, but the chunk doesn't represent a complete
   XML document.  In that case, parsing \e can be resumed by calling

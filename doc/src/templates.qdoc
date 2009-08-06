@@ -162,7 +162,7 @@
     without having to know the exact types of the objects we are connecting.
     This is impossible with a template based solution. This kind of runtime
     introspection opens up new possibilities, for example GUIs that are
-    generated and connected from Qt Designer's XML \c{ui} files. 
+    generated and connected from Qt Designer's XML UI files.
 
     \section1 Calling Performance is Not Everything
 

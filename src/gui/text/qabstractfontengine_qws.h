@@ -118,7 +118,7 @@ public:
     virtual QList<QFontEngineInfo> availableFontEngines() const = 0;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QFontEnginePlugin)
+    Q_DECLARE_PRIVATE(QFontEnginePlugin)
     Q_DISABLE_COPY(QFontEnginePlugin)
 };
 
@@ -207,7 +207,7 @@ public:
     */
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractFontEngine)
+    Q_DECLARE_PRIVATE(QAbstractFontEngine)
     Q_DISABLE_COPY(QAbstractFontEngine)
 };
 

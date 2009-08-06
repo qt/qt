@@ -46,7 +46,7 @@ static const HashTableValue JSMimeTypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSMimeTypeTableValues, 0 };
 #else
@@ -60,19 +60,19 @@ static const HashTableValue JSMimeTypeConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypeConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypeConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMimeTypeConstructorTableValues, 0 };
 #else
     { 1, 0, JSMimeTypeConstructorTableValues, 0 };
 #endif
 
-class JSMimeTypeConstructor : public DOMObject {
+class JSMimeTypeConstructor : public DOMConstructorObject {
 public:
-    JSMimeTypeConstructor(ExecState* exec)
-        : DOMObject(JSMimeTypeConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSMimeTypeConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSMimeTypeConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSMimeTypePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSMimeTypePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -98,7 +98,7 @@ static const HashTableValue JSMimeTypePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMimeTypePrototypeTableValues, 0 };
 #else
@@ -114,8 +114,8 @@ JSObject* JSMimeTypePrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 
 const ClassInfo JSMimeType::s_info = { "MimeType", 0, &JSMimeTypeTable, 0 };
 
-JSMimeType::JSMimeType(PassRefPtr<Structure> structure, PassRefPtr<MimeType> impl)
-    : DOMObject(structure)
+JSMimeType::JSMimeType(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MimeType> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -137,44 +137,49 @@ bool JSMimeType::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
 
 JSValue jsMimeTypeType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
+    MimeType* imp = static_cast<MimeType*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsMimeTypeSuffixes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
+    MimeType* imp = static_cast<MimeType*>(castedThis->impl());
     return jsString(exec, imp->suffixes());
 }
 
 JSValue jsMimeTypeDescription(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
+    MimeType* imp = static_cast<MimeType*>(castedThis->impl());
     return jsString(exec, imp->description());
 }
 
 JSValue jsMimeTypeEnabledPlugin(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MimeType* imp = static_cast<MimeType*>(static_cast<JSMimeType*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->enabledPlugin()));
+    MimeType* imp = static_cast<MimeType*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->enabledPlugin()));
 }
 
 JSValue jsMimeTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSMimeType*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSMimeType* domObject = static_cast<JSMimeType*>(asObject(slot.slotBase()));
+    return JSMimeType::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSMimeType::getConstructor(ExecState* exec)
+JSValue JSMimeType::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSMimeTypeConstructor>(exec);
+    return getDOMConstructor<JSMimeTypeConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, MimeType* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MimeType* object)
 {
-    return getDOMObjectWrapper<JSMimeType>(exec, object);
+    return getDOMObjectWrapper<JSMimeType>(exec, globalObject, object);
 }
 MimeType* toMimeType(JSC::JSValue value)
 {

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Collabora, Ltd.  All rights reserved.
+ * Copyright (C) 2009 Torch Mobile, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -81,9 +82,16 @@ bool PluginPackage::isPluginBlacklisted()
 
         if (compareFileVersion(slPluginMinRequired) < 0)
             return true;
-    } else if (fileName() == "npmozax.dll")
+    } else if (fileName() == "npmozax.dll") {
         // Bug 15217: Mozilla ActiveX control complains about missing xpcom_core.dll
         return true;
+    } else if (name() == "Yahoo Application State Plugin") {
+        // https://bugs.webkit.org/show_bug.cgi?id=26860
+        // Bug in Yahoo Application State plug-in earlier than 1.0.0.6 leads to heap corruption. 
+        static const PlatformModuleVersion yahooAppStatePluginMinRequired(0x00000006, 0x00010000);
+        if (compareFileVersion(yahooAppStatePluginMinRequired) < 0)
+            return true;
+    }
 
     return false;
 }
@@ -237,6 +245,7 @@ bool PluginPackage::load()
         m_loadCount++;
         return true;
     } else {
+#if !PLATFORM(WINCE)
         WCHAR currentPath[MAX_PATH];
 
         if (!::GetCurrentDirectoryW(MAX_PATH, currentPath))
@@ -246,15 +255,18 @@ bool PluginPackage::load()
 
         if (!::SetCurrentDirectoryW(path.charactersWithNullTermination()))
             return false;
+#endif
 
         // Load the library
-        m_module = ::LoadLibraryW(m_path.charactersWithNullTermination());
+        m_module = ::LoadLibraryExW(m_path.charactersWithNullTermination(), 0, LOAD_WITH_ALTERED_SEARCH_PATH);
 
+#if !PLATFORM(WINCE)
         if (!::SetCurrentDirectoryW(currentPath)) {
             if (m_module)
                 ::FreeLibrary(m_module);
             return false;
         }
+#endif
     }
 
     if (!m_module)
@@ -266,13 +278,19 @@ bool PluginPackage::load()
     NP_InitializeFuncPtr NP_Initialize = 0;
     NPError npErr;
 
+#if PLATFORM(WINCE)
+    NP_Initialize = (NP_InitializeFuncPtr)GetProcAddress(m_module, L"NP_Initialize");
+    NP_GetEntryPoints = (NP_GetEntryPointsFuncPtr)GetProcAddress(m_module, L"NP_GetEntryPoints");
+    m_NPP_Shutdown = (NPP_ShutdownProcPtr)GetProcAddress(m_module, L"NP_Shutdown");
+#else
     NP_Initialize = (NP_InitializeFuncPtr)GetProcAddress(m_module, "NP_Initialize");
     NP_GetEntryPoints = (NP_GetEntryPointsFuncPtr)GetProcAddress(m_module, "NP_GetEntryPoints");
     m_NPP_Shutdown = (NPP_ShutdownProcPtr)GetProcAddress(m_module, "NP_Shutdown");
+#endif
 
     if (!NP_Initialize || !NP_GetEntryPoints || !m_NPP_Shutdown)
         goto abort;
-  
+
     memset(&m_pluginFuncs, 0, sizeof(m_pluginFuncs));
     m_pluginFuncs.size = sizeof(m_pluginFuncs);
 

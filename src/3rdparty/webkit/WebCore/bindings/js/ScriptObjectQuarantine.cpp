@@ -31,7 +31,6 @@
 #include "config.h"
 #include "ScriptObjectQuarantine.h"
 
-#include "Database.h"
 #include "Document.h"
 #include "Frame.h"
 #include "JSDOMBinding.h"
@@ -43,6 +42,7 @@
 #include <runtime/JSLock.h>
 
 #if ENABLE(DATABASE)
+#include "Database.h"
 #include "JSDatabase.h"
 #endif
 
@@ -56,7 +56,7 @@ namespace WebCore {
 
 ScriptValue quarantineValue(ScriptState* scriptState, const ScriptValue& value)
 {
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
     return ScriptValue(JSInspectedObjectWrapper::wrap(scriptState, value.jsValue()));
 }
 
@@ -69,10 +69,11 @@ bool getQuarantinedScriptObject(Database* database, ScriptObject& quarantinedObj
     if (!frame)
         return false;
 
-    ExecState* exec = toJSDOMWindow(frame)->globalExec();
+    JSDOMGlobalObject* globalObject = toJSDOMWindow(frame);
+    ExecState* exec = globalObject->globalExec();
 
-    JSLock lock(false);
-    quarantinedObject = ScriptObject(asObject(JSInspectedObjectWrapper::wrap(exec, toJS(exec, database))));
+    JSLock lock(SilenceAssertionsOnly);
+    quarantinedObject = ScriptObject(asObject(JSInspectedObjectWrapper::wrap(exec, toJS(exec, globalObject, database))));
 
     return true;
 }
@@ -84,10 +85,11 @@ bool getQuarantinedScriptObject(Frame* frame, Storage* storage, ScriptObject& qu
     ASSERT(frame);
     ASSERT(storage);
 
-    ExecState* exec = toJSDOMWindow(frame)->globalExec();
+    JSDOMGlobalObject* globalObject = toJSDOMWindow(frame);
+    ExecState* exec = globalObject->globalExec();
 
-    JSLock lock(false);
-    quarantinedObject = ScriptObject(asObject(JSInspectedObjectWrapper::wrap(exec, toJS(exec, storage))));
+    JSLock lock(SilenceAssertionsOnly);
+    quarantinedObject = ScriptObject(asObject(JSInspectedObjectWrapper::wrap(exec, toJS(exec, globalObject, storage))));
 
     return true;
 }
@@ -99,8 +101,9 @@ bool getQuarantinedScriptObject(Node* node, ScriptObject& quarantinedObject)
     if (!exec)
         return false;
 
-    JSLock lock(false);
-    quarantinedObject = ScriptObject(asObject(JSInspectedObjectWrapper::wrap(exec, toJS(exec, node))));
+    JSLock lock(SilenceAssertionsOnly);
+    // FIXME: Should use some sort of globalObjectFromNode()
+    quarantinedObject = ScriptObject(asObject(JSInspectedObjectWrapper::wrap(exec, toJS(exec, deprecatedGlobalObjectForPrototype(exec), node))));
 
     return true;
 }
@@ -112,7 +115,7 @@ bool getQuarantinedScriptObject(DOMWindow* domWindow, ScriptObject& quarantinedO
     JSDOMWindow* window = toJSDOMWindow(domWindow->frame());
     ExecState* exec = window->globalExec();
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
     quarantinedObject = ScriptObject(asObject(JSInspectedObjectWrapper::wrap(exec, window)));
 
     return true;

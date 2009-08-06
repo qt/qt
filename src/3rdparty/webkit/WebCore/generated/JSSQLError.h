@@ -23,6 +23,7 @@
 
 #if ENABLE(DATABASE)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class SQLError;
 
-class JSSQLError : public DOMObject {
-    typedef DOMObject Base;
+class JSSQLError : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSQLError(PassRefPtr<JSC::Structure>, PassRefPtr<SQLError>);
+    JSSQLError(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SQLError>);
     virtual ~JSSQLError();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -52,7 +53,7 @@ private:
     RefPtr<SQLError> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SQLError*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SQLError*);
 SQLError* toSQLError(JSC::JSValue);
 
 class JSSQLErrorPrototype : public JSC::JSObject {

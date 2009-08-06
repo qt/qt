@@ -85,7 +85,7 @@ public:
 
 private:
     friend QKeyMapperPrivate *qt_keymapper_private();
-    Q_DECLARE_SCOPED_PRIVATE(QKeyMapper)
+    Q_DECLARE_PRIVATE(QKeyMapper)
     Q_DISABLE_COPY(QKeyMapper)
 };
 

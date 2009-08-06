@@ -52,6 +52,9 @@
 #ifndef QABSTRACTXMLNODEMODEL_P_H
 #define QABSTRACTXMLNODEMODEL_P_H
 
+#include "qabstractxmlnodemodel.h"
+#include "qsourcelocation.h"
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -61,6 +64,13 @@ class QAbstractXmlNodeModelPrivate
 public:
     virtual ~QAbstractXmlNodeModelPrivate()
     {
+    }
+
+    virtual QSourceLocation sourceLocation(const QXmlNodeModelIndex &index) const
+    {
+        Q_UNUSED(index);
+
+        return QSourceLocation();
     }
 };
 

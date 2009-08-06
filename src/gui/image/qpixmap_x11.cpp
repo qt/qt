@@ -313,7 +313,7 @@ int Q_GUI_EXPORT qt_x11_preferred_pixmap_depth = 0;
 
 QX11PixmapData::QX11PixmapData(PixelType type)
     : QPixmapData(type, X11Class), hd(0),
-      uninit(true), read_only(false), x11_mask(0), picture(0), mask_picture(0), hd2(0),
+      flags(Uninitialized), x11_mask(0), picture(0), mask_picture(0), hd2(0), gl_surface(0),
       share_mode(QPixmap::ImplicitlyShared), pengine(0)
 {
 }
@@ -1217,7 +1217,7 @@ void QX11PixmapData::release()
             XFreePixmap(xinfo.display(), hd2);
             hd2 = 0;
         }
-        if (!read_only)
+        if (!(flags & Readonly))
             XFreePixmap(xinfo.display(), hd);
         hd = 0;
     }
@@ -1876,7 +1876,7 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
     } else {                                        // color pixmap
         QPixmap pm;
         QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pm.data);
-        x11Data->uninit = false;
+        x11Data->flags &= ~QX11PixmapData::Uninitialized;
         x11Data->xinfo = xinfo;
         x11Data->d = d;
         x11Data->w = w;
@@ -2018,7 +2018,7 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 
     QPixmap pm(data);
 
-    data->uninit = false;
+    data->flags &= ~QX11PixmapData::Uninitialized;
     pm.x11SetScreen(scr);
 
     GC gc = XCreateGC(dpy, pm.handle(), 0, 0);
@@ -2060,7 +2060,7 @@ QPaintEngine* QX11PixmapData::paintEngine() const
 {
     QX11PixmapData *that = const_cast<QX11PixmapData*>(this);
 
-    if (read_only && share_mode == QPixmap::ImplicitlyShared) {
+    if ((flags & Readonly) && share_mode == QPixmap::ImplicitlyShared) {
         // if someone wants to draw onto us, copy the shared contents
         // and turn it into a fully fledged QPixmap
         ::Pixmap hd_copy = XCreatePixmap(X11->display, RootWindow(X11->display, xinfo.screen()),
@@ -2082,7 +2082,7 @@ QPaintEngine* QX11PixmapData::paintEngine() const
             XFreeGC(X11->display, gc);
         }
         that->hd = hd_copy;
-        that->read_only = false;
+        that->flags &= ~QX11PixmapData::Readonly;
     }
 
     if (!that->pengine)
@@ -2133,7 +2133,7 @@ void QX11PixmapData::copy(const QPixmapData *data, const QRect &rect)
 
     setSerialNumber(++qt_pixmap_serial);
 
-    uninit = false;
+    flags &= ~Uninitialized;
     xinfo = x11Data->xinfo;
     d = x11Data->d;
     w = rect.width();
@@ -2201,7 +2201,7 @@ void QX11PixmapData::convertToARGB32(bool preserveContents)
         return;
 
     // Q_ASSERT(count == 1);
-    if (read_only && share_mode == QPixmap::ExplicitlyShared)
+    if ((flags & Readonly) && share_mode == QPixmap::ExplicitlyShared)
         return;
 
     Pixmap pm = XCreatePixmap(X11->display, RootWindow(X11->display, xinfo.screen()),
@@ -2211,10 +2211,10 @@ void QX11PixmapData::convertToARGB32(bool preserveContents)
     if (picture) {
         if (preserveContents)
             XRenderComposite(X11->display, PictOpSrc, picture, 0, p, 0, 0, 0, 0, 0, 0, w, h);
-        if (!read_only)
+        if (!(flags & Readonly))
             XRenderFreePicture(X11->display, picture);
     }
-    if (hd && !read_only)
+    if (hd && !(flags & Readonly))
         XFreePixmap(X11->display, hd);
     if (x11_mask) {
         XFreePixmap(X11->display, x11_mask);
@@ -2252,9 +2252,8 @@ QPixmap QPixmap::fromX11Pixmap(Qt::HANDLE pixmap, QPixmap::ShareMode mode)
 
     QX11PixmapData *data = new QX11PixmapData(depth == 1 ? QPixmapData::BitmapType : QPixmapData::PixmapType);
     data->setSerialNumber(++qt_pixmap_serial);
-    data->read_only = true;
+    data->flags = QX11PixmapData::Readonly;
     data->share_mode = mode;
-    data->uninit = false;
     data->w = width;
     data->h = height;
     data->is_null = (width <= 0 || height <= 0);

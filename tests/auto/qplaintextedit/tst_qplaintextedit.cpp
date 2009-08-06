@@ -1128,6 +1128,7 @@ void tst_QPlainTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.canInsertCallCount, 0);
     QCOMPARE(ed.insertCallCount, 0);
 
+#ifdef QT_BUILD_INTERNAL
     QTextControl *control = qFindChild<QTextControl *>(&ed);
     QVERIFY(control);
 
@@ -1142,6 +1143,7 @@ void tst_QPlainTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.createMimeDataCallCount, 1);
     QCOMPARE(ed.canInsertCallCount, 1);
     QCOMPARE(ed.insertCallCount, 1);
+#endif
 }
 #endif
 

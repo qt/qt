@@ -56,10 +56,12 @@
 #include "qrect.h"
 #include "qpoint.h"
 #include "qdatetime.h"
+#include "qgesture.h"
 #include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
+class QObject;
 class QGraphicsItem;
 class QGesturePrivate : public QObjectPrivate
 {
@@ -67,45 +69,15 @@ class QGesturePrivate : public QObjectPrivate
 
 public:
     QGesturePrivate()
-        : state(Qt::NoGesture), graphicsItem(0), singleshot(0), duration(0) { }
-
-    void init(const QPoint &startPos, const QPoint &lastPos,
-              const QPoint &pos, const QRect &rect,
-              const QPoint &hotSpot, const QDateTime &startTime,
-              uint duration)
+        : graphicsItem(0), eventFilterProxyGraphicsItem(0), state(Qt::NoGesture)
     {
-        this->rect = rect;
-        this->hotSpot = hotSpot;
-        this->startTime = startTime;
-        this->duration = duration;
-        this->startPos = startPos;
-        this->lastPos = lastPos;
-        this->pos = pos;
     }
 
-    QString type;
-    Qt::GestureState state;
 
-    QPointer<QWidget> widget;
     QGraphicsItem *graphicsItem;
-    uint singleshot:1;
+    QGraphicsItem *eventFilterProxyGraphicsItem;
 
-    QRect rect;
-    QPoint hotSpot;
-    QDateTime startTime;
-    uint duration;
-    QPoint startPos;
-    QPoint lastPos;
-    QPoint pos;
-};
-
-class QPanningGesturePrivate : public QGesturePrivate
-{
-    Q_DECLARE_PUBLIC(QPanningGesture)
-
-public:
-    Qt::DirectionType lastDirection;
-    Qt::DirectionType direction;
+    Qt::GestureState state;
 };
 
 QT_END_NAMESPACE

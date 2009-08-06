@@ -9,7 +9,7 @@
     </message>
     <message>
         <location filename="project.ui" line="20"/>
-        <source>This should not be considered to be more or less equal to the corresponding one in the ts file.</source>
+        <source>This should not be considered to be more or less equal to the corresponding one in the TS file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

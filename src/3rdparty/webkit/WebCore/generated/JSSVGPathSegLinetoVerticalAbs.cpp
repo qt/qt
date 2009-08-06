@@ -42,7 +42,7 @@ static const HashTableValue JSSVGPathSegLinetoVerticalAbsTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoVerticalAbsTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoVerticalAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoVerticalAbsTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGPathSegLinetoVerticalAbsPrototypeTableValues[1]
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoVerticalAbsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoVerticalAbsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoVerticalAbsPrototypeTableValues, 0 };
 #else
@@ -72,8 +72,8 @@ JSObject* JSSVGPathSegLinetoVerticalAbsPrototype::self(ExecState* exec, JSGlobal
 
 const ClassInfo JSSVGPathSegLinetoVerticalAbs::s_info = { "SVGPathSegLinetoVerticalAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoVerticalAbsTable, 0 };
 
-JSSVGPathSegLinetoVerticalAbs::JSSVGPathSegLinetoVerticalAbs(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegLinetoVerticalAbs> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegLinetoVerticalAbs::JSSVGPathSegLinetoVerticalAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoVerticalAbs> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -89,8 +89,9 @@ bool JSSVGPathSegLinetoVerticalAbs::getOwnPropertySlot(ExecState* exec, const Id
 
 JSValue jsSVGPathSegLinetoVerticalAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegLinetoVerticalAbs* castedThis = static_cast<JSSVGPathSegLinetoVerticalAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegLinetoVerticalAbs* imp = static_cast<SVGPathSegLinetoVerticalAbs*>(static_cast<JSSVGPathSegLinetoVerticalAbs*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegLinetoVerticalAbs* imp = static_cast<SVGPathSegLinetoVerticalAbs*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 

@@ -40,7 +40,7 @@ static const HashTableValue JSSVGPathSegClosePathPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegClosePathPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegClosePathPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegClosePathPrototypeTableValues, 0 };
 #else
@@ -56,8 +56,8 @@ JSObject* JSSVGPathSegClosePathPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegClosePath::s_info = { "SVGPathSegClosePath", &JSSVGPathSeg::s_info, 0, 0 };
 
-JSSVGPathSegClosePath::JSSVGPathSegClosePath(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegClosePath> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegClosePath::JSSVGPathSegClosePath(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegClosePath> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 

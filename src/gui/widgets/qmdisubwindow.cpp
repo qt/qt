@@ -1066,7 +1066,7 @@ void QMdiSubWindowPrivate::createSystemMenu()
     addToSystemMenu(CloseAction, QMdiSubWindow::tr("&Close"), SLOT(close()));
     actions[CloseAction]->setIcon(style->standardIcon(QStyle::SP_TitleBarCloseButton, 0, q));
 #if !defined(QT_NO_SHORTCUT)
-    actions[CloseAction]->setShortcut(QKeySequence::Close);
+    actions[CloseAction]->setShortcuts(QKeySequence::Close);
 #endif
     updateActions();
 }
@@ -1946,26 +1946,21 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
                             colorref2qrgb(GetSysColor(COLOR_CAPTIONTEXT)));
         newPalette.setColor(QPalette::Inactive, QPalette::HighlightedText,
                             colorref2qrgb(GetSysColor(COLOR_INACTIVECAPTIONTEXT)));
-        if (QSysInfo::WindowsVersion != QSysInfo::WV_95
-                && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-            colorsInitialized = true;
-            BOOL hasGradient;
-            QT_WA({
-                SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &hasGradient, 0);
-            } , {
-                SystemParametersInfoA(SPI_GETGRADIENTCAPTIONS, 0, &hasGradient, 0);
-            });
-            if (hasGradient) {
-                newPalette.setColor(QPalette::Active, QPalette::Base,
-                                    colorref2qrgb(GetSysColor(COLOR_GRADIENTACTIVECAPTION)));
-                newPalette.setColor(QPalette::Inactive, QPalette::Base,
-                                    colorref2qrgb(GetSysColor(COLOR_GRADIENTINACTIVECAPTION)));
-            } else {
-                newPalette.setColor(QPalette::Active, QPalette::Base,
-                                    newPalette.color(QPalette::Active, QPalette::Highlight));
-                newPalette.setColor(QPalette::Inactive, QPalette::Base,
-                                    newPalette.color(QPalette::Inactive, QPalette::Highlight));
-            }
+
+        colorsInitialized = true;
+        BOOL hasGradient = false;
+        SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &hasGradient, 0);
+
+        if (hasGradient) {
+            newPalette.setColor(QPalette::Active, QPalette::Base,
+                                colorref2qrgb(GetSysColor(COLOR_GRADIENTACTIVECAPTION)));
+            newPalette.setColor(QPalette::Inactive, QPalette::Base,
+                                colorref2qrgb(GetSysColor(COLOR_GRADIENTINACTIVECAPTION)));
+        } else {
+            newPalette.setColor(QPalette::Active, QPalette::Base,
+                                newPalette.color(QPalette::Active, QPalette::Highlight));
+            newPalette.setColor(QPalette::Inactive, QPalette::Base,
+                                newPalette.color(QPalette::Inactive, QPalette::Highlight));
         }
     }
 #endif // Q_WS_WIN

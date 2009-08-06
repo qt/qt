@@ -5,7 +5,10 @@ QT += sql
 
 contains(QT_CONFIG, qt3support): QT += qt3support
 
-win32:!wince*: LIBS += -lws2_32
+win32: {
+   !wince*: LIBS += -lws2_32
+   else: LIBS += -lws2
+}
 
 wince*: {
    DEPLOYMENT_PLUGIN += qsqlite

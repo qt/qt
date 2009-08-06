@@ -65,7 +65,7 @@ class QTextDocumentLayoutPrivate;
 
 class Q_AUTOTEST_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
 {
-    Q_DECLARE_SCOPED_PRIVATE(QTextDocumentLayout)
+    Q_DECLARE_PRIVATE(QTextDocumentLayout)
     Q_OBJECT
     Q_PROPERTY(int cursorWidth READ cursorWidth WRITE setCursorWidth)
     Q_PROPERTY(qreal idealWidth READ idealWidth)

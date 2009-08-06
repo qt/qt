@@ -40,7 +40,7 @@ static const HashTableValue JSSVGMetadataElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMetadataElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMetadataElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGMetadataElementPrototypeTableValues, 0 };
 #else
@@ -56,8 +56,8 @@ JSObject* JSSVGMetadataElementPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGMetadataElement::s_info = { "SVGMetadataElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGMetadataElement::JSSVGMetadataElement(PassRefPtr<Structure> structure, PassRefPtr<SVGMetadataElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGMetadataElement::JSSVGMetadataElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMetadataElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 

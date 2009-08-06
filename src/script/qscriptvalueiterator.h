@@ -88,7 +88,7 @@ public:
 private:
     QScopedPointer<QScriptValueIteratorPrivate> d_ptr;
 
-    Q_DECLARE_SCOPED_PRIVATE(QScriptValueIterator)
+    Q_DECLARE_PRIVATE(QScriptValueIterator)
     Q_DISABLE_COPY(QScriptValueIterator)
 };
 

@@ -48,16 +48,10 @@ namespace WebCore {
 
     class WorkerContext : public RefCounted<WorkerContext>, public ScriptExecutionContext, public EventTarget {
     public:
-        static PassRefPtr<WorkerContext> create(const KURL& url, const String& userAgent, WorkerThread* thread)
-        {
-            return adoptRef(new WorkerContext(url, userAgent, thread));
-        }
 
         virtual ~WorkerContext();
 
         virtual bool isWorkerContext() const { return true; }
-
-        virtual WorkerContext* toWorkerContext() { return this; }
 
         virtual ScriptExecutionContext* scriptExecutionContext() const;
 
@@ -73,28 +67,23 @@ namespace WebCore {
 
         bool hasPendingActivity() const;
 
-        virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL);
-        virtual void addMessage(MessageDestination, MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
+        virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL) = 0;
+        virtual void addMessage(MessageDestination, MessageSource, MessageType, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
         virtual void resourceRetrievedByXMLHttpRequest(unsigned long identifier, const ScriptString& sourceString);
         virtual void scriptImported(unsigned long identifier, const String& sourceString);
 
         virtual void postTask(PassRefPtr<Task>); // Executes the task on context's thread asynchronously.
 
-
         // WorkerGlobalScope
         WorkerContext* self() { return this; }
         WorkerLocation* location() const;
         void close();
+        void setOnerror(PassRefPtr<EventListener> eventListener) { m_onerrorListener = eventListener; }
+        EventListener* onerror() const { return m_onerrorListener.get(); }
 
         // WorkerUtils
         void importScripts(const Vector<String>& urls, const String& callerURL, int callerLine, ExceptionCode&);
         WorkerNavigator* navigator() const;
-
-
-        // DedicatedWorkerGlobalScope
-        void postMessage(const String& message);
-        void setOnmessage(PassRefPtr<EventListener> eventListener) { m_onmessageListener = eventListener; }
-        EventListener* onmessage() const { return m_onmessageListener.get(); }
 
         // Timers
         int setTimeout(ScheduledAction*, int timeout);
@@ -111,7 +100,6 @@ namespace WebCore {
         typedef HashMap<AtomicString, ListenerVector> EventListenersMap;
         EventListenersMap& eventListeners() { return m_eventListeners; }
 
-        void dispatchMessage(const String&);
 
         // These methods are used for GC marking. See JSWorkerContext::mark() in
         // JSWorkerContextCustom.cpp.
@@ -121,9 +109,11 @@ namespace WebCore {
         using RefCounted<WorkerContext>::ref;
         using RefCounted<WorkerContext>::deref;
 
-    private:
+    protected:
         WorkerContext(const KURL&, const String&, WorkerThread*);
+        bool isClosing() { return m_closing; }
 
+    private:
         virtual void refScriptExecutionContext() { ref(); }
         virtual void derefScriptExecutionContext() { deref(); }
         virtual void refEventTarget() { ref(); }
@@ -141,7 +131,7 @@ namespace WebCore {
         OwnPtr<WorkerScriptController> m_script;
         WorkerThread* m_thread;
 
-        RefPtr<EventListener> m_onmessageListener;
+        RefPtr<EventListener> m_onerrorListener;
         EventListenersMap m_eventListeners;
 
         bool m_closing;

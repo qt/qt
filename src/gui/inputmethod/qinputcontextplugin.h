@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#if !defined(QT_NO_IM) && !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_IM)
 
 class QInputContext;
 class QInputContextPluginPrivate;

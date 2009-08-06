@@ -39,7 +39,15 @@
 **
 ****************************************************************************/
 
+#include <QRegExp>
+
 #include "adpreader.h"
+
+static bool versionIsAtLeast320(const QString &version)
+{
+    return QRegExp("\\d.\\d\\.\\d").exactMatch(version)
+            && (version[0] > '3' || (version[0] == '3' && version[2] >= '2'));
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -51,11 +59,11 @@ void AdpReader::readData(const QByteArray &contents)
     m_properties.clear();
     m_files.clear();
     addData(contents);
-	while (!atEnd()) {
-		readNext();
-		if (isStartElement()) {
+    while (!atEnd()) {
+        readNext();
+        if (isStartElement()) {
             if (name().toString().toLower() == QLatin1String("assistantconfig")
-                && attributes().value(QLatin1String("version")) == QLatin1String("3.2.0")) {
+                && versionIsAtLeast320(attributes().value(QLatin1String("version")).toString())) {
                 readProject();
             } else if (name().toString().toLower() == QLatin1String("dcf")) {
                 QString ref = attributes().value(QLatin1String("ref")).toString();
@@ -66,8 +74,8 @@ void AdpReader::readData(const QByteArray &contents)
             } else {
                 raiseError();
             }
-		}
-	}
+        }
+    }
 }
 
 QList<ContentItem> AdpReader::contents() const

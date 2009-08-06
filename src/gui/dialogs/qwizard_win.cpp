@@ -429,7 +429,7 @@ void QVistaHelper::setWindowPosHack()
 class QHackWidget : public QWidget
 {
 public:
-    Q_DECLARE_SCOPED_PRIVATE(QWidget)
+    Q_DECLARE_PRIVATE(QWidget)
     QTLWExtra* topData() { return d_func()->topData(); }
 };
 
@@ -616,7 +616,7 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         // Set up a memory DC and bitmap that we'll draw into
         HDC dcMem;
         HBITMAP bmp;
-        BITMAPINFO dib = {0};
+        BITMAPINFO dib = {{0}};
         dcMem = CreateCompatibleDC(hdc);
 
         dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -662,7 +662,7 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
         // Set up a memory DC and bitmap that we'll draw into
         HDC dcMem;
         HBITMAP bmp;
-        BITMAPINFO dib = {0};
+        BITMAPINFO dib = {{0}};
         dcMem = CreateCompatibleDC(hdc);
 
         dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);

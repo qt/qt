@@ -53,7 +53,7 @@ static const HashTableValue JSSVGDescElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGDescElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGDescElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGDescElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGDescElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGDescElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGDescElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGDescElementPrototypeTableValues, 0 };
 #else
@@ -89,8 +89,8 @@ bool JSSVGDescElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSSVGDescElement::s_info = { "SVGDescElement", &JSSVGElement::s_info, &JSSVGDescElementTable, 0 };
 
-JSSVGDescElement::JSSVGDescElement(PassRefPtr<Structure> structure, PassRefPtr<SVGDescElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGDescElement::JSSVGDescElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGDescElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -106,31 +106,35 @@ bool JSSVGDescElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsSVGDescElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGDescElement* castedThis = static_cast<JSSVGDescElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGDescElement* imp = static_cast<SVGDescElement*>(static_cast<JSSVGDescElement*>(asObject(slot.slotBase()))->impl());
+    SVGDescElement* imp = static_cast<SVGDescElement*>(castedThis->impl());
     return jsString(exec, imp->xmllang());
 }
 
 JSValue jsSVGDescElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGDescElement* castedThis = static_cast<JSSVGDescElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGDescElement* imp = static_cast<SVGDescElement*>(static_cast<JSSVGDescElement*>(asObject(slot.slotBase()))->impl());
+    SVGDescElement* imp = static_cast<SVGDescElement*>(castedThis->impl());
     return jsString(exec, imp->xmlspace());
 }
 
 JSValue jsSVGDescElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGDescElement* castedThis = static_cast<JSSVGDescElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGDescElement* imp = static_cast<SVGDescElement*>(static_cast<JSSVGDescElement*>(asObject(slot.slotBase()))->impl());
+    SVGDescElement* imp = static_cast<SVGDescElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGDescElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGDescElement* castedThis = static_cast<JSSVGDescElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGDescElement* imp = static_cast<SVGDescElement*>(static_cast<JSSVGDescElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGDescElement* imp = static_cast<SVGDescElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 void JSSVGDescElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -160,7 +164,7 @@ JSValue JSC_HOST_CALL jsSVGDescElementPrototypeFunctionGetPresentationAttribute(
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

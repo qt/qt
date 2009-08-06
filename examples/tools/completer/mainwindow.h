@@ -52,6 +52,7 @@ class QLabel;
 class QLineEdit;
 class QProgressBar;
 class QCheckBox;
+class QSpinBox;
 QT_END_NAMESPACE
 
 //! [0]
@@ -67,6 +68,7 @@ private slots:
     void changeCase(int);
     void changeMode(int);
     void changeModel();
+    void changeMaxVisible(int);
 //! [0]
 
 //! [1]
@@ -77,6 +79,7 @@ private:
     QComboBox *caseCombo;
     QComboBox *modeCombo;
     QComboBox *modelCombo;
+    QSpinBox *maxVisibleSpinBox;
     QCheckBox *wrapCheckBox;
     QCompleter *completer;
     QLabel *contentsLabel;

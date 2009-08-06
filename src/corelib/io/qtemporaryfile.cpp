@@ -60,6 +60,10 @@
 #include <time.h>
 #include <ctype.h>
 
+#if defined(Q_OS_UNIX)
+# include "private/qcore_unix_p.h"      // overrides QT_OPEN
+#endif
+
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 # include <process.h>
 # if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -69,9 +73,11 @@
 
 #if defined(Q_OS_WINCE)
 #  include <types.h>
-#  include "qfunctions_wince.h"
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#  include <taskLib.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -130,6 +136,8 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
     }
 #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
     pid = _getpid();
+#elif defined(Q_OS_VXWORKS)
+    pid = (pid_t) taskIdCurrent;
 #else
     pid = getpid();
 #endif
@@ -208,8 +216,9 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
             if ((*doopen =
                 QT_OPEN(targetPath.toLocal8Bit(), O_CREAT|O_EXCL|O_RDWR
 #  else // CE
+            // this is Unix or older MSVC
             if ((*doopen =
-                open(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
+                QT_OPEN(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
 #  endif
 #  ifdef QT_LARGEFILE_SUPPORT
                            |QT_OPEN_LARGEFILE
@@ -219,18 +228,9 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 #  elif defined(Q_OS_WIN)
                            |O_BINARY
 #  endif
-#  ifdef O_CLOEXEC
-                           // supported on Linux >= 2.6.23; avoids one extra system call
-                           // and avoids a race condition: if another thread forks, we could
-                           // end up leaking a file descriptor...
-                           |O_CLOEXEC
-#  endif
                      , 0600)) >= 0)
 #endif // WIN && !CE
             {
-#if defined(Q_OS_UNIX) && !defined(O_CLOEXEC)
-                fcntl(*doopen, F_SETFD, FD_CLOEXEC);
-#endif
                 return 1;
             }
             if (errno != EEXIST)
@@ -239,7 +239,7 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 #ifdef Q_OS_WIN
             if (QT_MKDIR(path) == 0)
 #else
-            if (mkdir(path, 0700) == 0)
+            if (QT_MKDIR(path, 0700) == 0)
 #endif
                 return 1;
             if (errno != EEXIST)
@@ -289,7 +289,7 @@ static int qt_mkstemps(char *path, int slen)
 //************* QTemporaryFileEngine
 class QTemporaryFileEngine : public QFSFileEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QFSFileEngine)
+    Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
     QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
         : QFSFileEngine(file), filePathIsTemplate(fileIsTemplate)

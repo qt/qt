@@ -135,38 +135,39 @@
 
     \section1 Transformation
 
-    QGraphicsItem supports affine transformations in addition to its base
-    position, pos(). To change the item's transformation, you can pass
-    a transformation matrix to setTransform()
+    QGraphicsItem supports projective transformations in addition to its base
+    position, pos(). There are several ways to change an item's transformation.
+    For simple transformations, you can call either of the convenience
+    functions setRotation() or setScale(), or you can pass any transformation
+    matrix to setTransform(). For advanced transformation control you also have
+    the option of setting several combined transformations by calling
+    setTransformations().
 
-    Item transformations accumulate from parent to child, so if both a
-    parent and child item are rotated 90 degrees, the child's total
-    transformation will be 180 degrees.  Similarly, if the item's
-    parent is scaled to 2x its original size, its children will also
-    be twice as large. An item's transformation does not affect its
-    own local geometry; all geometry functions (e.g., contains(),
-    update(), and all the mapping functions) still operate in local
-    coordinates. For convenience, QGraphicsItem provides the functions
-    sceneTransform(), which returns the item's total transformation
+    Item transformations accumulate from parent to child, so if both a parent
+    and child item are rotated 90 degrees, the child's total transformation
+    will be 180 degrees. Similarly, if the item's parent is scaled to 2x its
+    original size, its children will also be twice as large. An item's
+    transformation does not affect its own local geometry; all geometry
+    functions (e.g., contains(), update(), and all the mapping functions) still
+    operate in local coordinates. For convenience, QGraphicsItem provides the
+    functions sceneTransform(), which returns the item's total transformation
     matrix (including its position and all parents' positions and
-    transformations), and scenePos(), which returns its position in
-    scene coordinates. To reset an item's matrix, call
-    resetTransform().
+    transformations), and scenePos(), which returns its position in scene
+    coordinates. To reset an item's matrix, call resetTransform().
 
-    Another way to apply transformation to an item is to use the , or
-    set the different transformation properties (transformOrigin,
-    x/y/zRotation, x/yScale, horizontal/verticalShear).  Those
-    properties come in addition to the base transformation
+    Certain transformation operations produce a different outcome depending on
+    the order in which they are applied. For example, if you scale an
+    transform, and then rotate it, you may get a different result than if the
+    transform was rotated first. However, the order you set the transformation
+    properties on QGraphicsItem does not affect the resulting transformation;
+    QGraphicsItem always applies the properties in a fixed, defined order:
 
-    The order you set the transformation properties does not affect
-    the resulting transformation The resulting transformation is
-    always computed in the following order
-
-    \code
-    [Origin] [Base] [RotateX] [RotateY] [RotateZ] [Shear] [Scale] [-Origin]
-    \endcode
-
-    Where [Base] is the stransformation set by setTransform
+    \list
+    \o The item's base transform is applied (transform())
+    \o The item's transformations list is applied in order (transformations())
+    \o The item is rotated relative to its transform origin point (rotation(), transformOriginPoint())
+    \o The item is scaled relative to its transform origin point (scale(), transformOriginPoint())
+    \endlist
 
     \section1 Painting
 
@@ -303,13 +304,12 @@
     drop shadow effects and for decoration objects that follow the parent
     item's geometry without drawing on top of it.
 
-    \value ItemUsesExtendedStyleOption The item makes use of either
-    QStyleOptionGraphicsItem::exposedRect or QStyleOptionGraphicsItem::matrix.
+    \value ItemUsesExtendedStyleOption The item makes use of either the
+    exposedRect or matrix member of the QStyleOptionGraphicsItem. Implementers
+    of QGraphicsItem subclasses should set that flag if this data is required.
     By default, the exposedRect is initialized to the item's boundingRect and
     the matrix is untransformed. Enable this flag for more fine-grained values.
-    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
-    and is always initialized to 1.
-    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform for a more
+    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform() for a more
     fine-grained value.
 
     \value ItemHasNoContents The item does not paint anything (i.e., calling
@@ -323,6 +323,14 @@
     performance reasons, these notifications are disabled by default. You must
     enable this flag to receive notifications for position and transform
     changes. This flag was introduced in Qt 4.6.
+
+    \value ItemAcceptsInputMethod The item supports input methods typically
+    used for Asian languages.
+    This flag was introduced in Qt 4.6.
+
+    \value ItemAutoDetectsFocusProxy The item will assign any child that
+    gains input focus as its focus proxy. See also focusProxy().
+    This flag was introduced in Qt 4.6.
 */
 
 /*!
@@ -554,6 +562,7 @@
 #include "qgraphicsview.h"
 #include "qgraphicswidget.h"
 #include "qgraphicsproxywidget.h"
+#include "qgraphicsscenebsptreeindex_p.h"
 #include <QtCore/qbitarray.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qpoint.h>
@@ -575,7 +584,6 @@
 #include <private/qtextcontrol_p.h>
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
-#include <private/qgesturemanager_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -585,17 +593,6 @@
 #include <math.h>
 
 QT_BEGIN_NAMESPACE
-
-// QRectF::intersects() returns false always if either the source or target
-// rectangle's width or height are 0. This works around that problem.
-static inline void _q_adjustRect(QRectF *rect)
-{
-    Q_ASSERT(rect);
-    if (!rect->width())
-        rect->adjust(-0.00001, 0, 0.00001, 0);
-    if (!rect->height())
-        rect->adjust(0, -0.00001, 0, 0.00001);
-}
 
 static inline void _q_adjustRect(QRect *rect)
 {
@@ -615,8 +612,6 @@ public:
     QMap<const QGraphicsItem *, QMap<int, QVariant> > data;
 };
 Q_GLOBAL_STATIC(QGraphicsItemCustomDataStore, qt_dataStore)
-
-QString qt_getStandardGestureTypeName(Qt::GestureType type);
 
 /*!
     \internal
@@ -660,6 +655,10 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         // For root items only. This is the item that has either enabled or
         // disabled \a childFlag, or has been reparented.
         switch (int(childFlag)) {
+        case -2:
+            flag = AncestorFiltersChildEvents;
+            enabled = q->filtersChildEvents();
+            break;
         case -1:
             flag = AncestorHandlesChildEvents;
             enabled = q->handlesChildEvents();
@@ -677,18 +676,22 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             return;
         }
 
-        // Inherit the enabled-state from our parents.
-        if ((parent && ((parent->d_ptr->ancestorFlags & flag)
-                        || (int(parent->d_ptr->flags & childFlag) == childFlag)
-                        || (childFlag == -1 && parent->d_ptr->handlesChildEvents)))) {
-            enabled = true;
-            ancestorFlags |= flag;
-        }
-
-        // Top-level root items don't have any ancestors, so there are no
-        // ancestor flags either.
-        if (!parent)
+        if (parent) {
+            // Inherit the enabled-state from our parents.
+            if ((parent->d_ptr->ancestorFlags & flag)
+                    || (int(parent->d_ptr->flags & childFlag) == childFlag)
+                        || (childFlag == -1 && parent->d_ptr->handlesChildEvents)
+                        || (childFlag == -2 && parent->d_ptr->filtersDescendantEvents)) {
+                enabled = true;
+                ancestorFlags |= flag;
+            } else {
+                ancestorFlags &= ~flag;
+            }
+        } else {
+            // Top-level root items don't have any ancestors, so there are no
+            // ancestor flags either.
             ancestorFlags = 0;
+        }
     } else {
         // Don't set or propagate the ancestor flag if it's already correct.
         if (((ancestorFlags & flag) && enabled) || (!(ancestorFlags & flag) && !enabled))
@@ -701,7 +704,9 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             ancestorFlags &= ~flag;
 
         // Don't process children if the item has the main flag set on itself.
-        if ((childFlag != -1 &&  int(flags & childFlag) == childFlag) || (int(childFlag) == -1 && handlesChildEvents))
+        if ((childFlag != -1 &&  int(flags & childFlag) == childFlag)
+            || (int(childFlag) == -1 && handlesChildEvents)
+            || (int(childFlag) == -2 && filtersDescendantEvents))
             return;
     }
 
@@ -832,6 +837,42 @@ void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTran
     }
 }
 
+void QGraphicsItemPrivate::updateSceneTransformFromParent()
+{
+    if (parent) {
+        Q_ASSERT(!parent->d_ptr->dirtySceneTransform);
+        if (parent->d_ptr->sceneTransformTranslateOnly) {
+            sceneTransform = QTransform::fromTranslate(parent->d_ptr->sceneTransform.dx() + pos.x(),
+                                                       parent->d_ptr->sceneTransform.dy() + pos.y());
+        } else {
+            sceneTransform = parent->d_ptr->sceneTransform;
+            sceneTransform.translate(pos.x(), pos.y());
+        }
+        if (transformData) {
+            sceneTransform = transformData->computedFullTransform(&sceneTransform);
+            sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+        } else {
+            sceneTransformTranslateOnly = parent->d_ptr->sceneTransformTranslateOnly;
+        }
+    } else if (!transformData) {
+        sceneTransform = QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransformTranslateOnly = 1;
+    } else if (transformData->onlyTransform) {
+        sceneTransform = transformData->transform;
+        if (!pos.isNull())
+            sceneTransform *= QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    } else if (pos.isNull()) {
+        sceneTransform = transformData->computedFullTransform();
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    } else {
+        sceneTransform = QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransform = transformData->computedFullTransform(&sceneTransform);
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    }
+    dirtySceneTransform = 0;
+}
+
 /*!
     \internal
 
@@ -871,12 +912,17 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     if (newParent == parent)
         return;
 
-    if (QGraphicsWidget *w = isWidget ? static_cast<QGraphicsWidget *>(q) : q->parentWidget()) {
-        // Update the child focus chain; when reparenting a widget that has a
+    if (scene) {
+        // Deliver the change to the index
+        scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
+    }
+
+    QGraphicsItem *lastSubFocusItem = subFocusItem;
+    if (subFocusItem) {
+        // Update the child focus chain; when reparenting an item that has a
         // focus child, ensure that that focus child clears its focus child
         // chain from our parents before it's reparented.
-        if (QGraphicsWidget *focusChild = w->focusWidget())
-            focusChild->clearFocus();
+        subFocusItem->clearFocus();
     }
 
     // We anticipate geometry changes. If the item is deleted, it will be
@@ -922,6 +968,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         }
 
         // Inherit ancestor flags from the new parent.
+        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -938,6 +985,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     } else {
         // Inherit ancestor flags from the new parent.
+        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -958,15 +1006,24 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         }
     }
 
-    if (scene) {
-        // Invalidate any sort caching; arrival of a new item means we need to
-        // resort.
-        scene->d_func()->invalidateSortCache();
-    }
-
     // Resolve depth.
     resolveDepth(parent ? parent->d_ptr->depth : -1);
     dirtySceneTransform = 1;
+
+    // Restore the sub focus chain.
+    if (lastSubFocusItem)
+        lastSubFocusItem->d_ptr->setSubFocus();
+
+    // Auto-update focus proxy. The closest parent that detects
+    // focus proxies is updated as the proxy gains or loses focus.
+    QGraphicsItem *p = newParent;
+    while (p) {
+        if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
+            p->setFocusProxy(q);
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
@@ -1132,7 +1189,6 @@ QGraphicsItem::~QGraphicsItem()
 {
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
-    d_ptr->removeExtraGestures();
 
     clearFocus();
     if (!d_ptr->children.isEmpty()) {
@@ -1146,6 +1202,13 @@ QGraphicsItem::~QGraphicsItem()
     else
         d_ptr->setParentItemHelper(0);
 
+    if (d_ptr->transformData) {
+        for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
+            QGraphicsTransform *t = d_ptr->transformData->graphicsTransforms.at(i);
+            static_cast<QGraphicsTransformPrivate *>(t->d_ptr.data())->item = 0;
+            delete t;
+        }
+    }
     delete d_ptr->transformData;
 
     qt_dataStore()->data.remove(this);
@@ -1203,7 +1266,7 @@ void QGraphicsItem::setGroup(QGraphicsItemGroup *group)
     Returns a pointer to this item's parent item. If this item does not have a
     parent, 0 is returned.
 
-    \sa setParentItem(), children()
+    \sa setParentItem(), childItems()
 */
 QGraphicsItem *QGraphicsItem::parentItem() const
 {
@@ -1226,7 +1289,7 @@ QGraphicsItem *QGraphicsItem::topLevelItem() const
 }
 
 /*!
-    \since 4.4
+    \since 4.6
 
     Returns a pointer to the item's parent, cast to a QGraphicsObject. returns 0 if the parent item
     is not a QGraphicsObject.
@@ -1319,7 +1382,7 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
     the parent. You should not \l{QGraphicsScene::addItem()}{add} the
     item to the scene yourself.
 
-    \sa parentItem(), children()
+    \sa parentItem(), childItems()
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *parent)
 {
@@ -1442,6 +1505,8 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     flags = GraphicsItemFlags(itemChange(ItemFlagsChange, quint32(flags)).toUInt());
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, quint32(flags));
 
     // Flags that alter the geometry of the item (or its children).
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
@@ -1488,6 +1553,12 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
             d_ptr->parent->d_ptr->needSortChildren = 1;
         else if (d_ptr->scene)
             d_ptr->scene->d_func()->needSortTopLevelItems = 1;
+    }
+
+    if ((flags & ItemAcceptsInputMethod) != (oldFlags & ItemAcceptsInputMethod)) {
+        // Update input method sensitivity in any views.
+        if (d_ptr->scene)
+            d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
     }
 
     if (d_ptr->scene) {
@@ -1794,6 +1865,8 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         if (q_ptr->isSelected())
             q_ptr->setSelected(false);
     } else {
+        geometryChanged = 1;
+        paintedViewBoundingRectsNeedRepaint = 1;
         if (isWidget && scene) {
             QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
             if (widget->windowType() == Qt::Popup)
@@ -2254,10 +2327,10 @@ bool QGraphicsItem::acceptsHoverEvents() const
     stays "hovered" until the cursor leaves its area, including its
     children's areas.
 
-    If a parent item handles child events (setHandlesChildEvents()), it will
-    receive hover move, drag move, and drop events as the cursor passes
-    through its children, but it does not receive hover enter and hover leave,
-    nor drag enter and drag leave events on behalf of its children.
+    If a parent item handles child events, it will receive hover move,
+    drag move, and drop events as the cursor passes through its
+    children, but it does not receive hover enter and hover leave, nor
+    drag enter and drag leave events on behalf of its children.
 
     A QGraphicsWidget with window decorations will accept hover events
     regardless of the value of acceptHoverEvents().
@@ -2288,8 +2361,8 @@ void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
 
 /*! \since 4.6
 
-    Returns true if an item accepts touch events (QTouchEvent); otherwise, returns false. By
-    default, items do not accept touch events.
+    Returns true if an item accepts \l{QTouchEvent}{touch events};
+    otherwise, returns false. By default, items do not accept touch events.
 
     \sa setAcceptTouchEvents()
 */
@@ -2301,7 +2374,7 @@ bool QGraphicsItem::acceptTouchEvents() const
 /*!
     \since 4.6
 
-    If \a enabled is true, this item will accept touch events;
+    If \a enabled is true, this item will accept \l{QTouchEvent}{touch events};
     otherwise, it will ignore them. By default, items do not accept
     touch events.
 */
@@ -2317,6 +2390,44 @@ void QGraphicsItem::setAcceptTouchEvents(bool enabled)
 }
 
 /*!
+    \since 4.6
+
+    Returns true if this item filters child events (i.e., all events
+    intended for any of its children are instead sent to this item);
+    otherwise, false is returned.
+
+    The default value is false; child events are not filtered.
+
+    \sa setFiltersChildEvents()
+*/
+bool QGraphicsItem::filtersChildEvents() const
+{
+    return d_ptr->filtersDescendantEvents;
+}
+
+/*!
+    \since 4.6
+
+    If \a enabled is true, this item is set to filter all events for
+    all its children (i.e., all events intented for any of its
+    children are instead sent to this item); otherwise, if \a enabled
+    is false, this item will only handle its own events. The default
+    value is false.
+
+    \sa filtersChildEvents()
+*/
+void QGraphicsItem::setFiltersChildEvents(bool enabled)
+{
+    if (d_ptr->filtersDescendantEvents == enabled)
+        return;
+
+    d_ptr->filtersDescendantEvents = enabled;
+    d_ptr->updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
+}
+
+/*!
+    \obsolete
+
     Returns true if this item handles child events (i.e., all events
     intended for any of its children are instead sent to this item);
     otherwise, false is returned.
@@ -2337,6 +2448,8 @@ bool QGraphicsItem::handlesChildEvents() const
 }
 
 /*!
+    \obsolete
+
     If \a enabled is true, this item is set to handle all events for
     all its children (i.e., all events intented for any of its
     children are instead sent to this item); otherwise, if \a enabled
@@ -2364,70 +2477,163 @@ void QGraphicsItem::setHandlesChildEvents(bool enabled)
 }
 
 /*!
-    Returns true if this item has keyboard input focus; otherwise, returns
-    false.
+    Returns true if this item or its \l{focusProxy()}{focus proxy} has keyboard
+    input focus; otherwise, returns false.
 
-    \sa QGraphicsScene::focusItem(), setFocus(), QGraphicsScene::setFocusItem()
+    \sa focusItem(), setFocus(), QGraphicsScene::setFocusItem()
 */
 bool QGraphicsItem::hasFocus() const
 {
+    if (d_ptr->focusProxy)
+        return d_ptr->focusProxy->hasFocus();
     return (d_ptr->scene && d_ptr->scene->focusItem() == this);
 }
 
 /*!
     Gives keyboard input focus to this item. The \a focusReason argument will
-    be passed into any focus event generated by this function; it is used to
-    give an explanation of what caused the item to get focus.
+    be passed into any \l{QFocusEvent}{focus event} generated by this function;
+    it is used to give an explanation of what caused the item to get focus.
 
-    Only items that set the ItemIsFocusable flag can accept keyboard focus.
-
-    If this item is not visible (i.e., isVisible() returns false), not
-    enabled, not associated with a scene, or if it already has input focus,
-    this function will do nothing.
-
-    As a result of calling this function, this item will receive a focus in
-    event with \a focusReason. If another item already has focus, that item
-    will first receive a focus out event indicating that it has lost input
+    Only enabled items that set the ItemIsFocusable flag can accept keyboard
     focus.
 
-    \sa clearFocus(), hasFocus()
+    If this item is not visible, or not associated with a scene, it will not
+    gain immediate input focus. However, it will be registered as the preferred
+    focus item for its subtree of items, should it later become visible.
+
+    As a result of calling this function, this item will receive a 
+    \l{focusInEvent()}{focus in event} with \a focusReason. If another item
+    already has focus, that item will first receive a \l{focusOutEvent()}
+    {focus out event} indicating that it has lost input focus.
+
+    \sa clearFocus(), hasFocus(), focusItem(), focusProxy()
 */
 void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 {
-    if (!d_ptr->scene || !isEnabled() || hasFocus() || !(d_ptr->flags & ItemIsFocusable))
+    // Disabled / unfocusable items cannot accept focus.
+    if (!isEnabled() || !(d_ptr->flags & QGraphicsItem::ItemIsFocusable))
         return;
-    if (isVisible()) {
-        // Visible items immediately gain focus from scene.
-        d_ptr->scene->setFocusItem(this, focusReason);
-    } else if (d_ptr->isWidget) {
-        // Just set up subfocus.
-        static_cast<QGraphicsWidget *>(this)->d_func()->setFocusWidget();
+
+    // Find focus proxy.
+    QGraphicsItem *f = this;
+    while (f->d_ptr->focusProxy)
+        f = f->d_ptr->focusProxy;
+
+    // Return if it already has focus.
+    if (d_ptr->scene && d_ptr->scene->focusItem() == f)
+        return;
+
+    // Update the child focus chain.
+    d_ptr->setSubFocus();
+
+    // Update the scene's focus item.
+    if (d_ptr->scene) {
+        QGraphicsWidget *w = window();
+        if (!w || w->isActiveWindow()) {
+            // Visible items immediately gain focus from scene.
+            d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
+        }
     }
 }
 
 /*!
     Takes keyboard input focus from the item.
 
-    If it has focus, a focus out event is sent to this item to tell it that it
-    is about to lose the focus.
+    If it has focus, a \l{focusOutEvent()}{focus out event} is sent to this item
+    to tell it that it is about to lose the focus.
 
     Only items that set the ItemIsFocusable flag, or widgets that set an
     appropriate focus policy, can accept keyboard focus.
 
-    \sa setFocus(), QGraphicsWidget::focusPolicy
+    \sa setFocus(), hasFocus(), QGraphicsWidget::focusPolicy
 */
 void QGraphicsItem::clearFocus()
 {
     if (!d_ptr->scene)
         return;
-    if (d_ptr->isWidget) {
-        // Invisible widget items with focus must explicitly clear subfocus.
-        static_cast<QGraphicsWidget *>(this)->d_func()->clearFocusWidget();
-    }
-    if (d_ptr->scene->focusItem() == this) {
+    // Invisible items with focus must explicitly clear subfocus.
+    d_ptr->clearSubFocus();
+    if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
         d_ptr->scene->setFocusItem(0);
     }
+}
+
+/*!
+    \since 4.6
+
+    Returns this item's focus proxy, or 0 if this item has no
+    focus proxy.
+
+    \sa setFocusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+*/
+QGraphicsItem *QGraphicsItem::focusProxy() const
+{
+    return d_ptr->focusProxy;
+}
+
+/*!
+    \since 4.6
+
+    Sets the item's focus proxy to \a item.
+
+    If an item has a focus proxy, the focus proxy will receive
+    input focus when the item gains input focus. The item itself
+    will still have focus (i.e., hasFocus() will return true),
+    but only the focus proxy will receive the keyboard input.
+
+    A focus proxy can itself have a focus proxy, and so on. In
+    such case, keyboard input will be handled by the outermost
+    focus proxy.
+
+    The focus proxy \a item must belong to the same scene as
+    this item.
+
+    \sa focusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+*/
+void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
+{
+    if (item == d_ptr->focusProxy)
+        return;
+    if (item == this) {
+        qWarning("QGraphicsItem::setFocusProxy: cannot assign self as focus proxy");
+        return;
+    }
+    if (item) {
+        if (item->d_ptr->scene != d_ptr->scene) {
+            qWarning("QGraphicsItem::setFocusProxy: focus proxy must be in same scene");
+            return;
+        }
+        for (QGraphicsItem *f = item->focusProxy(); f != 0; f = f->focusProxy()) {
+            if (f == this) {
+                qWarning("QGraphicsItem::setFocusProxy: %p is already in the focus proxy chain", item);
+                return;
+            }
+        }
+    }
+
+    QGraphicsItem *lastFocusProxy = d_ptr->focusProxy;
+    d_ptr->focusProxy = item;
+    if (d_ptr->scene) {
+        if (lastFocusProxy)
+            d_ptr->scene->d_func()->focusProxyReverseMap.remove(lastFocusProxy, this);
+        if (item)
+            d_ptr->scene->d_func()->focusProxyReverseMap.insert(item, this);
+    }
+}
+
+/*!
+    \since 4.6
+
+    If this item, a child or descendant of this item currently has input
+    focus, this function will return a pointer to that item. If
+    no descendant has input focus, 0 is returned.
+
+    \sa hasFocus(), setFocus(), QWidget::focusWidget()
+*/
+QGraphicsItem *QGraphicsItem::focusItem() const
+{
+    return d_ptr->subFocusItem;
 }
 
 /*!
@@ -2565,7 +2771,7 @@ void QGraphicsItem::ungrabKeyboard()
     For convenience, you can also call scenePos() to determine the
     item's position in scene coordinates, regardless of its parent.
 
-    \sa x(), y(), setPos(), matrix(), {The Graphics View Coordinate System}
+    \sa x(), y(), setPos(), transform(), {The Graphics View Coordinate System}
 */
 QPointF QGraphicsItem::pos() const
 {
@@ -2581,10 +2787,12 @@ QPointF QGraphicsItem::pos() const
 */
 
 /*!
-  Set's the \a x coordinate of the item's position. Equivalent to
-  calling setPos(x, y()).
+    \since 4.6
 
-  \sa x(), setPos()
+    Set's the \a x coordinate of the item's position. Equivalent to
+    calling setPos(x, y()).
+
+    \sa x(), setPos()
 */
 void QGraphicsItem::setX(qreal x)
 {
@@ -2600,10 +2808,12 @@ void QGraphicsItem::setX(qreal x)
 */
 
 /*!
-  Set's the \a y coordinate of the item's position. Equivalent to
-  calling setPos(x(), y).
+    \since 4.6
 
-  \sa x(), setPos()
+    Set's the \a y coordinate of the item's position. Equivalent to
+    calling setPos(x(), y).
+
+    \sa x(), setPos()
 */
 void QGraphicsItem::setY(qreal y)
 {
@@ -2763,11 +2973,10 @@ QMatrix QGraphicsItem::matrix() const
 
     Returns this item's transformation matrix.
 
-    Either the one set by setTransform, or the resulting transformation from
-    all the transfmation properties
-
-    If no matrix or transformation property has been set, the
-    identity matrix is returned. 
+    The transformation matrix is combined with the item's rotation(), scale()
+    and transformations() into a combined transformations for the item.
+    
+    The default transformation matrix is an identity matrix.
 
     \sa setTransform(), sceneTransform()
 */
@@ -2781,333 +2990,182 @@ QTransform QGraphicsItem::transform() const
 /*!
     \since 4.6
 
-    Returns the rotation around the X axis.
+    Returns the clockwise rotation, in degrees, around the Z axis. The default
+    value is 0 (i.e., the item is not rotated).
 
-    The default is 0
+    The rotation is combined with the item's scale(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
 
-    \warning The value doesn't take in account any rotation set with
-    the setTransform() method.
-
-    \sa setXRotation(), {Transformations}
+    \sa setRotation(), transformOriginPoint(), {Transformations}
 */
-qreal QGraphicsItem::xRotation() const
+qreal QGraphicsItem::rotation() const
 {
     if (!d_ptr->transformData)
         return 0;
-    return d_ptr->transformData->xRotation;
+    return d_ptr->transformData->rotation;
 }
 
 /*!
     \since 4.6
 
-    Sets the rotation around the X axis to \a angle degrees.
+    Sets the clockwise rotation \a angle, in degrees, around the Z axis. The
+    default value is 0 (i.e., the item is not rotated). Assigning a negative
+    value will rotate the item counter-clockwise. Normally the rotation angle
+    is in the range (-360, 360), but it's also possible to assign values
+    outside of this range (e.g., a rotation of 370 degrees is the same as a
+    rotation of 10 degrees).
 
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
+    The item is rotated around its transform origin point, which by default
+    is (0, 0). You can select a different transformation origin by calling
+    setTransformOriginPoint().
 
-    \sa xRotation(), setTransformOrigin(), {Transformations}
+    The rotation is combined with the item's scale(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
+
+    \sa rotation(), setTransformOriginPoint(), {Transformations}
 */
-void QGraphicsItem::setXRotation(qreal angle)
+void QGraphicsItem::setRotation(qreal angle)
 {
     prepareGeometryChange();
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xRotation = angle;
+    d_ptr->transformData->rotation = angle;
+    d_ptr->transformData->onlyTransform = false;
+    d_ptr->dirtySceneTransform = 1;
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->rotationChanged();
+}
+
+/*!
+    \since 4.6
+
+    Returns the scale factor of the item. The default scale factor is 1.0
+    (i.e., the item is not scaled).
+
+    The scale is combined with the item's rotation(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
+
+    \sa setScale(), rotation(), {Transformations}
+*/
+qreal QGraphicsItem::scale() const
+{
+    if (!d_ptr->transformData)
+        return 1.;
+    return d_ptr->transformData->scale;
+}
+
+/*!
+    \since 4.6
+
+    Sets the scale \a factor of the item. The default scale factor is 1.0
+    (i.e., the item is not scaled). A scale factor of 0.0 will collapse the
+    item to a single point. If you provide a negative scale factor, the
+    item will be flipped and mirrored (i.e., rotated 180 degrees).
+
+    The item is scaled around its transform origin point, which by default
+    is (0, 0). You can select a different transformation origin by calling
+    setTransformOriginPoint().
+
+    The scale is combined with the item's rotation(), transform() and
+    transformations() to map the item's coordinate system to the parent item.
+
+    \sa scale(), setTransformOriginPoint(), {Transformations}
+*/
+void QGraphicsItem::setScale(qreal factor)
+{
+    prepareGeometryChange();
+    if (!d_ptr->transformData)
+        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
+    d_ptr->transformData->scale = factor;
+    d_ptr->transformData->onlyTransform = false;
+    d_ptr->dirtySceneTransform = 1;
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->scaleChanged();
+}
+
+
+/*!
+    \since 4.6
+
+    Returns a list of graphics transforms that currently apply to this item.
+
+    QGraphicsTransform is for applying and controlling a chain of individual
+    transformation operations on an item. It's particularily useful in
+    animations, where each transform operation needs to be interpolated
+    independently, or differently.
+
+    The transformations are combined with the item's rotation(), scale() and
+    transform() to map the item's coordinate system to the parent item.
+
+    \sa scale(), rotation(), transformOriginPoint(), {Transformations}
+*/
+QList<QGraphicsTransform *> QGraphicsItem::transformations() const
+{
+    if (!d_ptr->transformData)
+        return QList<QGraphicsTransform *>();
+    return d_ptr->transformData->graphicsTransforms;
+}
+
+/*!
+    \since 4.6
+
+    Sets a list of graphics \a transformations (QGraphicsTransform) that
+    currently apply to this item.
+
+    If all you want is to rotate or scale an item, you should call setRotation()
+    or setScale() instead. If you want to set an arbitrary transformation on
+    an item, you can call setTransform().
+
+    QGraphicsTransform is for applying and controlling a chain of individual
+    transformation operations on an item. It's particularily useful in
+    animations, where each transform operation needs to be interpolated
+    independently, or differently.
+
+    The transformations are combined with the item's rotation(), scale() and
+    transform() to map the item's coordinate system to the parent item.
+
+    \sa scale(), setTransformOriginPoint(), {Transformations}
+*/
+void QGraphicsItem::setTransformations(const QList<QGraphicsTransform *> &transformations)
+{
+    prepareGeometryChange();
+    if (!d_ptr->transformData)
+        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
+    d_ptr->transformData->graphicsTransforms = transformations;
+    for (int i = 0; i < transformations.size(); ++i)
+        transformations.at(i)->d_func()->setItem(this);
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
 /*!
-    \since 4.6
-
-    Returns the rotation around the Y axis.
-
-    The default is 0
-
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa setYRotation(), {Transformations}
+    \internal
 */
-qreal QGraphicsItem::yRotation() const
+void QGraphicsItemPrivate::appendGraphicsTransform(QGraphicsTransform *t)
 {
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->yRotation;
+    if (!transformData)
+        transformData = new QGraphicsItemPrivate::TransformData;
+    if (!transformData->graphicsTransforms.contains(t))
+        transformData->graphicsTransforms.append(t);
+
+    Q_Q(QGraphicsItem);
+    t->d_func()->setItem(q);
+    transformData->onlyTransform = false;
+    dirtySceneTransform = 1;
 }
 
 /*!
     \since 4.6
 
-    Sets the rotation around the Y axis to \a angle degrees.
-
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa yRotation(), setTransformOrigin() {Transformations}
-*/
-void QGraphicsItem::setYRotation(qreal angle)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->yRotation = angle;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the rotation around the Z axis.
-
-    The default is 0
-
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa setZRotation(), {Transformations}
-*/
-qreal QGraphicsItem::zRotation() const
-{
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->zRotation;
-}
-
-/*!
-    \since 4.6
-
-    Sets the rotation around the Z axis to \a angle degrees.
-
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
-
-    \sa zRotation(), setTransformOrigin(), {Transformations}
-*/
-void QGraphicsItem::setZRotation(qreal angle)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->zRotation = angle;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    This convenience function set the rotation angles around the 3 axes
-    to \a x, \a y and \a z.
-
-    \sa setXRotation(), setYRotation(), setZRotation(), {Transformations}
-*/
-void QGraphicsItem::setRotation(qreal x, qreal y, qreal z)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xRotation = x;
-    d_ptr->transformData->yRotation = y;
-    d_ptr->transformData->zRotation = z;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the scale factor on the X axis.
-
-    The default is 1
-
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa setXScale(), {Transformations}
-*/
-qreal QGraphicsItem::xScale() const
-{
-    if (!d_ptr->transformData)
-        return 1;
-    return d_ptr->transformData->xScale;
-}
-
-/*!
-    \since 4.6
-
-    Sets the scale factor on the X axis to \a factor.
-
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa xScale(), setTransformOrigin(), {Transformations}
-*/
-void QGraphicsItem::setXScale(qreal factor)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xScale = factor;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the scale factor on the Y axis.
-
-    The default is 1
-
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa setYScale(), {Transformations}
-*/
-qreal QGraphicsItem::yScale() const
-{
-    if (!d_ptr->transformData)
-        return 1;
-    return d_ptr->transformData->yScale;
-}
-
-/*!
-    \since 4.6
-
-    Sets the scale factor on the Y axis to \a factor.
-
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa yScale(), setTransformOrigin(), {Transformations}
-*/
-void QGraphicsItem::setYScale(qreal factor)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->yScale = factor;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    This convenience function set the scaling factors on X and Y axis to \a sx and \a sy.
-
-    \warning The value doesn't take in account any scaling set with the setTransform() method.
-
-    \sa setXScale(), setYScale(), {Transformations}
-*/
-void QGraphicsItem::setScale(qreal sx, qreal sy)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xScale = sx;
-    d_ptr->transformData->yScale = sy;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the horizontal shear.
-
-    The default is 0
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa setHorizontalShear(), {Transformations}
-*/
-qreal QGraphicsItem::horizontalShear() const
-{
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->horizontalShear;
-}
-
-/*!
-    \since 4.6
-
-    Sets the horizontal shear to \a shear.
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa horizontalShear(), {Transformations}
-*/
-void QGraphicsItem::setHorizontalShear(qreal shear)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->horizontalShear = shear;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the vertical shear.
-
-    The default is 0
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa setHorizontalShear(), {Transformations}
-*/
-qreal QGraphicsItem::verticalShear() const
-{
-    if (!d_ptr->transformData)
-        return 0;
-    return d_ptr->transformData->verticalShear;
-}
-
-/*!
-    \since 4.6
-
-    Sets the vertical shear to \a shear.
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa verticalShear(), {Transformations}
-*/
-void QGraphicsItem::setVerticalShear(qreal shear)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->verticalShear = shear;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    This convenience function sets the horizontal shear to \a sh and the vertical shear to \a sv.
-
-    \warning The value doesn't take in account any shearing set with the setTransform() method.
-
-    \sa setHorizontalShear(), setVerticalShear()
-*/
-void QGraphicsItem::setShear(qreal sh, qreal sv)
-{
-    prepareGeometryChange();
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->horizontalShear = sh;
-    d_ptr->transformData->verticalShear = sv;
-    d_ptr->transformData->onlyTransform = false;
-    d_ptr->dirtySceneTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the origin point used for transformation in item coordinate.
+    Returns the origin point for the transformation in item coordinates.
 
     The default is QPointF(0,0).
 
-    \sa setTransformOrigin(), {Transformations}
+    \sa setTransformOriginPoint(), {Transformations}
 */
-QPointF QGraphicsItem::transformOrigin() const
+QPointF QGraphicsItem::transformOriginPoint() const
 {
     if (!d_ptr->transformData)
         return QPointF(0,0);
@@ -3117,11 +3175,11 @@ QPointF QGraphicsItem::transformOrigin() const
 /*!
     \since 4.6
 
-    Sets the \a origin for transformation in item coordinate
+    Sets the \a origin point for the transformation in item coordinates.
 
-    \sa transformOrigin(), {Transformations}
+    \sa transformOriginPoint(), {Transformations}
 */
-void QGraphicsItem::setTransformOrigin(const QPointF &origin)
+void QGraphicsItem::setTransformOriginPoint(const QPointF &origin)
 {
     prepareGeometryChange();
     if (!d_ptr->transformData)
@@ -3133,15 +3191,15 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 }
 
 /*!
-    \fn void QGraphicsItem::setTransformOrigin(qreal x, qreal y)
+    \fn void QGraphicsItem::setTransformOriginPoint(qreal x, qreal y)
 
     \since 4.6
     \overload
 
-    Sets the origin for the transformation to the point
-    composed of \a x and \a y.
-    
-    \sa setTransformOrigin(), {Transformations}
+    Sets the origin point for the transformation in item coordinates.
+    This is equivalent to calling setTransformOriginPoint(QPointF(\a x, \a y)).
+
+    \sa setTransformOriginPoint(), {Transformations}
 */
 
 
@@ -3154,7 +3212,8 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 */
 QMatrix QGraphicsItem::sceneMatrix() const
 {
-    return sceneTransform().toAffine();
+    d_ptr->ensureSceneTransform();
+    return d_ptr->sceneTransform.toAffine();
 }
 
 
@@ -3177,16 +3236,7 @@ QMatrix QGraphicsItem::sceneMatrix() const
 */
 QTransform QGraphicsItem::sceneTransform() const
 {
-    if (d_ptr->dirtySceneTransform) {
-        // This item and all its descendants have dirty scene transforms.
-        // We're about to validate this item's scene transform, so we have to
-        // invalidate all the children; otherwise there's no way for the descendants
-        // to detect that the ancestor has changed.
-        d_ptr->invalidateChildrenSceneTransform();
-    }
-
-    QGraphicsItem *that = const_cast<QGraphicsItem *>(this);
-    d_ptr->ensureSceneTransformRecursive(&that);
+    d_ptr->ensureSceneTransform();
     return d_ptr->sceneTransform;
 }
 
@@ -3216,8 +3266,10 @@ QTransform QGraphicsItem::sceneTransform() const
 QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) const
 {
     // Ensure we return the standard transform if we're not untransformable.
-    if (!d_ptr->itemIsUntransformable())
-        return sceneTransform() * viewportTransform;
+    if (!d_ptr->itemIsUntransformable()) {
+        d_ptr->ensureSceneTransform();
+        return d_ptr->sceneTransform * viewportTransform;
+    }
 
     // Find the topmost item that ignores view transformations.
     const QGraphicsItem *untransformedAncestor = this;
@@ -3236,7 +3288,8 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
     }
 
     // First translate the base untransformable item.
-    QPointF mappedPoint = (untransformedAncestor->sceneTransform() * viewportTransform).map(QPointF(0, 0));
+    untransformedAncestor->d_ptr->ensureSceneTransform();
+    QPointF mappedPoint = (untransformedAncestor->d_ptr->sceneTransform * viewportTransform).map(QPointF(0, 0));
 
     // COMBINE
     QTransform matrix = QTransform::fromTranslate(mappedPoint.x(), mappedPoint.y());
@@ -3329,8 +3382,11 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     // Find the closest common ancestor. If the two items don't share an
     // ancestor, then the only way is to combine their scene transforms.
     const QGraphicsItem *commonAncestor = commonAncestorItem(other);
-    if (!commonAncestor)
-        return sceneTransform() * other->sceneTransform().inverted(ok);
+    if (!commonAncestor) {
+        d_ptr->ensureSceneTransform();
+        other->d_ptr->ensureSceneTransform();
+        return d_ptr->sceneTransform * other->d_ptr->sceneTransform.inverted(ok);
+    }
 
     // If the two items are cousins (in sibling branches), map both to the
     // common ancestor, and combine the two transforms.
@@ -3420,9 +3476,11 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     to map an item coordiate to a scene coordinate, or mapFromScene() to map
     from scene coordinates to item coordinates.
 
-    \warning using this function doesnt affect the value of the transformation properties
+    The transformation matrix is combined with the item's rotation(), scale()
+    and transformations() into a combined transformation that maps the item's
+    coordinate system to its parent.
 
-    \sa transform(), setRotation(), setScale(), setShear(), setTransformOrigin(), {The Graphics View Coordinate System}, {Transformations}
+    \sa transform(), setRotation(), setScale(), setTransformOriginPoint(), {The Graphics View Coordinate System}, {Transformations}
 */
 void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 {
@@ -3479,7 +3537,14 @@ void QGraphicsItem::resetTransform()
 
 /*!
     \obsolete
-    Use setZRotation() instead
+
+    Use
+
+    \code
+    setRotation(rotation() + angle);
+    \endcode
+
+    instead.
 
     Rotates the current item transformation \a angle degrees clockwise around
     its origin. To translate around an arbitrary point (x, y), you need to
@@ -3488,8 +3553,6 @@ void QGraphicsItem::resetTransform()
     Example:
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 6
-
-    \warning using this functionhas no effect on the zRotation value
 
     \sa setTransform(), transform(), scale(), shear(), translate()
 */
@@ -3500,7 +3563,14 @@ void QGraphicsItem::rotate(qreal angle)
 
 /*!
     \obsolete
-    Use setScale() instead
+
+    Use
+
+    \code
+    setTransform(QTransform::fromScale(sx, sy), true);
+    \endcode
+
+    instead.
 
     Scales the current item transformation by (\a sx, \a sy) around its
     origin. To scale from an arbitrary point (x, y), you need to combine
@@ -3509,8 +3579,6 @@ void QGraphicsItem::rotate(qreal angle)
     Example:
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 7
-
-    \warning using this function has no effect on the xScale or yScale value
 
     \sa setTransform(), transform()
 */
@@ -3521,11 +3589,16 @@ void QGraphicsItem::scale(qreal sx, qreal sy)
 
 /*!
     \obsolete
-    Use setShear instead.
+
+    Use 
+
+    \code
+    setTransform(QTransform().shear(sh, sv), true);
+    \endcode
+
+    instead.
 
     Shears the current item transformation by (\a sh, \a sv).
-
-    \warning using this function has no effect on the horizontalShear or verticalShear value
 
     \sa setTransform(), transform()
 */
@@ -3536,7 +3609,13 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 
 /*!
     \obsolete
-    Use setPos() or setTransformOrigin() instead.
+
+    Use setPos() or setTransformOriginPoint() instead. For identical
+    behavior, use
+    
+    \code
+    setTransform(QTransform::fromTranslate(dx, dy), true);
+    \endcode
 
     Translates the current item transformation by (\a dx, \a dy).
 
@@ -3621,18 +3700,20 @@ void QGraphicsItem::setZValue(qreal z)
     qreal newZ = qreal(newZVariant.toDouble());
     if (newZ == d_ptr->z)
         return;
+
+    if (d_ptr->scene) {
+        // Z Value has changed, we have to notify the index.
+        d_ptr->scene->d_func()->index->itemChange(this, ItemZValueChange, newZVariant);
+    }
+
     d_ptr->z = newZ;
     if (d_ptr->parent)
         d_ptr->parent->d_ptr->needSortChildren = 1;
     else if (d_ptr->scene)
         d_ptr->scene->d_func()->needSortTopLevelItems = 1;
 
-    if (d_ptr->scene) {
+    if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
-        // Invalidate any sort caching; arrival of a new item means we need to
-        // resort.
-        d_ptr->scene->d_func()->invalidateSortCache();
-    }
 
     itemChange(ItemZValueHasChanged, newZVariant);
 
@@ -3723,7 +3804,13 @@ QRectF QGraphicsItem::sceneBoundingRect() const
 
     QRectF br = boundingRect();
     br.translate(offset);
-    return !parentItem ? br : parentItem->sceneTransform().mapRect(br);
+    if (!parentItem)
+        return br;
+    if (parentItem->d_ptr->hasTranslateOnlySceneTransform()) {
+        br.translate(parentItem->d_ptr->sceneTransform.dx(), parentItem->d_ptr->sceneTransform.dy());
+        return br;
+    }
+    return parentItem->d_ptr->sceneTransform.mapRect(br);
 }
 
 /*!
@@ -4098,7 +4185,7 @@ bool QGraphicsItem::isObscuredBy(const QGraphicsItem *item) const
 {
     if (!item)
         return false;
-    return QGraphicsScenePrivate::closestItemFirst_withoutCache(item, this)
+    return QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(item, this)
         && qt_QGraphicsItem_isObscured(this, item, boundingRect());
 }
 
@@ -4291,12 +4378,11 @@ bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignore
 {
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
-    return (!visible && !ignoreVisibleBit)
+    return !scene
+           || (!visible && !ignoreVisibleBit && !this->ignoreVisible)
            || (!ignoreDirtyBit && fullUpdatePending)
-           || !scene
-           || (scene->d_func()->updateAll && scene->d_func()->hasSceneRect)
            || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
-           || (!ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
+           || (!ignoreOpacity && !this->ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
 }
 
 /*!
@@ -4317,6 +4403,7 @@ void QGraphicsItemPrivate::resolveDepth(int parentDepth)
 void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 {
     needSortChildren = 1;
+    child->d_ptr->siblingIndex = children.size();
     children.append(child);
 }
 
@@ -4326,6 +4413,10 @@ void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
 {
     children.removeOne(child);
+    // NB! Do not use children.removeAt(child->d_ptr->siblingIndex) because
+    // the child is not guaranteed to be at the index after the list is sorted.
+    // (see ensureSortedChildren()).
+    child->d_ptr->siblingIndex = -1;
 }
 
 /*!
@@ -4486,9 +4577,50 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
     }
 
     // COMBINE my transform with the parent's scene transform.
-    sceneTransform = parent ? parent->d_ptr->sceneTransform : QTransform();
-    combineTransformFromParent(&sceneTransform);
-    dirtySceneTransform = 0;
+    updateSceneTransformFromParent();
+    Q_ASSERT(!dirtySceneTransform);
+}
+
+void QGraphicsItemPrivate::ensureSceneTransform()
+{
+    if (dirtySceneTransform) {
+        // This item and all its descendants have dirty scene transforms.
+        // We're about to validate this item's scene transform, so we have to
+        // invalidate all the children; otherwise there's no way for the descendants
+        // to detect that the ancestor has changed.
+        invalidateChildrenSceneTransform();
+    }
+
+    QGraphicsItem *that = q_func();
+    ensureSceneTransformRecursive(&that);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::setSubFocus()
+{
+    // Update focus child chain.
+    QGraphicsItem *item = q_ptr;
+    QGraphicsItem *parent = item;
+    bool hidden = !visible;
+    do {
+        parent->d_func()->subFocusItem = item;
+    } while (!parent->isWindow() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::clearSubFocus()
+{
+    // Reset focus child chain.
+    QGraphicsItem *parent = q_ptr;
+    do {
+        if (parent->d_ptr->subFocusItem != q_ptr)
+            break;
+        parent->d_ptr->subFocusItem = 0;
+    } while (!parent->isWindow() && (parent = parent->d_ptr->parent));
 }
 
 /*!
@@ -4829,7 +4961,9 @@ QPointF QGraphicsItem::mapToParent(const QPointF &point) const
 */
 QPointF QGraphicsItem::mapToScene(const QPointF &point) const
 {
-    return sceneTransform().map(point);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return QPointF(point.x() + d_ptr->sceneTransform.dx(), point.y() + d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(point);
 }
 
 /*!
@@ -4896,7 +5030,9 @@ QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 */
 QPolygonF QGraphicsItem::mapToScene(const QRectF &rect) const
 {
-    return sceneTransform().map(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(rect);
 }
 
 /*!
@@ -4969,7 +5105,9 @@ QRectF QGraphicsItem::mapRectToParent(const QRectF &rect) const
 */
 QRectF QGraphicsItem::mapRectToScene(const QRectF &rect) const
 {
-    return sceneTransform().mapRect(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.mapRect(rect);
 }
 
 /*!
@@ -5043,7 +5181,9 @@ QRectF QGraphicsItem::mapRectFromParent(const QRectF &rect) const
 */
 QRectF QGraphicsItem::mapRectFromScene(const QRectF &rect) const
 {
-    return sceneTransform().inverted().mapRect(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().mapRect(rect);
 }
 
 /*!
@@ -5095,7 +5235,9 @@ QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 */
 QPolygonF QGraphicsItem::mapToScene(const QPolygonF &polygon) const
 {
-    return sceneTransform().map(polygon);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return polygon.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(polygon);
 }
 
 /*!
@@ -5140,7 +5282,9 @@ QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 */
 QPainterPath QGraphicsItem::mapToScene(const QPainterPath &path) const
 {
-    return sceneTransform().map(path);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return path.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(path);
 }
 
 /*!
@@ -5201,7 +5345,9 @@ QPointF QGraphicsItem::mapFromParent(const QPointF &point) const
 */
 QPointF QGraphicsItem::mapFromScene(const QPointF &point) const
 {
-    return sceneTransform().inverted().map(point);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return QPointF(point.x() - d_ptr->sceneTransform.dx(), point.y() - d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(point);
 }
 
 /*!
@@ -5269,7 +5415,9 @@ QPolygonF QGraphicsItem::mapFromParent(const QRectF &rect) const
 */
 QPolygonF QGraphicsItem::mapFromScene(const QRectF &rect) const
 {
-    return sceneTransform().inverted().map(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(rect);
 }
 
 /*!
@@ -5319,7 +5467,9 @@ QPolygonF QGraphicsItem::mapFromParent(const QPolygonF &polygon) const
 */
 QPolygonF QGraphicsItem::mapFromScene(const QPolygonF &polygon) const
 {
-    return sceneTransform().inverted().map(polygon);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return polygon.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(polygon);
 }
 
 /*!
@@ -5362,7 +5512,9 @@ QPainterPath QGraphicsItem::mapFromParent(const QPainterPath &path) const
 */
 QPainterPath QGraphicsItem::mapFromScene(const QPainterPath &path) const
 {
-    return sceneTransform().inverted().map(path);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return path.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(path);
 }
 
 /*!
@@ -5838,7 +5990,7 @@ void QGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event)
     focus in events for this item. The default implementation calls
     ensureVisible().
 
-    \sa focusOutEvent(), sceneEvent()
+    \sa focusOutEvent(), sceneEvent(), setFocus()
 */
 void QGraphicsItem::focusInEvent(QFocusEvent *event)
 {
@@ -5849,7 +6001,7 @@ void QGraphicsItem::focusInEvent(QFocusEvent *event)
     This event handler, for event \a event, can be reimplemented to receive
     focus out events for this item. The default implementation does nothing.
 
-    \sa focusInEvent(), sceneEvent()
+    \sa focusInEvent(), sceneEvent(), setFocus()
 */
 void QGraphicsItem::focusOutEvent(QFocusEvent *event)
 {
@@ -6235,7 +6387,7 @@ void QGraphicsItem::inputMethodEvent(QInputMethodEvent *event)
     surrounding text and reconversions. \a query specifies which
     property is queried.
 
-    \sa inputMethodEvent()
+    \sa inputMethodEvent(), QInputMethodEvent, QInputContext
 */
 QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -6251,99 +6403,36 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 }
 
 /*!
+    Returns the current input method hints of this item.
+
+    Input method hints are only relevant for input items.
+    The hints are used by the input method to indicate how it should operate.
+    For example, if the Qt::ImhNumbersOnly flag is set, the input method may change
+    its visual components to reflect that only numbers can be entered.
+
+    The effect may vary between input method implementations.
+
     \since 4.6
 
-    Subscribes the graphics item to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
+    \sa setInputMethodHints(), inputMethodQuery(), QInputContext
 */
-int QGraphicsItem::grabGesture(Qt::GestureType gesture)
+Qt::InputMethodHints QGraphicsItem::inputMethodHints() const
 {
-    /// TODO: if we are QGraphicsProxyWidget we should subscribe the widget to gesture as well.
-    return grabGesture(qt_getStandardGestureTypeName(gesture));
+    Q_D(const QGraphicsItem);
+    return d->imHints;
 }
 
 /*!
+    Sets the current input method hints of this item to \a hints.
+
     \since 4.6
 
-    Subscribes the graphics item to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
+    \sa inputMethodHints(), inputMethodQuery(), QInputContext
 */
-int QGraphicsItem::grabGesture(const QString &gesture)
+void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 {
-    int id = QGestureManager::instance()->makeGestureId(gesture);
-    d_ptr->grabGesture(id);
-    return id;
-}
-
-void QGraphicsItemPrivate::grabGesture(int id)
-{
-    Q_Q(QGraphicsItem);
-    extraGestures()->gestures << id;
-    if (scene)
-        scene->d_func()->grabGesture(q, id);
-}
-
-bool QGraphicsItemPrivate::releaseGesture(int id)
-{
-    Q_Q(QGraphicsItem);
-    QGestureExtraData *extra = maybeExtraGestures();
-    if (extra && extra->gestures.contains(id)) {
-        if (scene)
-            scene->d_func()->releaseGesture(q, id);
-        extra->gestures.remove(id);
-        return true;
-    }
-    return false;
-}
-
-/*!
-    \since 4.6
-
-    Unsubscribes the graphics item from a gesture, which is specified
-    by the \a gestureId.
-
-    \sa grabGesture(), setGestureEnabled()
-*/
-void QGraphicsItem::releaseGesture(int gestureId)
-{
-    /// TODO: if we are QGraphicsProxyWidget we should unsubscribe the widget from gesture as well.
-    if (d_ptr->releaseGesture(gestureId))
-        QGestureManager::instance()->releaseGestureId(gestureId);
-}
-
-/*!
-    \since 4.6
-
-    If \a enable is true, the gesture with the given \a gestureId is
-    enabled; otherwise the gesture is disabled.
-
-    The id of the gesture is returned by the grabGesture().
-
-    \sa grabGesture(), releaseGesture()
-*/
-void QGraphicsItem::setGestureEnabled(int gestureId, bool enable)
-{
-    //###
-}
-
-bool QGraphicsItemPrivate::hasGesture(const QString &name) const
-{
-    if (QGestureExtraData *extra = maybeExtraGestures()) {
-        QGestureManager *gm = QGestureManager::instance();
-        QSet<int>::const_iterator it = extra->gestures.begin(),
-                                   e = extra->gestures.end();
-        for (; it != e; ++it) {
-            if (gm->gestureNameFromId(*it) == name)
-                return true;
-        }
-    }
-    return false;
+    Q_D(QGraphicsItem);
+    d->imHints = hints;
 }
 
 /*!
@@ -6370,23 +6459,6 @@ bool QGraphicsItemPrivate::hasGesture(const QString &name) const
 QVariant QGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     Q_UNUSED(change);
-    if (change == QGraphicsItem::ItemSceneChange) {
-        QGestureExtraData *extra = d_ptr->maybeExtraGestures();
-        if (!qVariantValue<QGraphicsScene*>(value) && extra) {
-            // the item has been removed from a scene, unsubscribe gestures.
-            Q_ASSERT(d_ptr->scene);
-            foreach(int id, extra->gestures)
-                d_ptr->scene->d_func()->releaseGesture(this, id);
-        }
-    } else if (change == QGraphicsItem::ItemSceneHasChanged) {
-        QGraphicsScene *scene = qVariantValue<QGraphicsScene*>(value);
-        QGestureExtraData *extra = d_ptr->maybeExtraGestures();
-        if (scene && extra) {
-            // item has been added to the scene
-            foreach(int id, extra->gestures)
-                scene->d_func()->grabGesture(this, id);
-        }
-    }
     return value;
 }
 
@@ -6440,7 +6512,7 @@ void QGraphicsItem::addToIndex()
         return;
     }
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->addToIndex(this);
+        d_ptr->scene->d_func()->index->addItem(this);
 }
 
 /*!
@@ -6457,7 +6529,7 @@ void QGraphicsItem::removeFromIndex()
         return;
     }
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->removeFromIndex(this);
+        d_ptr->scene->d_func()->index->removeItem(this);
 }
 
 /*!
@@ -6476,10 +6548,12 @@ void QGraphicsItem::removeFromIndex()
 void QGraphicsItem::prepareGeometryChange()
 {
     if (d_ptr->scene) {
+        d_ptr->scene->d_func()->dirtyGrowingItemsBoundingRect = true;
         d_ptr->geometryChanged = 1;
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
+        scenePrivate->index->prepareBoundingRectChange(this);
         scenePrivate->markDirty(this, QRectF(),
                                 /*invalidateChildren=*/true,
                                 /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
@@ -6488,12 +6562,15 @@ void QGraphicsItem::prepareGeometryChange()
         // if someone is connected to the changed signal or the scene has no views.
         // Note that this has to be done *after* markDirty to ensure that
         // _q_processDirtyItems is called before _q_emitUpdated.
-        if ((scenePrivate->connectedSignals & scenePrivate->changedSignalMask)
+	if ((scenePrivate->connectedSignals[0] & scenePrivate->changedSignalMask)
             || scenePrivate->views.isEmpty()) {
-            d_ptr->scene->update(sceneTransform().mapRect(boundingRect()));
+            if (d_ptr->hasTranslateOnlySceneTransform()) {
+                d_ptr->scene->update(boundingRect().translated(d_ptr->sceneTransform.dx(),
+                                                               d_ptr->sceneTransform.dy()));
+            } else {
+                d_ptr->scene->update(d_ptr->sceneTransform.mapRect(boundingRect()));
+            }
         }
-
-        scenePrivate->removeFromIndex(this);
     }
 
     QGraphicsItem *parent = this;
@@ -6695,6 +6772,41 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \sa pos()
 */
 
+/*!
+  \property QGraphicsObject::rotation
+  This property holds the rotation of the item in degrees.
+
+  This specifies how many degrees to rotate the item around its transformOrigin.
+  The default rotation is 0 degrees (i.e. not rotated at all).
+*/
+
+/*!
+  \fn QGraphicsObject::rotationChanged()
+
+  This signal gets emitted whenever the roation of the item changes.
+*/
+
+/*!
+  \property QGraphicsObject::scale
+  This property holds the scale of the item.
+
+  A scale of less than 1 means the item will be displayed smaller than
+  normal, and a scale of greater than 1 means the item will be
+  displayed larger than normal.  A negative scale means the item will
+  be mirrored.
+
+  By default, items are displayed at a scale of 1 (i.e. at their
+  normal size).
+
+  Scaling is from the item's transformOrigin.
+*/
+
+/*!
+  \fn void QGraphicsObject::scaleChanged()
+
+  This signal is emitted when the scale of the item changes.
+*/
+
 
 /*!
   \property QGraphicsObject::enabled
@@ -6734,6 +6846,25 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \sa visible
 */
 
+/*!
+  \fn const QObjectList &QGraphicsObject::children() const
+  \internal
+
+  This function returns the same value as QObject::children(). It's
+  provided to differentiate between the obsolete member
+  QGraphicsItem::children() and QObject::children(). QGraphicsItem now
+  provides childItems() instead.
+*/
+
+/*!
+  \property QGraphicsObject::transformOriginPoint
+  \brief the transformation origin
+
+  This property sets a specific point in the items coordiante system as the
+  origin for scale and rotation.
+
+  \sa scale, rotation, QGraphicsItem::transformOriginPoint()
+*/
 
 
 /*!
@@ -9743,13 +9874,10 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     setParentItem().
 
     The boundingRect() function of QGraphicsItemGroup returns the
-    bounding rectangle of all items in the item group. In addition,
-    item groups have handlesChildEvents() enabled by default, so all
-    events sent to a member of the group go to the item group (i.e.,
-    selecting one item in a group will select them all).
-    QGraphicsItemGroup ignores the ItemIgnoresTransformations flag on its
-    children (i.e., with respect to the geometry of the group item, the
-    children are treated as if they were transformable).
+    bounding rectangle of all items in the item group.
+    QGraphicsItemGroup ignores the ItemIgnoresTransformations flag on
+    its children (i.e., with respect to the geometry of the group
+    item, the children are treated as if they were transformable).
 
     There are two ways to construct an item group. The easiest and
     most common approach is to pass a list of items (e.g., all
@@ -9939,17 +10067,11 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
         return debug;
     }
 
-    QStringList flags;
-    if (item->isVisible()) flags << QLatin1String("isVisible");
-    if (item->isEnabled()) flags << QLatin1String("isEnabled");
-    if (item->isSelected()) flags << QLatin1String("isSelected");
-    if (item->hasFocus()) flags << QLatin1String("HasFocus");
-
     debug << "QGraphicsItem(this =" << ((void*)item)
           << ", parent =" << ((void*)item->parentItem())
           << ", pos =" << item->pos()
-          << ", z =" << item->zValue() << ", flags = {"
-          << flags.join(QLatin1String("|")) << " })";
+          << ", z =" << item->zValue() << ", flags = "
+          << item->flags() << ")";
     return debug;
 }
 
@@ -10082,6 +10204,12 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemSendsGeometryChanges:
         str = "ItemSendsGeometryChanges";
+        break;
+    case QGraphicsItem::ItemAcceptsInputMethod:
+        str = "ItemAcceptsInputMethod";
+        break;
+    case QGraphicsItem::ItemAutoDetectsFocusProxy:
+        str = "ItemAutoDetectsFocusProxy";
         break;
     }
     debug << str;

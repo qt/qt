@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,36 +34,34 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 /*!
-  \module QtSql
-  
-  \page qsqldatatype-table.html
-  
-  \title QtSql Module - Recommended use of data types
+  \page sql-types.html
+  \title QtSql Module - Recommended Use of Data Types
 
-  \section1 Recommended use of types and widgets in Qt supported Databases
+  \section1 Recommended Use of Types in Qt Supported Databases
 
   This table shows the recommended data types used when extracting data 
   from the databases supported in Qt. It is important to note that the
-  types used in Qt not necessary are valid as input to the specific
-  database. One example could be that a double would work perfect as
-  input for floating point records in a database, but not necessary
-  as output to the database since it would be stored with 64-bit in C++.
+  types used in Qt are not necessarily valid as input to the specific
+  database. One example could be that a double would work perfectly as
+  input for floating point records in a database, but not necessarily
+  as a storage format for output from the database since it would be stored
+  with 64-bit precision in C++.
 
   \tableofcontents
 
-  \section2 IBM DB2 data type
+  \section2 IBM DB2 Data Types
 
-  \table
-    \row
-        \header IBM DB2 data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type and Qt )
+  \table 90%
+    \header
+        \o IBM DB2 data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o SMALLINT
         \o 16-bit signed integer
@@ -124,13 +122,13 @@
         \o Mapped to QDateTime
   \endtable
 
-  \section2 Borland InterBase data type
+  \section2 Borland InterBase Data Types
 
-  \table
-    \row
-        \header Borland InterBase data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type/Qt Widget)
+  \table 90%
+    \header
+        \o Borland InterBase data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o BOOLEAN
         \o Boolean
@@ -189,13 +187,13 @@
         \o Mapped to QDateTime
   \endtable
 
-  \section2 MySQL data type
+  \section2 MySQL Data Types
 
-  \table
-    \row
-        \header MySQL data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type/Qt Widget)
+  \table 90%
+    \header
+        \o MySQL data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o TINYINT
         \o 8 bit signed integer
@@ -290,13 +288,13 @@
         \o Mapped to QString
   \endtable
 
-  \section2 Oracle Call Interface data type
+  \section2 Oracle Call Interface Data Types
 
-  \table
-    \row
-        \header Oracle Call Interface data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type/Qt Widget)
+  \table 90%
+    \header
+        \o Oracle Call Interface data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o NUMBER
         \o FLOAT, DOUBLE, PRECISIONc REAL
@@ -338,13 +336,13 @@
         \o Mapped to QDateTime
   \endtable
 
-  \section2 ODBC data type
+  \section2 ODBC Data Types
 
-  \table
-    \row
-        \header ODBC data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type/Qt Widget)
+  \table 90%
+    \header
+        \o ODBC data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o BIT
         \o Boolean
@@ -407,13 +405,13 @@
         \o Mapped to QDateTime
   \endtable
 
-  \section2 PostgreSQL data type
+  \section2 PostgreSQL Data Types
 
-  \table
-    \row
-        \header PostgreSQL data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type/Qt Widget)
+  \table 90%
+    \header
+        \o PostgreSQL data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o BOOLEAN
         \o Boolean
@@ -484,13 +482,13 @@
         \o Mapped to QDateTime
   \endtable
 
-  \section2 QSQLITE SQLite version 3 data type
+  \section2 QSQLITE SQLite version 3 Data Types
 
-  \table
-    \row
-        \header QSQLITE SQLite version 3 data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type/Qt Widget)
+  \table 90%
+    \header
+        \o QSQLITE SQLite version 3 data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o NULL
         \o NULL value.
@@ -518,13 +516,13 @@
         \o Mapped to QByteArray
   \endtable
 
-  \section2 Sybase Adaptive Server data type
+  \section2 Sybase Adaptive Server Data Types
 
-  \table
-    \row
-        \header Sybase Adaptive Server data type
-        \header SQL Type Description
-        \header Recommended input (C++ data type/Qt Widget)
+  \table 90%
+    \header
+        \o Sybase Adaptive Server data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
     \row
         \o BINARY
         \o Describes a fixed-length binary value up to 255 bytes in size.
@@ -535,8 +533,7 @@
         \o Mapped to QString
     \row
         \o DATETIME
-        \o Date and time. Range: 1753-01-01 00:00:00 through 
-        9999-12-31 23:59:59.
+        \o Date and time. Range: 1753-01-01 00:00:00 through 9999-12-31 23:59:59.
         \o Mapped to QDateTime
     \row
         \o NCHAR
@@ -577,8 +574,8 @@
   \endtable
 
   \section2 SQLite Version 2
-    SQLite V.2 is "typeless". This means that you can store any kind of
-    data you want in any column of any table, regardless of the declared
-    data type of that column. We recommend that you map the data to QString.
 
+  SQLite version 2 is "typeless". This means that you can store any kind of
+  data you want in any column of any table, regardless of the declared
+  data type of that column. We recommend that you map the data to QString.
 */

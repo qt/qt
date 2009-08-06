@@ -95,8 +95,6 @@
 #define FORCE_SYSTEM_MALLOC 1
 #endif
 
-#define TCMALLOC_TRACK_DECOMMITED_SPANS (HAVE(VIRTUALALLOC) || HAVE(MADV_FREE_REUSE))
-
 #ifndef NDEBUG
 namespace WTF {
 
@@ -1043,11 +1041,7 @@ struct Span {
 #endif
 };
 
-#if TCMALLOC_TRACK_DECOMMITED_SPANS
 #define ASSERT_SPAN_COMMITTED(span) ASSERT(!span->decommitted)
-#else
-#define ASSERT_SPAN_COMMITTED(span)
-#endif
 
 #ifdef SPAN_HISTORY
 void Event(Span* span, char op, int v = 0) {
@@ -1369,12 +1363,10 @@ inline Span* TCMalloc_PageHeap::New(Length n) {
 
     Span* result = ll->next;
     Carve(result, n, released);
-#if TCMALLOC_TRACK_DECOMMITED_SPANS
     if (result->decommitted) {
         TCMalloc_SystemCommit(reinterpret_cast<void*>(result->start << kPageShift), static_cast<size_t>(n << kPageShift));
         result->decommitted = false;
     }
-#endif
     ASSERT(Check());
     free_pages_ -= n;
     return result;
@@ -1431,12 +1423,10 @@ Span* TCMalloc_PageHeap::AllocLarge(Length n) {
 
   if (best != NULL) {
     Carve(best, n, from_released);
-#if TCMALLOC_TRACK_DECOMMITED_SPANS
     if (best->decommitted) {
         TCMalloc_SystemCommit(reinterpret_cast<void*>(best->start << kPageShift), static_cast<size_t>(n << kPageShift));
         best->decommitted = false;
     }
-#endif
     ASSERT(Check());
     free_pages_ -= n;
     return best;
@@ -1461,14 +1451,10 @@ Span* TCMalloc_PageHeap::Split(Span* span, Length n) {
   return leftover;
 }
 
-#if !TCMALLOC_TRACK_DECOMMITED_SPANS
-static ALWAYS_INLINE void propagateDecommittedState(Span*, Span*) { }
-#else
 static ALWAYS_INLINE void propagateDecommittedState(Span* destination, Span* source)
 {
     destination->decommitted = source->decommitted;
 }
-#endif
 
 inline void TCMalloc_PageHeap::Carve(Span* span, Length n, bool released) {
   ASSERT(n > 0);
@@ -1495,9 +1481,6 @@ inline void TCMalloc_PageHeap::Carve(Span* span, Length n, bool released) {
   }
 }
 
-#if !TCMALLOC_TRACK_DECOMMITED_SPANS
-static ALWAYS_INLINE void mergeDecommittedStates(Span*, Span*) { }
-#else
 static ALWAYS_INLINE void mergeDecommittedStates(Span* destination, Span* other)
 {
     if (destination->decommitted && !other->decommitted) {
@@ -1509,7 +1492,6 @@ static ALWAYS_INLINE void mergeDecommittedStates(Span* destination, Span* other)
         destination->decommitted = true;
     }
 }
-#endif
 
 inline void TCMalloc_PageHeap::Delete(Span* span) {
   ASSERT(Check());
@@ -1526,10 +1508,6 @@ inline void TCMalloc_PageHeap::Delete(Span* span) {
   // necessary.  We do not bother resetting the stale pagemap
   // entries for the pieces we are merging together because we only
   // care about the pagemap entries for the boundaries.
-  //
-  // Note that the spans we merge into "span" may come out of
-  // a "returned" list.  For simplicity, we move these into the
-  // "normal" list of the appropriate size class.
   const PageID p = span->start;
   const Length n = span->length;
   Span* prev = GetDescriptor(p-1);
@@ -1560,10 +1538,16 @@ inline void TCMalloc_PageHeap::Delete(Span* span) {
 
   Event(span, 'D', span->length);
   span->free = 1;
-  if (span->length < kMaxPages) {
-    DLL_Prepend(&free_[span->length].normal, span);
+  if (span->decommitted) {
+    if (span->length < kMaxPages)
+      DLL_Prepend(&free_[span->length].returned, span);
+    else
+      DLL_Prepend(&large_.returned, span);
   } else {
-    DLL_Prepend(&large_.normal, span);
+    if (span->length < kMaxPages)
+      DLL_Prepend(&free_[span->length].normal, span);
+    else
+      DLL_Prepend(&large_.normal, span);
   }
   free_pages_ += n;
 
@@ -1591,9 +1575,7 @@ void TCMalloc_PageHeap::IncrementalScavenge(Length n) {
       DLL_Remove(s);
       TCMalloc_SystemRelease(reinterpret_cast<void*>(s->start << kPageShift),
                              static_cast<size_t>(s->length << kPageShift));
-#if TCMALLOC_TRACK_DECOMMITED_SPANS
       s->decommitted = true;
-#endif
       DLL_Prepend(&slist->returned, s);
 
       scavenge_counter_ = std::max<size_t>(64UL, std::min<size_t>(kDefaultReleaseDelay, kDefaultReleaseDelay - (free_pages_ / kDefaultReleaseDelay)));

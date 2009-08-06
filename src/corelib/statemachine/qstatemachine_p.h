@@ -53,16 +53,14 @@
 // We mean it.
 //
 
-#include <private/qobject_p.h>
+#include "private/qstate_p.h"
+
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
-
-#include "qstate.h"
-#include "private/qstate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -81,7 +79,7 @@ class QAbstractAnimation;
 #endif
 
 class QStateMachine;
-class QStateMachinePrivate : public QObjectPrivate
+class Q_CORE_EXPORT QStateMachinePrivate : public QStatePrivate
 {
     Q_DECLARE_PUBLIC(QStateMachine)
 public:
@@ -101,7 +99,7 @@ public:
 
     static QStateMachinePrivate *get(QStateMachine *q);
 
-    static QState *findLCA(const QList<QAbstractState*> &states);
+    QState *findLCA(const QList<QAbstractState*> &states) const;
 
     static bool stateEntryLessThan(QAbstractState *s1, QAbstractState *s2);
     static bool stateExitLessThan(QAbstractState *s1, QAbstractState *s2);
@@ -115,6 +113,11 @@ public:
 #ifndef QT_NO_ANIMATION
     void _q_animationFinished();
 #endif
+
+    QState *rootState() const;
+
+    QState *startState();
+    void removeStartState();
 
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
@@ -133,10 +136,12 @@ public:
     bool isInFinalState(QAbstractState *s) const;
     static bool isFinal(const QAbstractState *s);
     static bool isParallel(const QAbstractState *s);
-    static bool isCompound(const QAbstractState *s);
-    static bool isAtomic(const QAbstractState *s);
+    bool isCompound(const QAbstractState *s) const;
+    bool isAtomic(const QAbstractState *s) const;
     static bool isDescendantOf(const QAbstractState *s, const QAbstractState *other);
     static QList<QState*> properAncestors(const QAbstractState *s, const QState *upperBound);
+
+    void goToState(QAbstractState *targetState);
 
     void registerTransitions(QAbstractState *state);
     void registerSignalTransition(QSignalTransition *transition);
@@ -147,10 +152,11 @@ public:
 #endif
     void unregisterTransition(QAbstractTransition *transition);
     void unregisterAllTransitions();
-    void handleTransitionSignal(const QObject *sender, int signalIndex,
+    void handleTransitionSignal(QObject *sender, int signalIndex,
                                 void **args);    
     void scheduleProcess();
     
+#ifndef QT_NO_PROPERTIES
     typedef QPair<QObject *, QByteArray> RestorableId;
     QHash<RestorableId, QVariant> registeredRestorables;
     void registerRestorable(QObject *object, const QByteArray &propertyName);
@@ -158,13 +164,14 @@ public:
     bool hasRestorable(QObject *object, const QByteArray &propertyName) const;
     QVariant restorableValue(QObject *object, const QByteArray &propertyName) const;
     QList<QPropertyAssignment> restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const;
+#endif
 
     State state;
+    QState *_startState;
     bool processing;
     bool processingScheduled;
     bool stop;
     StopProcessingReason stopProcessingReason;
-    QState *rootState;
     QSet<QAbstractState*> configuration;
     QList<QEvent*> internalEventQueue;
     QList<QEvent*> externalEventQueue;
@@ -207,7 +214,7 @@ public:
         f_cloneEvent cloneEvent;
     };
 
-    static Q_CORE_EXPORT const Handler *handler;
+    static const Handler *handler;
 };
 
 QT_END_NAMESPACE

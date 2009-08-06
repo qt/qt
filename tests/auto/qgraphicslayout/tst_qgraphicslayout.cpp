@@ -687,7 +687,6 @@ void tst_QGraphicsLayout::ownership()
         delete top;
         //don't crash after that.
     }
-
 }
 
 QTEST_MAIN(tst_QGraphicsLayout)

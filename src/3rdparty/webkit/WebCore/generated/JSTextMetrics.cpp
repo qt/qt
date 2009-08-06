@@ -40,7 +40,7 @@ static const HashTableValue JSTextMetricsTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextMetricsTable =
+static JSC_CONST_HASHTABLE HashTable JSTextMetricsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSTextMetricsTableValues, 0 };
 #else
@@ -54,19 +54,19 @@ static const HashTableValue JSTextMetricsConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextMetricsConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSTextMetricsConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextMetricsConstructorTableValues, 0 };
 #else
     { 1, 0, JSTextMetricsConstructorTableValues, 0 };
 #endif
 
-class JSTextMetricsConstructor : public DOMObject {
+class JSTextMetricsConstructor : public DOMConstructorObject {
 public:
-    JSTextMetricsConstructor(ExecState* exec)
-        : DOMObject(JSTextMetricsConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSTextMetricsConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSTextMetricsConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSTextMetricsPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSTextMetricsPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -92,7 +92,7 @@ static const HashTableValue JSTextMetricsPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextMetricsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSTextMetricsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextMetricsPrototypeTableValues, 0 };
 #else
@@ -108,8 +108,8 @@ JSObject* JSTextMetricsPrototype::self(ExecState* exec, JSGlobalObject* globalOb
 
 const ClassInfo JSTextMetrics::s_info = { "TextMetrics", 0, &JSTextMetricsTable, 0 };
 
-JSTextMetrics::JSTextMetrics(PassRefPtr<Structure> structure, PassRefPtr<TextMetrics> impl)
-    : DOMObject(structure)
+JSTextMetrics::JSTextMetrics(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TextMetrics> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -131,23 +131,25 @@ bool JSTextMetrics::getOwnPropertySlot(ExecState* exec, const Identifier& proper
 
 JSValue jsTextMetricsWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTextMetrics* castedThis = static_cast<JSTextMetrics*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TextMetrics* imp = static_cast<TextMetrics*>(static_cast<JSTextMetrics*>(asObject(slot.slotBase()))->impl());
+    TextMetrics* imp = static_cast<TextMetrics*>(castedThis->impl());
     return jsNumber(exec, imp->width());
 }
 
 JSValue jsTextMetricsConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSTextMetrics*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSTextMetrics* domObject = static_cast<JSTextMetrics*>(asObject(slot.slotBase()));
+    return JSTextMetrics::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSTextMetrics::getConstructor(ExecState* exec)
+JSValue JSTextMetrics::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSTextMetricsConstructor>(exec);
+    return getDOMConstructor<JSTextMetricsConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, TextMetrics* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, TextMetrics* object)
 {
-    return getDOMObjectWrapper<JSTextMetrics>(exec, object);
+    return getDOMObjectWrapper<JSTextMetrics>(exec, globalObject, object);
 }
 TextMetrics* toTextMetrics(JSC::JSValue value)
 {

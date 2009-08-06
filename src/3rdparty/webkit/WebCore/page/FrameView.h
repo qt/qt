@@ -48,7 +48,7 @@ class String;
 
 template <typename T> class Timer;
 
-class FrameView : public ScrollView, public RefCounted<FrameView> {
+class FrameView : public ScrollView {
 public:
     friend class RenderView;
 
@@ -93,8 +93,7 @@ public:
     bool needsFullRepaint() const { return m_doFullRepaint; }
 
 #if USE(ACCELERATED_COMPOSITING)
-    enum CompositingUpdate { NormalCompositingUpdate, ForcedCompositingUpdate };
-    void updateCompositingLayers(CompositingUpdate updateType = NormalCompositingUpdate);
+    void updateCompositingLayers();
 
     // Called when changes to the GraphicsLayer hierarchy have to be synchronized with
     // content rendered via the normal painting path.
@@ -125,11 +124,6 @@ public:
     
     virtual IntRect windowClipRect(bool clipToContents = true) const;
     IntRect windowClipRectForLayer(const RenderLayer*, bool clipToLayerContents) const;
-
-    virtual bool isActive() const;
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&);
-    virtual void valueChanged(Scrollbar*);
-    virtual void getTickmarks(Vector<IntRect>&) const;
 
     virtual IntRect windowResizerRect() const;
 
@@ -185,9 +179,13 @@ public:
 
     void adjustPageHeight(float* newBottom, float oldTop, float oldBottom, float bottomLimit);
 
-    bool lockedToAnchor() { return m_lockedToAnchor; }
-    void setLockedToAnchor(bool lockedToAnchor) { m_lockedToAnchor = lockedToAnchor; }
+    void maintainScrollPositionAtAnchor(Node*);
 
+    // Methods to convert points and rects between the coordinate space of the renderer, and this view.
+    virtual IntRect convertFromRenderer(const RenderObject*, const IntRect&) const;
+    virtual IntRect convertToRenderer(const RenderObject*, const IntRect&) const;
+    virtual IntPoint convertFromRenderer(const RenderObject*, const IntPoint&) const;
+    virtual IntPoint convertToRenderer(const RenderObject*, const IntPoint&) const;
 
 private:
     FrameView(Frame*);
@@ -209,11 +207,20 @@ private:
 
     virtual void repaintContentRectangle(const IntRect&, bool immediate);
     virtual void contentsResized() { setNeedsLayout(); }
-    virtual void visibleContentsResized()
-    {
-        if (needsLayout())
-            layout();
-    }
+    virtual void visibleContentsResized();
+
+    // Override ScrollView methods to do point conversion via renderers, in order to
+    // take transforms into account.
+    virtual IntRect convertToContainingView(const IntRect&) const;
+    virtual IntRect convertFromContainingView(const IntRect&) const;
+    virtual IntPoint convertToContainingView(const IntPoint&) const;
+    virtual IntPoint convertFromContainingView(const IntPoint&) const;
+
+    // ScrollBarClient interface
+    virtual void valueChanged(Scrollbar*);
+    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&);
+    virtual bool isActive() const;
+    virtual void getTickmarks(Vector<IntRect>&) const;
 
     void deferredRepaintTimerFired(Timer<FrameView>*);
     void doDeferredRepaints();
@@ -221,6 +228,7 @@ private:
     double adjustedDeferredRepaintDelay() const;
 
     bool updateWidgets();
+    void scrollToAnchor();
     
     static double sCurrentPaintTimeStamp; // used for detecting decoded resource thrash in the cache
 
@@ -290,7 +298,7 @@ private:
     bool m_isVisuallyNonEmpty;
     bool m_firstVisuallyNonEmptyLayoutCallbackPending;
 
-    bool m_lockedToAnchor;
+    RefPtr<Node> m_maintainScrollPositionAnchor;
 };
 
 } // namespace WebCore

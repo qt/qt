@@ -43,7 +43,7 @@
     \page graphicsview-porting.html
     \title Porting to Graphics View
     \contentspage {Porting Guides}{Contents}
-    \previouspage Porting .ui Files to Qt 4
+    \previouspage Porting UI Files to Qt 4
     \nextpage qt3to4 - The Qt 3 to 4 Porting Tool
     \ingroup porting
     \ingroup multimedia

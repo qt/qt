@@ -198,7 +198,7 @@ WebInspector.Console.prototype = {
 
         this.messages.push(msg);
 
-        if (msg.level === WebInspector.ConsoleMessage.MessageLevel.EndGroup) {
+        if (msg.type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
             if (this.groupLevel < 1)
                 return;
 
@@ -206,7 +206,7 @@ WebInspector.Console.prototype = {
 
             this.currentGroup = this.currentGroup.parentGroup;
         } else {
-            if (msg.level === WebInspector.ConsoleMessage.MessageLevel.StartGroup) {
+            if (msg.type === WebInspector.ConsoleMessage.MessageType.StartGroup) {
                 this.groupLevel++;
 
                 var group = new WebInspector.ConsoleGroup(this.currentGroup, this.groupLevel);
@@ -260,16 +260,7 @@ WebInspector.Console.prototype = {
             return;
 
         var reportCompletions = this._reportCompletions.bind(this, bestMatchOnly, completionsReadyCallback, dotNotation, bracketNotation, prefix);
-        if (expressionString) {
-            this._evalInInspectedWindow(expressionString, reportCompletions);
-        } else {
-            // There is no expressionString, so the completion should happen against global properties.
-            // Or if the debugger is paused, against properties in scope of the selected call frame.
-            if (WebInspector.panels.scripts && WebInspector.panels.scripts.paused)
-                reportCompletions(WebInspector.panels.scripts.variablesInScopeForSelectedCallFrame());
-            else
-                reportCompletions(InspectorController.inspectedWindow());
-        }
+        this._evalInInspectedWindow(expressionString, reportCompletions);
     },
     
     _reportCompletions: function(bestMatchOnly, completionsReadyCallback, dotNotation, bracketNotation, prefix, result) {
@@ -397,7 +388,6 @@ WebInspector.Console.prototype = {
             WebInspector.panels.scripts.evaluateInSelectedCallFrame(expression, false, callback);
             return;
         }
-
         this.doEvalInWindow(expression, callback);
     },
     
@@ -419,18 +409,42 @@ WebInspector.Console.prototype = {
                 }, \
                 dir: function() { return console.dir.apply(console, arguments) }, \
                 dirxml: function() { return console.dirxml.apply(console, arguments) }, \
-                keys: function(o) { var a = []; for (k in o) a.push(k); return a; }, \
-                values: function(o) { var a = []; for (k in o) a.push(o[k]); return a; }, \
+                keys: function(o) { var a = []; for (var k in o) a.push(k); return a; }, \
+                values: function(o) { var a = []; for (var k in o) a.push(o[k]); return a; }, \
                 profile: function() { return console.profile.apply(console, arguments) }, \
-                profileEnd: function() { return console.profileEnd.apply(console, arguments) } \
+                profileEnd: function() { return console.profileEnd.apply(console, arguments) }, \
+                _inspectedNodes: [], \
+                _addInspectedNode: function(node) { \
+                    var inspectedNodes = _inspectorCommandLineAPI._inspectedNodes; \
+                    inspectedNodes.unshift(node); \
+                    if (inspectedNodes.length >= 5) \
+                        inspectedNodes.pop(); \
+                }, \
+                get $0() { return _inspectorCommandLineAPI._inspectedNodes[0] }, \
+                get $1() { return _inspectorCommandLineAPI._inspectedNodes[1] }, \
+                get $2() { return _inspectorCommandLineAPI._inspectedNodes[2] }, \
+                get $3() { return _inspectorCommandLineAPI._inspectedNodes[3] }, \
+                get $4() { return _inspectorCommandLineAPI._inspectedNodes[4] } \
             };");
 
             inspectedWindow._inspectorCommandLineAPI.clear = InspectorController.wrapCallback(this.clearMessages.bind(this));
         }
     },
-    
+
+    addInspectedNode: function(node)
+    {
+        var inspectedWindow = InspectorController.inspectedWindow();
+        this._ensureCommandLineAPIInstalled(inspectedWindow);
+        inspectedWindow._inspectorCommandLineAPI._addInspectedNode(node);
+    },
+
     doEvalInWindow: function(expression, callback)
     {
+        if (!expression) {
+            // There is no expression, so the completion should happen against global properties.
+            expression = "this";
+        }
+
         // Surround the expression in with statements to inject our command line API so that
         // the window object properties still take more precedent than our API functions.
         expression = "with (window._inspectorCommandLineAPI) { with (window) { " + expression + " } }";
@@ -581,23 +595,24 @@ WebInspector.Console.prototype = {
 
 WebInspector.Console.prototype.__proto__ = WebInspector.View.prototype;
 
-WebInspector.ConsoleMessage = function(source, level, line, url, groupLevel, repeatCount)
+WebInspector.ConsoleMessage = function(source, type, level, line, url, groupLevel, repeatCount)
 {
     this.source = source;
+    this.type = type;
     this.level = level;
     this.line = line;
     this.url = url;
     this.groupLevel = groupLevel;
     this.repeatCount = repeatCount;
-    if (arguments.length > 6)
-        this.setMessageBody(Array.prototype.slice.call(arguments, 6));
+    if (arguments.length > 7)
+        this.setMessageBody(Array.prototype.slice.call(arguments, 7));
 }
 
 WebInspector.ConsoleMessage.prototype = {
     setMessageBody: function(args)
     {
-        switch (this.level) {
-            case WebInspector.ConsoleMessage.MessageLevel.Trace:
+        switch (this.type) {
+            case WebInspector.ConsoleMessage.MessageType.Trace:
                 var span = document.createElement("span");
                 span.addStyleClass("console-formatted-trace");
                 var stack = Array.prototype.slice.call(args);
@@ -607,7 +622,7 @@ WebInspector.ConsoleMessage.prototype = {
                 span.appendChild(document.createTextNode(funcNames.join("\n")));
                 this.formattedMessage = span;
                 break;
-            case WebInspector.ConsoleMessage.MessageLevel.Object:
+            case WebInspector.ConsoleMessage.MessageType.Object:
                 this.formattedMessage = this._format(["%O", args[0]]);
                 break;
             default:
@@ -725,8 +740,10 @@ WebInspector.ConsoleMessage.prototype = {
             case WebInspector.ConsoleMessage.MessageLevel.Error:
                 element.addStyleClass("console-error-level");
                 break;
-            case WebInspector.ConsoleMessage.MessageLevel.StartGroup:
-                element.addStyleClass("console-group-title-level");
+        }
+        
+        if (this.type === WebInspector.ConsoleMessage.MessageType.StartGroup) {
+            element.addStyleClass("console-group-title");
         }
 
         if (this.elementsTreeOutline) {
@@ -793,6 +810,25 @@ WebInspector.ConsoleMessage.prototype = {
                 break;
         }
 
+        var typeString;
+        switch (this.type) {
+            case WebInspector.ConsoleMessage.MessageType.Log:
+                typeString = "Log";
+                break;
+            case WebInspector.ConsoleMessage.MessageType.Object:
+                typeString = "Object";
+                break;
+            case WebInspector.ConsoleMessage.MessageType.Trace:
+                typeString = "Trace";
+                break;
+            case WebInspector.ConsoleMessage.MessageType.StartGroup:
+                typeString = "Start Group";
+                break;
+            case WebInspector.ConsoleMessage.MessageType.EndGroup:
+                typeString = "End Group";
+                break;
+        }
+        
         var levelString;
         switch (this.level) {
             case WebInspector.ConsoleMessage.MessageLevel.Tip:
@@ -807,21 +843,9 @@ WebInspector.ConsoleMessage.prototype = {
             case WebInspector.ConsoleMessage.MessageLevel.Error:
                 levelString = "Error";
                 break;
-            case WebInspector.ConsoleMessage.MessageLevel.Object:
-                levelString = "Object";
-                break;
-            case WebInspector.ConsoleMessage.MessageLevel.Trace:
-                levelString = "Trace";
-                break;
-            case WebInspector.ConsoleMessage.MessageLevel.StartGroup:
-                levelString = "Start Group";
-                break;
-            case WebInspector.ConsoleMessage.MessageLevel.EndGroup:
-                levelString = "End Group";
-                break;
         }
 
-        return sourceString + " " + levelString + ": " + this.formattedMessage.textContent + "\n" + this.url + " line " + this.line;
+        return sourceString + " " + typeString + " " + levelString + ": " + this.formattedMessage.textContent + "\n" + this.url + " line " + this.line;
     },
 
     isEqual: function(msg, disreguardGroup)
@@ -830,6 +854,7 @@ WebInspector.ConsoleMessage.prototype = {
             return false;
 
         var ret = (this.source == msg.source)
+            && (this.type == msg.type)
             && (this.level == msg.level)
             && (this.line == msg.line)
             && (this.url == msg.url)
@@ -849,15 +874,19 @@ WebInspector.ConsoleMessage.MessageSource = {
     Other: 5
 }
 
+WebInspector.ConsoleMessage.MessageType = {
+    Log: 0,
+    Object: 1,
+    Trace: 2,
+    StartGroup: 3,
+    EndGroup: 4
+}
+
 WebInspector.ConsoleMessage.MessageLevel = {
     Tip: 0,
     Log: 1,
     Warning: 2,
-    Error: 3,
-    Object: 4,
-    Trace: 5,
-    StartGroup: 6,
-    EndGroup: 7
+    Error: 3
 }
 
 WebInspector.ConsoleCommand = function(command)
@@ -888,7 +917,7 @@ WebInspector.ConsoleCommandResult = function(result, exception, originatingComma
     var line = (exception ? result.line : -1);
     var url = (exception ? result.sourceURL : null);
 
-    WebInspector.ConsoleMessage.call(this, WebInspector.ConsoleMessage.MessageSource.JS, level, line, url, null, 1, message);
+    WebInspector.ConsoleMessage.call(this, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageType.Log, level, line, url, null, 1, message);
 
     this.originatingCommand = originatingCommand;
 }
@@ -925,7 +954,7 @@ WebInspector.ConsoleGroup.prototype = {
     {
         var element = msg.toMessageElement();
         
-        if (msg.level === WebInspector.ConsoleMessage.MessageLevel.StartGroup) {
+        if (msg.type === WebInspector.ConsoleMessage.MessageType.StartGroup) {
             this.messagesElement.parentNode.insertBefore(element, this.messagesElement);
             element.addEventListener("click", this._titleClicked.bind(this), true);
         } else
@@ -937,7 +966,7 @@ WebInspector.ConsoleGroup.prototype = {
 
     _titleClicked: function(event)
     {
-        var groupTitleElement = event.target.enclosingNodeOrSelfWithClass("console-group-title-level");
+        var groupTitleElement = event.target.enclosingNodeOrSelfWithClass("console-group-title");
         if (groupTitleElement) {
             var groupElement = groupTitleElement.enclosingNodeOrSelfWithClass("console-group");
             if (groupElement)

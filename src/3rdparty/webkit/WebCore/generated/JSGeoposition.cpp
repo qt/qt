@@ -45,7 +45,7 @@ static const HashTableValue JSGeopositionTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSGeopositionTable =
+static JSC_CONST_HASHTABLE HashTable JSGeopositionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSGeopositionTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSGeopositionPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSGeopositionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSGeopositionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSGeopositionPrototypeTableValues, 0 };
 #else
@@ -81,8 +81,8 @@ bool JSGeopositionPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
 
 const ClassInfo JSGeoposition::s_info = { "Geoposition", 0, &JSGeopositionTable, 0 };
 
-JSGeoposition::JSGeoposition(PassRefPtr<Structure> structure, PassRefPtr<Geoposition> impl)
-    : DOMObject(structure)
+JSGeoposition::JSGeoposition(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geoposition> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -104,15 +104,17 @@ bool JSGeoposition::getOwnPropertySlot(ExecState* exec, const Identifier& proper
 
 JSValue jsGeopositionCoords(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Geoposition* imp = static_cast<Geoposition*>(static_cast<JSGeoposition*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->coords()));
+    Geoposition* imp = static_cast<Geoposition*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->coords()));
 }
 
 JSValue jsGeopositionTimestamp(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Geoposition* imp = static_cast<Geoposition*>(static_cast<JSGeoposition*>(asObject(slot.slotBase()))->impl());
+    Geoposition* imp = static_cast<Geoposition*>(castedThis->impl());
     return jsNumber(exec, imp->timestamp());
 }
 
@@ -129,9 +131,9 @@ JSValue JSC_HOST_CALL jsGeopositionPrototypeFunctionToString(ExecState* exec, JS
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Geoposition* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Geoposition* object)
 {
-    return getDOMObjectWrapper<JSGeoposition>(exec, object);
+    return getDOMObjectWrapper<JSGeoposition>(exec, globalObject, object);
 }
 Geoposition* toGeoposition(JSC::JSValue value)
 {

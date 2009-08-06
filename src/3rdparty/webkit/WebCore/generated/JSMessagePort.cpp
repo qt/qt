@@ -48,7 +48,7 @@ static const HashTableValue JSMessagePortTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessagePortTable =
+static JSC_CONST_HASHTABLE HashTable JSMessagePortTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSMessagePortTableValues, 0 };
 #else
@@ -62,19 +62,19 @@ static const HashTableValue JSMessagePortConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessagePortConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMessagePortConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMessagePortConstructorTableValues, 0 };
 #else
     { 1, 0, JSMessagePortConstructorTableValues, 0 };
 #endif
 
-class JSMessagePortConstructor : public DOMObject {
+class JSMessagePortConstructor : public DOMConstructorObject {
 public:
-    JSMessagePortConstructor(ExecState* exec)
-        : DOMObject(JSMessagePortConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSMessagePortConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSMessagePortConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSMessagePortPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSMessagePortPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,7 +106,7 @@ static const HashTableValue JSMessagePortPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessagePortPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMessagePortPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSMessagePortPrototypeTableValues, 0 };
 #else
@@ -135,8 +135,8 @@ static const HashTable* getJSMessagePortTable(ExecState* exec)
 }
 const ClassInfo JSMessagePort::s_info = { "MessagePort", 0, 0, getJSMessagePortTable };
 
-JSMessagePort::JSMessagePort(PassRefPtr<Structure> structure, PassRefPtr<MessagePort> impl)
-    : DOMObject(structure)
+JSMessagePort::JSMessagePort(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessagePort> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -158,8 +158,9 @@ bool JSMessagePort::getOwnPropertySlot(ExecState* exec, const Identifier& proper
 
 JSValue jsMessagePortOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMessagePort* castedThis = static_cast<JSMessagePort*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MessagePort* imp = static_cast<MessagePort*>(static_cast<JSMessagePort*>(asObject(slot.slotBase()))->impl());
+    MessagePort* imp = static_cast<MessagePort*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -169,7 +170,8 @@ JSValue jsMessagePortOnmessage(ExecState* exec, const Identifier&, const Propert
 
 JSValue jsMessagePortConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSMessagePort*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSMessagePort* domObject = static_cast<JSMessagePort*>(asObject(slot.slotBase()));
+    return JSMessagePort::getConstructor(exec, domObject->globalObject());
 }
 void JSMessagePort::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -186,9 +188,9 @@ void setJSMessagePortOnmessage(ExecState* exec, JSObject* thisObject, JSValue va
     imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValue JSMessagePort::getConstructor(ExecState* exec)
+JSValue JSMessagePort::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSMessagePortConstructor>(exec);
+    return getDOMConstructor<JSMessagePortConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -273,9 +275,9 @@ JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionDispatchEvent(ExecState* exe
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, MessagePort* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MessagePort* object)
 {
-    return getDOMObjectWrapper<JSMessagePort>(exec, object);
+    return getDOMObjectWrapper<JSMessagePort>(exec, globalObject, object);
 }
 MessagePort* toMessagePort(JSC::JSValue value)
 {

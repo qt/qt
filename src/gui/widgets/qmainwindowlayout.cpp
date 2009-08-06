@@ -237,7 +237,7 @@ void QMainWindowLayoutState::apply(bool animated)
     if (centralWidgetItem != 0) {
         QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
         Q_ASSERT(layout != 0);
-        layout->widgetAnimator->animate(centralWidgetItem->widget(), centralWidgetRect, animated);
+        layout->widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect, animated);
     }
 #endif
 }
@@ -426,42 +426,42 @@ QList<int> QMainWindowLayoutState::gapIndex(QWidget *widget,
     return result;
 }
 
-bool QMainWindowLayoutState::insertGap(QList<int> path, QLayoutItem *item)
+bool QMainWindowLayoutState::insertGap(const QList<int> &path, QLayoutItem *item)
 {
     if (path.isEmpty())
         return false;
 
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0) {
         Q_ASSERT(qobject_cast<QToolBar*>(item->widget()) != 0);
-        return toolBarAreaLayout.insertGap(path, item);
+        return toolBarAreaLayout.insertGap(path.mid(1), item);
     }
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1) {
         Q_ASSERT(qobject_cast<QDockWidget*>(item->widget()) != 0);
-        return dockAreaLayout.insertGap(path, item);
+        return dockAreaLayout.insertGap(path.mid(1), item);
     }
 #endif //QT_NO_DOCKWIDGET
 
     return false;
 }
 
-void QMainWindowLayoutState::remove(QList<int> path)
+void QMainWindowLayoutState::remove(const QList<int> &path)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        toolBarAreaLayout.remove(path);
+        toolBarAreaLayout.remove(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        dockAreaLayout.remove(path);
+        dockAreaLayout.remove(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 }
 
@@ -501,88 +501,88 @@ bool QMainWindowLayoutState::isValid() const
     return rect.isValid();
 }
 
-QLayoutItem *QMainWindowLayoutState::item(QList<int> path)
+QLayoutItem *QMainWindowLayoutState::item(const QList<int> &path)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.item(path).widgetItem;
+        return toolBarAreaLayout.item(path.mid(1)).widgetItem;
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.item(path).widgetItem;
+        return dockAreaLayout.item(path.mid(1)).widgetItem;
 #endif //QT_NO_DOCKWIDGET
 
     return 0;
 }
 
-QRect QMainWindowLayoutState::itemRect(QList<int> path) const
+QRect QMainWindowLayoutState::itemRect(const QList<int> &path) const
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.itemRect(path);
+        return toolBarAreaLayout.itemRect(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.itemRect(path);
+        return dockAreaLayout.itemRect(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return QRect();
 }
 
-QRect QMainWindowLayoutState::gapRect(QList<int> path) const
+QRect QMainWindowLayoutState::gapRect(const QList<int> &path) const
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.itemRect(path);
+        return toolBarAreaLayout.itemRect(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.gapRect(path);
+        return dockAreaLayout.gapRect(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return QRect();
 }
 
-QLayoutItem *QMainWindowLayoutState::plug(QList<int> path)
+QLayoutItem *QMainWindowLayoutState::plug(const QList<int> &path)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.plug(path);
+        return toolBarAreaLayout.plug(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.plug(path);
+        return dockAreaLayout.plug(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return 0;
 }
 
-QLayoutItem *QMainWindowLayoutState::unplug(QList<int> path, QMainWindowLayoutState *other)
+QLayoutItem *QMainWindowLayoutState::unplug(const QList<int> &path, QMainWindowLayoutState *other)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifdef QT_NO_TOOLBAR
     Q_UNUSED(other);
 #else
     if (i == 0)
-        return toolBarAreaLayout.unplug(path, other ? &other->toolBarAreaLayout : 0);
+        return toolBarAreaLayout.unplug(path.mid(1), other ? &other->toolBarAreaLayout : 0);
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.unplug(path);
+        return dockAreaLayout.unplug(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return 0;
@@ -939,16 +939,70 @@ void QMainWindowLayout::getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar
 
 void QMainWindowLayout::toggleToolBarsVisible()
 {
-    layoutState.toolBarAreaLayout.visible = !layoutState.toolBarAreaLayout.visible;
-    if (!layoutState.mainWindow->isMaximized()){
-        QPoint topLeft = parentWidget()->geometry().topLeft();
-        QRect r = parentWidget()->geometry();
-        r = layoutState.toolBarAreaLayout.rectHint(r);
-        r.moveTo(topLeft);
-        parentWidget()->setGeometry(r);
-//      widgetAnimator->animate(parentWidget(), r, true);
-    } else{
-        update();
+    bool updateNonUnifiedParts = true;
+#ifdef Q_WS_MAC
+    if (layoutState.mainWindow->unifiedTitleAndToolBarOnMac()) {
+        // If we hit this case, someone has pressed the "toolbar button" which will
+        // toggle the unified toolbar visiblity, because that's what the user wants.
+        // We might be in a situation where someone has hidden all the toolbars
+        // beforehand (maybe in construction), but now they've hit this button and
+        // and are expecting the items to show. What do we do?
+        // 1) Check the visibility of all the toolbars, if one is visible, do nothing, this
+        //    preserves what people would expect (these toolbars were visible when I clicked last time).
+        // 2) If NONE are visible, then show them all. Again, this preserves the user expectation
+        //    of, "I want to see the toolbars." The user may get more toolbars than expected, but this
+        //    is better seeing nothing.
+        // Don't worry about any of this if we are going invisible. This does mean we may get
+        // into issues when switching into and out of fullscreen mode, but this is probably minor.
+        // If we ever need to do hiding, that would have to be taken care of after the unified toolbar
+        // has finished hiding.
+        // People can of course handle the QEvent::ToolBarChange event themselves and do
+        // WHATEVER they want if they don't like what we are doing (though the unified toolbar
+        // will fire regardless).
+
+        // Check if we REALLY need to update the geometry below. If we only have items in the
+        // unified toolbar, all the docks will be empty, so there's very little point
+        // in doing the geometry as Apple will do it (we also avoid flicker in Cocoa as well).
+        // FWIW, layoutState.toolBarAreaLayout.visible and the state of the unified toolbar
+        // visibility can get out of sync. I really don't think it's a big issue. It is kept
+        // to a minimum because we only change the visibility if we absolutely must.
+        // update the "non unified parts."
+        updateNonUnifiedParts = !layoutState.toolBarAreaLayout.isEmpty();
+
+        // We get this function before the unified toolbar does its thing.
+        // So, the value will be opposite of what we expect.
+        bool goingVisible = !macWindowToolbarIsVisible(qt_mac_window_for(layoutState.mainWindow));
+        if (goingVisible) {
+            const int ToolBarCount = qtoolbarsInUnifiedToolbarList.size();
+            bool needAllVisible = true;
+            for (int i = 0; i < ToolBarCount; ++i) {
+                if (!qtoolbarsInUnifiedToolbarList.at(i)->isHidden()) {
+                    needAllVisible = false;
+                    break;
+                }
+            }
+            if (needAllVisible) {
+                QBoolBlocker blocker(blockVisiblityCheck);  // Disable the visibilty check because
+                                                            // the toggle has already happened.
+                for (int i = 0; i < ToolBarCount; ++i)
+                    qtoolbarsInUnifiedToolbarList.at(i)->setVisible(true);
+            }
+        }
+        if (!updateNonUnifiedParts)
+            layoutState.toolBarAreaLayout.visible = goingVisible;
+    }
+#endif
+    if (updateNonUnifiedParts) {
+        layoutState.toolBarAreaLayout.visible = !layoutState.toolBarAreaLayout.visible;
+        if (!layoutState.mainWindow->isMaximized()) {
+            QPoint topLeft = parentWidget()->geometry().topLeft();
+            QRect r = parentWidget()->geometry();
+            r = layoutState.toolBarAreaLayout.rectHint(r);
+            r.moveTo(topLeft);
+            parentWidget()->setGeometry(r);
+        } else {
+            update();
+        }
     }
 }
 
@@ -1361,7 +1415,7 @@ QLayoutItem *QMainWindowLayout::takeAt(int index)
     if (QLayoutItem *ret = layoutState.takeAt(index, &x)) {
         // the widget might in fact have been destroyed by now
         if (QWidget *w = ret->widget()) {
-            widgetAnimator->abort(w);
+            widgetAnimator.abort(w);
             if (w == pluggingWidget)
                 pluggingWidget = 0;
         }
@@ -1528,75 +1582,28 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
         layoutState.remove(previousPath);
 
     pluggingWidget = widget;
-    if (dockOptions & QMainWindow::AnimatedDocks) {
-        QRect globalRect = currentGapRect;
-        globalRect.moveTopLeft(parentWidget()->mapToGlobal(globalRect.topLeft()));
+    QRect globalRect = currentGapRect;
+    globalRect.moveTopLeft(parentWidget()->mapToGlobal(globalRect.topLeft()));
 #ifndef QT_NO_DOCKWIDGET
-        if (qobject_cast<QDockWidget*>(widget) != 0) {
-            QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(widget->layout());
-            if (layout->nativeWindowDeco()) {
-                globalRect.adjust(0, layout->titleHeight(), 0, 0);
-            } else {
-                int fw = widget->style()->pixelMetric(QStyle::PM_DockWidgetFrameWidth, 0, widget);
-                globalRect.adjust(-fw, -fw, fw, fw);
-            }
+    if (qobject_cast<QDockWidget*>(widget) != 0) {
+        QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(widget->layout());
+        if (layout->nativeWindowDeco()) {
+            globalRect.adjust(0, layout->titleHeight(), 0, 0);
+        } else {
+            int fw = widget->style()->pixelMetric(QStyle::PM_DockWidgetFrameWidth, 0, widget);
+            globalRect.adjust(-fw, -fw, fw, fw);
         }
-#endif
-        widgetAnimator->animate(widget, globalRect,
-                                dockOptions & QMainWindow::AnimatedDocks);
-    } else {
-#ifndef QT_NO_DOCKWIDGET
-        if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget))
-            dw->d_func()->plug(currentGapRect);
-#endif
-#ifndef QT_NO_TOOLBAR
-        if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
-            tb->d_func()->plug(currentGapRect);
-#endif
-        applyState(layoutState);
-        savedState.clear();
-#ifndef QT_NO_DOCKWIDGET
-        parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
-#endif
-        currentGapPos.clear();
-        updateGapIndicator();
-        pluggingWidget = 0;
     }
+#endif
+    widgetAnimator.animate(widget, globalRect, dockOptions & QMainWindow::AnimatedDocks);
 
     return true;
 }
 
-void QMainWindowLayout::allAnimationsFinished()
-{
-#ifndef QT_NO_DOCKWIDGET
-    parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
-
-#ifndef QT_NO_TABBAR
-    foreach (QTabBar *tab_bar, usedTabBars)
-        tab_bar->show();
-#endif // QT_NO_TABBAR
-#endif // QT_NO_DOCKWIDGET
-
-    updateGapIndicator();
-}
-
 void QMainWindowLayout::animationFinished(QWidget *widget)
 {
-
-    /* This signal is delivered from QWidgetAnimator over a qeued connection. The problem is that
-       the widget can be deleted. This is handled as follows:
-
-       The animator only ever animates widgets that have been added to this layout. If a widget
-       is deleted during animation, the widget's destructor removes the widget form this layout.
-       This in turn aborts the animation (see takeAt()) and this signal will never be delivered.
-
-       If the widget is deleted after the animation is finished but before this qeued signal
-       is delivered, the widget is no longer in the layout and we catch it here. The key is that
-       QMainWindowLayoutState::contains() never dereferences the pointer. */
-
-    if (!layoutState.contains(widget))
-        return;
-
+    //this function is called from within the Widget Animator whenever an animation is finished
+    //on a certain widget
 #ifndef QT_NO_TOOLBAR
     if (QToolBar *tb = qobject_cast<QToolBar*>(widget)) {
         QToolBarLayout *tbl = qobject_cast<QToolBarLayout*>(tb->layout());
@@ -1609,32 +1616,44 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
     }
 #endif
 
-    if (widget != pluggingWidget)
-        return;
+    if (widget == pluggingWidget) {
 
 #ifndef QT_NO_DOCKWIDGET
-    if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget))
-        dw->d_func()->plug(currentGapRect);
+        if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget))
+            dw->d_func()->plug(currentGapRect);
 #endif
 #ifndef QT_NO_TOOLBAR
-    if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
-        tb->d_func()->plug(currentGapRect);
+        if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
+            tb->d_func()->plug(currentGapRect);
 #endif
 
-    applyState(layoutState, false);
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
-    if (qobject_cast<QDockWidget*>(widget) != 0) {
-        // info() might return null if the widget is destroyed while
-        // animating but before the animationFinished signal is received.
-        if (QDockAreaLayoutInfo *info = layoutState.dockAreaLayout.info(widget))
-            info->setCurrentTab(widget);
+        if (qobject_cast<QDockWidget*>(widget) != 0) {
+            // info() might return null if the widget is destroyed while
+            // animating but before the animationFinished signal is received.
+            if (QDockAreaLayoutInfo *info = layoutState.dockAreaLayout.info(widget))
+                info->setCurrentTab(widget);
+        }
+#endif
+#endif
+
+        savedState.clear();
+        currentGapPos.clear();
+        pluggingWidget = 0;
     }
-#endif
-#endif
-    savedState.clear();
-    currentGapPos.clear();
-    pluggingWidget = 0;
+
+    if (!widgetAnimator.animating()) {
+        //all animations are finished
+#ifndef QT_NO_DOCKWIDGET
+        parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
+#ifndef QT_NO_TABBAR
+        foreach (QTabBar *tab_bar, usedTabBars)
+            tab_bar->show();
+#endif // QT_NO_TABBAR
+#endif // QT_NO_DOCKWIDGET
+    }
+
     updateGapIndicator();
 }
 
@@ -1667,6 +1686,14 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
 #endif
 #endif
 #endif // QT_NO_DOCKWIDGET
+    , widgetAnimator(this)
+    , pluggingWidget(0)
+#ifndef QT_NO_RUBBERBAND
+    , gapIndicator(new QRubberBand(QRubberBand::Rectangle, mainwindow))
+#endif //QT_NO_RUBBERBAND
+#ifdef Q_WS_MAC
+    , blockVisiblityCheck(false)
+#endif
 {
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
@@ -1680,20 +1707,13 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
 #endif // QT_NO_DOCKWIDGET
 
 #ifndef QT_NO_RUBBERBAND
-    gapIndicator = new QRubberBand(QRubberBand::Rectangle, mainwindow);
     // For accessibility to identify this special widget.
     gapIndicator->setObjectName(QLatin1String("qt_rubberband"));
-
     gapIndicator->hide();
 #endif
     pluggingWidget = 0;
 
     setObjectName(mainwindow->objectName() + QLatin1String("_layout"));
-    widgetAnimator = new QWidgetAnimator(this);
-    connect(widgetAnimator, SIGNAL(finished(QWidget*)),
-            this, SLOT(animationFinished(QWidget*)), Qt::QueuedConnection);
-    connect(widgetAnimator, SIGNAL(finishedAll()),
-            this, SLOT(allAnimationsFinished()));
 }
 
 QMainWindowLayout::~QMainWindowLayout()
@@ -1795,14 +1815,8 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget)
 void QMainWindowLayout::updateGapIndicator()
 {
 #ifndef QT_NO_RUBBERBAND
-    if (widgetAnimator->animating() || currentGapPos.isEmpty()) {
-        gapIndicator->hide();
-    } else {
-        if (gapIndicator->geometry() != currentGapRect)
-            gapIndicator->setGeometry(currentGapRect);
-        if (!gapIndicator->isVisible())
-            gapIndicator->show();
-    }
+    gapIndicator->setVisible(!widgetAnimator.animating() && !currentGapPos.isEmpty());
+    gapIndicator->setGeometry(currentGapRect);
 #endif
 }
 

@@ -87,7 +87,7 @@ protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractProxyModel)
+    Q_DECLARE_PRIVATE(QAbstractProxyModel)
     Q_DISABLE_COPY(QAbstractProxyModel)
     Q_PRIVATE_SLOT(d_func(), void _q_sourceModelDestroyed())
 };

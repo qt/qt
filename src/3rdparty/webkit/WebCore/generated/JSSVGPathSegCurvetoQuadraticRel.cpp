@@ -45,7 +45,7 @@ static const HashTableValue JSSVGPathSegCurvetoQuadraticRelTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegCurvetoQuadraticRelTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegCurvetoQuadraticRelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGPathSegCurvetoQuadraticRelTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSSVGPathSegCurvetoQuadraticRelPrototypeTableValues[
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegCurvetoQuadraticRelPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegCurvetoQuadraticRelPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegCurvetoQuadraticRelPrototypeTableValues, 0 };
 #else
@@ -75,8 +75,8 @@ JSObject* JSSVGPathSegCurvetoQuadraticRelPrototype::self(ExecState* exec, JSGlob
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticRel::s_info = { "SVGPathSegCurvetoQuadraticRel", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoQuadraticRelTable, 0 };
 
-JSSVGPathSegCurvetoQuadraticRel::JSSVGPathSegCurvetoQuadraticRel(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegCurvetoQuadraticRel> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegCurvetoQuadraticRel::JSSVGPathSegCurvetoQuadraticRel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoQuadraticRel> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -92,29 +92,33 @@ bool JSSVGPathSegCurvetoQuadraticRel::getOwnPropertySlot(ExecState* exec, const 
 
 JSValue jsSVGPathSegCurvetoQuadraticRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegCurvetoQuadraticRel* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegCurvetoQuadraticRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegCurvetoQuadraticRel* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 
 JSValue jsSVGPathSegCurvetoQuadraticRelX1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegCurvetoQuadraticRel* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(castedThis->impl());
     return jsNumber(exec, imp->x1());
 }
 
 JSValue jsSVGPathSegCurvetoQuadraticRelY1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegCurvetoQuadraticRel* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegCurvetoQuadraticRel* imp = static_cast<SVGPathSegCurvetoQuadraticRel*>(castedThis->impl());
     return jsNumber(exec, imp->y1());
 }
 

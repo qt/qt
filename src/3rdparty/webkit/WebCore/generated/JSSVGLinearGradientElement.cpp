@@ -45,7 +45,7 @@ static const HashTableValue JSSVGLinearGradientElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLinearGradientElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLinearGradientElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGLinearGradientElementTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSSVGLinearGradientElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLinearGradientElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLinearGradientElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGLinearGradientElementPrototypeTableValues, 0 };
 #else
@@ -75,8 +75,8 @@ JSObject* JSSVGLinearGradientElementPrototype::self(ExecState* exec, JSGlobalObj
 
 const ClassInfo JSSVGLinearGradientElement::s_info = { "SVGLinearGradientElement", &JSSVGGradientElement::s_info, &JSSVGLinearGradientElementTable, 0 };
 
-JSSVGLinearGradientElement::JSSVGLinearGradientElement(PassRefPtr<Structure> structure, PassRefPtr<SVGLinearGradientElement> impl)
-    : JSSVGGradientElement(structure, impl)
+JSSVGLinearGradientElement::JSSVGLinearGradientElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLinearGradientElement> impl)
+    : JSSVGGradientElement(structure, globalObject, impl)
 {
 }
 
@@ -92,34 +92,38 @@ bool JSSVGLinearGradientElement::getOwnPropertySlot(ExecState* exec, const Ident
 
 JSValue jsSVGLinearGradientElementX1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGLinearGradientElement* castedThis = static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
+    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->x1Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGLinearGradientElementY1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGLinearGradientElement* castedThis = static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
+    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->y1Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGLinearGradientElementX2(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGLinearGradientElement* castedThis = static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
+    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->x2Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGLinearGradientElementY2(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGLinearGradientElement* castedThis = static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()))->impl());
+    SVGLinearGradientElement* imp = static_cast<SVGLinearGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->y2Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 

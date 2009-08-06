@@ -42,7 +42,7 @@ static const HashTableValue JSSVGAnimatedLengthTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedLengthTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedLengthTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedLengthTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGAnimatedLengthPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedLengthPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedLengthPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedLengthPrototypeTableValues, 0 };
 #else
@@ -72,9 +72,8 @@ JSObject* JSSVGAnimatedLengthPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSSVGAnimatedLength::s_info = { "SVGAnimatedLength", 0, &JSSVGAnimatedLengthTable, 0 };
 
-JSSVGAnimatedLength::JSSVGAnimatedLength(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimatedLength> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGAnimatedLength::JSSVGAnimatedLength(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedLength> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -96,21 +95,23 @@ bool JSSVGAnimatedLength::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsSVGAnimatedLengthBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedLength* castedThis = static_cast<JSSVGAnimatedLength*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedLength* imp = static_cast<SVGAnimatedLength*>(static_cast<JSSVGAnimatedLength*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::lookupOrCreateWrapper(imp, &SVGAnimatedLength::baseVal, &SVGAnimatedLength::setBaseVal).get(), static_cast<JSSVGAnimatedLength*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedLength* imp = static_cast<SVGAnimatedLength*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::lookupOrCreateWrapper(imp, &SVGAnimatedLength::baseVal, &SVGAnimatedLength::setBaseVal).get(), castedThis->context());
 }
 
 JSValue jsSVGAnimatedLengthAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedLength* castedThis = static_cast<JSSVGAnimatedLength*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedLength* imp = static_cast<SVGAnimatedLength*>(static_cast<JSSVGAnimatedLength*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::lookupOrCreateWrapper(imp, &SVGAnimatedLength::animVal, &SVGAnimatedLength::setAnimVal).get(), static_cast<JSSVGAnimatedLength*>(asObject(slot.slotBase()))->context());
+    SVGAnimatedLength* imp = static_cast<SVGAnimatedLength*>(castedThis->impl());
+    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::lookupOrCreateWrapper(imp, &SVGAnimatedLength::animVal, &SVGAnimatedLength::setAnimVal).get(), castedThis->context());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedLength* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedLength* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGAnimatedLength>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGAnimatedLength>(exec, globalObject, object, context);
 }
 SVGAnimatedLength* toSVGAnimatedLength(JSC::JSValue value)
 {

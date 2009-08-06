@@ -33,7 +33,7 @@ class Document;
 class JSDocument : public JSNode {
     typedef JSNode Base;
 public:
-    JSDocument(PassRefPtr<JSC::Structure>, PassRefPtr<Document>);
+    JSDocument(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Document>);
     virtual ~JSDocument();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,7 +48,7 @@ public:
 
     virtual void mark();
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom attributes
     JSC::JSValue location(JSC::ExecState*) const;
@@ -64,7 +64,7 @@ ALWAYS_INLINE bool JSDocument::getOwnPropertySlot(JSC::ExecState* exec, const JS
     return JSC::getStaticValueSlot<JSDocument, Base>(exec, s_info.staticPropHashTable, this, propertyName, slot);
 }
 
-JSC::JSValue toJS(JSC::ExecState*, Document*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Document*);
 Document* toDocument(JSC::JSValue);
 
 class JSDocumentPrototype : public JSC::JSObject {

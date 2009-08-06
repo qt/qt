@@ -93,6 +93,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
 {
+    setToolButtonStyle(Qt::ToolButtonFollowStyle);
+
     if (usesDefaultCollection()) {
         MainWindow::collectionFileDirectory(true);
         m_helpEngine = new QHelpEngine(MainWindow::defaultHelpCollectionFileName(),
@@ -272,7 +274,7 @@ bool MainWindow::initHelpDB()
         return false;
 
     bool assistantInternalDocRegistered = false;
-    QString intern(QLatin1String("com.trolltech.com.assistantinternal_"));
+    QString intern(QLatin1String("com.trolltech.com.assistantinternal-"));
     foreach (const QString &ns, m_helpEngine->registeredDocumentations()) {
         if (ns.startsWith(intern)) {
             intern = ns;
@@ -405,7 +407,7 @@ void MainWindow::insertLastPages()
     if (m_cmdLine->url().isValid())
         m_centralWidget->setSource(m_cmdLine->url());
     else
-        m_centralWidget->setLastShownPages();
+        m_centralWidget->setupWidget();
 
     if (m_cmdLine->search() == CmdLineParser::Activate)
         showSearch();
@@ -429,6 +431,7 @@ void MainWindow::setupActions()
         SLOT(printPreview()));
 
     m_printAction = menu->addAction(tr("&Print..."), m_centralWidget, SLOT(print()));
+    m_printAction->setPriority(QAction::LowPriority);
     m_printAction->setIcon(QIcon(resourcePath + QLatin1String("/print.png")));
     m_printAction->setShortcut(QKeySequence::Print);
 
@@ -448,12 +451,15 @@ void MainWindow::setupActions()
     menu = menuBar()->addMenu(tr("&Edit"));
     m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
         SLOT(copySelection()));
+    m_copyAction->setPriority(QAction::LowPriority);
+    m_copyAction->setIconText("&Copy");
     m_copyAction->setIcon(QIcon(resourcePath + QLatin1String("/editcopy.png")));
     m_copyAction->setShortcuts(QKeySequence::Copy);
     m_copyAction->setEnabled(false);
 
     m_findAction = menu->addAction(tr("&Find in Text..."), m_centralWidget,
         SLOT(showTextSearch()));
+    m_findAction->setIconText("&Find");
     m_findAction->setIcon(QIcon(resourcePath + QLatin1String("/find.png")));
     m_findAction->setShortcuts(QKeySequence::Find);
 
@@ -472,16 +478,19 @@ void MainWindow::setupActions()
     m_viewMenu = menuBar()->addMenu(tr("&View"));
     m_zoomInAction = m_viewMenu->addAction(tr("Zoom &in"), m_centralWidget,
         SLOT(zoomIn()));
+    m_zoomInAction->setPriority(QAction::LowPriority);
     m_zoomInAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomin.png")));
     m_zoomInAction->setShortcut(QKeySequence::ZoomIn);
 
     m_zoomOutAction = m_viewMenu->addAction(tr("Zoom &out"), m_centralWidget,
         SLOT(zoomOut()));
+    m_zoomOutAction->setPriority(QAction::LowPriority);
     m_zoomOutAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomout.png")));
     m_zoomOutAction->setShortcut(QKeySequence::ZoomOut);
 
     m_resetZoomAction = m_viewMenu->addAction(tr("Normal &Size"), m_centralWidget,
         SLOT(resetZoom()));
+    m_resetZoomAction->setPriority(QAction::LowPriority);
     m_resetZoomAction->setIcon(QIcon(resourcePath + QLatin1String("/resetzoom.png")));
     m_resetZoomAction->setShortcut(tr("Ctrl+0"));
 
@@ -507,12 +516,14 @@ void MainWindow::setupActions()
     m_backAction->setIcon(QIcon(resourcePath + QLatin1String("/previous.png")));
 
     m_nextAction = menu->addAction(tr("&Forward"), m_centralWidget, SLOT(forward()));
+    m_nextAction->setPriority(QAction::LowPriority);
     m_nextAction->setEnabled(false);
     m_nextAction->setShortcuts(QKeySequence::Forward);
     m_nextAction->setIcon(QIcon(resourcePath + QLatin1String("/next.png")));
 
     m_syncAction = menu->addAction(tr("Sync with Table of Contents"), this,
         SLOT(syncContents()));
+    m_syncAction->setIconText("Sync");
     m_syncAction->setIcon(QIcon(resourcePath + QLatin1String("/synctoc.png")));
 
     menu->addSeparator();

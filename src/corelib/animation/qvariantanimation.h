@@ -62,7 +62,7 @@ class Q_CORE_EXPORT QVariantAnimation : public QAbstractAnimation
     Q_OBJECT
     Q_PROPERTY(QVariant startValue READ startValue WRITE setStartValue)
     Q_PROPERTY(QVariant endValue READ endValue WRITE setEndValue)
-    Q_PROPERTY(QVariant currentValue READ currentValue NOTIFY currentValueChanged)
+    Q_PROPERTY(QVariant currentValue READ currentValue NOTIFY valueChanged)
     Q_PROPERTY(int duration READ duration WRITE setDuration)
     Q_PROPERTY(QEasingCurve easingCurve READ easingCurve WRITE setEasingCurve)
 
@@ -113,7 +113,7 @@ private:
     static void registerInterpolator(Interpolator func, int interpolationType);
 
     Q_DISABLE_COPY(QVariantAnimation)
-    Q_DECLARE_SCOPED_PRIVATE(QVariantAnimation)
+    Q_DECLARE_PRIVATE(QVariantAnimation)
 };
 
 template <typename T>

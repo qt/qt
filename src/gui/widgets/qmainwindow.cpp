@@ -1374,20 +1374,25 @@ bool QMainWindow::event(QEvent *event)
 #ifdef Q_WS_MAC
         case QEvent::Show:
             if (unifiedTitleAndToolBarOnMac())
-                macWindowToolbarShow(this, true);
+                d->layout->syncUnifiedToolbarVisibility();
+            d->layout->blockVisiblityCheck = false;
             break;
-#  ifdef QT_MAC_USE_COCOA
        case QEvent::WindowStateChange:
             {
+                if (isHidden()) {
+                    // We are coming out of a minimize, leave things as is.
+                    d->layout->blockVisiblityCheck = true;
+                }
+#  ifdef QT_MAC_USE_COCOA
                 // We need to update the HIToolbar status when we go out of or into fullscreen.
                 QWindowStateChangeEvent *wce = static_cast<QWindowStateChangeEvent *>(event);
                 if ((windowState() & Qt::WindowFullScreen) || (wce->oldState() & Qt::WindowFullScreen)) {
                     d->layout->updateHIToolBarStatus();
                 }
+#  endif // Cocoa
             }
             break;
-#  endif // Cocoa
-#endif
+#endif // Q_WS_MAC
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
        case QEvent::CursorChange:
            if (d->cursorAdjusted) {

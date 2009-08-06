@@ -41,7 +41,7 @@ static const HashTableValue JSSVGRenderingIntentTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRenderingIntentTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRenderingIntentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGRenderingIntentTableValues, 0 };
 #else
@@ -61,19 +61,19 @@ static const HashTableValue JSSVGRenderingIntentConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRenderingIntentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRenderingIntentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGRenderingIntentConstructorTableValues, 0 };
 #else
     { 16, 15, JSSVGRenderingIntentConstructorTableValues, 0 };
 #endif
 
-class JSSVGRenderingIntentConstructor : public DOMObject {
+class JSSVGRenderingIntentConstructor : public DOMConstructorObject {
 public:
-    JSSVGRenderingIntentConstructor(ExecState* exec)
-        : DOMObject(JSSVGRenderingIntentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGRenderingIntentConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGRenderingIntentConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGRenderingIntentPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGRenderingIntentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -105,7 +105,7 @@ static const HashTableValue JSSVGRenderingIntentPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRenderingIntentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRenderingIntentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGRenderingIntentPrototypeTableValues, 0 };
 #else
@@ -126,9 +126,8 @@ bool JSSVGRenderingIntentPrototype::getOwnPropertySlot(ExecState* exec, const Id
 
 const ClassInfo JSSVGRenderingIntent::s_info = { "SVGRenderingIntent", 0, &JSSVGRenderingIntentTable, 0 };
 
-JSSVGRenderingIntent::JSSVGRenderingIntent(PassRefPtr<Structure> structure, PassRefPtr<SVGRenderingIntent> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGRenderingIntent::JSSVGRenderingIntent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRenderingIntent> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -150,11 +149,12 @@ bool JSSVGRenderingIntent::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsSVGRenderingIntentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGRenderingIntent*>(asObject(slot.slotBase()))->getConstructor(exec);
+    UNUSED_PARAM(slot);
+    return JSSVGRenderingIntent::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
 }
-JSValue JSSVGRenderingIntent::getConstructor(ExecState* exec)
+JSValue JSSVGRenderingIntent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGRenderingIntentConstructor>(exec);
+    return getDOMConstructor<JSSVGRenderingIntentConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters
@@ -189,9 +189,9 @@ JSValue jsSVGRenderingIntentRENDERING_INTENT_ABSOLUTE_COLORIMETRIC(ExecState* ex
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGRenderingIntent* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGRenderingIntent* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGRenderingIntent>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGRenderingIntent>(exec, globalObject, object, context);
 }
 SVGRenderingIntent* toSVGRenderingIntent(JSC::JSValue value)
 {

@@ -102,8 +102,8 @@ inline QList<CeSdkInfo> CeSdkHandler::listAll() const
 
 inline QString CeSdkHandler::fixPaths(QString path) const
 {
-    QString str = QDir::toNativeSeparators(QDir::cleanPath(path.replace(VCINSTALL_MACRO, VCInstallDir).replace(VSINSTALL_MACRO, VSInstallDir).replace(QLatin1String("$(PATH)"), QLatin1String("%PATH%"))));
-    if (str.endsWith(';'))
+    QString str = QDir::toNativeSeparators(QDir::cleanPath(path.replace(QLatin1String(VCINSTALL_MACRO), VCInstallDir).replace(QLatin1String(VSINSTALL_MACRO), VSInstallDir).replace(QLatin1String("$(PATH)"), QLatin1String("%PATH%"))));
+    if (str.endsWith(QLatin1Char(';')))
         str.truncate(str.length() - 1);
     return str;
 }

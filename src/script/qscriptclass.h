@@ -107,7 +107,7 @@ protected:
     QScopedPointer<QScriptClassPrivate> d_ptr;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptClass)
+    Q_DECLARE_PRIVATE(QScriptClass)
     Q_DISABLE_COPY(QScriptClass)
 };
 

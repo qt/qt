@@ -126,6 +126,7 @@ public:
 //icon detection on X11
 #ifdef Q_WS_X11
     void lookupIconTheme() const;
+    int lookupToolButtonStyle() const;
     QIcon createIcon(const QString &) const;
     QPixmap findIcon(int size, const QString &) const;
     QPixmap findIconHelper(int size, const QString &, const QString &, QStringList &visited) const;

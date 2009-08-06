@@ -49,7 +49,7 @@ static const HashTableValue JSSVGTextElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGTextElementTableValues, 0 };
 #else
@@ -67,7 +67,7 @@ static const HashTableValue JSSVGTextElementPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGTextElementPrototypeTableValues, 0 };
 #else
@@ -88,8 +88,8 @@ bool JSSVGTextElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSSVGTextElement::s_info = { "SVGTextElement", &JSSVGTextPositioningElement::s_info, &JSSVGTextElementTable, 0 };
 
-JSSVGTextElement::JSSVGTextElement(PassRefPtr<Structure> structure, PassRefPtr<SVGTextElement> impl)
-    : JSSVGTextPositioningElement(structure, impl)
+JSSVGTextElement::JSSVGTextElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextElement> impl)
+    : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }
 
@@ -105,24 +105,27 @@ bool JSSVGTextElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsSVGTextElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextElement* castedThis = static_cast<JSSVGTextElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextElement* imp = static_cast<SVGTextElement*>(static_cast<JSSVGTextElement*>(asObject(slot.slotBase()))->impl());
+    SVGTextElement* imp = static_cast<SVGTextElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextElement* castedThis = static_cast<JSSVGTextElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextElement* imp = static_cast<SVGTextElement*>(static_cast<JSSVGTextElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->nearestViewportElement()));
+    SVGTextElement* imp = static_cast<SVGTextElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
 }
 
 JSValue jsSVGTextElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTextElement* castedThis = static_cast<JSSVGTextElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTextElement* imp = static_cast<SVGTextElement*>(static_cast<JSSVGTextElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->farthestViewportElement()));
+    SVGTextElement* imp = static_cast<SVGTextElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
 }
 
 JSValue JSC_HOST_CALL jsSVGTextElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -134,7 +137,7 @@ JSValue JSC_HOST_CALL jsSVGTextElementPrototypeFunctionGetBBox(ExecState* exec, 
     SVGTextElement* imp = static_cast<SVGTextElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
     return result;
 }
 
@@ -147,7 +150,7 @@ JSValue JSC_HOST_CALL jsSVGTextElementPrototypeFunctionGetCTM(ExecState* exec, J
     SVGTextElement* imp = static_cast<SVGTextElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
     return result;
 }
 
@@ -160,7 +163,7 @@ JSValue JSC_HOST_CALL jsSVGTextElementPrototypeFunctionGetScreenCTM(ExecState* e
     SVGTextElement* imp = static_cast<SVGTextElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
     return result;
 }
 
@@ -175,7 +178,7 @@ JSValue JSC_HOST_CALL jsSVGTextElementPrototypeFunctionGetTransformToElement(Exe
     SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }

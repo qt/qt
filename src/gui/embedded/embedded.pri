@@ -114,10 +114,17 @@ embedded {
 		SOURCES += embedded/qscreenlinuxfb_qws.cpp
 	}
 
+        contains( gfx-drivers, qnx ) {
+                HEADERS += embedded/qscreenqnx_qws.h
+                SOURCES += embedded/qscreenqnx_qws.cpp
+                LIBS += -lgf
+        }
+
 	contains( gfx-drivers, qvfb ) {
 		HEADERS += embedded/qscreenvfb_qws.h
 		SOURCES += embedded/qscreenvfb_qws.cpp
 	}
+
 
 	contains( gfx-drivers, vnc ) {
 		VNCDIR = $$QT_SOURCE_TREE/src/plugins/gfxdrivers/vnc
@@ -141,15 +148,7 @@ embedded {
 		!contains( kbd-drivers, qvfb ) {
 			kbd-drivers += qvfb
 		}
-         }
-
-	contains( kbd-drivers, sl5000 ) {
-		HEADERS +=embedded/qkbdsl5000_qws.h
-		SOURCES +=embedded/qkbdsl5000_qws.cpp
-		!contains( kbd-drivers, tty ) {
-		    kbd-drivers += tty
-		}
-	}
+        }
 
 	contains( kbd-drivers, tty ) {
 		HEADERS +=embedded/qkbdtty_qws.h
@@ -166,15 +165,10 @@ embedded {
 		SOURCES +=embedded/qkbdum_qws.cpp
 	}
 
-	contains( kbd-drivers, yopy ) {
-		HEADERS +=embedded/qkbdyopy_qws.h
-		SOURCES +=embedded/qkbdyopy_qws.cpp
-	}
-
-	contains( kbd-drivers, vr41xx ) {
-		HEADERS +=embedded/qkbdvr41xx_qws.h
-		SOURCES +=embedded/qkbdvr41xx_qws.cpp
-	}
+        contains( kbd-drivers, qnx ) {
+                HEADERS += embedded/qkbdqnx_qws.h
+                SOURCES += embedded/qkbdqnx_qws.cpp
+        }
 
 #
 # Mouse drivers
@@ -189,29 +183,24 @@ embedded {
 		SOURCES +=embedded/qmousepc_qws.cpp
 	}
 
-	contains( mouse-drivers, bus ) {
-		HEADERS +=embedded/qmousebus_qws.h
-		SOURCES +=embedded/qmousebus_qws.cpp
-	}
-
 	contains( mouse-drivers, linuxtp ) {
 		HEADERS +=embedded/qmouselinuxtp_qws.h
 		SOURCES +=embedded/qmouselinuxtp_qws.cpp
 	}
 
-	contains( mouse-drivers, vr41xx ) {
-		HEADERS +=embedded/qmousevr41xx_qws.h
-		SOURCES +=embedded/qmousevr41xx_qws.cpp
-	}
-
-	contains( mouse-drivers, yopy ) {
-		HEADERS +=embedded/qmouseyopy_qws.h
-		SOURCES +=embedded/qmouseyopy_qws.cpp
-	}
-	
 	contains( mouse-drivers, tslib ) {
 		LIBS += -lts
 		HEADERS +=embedded/qmousetslib_qws.h
 		SOURCES +=embedded/qmousetslib_qws.cpp
 	}
+
+	contains( mouse-drivers, linuxinput ) {
+		HEADERS +=embedded/qmouselinuxinput_qws.h
+		SOURCES +=embedded/qmouselinuxinput_qws.cpp
+        }
+
+        contains( mouse-drivers, qnx ) {
+                HEADERS += embedded/qmouseqnx_qws.h
+                SOURCES += embedded/qmouseqnx_qws.cpp
+        }
 }

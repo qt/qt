@@ -66,6 +66,8 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
+#include <qstandardgestures.h>
+
 #include <qinputcontext.h>
 
 #ifndef QT_NO_TEXTEDIT
@@ -255,7 +257,7 @@ QPlainTextDocumentLayoutPrivate *QPlainTextDocumentLayout::priv() const
  */
 void QPlainTextDocumentLayout::requestUpdate()
 {
-    emit update(QRectF(0., -4., 1000000000., 1000000000.));
+    emit update(QRectF(0., -document()->documentMargin(), 1000000000., 1000000000.));
 }
 
 
@@ -350,8 +352,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int /*charsRemoved*/, i
     }
 
     if (!d->blockUpdate)
-        emit update(); // optimization potential
-
+	emit update(QRectF(0., -doc->documentMargin(), 1000000000., 1000000000.)); // optimization potential
 }
 
 
@@ -732,6 +733,9 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
     backgroundVisible = false;
     centerOnScroll = false;
     inDrag = false;
+#ifdef Q_WS_WIN
+    singleFingerPanEnabled = true;
+#endif
 }
 
 
@@ -787,6 +791,9 @@ void QPlainTextEditPrivate::init(const QString &txt)
 #ifndef QT_NO_CURSOR
     viewport->setCursor(Qt::IBeamCursor);
 #endif
+    originalOffsetY = 0;
+    panGesture = new QPanGesture(q);
+    QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -2914,6 +2921,30 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     This signal is emitted whenever redo operations become available
     (\a available is true) or unavailable (\a available is false).
 */
+
+void QPlainTextEditPrivate::_q_gestureTriggered()
+{
+    Q_Q(QPlainTextEdit);
+    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+    if (!g)
+        return;
+    QScrollBar *hBar = q->horizontalScrollBar();
+    QScrollBar *vBar = q->verticalScrollBar();
+    if (g->state() == Qt::GestureStarted)
+        originalOffsetY = vBar->value();
+    QSize totalOffset = g->totalOffset();
+    if (!totalOffset.isNull()) {
+        if (QApplication::isRightToLeft())
+            totalOffset.rwidth() *= -1;
+        // QPlainTextEdit scrolls by lines only in vertical direction
+        QFontMetrics fm(q->document()->defaultFont());
+        int lineHeight = fm.height();
+        int newX = hBar->value() - g->lastOffset().width();
+        int newY = originalOffsetY - totalOffset.height()/lineHeight;
+        hbar->setValue(newX);
+        vbar->setValue(newY);
+    }
+}
 
 QT_END_NAMESPACE
 

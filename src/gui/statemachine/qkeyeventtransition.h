@@ -62,9 +62,6 @@ public:
     QKeyEventTransition(QState *sourceState = 0);
     QKeyEventTransition(QObject *object, QEvent::Type type, int key,
                         QState *sourceState = 0);
-    QKeyEventTransition(QObject *object, QEvent::Type type, int key,
-                        const QList<QAbstractState*> &targets,
-                        QState *sourceState = 0);
     ~QKeyEventTransition();
 
     int key() const;
@@ -79,7 +76,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QKeyEventTransition)
-    Q_DECLARE_SCOPED_PRIVATE(QKeyEventTransition)
+    Q_DECLARE_PRIVATE(QKeyEventTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

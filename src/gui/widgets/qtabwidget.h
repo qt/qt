@@ -234,7 +234,7 @@ Q_SIGNALS:
 #endif // QT3_SUPPORT
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QTabWidget)
+    Q_DECLARE_PRIVATE(QTabWidget)
     Q_DISABLE_COPY(QTabWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_showTab(int))
     Q_PRIVATE_SLOT(d_func(), void _q_removeTab(int))

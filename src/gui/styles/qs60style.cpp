@@ -2854,8 +2854,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 
 extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);
 
-bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset,
-            const QBrush &brush)
+bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
     if (backgroundTexture.cacheKey() != brush.texture().cacheKey())
@@ -2864,8 +2863,7 @@ bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {
         const QWidget *widget = static_cast<const QWidget *>(target);
-        const QRegion translated = rgn.translated(offset);
-        const QVector<QRect> &rects = translated.rects();
+        const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i) {
             const QRect rect(rects.at(i));
             painter->drawPixmap(rect.topLeft(), backgroundTexture,

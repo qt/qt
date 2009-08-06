@@ -15,6 +15,7 @@ MOC_DIR = .
 VPATH += $$QT_SOURCE_TREE/src/corelib/global \
          $$QT_SOURCE_TREE/src/corelib/tools \
          $$QT_SOURCE_TREE/src/corelib/kernel \
+         $$QT_SOURCE_TREE/src/corelib/codecs \
          $$QT_SOURCE_TREE/src/corelib/plugin \
 	 $$QT_SOURCE_TREE/src/corelib/io \
 	 $$QT_SOURCE_TREE/src/corelib/xml \

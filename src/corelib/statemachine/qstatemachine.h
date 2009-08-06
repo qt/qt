@@ -42,7 +42,7 @@
 #ifndef QSTATEMACHINE_H
 #define QSTATEMACHINE_H
 
-#include <QtCore/qabstractstate.h>
+#include <QtCore/qstate.h>
 
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
@@ -57,18 +57,12 @@ QT_MODULE(Core)
 #ifndef QT_NO_STATEMACHINE
 
 class QEvent;
-class QAbstractState;
-class QState;
 
 class QStateMachinePrivate;
 class QAbstractAnimation;
-class QAbstractState;
-class Q_CORE_EXPORT QStateMachine : public QObject
+class Q_CORE_EXPORT QStateMachine : public QState
 {
     Q_OBJECT
-    Q_PROPERTY(QState* rootState READ rootState)
-    Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState)
-    Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState)
     Q_PROPERTY(QString errorString READ errorString)
     Q_PROPERTY(RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
     Q_ENUMS(RestorePolicy)
@@ -93,14 +87,6 @@ public:
 
     void addState(QAbstractState *state);
     void removeState(QAbstractState *state);
-
-    QState *rootState() const;
-
-    QAbstractState *initialState() const;
-    void setInitialState(QAbstractState *state);
-
-    QAbstractState *errorState() const;
-    void setErrorState(QAbstractState *state);
 
     Error error() const;
     QString errorString() const;
@@ -135,9 +121,11 @@ public Q_SLOTS:
 Q_SIGNALS:
     void started();
     void stopped();
-    void finished();
 
 protected:
+    void onEntry(QEvent *event);
+    void onExit(QEvent *event);
+
     void postInternalEvent(QEvent *event);
 
     virtual void beginSelectTransitions(QEvent *event);
@@ -153,7 +141,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QStateMachine)
-    Q_DECLARE_SCOPED_PRIVATE(QStateMachine)
+    Q_DECLARE_PRIVATE(QStateMachine)
     Q_PRIVATE_SLOT(d_func(), void _q_start())
     Q_PRIVATE_SLOT(d_func(), void _q_process())
 #ifndef QT_NO_ANIMATION

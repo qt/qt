@@ -76,7 +76,7 @@ protected:
 #endif
 private:
     QScopedPointer<class QtColorButtonPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtColorButton)
+    Q_DECLARE_PRIVATE(QtColorButton)
     Q_DISABLE_COPY(QtColorButton)
     Q_PRIVATE_SLOT(d_func(), void slotEditColor())
 };

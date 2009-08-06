@@ -67,6 +67,8 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
+#include <qstandardgestures.h>
+
 #include <qinputcontext.h>
 #endif
 
@@ -116,6 +118,9 @@ QTextEditPrivate::QTextEditPrivate()
     preferRichText = false;
     showCursorOnInitialShow = true;
     inDrag = false;
+#ifdef Q_WS_WIN
+    singleFingerPanEnabled = true;
+#endif
 }
 
 void QTextEditPrivate::createAutoBulletList()
@@ -183,6 +188,8 @@ void QTextEditPrivate::init(const QString &html)
 #ifndef QT_NO_CURSOR
     viewport->setCursor(Qt::IBeamCursor);
 #endif
+    panGesture = new QPanGesture(q);
+    QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
 }
 
 void QTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -2622,6 +2629,25 @@ void QTextEdit::ensureCursorVisible()
 {
     Q_D(QTextEdit);
     d->control->ensureCursorVisible();
+}
+
+void QTextEditPrivate::_q_gestureTriggered()
+{
+    Q_Q(QTextEdit);
+    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+    if (!g)
+        return;
+    QScrollBar *hBar = q->horizontalScrollBar();
+    QScrollBar *vBar = q->verticalScrollBar();
+    QSize delta = g->lastOffset();
+    if (!delta.isNull()) {
+        if (QApplication::isRightToLeft())
+            delta.rwidth() *= -1;
+        int newX = hBar->value() - delta.width();
+        int newY = vBar->value() - delta.height();
+        hbar->setValue(newX);
+        vbar->setValue(newY);
+    }
 }
 
 

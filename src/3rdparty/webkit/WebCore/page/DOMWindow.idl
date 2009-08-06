@@ -304,6 +304,7 @@ module window {
         attribute CounterConstructor Counter;
         attribute CSSRuleListConstructor CSSRuleList;
         attribute RectConstructor Rect;
+        attribute RGBColorConstructor RGBColor;
         attribute StyleSheetListConstructor StyleSheetList;
 
         // FIXME: Implement the commented-out global constructors for interfaces listed in DOM Level 3 Core specification.
@@ -349,8 +350,9 @@ module window {
         attribute HTMLBodyElementConstructor HTMLBodyElement;
         attribute HTMLButtonElementConstructor HTMLButtonElement;
         attribute HTMLCanvasElementConstructor HTMLCanvasElement;
-        attribute HTMLDataGridElementConstructor HTMLDataGridElement;
-        attribute HTMLDataGridColElementConstructor HTMLDataGridColElement;
+        attribute [Conditional=DATAGRID] HTMLDataGridElementConstructor HTMLDataGridElement;
+        attribute [Conditional=DATAGRID] HTMLDataGridCellElementConstructor HTMLDataGridCellElement;
+        attribute [Conditional=DATAGRID] HTMLDataGridColElementConstructor HTMLDataGridColElement;
         attribute HTMLDListElementConstructor HTMLDListElement;
         attribute HTMLDirectoryElementConstructor HTMLDirectoryElement;
         attribute HTMLDivElementConstructor HTMLDivElement;
@@ -458,6 +460,10 @@ module window {
 
 #if defined(ENABLE_WORKERS) && ENABLE_WORKERS
         attribute [JSCCustomGetter] WorkerConstructor Worker; // Usable with the new operator
+#endif
+
+#if defined(ENABLE_SHARED_WORKERS) && ENABLE_SHARED_WORKERS
+        attribute [JSCCustomGetter] SharedWorkerConstructor SharedWorker; // Usable with the new operator
 #endif
 
         attribute PluginConstructor Plugin;

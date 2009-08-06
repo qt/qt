@@ -56,6 +56,10 @@
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#define Q_NO_SYMLINKS
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -374,6 +378,20 @@ void tst_QDir::compare()
     QVERIFY(dir == QDir::currentPath());
 }
 
+static QStringList filterLinks(const QStringList &list)
+{
+#ifndef Q_NO_SYMLINKS
+    return list;
+#else
+    QStringList result;
+    foreach (QString str, list) {
+        if (!str.endsWith(QLatin1String(".lnk")))
+            result.append(str);
+    }
+    return result;
+#endif
+}
+
 void tst_QDir::entryList_data()
 {
     QTest::addColumn<QString>("dirName"); // relative from current path or abs
@@ -415,94 +433,95 @@ void tst_QDir::entryList_data()
 
     QTest::newRow("nofilter") << SRCDIR "entrylist/" << QStringList("*")
                               << int(QDir::NoFilter) << int(QDir::Name)
-                              << QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                              << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::AllEntries") << SRCDIR "entrylist/" << QStringList("*")
                               << int(QDir::AllEntries) << int(QDir::Name)
-                              << QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                              << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::Files") << SRCDIR "entrylist/" << QStringList("*")
                                  << int(QDir::Files) << int(QDir::Name)
-                                 << QString("file,linktofile.lnk,writable").split(',');
+                                 << filterLinks(QString("file,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::Dirs") << SRCDIR "entrylist/" << QStringList("*")
                                 << int(QDir::Dirs) << int(QDir::Name)
-                                << QString(".,..,directory,linktodirectory.lnk").split(',');
+                                << filterLinks(QString(".,..,directory,linktodirectory.lnk").split(','));
     QTest::newRow("QDir::Dirs | QDir::NoDotAndDotDot") << SRCDIR "entrylist/" << QStringList("*")
                                                        << int(QDir::Dirs | QDir::NoDotAndDotDot) << int(QDir::Name)
-                                << QString("directory,linktodirectory.lnk").split(',');
+                                << filterLinks(QString("directory,linktodirectory.lnk").split(','));
     QTest::newRow("QDir::AllDirs") << SRCDIR "entrylist/" << QStringList("*")
                                    << int(QDir::AllDirs) << int(QDir::Name)
-                                   << QString(".,..,directory,linktodirectory.lnk").split(',');
+                                   << filterLinks(QString(".,..,directory,linktodirectory.lnk").split(','));
     QTest::newRow("QDir::AllDirs | QDir::Dirs") << SRCDIR "entrylist/" << QStringList("*")
                                                 << int(QDir::AllDirs | QDir::Dirs) << int(QDir::Name)
-                                                << QString(".,..,directory,linktodirectory.lnk").split(',');
+                                                << filterLinks(QString(".,..,directory,linktodirectory.lnk").split(','));
     QTest::newRow("QDir::AllDirs | QDir::Files") << SRCDIR "entrylist/" << QStringList("*")
                                                  << int(QDir::AllDirs | QDir::Files) << int(QDir::Name)
-                                                 << QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                                                 << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::AllEntries | QDir::NoSymLinks") << SRCDIR "entrylist/" << QStringList("*")
                                       << int(QDir::AllEntries | QDir::NoSymLinks) << int(QDir::Name)
-                                      << QString(".,..,directory,file,writable").split(',');
+                                      << filterLinks(QString(".,..,directory,file,writable").split(','));
     QTest::newRow("QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot") << SRCDIR "entrylist/" << QStringList("*")
                                       << int(QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot) << int(QDir::Name)
-                                      << QString("directory,file,writable").split(',');
+                                      << filterLinks(QString("directory,file,writable").split(','));
     QTest::newRow("QDir::Files | QDir::NoSymLinks") << SRCDIR "entrylist/" << QStringList("*")
                                                     << int(QDir::Files | QDir::NoSymLinks) << int(QDir::Name)
-                                                    << QString("file,writable").split(',');
+                                                    << filterLinks(QString("file,writable").split(','));
     QTest::newRow("QDir::Dirs | QDir::NoSymLinks") << SRCDIR "entrylist/" << QStringList("*")
                                                    << int(QDir::Dirs | QDir::NoSymLinks) << int(QDir::Name)
-                                                   << QString(".,..,directory").split(',');
+                                                   << filterLinks(QString(".,..,directory").split(','));
     QTest::newRow("QDir::Drives | QDir::Files | QDir::NoDotAndDotDot") << SRCDIR "entrylist/" << QStringList("*")
                                                    << int(QDir::Drives | QDir::Files | QDir::NoDotAndDotDot) << int(QDir::Name)
-                                                   << QString("file,linktofile.lnk,writable").split(',');
+                                                   << filterLinks(QString("file,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::System") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::System) << int(QDir::Name)
-                                  << QStringList("brokenlink.lnk");
+                                  << filterLinks(QStringList("brokenlink.lnk"));
     QTest::newRow("QDir::Hidden") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::Hidden) << int(QDir::Name)
                                   << QStringList();
     QTest::newRow("QDir::System | QDir::Hidden") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::System | QDir::Hidden) << int(QDir::Name)
-                                  << QStringList("brokenlink.lnk");
+                                  << filterLinks(QStringList("brokenlink.lnk"));
     QTest::newRow("QDir::AllDirs | QDir::NoSymLinks") << SRCDIR "entrylist/" << QStringList("*")
                                                       << int(QDir::AllDirs | QDir::NoSymLinks) << int(QDir::Name)
-                                                      << QString(".,..,directory").split(',');
+                                                      << filterLinks(QString(".,..,directory").split(','));
 #ifdef QT3_SUPPORT
     QTest::newRow("QDir::All | QDir::Hidden | QDir::System") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::All | QDir::Hidden | QDir::System) << int(QDir::Name)
-                                  << QString(".,..,brokenlink.lnk,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                                  << filterLinks(QString(".,..,brokenlink.lnk,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::All | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::All | QDir::Readable) << int(QDir::Name)
-                                                << QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                                                << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::All | QDir::Writable") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::All | QDir::Writable) << int(QDir::Name)
-                                  << QString(".,..,directory,linktodirectory.lnk,writable").split(',');
+                                  << filterLinks(QString(".,..,directory,linktodirectory.lnk,writable").split(','));
 #else
     QTest::newRow("QDir::AllEntries | QDir::Hidden | QDir::System") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::AllEntries | QDir::Hidden | QDir::System) << int(QDir::Name)
-                                  << QString(".,..,brokenlink.lnk,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                                  << filterLinks(QString(".,..,brokenlink.lnk,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::AllEntries | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::AllEntries | QDir::Readable) << int(QDir::Name)
-                                                << QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                                                << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::AllEntries | QDir::Writable") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::AllEntries | QDir::Writable) << int(QDir::Name)
-                                  << QString(".,..,directory,linktodirectory.lnk,writable").split(',');
+                                  << filterLinks(QString(".,..,directory,linktodirectory.lnk,writable").split(','));
 #endif
     QTest::newRow("Namefilters b*") << SRCDIR "entrylist/" << QStringList("d*")
                                   << int(QDir::NoFilter) << int(QDir::Name)
-                                  << QString("directory").split(',');
+                                  << filterLinks(QString("directory").split(','));
     QTest::newRow("Namefilters f*") << SRCDIR "entrylist/" << QStringList("f*")
                                   << int(QDir::NoFilter) << int(QDir::Name)
-                                  << QString("file").split(',');
+                                  << filterLinks(QString("file").split(','));
     QTest::newRow("Namefilters link*") << SRCDIR "entrylist/" << QStringList("link*")
                                   << int(QDir::NoFilter) << int(QDir::Name)
-                                  << QString("linktodirectory.lnk,linktofile.lnk").split(',');
+                                  << filterLinks(QString("linktodirectory.lnk,linktofile.lnk").split(','));
     QTest::newRow("Namefilters *to*") << SRCDIR "entrylist/" << QStringList("*to*")
                                   << int(QDir::NoFilter) << int(QDir::Name)
-                                  << QString("directory,linktodirectory.lnk,linktofile.lnk").split(',');
+                                  << filterLinks(QString("directory,linktodirectory.lnk,linktofile.lnk").split(','));
     QTest::newRow("Sorting QDir::Name") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::NoFilter) << int(QDir::Name)
-                                  << QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(',');
+                                  << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("Sorting QDir::Name | QDir::Reversed") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::NoFilter) << int(QDir::Name | QDir::Reversed)
-                                  << QString("writable,linktofile.lnk,linktodirectory.lnk,file,directory,..,.").split(',');
+                                  << filterLinks(QString("writable,linktofile.lnk,linktodirectory.lnk,file,directory,..,.").split(','));
+
     QTest::newRow("Sorting QDir::Type") << SRCDIR "types/" << QStringList("*")
                                   << int(QDir::NoFilter) << int(QDir::Type)
                                   << QString(".,..,a,b,c,d,e,f,a.a,b.a,c.a,d.a,e.a,f.a,a.b,b.b,c.b,d.b,e.b,f.b,a.c,b.c,c.c,d.c,e.c,f.c").split(',');
@@ -618,10 +637,21 @@ void tst_QDir::entryList()
         // lock up. The actual result depends on the file system.
         return;
     }
-    for (int i=0; i<max; ++i)
-        QCOMPARE(actual[i], expected[i]);
+    bool doContentCheck = true;
+#ifdef Q_OS_UNIX
+    if (qstrcmp(QTest::currentDataTag(), "QDir::AllEntries | QDir::Writable") == 0) {
+        // for root, everything is writeable
+        if (::getuid() == 0)
+            doContentCheck = false;
+    }
+#endif
 
-    QCOMPARE(actual.count(), expected.count());
+    if (doContentCheck) {
+        for (int i=0; i<max; ++i)
+            QCOMPARE(actual[i], expected[i]);
+
+        QCOMPARE(actual.count(), expected.count());
+    }
 
 #if defined(Q_OS_SYMBIAN)
     // Test cleanup on device requires setting the permissions back to normal
@@ -676,6 +706,7 @@ void tst_QDir::entryListSimple()
 
 void tst_QDir::entryListWithSymLinks()
 {
+#ifndef Q_NO_SYMLINKS
     QFile::remove("myLinkToDir.lnk");
     QFile::remove("myLinkToFile.lnk");
     QFile::remove("testfile.cpp");
@@ -717,6 +748,7 @@ void tst_QDir::entryListWithSymLinks()
     QFile::remove("myLinkToFile.lnk");
     QFile::remove("testfile.cpp");
     dir.rmdir("myDir");
+#endif
 }
 
 void tst_QDir::canonicalPath_data()

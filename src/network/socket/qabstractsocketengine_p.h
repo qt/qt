@@ -92,7 +92,9 @@ public:
         SendBufferSocketOption,
         AddressReusable,
         BindExclusively,
-        ReceiveOutOfBandData
+        ReceiveOutOfBandData,
+        LowDelayOption,
+        KeepAliveOption
     };
 
     virtual bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol) = 0;
@@ -175,7 +177,7 @@ protected:
     void setPeerPort(quint16 port);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractSocketEngine)
+    Q_DECLARE_PRIVATE(QAbstractSocketEngine)
     Q_DISABLE_COPY(QAbstractSocketEngine)
 };
 

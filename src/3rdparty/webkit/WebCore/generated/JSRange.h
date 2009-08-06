@@ -21,6 +21,7 @@
 #ifndef JSRange_h
 #define JSRange_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Range;
 
-class JSRange : public DOMObject {
-    typedef DOMObject Base;
+class JSRange : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSRange(PassRefPtr<JSC::Structure>, PassRefPtr<Range>);
+    JSRange(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Range>);
     virtual ~JSRange();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -44,14 +45,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     Range* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<Range> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Range*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Range*);
 Range* toRange(JSC::JSValue);
 
 class JSRangePrototype : public JSC::JSObject {

@@ -102,7 +102,7 @@ public:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QCheckBox)
+    Q_DECLARE_PRIVATE(QCheckBox)
     Q_DISABLE_COPY(QCheckBox)
 };
 

@@ -142,7 +142,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QSplitter)
-    Q_DECLARE_SCOPED_PRIVATE(QSplitter)
+    Q_DECLARE_PRIVATE(QSplitter)
 private:
     friend class QSplitterHandle;
 };
@@ -179,7 +179,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QSplitterHandle)
-    Q_DECLARE_SCOPED_PRIVATE(QSplitterHandle)
+    Q_DECLARE_PRIVATE(QSplitterHandle)
 };
 
 #endif // QT_NO_SPLITTER

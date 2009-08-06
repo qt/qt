@@ -310,7 +310,7 @@ void QProcessPrivate::Channel::clear()
     writes to its standard output and standard error will be written
     to the standard output and standard error of the main process.
 
-    \sa setReadChannelMode()
+    \sa setProcessChannelMode()
 */
 
 /*!
@@ -878,7 +878,7 @@ void QProcess::setReadChannelMode(ProcessChannelMode mode)
     Returns the channel mode of the QProcess standard output and
     standard error channels.
 
-    \sa setReadChannelMode(), ProcessChannelMode, setReadChannel()
+    \sa setProcessChannelMode(), ProcessChannelMode, setReadChannel()
 */
 QProcess::ProcessChannelMode QProcess::processChannelMode() const
 {
@@ -895,7 +895,7 @@ QProcess::ProcessChannelMode QProcess::processChannelMode() const
 
     \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 0
 
-    \sa readChannelMode(), ProcessChannelMode, setReadChannel()
+    \sa processChannelMode(), ProcessChannelMode, setReadChannel()
 */
 void QProcess::setProcessChannelMode(ProcessChannelMode mode)
 {

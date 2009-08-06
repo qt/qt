@@ -62,9 +62,8 @@ bool QLocalServerPrivate::addListener()
     listeners << Listener();
     Listener &listener = listeners.last();
 
-    QT_WA({
-    listener.handle = CreateNamedPipeW(
-                 (TCHAR*)fullServerName.utf16(), // pipe name
+    listener.handle = CreateNamedPipe(
+                 (const wchar_t *)fullServerName.utf16(), // pipe name
                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
                  PIPE_TYPE_MESSAGE |       // message type pipe
                  PIPE_READMODE_MESSAGE |   // message-read mode
@@ -74,19 +73,7 @@ bool QLocalServerPrivate::addListener()
                  BUFSIZE,                  // input buffer size
                  3000,                     // client time-out
                  NULL);
-    }, {
-    listener.handle = CreateNamedPipeA(
-                 fullServerName.toLocal8Bit().constData(), // pipe name
-                 PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
-                 PIPE_TYPE_MESSAGE |       // message type pipe
-                 PIPE_READMODE_MESSAGE |   // message-read mode
-                 PIPE_WAIT,                // blocking mode
-                 PIPE_UNLIMITED_INSTANCES, // max. instances
-                 BUFSIZE,                  // output buffer size
-                 BUFSIZE,                  // input buffer size
-                 3000,                     // client time-out
-                 NULL);
-    });
+
     if (listener.handle == INVALID_HANDLE_VALUE) {
         setError(QLatin1String("QLocalServerPrivate::addListener"));
         listeners.removeLast();

@@ -393,15 +393,8 @@ static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
 
 static QString getWinLocaleInfo(LCTYPE type)
 {
-    int cnt = 0;
-
     LCID id = GetUserDefaultLCID();
-
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type, 0, 0)*2;
-    } , {
-        cnt = GetLocaleInfoA(id, type, 0, 0);
-    });
+    int cnt = GetLocaleInfo(id, type, 0, 0) * 2;
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", (int)type);
@@ -410,27 +403,14 @@ static QString getWinLocaleInfo(LCTYPE type)
 
     QByteArray buff(cnt, 0);
 
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type,
-                                reinterpret_cast<wchar_t*>(buff.data()),
-                                buff.size()/2);
-    } , {
-        cnt = GetLocaleInfoA(id, type,
-                                buff.data(), buff.size());
-    });
+    cnt = GetLocaleInfo(id, type, reinterpret_cast<wchar_t*>(buff.data()), buff.size() / 2);
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", (int)type);
         return QString();
     }
 
-    QString result;
-    QT_WA({
-        result = QString::fromUtf16(reinterpret_cast<ushort*>(buff.data()));
-    } , {
-        result = QString::fromLocal8Bit(buff.data());
-    });
-    return result;
+    return QString::fromWCharArray(reinterpret_cast<const wchar_t *>(buff.data()));
 }
 
 QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
@@ -440,8 +420,8 @@ QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
         result = envVarLocale();
         QChar lang[3];
         QChar cntry[2];
-        if ( result == "C" || !result.isEmpty()
-                && splitLocaleName(QString::fromLocal8Bit(result), lang, cntry) ) {
+        if ( result == "C" || (!result.isEmpty()
+                && splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) ) {
             long id = 0;
             bool ok = false;
             id = qstrtoll(result.data(), 0, 0, &ok);
@@ -452,20 +432,19 @@ QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
         }
     }
 
-    if (QSysInfo::WindowsVersion == QSysInfo::WV_95
-        || (QSysInfo::WindowsVersion & QSysInfo::WV_CE_based)) {
-        result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
-    } else {
-        if (id == LOCALE_USER_DEFAULT)
-            id = GetUserDefaultLCID();
-        QString resultuage = winIso639LangName(id);
-        QString country = winIso3116CtryName(id);
-        result = resultuage.toLatin1();
-        if (!country.isEmpty()) {
-            result += '_';
-            result += country.toLatin1();
-        }
+#if defined(Q_OS_WINCE)
+    result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
+#else
+    if (id == LOCALE_USER_DEFAULT)
+        id = GetUserDefaultLCID();
+    QString resultuage = winIso639LangName(id);
+    QString country = winIso3116CtryName(id);
+    result = resultuage.toLatin1();
+    if (!country.isEmpty()) {
+        result += '_';
+        result += country.toLatin1();
     }
+#endif
 
     return result;
 }
@@ -551,15 +530,9 @@ static QString winDateToString(const QDate &date, DWORD flags)
 
     LCID id = GetUserDefaultLCID();
 
-    QT_WA({
-        TCHAR buf[255];
-        if (GetDateFormatW(id, flags, &st, 0, buf, 255))
-            return QString::fromUtf16((ushort*)buf);
-    } , {
-        char buf[255];
-        if (GetDateFormatA(id, flags, &st, 0, (char*)&buf, 255))
-            return QString::fromLocal8Bit(buf);
-    });
+    wchar_t buf[255];
+    if (GetDateFormat(id, flags, &st, 0, buf, 255))
+        return QString::fromWCharArray(buf);
 
     return QString();
 }
@@ -576,15 +549,9 @@ static QString winTimeToString(const QTime &time)
     DWORD flags = 0;
     LCID id = GetUserDefaultLCID();
 
-    QT_WA({
-        TCHAR buf[255];
-        if (GetTimeFormatW(id, flags, &st, 0, buf, 255))
-            return QString::fromUtf16((ushort*)buf);
-    } , {
-        char buf[255];
-        if (GetTimeFormatA(id, flags, &st, 0, (char*)&buf, 255))
-            return QString::fromLocal8Bit(buf);
-    });
+    wchar_t buf[255];
+    if (GetTimeFormat(id, flags, &st, 0, buf, 255))
+        return QString::fromWCharArray(buf);
 
     return QString();
 }
@@ -633,12 +600,10 @@ static QString winMonthName(int month, bool short_format)
 static QLocale::MeasurementSystem winSystemMeasurementSystem()
 {
     LCID id = GetUserDefaultLCID();
-    TCHAR output[2];
+    wchar_t output[2];
 
     if (GetLocaleInfo(id, LOCALE_IMEASURE, output, 2)) {
-        QString iMeasure = QT_WA_INLINE(
-                QString::fromUtf16(reinterpret_cast<ushort*>(output)),
-                QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
+        QString iMeasure = QString::fromWCharArray(output);
         if (iMeasure == QLatin1String("1")) {
             return QLocale::ImperialSystem;
         }
@@ -650,12 +615,10 @@ static QLocale::MeasurementSystem winSystemMeasurementSystem()
 static QString winSystemAMText()
 {
     LCID id = GetUserDefaultLCID();
-    TCHAR output[15]; // maximum length including  terminating zero character for Win2003+
+    wchar_t output[15]; // maximum length including  terminating zero character for Win2003+
 
     if (GetLocaleInfo(id, LOCALE_S1159, output, 15)) {
-        return QT_WA_INLINE(
-                QString::fromUtf16(reinterpret_cast<ushort*>(output)),
-                QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
+        return QString::fromWCharArray(output);
     }
 
     return QString();
@@ -664,12 +627,10 @@ static QString winSystemAMText()
 static QString winSystemPMText()
 {
     LCID id = GetUserDefaultLCID();
-    TCHAR output[15]; // maximum length including  terminating zero character for Win2003+
+    wchar_t output[15]; // maximum length including  terminating zero character for Win2003+
 
     if (GetLocaleInfo(id, LOCALE_S2359, output, 15)) {
-        return QT_WA_INLINE(
-                QString::fromUtf16(reinterpret_cast<ushort*>(output)),
-                QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
+        return QString::fromWCharArray(output);
     }
 
     return QString();
@@ -772,9 +733,6 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     }
     return QVariant();
 }
-
-/* Win95 doesn't have a function to return the ISO lang/country name of the user's locale.
-   Instead it can return a "Windows code". This maps windows codes to ISO country names. */
 
 struct WindowsToISOListElt {
     ushort windows_code;
@@ -931,15 +889,9 @@ static QString winIso639LangName(LCID id)
     // Windows returns the wrong ISO639 for some languages, we need to detect them here using
     // the language code
     QString lang_code;
-    QT_WA({
-        TCHAR out[256];
-        if (GetLocaleInfoW(id, LOCALE_ILANGUAGE, out, 255))
-            lang_code = QString::fromUtf16((ushort*)out);
-    } , {
-        char out[256];
-        if (GetLocaleInfoA(id, LOCALE_ILANGUAGE, out, 255))
-            lang_code = QString::fromLocal8Bit(out);
-    });
+    wchar_t out[256];
+    if (GetLocaleInfo(id, LOCALE_ILANGUAGE, out, 255))
+        lang_code = QString::fromWCharArray(out);
 
     if (!lang_code.isEmpty()) {
         const char *endptr;
@@ -961,15 +913,8 @@ static QString winIso639LangName(LCID id)
         return result;
 
     // not one of the problematic languages - do the usual lookup
-    QT_WA({
-        TCHAR out[256];
-        if (GetLocaleInfoW(id, LOCALE_SISO639LANGNAME , out, 255))
-            result = QString::fromUtf16((ushort*)out);
-    } , {
-        char out[256];
-        if (GetLocaleInfoA(id, LOCALE_SISO639LANGNAME, out, 255))
-            result = QString::fromLocal8Bit(out);
-    });
+    if (GetLocaleInfo(id, LOCALE_SISO639LANGNAME , out, 255))
+        result = QString::fromWCharArray(out);
 
     return result;
 }
@@ -978,15 +923,9 @@ static QString winIso3116CtryName(LCID id)
 {
     QString result;
 
-    QT_WA({
-        TCHAR out[256];
-        if (GetLocaleInfoW(id, LOCALE_SISO3166CTRYNAME, out, 255))
-            result = QString::fromUtf16((ushort*)out);
-    } , {
-        char out[256];
-        if (GetLocaleInfoA(id, LOCALE_SISO3166CTRYNAME, out, 255))
-            result = QString::fromLocal8Bit(out);
-    });
+    wchar_t out[256];
+    if (GetLocaleInfo(id, LOCALE_SISO3166CTRYNAME, out, 255))
+        result = QString::fromWCharArray(out);
 
     return result;
 }
@@ -2696,7 +2635,7 @@ static QString timeZone()
     DWORD res = GetTimeZoneInformation(&info);
     if (res == TIME_ZONE_ID_UNKNOWN)
         return QString();
-    return QString::fromUtf16(reinterpret_cast<const ushort *> (info.StandardName));
+    return QString::fromWCharArray(info.StandardName);
 #elif defined(Q_OS_WIN)
     _tzset();
 # if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -2708,6 +2647,8 @@ static QString timeZone()
 # else
     return QString::fromLocal8Bit(_tzname[1]);
 # endif
+#elif defined(Q_OS_VXWORKS)
+    return QString();
 #else
     tzset();
     return QString::fromLocal8Bit(tzname[1]);
@@ -5012,6 +4953,9 @@ static inline void Storeinc(ULong *&a, const ULong &b, const ULong &c)
 #define Bletch 0x10
 #define Bndry_mask  0xfffff
 #define Bndry_mask1 0xfffff
+#if defined(LSB) && defined(Q_OS_VXWORKS)
+#undef LSB
+#endif
 #define LSB 1
 #define Sign_bit 0x80000000
 #define Log2P 1
@@ -5374,7 +5318,11 @@ struct p5s_deleter
 {
     ~p5s_deleter()
     {
-        Bfree(p5s);
+        while (p5s) {
+            Bigint *next = p5s->next;
+            Bfree(p5s);
+            p5s = next;
+        }
     }
 };
 

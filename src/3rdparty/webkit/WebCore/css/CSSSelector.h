@@ -31,7 +31,7 @@
 namespace WebCore {
 
     // this class represents a selector for a StyleRule
-    class CSSSelector : Noncopyable {
+    class CSSSelector : public Noncopyable {
     public:
         CSSSelector()
             : m_tag(anyQName())
@@ -128,6 +128,8 @@ namespace WebCore {
             PseudoFullPageMedia,
             PseudoDisabled,
             PseudoInputPlaceholder,
+            PseudoOptional,
+            PseudoRequired,
             PseudoReadOnly,
             PseudoReadWrite,
             PseudoIndeterminate,
@@ -173,6 +175,9 @@ namespace WebCore {
             PseudoMediaControlsTimeline,
             PseudoMediaControlsSeekBackButton,
             PseudoMediaControlsSeekForwardButton,
+            PseudoMediaControlsRewindButton,
+            PseudoMediaControlsReturnToRealtimeButton,
+            PseudoMediaControlsStatusDisplay,
             PseudoMediaControlsFullscreenButton
         };
 

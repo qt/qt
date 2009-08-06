@@ -294,9 +294,9 @@ SubdirsMetaMakefileGenerator::init()
     init_flag = true;
 
     if(Option::recursive) {
-        QString old_output_dir = QDir::cleanPath(Option::output_dir);
+        QString old_output_dir = Option::output_dir;
 	QString old_output = Option::output.fileName();
-        QString oldpwd = QDir::cleanPath(qmake_getpwd());
+        QString oldpwd = qmake_getpwd();
         QString thispwd = oldpwd;
         if(!thispwd.endsWith('/'))
            thispwd += '/';

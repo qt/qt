@@ -46,7 +46,7 @@ static const HashTableValue JSSVGAltGlyphElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAltGlyphElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAltGlyphElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGAltGlyphElementTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSSVGAltGlyphElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAltGlyphElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAltGlyphElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAltGlyphElementPrototypeTableValues, 0 };
 #else
@@ -76,8 +76,8 @@ JSObject* JSSVGAltGlyphElementPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGAltGlyphElement::s_info = { "SVGAltGlyphElement", &JSSVGTextPositioningElement::s_info, &JSSVGAltGlyphElementTable, 0 };
 
-JSSVGAltGlyphElement::JSSVGAltGlyphElement(PassRefPtr<Structure> structure, PassRefPtr<SVGAltGlyphElement> impl)
-    : JSSVGTextPositioningElement(structure, impl)
+JSSVGAltGlyphElement::JSSVGAltGlyphElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAltGlyphElement> impl)
+    : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }
 
@@ -93,24 +93,27 @@ bool JSSVGAltGlyphElement::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 JSValue jsSVGAltGlyphElementGlyphRef(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAltGlyphElement* castedThis = static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()))->impl());
+    SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(castedThis->impl());
     return jsString(exec, imp->glyphRef());
 }
 
 JSValue jsSVGAltGlyphElementFormat(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAltGlyphElement* castedThis = static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()))->impl());
+    SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(castedThis->impl());
     return jsString(exec, imp->format());
 }
 
 JSValue jsSVGAltGlyphElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAltGlyphElement* castedThis = static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()))->impl());
+    SVGAltGlyphElement* imp = static_cast<SVGAltGlyphElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 void JSSVGAltGlyphElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)

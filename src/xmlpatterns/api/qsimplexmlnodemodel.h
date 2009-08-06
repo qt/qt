@@ -67,7 +67,7 @@ public:
     virtual QVector<QXmlNodeModelIndex> nodesByIdref(const QXmlName &idref) const;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QSimpleXmlNodeModel)
+    Q_DECLARE_PRIVATE(QSimpleXmlNodeModel)
 };
 
 QT_END_NAMESPACE

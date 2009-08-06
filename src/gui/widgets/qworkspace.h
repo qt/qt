@@ -115,7 +115,7 @@ protected:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QWorkspace)
+    Q_DECLARE_PRIVATE(QWorkspace)
     Q_DISABLE_COPY(QWorkspace)
     Q_PRIVATE_SLOT(d_func(), void _q_normalizeActiveWindow())
     Q_PRIVATE_SLOT(d_func(), void _q_minimizeActiveWindow())

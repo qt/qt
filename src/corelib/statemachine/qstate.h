@@ -87,8 +87,10 @@ public:
     ChildMode childMode() const;
     void setChildMode(ChildMode mode);
 
+#ifndef QT_NO_PROPERTIES
     void assignProperty(QObject *object, const char *name,
                         const QVariant &value);
+#endif
 
 Q_SIGNALS:
     void finished();
@@ -105,7 +107,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QState)
-    Q_DECLARE_SCOPED_PRIVATE(QState)
+    Q_DECLARE_PRIVATE(QState)
 };
 
 #endif //QT_NO_STATEMACHINE

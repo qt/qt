@@ -33,7 +33,7 @@ class SVGStopElement;
 class JSSVGStopElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGStopElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGStopElement>);
+    JSSVGStopElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGStopElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

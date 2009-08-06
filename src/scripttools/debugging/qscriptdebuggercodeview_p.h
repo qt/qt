@@ -87,7 +87,7 @@ public:
     bool event(QEvent *e);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerCodeView)
+    Q_DECLARE_PRIVATE(QScriptDebuggerCodeView)
     Q_DISABLE_COPY(QScriptDebuggerCodeView)
 };
 

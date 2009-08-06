@@ -30,6 +30,7 @@ HEADERS += \
         widgets/qlcdnumber.h \
         widgets/qlineedit.h \
         widgets/qlineedit_p.h \
+        widgets/qlinecontrol_p.h \
         widgets/qmainwindow.h \
         widgets/qmainwindowlayout_p.h \
         widgets/qmdiarea.h \
@@ -101,7 +102,9 @@ SOURCES += \
         widgets/qgroupbox.cpp \
         widgets/qlabel.cpp \
         widgets/qlcdnumber.cpp \
+        widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
+        widgets/qlinecontrol.cpp \
         widgets/qmainwindow.cpp \
         widgets/qmainwindowlayout.cpp \
         widgets/qmdiarea.cpp \

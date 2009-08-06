@@ -56,6 +56,7 @@
 #include "qlibraryinfo.h"
 #include "qfile.h"
 #include "qdebug.h"
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <syslog.h>
 #include <unistd.h>
@@ -572,7 +573,7 @@ bool QTransportAuth::authorizeRequest( QTransportAuth::Data &d, const QString &r
 
         //get cmdline from proc/pid/cmdline
         snprintf( cmdlinePath, BUF_SIZE, "/proc/%d/cmdline", d.processId );
-        int  cmdlineFd = open( cmdlinePath, O_RDONLY );
+        int  cmdlineFd = QT_OPEN( cmdlinePath, O_RDONLY );
         if ( cmdlineFd == -1 )
         {
             qWarning( "SXE:- Error encountered in opening /proc/%u/cmdline: %s",
@@ -581,13 +582,13 @@ bool QTransportAuth::authorizeRequest( QTransportAuth::Data &d, const QString &r
         }
         else
         {
-            if ( -1 == ::read(cmdlineFd, cmdline, BUF_SIZE - 1 ) )
+            if ( -1 == QT_READ(cmdlineFd, cmdline, BUF_SIZE - 1 ) )
             {
                 qWarning( "SXE:- Error encountered in reading /proc/%u/cmdline : %s",
                     d.processId, strerror(errno) );
                 snprintf( cmdline, BUF_SIZE, "%s", "Unknown" );
             }
-            close( cmdlineFd );
+            QT_CLOSE( cmdlineFd );
         }
 
         syslog( LOG_ERR | LOG_LOCAL6, "%s // PID:%u // ProgId:%u // Exe:%s // Request:%s // Cmdline:%s",

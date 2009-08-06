@@ -91,6 +91,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
+    if (state != Working)
+        return;
     if (!copyDevice || !q->isOpen())
         return;
 
@@ -101,16 +103,17 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
             break;
 
         bytesToRead = qBound<qint64>(1, bytesToRead, copyDevice->bytesAvailable());
-        char *ptr = readBuffer.reserve(bytesToRead);
-        qint64 bytesActuallyRead = copyDevice->read(ptr, bytesToRead);
+        QByteArray byteData;
+        byteData.resize(bytesToRead);
+        qint64 bytesActuallyRead = copyDevice->read(byteData.data(), byteData.size());
         if (bytesActuallyRead == -1) {
-            readBuffer.chop(bytesToRead);
+            byteData.clear();
             backendNotify(NotifyCopyFinished);
             break;
         }
 
-        if (bytesActuallyRead != bytesToRead)
-            readBuffer.chop(bytesToRead - bytesActuallyRead);
+        byteData.resize(bytesActuallyRead);
+        readBuffer.append(byteData);
 
         if (!copyDevice->isSequential() && copyDevice->atEnd()) {
             backendNotify(NotifyCopyFinished);
@@ -382,26 +385,33 @@ qint64 QNetworkReplyImplPrivate::nextDownstreamBlockSize() const
     if (readBufferMaxSize == 0)
         return DesiredBufferSize;
 
-    return qMax<qint64>(0, readBufferMaxSize - readBuffer.size());
+    return qMax<qint64>(0, readBufferMaxSize - readBuffer.byteAmount());
 }
 
 // we received downstream data and send this to the cache
 // and to our readBuffer (which in turn gets read by the user of QNetworkReply)
-void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
+void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
 {
     Q_Q(QNetworkReplyImpl);
     if (!q->isOpen())
         return;
-
-    char *ptr = readBuffer.reserve(data.size());
-    memcpy(ptr, data.constData(), data.size());
 
     if (cacheEnabled && !cacheSaveDevice) {
         // save the meta data
         QNetworkCacheMetaData metaData;
         metaData.setUrl(url);
         metaData = backend->fetchCacheMetaData(metaData);
+
+        // save the redirect request also in the cache
+        QVariant redirectionTarget = q->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirectionTarget.isValid()) {
+            QNetworkCacheMetaData::AttributesMap attributes = metaData.attributes();
+            attributes.insert(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
+            metaData.setAttributes(attributes);
+        }
+
         cacheSaveDevice = networkCache->prepare(metaData);
+
         if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
             if (cacheSaveDevice && !cacheSaveDevice->isOpen())
                 qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
@@ -414,10 +424,19 @@ void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
         }
     }
 
-    if (cacheSaveDevice)
-        cacheSaveDevice->write(data);
+    qint64 bytesWritten = 0;
+    for (int i = 0; i < data.bufferCount(); i++) {
+        QByteArray item = data[i];
 
-    bytesDownloaded += data.size();
+        if (cacheSaveDevice)
+            cacheSaveDevice->write(item.constData(), item.size());
+        readBuffer.append(item);
+
+        bytesWritten += item.size();
+    }
+    data.clear();
+
+    bytesDownloaded += bytesWritten;
     lastBytesDownloaded = bytesDownloaded;
 
     QPointer<QNetworkReplyImpl> qq = q;
@@ -426,6 +445,8 @@ void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
     pauseNotificationHandling();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+    // important: At the point of this readyRead(), the data parameter list must be empty,
+    // else implicit sharing will trigger memcpy when the user is reading data!
     emit q->readyRead();
 
     // hopefully we haven't been deleted here
@@ -462,8 +483,8 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 void QNetworkReplyImplPrivate::finished()
 {
     Q_Q(QNetworkReplyImpl);
-    Q_ASSERT_X(state != Finished, "QNetworkReplyImpl",
-               "Backend called finished/finishedWithError more than once");
+    if (state == Finished || state == Aborted)
+        return;
 
     state = Finished;
     pendingNotifications.clear();
@@ -531,6 +552,11 @@ void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
+bool QNetworkReplyImplPrivate::isFinished() const
+{
+    return (state == Finished || state == Aborted);
+}
+
 QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)
     : QNetworkReply(*new QNetworkReplyImplPrivate, parent)
 {
@@ -596,14 +622,14 @@ void QNetworkReplyImpl::close()
 */
 qint64 QNetworkReplyImpl::bytesAvailable() const
 {
-    return QNetworkReply::bytesAvailable() + d_func()->readBuffer.size();
+    return QNetworkReply::bytesAvailable() + d_func()->readBuffer.byteAmount();
 }
 
 void QNetworkReplyImpl::setReadBufferSize(qint64 size)
 {
     Q_D(QNetworkReplyImpl);
     if (size > d->readBufferMaxSize &&
-        size == d->readBuffer.size())
+        size > d->readBuffer.byteAmount())
         d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
 
     QNetworkReply::setReadBufferSize(size);
@@ -633,6 +659,12 @@ void QNetworkReplyImpl::ignoreSslErrors()
         d->backend->ignoreSslErrors();
 }
 
+void QNetworkReplyImpl::ignoreSslErrorsImplementation(const QList<QSslError> &errors)
+{
+    Q_D(QNetworkReplyImpl);
+    if (d->backend)
+        d->backend->ignoreSslErrors(errors);
+}
 #endif  // QT_NO_OPENSSL
 
 /*!
@@ -651,7 +683,7 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
         return 1;
     }
 
-    maxlen = qMin<qint64>(maxlen, d->readBuffer.size());
+    maxlen = qMin<qint64>(maxlen, d->readBuffer.byteAmount());
     return d->readBuffer.read(data, maxlen);
 }
 

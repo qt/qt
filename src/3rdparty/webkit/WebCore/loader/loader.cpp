@@ -176,6 +176,35 @@ void Loader::resumePendingRequests()
         scheduleServePendingRequests();
 }
 
+void Loader::nonCacheRequestInFlight(const KURL& url)
+{
+    if (!url.protocolInHTTPFamily())
+        return;
+    
+    AtomicString hostName = url.host();
+    RefPtr<Host> host = m_hosts.get(hostName.impl());
+    if (!host) {
+        host = Host::create(hostName, maxRequestsInFlightPerHost);
+        m_hosts.add(hostName.impl(), host);
+    }
+
+    host->nonCacheRequestInFlight();
+}
+
+void Loader::nonCacheRequestComplete(const KURL& url)
+{
+    if (!url.protocolInHTTPFamily())
+        return;
+    
+    AtomicString hostName = url.host();
+    RefPtr<Host> host = m_hosts.get(hostName.impl());
+    ASSERT(host);
+    if (!host)
+        return;
+
+    host->nonCacheRequestComplete();
+}
+
 void Loader::cancelRequests(DocLoader* docLoader)
 {
     docLoader->clearPendingPreloads();
@@ -204,6 +233,7 @@ Loader::Host::Host(const AtomicString& name, unsigned maxRequestsInFlight)
     : m_name(name)
     , m_maxRequestsInFlight(maxRequestsInFlight)
     , m_numResourcesProcessing(0)
+    , m_nonCachedRequestsInFlight(0)
 {
 }
 
@@ -219,6 +249,17 @@ void Loader::Host::addRequest(Request* request, Priority priority)
     m_requestsPending[priority].append(request);
 }
     
+void Loader::Host::nonCacheRequestInFlight()
+{
+    ++m_nonCachedRequestsInFlight;
+}
+
+void Loader::Host::nonCacheRequestComplete()
+{
+    --m_nonCachedRequestsInFlight;
+    ASSERT(m_nonCachedRequestsInFlight >= 0);
+}
+
 bool Loader::Host::hasRequests() const
 {
     if (!m_requestsLoading.isEmpty())
@@ -246,11 +287,8 @@ void Loader::Host::servePendingRequests(RequestQueue& requestsPending, bool& ser
         Request* request = requestsPending.first();
         DocLoader* docLoader = request->docLoader();
         bool resourceIsCacheValidator = request->cachedResource()->isCacheValidator();
-        // If the document is fully parsed and there are no pending stylesheets there won't be any more 
-        // resources that we would want to push to the front of the queue. Just hand off the remaining resources
-        // to the networking layer.
-        bool parsedAndStylesheetsKnown = !docLoader->doc()->parsing() && docLoader->doc()->haveStylesheetsLoaded();
-        if (!parsedAndStylesheetsKnown && !resourceIsCacheValidator && m_requestsLoading.size() >= m_maxRequestsInFlight) {
+
+        if (m_requestsLoading.size() + m_nonCachedRequestsInFlight >= m_maxRequestsInFlight) {
             serveLowerPriority = false;
             return;
         }

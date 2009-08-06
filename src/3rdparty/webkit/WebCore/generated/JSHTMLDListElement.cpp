@@ -39,7 +39,7 @@ static const HashTableValue JSHTMLDListElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDListElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDListElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLDListElementTableValues, 0 };
 #else
@@ -53,19 +53,19 @@ static const HashTableValue JSHTMLDListElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDListElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDListElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDListElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLDListElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLDListElementConstructor : public DOMObject {
+class JSHTMLDListElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLDListElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLDListElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLDListElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLDListElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDListElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDListElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -91,7 +91,7 @@ static const HashTableValue JSHTMLDListElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDListElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDListElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDListElementPrototypeTableValues, 0 };
 #else
@@ -107,8 +107,8 @@ JSObject* JSHTMLDListElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLDListElement::s_info = { "HTMLDListElement", &JSHTMLElement::s_info, &JSHTMLDListElementTable, 0 };
 
-JSHTMLDListElement::JSHTMLDListElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLDListElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLDListElement::JSHTMLDListElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDListElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -124,14 +124,16 @@ bool JSHTMLDListElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLDListElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDListElement* castedThis = static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDListElement* imp = static_cast<HTMLDListElement*>(static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDListElement* imp = static_cast<HTMLDListElement*>(castedThis->impl());
     return jsBoolean(imp->compact());
 }
 
 JSValue jsHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLDListElement* domObject = static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()));
+    return JSHTMLDListElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDListElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -144,9 +146,9 @@ void setJSHTMLDListElementCompact(ExecState* exec, JSObject* thisObject, JSValue
     imp->setCompact(value.toBoolean(exec));
 }
 
-JSValue JSHTMLDListElement::getConstructor(ExecState* exec)
+JSValue JSHTMLDListElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLDListElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLDListElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

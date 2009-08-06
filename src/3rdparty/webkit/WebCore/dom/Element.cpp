@@ -33,7 +33,6 @@
 #include "ClientRect.h"
 #include "ClientRectList.h"
 #include "Document.h"
-#include "Editor.h"
 #include "ElementRareData.h"
 #include "ExceptionCode.h"
 #include "FocusController.h"
@@ -45,9 +44,7 @@
 #include "NodeList.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
-#include "PlatformString.h"
-#include "RenderBlock.h"
-#include "SelectionController.h"
+#include "RenderView.h"
 #include "TextIterator.h"
 #include "XMLNames.h"
 
@@ -382,8 +379,10 @@ int Element::clientWidth()
     bool inCompatMode = document()->inCompatMode();
     if ((!inCompatMode && document()->documentElement() == this) ||
         (inCompatMode && isHTMLElement() && document()->body() == this)) {
-        if (FrameView* view = document()->view())
-            return adjustForAbsoluteZoom(view->layoutWidth(), document()->renderer());
+        if (FrameView* view = document()->view()) {
+            if (RenderView* renderView = document()->renderView())
+                return adjustForAbsoluteZoom(view->layoutWidth(), renderView);
+        }
     }
     
     if (RenderBox* rend = renderBox())
@@ -401,8 +400,10 @@ int Element::clientHeight()
 
     if ((!inCompatMode && document()->documentElement() == this) ||
         (inCompatMode && isHTMLElement() && document()->body() == this)) {
-        if (FrameView* view = document()->view())
-            return adjustForAbsoluteZoom(view->layoutHeight(), document()->renderer());
+        if (FrameView* view = document()->view()) {
+            if (RenderView* renderView = document()->renderView())
+                return adjustForAbsoluteZoom(view->layoutHeight(), renderView);
+        }
     }
     
     if (RenderBox* rend = renderBox())
@@ -590,6 +591,12 @@ PassRefPtr<Attribute> Element::createAttribute(const QualifiedName& name, const 
 
 void Element::attributeChanged(Attribute* attr, bool)
 {
+    recalcStyleIfNeededAfterAttributeChanged(attr);
+    updateAfterAttributeChanged(attr);
+}
+
+void Element::updateAfterAttributeChanged(Attribute* attr)
+{
     if (!document()->axObjectCache()->accessibilityEnabled())
         return;
 
@@ -602,7 +609,13 @@ void Element::attributeChanged(Attribute* attr, bool)
         document()->axObjectCache()->handleAriaRoleChanged(renderer());
     }
 }
-
+    
+void Element::recalcStyleIfNeededAfterAttributeChanged(Attribute* attr)
+{
+    if (document()->attached() && document()->styleSelector()->hasSelectorForAttribute(attr->name().localName()))
+        setNeedsStyleRecalc();
+}
+        
 void Element::setAttributeMap(PassRefPtr<NamedNodeMap> list)
 {
     document()->incDOMTreeVersion();
@@ -761,6 +774,34 @@ void Element::detach()
     ContainerNode::detach();
 }
 
+bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle)
+{
+    ASSERT(currentStyle = renderStyle());
+
+    if (!renderer() || !currentStyle)
+        return false;
+
+    RenderStyle::PseudoStyleCache pseudoStyleCache;
+    currentStyle->getPseudoStyleCache(pseudoStyleCache);
+    size_t cacheSize = pseudoStyleCache.size();
+    for (size_t i = 0; i < cacheSize; ++i) {
+        RefPtr<RenderStyle> newPseudoStyle;
+        PseudoId pseudoId = pseudoStyleCache[i]->styleType();
+        if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
+            newPseudoStyle = renderer()->uncachedFirstLineStyle(newStyle);
+        else
+            newPseudoStyle = renderer()->getUncachedPseudoStyle(pseudoId, newStyle, newStyle);
+
+        if (*newPseudoStyle != *pseudoStyleCache[i]) {
+            if (pseudoId < FIRST_INTERNAL_PSEUDOID)
+                newStyle->setHasPseudoStyle(pseudoId);
+            newStyle->addCachedPseudoStyle(newPseudoStyle);
+            return true;
+        }
+    }
+    return false;
+}
+
 void Element::recalcStyle(StyleChange change)
 {
     RenderStyle* currentStyle = renderStyle();
@@ -811,7 +852,7 @@ void Element::recalcStyle(StyleChange change)
                 newStyle->setChildrenAffectedByDirectAdjacentRules();
         }
 
-        if (ch != NoChange) {
+        if (ch != NoChange || pseudoStyleCacheIsInvalid(currentStyle, newStyle.get())) {
             setRenderStyle(newStyle);
         } else if (needsStyleRecalc() && (styleChangeType() != AnimationStyleChange) && (document()->usesSiblingRules() || document()->usesDescendantRules())) {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
@@ -826,7 +867,11 @@ void Element::recalcStyle(StyleChange change)
              setRenderStyle(newStyle);
 
         if (change != Force) {
-            if ((document()->usesDescendantRules() || hasPositionalRules) && styleChangeType() >= FullStyleChange)
+            // If "rem" units are used anywhere in the document, and if the document element's font size changes, then go ahead and force font updating
+            // all the way down the tree.  This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
+            if (document()->usesRemUnits() && ch != NoChange && currentStyle && newStyle && currentStyle->fontSize() != newStyle->fontSize() && document()->documentElement() == this)
+                change = Force;
+            else if ((document()->usesDescendantRules() || hasPositionalRules) && styleChangeType() >= FullStyleChange)
                 change = Force;
             else
                 change = ch;
@@ -981,7 +1026,7 @@ void Element::dispatchAttrAdditionEvent(Attribute*)
         return;
     ExceptionCode ec = 0;
     dispatchEvent(new MutationEvent(DOMAttrModifiedEvent, true, false, attr, attr->value(),
-        attr->value(),document()->attrName(attr->id()), MutationEvent::ADDITION), ec);
+        attr->value(), document()->attrName(attr->id()), MutationEvent::ADDITION), ec);
 #endif
 }
 

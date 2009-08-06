@@ -77,7 +77,7 @@ protected:
                                      QScriptDebuggerCommandSchedulerInterface *scheduler);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerConsoleCommandJob)
+    Q_DECLARE_PRIVATE(QScriptDebuggerConsoleCommandJob)
     Q_DISABLE_COPY(QScriptDebuggerConsoleCommandJob)
 };
 

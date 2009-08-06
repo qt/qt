@@ -458,7 +458,8 @@ OSStatus qt_mac_menu_event(EventHandlerCallRef er, EventRef event, void *)
 
                         int merged = 0;
                         const QMenuPrivate::QMacMenuPrivate *mac_menu = qmenu->d_func()->mac_menu;
-                        for(int i = 0; i < mac_menu->actionItems.size(); ++i) {
+                        const int ActionItemsCount = mac_menu->actionItems.size();
+                        for(int i = 0; i < ActionItemsCount; ++i) {
                             QMacMenuAction *action = mac_menu->actionItems.at(i);
                             if (action->action->isSeparator()) {
                                 bool hide = false;
@@ -972,7 +973,7 @@ void Q_GUI_EXPORT qt_mac_set_menubar_merge(bool b) { qt_mac_no_menubar_merge = !
 /*****************************************************************************
   QMenu bindings
  *****************************************************************************/
-QMenuPrivate::QMacMenuPrivate::QMacMenuPrivate(QMenuPrivate *menu) : menu(0), qmenu(menu)
+QMenuPrivate::QMacMenuPrivate::QMacMenuPrivate() : menu(0)
 {
 }
 
@@ -1300,61 +1301,22 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
 #else
     int itemIndex = [menu indexOfItem:item];
     Q_ASSERT(itemIndex != -1);
-
-    // Separator handling: Menu items and separators can be added to a QMenu in
-    // any order (for example, add all the separators first and then "fill inn" 
-    // the menu items). Create NSMenuItem seperatorItems for the Qt separators, 
-    // and make sure that there are no double separators and no seprators 
-    // at the top or bottom of the menu.
-    bool itemIsSeparator = action->action->isSeparator();
-    bool previousItemIsSeparator = false;
-    if (itemIndex > 0) {
-        if ([[menu itemAtIndex : itemIndex - 1] isSeparatorItem])
-            previousItemIsSeparator = true;
-    }
-    bool nexItemIsSeparator = false;
-    if (itemIndex > 0 && itemIndex < [menu numberOfItems] -1) {
-        if ([[menu itemAtIndex : itemIndex + 1] isSeparatorItem])
-            nexItemIsSeparator = true;
-    }
-    bool itemIsAtBottomOfMenu = (itemIndex == [menu numberOfItems]  - 1);
-    bool itemIsAtTopOfMenu = (itemIndex == 0);
-        
-
-    if (itemIsSeparator) {
-        // Create separators items for actions that are now separators
+    if (action->action->isSeparator()) {
         action->menuItem = [NSMenuItem separatorItem];
         [action->menuItem retain];
-
-        // Hide duplicate/top/bottom separators.
-        if (qmenu->collapsibleSeparators && (previousItemIsSeparator || itemIsAtBottomOfMenu || itemIsAtTopOfMenu)) {
-            [action->menuItem setHidden : true];
-        }
-
         [menu insertItem: action->menuItem atIndex:itemIndex];
         [menu removeItem:item];
         [item release];
         item = action->menuItem;
         return;
-    } else {
-        // Create standard menu items for actions that are no longer separators
-        if ([item isSeparatorItem]) {
-            action->menuItem = createNSMenuItem(action->action->text());
-            [menu insertItem:action->menuItem atIndex:itemIndex];
-            [menu removeItem:item];
-            [item release];
-            item = action->menuItem;
-        }
-
-        // Show separators that should now be visible since a non-separator
-        // item (the current item) was added.
-        if (previousItemIsSeparator) {
-            [[menu itemAtIndex : itemIndex - 1] setHidden : false];
-        } else if (itemIsAtTopOfMenu && nexItemIsSeparator) {
-            [[menu itemAtIndex : itemIndex + 1] setHidden : false];
-        }
+    } else if ([item isSeparatorItem]) {
+        // I'm no longer a separator...
+        action->menuItem = createNSMenuItem(action->action->text());
+        [menu insertItem:action->menuItem atIndex:itemIndex];
+        [menu removeItem:item];
+        [item release];
+        item = action->menuItem;
     }
-
 #endif
 
     //find text (and accel)
@@ -1376,8 +1338,9 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
             accel = qt_mac_menu_merge_accel(action);
         }
     }
+    // Show multiple key sequences as part of the menu text.
     if (accel.count() > 1)
-        text += QLatin1String(" (****)"); //just to denote a multi stroke shortcut
+        text += QLatin1String(" (") + accel.toString(QKeySequence::NativeText) + QLatin1String(")");
 
     QString finalString = qt_mac_removeMnemonics(text);
 
@@ -1459,14 +1422,15 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         data.whichData |= kMenuItemDataCmdKey;
         data.whichData |= kMenuItemDataCmdKeyModifiers;
         data.whichData |= kMenuItemDataCmdKeyGlyph;
-        if (!accel.isEmpty()) {
+        if (accel.count() == 1) {
             qt_mac_get_accel(accel[0], (quint32*)&data.cmdKeyModifiers, (quint32*)&data.cmdKeyGlyph);
             if (data.cmdKeyGlyph == 0)
                 data.cmdKey = (UniChar)accel[0];
         }
 #else
         [item setSubmenu:0];
-        if (!accel.isEmpty()) {
+        // No key equivalent set for multiple key QKeySequence.
+        if (accel.count() == 1) {
             [item setKeyEquivalent:keySequenceToKeyEqivalent(accel)];
             [item setKeyEquivalentModifierMask:keySequenceModifierMask(accel)];
         } else {
@@ -1538,7 +1502,7 @@ QMenuPrivate::macMenu(OSMenuRef merge)
     if (mac_menu && mac_menu->menu)
         return mac_menu->menu;
     if (!mac_menu)
-        mac_menu = new QMacMenuPrivate(this);
+        mac_menu = new QMacMenuPrivate;
     mac_menu->menu = qt_mac_create_menu(q);
     if (merge) {
 #ifndef QT_MAC_USE_COCOA
@@ -1550,8 +1514,27 @@ QMenuPrivate::macMenu(OSMenuRef merge)
     QList<QAction*> items = q->actions();
     for(int i = 0; i < items.count(); i++)
         mac_menu->addAction(items[i], 0, this);
+    syncSeparatorsCollapsible(collapsibleSeparators);
     return mac_menu->menu;
 }
+
+/*!
+  \internal
+*/
+void
+QMenuPrivate::syncSeparatorsCollapsible(bool collapse)
+{
+#ifndef QT_MAC_USE_COCOA
+    if (collapse)
+        ChangeMenuAttributes(mac_menu->menu, kMenuAttrCondenseSeparators, 0);
+    else
+        ChangeMenuAttributes(mac_menu->menu, 0, kMenuAttrCondenseSeparators);
+#else
+    qt_mac_menu_collapseSeparators(mac_menu->menu, collapse);
+#endif
+}
+
+
 
 /*!
   \internal

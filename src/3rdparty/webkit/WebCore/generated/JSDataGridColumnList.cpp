@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "JSDataGridColumnList.h"
 
 #include "AtomicString.h"
@@ -48,7 +51,7 @@ static const HashTableValue JSDataGridColumnListTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnListTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSDataGridColumnListTableValues, 0 };
 #else
@@ -62,19 +65,19 @@ static const HashTableValue JSDataGridColumnListConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnListConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnListConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDataGridColumnListConstructorTableValues, 0 };
 #else
     { 1, 0, JSDataGridColumnListConstructorTableValues, 0 };
 #endif
 
-class JSDataGridColumnListConstructor : public DOMObject {
+class JSDataGridColumnListConstructor : public DOMConstructorObject {
 public:
-    JSDataGridColumnListConstructor(ExecState* exec)
-        : DOMObject(JSDataGridColumnListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSDataGridColumnListConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSDataGridColumnListConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSDataGridColumnListPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSDataGridColumnListPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -105,7 +108,7 @@ static const HashTableValue JSDataGridColumnListPrototypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSDataGridColumnListPrototypeTableValues, 0 };
 #else
@@ -126,8 +129,8 @@ bool JSDataGridColumnListPrototype::getOwnPropertySlot(ExecState* exec, const Id
 
 const ClassInfo JSDataGridColumnList::s_info = { "DataGridColumnList", 0, &JSDataGridColumnListTable, 0 };
 
-JSDataGridColumnList::JSDataGridColumnList(PassRefPtr<Structure> structure, PassRefPtr<DataGridColumnList> impl)
-    : DOMObject(structure)
+JSDataGridColumnList::JSDataGridColumnList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DataGridColumnList> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -173,28 +176,32 @@ bool JSDataGridColumnList::getOwnPropertySlot(ExecState* exec, unsigned property
 
 JSValue jsDataGridColumnListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumnList* castedThis = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumnList* imp = static_cast<DataGridColumnList*>(static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()))->impl());
+    DataGridColumnList* imp = static_cast<DataGridColumnList*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsDataGridColumnListSortColumn(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumnList* castedThis = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumnList* imp = static_cast<DataGridColumnList*>(static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->sortColumn()));
+    DataGridColumnList* imp = static_cast<DataGridColumnList*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sortColumn()));
 }
 
 JSValue jsDataGridColumnListPrimaryColumn(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumnList* castedThis = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumnList* imp = static_cast<DataGridColumnList*>(static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->primaryColumn()));
+    DataGridColumnList* imp = static_cast<DataGridColumnList*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->primaryColumn()));
 }
 
 JSValue jsDataGridColumnListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSDataGridColumnList* domObject = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
+    return JSDataGridColumnList::getConstructor(exec, domObject->globalObject());
 }
 void JSDataGridColumnList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
@@ -203,9 +210,9 @@ void JSDataGridColumnList::getPropertyNames(ExecState* exec, PropertyNameArray& 
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSDataGridColumnList::getConstructor(ExecState* exec)
+JSValue JSDataGridColumnList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSDataGridColumnListConstructor>(exec);
+    return getDOMConstructor<JSDataGridColumnListConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsDataGridColumnListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -222,7 +229,7 @@ JSValue JSC_HOST_CALL jsDataGridColumnListPrototypeFunctionItem(ExecState* exec,
     }
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->item(index)));
     return result;
 }
 
@@ -240,7 +247,7 @@ JSValue JSC_HOST_CALL jsDataGridColumnListPrototypeFunctionAdd(ExecState* exec, 
     unsigned short sortable = args.at(4).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->add(id, label, type, primary, sortable)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->add(id, label, type, primary, sortable)));
     return result;
 }
 
@@ -287,11 +294,11 @@ JSValue JSC_HOST_CALL jsDataGridColumnListPrototypeFunctionClear(ExecState* exec
 JSValue JSDataGridColumnList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSDataGridColumnList* thisObj = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
-    return toJS(exec, static_cast<DataGridColumnList*>(thisObj->impl())->item(slot.index()));
+    return toJS(exec, thisObj->globalObject(), static_cast<DataGridColumnList*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValue toJS(JSC::ExecState* exec, DataGridColumnList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DataGridColumnList* object)
 {
-    return getDOMObjectWrapper<JSDataGridColumnList>(exec, object);
+    return getDOMObjectWrapper<JSDataGridColumnList>(exec, globalObject, object);
 }
 DataGridColumnList* toDataGridColumnList(JSC::JSValue value)
 {
@@ -299,3 +306,5 @@ DataGridColumnList* toDataGridColumnList(JSC::JSValue value)
 }
 
 }
+
+#endif // ENABLE(DATAGRID)

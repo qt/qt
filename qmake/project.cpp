@@ -704,10 +704,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             concat << base_concat + QDir::separator() + "mac";
             concat << base_concat + QDir::separator() + "mac9";
             break;
-        case Option::TARG_QNX6_MODE: //also a unix
-            concat << base_concat + QDir::separator() + "qnx6";
-            concat << base_concat + QDir::separator() + "unix";
-            break;
         }
         concat << base_concat;
     }
@@ -1706,12 +1702,10 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
         return true;
 
     //mkspecs
-    if((Option::target_mode == Option::TARG_MACX_MODE || Option::target_mode == Option::TARG_QNX6_MODE ||
+    if((Option::target_mode == Option::TARG_MACX_MODE ||
         Option::target_mode == Option::TARG_UNIX_MODE) && x == "unix")
         return !isForSymbian();
     else if(Option::target_mode == Option::TARG_MACX_MODE && x == "macx")
-        return !isForSymbian();
-    else if(Option::target_mode == Option::TARG_QNX6_MODE && x == "qnx6")
         return !isForSymbian();
     else if(Option::target_mode == Option::TARG_MAC9_MODE && x == "mac9")
         return !isForSymbian();
@@ -3260,9 +3254,9 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
             ret = "Windows";
         } else if(type == "name") {
             DWORD name_length = 1024;
-            TCHAR name[1024];
-            if(GetComputerName(name, &name_length))
-                ret = QString::fromUtf16((ushort*)name, name_length);
+            wchar_t name[1024];
+            if (GetComputerName(name, &name_length))
+                ret = QString::fromWCharArray(name);
         } else if(type == "version" || type == "version_string") {
             QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
             if(type == "version")

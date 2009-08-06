@@ -117,11 +117,7 @@ bool QFileInfoPrivate::hasAccess(Access access) const
     if (access == ExecuteAccess)
         return getFileFlags(QAbstractFileEngine::ExeUserPerm);
 
-    QT_WA( {
-        return ::_waccess((TCHAR *)QFSFileEnginePrivate::longFileName(data->fileName).utf16(), mode) == 0;
-    } , {
-        return QT_ACCESS(QFSFileEnginePrivate::win95Name(data->fileName), mode) == 0;
-    } );
+    return ::_waccess((wchar_t*)QFSFileEnginePrivate::longFileName(data->fileName).utf16(), mode) == 0;
 #endif
     return false;
 }

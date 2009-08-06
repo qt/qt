@@ -193,6 +193,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_paintingPhase(GraphicsLayerPaintAllMask)
+    , m_contentsOrientation(CompositingCoordinatesTopDown)
     , m_parent(0)
 #ifndef NDEBUG
     , m_repaintCount(0)
@@ -447,6 +448,31 @@ void GraphicsLayer::setZPosition(float position)
     m_zPosition = position;
 }
 #endif
+
+float GraphicsLayer::accumulatedOpacity() const
+{
+    if (!preserves3D())
+        return 1;
+        
+    return m_opacity * (parent() ? parent()->accumulatedOpacity() : 1);
+}
+
+void GraphicsLayer::distributeOpacity(float accumulatedOpacity)
+{
+    // If this is a transform layer we need to distribute our opacity to all our children
+    
+    // Incoming accumulatedOpacity is the contribution from our parent(s). We mutiply this by our own
+    // opacity to get the total contribution
+    accumulatedOpacity *= m_opacity;
+    
+    setOpacityInternal(accumulatedOpacity);
+    
+    if (preserves3D()) {
+        size_t numChildren = children().size();
+        for (size_t i = 0; i < numChildren; ++i)
+            children()[i]->distributeOpacity(accumulatedOpacity);
+    }
+}
 
 static void writeIndent(TextStream& ts, int indent)
 {

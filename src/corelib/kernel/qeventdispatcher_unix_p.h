@@ -56,55 +56,20 @@
 #include "QtCore/qabstracteventdispatcher.h"
 #include "QtCore/qlist.h"
 #include "private/qabstracteventdispatcher_p.h"
+#include "private/qcore_unix_p.h"
 #include "private/qpodlist_p.h"
 #include "QtCore/qvarlengtharray.h"
 
-#include <sys/types.h>
-#include <sys/time.h>
-#if !defined(Q_OS_HPUX) || defined(__ia64)
-#include <sys/select.h>
+#if defined(Q_OS_VXWORKS)
+#  include <sys/times.h>
+#else
+#  include <sys/time.h>
+#  if !defined(Q_OS_HPUX) || defined(__ia64)
+#    include <sys/select.h>
+#  endif
 #endif
-#include <unistd.h>
 
 QT_BEGIN_NAMESPACE
-#if !defined(_POSIX_MONOTONIC_CLOCK)
-#  define _POSIX_MONOTONIC_CLOCK -1
-#endif
-
-// Internal operator functions for timevals
-inline bool operator<(const timeval &t1, const timeval &t2)
-{ return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_usec < t2.tv_usec); }
-inline bool operator==(const timeval &t1, const timeval &t2)
-{ return t1.tv_sec == t2.tv_sec && t1.tv_usec == t2.tv_usec; }
-inline timeval &operator+=(timeval &t1, const timeval &t2)
-{
-    t1.tv_sec += t2.tv_sec;
-    if ((t1.tv_usec += t2.tv_usec) >= 1000000l) {
-        ++t1.tv_sec;
-        t1.tv_usec -= 1000000l;
-    }
-    return t1;
-}
-inline timeval operator+(const timeval &t1, const timeval &t2)
-{
-    timeval tmp;
-    tmp.tv_sec = t1.tv_sec + t2.tv_sec;
-    if ((tmp.tv_usec = t1.tv_usec + t2.tv_usec) >= 1000000l) {
-        ++tmp.tv_sec;
-        tmp.tv_usec -= 1000000l;
-    }
-    return tmp;
-}
-inline timeval operator-(const timeval &t1, const timeval &t2)
-{
-    timeval tmp;
-    tmp.tv_sec = t1.tv_sec - t2.tv_sec;
-    if ((tmp.tv_usec = t1.tv_usec - t2.tv_usec) < 0l) {
-        --tmp.tv_sec;
-        tmp.tv_usec += 1000000l;
-    }
-    return tmp;
-}
 
 // internal timer info
 struct QTimerInfo {
@@ -117,9 +82,7 @@ struct QTimerInfo {
 
 class QTimerInfoList : public QList<QTimerInfo*>
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
-    bool useMonotonicTimers;
-
+#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
     timeval previousTime;
     clock_t previousTicks;
     int ticksPerSecond;
@@ -133,8 +96,6 @@ class QTimerInfoList : public QList<QTimerInfo*>
 
 public:
     QTimerInfoList();
-
-    void getTime(timeval &t);
 
     timeval currentTime;
     timeval updateCurrentTime();
@@ -181,7 +142,7 @@ class QEventDispatcherUNIXPrivate;
 class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcher
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherUNIX)
+    Q_DECLARE_PRIVATE(QEventDispatcherUNIX)
 
 public:
     explicit QEventDispatcherUNIX(QObject *parent = 0);

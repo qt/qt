@@ -70,7 +70,7 @@ class QWSGLWindowSurfacePrivate;
 
 class Q_OPENGL_EXPORT QWSGLWindowSurface : public QWSWindowSurface
 {
-    Q_DECLARE_SCOPED_PRIVATE(QWSGLWindowSurface)
+    Q_DECLARE_PRIVATE(QWSGLWindowSurface)
 
 public:
     QWSGLWindowSurface(QWidget *widget);

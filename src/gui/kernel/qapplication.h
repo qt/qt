@@ -75,7 +75,6 @@ class QStyle;
 class QEventLoop;
 class QIcon;
 class QInputContext;
-class QGestureRecognizer;
 template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
@@ -114,7 +113,6 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
 #endif
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
-    Q_PROPERTY(int eventDeliveryDelayForGestures READ eventDeliveryDelayForGestures WRITE setEventDeliveryDelayForGestures)
 
 public:
     enum Type { Tty, GuiClient, GuiServer };
@@ -280,12 +278,6 @@ public:
     static bool keypadNavigationEnabled();
 #endif
 
-    void addGestureRecognizer(QGestureRecognizer *recognizer);
-    void removeGestureRecognizer(QGestureRecognizer *recognizer);
-
-    void setEventDeliveryDelayForGestures(int delay);
-    int eventDeliveryDelayForGestures();
-
 Q_SIGNALS:
     void lastWindowClosed();
     void focusChanged(QWidget *old, QWidget *now);
@@ -371,7 +363,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QApplication)
-    Q_DECLARE_SCOPED_PRIVATE(QApplication)
+    Q_DECLARE_PRIVATE(QApplication)
 
     friend class QGraphicsWidget;
     friend class QGraphicsScene;
@@ -396,7 +388,6 @@ private:
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;
 #endif
-    friend class QGestureManager;
 
 #if defined(Q_WS_WIN)
     friend QApplicationPrivate* getQApplicationPrivateInternal();

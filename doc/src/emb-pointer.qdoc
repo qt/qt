@@ -64,9 +64,10 @@
     \section1 Available Drivers
 
     \l{Qt for Embedded Linux} provides ready-made drivers for the MouseMan,
-    IntelliMouse, Microsoft, NEC Vr41XX, Linux Touch Panel and Yopy
-    protocols as well as the universal touch screen library,
-    tslib. Run the \c configure script to list the available drivers:
+    IntelliMouse, Microsoft and Linux Touch Panel protocols, for the
+    standard Linux Input Subsystem as well as the universal touch screen
+    library, tslib.  Run the \c configure script to list the available
+    drivers:
 
     \if defined(QTOPIA_PHONE)
 
@@ -125,7 +126,7 @@
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 4
 
     The valid values for the \c <driver> argument are \c MouseMan, \c
-    IntelliMouse, \c Microsoft, \c VR41xx, \c LinuxTP, \c Yopy, \c
+    IntelliMouse, \c Microsoft, \c LinuxTP, \c LinuxInput, \c
     Tslib and \l {QMouseDriverPlugin::keys()}{keys} identifying custom
     drivers, and the driver specific options are typically a device,
     e.g., \c /dev/mouse for mouse devices and \c /dev/ts for touch
@@ -136,14 +137,6 @@
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 5
 
     Input will be read from all specified drivers.
-
-    Note that the \c Vr41xx driver also accepts two optional
-    arguments: \c press=<value> defining a mouse click (the default
-    value is 750) and \c filter=<value> specifying the length of the
-    filter used to eliminate noise (the default length is 3). For
-    example:
-
-    \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 6
 
     \table
     \header \o The Tslib Mouse Driver

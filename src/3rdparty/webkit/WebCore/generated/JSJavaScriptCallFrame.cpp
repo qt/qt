@@ -52,7 +52,7 @@ static const HashTableValue JSJavaScriptCallFrameTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSJavaScriptCallFrameTable =
+static JSC_CONST_HASHTABLE HashTable JSJavaScriptCallFrameTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSJavaScriptCallFrameTableValues, 0 };
 #else
@@ -67,7 +67,7 @@ static const HashTableValue JSJavaScriptCallFramePrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSJavaScriptCallFramePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSJavaScriptCallFramePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSJavaScriptCallFramePrototypeTableValues, 0 };
 #else
@@ -88,8 +88,8 @@ bool JSJavaScriptCallFramePrototype::getOwnPropertySlot(ExecState* exec, const I
 
 const ClassInfo JSJavaScriptCallFrame::s_info = { "JavaScriptCallFrame", 0, &JSJavaScriptCallFrameTable, 0 };
 
-JSJavaScriptCallFrame::JSJavaScriptCallFrame(PassRefPtr<Structure> structure, PassRefPtr<JavaScriptCallFrame> impl)
-    : DOMObject(structure)
+JSJavaScriptCallFrame::JSJavaScriptCallFrame(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JavaScriptCallFrame> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -111,45 +111,52 @@ bool JSJavaScriptCallFrame::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsJavaScriptCallFrameCaller(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->caller()));
+    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->caller()));
 }
 
 JSValue jsJavaScriptCallFrameSourceID(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()))->impl());
+    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
     return jsNumber(exec, imp->sourceID());
 }
 
 JSValue jsJavaScriptCallFrameLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()))->impl());
+    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
     return jsNumber(exec, imp->line());
 }
 
 JSValue jsJavaScriptCallFrameScopeChain(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()))->scopeChain(exec);
+    JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
+    return castedThis->scopeChain(exec);
 }
 
 JSValue jsJavaScriptCallFrameThisObject(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()))->thisObject(exec);
+    JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
+    return castedThis->thisObject(exec);
 }
 
 JSValue jsJavaScriptCallFrameFunctionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()))->impl());
+    JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
     return jsString(exec, imp->functionName());
 }
 
 JSValue jsJavaScriptCallFrameType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()))->type(exec);
+    JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
+    return castedThis->type(exec);
 }
 
 JSValue JSC_HOST_CALL jsJavaScriptCallFramePrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -161,9 +168,9 @@ JSValue JSC_HOST_CALL jsJavaScriptCallFramePrototypeFunctionEvaluate(ExecState* 
     return castedThisObj->evaluate(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, JavaScriptCallFrame* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JavaScriptCallFrame* object)
 {
-    return getDOMObjectWrapper<JSJavaScriptCallFrame>(exec, object);
+    return getDOMObjectWrapper<JSJavaScriptCallFrame>(exec, globalObject, object);
 }
 JavaScriptCallFrame* toJavaScriptCallFrame(JSC::JSValue value)
 {

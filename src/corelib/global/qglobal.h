@@ -148,7 +148,7 @@ namespace QT_NAMESPACE {}
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
-     WIN32    - Win32 (Windows 95/98/ME and Windows NT/2000/XP)
+     WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
      WINCE    - WinCE (Windows CE 5.0)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -244,8 +244,6 @@ namespace QT_NAMESPACE {}
 #elif defined(__DGUX__)
 #  define Q_OS_DGUX
 #elif defined(__QNXNTO__)
-#  define Q_OS_QNX6
-#elif defined(__QNX__)
 #  define Q_OS_QNX
 #elif defined(_SEQUENT_)
 #  define Q_OS_DYNIX
@@ -257,6 +255,8 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_UNIXWARE
 #elif defined(__INTEGRITY)
 #  define Q_OS_INTEGRITY
+#elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */
+#  define Q_OS_VXWORKS
 #elif defined(__MAKEDEPEND__)
 #else
 #  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
@@ -285,7 +285,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA)
+#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE)
 #error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
 #endif
 
@@ -317,16 +317,9 @@ namespace QT_NAMESPACE {}
 #  if !defined(MAC_OS_X_VERSION_10_6)
 #       define MAC_OS_X_VERSION_10_6 MAC_OS_X_VERSION_10_5 + 1
 #  endif
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED == MAC_OS_X_VERSION_10_6)
-#    warning "Support for this version of Mac OS X is still preliminary"
-#  endif
 #  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6)
-#    error "This version of Mac OS X is unsupported"
+#    warning "This version of Mac OS X is unsupported"
 #  endif
-#endif
-
-#ifdef QT_MAC_USE_COCOA
-#define QT_MAC_NO_QUICKDRAW 1
 #endif
 
 #ifdef __LSB_VERSION__
@@ -440,25 +433,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
-#  if defined(Q_OS_QNX4)
-/* compiler flags */
-#    define Q_TYPENAME
-#    define Q_NO_BOOL_TYPE
-#    define Q_CANNOT_DELETE_CONSTANT
-#    define mutable
-/* ??? */
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-/* no template classes in QVariant */
-#    define QT_NO_TEMPLATE_VARIANT
-/* Wcc does not fill in functions needed by valuelists, maps, and
-   valuestacks implicitly */
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-/* can we just compare the structures? */
-#    define Q_FULL_TEMPLATE_INSTANTIATION_MEMCMP
-/* these are not useful to our customers */
-#    define QT_NO_QWS_MULTIPROCESS
-#    define QT_NO_QWS_CURSOR
-#  endif
 
 /* Symbian GCCE */
 #elif defined(__GCCE__)
@@ -634,6 +608,13 @@ namespace QT_NAMESPACE {}
 #  elif defined(__ghs)
 #    define Q_CC_GHS
 
+#  elif defined(__DCC__)
+#    define Q_CC_DIAB
+#    undef Q_NO_BOOL_TYPE
+#    if !defined(__bool)
+#      define Q_NO_BOOL_TYPE
+#    endif
+
 /* The UnixWare 7 UDK compiler is based on EDG and does define __EDG__ */
 #  elif defined(__USLC__) && defined(__SCO_VERSION__)
 #    define Q_CC_USLC
@@ -665,6 +646,11 @@ namespace QT_NAMESPACE {}
 #    endif
 #  endif
 
+/* VxWorks' DIAB toolchain has an additional EDG type C++ compiler
+   (see __DCC__ above). This one is for C mode files (__EDG is not defined) */
+#elif defined(_DIAB_TOOL)
+#  define Q_CC_DIAB
+
 /* Never tested! */
 #elif defined(__HIGHC__)
 #  define Q_CC_HIGHC
@@ -676,15 +662,17 @@ namespace QT_NAMESPACE {}
     in which case _BOOL is not defined
         this is the default in 4.2 compatibility mode triggered by -compat=4 */
 #  if __SUNPRO_CC >= 0x500
-#    if __SUNPRO_CC < 0x570
-#      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
-#    endif
+#    define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
    /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
 #    if __SUNPRO_CC >= 0x590
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
+//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
+#    if __SUNPRO_CC < 0x5a0
+#      define Q_NO_TEMPLATE_FRIENDS
 #    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
@@ -724,7 +712,7 @@ namespace QT_NAMESPACE {}
 #      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
 #    endif
 #    if __HP_aCC-0 >= 062000
-#      define Q_DECL_EXPORT     __attribute__((visibility("default"))
+#      define Q_DECL_EXPORT     __attribute__((visibility("default")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
@@ -1152,6 +1140,15 @@ class QDataStream;
 #  define QT_NO_COP
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#  define QT_NO_CRASHHANDLER     // no popen
+#  define QT_NO_PROCESS          // no exec*, no fork
+#  define QT_NO_LPR
+#  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
+#  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
+#  define QT_NO_QWS_MULTIPROCESS // no processes
+#endif
+
 # include <QtCore/qfeatures.h>
 
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
@@ -1220,6 +1217,11 @@ class QDataStream;
 #    else
 #      define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_MULTIMEDIA_LIB)
+#      define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_OPENVG_LIB)
 #      define Q_OPENVG_EXPORT Q_DECL_EXPORT
 #    else
@@ -1264,6 +1266,7 @@ class QDataStream;
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
+#    define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
 #    define Q_OPENVG_EXPORT Q_DECL_IMPORT
 #    define Q_XML_EXPORT Q_DECL_IMPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_IMPORT
@@ -1290,6 +1293,7 @@ class QDataStream;
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
+#    define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
 #    define Q_OPENVG_EXPORT Q_DECL_EXPORT
 #    define Q_XML_EXPORT Q_DECL_EXPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
@@ -1303,6 +1307,7 @@ class QDataStream;
 #    define Q_NETWORK_EXPORT
 #    define Q_SVG_EXPORT
 #    define Q_OPENGL_EXPORT
+#    define Q_MULTIMEDIA_EXPORT
 #    define Q_XML_EXPORT
 #    define Q_XMLPATTERNS_EXPORT
 #    define Q_SCRIPT_EXPORT
@@ -1503,24 +1508,13 @@ inline QT3_SUPPORT bool qSysInfo(int *wordSize, bool *bigEndian)
 
 #if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
 #if defined(QT3_SUPPORT)
-inline QT3_SUPPORT bool qt_winUnicode() { return !(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based); }
+inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
-#ifdef Q_OS_WINCE
-#define QT_WA(uni, ansi) uni
-#define QT_WA_INLINE(uni, ansi) (uni)
-#elif defined(Q_CC_MWERKS)
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) (ansi)
-#elif defined(UNICODE)
-#define QT_WA(uni, ansi) if (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based)) { uni } else { ansi }
+#define QT_WA(unicode, ansi) unicode
+#define QT_WA_INLINE(unicode, ansi) (unicode)
 
-#define QT_WA_INLINE(uni, ansi) (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based) ? uni : ansi)
-#else
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) ansi
-#endif
 #endif /* Q_WS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE
@@ -1665,7 +1659,7 @@ Q_CORE_EXPORT void qBadAlloc();
 template <typename T>
 inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 
-#if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC)
+#if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC) || defined(Q_CC_DIAB)
 #  define Q_FUNC_INFO __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
     /* MSVC 2002 doesn't have __FUNCSIG__ nor can it handle QT_STRINGIFY. */
@@ -2173,7 +2167,7 @@ public:
 
     inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f; }
+    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == f ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\
@@ -2255,6 +2249,17 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
              qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk;           \
              --qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk)
 
+#elif defined(Q_CC_DIAB)
+// VxWorks DIAB generates unresolvable symbols, if container is a function call
+#  define Q_FOREACH(variable,container)                                                             \
+    if(0){}else                                                                                     \
+    for (const QForeachContainerBase &_container_ = qForeachContainerNew(container);                \
+         qForeachContainer(&_container_, (__typeof__(container) *) 0)->condition();       \
+         ++qForeachContainer(&_container_, (__typeof__(container) *) 0)->i)               \
+        for (variable = *qForeachContainer(&_container_, (__typeof__(container) *) 0)->i; \
+             qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk;           \
+             --qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk)
+
 #else
 #  define Q_FOREACH(variable, container) \
     for (const QForeachContainerBase &_container_ = qForeachContainerNew(container); \
@@ -2285,14 +2290,12 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #endif
 #endif
 
-#define Q_DECLARE_PRIVATE(Class) \
-    inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(d_ptr); } \
-    inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(d_ptr); } \
-    friend class Class##Private;
+template <typename T> static inline T *qGetPtrHelper(T *ptr) { return ptr; }
+template <typename Wrapper> static inline typename Wrapper::pointer qGetPtrHelper(const Wrapper &p) { return p.data(); }
 
-#define Q_DECLARE_SCOPED_PRIVATE(Class) \
-    inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(d_ptr.data()); } \
-    inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(d_ptr.data()); } \
+#define Q_DECLARE_PRIVATE(Class) \
+    inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(qGetPtrHelper(d_ptr)); } \
+    inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(qGetPtrHelper(d_ptr)); } \
     friend class Class##Private;
 
 #define Q_DECLARE_PRIVATE_D(Dptr, Class) \
@@ -2314,6 +2317,18 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #define QT_TRANSLATE_NOOP_UTF8(scope, x) (x)
 #define QT_TRANSLATE_NOOP3(scope, x, comment) {x, comment}
 #define QT_TRANSLATE_NOOP3_UTF8(scope, x, comment) {x, comment}
+
+#ifndef QT_NO_TRANSLATION // ### This should enclose the NOOPs above
+
+// Defined in qcoreapplication.cpp
+// The better name qTrId() is reserved for an upcoming function which would
+// return a much more powerful QStringFormatter instead of a QString.
+Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
+
+#define QT_TRID_NOOP(id) id
+
+#endif // QT_NO_TRANSLATION
+
 #define QDOC_PROPERTY(text)
 
 /*
@@ -2440,12 +2455,14 @@ Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
 #define QT_MODULE_DBUS                 0x08000
 #define QT_MODULE_SCRIPTTOOLS          0x10000
 #define QT_MODULE_OPENVG               0x20000
+#define QT_MODULE_MULTIMEDIA           0x40000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
                                  | QT_MODULE_NETWORK \
                                  | QT_MODULE_SQL \
                                  | QT_MODULE_SCRIPT \
+                                 | QT_MODULE_MULTIMEDIA \
                                  | QT_MODULE_XML \
                                  | QT_MODULE_XMLPATTERNS \
                                  | QT_MODULE_TEST \
@@ -2461,6 +2478,7 @@ Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
                                  | QT_MODULE_OPENGL \
                                  | QT_MODULE_OPENVG \
                                  | QT_MODULE_SQL \
+                                 | QT_MODULE_MULTIMEDIA \
                                  | QT_MODULE_XML \
                                  | QT_MODULE_XMLPATTERNS \
                                  | QT_MODULE_SCRIPT \
@@ -2512,6 +2530,9 @@ QT_LICENSED_MODULE(OpenVG)
 #if (QT_EDITION & QT_MODULE_SQL)
 QT_LICENSED_MODULE(Sql)
 #endif
+#if (QT_EDITION & QT_MODULE_MULTIMEDIA)
+QT_LICENSED_MODULE(Multimedia)
+#endif
 #if (QT_EDITION & QT_MODULE_XML)
 QT_LICENSED_MODULE(Xml)
 #endif
@@ -2553,30 +2574,28 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_QFUTURE
 #endif
 
-/*
-    Turn off certain features for compilers that have problems parsing
-    the code.
-*/
-#if (defined(Q_CC_HPACC) && defined(QT_ARCH_PARISC)) \
-    || defined(Q_CC_MIPS) \
-    || defined(Q_CC_XLC)
-// HP aCC A.03.*, MIPSpro, and xlC cannot handle
-// the template function declarations for the QtConcurrent functions
-#  define QT_NO_QFUTURE
-#  define QT_NO_CONCURRENT
-#endif
-
-// MSVC 6.0, MSVC .NET 2002, and old versions of Sun CC can`t handle the map(), etc templates,
+// MSVC 6.0 and MSVC .NET 2002,  can`t handle the map(), etc templates,
 // but the QFuture class compiles.
-#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300) || (defined (__SUNPRO_CC) && __SUNPRO_CC <= 0x590)
+#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300)
 #  define QT_NO_CONCURRENT
 #endif
 
-// Mingw uses a gcc 3 version which has problems with some of the
-// map/filter overloads. So does IRIX and Solaris.
-#if (defined(Q_OS_IRIX) || defined(Q_CC_MINGW) || defined (Q_OS_SOLARIS)) && (__GNUC__ < 4)
+// gcc 3 version has problems with some of the
+// map/filter overloads.
+#if defined(Q_CC_GNU) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
+#endif
+
+#ifdef Q_OS_QNX
+// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
+// shared fonts and QSystemSemaphore + QSharedMemory are not available
+#  define QT_NO_QWS_MULTIPROCESS
+#  define QT_NO_QWS_SHARE_FONTS
+#  define QT_NO_SYSTEMSEMAPHORE
+#  define QT_NO_SHAREDMEMORY
+// QNX currently doesn't support forking in a thread, so disable QProcess
+#  define QT_NO_PROCESS
 #endif
 
 QT_END_NAMESPACE

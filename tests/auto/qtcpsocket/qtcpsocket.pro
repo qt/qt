@@ -2,4 +2,4 @@ TEMPLATE = subdirs
 
 
 !wince*: SUBDIRS = test stressTest
-wince* | symbian* : SUBDIRS = test
+wince*|symbian*|vxworks* : SUBDIRS = test

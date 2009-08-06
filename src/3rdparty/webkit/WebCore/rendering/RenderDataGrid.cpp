@@ -24,12 +24,17 @@
  */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "RenderDataGrid.h"
 
+#include "CSSStyleSelector.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "GraphicsContext.h"
 #include "Page.h"
+#include "RenderView.h"
 #include "Scrollbar.h"
 
 using std::min;
@@ -45,6 +50,42 @@ RenderDataGrid::RenderDataGrid(Element* elt)
 
 RenderDataGrid::~RenderDataGrid()
 {
+}
+
+void RenderDataGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+{
+    RenderBlock::styleDidChange(diff, oldStyle);
+    recalcStyleForColumns();
+}
+
+void RenderDataGrid::recalcStyleForColumns()
+{
+    DataGridColumnList* columns = gridElement()->columns();
+    unsigned length = columns->length();
+    for (unsigned i = 0; i < length; ++i)
+        recalcStyleForColumn(columns->item(i));
+}
+
+void RenderDataGrid::recalcStyleForColumn(DataGridColumn* column)
+{
+    if (!column->columnStyle())
+        column->setColumnStyle(document()->styleSelector()->pseudoStyleForDataGridColumn(column, style()));
+    if (!column->headerStyle())
+        column->setHeaderStyle(document()->styleSelector()->pseudoStyleForDataGridColumnHeader(column, style()));
+}
+
+RenderStyle* RenderDataGrid::columnStyle(DataGridColumn* column)
+{
+    if (!column->columnStyle())
+        recalcStyleForColumn(column);
+    return column->columnStyle();
+}
+
+RenderStyle* RenderDataGrid::headerStyle(DataGridColumn* column)
+{
+    if (!column->headerStyle())
+        recalcStyleForColumn(column);
+    return column->headerStyle();
 }
 
 void RenderDataGrid::calcPrefWidths()
@@ -77,6 +118,17 @@ void RenderDataGrid::calcPrefWidths()
     setPrefWidthsDirty(false);
 }
 
+void RenderDataGrid::layout()
+{
+    RenderBlock::layout();
+    layoutColumns();
+}
+
+void RenderDataGrid::layoutColumns()
+{
+    // FIXME: Implement.
+}
+
 void RenderDataGrid::paintObject(PaintInfo& paintInfo, int tx, int ty)
 {
     if (style()->visibility() != VISIBLE)
@@ -92,14 +144,29 @@ void RenderDataGrid::paintObject(PaintInfo& paintInfo, int tx, int ty)
     paintColumnHeaders(paintInfo, tx, ty);
 }
 
-void RenderDataGrid::paintColumnHeaders(PaintInfo&, int, int)
+void RenderDataGrid::paintColumnHeaders(PaintInfo& paintInfo, int tx, int ty)
 {
-    gridElement()->columns();
-    
+    DataGridColumnList* columns = gridElement()->columns();
+    unsigned length = columns->length();
+    for (unsigned i = 0; i < length; ++i) {
+        DataGridColumn* column = columns->item(i);
+        RenderStyle* columnStyle = headerStyle(column);
+
+        // Don't render invisible columns.
+        if (!columnStyle || columnStyle->display() == NONE || columnStyle->visibility() != VISIBLE)
+            continue;
+        
+        // Paint the column header if it intersects the dirty rect.
+        IntRect columnRect(column->rect());
+        columnRect.move(tx, ty);
+        if (columnRect.intersects(paintInfo.rect))
+            paintColumnHeader(column, paintInfo, tx, ty);
+    }
 }
 
-void RenderDataGrid::rebuildColumns()
+void RenderDataGrid::paintColumnHeader(DataGridColumn*, PaintInfo&, int, int)
 {
+    // FIXME: Implement.
 }
 
 // Scrolling implementation functions
@@ -119,4 +186,65 @@ bool RenderDataGrid::isActive() const
     return page && page->focusController()->isActive();
 }
 
+
+IntRect RenderDataGrid::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
+{
+    RenderView* view = this->view();
+    if (!view)
+        return scrollbarRect;
+
+    IntRect rect = scrollbarRect;
+
+    int scrollbarLeft = width() - borderRight() - scrollbar->width();
+    int scrollbarTop = borderTop();
+    rect.move(scrollbarLeft, scrollbarTop);
+
+    return view->frameView()->convertFromRenderer(this, rect);
 }
+
+IntRect RenderDataGrid::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+{
+    RenderView* view = this->view();
+    if (!view)
+        return parentRect;
+
+    IntRect rect = view->frameView()->convertToRenderer(this, parentRect);
+
+    int scrollbarLeft = width() - borderRight() - scrollbar->width();
+    int scrollbarTop = borderTop();
+    rect.move(-scrollbarLeft, -scrollbarTop);
+    return rect;
+}
+
+IntPoint RenderDataGrid::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
+{
+    RenderView* view = this->view();
+    if (!view)
+        return scrollbarPoint;
+
+    IntPoint point = scrollbarPoint;
+
+    int scrollbarLeft = width() - borderRight() - scrollbar->width();
+    int scrollbarTop = borderTop();
+    point.move(scrollbarLeft, scrollbarTop);
+
+    return view->frameView()->convertFromRenderer(this, point);
+}
+
+IntPoint RenderDataGrid::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+{
+    RenderView* view = this->view();
+    if (!view)
+        return parentPoint;
+
+    IntPoint point = view->frameView()->convertToRenderer(this, parentPoint);
+
+    int scrollbarLeft = width() - borderRight() - scrollbar->width();
+    int scrollbarTop = borderTop();
+    point.move(-scrollbarLeft, -scrollbarTop);
+    return point;
+}
+
+}
+
+#endif

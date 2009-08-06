@@ -153,9 +153,6 @@ public:
     inline bool isHidden(int row) const;
     inline int hiddenCount() const;
 
-    inline void clearIntersections() const;
-    inline void appendToIntersections(const QModelIndex &idx) const;
-
     inline bool isRightToLeft() const;
 
     QListViewPrivate *dd;
@@ -186,7 +183,7 @@ public:
 
     QPoint initStaticLayout(const QListViewLayoutInfo &info);
     void doStaticLayout(const QListViewLayoutInfo &info);
-    void intersectingStaticSet(const QRect &area) const;
+    QVector<QModelIndex> intersectingStaticSet(const QRect &area) const;
 
     int itemIndex(const QListViewItem &item) const;
 
@@ -216,7 +213,7 @@ class QDynamicListViewBase : public QCommonListViewBase
     friend class QListViewPrivate;
 public:
     QDynamicListViewBase(QListView *q, QListViewPrivate *d) : QCommonListViewBase(q, d),
-        batchStartRow(0), batchSavedDeltaSeg(0) {}
+        batchStartRow(0), batchSavedDeltaSeg(0), interSectingVector(0) {}
 
     QBspTree tree;
     QVector<QListViewItem> items;
@@ -230,6 +227,7 @@ public:
     // used when laying out in batches
     int batchStartRow;
     int batchSavedDeltaSeg;
+    QVector<QModelIndex> *interSectingVector; //used from within intersectingDynamicSet
 
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     bool doBatchedItemLayout(const QListViewLayoutInfo &info, int max);
@@ -237,7 +235,7 @@ public:
     void initBspTree(const QSize &contents);
     QPoint initDynamicLayout(const QListViewLayoutInfo &info);
     void doDynamicLayout(const QListViewLayoutInfo &info);
-    void intersectingDynamicSet(const QRect &area) const;
+    QVector<QModelIndex> intersectingDynamicSet(const QRect &area) const;
 
     static void addLeaf(QVector<int> &leaf, const QRect &area,
                         uint visited, QBspTree::Data data);
@@ -277,11 +275,11 @@ public:
 
     bool doItemsLayout(int num);
 
-    inline void intersectingSet(const QRect &area, bool doLayout = true) const {
+    inline QVector<QModelIndex> intersectingSet(const QRect &area, bool doLayout = true) const {
         if (doLayout) executePostedLayout();
         QRect a = (q_func()->isRightToLeft() ? flipX(area.normalized()) : area.normalized());
-        if (viewMode == QListView::ListMode) staticListView->intersectingStaticSet(a);
-        else dynamicListView->intersectingDynamicSet(a);
+        return (viewMode == QListView::ListMode)  ? staticListView->intersectingStaticSet(a)
+            : dynamicListView->intersectingDynamicSet(a);
     }
 
     // ### FIXME:
@@ -351,6 +349,8 @@ public:
 
     void scrollElasticBandBy(int dx, int dy);
 
+    QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
+
     // ### FIXME: we only need one at a time
     QDynamicListViewBase *dynamicListView;
     QStaticListViewBase *staticListView;
@@ -382,9 +382,6 @@ public:
     uint modeProperties : 8;
 
     QRect layoutBounds;
-
-    // used for intersecting set
-    mutable QVector<QModelIndex> intersectVector;
 
     // timers
     QBasicTimer batchLayoutTimer;
@@ -437,9 +434,6 @@ inline QAbstractItemDelegate *QCommonListViewBase::delegate(const QModelIndex &i
 
 inline bool QCommonListViewBase::isHidden(int row) const { return dd->isHidden(row); }
 inline int QCommonListViewBase::hiddenCount() const { return dd->hiddenRows.count(); }
-
-inline void QCommonListViewBase::clearIntersections() const { dd->intersectVector.clear(); }
-inline void QCommonListViewBase::appendToIntersections(const QModelIndex &idx) const { dd->intersectVector.append(idx); }
 
 inline bool QCommonListViewBase::isRightToLeft() const { return qq->isRightToLeft(); }
 

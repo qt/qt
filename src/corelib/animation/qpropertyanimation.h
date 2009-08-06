@@ -78,7 +78,7 @@ protected:
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_targetDestroyed())
     Q_DISABLE_COPY(QPropertyAnimation)
-    Q_DECLARE_SCOPED_PRIVATE(QPropertyAnimation)
+    Q_DECLARE_PRIVATE(QPropertyAnimation)
 };
 
 #endif //QT_NO_ANIMATION

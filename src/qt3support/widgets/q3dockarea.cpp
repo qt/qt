@@ -473,24 +473,25 @@ int Q3DockAreaLayout::widthForHeight(int h) const
     contain Q3ToolBars since Q3ToolBar is a Q3DockWindow subclass.
 
     QMainWindow contains four Q3DockAreas which you can use for your
-    Q3ToolBars and Q3DockWindows, so in most situations you do not need
-    to use the Q3DockArea class directly. Although QMainWindow contains
-    support for its own dock areas it isn't convenient for adding new
-    Q3DockAreas. If you need to create your own dock areas we suggest
-    that you create a subclass of QWidget and add your Q3DockAreas to
-    your subclass.
+    Q3ToolBars and Q3DockWindows, so in most situations you do not
+    need to use the Q3DockArea class directly. Although QMainWindow
+    contains support for its own dock areas, you can't add new ones.
+    You also can't add a Q3DockArea to your own subclass of QWidget.
+    It won't be shown.
 
     \img qmainwindow-qdockareas.png QMainWindow's Q3DockAreas
 
     \target lines
-    \e Lines. Q3DockArea uses the concept of lines. A line is a
-    horizontal region which may contain dock windows side-by-side. A
-    dock area may have room for more than one line. When dock windows
-    are docked into a dock area they are usually added at the right
-    hand side of the top-most line that has room (unless manually
-    placed by the user). When users move dock windows they may leave
-    empty lines or gaps in non-empty lines. Qt::Dock windows can be lined
-    up to minimize wasted space using the lineUp() function.
+    \section1 Lines.
+
+    Q3DockArea uses the concept of lines. A line is a horizontal
+    region which may contain dock windows side-by-side. A dock area
+    may have room for more than one line. When dock windows are docked
+    into a dock area they are usually added at the right hand side of
+    the top-most line that has room (unless manually placed by the
+    user). When users move dock windows they may leave empty lines or
+    gaps in non-empty lines. Qt::Dock windows can be lined up to
+    minimize wasted space using the lineUp() function.
 
     The Q3DockArea class maintains a position list of all its child
     dock windows. Qt::Dock windows are added to a dock area from position

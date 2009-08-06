@@ -36,7 +36,8 @@ namespace WebCore {
 
 class FlexBoxIterator {
 public:
-    FlexBoxIterator(RenderFlexibleBox* parent) {
+    FlexBoxIterator(RenderFlexibleBox* parent)
+    {
         box = parent;
         if (box->style()->boxOrient() == HORIZONTAL && box->style()->direction() == RTL)
             forward = box->style()->boxDirection() != BNORMAL;
@@ -56,17 +57,20 @@ public:
         reset();
     }
 
-    void reset() {
+    void reset()
+    {
         current = 0;
         currentOrdinal = forward ? 0 : lastOrdinal+1;
     }
 
-    RenderBox* first() {
+    RenderBox* first()
+    {
         reset();
         return next();
     }
     
-    RenderBox* next() {
+    RenderBox* next()
+    {
         do { 
             if (!current) {
                 if (forward) {
@@ -187,6 +191,10 @@ void RenderFlexibleBox::calcPrefWidths()
     }
 
     int toAdd = borderLeft() + borderRight() + paddingLeft() + paddingRight();
+    
+    if (hasOverflowClip() && style()->overflowY() == OSCROLL)
+        toAdd += verticalScrollbarWidth();
+
     m_minPrefWidth += toAdd;
     m_maxPrefWidth += toAdd;
 
@@ -272,10 +280,10 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
 
     if (!hasOverflowClip()) {
         for (ShadowData* boxShadow = style()->boxShadow(); boxShadow; boxShadow = boxShadow->next) {
-            m_overflowLeft = min(m_overflowLeft, boxShadow->x - boxShadow->blur);
-            m_overflowWidth = max(m_overflowWidth, width() + boxShadow->x + boxShadow->blur);
-            m_overflowTop = min(m_overflowTop, boxShadow->y - boxShadow->blur);
-            m_overflowHeight = max(m_overflowHeight, height() + boxShadow->y + boxShadow->blur);
+            m_overflowLeft = min(m_overflowLeft, boxShadow->x - boxShadow->blur - boxShadow->spread);
+            m_overflowWidth = max(m_overflowWidth, width() + boxShadow->x + boxShadow->blur + boxShadow->spread);
+            m_overflowTop = min(m_overflowTop, boxShadow->y - boxShadow->blur - boxShadow->spread);
+            m_overflowHeight = max(m_overflowHeight, height() + boxShadow->y + boxShadow->blur + boxShadow->spread);
         }
         
         if (hasReflection()) {
@@ -336,7 +344,9 @@ void RenderFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         }
         child = iterator.next();
     }
-    
+
+    RenderBlock::startDelayUpdateScrollInfo();
+
     // We do 2 passes.  The first pass is simply to lay everyone out at
     // their preferred widths.  The second pass handles flexing the children.
     do {
@@ -561,7 +571,9 @@ void RenderFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
     } while (haveFlex);
 
     m_flexingChildren = false;
-    
+
+    RenderBlock::finishDelayUpdateScrollInfo();
+
     if (remainingSpace > 0 && ((style()->direction() == LTR && style()->boxPack() != BSTART) ||
                                (style()->direction() == RTL && style()->boxPack() != BEND))) {
         // Children must be repositioned.
@@ -648,7 +660,7 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
 {
     int xPos = borderLeft() + paddingLeft();
     int yPos = borderTop() + paddingTop();
-    if( style()->direction() == RTL )
+    if (style()->direction() == RTL)
         xPos = width() - paddingRight() - borderRight();
     int toAdd = borderBottom() + paddingBottom() + horizontalScrollbarHeight();
     bool heightSpecified = false;
@@ -788,6 +800,8 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             }
         }
     }
+
+    RenderBlock::startDelayUpdateScrollInfo();
 
     // We do 2 passes.  The first pass is simply to lay everyone out at
     // their preferred widths.  The second pass handles flexing the children.
@@ -976,6 +990,8 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                 haveFlex = false;
         }        
     } while (haveFlex);
+
+    RenderBlock::finishDelayUpdateScrollInfo();
 
     if (style()->boxPack() != BSTART && remainingSpace > 0) {
         // Children must be repositioned.

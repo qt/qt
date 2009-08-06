@@ -2,7 +2,7 @@
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
  *           (C) 2000 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Graham Dennis (graham.dennis@gmail.com)
  *
  * This library is free software; you can redistribute it and/or
@@ -29,6 +29,8 @@
 
 namespace WebCore {
 
+enum ShadowStyle { Normal, Inset };
+
 // This struct holds information about shadows for the text-shadow and box-shadow properties.
 
 struct ShadowData {
@@ -36,15 +38,19 @@ struct ShadowData {
         : x(0)
         , y(0)
         , blur(0)
+        , spread(0)
+        , style(Normal)
         , next(0)
     {
     }
 
-    ShadowData(int _x, int _y, int _blur, const Color& _color)
-        : x(_x)
-        , y(_y)
-        , blur(_blur)
-        , color(_color)
+    ShadowData(int x, int y, int blur, int spread, ShadowStyle style, const Color& color)
+        : x(x)
+        , y(y)
+        , blur(blur)
+        , spread(spread)
+        , style(style)
+        , color(color)
         , next(0)
     {
     }
@@ -62,6 +68,8 @@ struct ShadowData {
     int x;
     int y;
     int blur;
+    int spread;
+    ShadowStyle style;
     Color color;
     ShadowData* next;
 };

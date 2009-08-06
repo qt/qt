@@ -174,7 +174,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAbstractSlider)
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractSlider)
+    Q_DECLARE_PRIVATE(QAbstractSlider)
 };
 
 QT_END_NAMESPACE

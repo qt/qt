@@ -62,7 +62,7 @@ class QGuiEventDispatcherGlibPrivate;
 class QGuiEventDispatcherGlib : public QEventDispatcherGlib
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QGuiEventDispatcherGlib)
+    Q_DECLARE_PRIVATE(QGuiEventDispatcherGlib)
 
 public:
     explicit QGuiEventDispatcherGlib(QObject *parent = 0);

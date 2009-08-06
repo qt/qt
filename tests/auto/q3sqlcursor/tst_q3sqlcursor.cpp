@@ -135,6 +135,7 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
 
     if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+        QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
     }
 
     // please never ever change this table; otherwise fix all tests ;)
@@ -547,7 +548,7 @@ void tst_Q3SqlCursor::unicode()
         else
             QFAIL( QString( "Strings differ at position %1: orig: %2, db: %3" ).arg( i ).arg( utf8str[ i ].unicode(), 0, 16 ).arg( res[ i ].unicode(), 0, 16 ) );
     }
-    if(db.driverName().startsWith("QMYSQL") || db.driverName().startsWith("QDB2"))
+    if((db.driverName().startsWith("QMYSQL") || db.driverName().startsWith("QDB2")) && res != utf8str)
         QEXPECT_FAIL("", "See above message", Continue);
     QVERIFY( res == utf8str );
 }
@@ -573,10 +574,7 @@ void tst_Q3SqlCursor::precision()
 
     QVERIFY_SQL(cur, select());
     QVERIFY( cur.next() );
-    if(!tst_Databases::isSqlServer(db))
-        QCOMPARE( cur.value( 0 ).asString(), precStr );
-    else
-        QCOMPARE( cur.value( 0 ).asString(), precStr.left(precStr.size()-1) ); // Sql server fails at counting.
+    QCOMPARE( cur.value( 0 ).asString(), precStr );
     QVERIFY( cur.next() );
     QCOMPARE( cur.value( 0 ).asDouble(), precDbl );
 }
@@ -723,7 +721,9 @@ void tst_Q3SqlCursor::updateNoPK()
     // Sqlite returns 2, don't ask why.
     QVERIFY(cur.update() != 0);
     QString expect = "update " + qTableName("qtestPK") +
-            " set id = 1 , name = NULL , num = NULL  where " + qTableName("qtestPK") + ".id"
+            " set "+db.driver()->escapeIdentifier("id", QSqlDriver::FieldName)+" = 1 , "
+            +db.driver()->escapeIdentifier("name", QSqlDriver::FieldName)+" = NULL , "
+            +db.driver()->escapeIdentifier("num", QSqlDriver::FieldName)+" = NULL  where " + qTableName("qtestPK") + ".id"
             " IS NULL and " + qTableName("qtestPK") + ".name IS NULL and " +
             qTableName("qtestPK") + ".num IS NULL";
     if (!db.driver()->hasFeature(QSqlDriver::PreparedQueries)) {
@@ -760,12 +760,6 @@ void tst_Q3SqlCursor::insertFieldNameContainsWS() {
 
     QSqlQuery q(db);
     tst_Databases::safeDropTable(db, tableName);
-    QString query = QString("CREATE TABLE %1 (id int, \"first Name\" varchar(20), "
-                            "lastName varchar(20))");
-    QVERIFY_SQL(q, exec(query.arg(tableName)));
-    QString query = QString("CREATE TABLE %1 (id int, \"first Name\" varchar(20), "
-                            "lastName varchar(20))").arg(tableName);
-    QVERIFY_SQL(q, exec(query));
     QString query = "CREATE TABLE %1 (id int, " 
         + db.driver()->escapeIdentifier("first Name", QSqlDriver::FieldName) 
         + " varchar(20), lastName varchar(20))";

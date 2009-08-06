@@ -62,9 +62,6 @@ public:
     QSignalTransition(QState *sourceState = 0);
     QSignalTransition(QObject *sender, const char *signal,
                       QState *sourceState = 0);
-    QSignalTransition(QObject *sender, const char *signal,
-                      const QList<QAbstractState*> &targets,
-                      QState *sourceState = 0);
     ~QSignalTransition();
 
     QObject *senderObject() const;
@@ -81,7 +78,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QSignalTransition)
-    Q_DECLARE_SCOPED_PRIVATE(QSignalTransition)
+    Q_DECLARE_PRIVATE(QSignalTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

@@ -44,6 +44,7 @@
 
 #include <QtCore/qatomic.h>
 #include <limits.h>
+#include <new>
 
 QT_BEGIN_HEADER
 
@@ -76,6 +77,12 @@ struct QContiguousCacheTypedData
     int start;
     int offset;
     uint sharable : 1;
+    // uint unused : 31;
+
+    // total is 24 bytes (HP-UX aCC: 40 bytes)
+    // the next entry is already aligned to 8 bytes
+    // there will be an 8 byte gap here if T requires 16-byte alignment
+    //  (such as long double on 64-bit platforms, __int128, __float128)
 
     T array[1];
 };
@@ -166,8 +173,8 @@ void QContiguousCache<T>::detach_helper()
 
     T *dest = x.d->array + x.d->start;
     T *src = d->array + d->start;
-    int count = x.d->count;
-    while (count--) {
+    int oldcount = x.d->count;
+    while (oldcount--) {
         if (QTypeInfo<T>::isComplex) {
             new (dest) T(*src);
         } else {
@@ -200,8 +207,8 @@ void QContiguousCache<T>::setCapacity(int asize)
     x.d->start = x.d->offset % x.d->alloc;
     T *dest = x.d->array + (x.d->start + x.d->count-1) % x.d->alloc;
     T *src = d->array + (d->start + d->count-1) % d->alloc;
-    int count = x.d->count;
-    while (count--) {
+    int oldcount = x.d->count;
+    while (oldcount--) {
         if (QTypeInfo<T>::isComplex) {
             new (dest) T(*src);
         } else {
@@ -224,10 +231,10 @@ void QContiguousCache<T>::clear()
 {
     if (d->ref == 1) {
         if (QTypeInfo<T>::isComplex) {
-            int count = d->count;
+            int oldcount = d->count;
             T * i = d->array + d->start;
             T * e = d->array + d->alloc;
-            while (count--) {
+            while (oldcount--) {
                 i->~T();
                 i++;
                 if (i == e)
@@ -254,11 +261,11 @@ inline QContiguousCacheData *QContiguousCache<T>::malloc(int aalloc)
 }
 
 template <typename T>
-QContiguousCache<T>::QContiguousCache(int capacity)
+QContiguousCache<T>::QContiguousCache(int cap)
 {
-    p = malloc(capacity);
+    p = malloc(cap);
     d->ref = 1;
-    d->alloc = capacity;
+    d->alloc = cap;
     d->count = d->start = d->offset = 0;
     d->sharable = true;
 }
@@ -295,10 +302,10 @@ template <typename T>
 void QContiguousCache<T>::free(Data *x)
 {
     if (QTypeInfo<T>::isComplex) {
-        int count = d->count;
+        int oldcount = d->count;
         T * i = d->array + d->start;
         T * e = d->array + d->alloc;
-        while (count--) {
+        while (oldcount--) {
             i->~T();
             i++;
             if (i == e)

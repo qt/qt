@@ -102,7 +102,7 @@ protected:
     QString orderByClause() const;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QSqlRelationalTableModel)
+    Q_DECLARE_PRIVATE(QSqlRelationalTableModel)
 };
 
 QT_END_NAMESPACE

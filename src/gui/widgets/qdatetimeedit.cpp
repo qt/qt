@@ -1086,10 +1086,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
 
                 //hide cursor
                 d->edit->d_func()->setCursorVisible(false);
-                if (d->edit->d_func()->cursorTimer > 0)
-                    killTimer(d->edit->d_func()->cursorTimer);
-                d->edit->d_func()->cursorTimer = 0;
-
+                d->edit->d_func()->control->setCursorBlinkPeriod(0);
                 d->setSelected(0);
             }
         }
@@ -1110,10 +1107,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
 
             //hide cursor
             d->edit->d_func()->setCursorVisible(false);
-            if (d->edit->d_func()->cursorTimer > 0)
-                killTimer(d->edit->d_func()->cursorTimer);
-            d->edit->d_func()->cursorTimer = 0;
-
+            d->edit->d_func()->control->setCursorBlinkPeriod(0);
             d->setSelected(0);
             oldCurrent = 0;
         }
@@ -1936,7 +1930,6 @@ QDateTime QDateTimeEditPrivate::validateAndInterpret(QString &input, int &positi
 
 /*!
   \internal
-  \reimp
 */
 
 QString QDateTimeEditPrivate::textFromValue(const QVariant &f) const
@@ -1947,7 +1940,6 @@ QString QDateTimeEditPrivate::textFromValue(const QVariant &f) const
 
 /*!
   \internal
-  \reimp
 
   This function's name is slightly confusing; it is not to be confused
   with QAbstractSpinBox::valueFromText().
@@ -2105,7 +2097,6 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
 
 /*!
   \internal
-  \reimp
 */
 
 void QDateTimeEditPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
@@ -2135,7 +2126,6 @@ void QDateTimeEditPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
 
 /*!
   \internal
-  \reimp
 */
 
 void QDateTimeEditPrivate::_q_editorCursorPositionChanged(int oldpos, int newpos)

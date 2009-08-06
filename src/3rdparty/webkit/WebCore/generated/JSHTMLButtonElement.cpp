@@ -24,7 +24,9 @@
 #include "HTMLButtonElement.h"
 #include "HTMLFormElement.h"
 #include "JSHTMLFormElement.h"
+#include "JSValidityState.h"
 #include "KURL.h"
+#include "ValidityState.h"
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
@@ -37,9 +39,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLButtonElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLButtonElementTableValues[10] =
+static const HashTableValue JSHTMLButtonElementTableValues[11] =
 {
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLButtonElementForm, (intptr_t)0 },
+    { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLButtonElementValidity, (intptr_t)0 },
     { "accessKey", DontDelete, (intptr_t)jsHTMLButtonElementAccessKey, (intptr_t)setJSHTMLButtonElementAccessKey },
     { "disabled", DontDelete, (intptr_t)jsHTMLButtonElementDisabled, (intptr_t)setJSHTMLButtonElementDisabled },
     { "autofocus", DontDelete, (intptr_t)jsHTMLButtonElementAutofocus, (intptr_t)setJSHTMLButtonElementAutofocus },
@@ -51,7 +54,7 @@ static const HashTableValue JSHTMLButtonElementTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLButtonElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLButtonElementTableValues, 0 };
 #else
@@ -65,19 +68,19 @@ static const HashTableValue JSHTMLButtonElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLButtonElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLButtonElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLButtonElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLButtonElementConstructor : public DOMObject {
+class JSHTMLButtonElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLButtonElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLButtonElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLButtonElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLButtonElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLButtonElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLButtonElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -104,7 +107,7 @@ static const HashTableValue JSHTMLButtonElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLButtonElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLButtonElementPrototypeTableValues, 0 };
 #else
@@ -125,8 +128,8 @@ bool JSHTMLButtonElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSHTMLButtonElement::s_info = { "HTMLButtonElement", &JSHTMLElement::s_info, &JSHTMLButtonElementTable, 0 };
 
-JSHTMLButtonElement::JSHTMLButtonElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLButtonElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLButtonElement::JSHTMLButtonElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLButtonElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -142,63 +145,80 @@ bool JSHTMLButtonElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsHTMLButtonElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->form()));
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
+}
+
+JSValue jsHTMLButtonElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLButtonElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return jsString(exec, imp->accessKey());
 }
 
 JSValue jsHTMLButtonElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return jsBoolean(imp->disabled());
 }
 
 JSValue jsHTMLButtonElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return jsBoolean(imp->autofocus());
 }
 
 JSValue jsHTMLButtonElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsHTMLButtonElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLButtonElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return jsString(exec, imp->value());
 }
 
 JSValue jsHTMLButtonElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->impl());
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return jsBoolean(imp->willValidate());
 }
 
 JSValue jsHTMLButtonElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLButtonElement* domObject = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
+    return JSHTMLButtonElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLButtonElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -235,9 +255,9 @@ void setJSHTMLButtonElementValue(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setValue(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLButtonElement::getConstructor(ExecState* exec)
+JSValue JSHTMLButtonElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLButtonElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLButtonElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLButtonElementPrototypeFunctionClick(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

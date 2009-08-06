@@ -77,7 +77,7 @@ class Q_GUI_EXPORT QMenu : public QWidget
 {
 private:
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QMenu)
+    Q_DECLARE_PRIVATE(QMenu)
 
     Q_PROPERTY(bool tearOffEnabled READ isTearOffEnabled WRITE setTearOffEnabled)
     Q_PROPERTY(QString title READ title WRITE setTitle)

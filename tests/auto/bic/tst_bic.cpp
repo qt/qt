@@ -43,6 +43,10 @@
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #include "qbic.h"
 
 #include <stdlib.h>
@@ -145,7 +149,7 @@ void tst_Bic::initTestCase_data()
 
 void tst_Bic::initTestCase()
 {
-    QString qtDir = QString::fromLocal8Bit(getenv("QTDIR"));
+    QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
     QVERIFY2(!qtDir.isEmpty(), "This test needs $QTDIR");
 
     if (qgetenv("PATH").contains("teambuilder"))
@@ -220,7 +224,7 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
     tmpQFile.write(tmpFileContents);
     tmpQFile.flush();
 
-    QString qtDir = QString::fromLocal8Bit(getenv("QTDIR"));
+    QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
 #ifdef Q_OS_WIN
     qtDir.replace('\\', '/');
 #endif
@@ -257,22 +261,18 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
         return QBic::Info();
     }
 
-    QString resultFileName = QFileInfo(tmpQFile).fileName();
-    static const char *suffixes[] = { ".t01.class", ".class", ".002t.class", 0 };
-    for (const char **p = suffixes; true; ++p) {
-        if (!p) {
-            // we didn't find the file
-            qFatal("GCC didn't produce the expected intermediary files. Please update this test!");
-            return QBic::Info();
-        }
-
-        QString check = resultFileName + *p;
-        if (!QFile::exists(check))
-            continue;
-
-        resultFileName = check;
-        break;
+    // See if we find the gcc output file, which seems to change
+    // from release to release
+    QStringList files = QDir().entryList(QStringList() << "*.class");
+    if (files.isEmpty()) {
+        qFatal("Could not locate the GCC output file, update this test");
+        return QBic::Info();
+    } else if (files.size() > 1) {
+        qFatal("Located more than one output file, please clean up before running this test");
+        return QBic::Info();
     }
+
+    QString resultFileName = files.first();
     QBic::Info inf = bic.parseFile(resultFileName);
 
     QFile::remove(resultFileName);
@@ -367,4 +367,4 @@ void tst_Bic::sizesAndVTables()
 QTEST_APPLESS_MAIN(tst_Bic)
 
 #include "tst_bic.moc"
-
+#endif

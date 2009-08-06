@@ -68,7 +68,7 @@ class QStylePrivate;
 class Q_GUI_EXPORT QStyle : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QStyle)
+    Q_DECLARE_PRIVATE(QStyle)
 
 protected:
     QStyle(QStylePrivate &dd);
@@ -730,7 +730,7 @@ public:
         SH_ItemView_DrawDelegateFrame,
         SH_TabBar_CloseButtonPosition,
         SH_DockWidget_ButtonsHaveFrame,
-
+        SH_ToolButtonStyle,
         // Add new style hint values here
 
 #ifdef QT3_SUPPORT

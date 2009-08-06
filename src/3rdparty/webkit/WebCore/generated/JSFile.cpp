@@ -43,7 +43,7 @@ static const HashTableValue JSFileTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSFileTable =
+static JSC_CONST_HASHTABLE HashTable JSFileTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSFileTableValues, 0 };
 #else
@@ -57,19 +57,19 @@ static const HashTableValue JSFileConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSFileConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSFileConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSFileConstructorTableValues, 0 };
 #else
     { 1, 0, JSFileConstructorTableValues, 0 };
 #endif
 
-class JSFileConstructor : public DOMObject {
+class JSFileConstructor : public DOMConstructorObject {
 public:
-    JSFileConstructor(ExecState* exec)
-        : DOMObject(JSFileConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSFileConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSFileConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSFilePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSFilePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -95,7 +95,7 @@ static const HashTableValue JSFilePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSFilePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSFilePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSFilePrototypeTableValues, 0 };
 #else
@@ -111,8 +111,8 @@ JSObject* JSFilePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSFile::s_info = { "File", 0, &JSFileTable, 0 };
 
-JSFile::JSFile(PassRefPtr<Structure> structure, PassRefPtr<File> impl)
-    : DOMObject(structure)
+JSFile::JSFile(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<File> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -134,30 +134,33 @@ bool JSFile::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
 
 JSValue jsFileFileName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSFile* castedThis = static_cast<JSFile*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    File* imp = static_cast<File*>(static_cast<JSFile*>(asObject(slot.slotBase()))->impl());
+    File* imp = static_cast<File*>(castedThis->impl());
     return jsString(exec, imp->fileName());
 }
 
 JSValue jsFileFileSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSFile* castedThis = static_cast<JSFile*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    File* imp = static_cast<File*>(static_cast<JSFile*>(asObject(slot.slotBase()))->impl());
+    File* imp = static_cast<File*>(castedThis->impl());
     return jsNumber(exec, imp->fileSize());
 }
 
 JSValue jsFileConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSFile*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSFile* domObject = static_cast<JSFile*>(asObject(slot.slotBase()));
+    return JSFile::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSFile::getConstructor(ExecState* exec)
+JSValue JSFile::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSFileConstructor>(exec);
+    return getDOMConstructor<JSFileConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, File* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, File* object)
 {
-    return getDOMObjectWrapper<JSFile>(exec, object);
+    return getDOMObjectWrapper<JSFile>(exec, globalObject, object);
 }
 File* toFile(JSC::JSValue value)
 {

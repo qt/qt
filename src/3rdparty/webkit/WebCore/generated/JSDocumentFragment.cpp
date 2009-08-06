@@ -44,7 +44,7 @@ static const HashTableValue JSDocumentFragmentTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentFragmentTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentFragmentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDocumentFragmentTableValues, 0 };
 #else
@@ -58,19 +58,19 @@ static const HashTableValue JSDocumentFragmentConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentFragmentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentFragmentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDocumentFragmentConstructorTableValues, 0 };
 #else
     { 1, 0, JSDocumentFragmentConstructorTableValues, 0 };
 #endif
 
-class JSDocumentFragmentConstructor : public DOMObject {
+class JSDocumentFragmentConstructor : public DOMConstructorObject {
 public:
-    JSDocumentFragmentConstructor(ExecState* exec)
-        : DOMObject(JSDocumentFragmentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSDocumentFragmentConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSDocumentFragmentConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSDocumentFragmentPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSDocumentFragmentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -98,7 +98,7 @@ static const HashTableValue JSDocumentFragmentPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentFragmentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentFragmentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSDocumentFragmentPrototypeTableValues, 0 };
 #else
@@ -119,8 +119,8 @@ bool JSDocumentFragmentPrototype::getOwnPropertySlot(ExecState* exec, const Iden
 
 const ClassInfo JSDocumentFragment::s_info = { "DocumentFragment", &JSNode::s_info, &JSDocumentFragmentTable, 0 };
 
-JSDocumentFragment::JSDocumentFragment(PassRefPtr<Structure> structure, PassRefPtr<DocumentFragment> impl)
-    : JSNode(structure, impl)
+JSDocumentFragment::JSDocumentFragment(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DocumentFragment> impl)
+    : JSNode(structure, globalObject, impl)
 {
 }
 
@@ -136,11 +136,12 @@ bool JSDocumentFragment::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsDocumentFragmentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDocumentFragment*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSDocumentFragment* domObject = static_cast<JSDocumentFragment*>(asObject(slot.slotBase()));
+    return JSDocumentFragment::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSDocumentFragment::getConstructor(ExecState* exec)
+JSValue JSDocumentFragment::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSDocumentFragmentConstructor>(exec);
+    return getDOMConstructor<JSDocumentFragmentConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -154,7 +155,7 @@ JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelector(ExecState
     const UString& selectors = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelector(selectors, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->querySelector(selectors, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -170,7 +171,7 @@ JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelectorAll(ExecSt
     const UString& selectors = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelectorAll(selectors, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->querySelectorAll(selectors, ec)));
     setDOMException(exec, ec);
     return result;
 }

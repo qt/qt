@@ -66,6 +66,7 @@ private slots:
     void setScrollBars();
     void setScrollBars2();
     void objectNaming();
+    void patternBackground();
 
     void viewportCrash();
     void task214488_layoutDirection_data();
@@ -348,6 +349,40 @@ void tst_QAbstractScrollArea::task214488_layoutDirection()
     int refValue = hbar->value();
     qApp->sendEvent(&scrollArea, new QKeyEvent(QEvent::KeyPress, key, Qt::NoModifier));
     QVERIFY(lessThan ? (hbar->value() < refValue) : (hbar->value() > refValue));
+}
+
+void tst_QAbstractScrollArea::patternBackground()
+{
+    QScrollArea scrollArea;
+    scrollArea.resize(200, 200);
+    QWidget widget;
+    widget.resize(600, 600);
+    scrollArea.setWidget(&widget);
+    scrollArea.show();
+
+    QLinearGradient linearGrad(QPointF(250, 250), QPointF(300, 300));
+    linearGrad.setColorAt(0, Qt::yellow);
+    linearGrad.setColorAt(1, Qt::red);
+    QBrush bg(linearGrad);
+    scrollArea.viewport()->setPalette(QPalette(Qt::black, bg, bg, bg, bg, bg, bg, bg, bg));
+    widget.setPalette(Qt::transparent);
+
+    QTest::qWait(50);
+
+    QImage image(200, 200, QImage::Format_ARGB32);
+    scrollArea.render(&image);
+
+    QCOMPARE(image.pixel(QPoint(20,20)) , QColor(Qt::yellow).rgb());
+
+    QScrollBar *hbar = scrollArea.horizontalScrollBar();
+    hbar->setValue(hbar->maximum());
+    QScrollBar *vbar = scrollArea.verticalScrollBar();
+    vbar->setValue(vbar->maximum());
+
+    QTest::qWait(50);
+
+    scrollArea.render(&image);
+    QCOMPARE(image.pixel(QPoint(20,20)) , QColor(Qt::red).rgb());
 }
 
 QTEST_MAIN(tst_QAbstractScrollArea)

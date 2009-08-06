@@ -95,7 +95,7 @@ public:
 
     virtual void setResizable(bool) { }
 
-    virtual void addMessageToConsole(MessageSource, MessageLevel, const String&, unsigned, const String&) { }
+    virtual void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, unsigned, const String&) { }
 
     virtual bool canRunBeforeUnloadConfirmPanel() { return false; }
     virtual bool runBeforeUnloadConfirmPanel(const String&, Frame*) { return true; }
@@ -125,7 +125,7 @@ public:
 
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned) { }
 
-    virtual void setToolTip(const String&) { }
+    virtual void setToolTip(const String&, TextDirection) { }
 
     virtual void print(Frame*) { }
 
@@ -133,9 +133,16 @@ public:
     virtual void exceededDatabaseQuota(Frame*, const String&) { }
 #endif
 
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+    virtual void reachedMaxAppCacheSize(int64_t) { }
+#endif
+
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) { }
 
     virtual void formStateDidChange(const Node*) { }
+
+    virtual void formDidFocus(const Node*) { }
+    virtual void formDidBlur(const Node*) { }
 
     virtual PassOwnPtr<HTMLParserQuirks> createHTMLParserQuirks() { return 0; }
 
@@ -270,8 +277,8 @@ public:
     virtual bool canCachePage() const { return false; }
 
     virtual PassRefPtr<Frame> createFrame(const KURL&, const String&, HTMLFrameOwnerElement*, const String&, bool, int, int) { return 0; }
-    virtual Widget* createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool) { return 0; }
-    virtual Widget* createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) { return 0; }
+    virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool) { return 0; }
+    virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) { return 0; }
 
     virtual ObjectContentType objectContentType(const KURL&, const String&) { return ObjectContentType(); }
     virtual String overrideMediaType() const { return String(); }
@@ -284,8 +291,9 @@ public:
     virtual void registerForIconNotification(bool) { }
 
 #if USE(V8)
-    virtual void didCreateScriptContext() { }
-    virtual void didDestroyScriptContext() { }
+    virtual void didCreateScriptContextForFrame() { }
+    virtual void didDestroyScriptContextForFrame() { }
+    virtual void didCreateIsolatedScriptContext() { }
 #endif
 
 #if PLATFORM(MAC)

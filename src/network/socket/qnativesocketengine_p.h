@@ -55,9 +55,9 @@
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
-# include "qplatformdefs.h"
+#  include "qplatformdefs.h"
 #else
-# include <winsock2.h>
+#  include <winsock2.h>
 #endif
 
 #ifdef Q_OS_SYMBIAN
@@ -66,29 +66,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef Q_OS_WIN
-// Almost always the same. If not, specify in qplatformdefs.h.
-#if !defined(QT_SOCKOPTLEN_T)
-# define QT_SOCKOPTLEN_T QT_SOCKLEN_T
-#endif
-
-// Tru64 redefines accept -> _accept with _XOPEN_SOURCE_EXTENDED
-static inline int qt_socket_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *addrlen)
-{ return ::accept(s, addr, static_cast<QT_SOCKLEN_T *>(addrlen)); }
-#if defined(accept)
-# undef accept
-#endif
-
-// UnixWare 7 redefines listen -> _listen
-static inline int qt_socket_listen(int s, int backlog)
-{
-	return ::listen(s, backlog);
-}
-#if defined(listen)
-# undef listen
-#endif
 
 static inline int qt_socket_connect(int s, const struct sockaddr * addrptr, socklen_t namelen)
 {
@@ -216,17 +193,6 @@ static inline int qt_socket_setsockopt(int socket, int level, int optname, void 
 # undef setsockopt
 #endif
 
-// UnixWare 7 redefines socket -> _socket
-static inline int qt_socket_socket(int domain, int type, int protocol)
-{
-	return ::socket(domain, type, protocol);
-}
-#if defined(socket)
-# undef socket
-#endif
-
-#endif
-
 // Use our own defines and structs which we know are correct
 #  define QT_SS_MAXSIZE 128
 #  define QT_SS_ALIGNSIZE (sizeof(qint64))
@@ -322,7 +288,7 @@ public Q_SLOTS:
     void connectionNotification();
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QNativeSocketEngine)
+    Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY(QNativeSocketEngine)
 };
 

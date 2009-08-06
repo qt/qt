@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLTableCaptionElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableCaptionElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableCaptionElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLTableCaptionElementTableValues, 0 };
 #else
@@ -55,19 +55,19 @@ static const HashTableValue JSHTMLTableCaptionElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableCaptionElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableCaptionElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTableCaptionElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLTableCaptionElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLTableCaptionElementConstructor : public DOMObject {
+class JSHTMLTableCaptionElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLTableCaptionElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLTableCaptionElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLTableCaptionElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLTableCaptionElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLTableCaptionElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLTableCaptionElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLTableCaptionElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableCaptionElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableCaptionElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTableCaptionElementPrototypeTableValues, 0 };
 #else
@@ -109,8 +109,8 @@ JSObject* JSHTMLTableCaptionElementPrototype::self(ExecState* exec, JSGlobalObje
 
 const ClassInfo JSHTMLTableCaptionElement::s_info = { "HTMLTableCaptionElement", &JSHTMLElement::s_info, &JSHTMLTableCaptionElementTable, 0 };
 
-JSHTMLTableCaptionElement::JSHTMLTableCaptionElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLTableCaptionElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLTableCaptionElement::JSHTMLTableCaptionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableCaptionElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +126,16 @@ bool JSHTMLTableCaptionElement::getOwnPropertySlot(ExecState* exec, const Identi
 
 JSValue jsHTMLTableCaptionElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableCaptionElement* castedThis = static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLTableCaptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLTableCaptionElement* domObject = static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()));
+    return JSHTMLTableCaptionElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLTableCaptionElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -146,9 +148,9 @@ void setJSHTMLTableCaptionElementAlign(ExecState* exec, JSObject* thisObject, JS
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLTableCaptionElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTableCaptionElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLTableCaptionElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLTableCaptionElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 HTMLTableCaptionElement* toHTMLTableCaptionElement(JSC::JSValue value)

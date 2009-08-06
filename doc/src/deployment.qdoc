@@ -715,17 +715,19 @@
 
     \table 100%
     \header
-        \o \o VC++ 6.0 \o VC++ 7.1 (2003) \o VC++ 8.0 (2005)
+        \o \o VC++ 6.0 \o VC++ 7.1 (2003) \o VC++ 8.0 (2005) \o VC++ 9.0 (2008)
     \row
         \o The C run-time
         \o \c msvcrt.dll
         \o \c msvcr71.dll
         \o \c msvcr80.dll
+        \o \c msvcr90.dll
     \row
         \o The C++ run-time
         \o \c msvcp60.dll
         \o \c msvcp71.dll
         \o \c msvcp80.dll
+        \o \c msvcp90.dll
     \endtable
 
     To verify that the application now can be successfully deployed,
@@ -893,7 +895,7 @@
 
     \o \l{qt-conf.html}{Using \c qt.conf}. This approach is the recommended 
     if you have executables in different places sharing the same plugins.
-    
+
     \o Using QApplication::addLibraryPath() or
     QApplication::setLibraryPaths(). This approach is recommended if you only 
     have one executable that will use the plugin. 
@@ -902,10 +904,10 @@
     hard-coded paths in the QtCore library.
 
     \endlist
-    
+
     If you add a custom path using QApplication::addLibraryPath it could 
     look like this:
-    
+
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 54
 
     Then qApp->libraryPaths() would return something like this:

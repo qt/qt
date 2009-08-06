@@ -173,6 +173,7 @@ public:
     bool save(QIODevice *iod);
 
     void insert(const TranslatorMessage &msg, bool forceComment);
+    void insertIdBased(const TranslatorMessage &message);
 
     void squeeze(TranslatorSaveMode mode);
 
@@ -244,7 +245,7 @@ void Releaser::writeMessage(const ByteTranslatorMessage &msg, QDataStream &strea
     if (mode == SaveEverything)
         prefix = HashContextSourceTextComment;
 
-    // lrelease produces "wrong" .qm files for QByteArrays that are .isNull().
+    // lrelease produces "wrong" QM files for QByteArrays that are .isNull().
     switch (prefix) {
     default:
     case HashContextSourceTextComment:
@@ -436,6 +437,16 @@ void Releaser::insert(const TranslatorMessage &message, bool forceComment)
         insertInternal(message, forceComment, false);
 }
 
+void Releaser::insertIdBased(const TranslatorMessage &message)
+{
+    QStringList tlns = message.translations();
+    for (int i = 0; i < tlns.size(); ++i)
+        if (tlns.at(i).isEmpty())
+            tlns[i] = message.sourceText();
+    ByteTranslatorMessage bmsg("", originalBytes(message.id(), false), "", tlns);
+    m_messages.insert(bmsg, 0);
+}
+
 void Releaser::setNumerusRules(const QByteArray &rules)
 {
     m_numerusRules = rules;
@@ -541,7 +552,8 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     size_t numItems = offsetLength / (2 * sizeof(quint32));
     //qDebug() << "NUMITEMS: " << numItems;
 
-    QTextCodec *codec = QTextCodec::codecForName(cd.m_codecForSource);
+    QTextCodec *codec = QTextCodec::codecForName(
+        cd.m_codecForSource.isEmpty() ? QByteArray("Latin1") : cd.m_codecForSource);
     QTextCodec *utf8Codec = 0;
     if (codec->name() != "UTF-8")
         utf8Codec = QTextCodec::codecForName("UTF-8");
@@ -689,11 +701,17 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
     int finished = 0;
     int unfinished = 0;
     int untranslated = 0;
+    int missingIds = 0;
+    int droppedData = 0;
 
     for (int i = 0; i != translator.messageCount(); ++i) {
         const TranslatorMessage &msg = translator.message(i);
         TranslatorMessage::Type typ = msg.type();
         if (typ != TranslatorMessage::Obsolete) {
+            if (cd.m_idBased && msg.id().isEmpty()) {
+                ++missingIds;
+                continue;
+            }
             if (typ == TranslatorMessage::Unfinished) {
                 if (msg.translation().isEmpty()) {
                     ++untranslated;
@@ -706,18 +724,33 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
             } else {
                 ++finished;
             }
-            // Drop the comment in (context, sourceText, comment),
-            // unless the context is empty,
-            // unless (context, sourceText, "") already exists or
-            // unless we already dropped the comment of (context,
-            // sourceText, comment0).
-            bool forceComment =
-                    msg.comment().isEmpty()
-                    || msg.context().isEmpty()
-                    || translator.contains(msg.context(), msg.sourceText(), QString());
-            releaser.insert(msg, forceComment);
+            if (cd.m_idBased) {
+                if (!msg.context().isEmpty() || !msg.comment().isEmpty())
+                    ++droppedData;
+                releaser.insertIdBased(msg);
+            } else {
+                // Drop the comment in (context, sourceText, comment),
+                // unless the context is empty,
+                // unless (context, sourceText, "") already exists or
+                // unless we already dropped the comment of (context,
+                // sourceText, comment0).
+                bool forceComment =
+                        msg.comment().isEmpty()
+                        || msg.context().isEmpty()
+                        || translator.contains(msg.context(), msg.sourceText(), QString());
+                releaser.insert(msg, forceComment);
+            }
         }
     }
+
+    if (missingIds)
+        cd.appendError(QCoreApplication::translate("LRelease",
+            "Dropped %n message(s) which had no ID.", 0,
+            QCoreApplication::CodecForTr, missingIds));
+    if (droppedData)
+        cd.appendError(QCoreApplication::translate("LRelease",
+            "Excess context/disambiguation dropped from %n message(s).", 0,
+            QCoreApplication::CodecForTr, droppedData));
 
     releaser.squeeze(cd.m_saveMode);
     bool saved = releaser.save(&dev);

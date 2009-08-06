@@ -58,10 +58,10 @@
 #include "TextMetrics.h"
 #include "HTMLVideoElement.h"
 #include <stdio.h>
-
 #include <wtf/ByteArray.h>
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/UnusedParam.h>
 
 using namespace std;
 
@@ -546,7 +546,10 @@ void CanvasRenderingContext2D::lineTo(float x, float y)
         return;
     if (!state().m_invertibleCTM)
         return;
-    m_path.addLineTo(FloatPoint(x, y));
+    if (!m_path.hasCurrentPoint())
+        m_path.moveTo(FloatPoint(x, y));
+    else
+        m_path.addLineTo(FloatPoint(x, y));
 }
 
 void CanvasRenderingContext2D::quadraticCurveTo(float cpx, float cpy, float x, float y)
@@ -555,7 +558,10 @@ void CanvasRenderingContext2D::quadraticCurveTo(float cpx, float cpy, float x, f
         return;
     if (!state().m_invertibleCTM)
         return;
-    m_path.addQuadCurveTo(FloatPoint(cpx, cpy), FloatPoint(x, y));
+    if (!m_path.hasCurrentPoint())
+        m_path.moveTo(FloatPoint(x, y));
+    else
+        m_path.addQuadCurveTo(FloatPoint(cpx, cpy), FloatPoint(x, y));
 }
 
 void CanvasRenderingContext2D::bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y)
@@ -564,7 +570,10 @@ void CanvasRenderingContext2D::bezierCurveTo(float cp1x, float cp1y, float cp2x,
         return;
     if (!state().m_invertibleCTM)
         return;
-    m_path.addBezierCurveTo(FloatPoint(cp1x, cp1y), FloatPoint(cp2x, cp2y), FloatPoint(x, y));
+    if (!m_path.hasCurrentPoint())
+        m_path.moveTo(FloatPoint(x, y));
+    else
+        m_path.addBezierCurveTo(FloatPoint(cp1x, cp1y), FloatPoint(cp2x, cp2y), FloatPoint(x, y));
 }
 
 void CanvasRenderingContext2D::arcTo(float x0, float y0, float x1, float y1, float r, ExceptionCode& ec)
@@ -1103,7 +1112,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
     c->translate(destRect.x(), destRect.y());
     c->scale(FloatSize(destRect.width()/sourceRect.width(), destRect.height()/sourceRect.height()));
     c->translate(-sourceRect.x(), -sourceRect.y());
-    video->paint(c, IntRect(IntPoint(), size(video)));
+    video->paintCurrentFrameInContext(c, IntRect(IntPoint(), size(video)));
     c->restore();
 }
 #endif
@@ -1158,6 +1167,8 @@ void CanvasRenderingContext2D::prepareGradientForDashboard(CanvasGradient* gradi
     if (Settings* settings = m_canvas->document()->settings())
         if (settings->usesDashboardBackwardCompatibilityMode())
             gradient->setDashboardCompatibilityMode();
+#else
+    UNUSED_PARAM(gradient);
 #endif
 }
 

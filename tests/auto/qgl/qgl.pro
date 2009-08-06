@@ -3,7 +3,8 @@
 ############################################################
 
 load(qttest_p4)
-contains(QT_CONFIG, opengl):QT += opengl
+requires(contains(QT_CONFIG,opengl))
+QT += opengl
 
 SOURCES += tst_qgl.cpp
 

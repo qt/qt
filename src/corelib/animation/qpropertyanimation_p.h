@@ -58,6 +58,8 @@
 
 #include "private/qvariantanimation_p.h"
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 class QPropertyAnimationPrivate : public QVariantAnimationPrivate
@@ -86,4 +88,6 @@ public:
 
 QT_END_NAMESPACE
 
-#endif
+#endif //QT_NO_ANIMATION
+
+#endif //QPROPERTYANIMATION_P_H

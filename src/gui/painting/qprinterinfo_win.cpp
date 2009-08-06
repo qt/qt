@@ -43,7 +43,7 @@
 
 #include <qstringlist.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -89,45 +89,24 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
     DWORD needed = 0;
     DWORD returned = 0;
 
-    QT_WA({
-            if (!EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL,
-                               4, 0, 0, &needed, &returned))
-            {
-                buffer = new BYTE[needed];
-                if (!EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS , NULL,
-                                   4, buffer, needed, &needed, &returned))
-                {
-                    delete [] buffer;
-                    return printers;
-                }
-                PPRINTER_INFO_4 infoList = reinterpret_cast<PPRINTER_INFO_4>(buffer);
-                QPrinterInfo defPrn = defaultPrinter();
-                for (uint i = 0; i < returned; ++i) {
-                    printers.append(QPrinterInfo(QString::fromUtf16(reinterpret_cast<const ushort*>(infoList[i].pPrinterName))));
-                    if (printers.at(i).printerName() == defPrn.printerName())
-                        printers[i].d_ptr->m_default = true;
-                }
-                delete [] buffer;
-            }
-        }, {
-            // In Windows 98 networked printers are served through the local connection
-            if (!EnumPrintersA(PRINTER_ENUM_LOCAL, NULL, 5, 0, 0, &needed, &returned)) {
-                buffer = new BYTE[needed];
-                if (!EnumPrintersA(PRINTER_ENUM_LOCAL, NULL, 5, buffer, needed, &needed, &returned)) {
-                    delete [] buffer;
-                    return printers;
-                }
-
-                PPRINTER_INFO_5 infoList = reinterpret_cast<PPRINTER_INFO_5>(buffer);
-                QPrinterInfo defPrn = defaultPrinter();
-                for (uint i = 0; i < returned; ++i) {
-                    printers.append(QPrinterInfo(QString::fromLocal8Bit(reinterpret_cast<const char*>(infoList[i].pPrinterName))));
-                    if (printers.at(i).printerName() == defPrn.printerName())
-                        printers[i].d_ptr->m_default = true;
-                }
-                delete [] buffer;
-            }
-        });
+    if ( !EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, 0, 0, &needed, &returned))
+    {
+        buffer = new BYTE[needed];
+        if (!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS , NULL,
+                           4, buffer, needed, &needed, &returned))
+        {
+            delete [] buffer;
+            return printers;
+        }
+        PPRINTER_INFO_4 infoList = reinterpret_cast<PPRINTER_INFO_4>(buffer);
+        QPrinterInfo defPrn = defaultPrinter();
+        for (uint i = 0; i < returned; ++i) {
+            printers.append(QPrinterInfo(QString::fromWCharArray(infoList[i].pPrinterName)));
+            if (printers.at(i).printerName() == defPrn.printerName())
+                printers[i].d_ptr->m_default = true;
+        }
+        delete [] buffer;
+    }
 
     return printers;
 }
@@ -135,18 +114,9 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 QPrinterInfo QPrinterInfo::defaultPrinter()
 {
     QString noPrinters(QLatin1String("qt_no_printers"));
-    QString output;
-    QT_WA({
-        ushort buffer[256];
-        GetProfileStringW(L"windows", L"device",
-                          reinterpret_cast<const wchar_t *>(noPrinters.utf16()),
-                          reinterpret_cast<wchar_t *>(buffer), 256);
-        output = QString::fromUtf16(buffer);
-    }, {
-        char buffer[256];
-        GetProfileStringA("windows", "device", noPrinters.toLatin1(), buffer, 256);
-        output = QString::fromLocal8Bit(buffer);
-    });
+    wchar_t buffer[256];
+    GetProfileString(L"windows", L"device", (wchar_t*)noPrinters.utf16(), buffer, 256);
+    QString output = QString::fromWCharArray(buffer);
 
     // Filter out the name of the printer, which should be everything
     // before a comma.
@@ -228,26 +198,16 @@ bool QPrinterInfo::isDefault() const
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
     const Q_D(QPrinterInfo);
-    DWORD size;
-    WORD* papers;
     QList<QPrinter::PaperSize> paperList;
 
-    QT_WA({
-        size = DeviceCapabilitiesW(reinterpret_cast<const WCHAR*>(d->m_name.utf16()),
-                NULL, DC_PAPERS, NULL, NULL);
-        if ((int)size == -1)
-            return paperList;
-        papers = new WORD[size];
-        size = DeviceCapabilitiesW(reinterpret_cast<const WCHAR*>(d->m_name.utf16()),
-                NULL, DC_PAPERS, reinterpret_cast<WCHAR*>(papers), NULL);
-    }, {
-        size = DeviceCapabilitiesA(d->m_name.toLatin1().data(), NULL, DC_PAPERS, NULL, NULL);
-        if ((int)size == -1)
-            return paperList;
-        papers = new WORD[size];
-        size = DeviceCapabilitiesA(d->m_name.toLatin1().data(), NULL, DC_PAPERS,
-                reinterpret_cast<char*>(papers), NULL);
-    });
+    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->m_name.utf16()),
+                                    NULL, DC_PAPERS, NULL, NULL);
+    if ((int)size == -1)
+        return paperList;
+
+    wchar_t *papers = new wchar_t[size];
+    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->m_name.utf16()),
+                              NULL, DC_PAPERS, papers, NULL);
 
     for (int c = 0; c < (int)size; ++c) {
         paperList.append(mapDevmodePaperSize(papers[c]));

@@ -70,7 +70,7 @@ class QPSPrintEnginePrivate;
 
 class QPSPrintEngine : public QPdfBaseEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QPSPrintEngine)
+    Q_DECLARE_PRIVATE(QPSPrintEngine)
 public:
     // QPrinter uses these
     explicit QPSPrintEngine(QPrinter::PrinterMode m);

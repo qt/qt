@@ -116,6 +116,8 @@ public:
     QNetworkAccessManager::Operation operation() const;
     QNetworkRequest request() const;
     NetworkError error() const;
+    bool isFinished() const;
+    bool isRunning() const;
     QUrl url() const;
 
     // "cooked" headers
@@ -132,6 +134,7 @@ public:
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &configuration);
+    void ignoreSslErrors(const QList<QSslError> &errors);
 #endif
 
 public Q_SLOTS:
@@ -162,7 +165,7 @@ protected:
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QNetworkReply)
+    Q_DECLARE_PRIVATE(QNetworkReply)
 };
 
 QT_END_NAMESPACE

@@ -335,6 +335,9 @@ Document::Document(Frame* frame, bool isXHTML)
     , m_hasOpenDatabases(false)
 #endif
     , m_usingGeolocation(false)
+#if ENABLE(WML)
+    , m_containsWMLContent(false)
+#endif
 {
     m_document.resetSkippingRef(this);
 
@@ -361,11 +364,14 @@ Document::Document(Frame* frame, bool isXHTML)
     m_inDocument = true;
     m_inStyleRecalc = false;
     m_closeAfterStyleRecalc = false;
+
     m_usesDescendantRules = false;
     m_usesSiblingRules = false;
     m_usesFirstLineRules = false;
     m_usesFirstLetterRules = false;
     m_usesBeforeAfterRules = false;
+    m_usesRemUnits = false;
+
     m_gotoAnchorNeededAfterStylesheetsLoad = false;
  
     m_styleSelector = 0;
@@ -1132,6 +1138,11 @@ void Document::styleRecalcTimerFired(Timer<Document>*)
     updateStyleIfNeeded();
 }
 
+bool Document::childNeedsAndNotInStyleRecalc()
+{
+    return childNeedsStyleRecalc() && !m_inStyleRecalc;
+}
+
 void Document::recalcStyle(StyleChange change)
 {
     // we should not enter style recalc while painting
@@ -1663,7 +1674,8 @@ void Document::implicitClose()
     }
 
     frame()->loader()->checkCallImplicitClose();
-
+    RenderObject* renderObject = renderer();
+    
     // We used to force a synchronous display and flush here.  This really isn't
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
@@ -1672,13 +1684,19 @@ void Document::implicitClose()
         updateStyleIfNeeded();
         
         // Always do a layout after loading if needed.
-        if (view() && renderer() && (!renderer()->firstChild() || renderer()->needsLayout()))
+        if (view() && renderObject && (!renderObject->firstChild() || renderObject->needsLayout()))
             view()->layout();
     }
 
 #if PLATFORM(MAC)
-    if (f && renderer() && this == topDocument() && AXObjectCache::accessibilityEnabled())
-        axObjectCache()->postNotification(renderer(), "AXLoadComplete", true);
+    if (f && renderObject && this == topDocument() && AXObjectCache::accessibilityEnabled()) {
+        // The AX cache may have been cleared at this point, but we need to make sure it contains an
+        // AX object to send the notification to. getOrCreate will make sure that an valid AX object
+        // exists in the cache (we ignore the return value because we don't need it here). This is 
+        // only safe to call when a layout is not in progress, so it can not be used in postNotification.    
+        axObjectCache()->getOrCreate(renderObject);
+        axObjectCache()->postNotification(renderObject, "AXLoadComplete", true);
+    }
 #endif
 
 #if ENABLE(SVG)
@@ -2598,7 +2616,7 @@ bool Document::setFocusedNode(PassRefPtr<Node> newFocusedNode)
             else
                 view()->setFocus();
         }
-   }
+    }
 
 #if PLATFORM(MAC) && !PLATFORM(CHROMIUM)
     if (!focusChangeBlocked && m_focusedNode && AXObjectCache::accessibilityEnabled())
@@ -4354,19 +4372,19 @@ void Document::parseDNSPrefetchControlHeader(const String& dnsPrefetchControl)
 void Document::reportException(const String& errorMessage, int lineNumber, const String& sourceURL)
 {
     if (DOMWindow* window = domWindow())
-        window->console()->addMessage(JSMessageSource, ErrorMessageLevel, errorMessage, lineNumber, sourceURL);
+        window->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, errorMessage, lineNumber, sourceURL);
 }
 
-void Document::addMessage(MessageDestination destination, MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
+void Document::addMessage(MessageDestination destination, MessageSource source, MessageType type, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
 {
     switch (destination) {
     case InspectorControllerDestination:
         if (page())
-            page()->inspectorController()->addMessageToConsole(source, level, message, lineNumber, sourceURL);
+            page()->inspectorController()->addMessageToConsole(source, type, level, message, lineNumber, sourceURL);
         return;
     case ConsoleDestination:
         if (DOMWindow* window = domWindow())
-            window->console()->addMessage(source, level, message, lineNumber, sourceURL);
+            window->console()->addMessage(source, type, level, message, lineNumber, sourceURL);
         return;
     }
     ASSERT_NOT_REACHED();

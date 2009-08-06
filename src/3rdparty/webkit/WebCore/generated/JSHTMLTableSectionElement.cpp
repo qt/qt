@@ -50,7 +50,7 @@ static const HashTableValue JSHTMLTableSectionElementTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableSectionElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableSectionElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLTableSectionElementTableValues, 0 };
 #else
@@ -64,19 +64,19 @@ static const HashTableValue JSHTMLTableSectionElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableSectionElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableSectionElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTableSectionElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLTableSectionElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLTableSectionElementConstructor : public DOMObject {
+class JSHTMLTableSectionElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLTableSectionElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLTableSectionElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLTableSectionElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLTableSectionElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLTableSectionElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLTableSectionElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -104,7 +104,7 @@ static const HashTableValue JSHTMLTableSectionElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableSectionElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableSectionElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLTableSectionElementPrototypeTableValues, 0 };
 #else
@@ -125,8 +125,8 @@ bool JSHTMLTableSectionElementPrototype::getOwnPropertySlot(ExecState* exec, con
 
 const ClassInfo JSHTMLTableSectionElement::s_info = { "HTMLTableSectionElement", &JSHTMLElement::s_info, &JSHTMLTableSectionElementTable, 0 };
 
-JSHTMLTableSectionElement::JSHTMLTableSectionElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLTableSectionElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLTableSectionElement::JSHTMLTableSectionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableSectionElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -142,42 +142,48 @@ bool JSHTMLTableSectionElement::getOwnPropertySlot(ExecState* exec, const Identi
 
 JSValue jsHTMLTableSectionElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLTableSectionElementCh(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
     return jsString(exec, imp->ch());
 }
 
 JSValue jsHTMLTableSectionElementChOff(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
     return jsString(exec, imp->chOff());
 }
 
 JSValue jsHTMLTableSectionElementVAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
     return jsString(exec, imp->vAlign());
 }
 
 JSValue jsHTMLTableSectionElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->rows()));
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
 }
 
 JSValue jsHTMLTableSectionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLTableSectionElement* domObject = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
+    return JSHTMLTableSectionElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLTableSectionElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -208,9 +214,9 @@ void setJSHTMLTableSectionElementVAlign(ExecState* exec, JSObject* thisObject, J
     imp->setVAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLTableSectionElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTableSectionElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLTableSectionElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLTableSectionElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionInsertRow(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -224,7 +230,7 @@ JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionInsertRow(ExecSt
     int index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->insertRow(index, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->insertRow(index, ec)));
     setDOMException(exec, ec);
     return result;
 }

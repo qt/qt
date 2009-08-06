@@ -54,7 +54,6 @@
 #include "FrameLoaderClient.h"
 #include "FrameTree.h"
 #include "FrameView.h"
-#include "HTMLAnchorElement.h"
 #include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameElement.h"
@@ -71,6 +70,7 @@
 #include "Page.h"
 #include "PageCache.h"
 #include "PageGroup.h"
+#include "PlaceholderDocument.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
 #include "ProgressTracker.h"
@@ -271,9 +271,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
 #ifndef NDEBUG
     , m_didDispatchDidCommitLoad(false)
 #endif
-#if ENABLE(WML)
-    , m_forceReloadWmlDeck(false)
-#endif
 {
 }
 
@@ -424,7 +421,7 @@ bool FrameLoader::requestFrame(HTMLFrameOwnerElement* ownerElement, const String
 
     Frame* frame = ownerElement->contentFrame();
     if (frame)
-        frame->loader()->scheduleLocationChange(url.string(), m_outgoingReferrer, true, true, userGestureHint());
+        frame->loader()->scheduleLocationChange(url.string(), m_outgoingReferrer, true, true, isProcessingUserGesture());
     else
         frame = loadSubframe(ownerElement, url, frameName, m_outgoingReferrer);
     
@@ -487,7 +484,7 @@ Frame* FrameLoader::loadSubframe(HTMLFrameOwnerElement* ownerElement, const KURL
 
 void FrameLoader::submitForm(const char* action, const String& url, PassRefPtr<FormData> formData,
     const String& target, const String& contentType, const String& boundary,
-    bool lockHistory, bool lockBackForwardList, PassRefPtr<Event> event, PassRefPtr<FormState> formState)
+    bool lockHistory, PassRefPtr<Event> event, PassRefPtr<FormState> formState)
 {
     ASSERT(action);
     ASSERT(strcmp(action, "GET") == 0 || strcmp(action, "POST") == 0);
@@ -559,20 +556,7 @@ void FrameLoader::submitForm(const char* action, const String& url, PassRefPtr<F
     frameRequest.resourceRequest().setURL(u);
     addHTTPOriginIfNeeded(frameRequest.resourceRequest(), outgoingOrigin());
 
-    // Navigation of a subframe during loading of the main frame does not create a new back/forward item.
-    // Strangely, we only implement this rule for form submission; time will tell if we need it for other types of navigation.
-    // The definition of "during load" is any time before the load event has been handled.
-    // See https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation for this.
-    if (Page* targetPage = targetFrame->page()) {
-        Frame* mainFrame = targetPage->mainFrame();
-        if (mainFrame != targetFrame) {
-            Document* document = mainFrame->document();
-            if (!mainFrame->loader()->isComplete() || document && document->processingLoadEvent())
-                lockBackForwardList = true;
-        }
-    }
-
-    targetFrame->loader()->scheduleFormSubmission(frameRequest, lockHistory, lockBackForwardList, event, formState);
+    targetFrame->loader()->scheduleFormSubmission(frameRequest, lockHistory, event, formState);
 }
 
 void FrameLoader::stopLoading(bool sendUnload, DatabasePolicy databasePolicy)
@@ -741,15 +725,16 @@ bool FrameLoader::executeIfJavaScriptURL(const KURL& url, bool userGesture, bool
     if (m_frame->page() && !m_frame->page()->javaScriptURLsAreAllowed())
         return true;
 
-    String script = decodeURLEscapeSequences(url.string().substring(strlen("javascript:")));
+    const int javascriptSchemeLength = sizeof("javascript:") - 1;
+
+    String script = decodeURLEscapeSequences(url.string().substring(javascriptSchemeLength));
     ScriptValue result = executeScript(script, userGesture);
 
     String scriptResult;
     if (!result.getString(scriptResult))
         return true;
 
-    SecurityOrigin* currentSecurityOrigin = 0;
-    currentSecurityOrigin = m_frame->document()->securityOrigin();
+    SecurityOrigin* currentSecurityOrigin = m_frame->document()->securityOrigin();
 
     // FIXME: We should always replace the document, but doing so
     //        synchronously can cause crashes:
@@ -910,6 +895,8 @@ void FrameLoader::begin(const KURL& url, bool dispatch, SecurityOrigin* origin)
     // Create a new document before clearing the frame, because it may need to inherit an aliased security context.
     if (!m_isDisplayingInitialEmptyDocument && m_client->shouldUsePluginDocument(m_responseMIMEType))
         document = PluginDocument::create(m_frame);
+    else if (!m_client->hasHTMLView())
+        document = PlaceholderDocument::create(m_frame);
     else
         document = DOMImplementation::createDocument(m_responseMIMEType, m_frame, m_frame->inViewSourceMode());
 
@@ -966,7 +953,7 @@ void FrameLoader::begin(const KURL& url, bool dispatch, SecurityOrigin* origin)
 
     document->implicitOpen();
     
-    if (m_frame->view())
+    if (m_frame->view() && m_client->hasHTMLView())
         m_frame->view()->setContentsSize(IntSize());
 }
 
@@ -1336,6 +1323,20 @@ void FrameLoader::scheduleHTTPRedirection(double delay, const String& url)
         scheduleRedirection(new ScheduledRedirection(delay, url, true, delay <= 1, false, false));
 }
 
+static bool mustLockBackForwardList(Frame* targetFrame)
+{
+    // Navigation of a subframe during loading of an ancestor frame does not create a new back/forward item.
+    // The definition of "during load" is any time before all handlers for the load event have been run.
+    // See https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation for this.
+    
+    for (Frame* ancestor = targetFrame->tree()->parent(); ancestor; ancestor = ancestor->tree()->parent()) {
+        Document* document = ancestor->document();
+        if (!ancestor->loader()->isComplete() || document && document->processingLoadEvent())
+            return true;
+    }
+    return false;
+}    
+
 void FrameLoader::scheduleLocationChange(const String& url, const String& referrer, bool lockHistory, bool lockBackForwardList, bool wasUserGesture)
 {
     if (!m_frame->page())
@@ -1343,6 +1344,8 @@ void FrameLoader::scheduleLocationChange(const String& url, const String& referr
 
     if (url.isEmpty())
         return;
+
+    lockBackForwardList = lockBackForwardList || mustLockBackForwardList(m_frame);
 
     // If the URL we're going to navigate to is the same as the current one, except for the
     // fragment part, we don't need to schedule the location change.
@@ -1360,7 +1363,7 @@ void FrameLoader::scheduleLocationChange(const String& url, const String& referr
 }
 
 void FrameLoader::scheduleFormSubmission(const FrameLoadRequest& frameRequest,
-    bool lockHistory, bool lockBackForwardList, PassRefPtr<Event> event, PassRefPtr<FormState> formState)
+    bool lockHistory, PassRefPtr<Event> event, PassRefPtr<FormState> formState)
 {
     ASSERT(m_frame->page());
     ASSERT(!frameRequest.isEmpty());
@@ -1372,7 +1375,7 @@ void FrameLoader::scheduleFormSubmission(const FrameLoadRequest& frameRequest,
     // This may happen when a frame changes the location of another frame.
     bool duringLoad = !m_committedFirstRealDocumentLoad;
 
-    scheduleRedirection(new ScheduledRedirection(frameRequest, lockHistory, lockBackForwardList, event, formState, duringLoad));
+    scheduleRedirection(new ScheduledRedirection(frameRequest, lockHistory, mustLockBackForwardList(m_frame), event, formState, duringLoad));
 }
 
 void FrameLoader::scheduleRefresh(bool wasUserGesture)
@@ -1586,28 +1589,8 @@ bool FrameLoader::gotoAnchor(const String& name)
     if (!anchorNode && !(name.isEmpty() || equalIgnoringCase(name, "top")))
         return false;
 
-    // We need to update the layout before scrolling, otherwise we could
-    // really mess things up if an anchor scroll comes at a bad moment.
-    m_frame->document()->updateStyleIfNeeded();
-    // Only do a layout if changes have occurred that make it necessary.
-    if (m_frame->view() && m_frame->contentRenderer() && m_frame->contentRenderer()->needsLayout())
-        m_frame->view()->layout();
-  
-    // Scroll nested layers and frames to reveal the anchor.
-    // Align to the top and to the closest side (this matches other browsers).
-    RenderObject* renderer;
-    IntRect rect;
-    if (!anchorNode)
-        renderer = m_frame->document()->renderer(); // top of document
-    else {
-        renderer = anchorNode->renderer();
-        rect = anchorNode->getRect();
-    }
-    if (renderer) {
-        renderer->enclosingLayer()->scrollRectToVisible(rect, true, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
-        if (m_frame->view())
-            m_frame->view()->setLockedToAnchor(true);
-    }
+    if (FrameView* view = m_frame->view())
+        view->maintainScrollPositionAtAnchor(anchorNode ? static_cast<Node*>(anchorNode) : m_frame->document());
 
     return true;
 }
@@ -1686,7 +1669,7 @@ static HTMLPlugInElement* toPlugInElement(Node* node)
 bool FrameLoader::loadPlugin(RenderPart* renderer, const KURL& url, const String& mimeType, 
     const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback)
 {
-    Widget* widget = 0;
+    RefPtr<Widget> widget;
 
     if (renderer && !useFallback) {
         HTMLPlugInElement* element = toPlugInElement(renderer->node());
@@ -1768,7 +1751,7 @@ void FrameLoader::provisionalLoadStarted()
     m_client->provisionalLoadStarted();
 }
 
-bool FrameLoader::userGestureHint()
+bool FrameLoader::isProcessingUserGesture()
 {
     Frame* frame = m_frame->tree()->top();
     if (!frame->script()->isEnabled())
@@ -1797,6 +1780,17 @@ void FrameLoader::addData(const char* bytes, int length)
     write(bytes, length);
 }
 
+#if ENABLE(WML)
+static inline bool frameContainsWMLContent(Frame* frame)
+{
+    Document* document = frame ? frame->document() : 0;
+    if (!document)
+        return false;
+
+    return document->containsWMLContent() || document->isWMLDocument();
+}
+#endif
+
 bool FrameLoader::canCachePageContainingThisFrame()
 {
     return m_documentLoader
@@ -1824,6 +1818,9 @@ bool FrameLoader::canCachePageContainingThisFrame()
         // application cache. <rdar://problem/5917899> tracks that work.
         && !m_documentLoader->applicationCache()
         && !m_documentLoader->candidateApplicationCacheGroup()
+#endif
+#if ENABLE(WML)
+        && !frameContainsWMLContent(m_frame)
 #endif
         && m_client->canCachePage()
         ;
@@ -2111,7 +2108,7 @@ void FrameLoader::completed()
     if (Frame* parent = m_frame->tree()->parent())
         parent->loader()->checkCompleted();
     if (m_frame->view())
-        m_frame->view()->setLockedToAnchor(false);
+        m_frame->view()->maintainScrollPositionAtAnchor(0);
 }
 
 void FrameLoader::started()
@@ -2406,7 +2403,7 @@ void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
     if (!frame)
         return;
 
-    frame->domWindow()->console()->addMessage(JSMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url, 0, String());
+    frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, "Not allowed to load local resource: " + url, 0, String());
 }
 
 bool FrameLoader::shouldHideReferrer(const KURL& url, const String& referrer)
@@ -2623,7 +2620,7 @@ bool FrameLoader::shouldAllowNavigation(Frame* targetFrame) const
             targetDocument->url().string().utf8().data(), activeDocument->url().string().utf8().data());
 
         // FIXME: should we print to the console of the activeFrame as well?
-        targetFrame->domWindow()->console()->addMessage(JSMessageSource, ErrorMessageLevel, message, 1, String());
+        targetFrame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, message, 1, String());
     }
     
     return false;
@@ -2937,10 +2934,12 @@ void FrameLoader::transitionToCommitted(PassRefPtr<CachedPage> cachedPage)
     
     m_committedFirstRealDocumentLoad = true;
 
-    // For non-cached HTML pages, these methods are called in FrameLoader::begin.
-    if (cachedPage || !m_client->hasHTMLView()) {
-        dispatchDidCommitLoad(); 
-            
+    if (!m_client->hasHTMLView())
+        receivedFirstData();
+    else if (cachedPage) {
+        // For non-cached HTML pages, these methods are called in receivedFirstData().
+        dispatchDidCommitLoad();
+
         // If we have a title let the WebView know about it. 
         if (!ptitle.isNull()) 
             m_client->dispatchDidReceiveTitle(ptitle);         
@@ -2975,18 +2974,11 @@ void FrameLoader::clientRedirected(const KURL& url, double seconds, double fireD
     m_quickRedirectComing = lockBackForwardList && m_documentLoader && !m_isExecutingJavaScriptFormAction;
 }
 
-#if ENABLE(WML)
-void FrameLoader::setForceReloadWmlDeck(bool reload)
-{
-    m_forceReloadWmlDeck = reload;
-}
-#endif
-
 bool FrameLoader::shouldReload(const KURL& currentURL, const KURL& destinationURL)
 {
 #if ENABLE(WML)
-    // As for WML deck, sometimes it's supposed to be reloaded even if the same URL with fragment
-    if (m_forceReloadWmlDeck)
+    // All WML decks are supposed to be reloaded, even within the same URL fragment
+    if (frameContainsWMLContent(m_frame))
         return true;
 #endif
 
@@ -4441,7 +4433,8 @@ void FrameLoader::loadItem(HistoryItem* item, FrameLoadType loadType)
     bool shouldScroll = !formData && !(m_currentHistoryItem && m_currentHistoryItem->formData()) && urlsMatchItem(item);
 
 #if ENABLE(WML)
-    if (m_frame->document()->isWMLDocument())
+    // All WML decks should go through the real load mechanism, not the scroll-to-anchor code
+    if (frameContainsWMLContent(m_frame))
         shouldScroll = false;
 #endif
 
@@ -5066,7 +5059,7 @@ void FrameLoader::dispatchWindowObjectAvailable()
     }
 }
 
-Widget* FrameLoader::createJavaAppletWidget(const IntSize& size, HTMLAppletElement* element, const HashMap<String, String>& args)
+PassRefPtr<Widget> FrameLoader::createJavaAppletWidget(const IntSize& size, HTMLAppletElement* element, const HashMap<String, String>& args)
 {
     String baseURLString;
     String codeBaseURLString;
@@ -5094,7 +5087,7 @@ Widget* FrameLoader::createJavaAppletWidget(const IntSize& size, HTMLAppletEleme
         baseURLString = m_frame->document()->baseURL().string();
     KURL baseURL = completeURL(baseURLString);
 
-    Widget* widget = m_client->createJavaAppletWidget(size, element, baseURL, paramNames, paramValues);
+    RefPtr<Widget> widget = m_client->createJavaAppletWidget(size, element, baseURL, paramNames, paramValues);
     if (!widget)
         return 0;
 
@@ -5106,8 +5099,7 @@ void FrameLoader::didChangeTitle(DocumentLoader* loader)
 {
     m_client->didChangeTitle(loader);
 
-    // The title doesn't get communicated to the WebView until we are committed.
-    if (loader->isCommitted()) {
+    if (loader == m_documentLoader) {
         // Must update the entries in the back-forward list too.
         if (m_currentHistoryItem)
             m_currentHistoryItem->setTitle(loader->title());

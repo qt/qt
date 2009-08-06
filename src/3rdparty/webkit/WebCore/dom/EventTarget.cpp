@@ -89,7 +89,14 @@ Worker* EventTarget::toWorker()
     return 0;
 }
 
-WorkerContext* EventTarget::toWorkerContext()
+DedicatedWorkerContext* EventTarget::toDedicatedWorkerContext()
+{
+    return 0;
+}
+#endif
+
+#if ENABLE(SHARED_WORKERS)
+SharedWorker* EventTarget::toSharedWorker()
 {
     return 0;
 }

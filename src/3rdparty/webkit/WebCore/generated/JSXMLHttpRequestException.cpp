@@ -45,7 +45,7 @@ static const HashTableValue JSXMLHttpRequestExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSXMLHttpRequestExceptionTableValues, 0 };
 #else
@@ -61,19 +61,19 @@ static const HashTableValue JSXMLHttpRequestExceptionConstructorTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSXMLHttpRequestExceptionConstructorTableValues, 0 };
 #else
     { 4, 3, JSXMLHttpRequestExceptionConstructorTableValues, 0 };
 #endif
 
-class JSXMLHttpRequestExceptionConstructor : public DOMObject {
+class JSXMLHttpRequestExceptionConstructor : public DOMConstructorObject {
 public:
-    JSXMLHttpRequestExceptionConstructor(ExecState* exec)
-        : DOMObject(JSXMLHttpRequestExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSXMLHttpRequestExceptionConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSXMLHttpRequestExceptionConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSXMLHttpRequestExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSXMLHttpRequestExceptionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -102,7 +102,7 @@ static const HashTableValue JSXMLHttpRequestExceptionPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSXMLHttpRequestExceptionPrototypeTableValues, 0 };
 #else
@@ -131,8 +131,8 @@ static const HashTable* getJSXMLHttpRequestExceptionTable(ExecState* exec)
 }
 const ClassInfo JSXMLHttpRequestException::s_info = { "XMLHttpRequestException", 0, 0, getJSXMLHttpRequestExceptionTable };
 
-JSXMLHttpRequestException::JSXMLHttpRequestException(PassRefPtr<Structure> structure, PassRefPtr<XMLHttpRequestException> impl)
-    : DOMObject(structure)
+JSXMLHttpRequestException::JSXMLHttpRequestException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequestException> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -154,32 +154,36 @@ bool JSXMLHttpRequestException::getOwnPropertySlot(ExecState* exec, const Identi
 
 JSValue jsXMLHttpRequestExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
     return jsNumber(exec, imp->code());
 }
 
 JSValue jsXMLHttpRequestExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsXMLHttpRequestExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()))->impl());
+    XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
     return jsString(exec, imp->message());
 }
 
 JSValue jsXMLHttpRequestExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSXMLHttpRequestException* domObject = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
+    return JSXMLHttpRequestException::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSXMLHttpRequestException::getConstructor(ExecState* exec)
+JSValue JSXMLHttpRequestException::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSXMLHttpRequestExceptionConstructor>(exec);
+    return getDOMConstructor<JSXMLHttpRequestExceptionConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsXMLHttpRequestExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -207,9 +211,9 @@ JSValue jsXMLHttpRequestExceptionABORT_ERR(ExecState* exec, const Identifier&, c
     return jsNumber(exec, static_cast<int>(102));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, XMLHttpRequestException* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XMLHttpRequestException* object)
 {
-    return getDOMObjectWrapper<JSXMLHttpRequestException>(exec, object);
+    return getDOMObjectWrapper<JSXMLHttpRequestException>(exec, globalObject, object);
 }
 XMLHttpRequestException* toXMLHttpRequestException(JSC::JSValue value)
 {

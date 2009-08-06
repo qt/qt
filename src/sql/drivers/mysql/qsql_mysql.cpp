@@ -85,11 +85,10 @@ public:
 #else
         tc(0),
 #endif
-        preparedQuerys(false), preparedQuerysEnabled(false) {}
+        preparedQuerysEnabled(false) {}
     MYSQL *mysql;
     QTextCodec *tc;
 
-    bool preparedQuerys;
     bool preparedQuerysEnabled;
 };
 
@@ -172,6 +171,7 @@ public:
 #if MYSQL_VERSION_ID >= 40108
         , stmt(0), meta(0), inBinds(0), outBinds(0)
 #endif
+        , preparedQuery(false)
         {
             connect(dp, SIGNAL(destroyed()), this, SLOT(driverDestroyed()));
         }
@@ -209,6 +209,9 @@ public:
     MYSQL_BIND *inBinds;
     MYSQL_BIND *outBinds;
 #endif
+
+    bool preparedQuery;
+
 private Q_SLOTS:
     void driverDestroyed() { driver = NULL; }
 };
@@ -399,7 +402,7 @@ QMYSQLResult::~QMYSQLResult()
 QVariant QMYSQLResult::handle() const
 {
 #if MYSQL_VERSION_ID >= 40108
-    if(d->driver && d->driver->d->preparedQuerys)
+    if(d->preparedQuery)
         return d->meta ? qVariantFromValue(d->meta) : qVariantFromValue(d->stmt);
     else
 #endif
@@ -454,9 +457,6 @@ void QMYSQLResult::cleanup()
     d->row = NULL;
     setAt(-1);
     setActive(false);
-
-    if(d->driver)
-        d->driver->d->preparedQuerys = d->driver->d->preparedQuerysEnabled;
 }
 
 bool QMYSQLResult::fetch(int i)
@@ -474,7 +474,7 @@ bool QMYSQLResult::fetch(int i)
     }
     if (at() == i)
         return true;
-    if (d->driver->d->preparedQuerys) {
+    if (d->preparedQuery) {
 #if MYSQL_VERSION_ID >= 40108
         mysql_stmt_data_seek(d->stmt, i);
 
@@ -507,7 +507,7 @@ bool QMYSQLResult::fetchNext()
 {
     if(!d->driver)
         return false;
-    if (d->driver->d->preparedQuerys) {
+    if (d->preparedQuery) {
 #if MYSQL_VERSION_ID >= 40108
         if (mysql_stmt_fetch(d->stmt))
             return false;
@@ -534,7 +534,7 @@ bool QMYSQLResult::fetchLast()
     }
 
     my_ulonglong numRows;
-    if (d->driver->d->preparedQuerys) {
+    if (d->preparedQuery) {
 #if MYSQL_VERSION_ID >= 40108
         numRows = mysql_stmt_num_rows(d->stmt);
 #else
@@ -574,7 +574,7 @@ QVariant QMYSQLResult::data(int field)
     int fieldLength = 0;
     const QMYSQLResultPrivate::QMyField &f = d->fields.at(field);
     QString val;
-    if (d->driver->d->preparedQuerys) {
+    if (d->preparedQuery) {
         if (f.nullIndicator)
             return QVariant(f.type);
 
@@ -634,7 +634,7 @@ QVariant QMYSQLResult::data(int field)
     case QVariant::ByteArray: {
 
         QByteArray ba;
-        if (d->driver->d->preparedQuerys) {
+        if (d->preparedQuery) {
             ba = QByteArray(f.outField, f.bufLength);
         } else {
             ba = QByteArray(d->row[field], fieldLength);
@@ -651,7 +651,7 @@ QVariant QMYSQLResult::data(int field)
 
 bool QMYSQLResult::isNull(int field)
 {
-   if (d->driver->d->preparedQuerys)
+   if (d->preparedQuery)
        return d->fields.at(field).nullIndicator;
    else
        return d->row[field] == NULL;
@@ -662,11 +662,9 @@ bool QMYSQLResult::reset (const QString& query)
     if (!driver() || !driver()->isOpen() || driver()->isOpenError() || !d->driver)
         return false;
 
-    if(d->driver->d->preparedQuerysEnabled && prepare(query)) {
-        d->driver->d->preparedQuerys = true;
-        return exec();
-    }
-    d->driver->d->preparedQuerys = false;
+    d->preparedQuery = false;
+
+    cleanup();
 
     const QByteArray encQuery(fromUnicode(d->driver->d->tc, query));
     if (mysql_real_query(d->driver->d->mysql, encQuery.data(), encQuery.length())) {
@@ -699,7 +697,7 @@ bool QMYSQLResult::reset (const QString& query)
 int QMYSQLResult::size()
 {
     if (d->driver && isSelect())
-        if (d->driver->d->preparedQuerys)
+        if (d->preparedQuery)
 #if MYSQL_VERSION_ID >= 40108
             return mysql_stmt_num_rows(d->stmt);
 #else
@@ -721,7 +719,7 @@ QVariant QMYSQLResult::lastInsertId() const
     if (!isActive() || !d->driver)
         return QVariant();
 
-    if (d->driver->d->preparedQuerys) {
+    if (d->preparedQuery) {
 #if MYSQL_VERSION_ID >= 40108
         quint64 id = mysql_stmt_insert_id(d->stmt);
         if (id)
@@ -743,7 +741,7 @@ QSqlRecord QMYSQLResult::record() const
         return info;
 
 #if MYSQL_VERSION_ID >= 40108
-    res = d->driver->d->preparedQuerys ? d->meta : d->result;
+    res = d->preparedQuery ? d->meta : d->result;
 #else
     res = d->result;
 #endif
@@ -856,7 +854,7 @@ bool QMYSQLResult::prepare(const QString& query)
         return false;
 #if MYSQL_VERSION_ID >= 40108
     cleanup();
-    if (!d->driver->d->preparedQuerys)
+    if (!d->driver->d->preparedQuerysEnabled)
         return QSqlResult::prepare(query);
 
     int r;
@@ -886,6 +884,7 @@ bool QMYSQLResult::prepare(const QString& query)
     }
 
     setSelect(d->bindInValues());
+    d->preparedQuery = true;
     return true;
 #else
     return false;
@@ -896,7 +895,7 @@ bool QMYSQLResult::exec()
 {
     if (!d->driver)
         return false;
-    if (!d->driver->d->preparedQuerys)
+    if (!d->preparedQuery)
         return QSqlResult::exec();
     if (!d->stmt)
         return false;
@@ -1338,9 +1337,6 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
     if (!isOpen())
         return idx;
 
-    prepQ = d->preparedQuerys;
-    d->preparedQuerys = false;
-
     QSqlQuery i(createResult());
     QString stmt(QLatin1String("show index from %1;"));
     QSqlRecord fil = record(tablename);
@@ -1353,7 +1349,6 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
         }
     }
 
-    d->preparedQuerys = prepQ;
     return idx;
 }
 

@@ -110,6 +110,7 @@ public:
     uint hasGuards : 1; //true iff there is one or more QPointer attached to this object
     uint unused : 22;
     int postedEvents;
+    QMetaObject *metaObject; // assert dynamic
 };
 
 
@@ -117,7 +118,7 @@ class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString objectName READ objectName WRITE setObjectName)
-    Q_DECLARE_SCOPED_PRIVATE(QObject)
+    Q_DECLARE_PRIVATE(QObject)
 
 public:
     Q_INVOKABLE explicit QObject(QObject *parent=0);
@@ -380,6 +381,9 @@ inline QList<T> qFindChildren(const QObject *o, const QRegExp &re)
 #endif // Q_MOC_RUN
 
 
+template <class T> inline const char * qobject_interface_iid() 
+{ return 0; }
+
 template <class T> inline T qobject_cast_helper(QObject *object, T)
 { return static_cast<T>(((T)0)->staticMetaObject.cast(object)); }
 
@@ -396,6 +400,8 @@ inline T qobject_cast(const QObject *object)
 
 #ifndef Q_MOC_RUN
 #  define Q_DECLARE_INTERFACE(IFace, IId) \
+    template <> inline const char *qobject_interface_iid<IFace *>() \
+    { return IId; } \
     template <> inline IFace *qobject_cast_helper<IFace *>(QObject *object, IFace *) \
     { return (IFace *)(object ? object->qt_metacast(IId) : 0); } \
     template <> inline IFace *qobject_cast_helper<IFace *>(const QObject *object, IFace *) \
@@ -459,8 +465,13 @@ inline T qobject_cast(const QObject *object)
 }
 
 
+template <class T> inline const char * qobject_interface_iid() 
+{ return 0; }
+
 #ifndef Q_MOC_RUN
 #  define Q_DECLARE_INTERFACE(IFace, IId) \
+    template <> inline const char *qobject_interface_iid<IFace *>() \
+    { return IId; } \
     template <> inline IFace *qobject_cast<IFace *>(QObject *object) \
     { return reinterpret_cast<IFace *>((object ? object->qt_metacast(IId) : 0)); } \
     template <> inline IFace *qobject_cast<IFace *>(const QObject *object) \

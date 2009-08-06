@@ -81,7 +81,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QTextList)
-    Q_DECLARE_SCOPED_PRIVATE(QTextList)
+    Q_DECLARE_PRIVATE(QTextList)
 };
 
 inline void QTextList::setFormat(const QTextListFormat &aformat)

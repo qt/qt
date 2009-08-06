@@ -287,6 +287,12 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
     Q_UNUSED(fnt);
 }
 
+bool QFontDatabase::removeApplicationFont(int handle)
+{
+    Q_UNUSED(handle);
+    return false;
+}
+
 bool QFontDatabase::supportsThreadedFontRendering()
 {
     return false;

@@ -40,7 +40,7 @@ static const HashTableValue JSSVGAnimateTransformElementPrototypeTableValues[1] 
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimateTransformElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimateTransformElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimateTransformElementPrototypeTableValues, 0 };
 #else
@@ -56,8 +56,8 @@ JSObject* JSSVGAnimateTransformElementPrototype::self(ExecState* exec, JSGlobalO
 
 const ClassInfo JSSVGAnimateTransformElement::s_info = { "SVGAnimateTransformElement", &JSSVGAnimationElement::s_info, 0, 0 };
 
-JSSVGAnimateTransformElement::JSSVGAnimateTransformElement(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimateTransformElement> impl)
-    : JSSVGAnimationElement(structure, impl)
+JSSVGAnimateTransformElement::JSSVGAnimateTransformElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimateTransformElement> impl)
+    : JSSVGAnimationElement(structure, globalObject, impl)
 {
 }
 

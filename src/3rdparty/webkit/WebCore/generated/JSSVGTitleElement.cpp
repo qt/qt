@@ -53,7 +53,7 @@ static const HashTableValue JSSVGTitleElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTitleElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTitleElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGTitleElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGTitleElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTitleElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTitleElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTitleElementPrototypeTableValues, 0 };
 #else
@@ -89,8 +89,8 @@ bool JSSVGTitleElementPrototype::getOwnPropertySlot(ExecState* exec, const Ident
 
 const ClassInfo JSSVGTitleElement::s_info = { "SVGTitleElement", &JSSVGElement::s_info, &JSSVGTitleElementTable, 0 };
 
-JSSVGTitleElement::JSSVGTitleElement(PassRefPtr<Structure> structure, PassRefPtr<SVGTitleElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGTitleElement::JSSVGTitleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTitleElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -106,31 +106,35 @@ bool JSSVGTitleElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsSVGTitleElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTitleElement* castedThis = static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTitleElement* imp = static_cast<SVGTitleElement*>(static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()))->impl());
+    SVGTitleElement* imp = static_cast<SVGTitleElement*>(castedThis->impl());
     return jsString(exec, imp->xmllang());
 }
 
 JSValue jsSVGTitleElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTitleElement* castedThis = static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTitleElement* imp = static_cast<SVGTitleElement*>(static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()))->impl());
+    SVGTitleElement* imp = static_cast<SVGTitleElement*>(castedThis->impl());
     return jsString(exec, imp->xmlspace());
 }
 
 JSValue jsSVGTitleElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTitleElement* castedThis = static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTitleElement* imp = static_cast<SVGTitleElement*>(static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()))->impl());
+    SVGTitleElement* imp = static_cast<SVGTitleElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTitleElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTitleElement* castedThis = static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTitleElement* imp = static_cast<SVGTitleElement*>(static_cast<JSSVGTitleElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGTitleElement* imp = static_cast<SVGTitleElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 void JSSVGTitleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -160,7 +164,7 @@ JSValue JSC_HOST_CALL jsSVGTitleElementPrototypeFunctionGetPresentationAttribute
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

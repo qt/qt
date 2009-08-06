@@ -78,7 +78,7 @@ protected:
     ScriptDebuggerPrivate *d_ptr;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(ScriptDebugger)
+    Q_DECLARE_PRIVATE(ScriptDebugger)
     Q_DISABLE_COPY(ScriptDebugger)
 };
 

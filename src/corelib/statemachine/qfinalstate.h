@@ -68,7 +68,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFinalState)
-    Q_DECLARE_SCOPED_PRIVATE(QFinalState)
+    Q_DECLARE_PRIVATE(QFinalState)
 };
 
 #endif //QT_NO_STATEMACHINE

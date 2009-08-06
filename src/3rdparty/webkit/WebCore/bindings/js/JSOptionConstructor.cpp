@@ -35,24 +35,16 @@ ASSERT_CLASS_FITS_IN_CELL(JSOptionConstructor);
 const ClassInfo JSOptionConstructor::s_info = { "OptionConstructor", 0, 0, 0 };
 
 JSOptionConstructor::JSOptionConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-    : DOMObject(JSOptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
-    , m_globalObject(globalObject)
+    : DOMConstructorWithDocument(JSOptionConstructor::createStructure(globalObject->objectPrototype()), globalObject)
 {
-    ASSERT(globalObject->scriptExecutionContext());
-    ASSERT(globalObject->scriptExecutionContext()->isDocument());
-
-    putDirect(exec->propertyNames().prototype, JSHTMLOptionElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+    putDirect(exec->propertyNames().prototype, JSHTMLOptionElementPrototype::self(exec, globalObject), None);
     putDirect(exec->propertyNames().length, jsNumber(exec, 4), ReadOnly|DontDelete|DontEnum);
-}
-
-Document* JSOptionConstructor::document() const
-{
-    return static_cast<Document*>(m_globalObject->scriptExecutionContext());
 }
 
 static JSObject* constructHTMLOptionElement(ExecState* exec, JSObject* constructor, const ArgList& args)
 {
-    Document* document = static_cast<JSOptionConstructor*>(constructor)->document();
+    JSOptionConstructor* jsConstructor = static_cast<JSOptionConstructor*>(constructor);
+    Document* document = jsConstructor->document();
     if (!document)
         return throwError(exec, ReferenceError, "Option constructor associated document is unavailable");
 
@@ -76,7 +68,7 @@ static JSObject* constructHTMLOptionElement(ExecState* exec, JSObject* construct
         return 0;
     }
 
-    return asObject(toJS(exec, element.release()));
+    return asObject(toJS(exec, jsConstructor->globalObject(), element.release()));
 }
 
 ConstructType JSOptionConstructor::getConstructData(ConstructData& constructData)
@@ -85,11 +77,5 @@ ConstructType JSOptionConstructor::getConstructData(ConstructData& constructData
     return ConstructTypeHost;
 }
 
-void JSOptionConstructor::mark()
-{
-    DOMObject::mark();
-    if (!m_globalObject->marked())
-        m_globalObject->mark();
-}
 
 } // namespace WebCore

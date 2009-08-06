@@ -56,7 +56,7 @@ class QGLFramebufferObjectFormat;
 
 class Q_OPENGL_EXPORT QGLFramebufferObject : public QPaintDevice
 {
-    Q_DECLARE_SCOPED_PRIVATE(QGLFramebufferObject)
+    Q_DECLARE_PRIVATE(QGLFramebufferObject)
 public:
     enum Attachment {
         NoAttachment,

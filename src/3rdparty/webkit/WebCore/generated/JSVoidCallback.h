@@ -21,6 +21,7 @@
 #ifndef JSVoidCallback_h
 #define JSVoidCallback_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class VoidCallback;
 
-class JSVoidCallback : public DOMObject {
-    typedef DOMObject Base;
+class JSVoidCallback : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSVoidCallback(PassRefPtr<JSC::Structure>, PassRefPtr<VoidCallback>);
+    JSVoidCallback(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<VoidCallback>);
     virtual ~JSVoidCallback();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -44,7 +45,7 @@ private:
     RefPtr<VoidCallback> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, VoidCallback*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, VoidCallback*);
 VoidCallback* toVoidCallback(JSC::JSValue);
 
 class JSVoidCallbackPrototype : public JSC::JSObject {

@@ -63,10 +63,6 @@ public:
     QMouseEventTransition(QState *sourceState = 0);
     QMouseEventTransition(QObject *object, QEvent::Type type,
                           Qt::MouseButton button, QState *sourceState = 0);
-    QMouseEventTransition(QObject *object, QEvent::Type type,
-                          Qt::MouseButton button,
-                          const QList<QAbstractState*> &targets,
-                          QState *sourceState = 0);
     ~QMouseEventTransition();
 
     Qt::MouseButton button() const;
@@ -84,7 +80,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QMouseEventTransition)
-    Q_DECLARE_SCOPED_PRIVATE(QMouseEventTransition)
+    Q_DECLARE_PRIVATE(QMouseEventTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

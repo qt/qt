@@ -56,7 +56,7 @@ class QCleanlooksStylePrivate;
 class Q_GUI_EXPORT QCleanlooksStyle : public QWindowsStyle
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QCleanlooksStyle)
+    Q_DECLARE_PRIVATE(QCleanlooksStyle)
 
 public:
     QCleanlooksStyle();

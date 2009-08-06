@@ -321,8 +321,8 @@ bool ObjectDescriptionModelData::dropMimeData(ObjectDescriptionType type, const 
         }
     }
     d->model->beginInsertRows(QModelIndex(), row, row + toInsert.size() - 1);
-    foreach (const QExplicitlySharedDataPointer<ObjectDescriptionData> &obj, toInsert) {
-        d->data.insert(row, obj);
+    for (int i = 0 ; i < toInsert.count(); ++i) {
+        d->data.insert(row, toInsert.at(i));
     }
     d->model->endInsertRows();
     return true;

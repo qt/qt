@@ -116,6 +116,8 @@ private slots:
     void insertRecordsInLoop();
     void sqlite_attachedDatabase_data() { generic_data("QSQLITE"); }
     void sqlite_attachedDatabase(); // For task 130799
+    void tableModifyWithBlank_data() { generic_data(); }
+    void tableModifyWithBlank(); // For mail task
 
 private:
     void generic_data(const QString& engine=QString());
@@ -141,6 +143,7 @@ void tst_QSqlTableModel::dropTestTables()
         tableNames << qTableName("test")
                    << qTableName("test2")
                    << qTableName("test3")
+                   << qTableName("test4")
                    << qTableName("emptytable")
                    << qTableName("bigtable")
                    << qTableName("foo");
@@ -166,6 +169,8 @@ void tst_QSqlTableModel::createTestTables()
         QVERIFY_SQL( q, exec("create table " + qTableName("test2") + "(id int, title varchar(20))"));
 
         QVERIFY_SQL( q, exec("create table " + qTableName("test3") + "(id int, random varchar(20), randomtwo varchar(20))"));
+
+        QVERIFY_SQL( q, exec("create table " + qTableName("test4") + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
 
         QVERIFY_SQL( q, exec("create table " + qTableName("emptytable") + "(id int)"));
 
@@ -925,6 +930,63 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 3);
     QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("main"));
+}
+
+
+void tst_QSqlTableModel::tableModifyWithBlank()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setTable(qTableName("test4"));
+    model.select();
+
+    //generate a time stamp for the test. Add one second to the current time to make sure
+    //it is different than the QSqlQuery test.
+    QString timeString=QDateTime::currentDateTime().addSecs(1).toString(Qt::ISODate);
+
+    //insert a new row, with column0 being the timestamp.
+    //Should be equivalent to QSqlQuery INSERT INTO... command)
+    QVERIFY_SQL(model, insertRow(0));
+    QVERIFY_SQL(model, setData(model.index(0,0),timeString));
+    QVERIFY_SQL(model, submitAll());
+
+    //set a filter on the table so the only record we get is the one we just made
+    //I could just do another setData command, but I want to make sure the TableModel
+    //matches exactly what is stored in the database
+    model.setFilter("column1='"+timeString+"'"); //filter to get just the newly entered row
+    QVERIFY_SQL(model, select());
+
+    //Make sure we only get one record, and that it is the one we just made
+    QCOMPARE(model.rowCount(), 1); //verify only one entry
+    QCOMPARE(model.record(0).value(0).toString(), timeString); //verify correct record
+
+    //At this point we know that the intial value (timestamp) was succsefully stored in the database
+    //Attempt to modify the data in the new record
+    //equivalent to query.exec("update test set column3="... command in direct test
+    //set the data in the first column to "col1ModelData"
+    QVERIFY_SQL(model, setData(model.index(0,1), "col1ModelData"));
+
+    //do a quick check to make sure that the setData command properly set the value in the model
+    QCOMPARE(model.record(0).value(1).toString(), QLatin1String("col1ModelData"));
+
+    //submit the changed data to the database
+    //This is where I have been getting errors.
+    QVERIFY_SQL(model, submitAll());
+
+    //make sure the model has the most current data for our record
+    QVERIFY_SQL(model, select());
+
+    //verify that our new record was the only record returned
+    QCOMPARE(model.rowCount(), 1);
+
+    //And that the record returned is, in fact, our test record.
+    QCOMPARE(model.record(0).value(0).toString(), timeString);
+
+    //Make sure the value of the first column matches what we set it to previously.
+    QCOMPARE(model.record(0).value(1).toString(), QLatin1String("col1ModelData"));
 }
 
 QTEST_MAIN(tst_QSqlTableModel)

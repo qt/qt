@@ -345,7 +345,7 @@ protected:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractItemView)
+    Q_DECLARE_PRIVATE(QAbstractItemView)
     Q_DISABLE_COPY(QAbstractItemView)
     Q_PRIVATE_SLOT(d_func(), void _q_columnsAboutToBeRemoved(const QModelIndex&, int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_columnsRemoved(const QModelIndex&, int, int))
@@ -353,7 +353,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_rowsRemoved(const QModelIndex&, int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
     Q_PRIVATE_SLOT(d_func(), void _q_layoutChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_fetchMore())
 
     friend class QTreeViewPrivate; // needed to compile with MSVC
     friend class QAccessibleItemRow;

@@ -134,7 +134,7 @@ Q_GUI_EXPORT
 #endif
 QRasterPaintEngine : public QPaintEngineEx
 {
-    Q_DECLARE_SCOPED_PRIVATE(QRasterPaintEngine)
+    Q_DECLARE_PRIVATE(QRasterPaintEngine)
 public:
 
     QRasterPaintEngine(QPaintDevice *device);
@@ -165,7 +165,6 @@ public:
 
     void updateMatrix(const QTransform &matrix);
 
-    void drawPath(const QPainterPath &path);
     void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
     void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode);
     void fillPath(const QPainterPath &path, QSpanData *fillData);
@@ -327,7 +326,6 @@ public:
 
     inline const QClipData *clip() const;
 
-    void strokeProjective(const QPainterPath &path);
     void initializeRasterizer(QSpanData *data);
 
     void recalculateFastImages();

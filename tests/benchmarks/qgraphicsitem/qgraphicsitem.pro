@@ -3,4 +3,3 @@ TEMPLATE = app
 TARGET = tst_qgraphicsitem
 
 SOURCES += tst_qgraphicsitem.cpp
-

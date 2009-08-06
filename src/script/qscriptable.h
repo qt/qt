@@ -78,7 +78,7 @@ private:
     QScopedPointer<QScriptablePrivate> d_ptr;
 
     Q_DISABLE_COPY(QScriptable)
-    Q_DECLARE_SCOPED_PRIVATE(QScriptable)
+    Q_DECLARE_PRIVATE(QScriptable)
 };
 
 #endif // QT_NO_QOBJECT

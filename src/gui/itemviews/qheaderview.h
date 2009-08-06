@@ -221,15 +221,14 @@ protected:
     bool isIndexHidden(const QModelIndex &index) const;
 
     QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers);
-    void setSelection(const QRect&, QItemSelectionModel::SelectionFlags);
+    void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags);
     QRegion visualRegionForSelection(const QItemSelection &selection) const;
     void initStyleOption(QStyleOptionHeader *option) const;
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_sectionsRemoved(const QModelIndex &parent, int logicalFirst, int logicalLast))
     Q_PRIVATE_SLOT(d_func(), void _q_layoutAboutToBeChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_layoutChanged())
-    Q_DECLARE_SCOPED_PRIVATE(QHeaderView)
+    Q_DECLARE_PRIVATE(QHeaderView)
     Q_DISABLE_COPY(QHeaderView)
 };
 

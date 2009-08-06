@@ -33,7 +33,7 @@ class Element;
 class JSElement : public JSNode {
     typedef JSNode Base;
 public:
-    JSElement(PassRefPtr<JSC::Structure>, PassRefPtr<Element>);
+    JSElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Element>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -45,7 +45,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue setAttribute(JSC::ExecState*, const JSC::ArgList&);
@@ -64,7 +64,7 @@ ALWAYS_INLINE bool JSElement::getOwnPropertySlot(JSC::ExecState* exec, const JSC
 }
 
 Element* toElement(JSC::JSValue);
-JSC::JSValue toJSNewlyCreated(JSC::ExecState*, Element*);
+JSC::JSValue toJSNewlyCreated(JSC::ExecState*, JSDOMGlobalObject*, Element*);
 
 class JSElementPrototype : public JSC::JSObject {
     typedef JSC::JSObject Base;

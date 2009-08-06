@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLHeadElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLHeadElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLHeadElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLHeadElementTableValues, 0 };
 #else
@@ -55,19 +55,19 @@ static const HashTableValue JSHTMLHeadElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLHeadElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLHeadElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLHeadElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLHeadElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLHeadElementConstructor : public DOMObject {
+class JSHTMLHeadElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLHeadElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLHeadElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLHeadElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLHeadElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLHeadElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLHeadElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLHeadElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLHeadElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLHeadElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLHeadElementPrototypeTableValues, 0 };
 #else
@@ -109,8 +109,8 @@ JSObject* JSHTMLHeadElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLHeadElement::s_info = { "HTMLHeadElement", &JSHTMLElement::s_info, &JSHTMLHeadElementTable, 0 };
 
-JSHTMLHeadElement::JSHTMLHeadElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLHeadElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLHeadElement::JSHTMLHeadElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLHeadElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +126,16 @@ bool JSHTMLHeadElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsHTMLHeadElementProfile(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLHeadElement* castedThis = static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()))->impl());
+    HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(castedThis->impl());
     return jsString(exec, imp->profile());
 }
 
 JSValue jsHTMLHeadElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLHeadElement* domObject = static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()));
+    return JSHTMLHeadElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLHeadElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -146,9 +148,9 @@ void setJSHTMLHeadElementProfile(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setProfile(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLHeadElement::getConstructor(ExecState* exec)
+JSValue JSHTMLHeadElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLHeadElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLHeadElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

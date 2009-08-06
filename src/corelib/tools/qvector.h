@@ -253,11 +253,7 @@ public:
     typedef const value_type* const_pointer;
     typedef value_type& reference;
     typedef const value_type& const_reference;
-#ifndef QT_NO_STL
     typedef ptrdiff_t difference_type;
-#else
-    typedef int difference_type;
-#endif
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
     typedef int size_type;
@@ -418,7 +414,9 @@ void QVector<T>::free(Data *x)
 {
     if (QTypeInfo<T>::isComplex) {
         T* b = x->array;
-        T* i = b + reinterpret_cast<QVectorData *>(x)->size;
+        union { QVectorData *d; Data *p; } u;
+        u.p = x;
+        T* i = b + u.d->size;
         while (i-- != b)
              i->~T();
     }

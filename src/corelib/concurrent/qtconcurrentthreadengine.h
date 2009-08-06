@@ -238,9 +238,11 @@ protected:
 template <typename T>
 class ThreadEngineStarter : public ThreadEngineStarterBase<T>
 {
+    typedef ThreadEngineStarterBase<T> Base;
+    typedef ThreadEngine<T> TypedThreadEngine;
 public:
-    ThreadEngineStarter(ThreadEngine<T> *threadEngine)
-    :ThreadEngineStarterBase<T>(threadEngine) {}
+    ThreadEngineStarter(TypedThreadEngine *eng)
+        : Base(eng) { }
 
     T startBlocking()
     {

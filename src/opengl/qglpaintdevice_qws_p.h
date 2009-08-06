@@ -64,7 +64,7 @@ class QWSGLPaintDevicePrivate;
 
 class Q_OPENGL_EXPORT QWSGLPaintDevice : public QPaintDevice
 {
-    Q_DECLARE_SCOPED_PRIVATE(QWSGLPaintDevice)
+    Q_DECLARE_PRIVATE(QWSGLPaintDevice)
 public:
     QWSGLPaintDevice(QWidget *widget);
     ~QWSGLPaintDevice();

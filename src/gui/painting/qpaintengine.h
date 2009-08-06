@@ -89,7 +89,7 @@ Q_DECLARE_TYPEINFO(QTextItem, Q_PRIMITIVE_TYPE);
 
 class Q_GUI_EXPORT QPaintEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QPaintEngine)
+    Q_DECLARE_PRIVATE(QPaintEngine)
 public:
     enum PaintEngineFeature {
         PrimitiveTransform          = 0x00000001, // Can transform primitives brushes

@@ -151,7 +151,7 @@ protected:
     bool event(QEvent *event);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QFileSystemModel)
+    Q_DECLARE_PRIVATE(QFileSystemModel)
     Q_DISABLE_COPY(QFileSystemModel)
 
     Q_PRIVATE_SLOT(d_func(), void _q_directoryChanged(const QString &directory, const QStringList &list))

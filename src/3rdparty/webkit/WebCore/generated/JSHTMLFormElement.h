@@ -30,7 +30,7 @@ class HTMLFormElement;
 class JSHTMLFormElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLFormElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLFormElement>);
+    JSHTMLFormElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLFormElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -43,7 +43,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue submit(JSC::ExecState*, const JSC::ArgList&);

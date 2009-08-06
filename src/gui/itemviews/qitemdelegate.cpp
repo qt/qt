@@ -861,6 +861,8 @@ void QItemDelegate::drawBackground(QPainter *painter,
 
 /*!
     \internal
+
+    Code duplicated in QCommonStylePrivate::viewItemLayout
 */
 
 void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
@@ -882,8 +884,10 @@ void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
     int w, h;
 
     textRect->adjust(-textMargin, 0, textMargin, 0); // add width padding
-    if (textRect->height() == 0 && !hasPixmap)
+    if (textRect->height() == 0 && (!hasPixmap || !hint)) {
+        //if there is no text, we still want to have a decent height for the item sizeHint and the editor size
         textRect->setHeight(option.fontMetrics.height());
+    }
 
     QSize pm(0, 0);
     if (hasPixmap) {
@@ -1219,7 +1223,7 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
         if (editor->parentWidget())
             editor->parentWidget()->setFocus();
         return true;
-    } else if (event->type() == QEvent::FocusOut || event->type() == QEvent::Hide) {
+    } else if (event->type() == QEvent::FocusOut || (event->type() == QEvent::Hide && editor->isWindow())) {
         //the Hide event will take care of he editors that are in fact complete dialogs
         if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
             QWidget *w = QApplication::focusWidget();
@@ -1234,12 +1238,7 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
             if (QDragManager::self() && QDragManager::self()->object != 0)
                 return false;
 #endif
-            // Opening a modal dialog will start a new eventloop
-            // that will process the deleteLater event.
-            if (QApplication::activeModalWidget()
-                && !QApplication::activeModalWidget()->isAncestorOf(editor)
-                && qobject_cast<QDialog*>(QApplication::activeModalWidget()))
-                return false;
+
             emit commitData(editor);
             emit closeEditor(editor, NoHint);
         }

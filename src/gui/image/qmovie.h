@@ -74,7 +74,7 @@ class QMoviePrivate;
 class Q_GUI_EXPORT QMovie : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QMovie)
+    Q_DECLARE_PRIVATE(QMovie)
     Q_ENUMS(MovieState CacheMode)
     Q_PROPERTY(int speed READ speed WRITE setSpeed)
     Q_PROPERTY(CacheMode cacheMode READ cacheMode WRITE setCacheMode)

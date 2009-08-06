@@ -58,16 +58,16 @@ QT_MODULE(Core)
 class Q_CORE_EXPORT QSignalEvent : public QEvent
 {
 public:
-    QSignalEvent(const QObject *sender, int signalIndex,
+    QSignalEvent(QObject *sender, int signalIndex,
                  const QList<QVariant> &arguments);
     ~QSignalEvent();
 
-    inline const QObject *sender() const { return m_sender; }
+    inline QObject *sender() const { return m_sender; }
     inline int signalIndex() const { return m_signalIndex; }
     inline QList<QVariant> arguments() const { return m_arguments; }
 
 private:
-    const QObject *m_sender;
+    QObject *m_sender;
     int m_signalIndex;
     QList<QVariant> m_arguments;
 };

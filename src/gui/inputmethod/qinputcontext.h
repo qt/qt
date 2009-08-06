@@ -83,7 +83,7 @@ class QInputContextPrivate;
 class Q_GUI_EXPORT QInputContext : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QInputContext)
+    Q_DECLARE_PRIVATE(QInputContext)
 public:
     explicit QInputContext(QObject* parent = 0);
     virtual ~QInputContext();

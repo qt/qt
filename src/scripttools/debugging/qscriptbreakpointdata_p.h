@@ -116,7 +116,7 @@ public:
 private:
     QScopedPointer<QScriptBreakpointDataPrivate> d_ptr;
 
-    Q_DECLARE_SCOPED_PRIVATE(QScriptBreakpointData)
+    Q_DECLARE_PRIVATE(QScriptBreakpointData)
 };
 
 typedef QMap<int, QScriptBreakpointData> QScriptBreakpointMap;

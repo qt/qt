@@ -62,7 +62,7 @@ class QEventDispatcherQWSPrivate;
 class QEventDispatcherQWS : public QEventDispatcherUNIX
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherQWS)
+    Q_DECLARE_PRIVATE(QEventDispatcherQWS)
 
 public:
     explicit QEventDispatcherQWS(QObject *parent = 0);

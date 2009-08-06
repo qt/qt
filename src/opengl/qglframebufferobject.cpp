@@ -109,8 +109,6 @@ public:
 */
 
 /*!
-    \since 4.6
-
     Creates a QGLFramebufferObjectFormat object with properties specifying
     the format of an OpenGL framebuffer object.
 
@@ -146,8 +144,6 @@ QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(int samples,
 }
 
 /*!
-    \since 4.6
-
     Constructs a copy of \a other.
 */
 
@@ -158,8 +154,6 @@ QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(const QGLFramebufferObjec
 }
 
 /*!
-    \since 4.6
-
     Assigns \a other to this object.
 */
 
@@ -170,8 +164,6 @@ QGLFramebufferObjectFormat &QGLFramebufferObjectFormat::operator=(const QGLFrame
 }
 
 /*!
-    \since 4.6
-
     Destroys the QGLFramebufferObjectFormat.
 */
 QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
@@ -180,8 +172,6 @@ QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
 }
 
 /*!
-    \since 4.6
-
     Sets the number of samples per pixel for a multisample framebuffer object
     to \a samples.
     A sample count of 0 represents a regular non-multisample framebuffer object.
@@ -194,8 +184,6 @@ void QGLFramebufferObjectFormat::setSamples(int samples)
 }
 
 /*!
-    \since 4.6
-
     Returns the number of samples per pixel if a framebuffer object
     is a multisample framebuffer object. Otherwise, returns 0.
 
@@ -207,8 +195,6 @@ int QGLFramebufferObjectFormat::samples() const
 }
 
 /*!
-    \since 4.6
-
     Sets the attachments a framebuffer object should have to \a attachment.
 
     \sa attachment()
@@ -219,8 +205,6 @@ void QGLFramebufferObjectFormat::setAttachment(QGLFramebufferObject::Attachment 
 }
 
 /*!
-    \since 4.6
-
     Returns the status of the depth and stencil buffers attached to
     a framebuffer object.
 
@@ -232,8 +216,6 @@ QGLFramebufferObject::Attachment QGLFramebufferObjectFormat::attachment() const
 }
 
 /*!
-    \since 4.6
-
     Sets the texture target of the texture attached to a framebuffer object to
     \a target. Ignored for multisample framebuffer objects.
 
@@ -245,8 +227,6 @@ void QGLFramebufferObjectFormat::setTextureTarget(GLenum target)
 }
 
 /*!
-    \since 4.6
-
     Returns the texture target of the texture attached to a framebuffer object.
     Ignored for multisample framebuffer objects.
 
@@ -258,8 +238,6 @@ GLenum QGLFramebufferObjectFormat::textureTarget() const
 }
 
 /*!
-    \since 4.6
-
     Sets the internal format of a framebuffer object's texture or multisample
     framebuffer object's color buffer to \a internalFormat.
 
@@ -271,8 +249,6 @@ void QGLFramebufferObjectFormat::setInternalFormat(GLenum internalFormat)
 }
 
 /*!
-    \since 4.6
-
     Returns the internal format of a framebuffer object's texture or
     multisample framebuffer object's color buffer.
 
@@ -769,8 +745,11 @@ QGLFramebufferObject::~QGLFramebufferObject()
 
     The framebuffer can become invalid if the initialization process
     fails, the user attaches an invalid buffer to the framebuffer
-    object, or a non-power of 2 width/height is specified as the
+    object, or a non-power of two width/height is specified as the
     texture size if the texture target is \c{GL_TEXTURE_2D}.
+    The non-power of two limitation does not apply if the OpenGL version
+    is 2.0 or higher, or if the GL_ARB_texture_non_power_of_two extension
+    is present.
 */
 bool QGLFramebufferObject::isValid() const
 {
@@ -1055,8 +1034,7 @@ GLuint QGLFramebufferObject::handle() const
 }
 
 /*! \fn int QGLFramebufferObject::devType() const
-
-    \reimp
+    \internal
 */
 
 

@@ -50,7 +50,7 @@ static const HashTableValue JSPluginTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPluginTable =
+static JSC_CONST_HASHTABLE HashTable JSPluginTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPluginTableValues, 0 };
 #else
@@ -64,19 +64,19 @@ static const HashTableValue JSPluginConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPluginConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSPluginConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSPluginConstructorTableValues, 0 };
 #else
     { 1, 0, JSPluginConstructorTableValues, 0 };
 #endif
 
-class JSPluginConstructor : public DOMObject {
+class JSPluginConstructor : public DOMConstructorObject {
 public:
-    JSPluginConstructor(ExecState* exec)
-        : DOMObject(JSPluginConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSPluginConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSPluginConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSPluginPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSPluginPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -104,7 +104,7 @@ static const HashTableValue JSPluginPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPluginPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSPluginPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSPluginPrototypeTableValues, 0 };
 #else
@@ -125,8 +125,8 @@ bool JSPluginPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 const ClassInfo JSPlugin::s_info = { "Plugin", 0, &JSPluginTable, 0 };
 
-JSPlugin::JSPlugin(PassRefPtr<Structure> structure, PassRefPtr<Plugin> impl)
-    : DOMObject(structure)
+JSPlugin::JSPlugin(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Plugin> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -172,35 +172,40 @@ bool JSPlugin::getOwnPropertySlot(ExecState* exec, unsigned propertyName, Proper
 
 JSValue jsPluginName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Plugin* imp = static_cast<Plugin*>(static_cast<JSPlugin*>(asObject(slot.slotBase()))->impl());
+    Plugin* imp = static_cast<Plugin*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsPluginFilename(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Plugin* imp = static_cast<Plugin*>(static_cast<JSPlugin*>(asObject(slot.slotBase()))->impl());
+    Plugin* imp = static_cast<Plugin*>(castedThis->impl());
     return jsString(exec, imp->filename());
 }
 
 JSValue jsPluginDescription(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Plugin* imp = static_cast<Plugin*>(static_cast<JSPlugin*>(asObject(slot.slotBase()))->impl());
+    Plugin* imp = static_cast<Plugin*>(castedThis->impl());
     return jsString(exec, imp->description());
 }
 
 JSValue jsPluginLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Plugin* imp = static_cast<Plugin*>(static_cast<JSPlugin*>(asObject(slot.slotBase()))->impl());
+    Plugin* imp = static_cast<Plugin*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsPluginConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSPlugin*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSPlugin* domObject = static_cast<JSPlugin*>(asObject(slot.slotBase()));
+    return JSPlugin::getConstructor(exec, domObject->globalObject());
 }
 void JSPlugin::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
@@ -209,9 +214,9 @@ void JSPlugin::getPropertyNames(ExecState* exec, PropertyNameArray& propertyName
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSPlugin::getConstructor(ExecState* exec)
+JSValue JSPlugin::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSPluginConstructor>(exec);
+    return getDOMConstructor<JSPluginConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsPluginPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -224,7 +229,7 @@ JSValue JSC_HOST_CALL jsPluginPrototypeFunctionItem(ExecState* exec, JSObject*, 
     unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->item(index)));
     return result;
 }
 
@@ -238,7 +243,7 @@ JSValue JSC_HOST_CALL jsPluginPrototypeFunctionNamedItem(ExecState* exec, JSObje
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->namedItem(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->namedItem(name)));
     return result;
 }
 
@@ -246,11 +251,11 @@ JSValue JSC_HOST_CALL jsPluginPrototypeFunctionNamedItem(ExecState* exec, JSObje
 JSValue JSPlugin::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSPlugin* thisObj = static_cast<JSPlugin*>(asObject(slot.slotBase()));
-    return toJS(exec, static_cast<Plugin*>(thisObj->impl())->item(slot.index()));
+    return toJS(exec, thisObj->globalObject(), static_cast<Plugin*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValue toJS(JSC::ExecState* exec, Plugin* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Plugin* object)
 {
-    return getDOMObjectWrapper<JSPlugin>(exec, object);
+    return getDOMObjectWrapper<JSPlugin>(exec, globalObject, object);
 }
 Plugin* toPlugin(JSC::JSValue value)
 {

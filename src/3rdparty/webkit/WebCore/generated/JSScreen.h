@@ -21,6 +21,7 @@
 #ifndef JSScreen_h
 #define JSScreen_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class Screen;
 
-class JSScreen : public DOMObject {
-    typedef DOMObject Base;
+class JSScreen : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSScreen(PassRefPtr<JSC::Structure>, PassRefPtr<Screen>);
+    JSScreen(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Screen>);
     virtual ~JSScreen();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -50,7 +51,7 @@ private:
     RefPtr<Screen> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Screen*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Screen*);
 Screen* toScreen(JSC::JSValue);
 
 class JSScreenPrototype : public JSC::JSObject {

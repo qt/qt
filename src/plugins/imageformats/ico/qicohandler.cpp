@@ -522,6 +522,18 @@ QImage ICOReader::iconAt(int index)
         ICONDIRENTRY iconEntry;
         if (readIconEntry(index, &iconEntry)) {
 
+            static const uchar pngMagicData[] = { 137, 80, 78, 71, 13, 10, 26, 10 };
+
+            iod->seek(iconEntry.dwImageOffset);
+
+            const QByteArray pngMagic = QByteArray::fromRawData((char*)pngMagicData, sizeof(pngMagicData));
+            const bool isPngImage = (iod->read(pngMagic.size()) == pngMagic);
+
+            if (isPngImage) {
+                iod->seek(iconEntry.dwImageOffset);
+                return QImage::fromData(iod->read(iconEntry.dwBytesInRes), "png");
+            }
+
             BMP_INFOHDR header;
             if (readBMPHeader(iconEntry.dwImageOffset, &header)) {
                 icoAttrib.nbits = header.biBitCount ? header.biBitCount : iconEntry.wBitCount;

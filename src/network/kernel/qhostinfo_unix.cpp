@@ -50,13 +50,16 @@
 #include <qurl.h>
 #include <qfile.h>
 #include <private/qmutexpool_p.h>
+#include <private/qnet_unix_p.h>
 
-extern "C" {
 #include <sys/types.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <resolv.h>
-}
+#if defined(Q_OS_VXWORKS)
+#  include <hostLib.h>
+#else
+#  include <resolv.h>
+#endif
 
 #if defined (QT_NO_GETADDRINFO)
 #include <qmutex.h>
@@ -178,7 +181,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         }
         results.setHostName(QString::fromLatin1(hbuf));
 #else
-        in_addr_t inetaddr = inet_addr(hostName.toLatin1().constData());
+        in_addr_t inetaddr = qt_safe_inet_addr(hostName.toLatin1().constData());
         struct hostent *ent = gethostbyaddr((const char *)&inetaddr, sizeof(inetaddr), AF_INET);
         if (!ent) {
             results.setError(QHostInfo::HostNotFound);
@@ -274,10 +277,12 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             results.setError(QHostInfo::UnknownError);
             results.setErrorString(tr("Unknown address type"));
         }
+#if !defined(Q_OS_VXWORKS)
     } else if (h_errno == HOST_NOT_FOUND || h_errno == NO_DATA
                || h_errno == NO_ADDRESS) {
         results.setError(QHostInfo::HostNotFound);
         results.setErrorString(tr("Host not found"));
+#endif
     } else {
         results.setError(QHostInfo::UnknownError);
         results.setErrorString(tr("Unknown error"));
@@ -314,6 +319,7 @@ QString QHostInfo::localHostName()
 
 QString QHostInfo::localDomainName()
 {
+#if !defined(Q_OS_VXWORKS)
     resolveLibrary();
     if (local_res_ninit) {
         // using thread-safe version
@@ -344,7 +350,7 @@ QString QHostInfo::localDomainName()
             domainName = QUrl::fromAce(local_res->dnsrch[0]);
         return domainName;
     }
-
+#endif
     // nothing worked, try doing it by ourselves:
     QFile resolvconf;
 #if defined(_PATH_RESCONF)

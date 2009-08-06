@@ -6412,7 +6412,7 @@ void Q3Table::startDrag()
 
 #endif
 
-/*! \reimp */
+/*! \internal */
 void Q3Table::windowActivationChange(bool oldActive)
 {
     if (oldActive && autoScrollTimer)

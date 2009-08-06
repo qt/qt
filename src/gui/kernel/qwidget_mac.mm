@@ -83,6 +83,7 @@
 #include "qcursor.h"
 #include "qdesktopwidget.h"
 #include "qevent.h"
+#include "qfileinfo.h"
 #include "qimage.h"
 #include "qlayout.h"
 #include "qmenubar.h"
@@ -843,8 +844,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowToolbarSwitchMode) {
-            QToolBarChangeEvent ev(!(GetCurrentKeyModifiers() & cmdKey));
-            QApplication::sendSpontaneousEvent(widget, &ev);
+            macSendToolbarChangeEvent(widget);
             HIToolbarRef toolbar;
             if (GetWindowToolbar(wid, &toolbar) == noErr) {
                 if (toolbar) {
@@ -1116,23 +1116,9 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 //update handles
                 GrafPtr qd = 0;
                 CGContextRef cg = 0;
-#ifndef QT_MAC_NO_QUICKDRAW
-                {
-                    if(GetEventParameter(event, kEventParamGrafPort, typeGrafPtr, 0, sizeof(qd), 0, &qd) != noErr) {
-                        GDHandle dev = 0;
-                        GetGWorld(&qd, &dev); //just use the global port..
-                    }
-                }
-                bool end_cg_context = false;
-                if(GetEventParameter(event, kEventParamCGContextRef, typeCGContextRef, 0, sizeof(cg), 0, &cg) != noErr && qd) {
-                    end_cg_context = true;
-                    QDBeginCGContext(qd, &cg);
-                }
-#else
                 if(GetEventParameter(event, kEventParamCGContextRef, typeCGContextRef, 0, sizeof(cg), 0, &cg) != noErr) {
                     Q_ASSERT(false);
                 }
-#endif
                 widget->d_func()->hd = cg;
                 widget->d_func()->qd_hd = qd;
                 CGContextSaveGState(cg);
@@ -1198,22 +1184,13 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         p.setClipping(false);
                         if(was_unclipped)
                             widget->setAttribute(Qt::WA_PaintUnclipped);
-
-                        QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget->parent());
-                        QPoint scrollAreaOffset;
-                        if (scrollArea && scrollArea->viewport() == widget) {
-                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr.data());
-                            scrollAreaOffset = priv->contentsOffset();
-                            p.translate(-scrollAreaOffset);
-                        }
-
-                        widget->d_func()->paintBackground(&p, qrgn, scrollAreaOffset, widget->isWindow() ? DrawAsRoot : 0);
+                        widget->d_func()->paintBackground(&p, qrgn, widget->isWindow() ? DrawAsRoot : 0);
                         if (widget->testAttribute(Qt::WA_TintedBackground)) {
                             QColor tint = widget->palette().window().color();
                             tint.setAlphaF(.6);
                             const QVector<QRect> &rects = qrgn.rects();
                             for (int i = 0; i < rects.size(); ++i)
-                                p.fillRect(rects.at(i).translated(scrollAreaOffset), tint);
+                                p.fillRect(rects.at(i), tint);
                         }
                         p.end();
                         if (!redirectionOffset.isNull())
@@ -1261,10 +1238,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 widget->d_func()->hd = 0;
                 widget->d_func()->qd_hd = 0;
                 CGContextRestoreGState(cg);
-#ifndef QT_MAC_NO_QUICKDRAW
-                if(end_cg_context)
-                    QDEndCGContext(qd, &cg);
-#endif
             } else if(!HIObjectIsOfClass((HIObjectRef)hiview, kObjectQWidget)) {
                 CallNextEventHandler(er, event);
             }
@@ -1365,6 +1338,14 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                             QDragManager::self()->currentTarget()->d_func()->qt_mac_dnd_event(kEventControlDragLeave, drag);
                         if (dropWidget) {
                             dropWidget->d_func()->qt_mac_dnd_event(kEventControlDragEnter, drag);
+                        }
+                        // Set dropWidget to zero, so qt_mac_dnd_event
+                        // doesn't get called a second time below:
+                        dropWidget = 0;
+                    } else if (ekind == kEventControlDragLeave) {
+                        dropWidget = QDragManager::self()->currentTarget();
+                        if (dropWidget) {
+                            dropWidget->d_func()->qt_mac_dnd_event(kEventControlDragLeave, drag);
                         }
                         // Set dropWidget to zero, so qt_mac_dnd_event
                         // doesn't get called a second time below:
@@ -2861,8 +2842,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
         SetWindowTitleWithCFString(qt_mac_window_for(q), QCFString(caption));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-          setTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(caption)))];
+        [qt_mac_window_for(q) setTitle:qt_mac_QStringToNSString(caption)];
 #endif
     }
 }
@@ -2884,7 +2864,8 @@ void QWidgetPrivate::setWindowFilePath_sys(const QString &filePath)
     Q_Q(QWidget);
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
-    [qt_mac_window_for(q) setRepresentedFilename:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(filePath)))];
+    QFileInfo fi(filePath);
+    [qt_mac_window_for(q) setRepresentedFilename:fi.exists() ? qt_mac_QStringToNSString(filePath) : @""];
 #else
     bool validRef = false;
     FSRef ref;
@@ -2974,8 +2955,7 @@ void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
         SetWindowAlternateTitle(qt_mac_window_for(q), QCFString(iconText));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-            setMiniwindowTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(iconText)))];
+        [qt_mac_window_for(q) setMiniwindowTitle:qt_mac_QStringToNSString(iconText)];
 #endif
     }
 }
@@ -3124,7 +3104,12 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
         return;
     dirtyOnWidget += rgn;
 #ifndef QT_MAC_USE_COCOA
-    HIViewSetNeedsDisplayInRegion(qt_mac_nativeview_for(q), QMacSmartQuickDrawRegion(rgn.toQDRgn()), true);
+    RgnHandle rgnHandle = rgn.toQDRgnForUpdate_sys();
+    if (rgnHandle) 
+        HIViewSetNeedsDisplayInRegion(qt_mac_nativeview_for(q), QMacSmartQuickDrawRegion(rgnHandle), true);
+    else {
+        HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true); // do a complete repaint on overflow.
+    }
 #else
     // Cocoa doesn't do regions, it seems more efficient to just update the bounding rect instead of a potential number of message passes for each rect.
     const QRect &boundingRect = rgn.boundingRect();
@@ -3822,8 +3807,6 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
       Qt coordinate system for parent
       X coordinate system for parent (relative to parent's wrect).
     */
-    QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
-    QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
     QRect wrect;
     //xrect is the X geometry of my X widget. (starts out in  parent's Qt coord sys, and ends up in parent's X coord sys)
     QRect xrect = data.crect;
@@ -3845,6 +3828,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             parentWRect = QRect(tmpRect.origin.x, tmpRect.origin.y,
                                 tmpRect.size.width, tmpRect.size.height);
         } else {
+            const QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
             parentWRect = wrectRange;
         }
     } else {
@@ -3900,15 +3884,24 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             }
         }
 
+        const QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
         if (!validRange.contains(xrect)) {
             // we are too big, and must clip
-            xrect &=wrectRange;
-            wrect = xrect;
-            wrect.translate(-data.crect.topLeft());
-            //parent's X coord system is equal to parent's Qt coord
-            //sys, so we don't need to map xrect.
-        }
+            QPoint screenOffset(0, 0); // offset of the part being on screen
+            const QWidget *parentWidget = q->parentWidget();
+            while (parentWidget && !parentWidget->isWindow()) {
+                screenOffset -= parentWidget->data->crect.topLeft();
+                parentWidget = parentWidget->parentWidget();
+            }
+            QRect cropRect(screenOffset.x() - WRECT_MAX,
+                           screenOffset.y() - WRECT_MAX,
+                           2*WRECT_MAX,
+                           2*WRECT_MAX);
 
+            xrect &=cropRect;
+            wrect = xrect;
+            wrect.translate(-data.crect.topLeft()); // translate wrect in my Qt coordinates
+        }
     }
 
     // unmap if we are outside the valid window system coord system
@@ -3948,10 +3941,9 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
 
     qt_mac_update_widget_posisiton(q, oldRect, xrect);
 
-    if  (jump) {
-        updateSystemBackground();
+    if  (jump)
         q->update();
-    }
+
     if (mapWindow && !dontShow) {
         q->setAttribute(Qt::WA_Mapped);
 #ifndef QT_MAC_USE_COCOA
@@ -4601,6 +4593,7 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
     bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
     if (windowParent && q->windowModality() == Qt::WindowModal){
@@ -4677,31 +4670,40 @@ void QWidgetPrivate::setModal_sys()
                 || (primaryWindow && primaryWindow->windowModality() == Qt::WindowModal)){
             // Window should be window-modal (which implies a sheet).
             if (old_wclass != kSheetWindowClass){
-                // We cannot convert a created window to a sheet. So we recreate the window:
+                // We cannot convert a created window to a sheet.
+                // So we recreate the window:
                 recreateMacWindow();
                 return;
             }
-        } else if (!(q->data->window_flags & Qt::CustomizeWindowHint)) {
-            if (old_wclass == kDocumentWindowClass || old_wclass == kFloatingWindowClass || old_wclass == kUtilityWindowClass){
-                // Only change the class to kMovableModalWindowClass if the no explicit jewels
-                // are set (kMovableModalWindowClass can't contain them), and the current window class
-                // can be converted to modal (according to carbon doc). Mind the order of
-                // HIWindowChangeClass and ChangeWindowAttributes.
-                WindowGroupRef group = GetWindowGroup(windowRef);
-                HIWindowChangeClass(windowRef, kMovableModalWindowClass);
-                quint32 tmpWattr = kWindowCloseBoxAttribute | kWindowHorizontalZoomAttribute;
-                ChangeWindowAttributes(windowRef, tmpWattr, kWindowNoAttributes);
-                ChangeWindowAttributes(windowRef, kWindowNoAttributes, tmpWattr);
-                // If the window belongs to a qt-created group, set that group once more:
-                if (data.window_flags & Qt::WindowStaysOnTopHint
-                        || q->windowType() == Qt::Popup
-                        || q->windowType() == Qt::ToolTip)
-                    SetWindowGroup(windowRef, group);
+        } else {
+            // Window should be application-modal (which implies NOT using a sheet).
+            if (old_wclass == kSheetWindowClass){
+                // We cannot convert a sheet to a window.
+                // So we recreate the window:
+                recreateMacWindow();
+                return;
+            } else if (!(q->data->window_flags & Qt::CustomizeWindowHint)) {
+                if (old_wclass == kDocumentWindowClass || old_wclass == kFloatingWindowClass || old_wclass == kUtilityWindowClass){
+                    // Only change the class to kMovableModalWindowClass if the no explicit jewels
+                    // are set (kMovableModalWindowClass can't contain them), and the current window class
+                    // can be converted to modal (according to carbon doc). Mind the order of
+                    // HIWindowChangeClass and ChangeWindowAttributes.
+                    WindowGroupRef group = GetWindowGroup(windowRef);
+                    HIWindowChangeClass(windowRef, kMovableModalWindowClass);
+                    quint32 tmpWattr = kWindowCloseBoxAttribute | kWindowHorizontalZoomAttribute;
+                    ChangeWindowAttributes(windowRef, tmpWattr, kWindowNoAttributes);
+                    ChangeWindowAttributes(windowRef, kWindowNoAttributes, tmpWattr);
+                    // If the window belongs to a qt-created group, set that group once more:
+                    if (data.window_flags & Qt::WindowStaysOnTopHint
+                            || q->windowType() == Qt::Popup
+                            || q->windowType() == Qt::ToolTip)
+                        SetWindowGroup(windowRef, group);
+                }
+                // Popups are usually handled "special" and are never modal.
+                Qt::WindowType winType = q->windowType();
+                if (winType != Qt::Popup && winType != Qt::ToolTip)
+                    SetWindowModality(windowRef, kWindowModalityAppModal, 0);
             }
-            // Popups are usually handled "special" and are never modal.
-            Qt::WindowType winType = q->windowType();
-            if (winType != Qt::Popup && winType != Qt::ToolTip)
-                SetWindowModality(windowRef, kWindowModalityAppModal, 0);
         }
     } else if (windowRef) {
         if (old_wclass == kSheetWindowClass){

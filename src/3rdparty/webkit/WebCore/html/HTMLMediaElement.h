@@ -66,7 +66,12 @@ public:
     virtual bool isVideo() const { return false; }
     virtual bool hasVideo() const { return false; }
 
-    virtual bool supportsFullscreen() const { return false; }
+    void rewind(float timeDelta);
+    void returnToRealtime();
+
+    // Eventually overloaded in HTMLVideoElement
+    virtual bool supportsFullscreen() const { return false; };
+    virtual bool supportsSave() const;
 
     void scheduleLoad();
     
@@ -74,6 +79,8 @@ public:
     
     // Pauses playback without changing any states or generating events
     void setPausedInternal(bool);
+    
+    MediaPlayer::MovieLoadType movieLoadType() const;
     
     bool inActiveDocument() const { return m_inActiveDocument; }
     
@@ -221,10 +228,12 @@ private:
     bool stoppedDueToErrors() const;
     bool pausedForUserInteraction() const;
 
+    float minTimeSeekable() const;
+    float maxTimeSeekable() const;
+
     // Restrictions to change default behaviors. This is a effectively a compile time choice at the moment
     //  because there are no accessor methods.
-    enum BehaviorRestrictions 
-    { 
+    enum BehaviorRestrictions {
         NoRestrictions = 0,
         RequireUserGestureForLoadRestriction = 1 << 0,
         RequireUserGestureForRateChangeRestriction = 1 << 1,

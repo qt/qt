@@ -22,6 +22,7 @@
 #include "JSHTMLBaseFontElement.h"
 
 #include "HTMLBaseFontElement.h"
+#include "HTMLNames.h"
 #include "KURL.h"
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
@@ -44,7 +45,7 @@ static const HashTableValue JSHTMLBaseFontElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBaseFontElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBaseFontElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLBaseFontElementTableValues, 0 };
 #else
@@ -58,19 +59,19 @@ static const HashTableValue JSHTMLBaseFontElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBaseFontElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBaseFontElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBaseFontElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLBaseFontElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLBaseFontElementConstructor : public DOMObject {
+class JSHTMLBaseFontElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLBaseFontElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLBaseFontElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLBaseFontElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLBaseFontElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBaseFontElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBaseFontElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -96,7 +97,7 @@ static const HashTableValue JSHTMLBaseFontElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBaseFontElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBaseFontElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBaseFontElementPrototypeTableValues, 0 };
 #else
@@ -112,8 +113,8 @@ JSObject* JSHTMLBaseFontElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLBaseFontElement::s_info = { "HTMLBaseFontElement", &JSHTMLElement::s_info, &JSHTMLBaseFontElementTable, 0 };
 
-JSHTMLBaseFontElement::JSHTMLBaseFontElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLBaseFontElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLBaseFontElement::JSHTMLBaseFontElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBaseFontElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -129,28 +130,32 @@ bool JSHTMLBaseFontElement::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsHTMLBaseFontElementColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBaseFontElement* castedThis = static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->color());
+    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::colorAttr));
 }
 
 JSValue jsHTMLBaseFontElementFace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBaseFontElement* castedThis = static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->face());
+    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::faceAttr));
 }
 
 JSValue jsHTMLBaseFontElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBaseFontElement* castedThis = static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThis->impl());
     return jsNumber(exec, imp->size());
 }
 
 JSValue jsHTMLBaseFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLBaseFontElement* domObject = static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()));
+    return JSHTMLBaseFontElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLBaseFontElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -160,13 +165,13 @@ void JSHTMLBaseFontElement::put(ExecState* exec, const Identifier& propertyName,
 void setJSHTMLBaseFontElementColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
-    imp->setColor(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::colorAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBaseFontElementFace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
-    imp->setFace(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::faceAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBaseFontElementSize(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -175,9 +180,9 @@ void setJSHTMLBaseFontElementSize(ExecState* exec, JSObject* thisObject, JSValue
     imp->setSize(value.toInt32(exec));
 }
 
-JSValue JSHTMLBaseFontElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBaseFontElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLBaseFontElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLBaseFontElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

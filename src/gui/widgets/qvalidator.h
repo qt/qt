@@ -61,7 +61,7 @@ class Q_GUI_EXPORT QValidator : public QObject
 {
     Q_OBJECT
 public:
-    explicit QValidator(QObject * parent);
+    explicit QValidator(QObject * parent=0);
     ~QValidator();
 
     enum State {
@@ -90,7 +90,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QValidator)
-    Q_DECLARE_SCOPED_PRIVATE(QValidator)
+    Q_DECLARE_PRIVATE(QValidator)
 };
 
 class Q_GUI_EXPORT QIntValidator : public QValidator
@@ -100,7 +100,7 @@ class Q_GUI_EXPORT QIntValidator : public QValidator
     Q_PROPERTY(int top READ top WRITE setTop)
 
 public:
-    explicit QIntValidator(QObject * parent);
+    explicit QIntValidator(QObject * parent=0);
     QIntValidator(int bottom, int top, QObject * parent);
     ~QIntValidator();
 
@@ -168,7 +168,7 @@ public:
                                            QObject * parent, const char *name);
 #endif
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QDoubleValidator)
+    Q_DECLARE_PRIVATE(QDoubleValidator)
     Q_DISABLE_COPY(QDoubleValidator)
 
     double b;

@@ -98,7 +98,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QWindowsStyle)
-    Q_DECLARE_SCOPED_PRIVATE(QWindowsStyle)
+    Q_DECLARE_PRIVATE(QWindowsStyle)
     void *reserved;
 };
 

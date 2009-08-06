@@ -57,6 +57,7 @@ Q_OBJECT
 private slots:
     void getSetCheck();
     void interpretedAs0D() const;
+    void exception();
 };
 
 class MyXmlEntityResolver : public QXmlEntityResolver
@@ -211,6 +212,31 @@ void tst_QXml::interpretedAs0D() const
 
     QCOMPARE(myHandler.attrCount, 1);
     QCOMPARE(myHandler.attrName, QChar(0x010D) + QString::fromLatin1("reated-by"));
+}
+
+void tst_QXml::exception()
+{
+#ifndef QT_NO_EXCEPTIONS
+    QString message = QString::fromLatin1("message");
+    int column = 3;
+    int line = 2;
+    QString publicId = QString::fromLatin1("publicId");
+    QString systemId = QString::fromLatin1("systemId");
+
+    try {
+        QXmlParseException e(message, column, line, publicId, systemId);
+        throw e;
+    }
+    catch (QXmlParseException e) {
+        QCOMPARE(e.message(), message);
+        QCOMPARE(e.columnNumber(), column);
+        QCOMPARE(e.lineNumber(), line);
+        QCOMPARE(e.publicId(), publicId);
+        QCOMPARE(e.systemId(), systemId);
+    }
+#else
+    QSKIP("Exceptions not available", SkipAll);
+#endif
 }
 
 QTEST_MAIN(tst_QXml)

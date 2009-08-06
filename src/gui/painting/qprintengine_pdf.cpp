@@ -655,7 +655,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 #ifdef Q_WS_WIN
         if (ti.fontEngine->type() == QFontEngine::Win) {
             QFontEngineWin *fe = static_cast<QFontEngineWin *>(ti.fontEngine);
-            size = fe->tm.w.tmHeight;
+            size = fe->tm.tmHeight;
         }
 #endif
         int synthesized = ti.fontEngine->synthesized();

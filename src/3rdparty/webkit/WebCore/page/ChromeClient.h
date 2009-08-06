@@ -103,7 +103,7 @@ namespace WebCore {
 
         virtual void setResizable(bool) = 0;
         
-        virtual void addMessageToConsole(MessageSource, MessageLevel, const String& message, unsigned int lineNumber, const String& sourceID) = 0;
+        virtual void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, unsigned int lineNumber, const String& sourceID) = 0;
 
         virtual bool canRunBeforeUnloadConfirmPanel() = 0;
         virtual bool runBeforeUnloadConfirmPanel(const String& message, Frame* frame) = 0;
@@ -131,12 +131,21 @@ namespace WebCore {
 
         virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags) = 0;
 
-        virtual void setToolTip(const String&) = 0;
+        virtual void setToolTip(const String&, TextDirection) = 0;
 
         virtual void print(Frame*) = 0;
 
 #if ENABLE(DATABASE)
         virtual void exceededDatabaseQuota(Frame*, const String& databaseName) = 0;
+#endif
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+        // Callback invoked when the application cache fails to save a cache object
+        // because storing it would grow the database file past its defined maximum
+        // size or past the amount of free space on the device. 
+        // The chrome client would need to take some action such as evicting some
+        // old caches.
+        virtual void reachedMaxAppCacheSize(int64_t spaceNeeded) = 0;
 #endif
 
 #if ENABLE(DASHBOARD_SUPPORT)
@@ -168,6 +177,9 @@ namespace WebCore {
         // Notification that the given form element has changed. This function
         // will be called frequently, so handling should be very fast.
         virtual void formStateDidChange(const Node*) = 0;
+        
+        virtual void formDidFocus(const Node*) { };
+        virtual void formDidBlur(const Node*) { };
 
         virtual PassOwnPtr<HTMLParserQuirks> createHTMLParserQuirks() = 0;
 

@@ -66,7 +66,7 @@ class QTextEdit;
 class Q_GUI_EXPORT QSyntaxHighlighter : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QSyntaxHighlighter)
+    Q_DECLARE_PRIVATE(QSyntaxHighlighter)
 public:
     QSyntaxHighlighter(QObject *parent);
     QSyntaxHighlighter(QTextDocument *parent);
@@ -78,6 +78,7 @@ public:
 
 public Q_SLOTS:
     void rehighlight();
+    void rehighlightBlock(const QTextBlock &block);
 
 protected:
     virtual void highlightBlock(const QString &text) = 0;

@@ -74,7 +74,7 @@ protected:
     void paintEvent(QPaintEvent *event);
 private:
     Q_DISABLE_COPY(QSvgWidget)
-    Q_DECLARE_SCOPED_PRIVATE(QSvgWidget)
+    Q_DECLARE_PRIVATE(QSvgWidget)
 };
 
 QT_END_NAMESPACE

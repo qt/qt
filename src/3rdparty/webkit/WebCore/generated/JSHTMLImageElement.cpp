@@ -60,7 +60,7 @@ static const HashTableValue JSHTMLImageElementTableValues[20] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLImageElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLImageElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 16383, JSHTMLImageElementTableValues, 0 };
 #else
@@ -74,19 +74,19 @@ static const HashTableValue JSHTMLImageElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLImageElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLImageElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLImageElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLImageElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLImageElementConstructor : public DOMObject {
+class JSHTMLImageElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLImageElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLImageElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLImageElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLImageElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,7 +112,7 @@ static const HashTableValue JSHTMLImageElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLImageElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLImageElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLImageElementPrototypeTableValues, 0 };
 #else
@@ -128,8 +128,8 @@ JSObject* JSHTMLImageElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLImageElement::s_info = { "HTMLImageElement", &JSHTMLElement::s_info, &JSHTMLImageElementTable, 0 };
 
-JSHTMLImageElement::JSHTMLImageElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLImageElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLImageElement::JSHTMLImageElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLImageElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -145,133 +145,152 @@ bool JSHTMLImageElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLImageElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getAttribute(HTMLNames::nameAttr));
 }
 
 JSValue jsHTMLImageElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getAttribute(HTMLNames::alignAttr));
 }
 
 JSValue jsHTMLImageElementAlt(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getAttribute(HTMLNames::altAttr));
 }
 
 JSValue jsHTMLImageElementBorder(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getAttribute(HTMLNames::borderAttr));
 }
 
 JSValue jsHTMLImageElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->height());
 }
 
 JSValue jsHTMLImageElementHspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->hspace());
 }
 
 JSValue jsHTMLImageElementIsMap(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsBoolean(imp->isMap());
 }
 
 JSValue jsHTMLImageElementLongDesc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getURLAttribute(HTMLNames::longdescAttr));
 }
 
 JSValue jsHTMLImageElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getURLAttribute(HTMLNames::srcAttr));
 }
 
 JSValue jsHTMLImageElementUseMap(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getAttribute(HTMLNames::usemapAttr));
 }
 
 JSValue jsHTMLImageElementVspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->vspace());
 }
 
 JSValue jsHTMLImageElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->width());
 }
 
 JSValue jsHTMLImageElementComplete(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsBoolean(imp->complete());
 }
 
 JSValue jsHTMLImageElementLowsrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsString(exec, imp->getURLAttribute(HTMLNames::lowsrcAttr));
 }
 
 JSValue jsHTMLImageElementNaturalHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->naturalHeight());
 }
 
 JSValue jsHTMLImageElementNaturalWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->naturalWidth());
 }
 
 JSValue jsHTMLImageElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsHTMLImageElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLImageElement* castedThis = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
+    HTMLImageElement* imp = static_cast<HTMLImageElement*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 
 JSValue jsHTMLImageElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLImageElement* domObject = static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()));
+    return JSHTMLImageElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLImageElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -356,9 +375,9 @@ void setJSHTMLImageElementLowsrc(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setAttribute(HTMLNames::lowsrcAttr, valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLImageElement::getConstructor(ExecState* exec)
+JSValue JSHTMLImageElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLImageElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLImageElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 
