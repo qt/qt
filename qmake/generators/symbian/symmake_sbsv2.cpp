@@ -79,8 +79,8 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
                     generatedFiles << destInfo.absoluteFilePath();
                 else
                     fprintf(stderr, "Error: Could not copy '%s' -> '%s'\n",
-                        qPrintable(item.absoluteFilePath()),
-                        qPrintable(destInfo.absoluteFilePath()));
+                            qPrintable(item.absoluteFilePath()),
+                            qPrintable(destInfo.absoluteFilePath()));
             }
         }
         flmExportDone = true;
@@ -124,8 +124,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
     QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-    if(ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
+    if (ofile.lastIndexOf(Option::dir_sep) != -1)
+        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) - 1);
     t << "MAKEFILE          = " << ofile << endl;
     t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
@@ -142,7 +142,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
 
     t << "INCPATH" << '\t' << " = ";
 
-    for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+    for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
             t << " -I\"" << values.at(i) << "\" ";
@@ -212,8 +212,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     if (targetType != TypeSubdirs) {
         t << extraTargetsCache;
         t << extraCompilersCache;
-    }
-    else {
+    } else {
         QList<MakefileGenerator::SubTarget*> subtargets = findSubDirsSubTargets();
         writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables|SubTargetSkipDefaultTargets);
         qDeleteAll(subtargets);
@@ -244,7 +243,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     defines << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
             << varGlue("QMAKE_COMPILER_DEFINES", "-D", "-D", " ")
             << varGlue("DEFINES","-D"," -D","");
-    for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+    for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
             incPath << QLatin1String(" -I\"") + values.at(i) + "\"";
@@ -264,8 +263,8 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     foreach(QString item, project->values("PRE_TARGETDEPS")) {
         // Predeps get mangled in windows, so fix them to more sbsv2 friendly format
 #if defined(Q_OS_WIN)
-        if (item.mid(1,1) == ":")
-            item = item.mid(0,1).toUpper().append(item.mid(1)); // Fix drive to uppercase
+        if (item.mid(1, 1) == ":")
+            item = item.mid(0, 1).toUpper().append(item.mid(1)); // Fix drive to uppercase
 #endif
         item.replace("\\", "/");
         allPreDeps << escapeDependencyPath(item);
@@ -275,7 +274,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         allPreDeps.append(fileInfo(item).absoluteFilePath());
     }
 
-    for(QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
+    for (QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
         QString currentSourcePath = it.key();
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
@@ -333,10 +332,10 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     // Write winscw deployment rules
     QString remoteTestPath = epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
     DeploymentList depList;
-    initProjectDeploySymbian( project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles );
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
 
     t << "#if defined(WINSCW)" << endl;
-    for (int i=0; i<depList.size(); ++i) {
+    for (int i = 0; i < depList.size(); ++i) {
         t << "START EXTENSION qt/qmake_emulator_deployment" << endl;
         QString fromItem = depList.at(i).from;
         QString toItem = depList.at(i).to;
@@ -354,7 +353,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << endl;
 
     // Write post link rules
-    if(!project->isEmpty("QMAKE_POST_LINK")) {
+    if (!project->isEmpty("QMAKE_POST_LINK")) {
         t << "START EXTENSION qt/qmake_post_link" << endl;
         t << "OPTION POST_LINK_CMD " << var("QMAKE_POST_LINK") << endl;
         t << "OPTION LINK_TARGET " << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".").append(getTargetExtension())) << endl;
@@ -384,7 +383,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     // Generate temp dirs
     QString tempDirs;
-    for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+    for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
             QString value = values.at(i);

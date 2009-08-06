@@ -69,7 +69,7 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
     gnuMakefileName.append(".mk");
 
     QFile ft(gnuMakefileName);
-    if(ft.open(QIODevice::WriteOnly)) {
+    if (ft.open(QIODevice::WriteOnly)) {
         generatedFiles << ft.fileName();
         QTextStream t(&ft);
 
@@ -103,7 +103,7 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         if (deploymentOnly) {
             buildDeps.append(DO_NOTHING_TARGET);
             cleanDeps.append(DO_NOTHING_TARGET);
-            cleanDepsWinscw.append( WINSCW_DEPLOYMENT_CLEAN_TARGET);
+            cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET);
             finalDeps.append(DO_NOTHING_TARGET);
             finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET);
             wrapperTargets << WINSCW_DEPLOYMENT_TARGET << WINSCW_DEPLOYMENT_CLEAN_TARGET;
@@ -180,8 +180,8 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
     QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-    if(ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
+    if (ofile.lastIndexOf(Option::dir_sep) != -1)
+        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) - 1);
     t << "MAKEFILE          = " << ofile << endl;
     t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
@@ -205,7 +205,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
     t << "INCPATH" << '\t' << " = ";
 
-    for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+    for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
             t << " -I\"" << values.at(i) << "\"";
@@ -289,7 +289,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // generate command lines like this ...
         // -@ if NOT EXIST  ".\somedir"         mkdir ".\somedir"
         QStringList dirsToClean;
-        for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+        for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
             QStringList values = it.value();
             for (int i = 0; i < values.size(); ++i) {
                 if (values.at(i).endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
@@ -321,7 +321,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << ALL_SOURCE_DEPS_TARGET ":";
 
         QStringList allDeps;
-        for(QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
+        for (QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
             QString currentSourcePath = it.key();
             QStringList values = it.value();
             for (int i = 0; i < values.size(); ++i) {
@@ -339,15 +339,14 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
         // Post link operations
         t << FINALIZE_TARGET ":" << endl;
-        if(!project->isEmpty("QMAKE_POST_LINK")) {
+        if (!project->isEmpty("QMAKE_POST_LINK")) {
             t << '\t' << var("QMAKE_POST_LINK");
             t << endl;
         }
         t << endl;
-    }
-    else {
+    } else {
         QList<MakefileGenerator::SubTarget*> subtargets = findSubDirsSubTargets();
-        writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables|SubTargetSkipDefaultTargets);
+        writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables | SubTargetSkipDefaultTargets);
         qDeleteAll(subtargets);
     }
 
@@ -379,23 +378,23 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
 
     QString remoteTestPath = epocRoot() + QLatin1String("epoc32\\winscw\\c\\private\\") + privateDirUid;   // default 4 OpenC; 4 all Symbian too
     DeploymentList depList;
-    initProjectDeploySymbian( project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles );
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
 
     if (depList.size())
         t << "\t-echo Deploying changed files..." << endl;
 
-    for (int i=0; i<depList.size(); ++i) {
+    for (int i = 0; i < depList.size(); ++i) {
         // Xcopy prompts for selecting file or directory if target doesn't exist,
         // and doesn't provide switch to force file selection. It does provide dir forcing, though,
         // so strip the last part of the destination.
-        t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \"" << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\")+1) << "\"" << endl;
+        t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \"" << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\") + 1) << "\"" << endl;
     }
 
     t << endl;
 
     t << WINSCW_DEPLOYMENT_CLEAN_TARGET ":" << endl;
     QStringList cleanList;
-    for (int i=0; i<depList.size(); ++i) {
+    for (int i = 0; i < depList.size(); ++i) {
         cleanList.append(depList.at(i).to);
     }
     generateCleanCommands(t, cleanList, "$(DEL_FILE)", "", "", "");
@@ -412,7 +411,7 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
 {
     // Normally emulator deployment gets done via regular makefile, but since subdirs
     // do not get that, special deployment only makefile is generated for them if needed.
-    if(targetType != TypeSubdirs || addDeploymentExtension) {
+    if (targetType != TypeSubdirs || addDeploymentExtension) {
         QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
         removeSpecialCharacters(gnuMakefileName);
         gnuMakefileName.append(".mk");

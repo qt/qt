@@ -59,7 +59,7 @@ bool QPopen::init(const char *command, const char* /* mode */)
     }
 
     // Ensure that the read handle to the child process's pipe for STDOUT is not inherited.
-    SetHandleInformation( childStdOutR, HANDLE_FLAG_INHERIT, 0);
+    SetHandleInformation(childStdOutR, HANDLE_FLAG_INHERIT, 0);
 
     // Create a pipe for the child process's STDIN.
     if (! CreatePipe(&childStdInR, &childStdInW, &attributes, 0)) {
@@ -67,18 +67,18 @@ bool QPopen::init(const char *command, const char* /* mode */)
     }
 
     // Ensure that the write handle to the child process's pipe for STDIN is not inherited.
-    SetHandleInformation( childStdInW, HANDLE_FLAG_INHERIT, 0);
+    SetHandleInformation(childStdInW, HANDLE_FLAG_INHERIT, 0);
 
     TCHAR *szCmdLine = new TCHAR[strlen(command)+1];
     strcpy(szCmdLine, command);
 
     // Set up members of the PROCESS_INFORMATION structure.
 
-    ZeroMemory( &processInfo, sizeof(PROCESS_INFORMATION) );
+    ZeroMemory(&processInfo, sizeof(PROCESS_INFORMATION));
 
     // Set up members of the STARTUPINFO structure.
 
-    ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
+    ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
     siStartInfo.cb = sizeof(STARTUPINFO);
     siStartInfo.hStdError = childStdOutW;
     siStartInfo.hStdOutput = childStdOutW;
@@ -88,15 +88,15 @@ bool QPopen::init(const char *command, const char* /* mode */)
     // Create the child process.
 
     bool success = CreateProcess(NULL,
-            szCmdLine,     // command line
-            NULL,          // process security attributes
-            NULL,          // primary thread security attributes
-            TRUE,          // handles are inherited
-            0,             // creation flags
-            NULL,          // use parent's environment
-            NULL,          // use parent's current directory
-            &siStartInfo,  // STARTUPINFO pointer
-            &processInfo);  // receives PROCESS_INFORMATION
+                                 szCmdLine,     // command line
+                                 NULL,          // process security attributes
+                                 NULL,          // primary thread security attributes
+                                 TRUE,          // handles are inherited
+                                 0,             // creation flags
+                                 NULL,          // use parent's environment
+                                 NULL,          // use parent's current directory
+                                 &siStartInfo,  // STARTUPINFO pointer
+                                 &processInfo);  // receives PROCESS_INFORMATION
 
     delete szCmdLine;
 
@@ -118,7 +118,7 @@ int QPopen::fwrite(char* buffer, int maxBytes)
     DWORD bytesWritten;
 
     bool success = WriteFile(childStdInW, buffer, maxBytes, &bytesWritten, NULL);
-    if(success) {
+    if (success) {
         return bytesWritten;
     }
 
@@ -129,11 +129,11 @@ int QPopen::fread(char* buffer, int maxBytes)
 {
     DWORD bytesRead;
 
-    if( !CloseHandle(childStdOutW) )
+    if (!CloseHandle(childStdOutW))
         return 0;
 
     bool success = ReadFile(childStdOutR, buffer, maxBytes, &bytesRead, NULL);
-    if(success)
+    if (success)
         return bytesRead;
 
     return 0;

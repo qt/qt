@@ -597,8 +597,7 @@ static void qmake_error_msg(const QString &msg)
             msg.toLatin1().constData());
 }
 
-enum isForSymbian_enum
-{
+enum isForSymbian_enum {
     isForSymbian_NOT_SET = -1,
     isForSymbian_FALSE = 0,
     isForSymbian_ABLD = 1,
@@ -3342,7 +3341,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
 QString generate_test_uid(const QString& target)
 {
     QString tmp = generate_uid(target);
-    tmp.replace(0,1,"E");
+    tmp.replace(0, 1, "E");
     tmp.prepend("0x");
 
     return tmp;
@@ -3356,32 +3355,32 @@ QString generate_uid(const QString& target)
 
     QString tmp = targetToUid[target];
 
-    if(!tmp.isEmpty()) {
+    if (!tmp.isEmpty()) {
         return tmp;
     }
 
     unsigned long hash = 5381;
     int c;
 
-    for(int i = 0; i < target.size(); ++i) {
+    for (int i = 0; i < target.size(); ++i) {
         c = target.at(i).toAscii();
-        hash ^= c + ((c-i) << i%20) + ((c+i) << (i+5)%20) + ((c-2*i) << (i+10)%20) + ((c+2*i) << (i+15)%20);
+        hash ^= c + ((c - i) << i % 20) + ((c + i) << (i + 5) % 20) + ((c - 2 * i) << (i + 10) % 20) + ((c + 2 * i) << (i + 15) % 20);
     }
 
     tmp.setNum(hash, 16);
-    for(int i = tmp.size(); i < 8; ++i)
+    for (int i = tmp.size(); i < 8; ++i)
         tmp.prepend("0");
 
 #if 0
     static QMap<QString, QString> uidConflictCheckList;
     QString testStr = tmp;
-    testStr.replace(0,1,"E"); // Simulate actual UID generation
+    testStr.replace(0, 1, "E"); // Simulate actual UID generation
     if (uidConflictCheckList.contains(testStr)) {
         printf("\n\n!!!! generated duplicate uid for %s is %s <-> %s !!!!\n\n\n",
-            qPrintable(target),
-            qPrintable(testStr),
-            qPrintable(uidConflictCheckList.value(testStr)));
-        }
+               qPrintable(target),
+               qPrintable(testStr),
+               qPrintable(uidConflictCheckList.value(testStr)));
+    }
     uidConflictCheckList.insert(testStr, target);
     printf("generate_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
 #endif
@@ -3393,7 +3392,7 @@ QString generate_uid(const QString& target)
 
 static void fixEpocRootStr(QString& path)
 {
-    path.replace("\\","/");
+    path.replace("\\", "/");
 
     if (path.size() > 1 && path[1] == QChar(':')) {
         path = path.mid(2);
@@ -3410,8 +3409,7 @@ static QString epocRootStr;
 
 QString epocRoot()
 {
-    if (!epocRootStr.isEmpty())
-    {
+    if (!epocRootStr.isEmpty()) {
         return epocRootStr;
     }
 
