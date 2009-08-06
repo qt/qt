@@ -126,6 +126,14 @@ void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)
     emit q->cursorPositionChanged(from, to);
 }
 
+#ifdef QT_KEYPAD_NAVIGATION
+void QLineEditPrivate::_q_editFocusChange(bool e)
+{
+    Q_Q(QLineEdit);
+    q->setEditFocus(e);
+}
+#endif
+
 void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
@@ -142,6 +150,10 @@ void QLineEditPrivate::init(const QString& txt)
             q, SIGNAL(returnPressed()));
     QObject::connect(control, SIGNAL(editingFinished()),
             q, SIGNAL(editingFinished()));
+#ifdef QT_KEYPAD_NAVIGATION
+    QObject::connect(control, SIGNAL(editFocusChange(bool)),
+            q, SLOT(_q_editFocusChange(bool)));
+#endif
 
     // for now, going completely overboard with updates.
     QObject::connect(control, SIGNAL(selectionChanged()),
