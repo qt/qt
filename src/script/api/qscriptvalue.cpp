@@ -193,9 +193,9 @@ QT_BEGIN_NAMESPACE
 
     \value ResolvePrototype Check the object's own properties first, then search the prototype chain. This is the default.
 
-    \value ResolveScope Check the object's own properties first, then search the scope chain.
+    \omitvalue ResolveScope Check the object's own properties first, then search the scope chain.
 
-    \value ResolveFull Check the object's own properties first, then search the prototype chain, and finally search the scope chain.
+    \omitvalue ResolveFull Check the object's own properties first, then search the prototype chain, and finally search the scope chain.
 */
 
 // ### move
