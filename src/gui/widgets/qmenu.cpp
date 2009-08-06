@@ -204,6 +204,8 @@ void QMenuPrivate::updateActionRects() const
     Q_Q(const QMenu);
     if (!itemsDirty)
         return;
+		
+    q->ensurePolished();
 
     //let's reinitialize the buffer
     actionRects.resize(actions.count());
