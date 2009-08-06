@@ -74,7 +74,7 @@ public:
 
 class QOpenGLPaintEngine : public QPaintEngineEx
 {
-    Q_DECLARE_SCOPED_PRIVATE(QOpenGLPaintEngine)
+    Q_DECLARE_PRIVATE(QOpenGLPaintEngine)
 public:
     QOpenGLPaintEngine();
     ~QOpenGLPaintEngine();

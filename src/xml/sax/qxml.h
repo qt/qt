@@ -272,7 +272,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QXmlSimpleReader)
-    Q_DECLARE_SCOPED_PRIVATE(QXmlSimpleReader)
+    Q_DECLARE_PRIVATE(QXmlSimpleReader)
     QScopedPointer<QXmlSimpleReaderPrivate> d_ptr;
 
     friend class QXmlSimpleReaderLocator;

@@ -107,7 +107,7 @@ public:
 private:
     QScopedSharedPointer<QScriptContextInfoPrivate> d_ptr;
 
-    Q_DECLARE_SCOPED_PRIVATE(QScriptContextInfo)
+    Q_DECLARE_PRIVATE(QScriptContextInfo)
 };
 
 typedef QList<QScriptContextInfo> QScriptContextInfoList;

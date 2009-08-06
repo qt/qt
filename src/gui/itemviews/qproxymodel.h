@@ -119,7 +119,7 @@ protected:
     void disconnectFromModel(const QAbstractItemModel *model) const;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QProxyModel)
+    Q_DECLARE_PRIVATE(QProxyModel)
     Q_DISABLE_COPY(QProxyModel)
 
     Q_PRIVATE_SLOT(d_func(), void _q_sourceDataChanged(const QModelIndex&,const QModelIndex&))

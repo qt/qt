@@ -155,7 +155,7 @@ static inline QPaintEngine::PaintEngineFeatures svgEngineFeatures()
 
 class QSvgPaintEngine : public QPaintEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QSvgPaintEngine)
+    Q_DECLARE_PRIVATE(QSvgPaintEngine)
 public:
 
     QSvgPaintEngine()

@@ -57,7 +57,7 @@ class QPanGesturePrivate;
 class Q_GUI_EXPORT QPanGesture : public QGesture
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QPanGesture)
+    Q_DECLARE_PRIVATE(QPanGesture)
 
     Q_PROPERTY(QSize totalOffset READ totalOffset)
     Q_PROPERTY(QSize lastOffset READ lastOffset)

@@ -57,7 +57,7 @@ class QS60StylePrivate;
 class Q_GUI_EXPORT QS60Style : public QCommonStyle
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QS60Style)
+    Q_DECLARE_PRIVATE(QS60Style)
 
 public:
     QS60Style();

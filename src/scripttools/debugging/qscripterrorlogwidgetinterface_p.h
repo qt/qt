@@ -75,7 +75,7 @@ protected:
                                    QWidget *parent, Qt::WindowFlags flags);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptErrorLogWidgetInterface)
+    Q_DECLARE_PRIVATE(QScriptErrorLogWidgetInterface)
     Q_DISABLE_COPY(QScriptErrorLogWidgetInterface)
 };
 

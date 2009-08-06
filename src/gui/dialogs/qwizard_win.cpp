@@ -429,7 +429,7 @@ void QVistaHelper::setWindowPosHack()
 class QHackWidget : public QWidget
 {
 public:
-    Q_DECLARE_SCOPED_PRIVATE(QWidget)
+    Q_DECLARE_PRIVATE(QWidget)
     QTLWExtra* topData() { return d_func()->topData(); }
 };
 

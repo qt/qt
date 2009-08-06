@@ -146,7 +146,7 @@ Q_SIGNALS:
     void dataSendProgress(qint64 done, qint64 total);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QHttpNetworkReply)
+    Q_DECLARE_PRIVATE(QHttpNetworkReply)
     friend class QHttpNetworkConnection;
     friend class QHttpNetworkConnectionPrivate;
     friend class QHttpNetworkConnectionChannel;

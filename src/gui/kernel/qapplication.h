@@ -363,7 +363,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QApplication)
-    Q_DECLARE_SCOPED_PRIVATE(QApplication)
+    Q_DECLARE_PRIVATE(QApplication)
 
     friend class QGraphicsWidget;
     friend class QGraphicsScene;

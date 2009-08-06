@@ -68,7 +68,7 @@ class QStylePrivate;
 class Q_GUI_EXPORT QStyle : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QStyle)
+    Q_DECLARE_PRIVATE(QStyle)
 
 protected:
     QStyle(QStylePrivate &dd);

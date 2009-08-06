@@ -135,7 +135,7 @@ Q_SIGNALS:
     void error(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QHttpNetworkConnection)
+    Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY(QHttpNetworkConnection)
     friend class QHttpNetworkReply;
     friend class QHttpNetworkConnectionChannel;

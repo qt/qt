@@ -177,7 +177,7 @@ protected:
     void setPeerPort(quint16 port);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractSocketEngine)
+    Q_DECLARE_PRIVATE(QAbstractSocketEngine)
     Q_DISABLE_COPY(QAbstractSocketEngine)
 };
 

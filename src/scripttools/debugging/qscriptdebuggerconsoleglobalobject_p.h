@@ -163,7 +163,7 @@ public Q_SLOTS:
     void setEvaluateAction(int action);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerConsoleGlobalObject)
+    Q_DECLARE_PRIVATE(QScriptDebuggerConsoleGlobalObject)
     Q_DISABLE_COPY(QScriptDebuggerConsoleGlobalObject)
 };
 

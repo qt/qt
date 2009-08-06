@@ -62,7 +62,7 @@ class QTextFrame;
 class Q_GUI_EXPORT QAbstractTextDocumentLayout : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractTextDocumentLayout)
+    Q_DECLARE_PRIVATE(QAbstractTextDocumentLayout)
 
 public:
     explicit QAbstractTextDocumentLayout(QTextDocument *doc);

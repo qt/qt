@@ -111,7 +111,7 @@ protected:
     void event(const QScriptDebuggerEvent &event);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptEngineDebuggerBackend)
+    Q_DECLARE_PRIVATE(QScriptEngineDebuggerBackend)
     Q_DISABLE_COPY(QScriptEngineDebuggerBackend)
 };
 

@@ -165,7 +165,7 @@ protected:
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QNetworkReply)
+    Q_DECLARE_PRIVATE(QNetworkReply)
 };
 
 QT_END_NAMESPACE

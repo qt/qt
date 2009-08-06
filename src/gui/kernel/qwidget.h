@@ -142,7 +142,7 @@ class QWidgetPrivate;
 class Q_GUI_EXPORT QWidget : public QObject, public QPaintDevice
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QWidget)
+    Q_DECLARE_PRIVATE(QWidget)
 
     Q_PROPERTY(bool modal READ isModal)
     Q_PROPERTY(Qt::WindowModality windowModality READ windowModality WRITE setWindowModality)

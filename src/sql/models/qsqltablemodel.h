@@ -59,7 +59,7 @@ class QSqlIndex;
 class Q_SQL_EXPORT QSqlTableModel: public QSqlQueryModel
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QSqlTableModel)
+    Q_DECLARE_PRIVATE(QSqlTableModel)
 
 public:
     enum EditStrategy {OnFieldChange, OnRowChange, OnManualSubmit};

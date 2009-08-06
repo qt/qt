@@ -56,7 +56,7 @@ class QFSFileEnginePrivate;
 
 class Q_CORE_EXPORT QFSFileEngine : public QAbstractFileEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QFSFileEngine)
+    Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
     QFSFileEngine();
     explicit QFSFileEngine(const QString &file);

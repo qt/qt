@@ -117,7 +117,7 @@ private:
     QScriptSyntaxCheckResult(QScriptSyntaxCheckResultPrivate *d);
     QScopedSharedPointer<QScriptSyntaxCheckResultPrivate> d_ptr;
 
-    Q_DECLARE_SCOPED_PRIVATE(QScriptSyntaxCheckResult)
+    Q_DECLARE_PRIVATE(QScriptSyntaxCheckResult)
     friend class QScriptEnginePrivate;
 };
 
@@ -291,7 +291,7 @@ protected:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptEngine)
+    Q_DECLARE_PRIVATE(QScriptEngine)
     Q_DISABLE_COPY(QScriptEngine)
 #ifndef QT_NO_QOBJECT
     Q_PRIVATE_SLOT(d_func(), void _q_objectDestroyed(QObject *))

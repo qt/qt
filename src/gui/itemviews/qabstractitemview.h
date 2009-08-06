@@ -345,7 +345,7 @@ protected:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractItemView)
+    Q_DECLARE_PRIVATE(QAbstractItemView)
     Q_DISABLE_COPY(QAbstractItemView)
     Q_PRIVATE_SLOT(d_func(), void _q_columnsAboutToBeRemoved(const QModelIndex&, int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_columnsRemoved(const QModelIndex&, int, int))

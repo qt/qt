@@ -300,7 +300,7 @@ protected:
     QComboBox(QComboBoxPrivate &, QWidget *);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QComboBox)
+    Q_DECLARE_PRIVATE(QComboBox)
     Q_DISABLE_COPY(QComboBox)
     Q_PRIVATE_SLOT(d_func(), void _q_itemSelected(const QModelIndex &item))
     Q_PRIVATE_SLOT(d_func(), void _q_emitHighlighted(const QModelIndex &))

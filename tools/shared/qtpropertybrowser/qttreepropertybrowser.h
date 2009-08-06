@@ -119,7 +119,7 @@ protected:
 private:
 
     QScopedPointer<QtTreePropertyBrowserPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtTreePropertyBrowser)
+    Q_DECLARE_PRIVATE(QtTreePropertyBrowser)
     Q_DISABLE_COPY(QtTreePropertyBrowser)
 
     Q_PRIVATE_SLOT(d_func(), void slotCollapsed(const QModelIndex &))

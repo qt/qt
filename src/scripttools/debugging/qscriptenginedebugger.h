@@ -120,7 +120,7 @@ Q_SIGNALS:
     void evaluationResumed();
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptEngineDebugger)
+    Q_DECLARE_PRIVATE(QScriptEngineDebugger)
     Q_DISABLE_COPY(QScriptEngineDebugger)
 
     Q_PRIVATE_SLOT(d_func(), void _q_showStandardWindow())

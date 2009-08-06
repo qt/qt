@@ -64,7 +64,7 @@ class Q_CORE_EXPORT QTemporaryFile : public QFile
 #ifndef QT_NO_QOBJECT
     Q_OBJECT
 #endif
-    Q_DECLARE_SCOPED_PRIVATE(QTemporaryFile)
+    Q_DECLARE_PRIVATE(QTemporaryFile)
 
 public:
     QTemporaryFile();

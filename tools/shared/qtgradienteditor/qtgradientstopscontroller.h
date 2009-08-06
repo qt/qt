@@ -71,7 +71,7 @@ signals:
 
 private:
     QScopedPointer<class QtGradientStopsControllerPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtGradientStopsController)
+    Q_DECLARE_PRIVATE(QtGradientStopsController)
     Q_DISABLE_COPY(QtGradientStopsController)
     Q_PRIVATE_SLOT(d_func(), void slotHsvClicked())
     Q_PRIVATE_SLOT(d_func(), void slotRgbClicked())

@@ -108,7 +108,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsLinearLayout)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsLinearLayout)
+    Q_DECLARE_PRIVATE(QGraphicsLinearLayout)
 };
 
 #endif

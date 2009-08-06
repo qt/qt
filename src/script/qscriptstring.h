@@ -78,7 +78,7 @@ public:
 private:
     QCustomScopedPointer<QScriptStringPrivate, QScriptStringPrivatePointerDeleter> d_ptr;
 
-    Q_DECLARE_SCOPED_PRIVATE(QScriptString)
+    Q_DECLARE_PRIVATE(QScriptString)
 };
 
 QT_END_NAMESPACE

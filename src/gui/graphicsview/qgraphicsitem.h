@@ -431,7 +431,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsItem)
+    Q_DECLARE_PRIVATE(QGraphicsItem)
     friend class QGraphicsItemGroup;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
@@ -571,7 +571,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAbstractGraphicsShapeItem)
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractGraphicsShapeItem)
+    Q_DECLARE_PRIVATE(QAbstractGraphicsShapeItem)
 };
 
 class QGraphicsPathItemPrivate;
@@ -614,7 +614,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsPathItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsPathItem)
+    Q_DECLARE_PRIVATE(QGraphicsPathItem)
 };
 
 class QGraphicsRectItemPrivate;
@@ -664,7 +664,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsRectItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsRectItem)
+    Q_DECLARE_PRIVATE(QGraphicsRectItem)
 };
 
 inline void QGraphicsRectItem::setRect(qreal ax, qreal ay, qreal w, qreal h)
@@ -723,7 +723,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsEllipseItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsEllipseItem)
+    Q_DECLARE_PRIVATE(QGraphicsEllipseItem)
 };
 
 inline void QGraphicsEllipseItem::setRect(qreal ax, qreal ay, qreal w, qreal h)
@@ -773,7 +773,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsPolygonItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsPolygonItem)
+    Q_DECLARE_PRIVATE(QGraphicsPolygonItem)
 };
 
 class QGraphicsLineItemPrivate;
@@ -827,7 +827,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsLineItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsLineItem)
+    Q_DECLARE_PRIVATE(QGraphicsLineItem)
 };
 
 class QGraphicsPixmapItemPrivate;
@@ -886,7 +886,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsPixmapItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsPixmapItem)
+    Q_DECLARE_PRIVATE(QGraphicsPixmapItem)
 };
 
 inline void QGraphicsPixmapItem::setOffset(qreal ax, qreal ay)
@@ -1042,7 +1042,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsSimpleTextItem)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSimpleTextItem)
+    Q_DECLARE_PRIVATE(QGraphicsSimpleTextItem)
 };
 
 class QGraphicsItemGroupPrivate;
@@ -1071,7 +1071,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QGraphicsItemGroup)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsItemGroup)
+    Q_DECLARE_PRIVATE(QGraphicsItemGroup)
 };
 
 template <class T> inline T qgraphicsitem_cast(QGraphicsItem *item)

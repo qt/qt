@@ -55,7 +55,7 @@ class QStackedLayoutPrivate;
 class Q_GUI_EXPORT QStackedLayout : public QLayout
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QStackedLayout)
+    Q_DECLARE_PRIVATE(QStackedLayout)
     Q_ENUMS(StackingMode)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentChanged)
     Q_PROPERTY(StackingMode stackingMode READ stackingMode WRITE setStackingMode)

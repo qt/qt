@@ -92,7 +92,7 @@ public:
     Q_INVOKABLE virtual void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
 #endif
 
-    Q_DECLARE_SCOPED_PRIVATE(QNetworkReplyImpl)
+    Q_DECLARE_PRIVATE(QNetworkReplyImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
     Q_PRIVATE_SLOT(d_func(), void _q_copyReadyRead())
     Q_PRIVATE_SLOT(d_func(), void _q_copyReadChannelFinished())

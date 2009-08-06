@@ -291,7 +291,7 @@ Q_SIGNALS:
     void selectionChanged();
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsScene)
+    Q_DECLARE_PRIVATE(QGraphicsScene)
     Q_DISABLE_COPY(QGraphicsScene)
     Q_PRIVATE_SLOT(d_func(), void _q_emitUpdated())
     Q_PRIVATE_SLOT(d_func(), void _q_polishItems())

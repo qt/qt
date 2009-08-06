@@ -144,7 +144,7 @@ public slots:
     void onTrigger(QAction *action) { d_func()->activateAction(action, QAction::Trigger, false); }
     void onHovered(QAction *action) { d_func()->activateAction(action, QAction::Hover, false); }
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QTornOffMenu)
+    Q_DECLARE_PRIVATE(QTornOffMenu)
     friend class QMenuPrivate;
 };
 

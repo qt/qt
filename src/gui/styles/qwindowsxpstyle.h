@@ -93,7 +93,7 @@ protected Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QWindowsXPStyle)
-    Q_DECLARE_SCOPED_PRIVATE(QWindowsXPStyle)
+    Q_DECLARE_PRIVATE(QWindowsXPStyle)
     friend class QStyleFactory;
     void *reserved;
 };

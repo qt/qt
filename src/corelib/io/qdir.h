@@ -60,7 +60,7 @@ class Q_CORE_EXPORT QDir
 protected:
     QScopedPointer<QDirPrivate> d_ptr;
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QDir)
+    Q_DECLARE_PRIVATE(QDir)
 public:
     enum Filter { Dirs        = 0x001,
                   Files       = 0x002,

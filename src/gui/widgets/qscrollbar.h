@@ -92,7 +92,7 @@ private:
     friend Q_GUI_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollBar);
 
     Q_DISABLE_COPY(QScrollBar)
-    Q_DECLARE_SCOPED_PRIVATE(QScrollBar)
+    Q_DECLARE_PRIVATE(QScrollBar)
 };
 
 #endif // QT_NO_SCROLLBAR

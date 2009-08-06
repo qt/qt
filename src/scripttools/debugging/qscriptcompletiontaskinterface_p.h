@@ -97,7 +97,7 @@ protected:
         QScriptCompletionTaskInterfacePrivate &dd, QObject *parent);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptCompletionTaskInterface)
+    Q_DECLARE_PRIVATE(QScriptCompletionTaskInterface)
     Q_DISABLE_COPY(QScriptCompletionTaskInterface)
 };
 

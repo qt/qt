@@ -81,7 +81,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsLayout)
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsLayout)
+    Q_DECLARE_PRIVATE(QGraphicsLayout)
     friend class QGraphicsWidget;
 };
 

@@ -77,7 +77,7 @@ public:
 
 private:
     QScopedPointer<class QtGradientDialogPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtGradientDialog)
+    Q_DECLARE_PRIVATE(QtGradientDialog)
     Q_DISABLE_COPY(QtGradientDialog)
     Q_PRIVATE_SLOT(d_func(), void slotAboutToShowDetails(bool details, int extensionWidthHint))
 };

@@ -104,7 +104,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QStatusBar)
-    Q_DECLARE_SCOPED_PRIVATE(QStatusBar)
+    Q_DECLARE_PRIVATE(QStatusBar)
 };
 
 #endif // QT_NO_STATUSBAR

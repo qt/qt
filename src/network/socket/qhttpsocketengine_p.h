@@ -144,7 +144,7 @@ private:
     void emitWriteNotification();
     void emitConnectionNotification();
 
-    Q_DECLARE_SCOPED_PRIVATE(QHttpSocketEngine)
+    Q_DECLARE_PRIVATE(QHttpSocketEngine)
     Q_DISABLE_COPY(QHttpSocketEngine)
 
 };

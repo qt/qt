@@ -100,7 +100,7 @@ protected:
     void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
 
 private :
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneBspTreeIndex)
+    Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)
     Q_DISABLE_COPY(QGraphicsSceneBspTreeIndex)
     Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
     Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())

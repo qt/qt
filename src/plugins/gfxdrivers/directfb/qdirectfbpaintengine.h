@@ -53,7 +53,7 @@ class QDirectFBPaintEnginePrivate;
 
 class QDirectFBPaintEngine : public QRasterPaintEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QDirectFBPaintEngine)
+    Q_DECLARE_PRIVATE(QDirectFBPaintEngine)
 public:
     QDirectFBPaintEngine(QPaintDevice *device);
     virtual ~QDirectFBPaintEngine();

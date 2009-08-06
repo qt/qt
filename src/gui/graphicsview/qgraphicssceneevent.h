@@ -76,7 +76,7 @@ public:
 protected:
     QGraphicsSceneEvent(QGraphicsSceneEventPrivate &dd, Type type = None);
     QScopedPointer<QGraphicsSceneEventPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneEvent)
 };
 
 class QGraphicsSceneMouseEventPrivate;
@@ -123,7 +123,7 @@ public:
     void setModifiers(Qt::KeyboardModifiers modifiers);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneMouseEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneMouseEvent)
 };
 
 class QGraphicsSceneWheelEventPrivate;
@@ -155,7 +155,7 @@ public:
     void setOrientation(Qt::Orientation orientation);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneWheelEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneWheelEvent)
 };
 
 class QGraphicsSceneContextMenuEventPrivate;
@@ -183,7 +183,7 @@ public:
     void setReason(Reason reason);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneContextMenuEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneContextMenuEvent)
 };
 
 class QGraphicsSceneHoverEventPrivate;
@@ -215,7 +215,7 @@ public:
     void setModifiers(Qt::KeyboardModifiers modifiers);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneHoverEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneHoverEvent)
 };
 
 class QGraphicsSceneHelpEventPrivate;
@@ -232,7 +232,7 @@ public:
     void setScreenPos(const QPoint &pos);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneHelpEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneHelpEvent)
 };
 
 class QGraphicsSceneDragDropEventPrivate;
@@ -274,13 +274,13 @@ public:
     void setMimeData(const QMimeData *data);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneDragDropEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneDragDropEvent)
 };
 
 class QGraphicsSceneResizeEventPrivate;
 class Q_GUI_EXPORT QGraphicsSceneResizeEvent : public QGraphicsSceneEvent
 {
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneResizeEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneResizeEvent)
 public:
     QGraphicsSceneResizeEvent();
     ~QGraphicsSceneResizeEvent();
@@ -295,7 +295,7 @@ public:
 class QGraphicsSceneMoveEventPrivate;
 class Q_GUI_EXPORT QGraphicsSceneMoveEvent : public QGraphicsSceneEvent
 {
-    Q_DECLARE_SCOPED_PRIVATE(QGraphicsSceneMoveEvent)
+    Q_DECLARE_PRIVATE(QGraphicsSceneMoveEvent)
 public:
     QGraphicsSceneMoveEvent();
     ~QGraphicsSceneMoveEvent();

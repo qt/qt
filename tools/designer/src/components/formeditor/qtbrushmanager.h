@@ -78,7 +78,7 @@ signals:
 
 private:
     QScopedPointer<QtBrushManagerPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtBrushManager)
+    Q_DECLARE_PRIVATE(QtBrushManager)
     Q_DISABLE_COPY(QtBrushManager)
 };
 

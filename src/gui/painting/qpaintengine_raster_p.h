@@ -134,7 +134,7 @@ Q_GUI_EXPORT
 #endif
 QRasterPaintEngine : public QPaintEngineEx
 {
-    Q_DECLARE_SCOPED_PRIVATE(QRasterPaintEngine)
+    Q_DECLARE_PRIVATE(QRasterPaintEngine)
 public:
 
     QRasterPaintEngine(QPaintDevice *device);

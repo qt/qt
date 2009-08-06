@@ -73,7 +73,7 @@ public:
     void setCurrentScript(qint64 id);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerScriptsWidget)
+    Q_DECLARE_PRIVATE(QScriptDebuggerScriptsWidget)
     Q_DISABLE_COPY(QScriptDebuggerScriptsWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_onCurrentChanged(const QModelIndex &))

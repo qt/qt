@@ -98,7 +98,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QButtonGroup)
-    Q_DECLARE_SCOPED_PRIVATE(QButtonGroup)
+    Q_DECLARE_PRIVATE(QButtonGroup)
     friend class QAbstractButton;
     friend class QAbstractButtonPrivate;
 };

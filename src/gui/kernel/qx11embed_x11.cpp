@@ -270,7 +270,7 @@ const int XButtonRelease = ButtonRelease;
 // need to to inspect window()'s embedded state.
 class QHackWidget : public QWidget
 {
-    Q_DECLARE_SCOPED_PRIVATE(QWidget)
+    Q_DECLARE_PRIVATE(QWidget)
 public:
     QTLWExtra* topData() { return d_func()->topData(); }
 };

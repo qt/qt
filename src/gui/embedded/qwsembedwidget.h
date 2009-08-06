@@ -71,7 +71,7 @@ protected:
     void showEvent(QShowEvent *event);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QWSEmbedWidget)
+    Q_DECLARE_PRIVATE(QWSEmbedWidget)
 };
 
 QT_END_NAMESPACE

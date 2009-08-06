@@ -91,7 +91,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QBasicMouseEventTransition)
-    Q_DECLARE_SCOPED_PRIVATE(QBasicMouseEventTransition)
+    Q_DECLARE_PRIVATE(QBasicMouseEventTransition)
 };
 
 QT_END_NAMESPACE

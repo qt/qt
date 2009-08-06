@@ -58,7 +58,7 @@ class QLocalSocketPrivate;
 class Q_NETWORK_EXPORT QLocalSocket : public QIODevice
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QLocalSocket)
+    Q_DECLARE_PRIVATE(QLocalSocket)
 
 public:
     enum LocalSocketError

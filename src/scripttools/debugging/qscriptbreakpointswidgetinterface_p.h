@@ -83,7 +83,7 @@ protected:
         QWidget *parent, Qt::WindowFlags flags);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptBreakpointsWidgetInterface)
+    Q_DECLARE_PRIVATE(QScriptBreakpointsWidgetInterface)
     Q_DISABLE_COPY(QScriptBreakpointsWidgetInterface)
 };
 

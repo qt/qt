@@ -182,7 +182,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QStyleSheetStyle)
-    Q_DECLARE_SCOPED_PRIVATE(QStyleSheetStyle)
+    Q_DECLARE_PRIVATE(QStyleSheetStyle)
 };
 
 

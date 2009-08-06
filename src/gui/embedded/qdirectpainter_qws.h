@@ -57,7 +57,7 @@ class QWSEmbedEvent;
 
 class Q_GUI_EXPORT QDirectPainter : public QObject {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QDirectPainter)
+    Q_DECLARE_PRIVATE(QDirectPainter)
 public:
 
     enum SurfaceFlag { NonReserved = 0,

@@ -89,7 +89,7 @@ class QLayoutPrivate;
 class Q_GUI_EXPORT QLayout : public QObject, public QLayoutItem
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QLayout)
+    Q_DECLARE_PRIVATE(QLayout)
 
     Q_ENUMS(SizeConstraint)
     Q_PROPERTY(int margin READ margin WRITE setMargin)

@@ -78,7 +78,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QSignalTransition)
-    Q_DECLARE_SCOPED_PRIVATE(QSignalTransition)
+    Q_DECLARE_PRIVATE(QSignalTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

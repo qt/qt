@@ -76,7 +76,7 @@ struct qt_float_point
 
 class QX11PaintEngine : public QPaintEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QX11PaintEngine)
+    Q_DECLARE_PRIVATE(QX11PaintEngine)
 public:
     QX11PaintEngine();
     ~QX11PaintEngine();

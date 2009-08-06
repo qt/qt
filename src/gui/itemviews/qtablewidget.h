@@ -336,7 +336,7 @@ protected:
 private:
     void setModel(QAbstractItemModel *model);
 
-    Q_DECLARE_SCOPED_PRIVATE(QTableWidget)
+    Q_DECLARE_PRIVATE(QTableWidget)
     Q_DISABLE_COPY(QTableWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_emitItemPressed(const QModelIndex &index))

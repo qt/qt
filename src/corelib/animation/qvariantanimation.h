@@ -113,7 +113,7 @@ private:
     static void registerInterpolator(Interpolator func, int interpolationType);
 
     Q_DISABLE_COPY(QVariantAnimation)
-    Q_DECLARE_SCOPED_PRIVATE(QVariantAnimation)
+    Q_DECLARE_PRIVATE(QVariantAnimation)
 };
 
 template <typename T>

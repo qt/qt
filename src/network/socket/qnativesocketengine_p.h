@@ -288,7 +288,7 @@ public Q_SLOTS:
     void connectionNotification();
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QNativeSocketEngine)
+    Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY(QNativeSocketEngine)
 };
 

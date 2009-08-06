@@ -143,7 +143,7 @@ class QPixmapFilter;
 
 class Q_GUI_EXPORT QPaintEngineEx : public QPaintEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QPaintEngineEx)
+    Q_DECLARE_PRIVATE(QPaintEngineEx)
 public:
     QPaintEngineEx();
 

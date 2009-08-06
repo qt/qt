@@ -84,7 +84,7 @@ protected:
     virtual qint64 expire();
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QNetworkDiskCache)
+    Q_DECLARE_PRIVATE(QNetworkDiskCache)
     Q_DISABLE_COPY(QNetworkDiskCache)
 };
 

@@ -209,7 +209,7 @@ protected:
     QAbstractSocket(SocketType socketType, QAbstractSocketPrivate &dd, QObject *parent = 0);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractSocket)
+    Q_DECLARE_PRIVATE(QAbstractSocket)
     Q_DISABLE_COPY(QAbstractSocket)
 
     Q_PRIVATE_SLOT(d_func(), void _q_connectToNextAddress())

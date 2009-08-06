@@ -291,7 +291,7 @@ private:
     void setModel(QAbstractItemModel *model);
     Qt::SortOrder sortOrder() const;
 
-    Q_DECLARE_SCOPED_PRIVATE(QListWidget)
+    Q_DECLARE_PRIVATE(QListWidget)
     Q_DISABLE_COPY(QListWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_emitItemPressed(const QModelIndex &index))

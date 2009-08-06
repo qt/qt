@@ -103,7 +103,7 @@ protected:
 private:
 
     QScopedPointer<class QtResourceViewPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtResourceView)
+    Q_DECLARE_PRIVATE(QtResourceView)
     Q_DISABLE_COPY(QtResourceView)
     Q_PRIVATE_SLOT(d_func(), void slotResourceSetActivated(QtResourceSet *))
     Q_PRIVATE_SLOT(d_func(), void slotCurrentPathChanged(QTreeWidgetItem *))
@@ -131,7 +131,7 @@ public:
 
 private:
     QScopedPointer<class QtResourceViewDialogPrivate> d_ptr;
-    Q_DECLARE_SCOPED_PRIVATE(QtResourceViewDialog)
+    Q_DECLARE_PRIVATE(QtResourceViewDialog)
     Q_DISABLE_COPY(QtResourceViewDialog)
     Q_PRIVATE_SLOT(d_func(), void slotResourceSelected(const QString &))
 };

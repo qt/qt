@@ -59,7 +59,7 @@ class QFutureWatcherBasePrivate;
 class Q_CORE_EXPORT QFutureWatcherBase : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QFutureWatcherBase)
+    Q_DECLARE_PRIVATE(QFutureWatcherBase)
 
 public:
     QFutureWatcherBase(QObject *parent = 0);

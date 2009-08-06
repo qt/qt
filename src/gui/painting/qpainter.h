@@ -83,7 +83,7 @@ class QPainterPrivateDeleter;
 
 class Q_GUI_EXPORT QPainter
 {
-    Q_DECLARE_SCOPED_PRIVATE(QPainter)
+    Q_DECLARE_PRIVATE(QPainter)
     Q_GADGET
     Q_FLAGS(RenderHint RenderHints)
 

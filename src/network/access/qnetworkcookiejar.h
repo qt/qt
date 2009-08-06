@@ -70,7 +70,7 @@ protected:
     void setAllCookies(const QList<QNetworkCookie> &cookieList);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QNetworkCookieJar)
+    Q_DECLARE_PRIVATE(QNetworkCookieJar)
     Q_DISABLE_COPY(QNetworkCookieJar)
 };
 

@@ -111,7 +111,7 @@ Q_SIGNALS:
     void finished(QDBusPendingCallWatcher *self);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QDBusPendingCallWatcher)
+    Q_DECLARE_PRIVATE(QDBusPendingCallWatcher)
     Q_PRIVATE_SLOT(d_func(), void _q_finished())
 };
 

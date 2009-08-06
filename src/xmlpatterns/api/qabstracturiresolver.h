@@ -64,7 +64,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QAbstractUriResolver)
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractUriResolver)
+    Q_DECLARE_PRIVATE(QAbstractUriResolver)
 };
 
 QT_END_NAMESPACE

@@ -96,7 +96,7 @@ protected Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QWindowsVistaStyle)
-    Q_DECLARE_SCOPED_PRIVATE(QWindowsVistaStyle)
+    Q_DECLARE_PRIVATE(QWindowsVistaStyle)
     friend class QStyleFactory;
 };
 #endif //QT_NO_STYLE_WINDOWSVISTA

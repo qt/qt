@@ -239,7 +239,7 @@ public:
     QScopedPointer<QCompletionEngine> engine;
     bool showAll;
 
-    Q_DECLARE_SCOPED_PRIVATE(QCompletionModel)
+    Q_DECLARE_PRIVATE(QCompletionModel)
 
 signals:
     void rowsAdded();
