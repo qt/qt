@@ -641,7 +641,7 @@ inline void QLineControl::setCursorPosition(int pos)
 {
     if (pos < 0)
         pos = 0;
-    if (pos < m_text.length())
+    if (pos <= m_text.length())
         moveCursor(pos);
 }
 
