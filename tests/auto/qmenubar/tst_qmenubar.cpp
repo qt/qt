@@ -59,6 +59,8 @@
 
 #include <qobject.h>
 
+#include "../../shared/util.h"
+
 QT_FORWARD_DECLARE_CLASS(QMainWindow)
 
 #include <qmenubar.h>
@@ -1536,25 +1538,26 @@ void tst_QMenuBar::task256322_highlight()
     QAction *nothing = win.menuBar()->addAction("nothing");
 
     win.show();
+    QTest::qWait(50);
 
+    QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file).center());
     QTest::mouseClick(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
-    QVERIFY(menu.isVisible());
+    QTRY_VERIFY(menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file);
 
     QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file2).center());
-    QVERIFY(!menu.isVisible());
+    QTRY_VERIFY(!menu.isVisible());
     QVERIFY(menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file2);
 
     QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(nothing).center());
+    QTRY_VERIFY(!menu2.isVisible());
     QVERIFY(!menu.isVisible());
-    QVERIFY(!menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), nothing);
 
     QTest::mouseMove(&win, win.menuBar()->geometry().bottomLeft() + QPoint(1,1));
-
-    QVERIFY(!menu.isVisible());
+    QTRY_VERIFY(!menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QVERIFY(!win.menuBar()->activeAction());
 }
