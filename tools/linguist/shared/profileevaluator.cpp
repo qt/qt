@@ -256,10 +256,8 @@ public:
     ProFile *m_prevProFile;                         // See m_prevLineNo
 };
 
-#if (!defined(__GNUC__) || __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 3)) && !defined(__SUNPRO_CC)
 Q_DECLARE_TYPEINFO(ProFileEvaluator::Private::State, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(ProFileEvaluator::Private::ProLoop, Q_MOVABLE_TYPE);
-#endif
 
 ProFileEvaluator::Private::Private(ProFileEvaluator *q_)
   : q(q_)
