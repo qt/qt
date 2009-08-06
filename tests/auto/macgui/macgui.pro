@@ -4,12 +4,8 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-SOURCES += tst_gui.cpp 
+SOURCES += tst_macgui.cpp guitest.cpp
+HEADERS += guitest.h
 
-mac {
-    SOURCES += guitest.cpp
-    HEADERS += guitest.h
-}
-
-
+requires(mac)
 

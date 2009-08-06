@@ -4,7 +4,7 @@ TEMPLATE = subdirs
 !wince*:SUBDIRS += \
            headers
 
-SUBDIRS += _networkselftest \
+SUBDIRS += \
            bic \
            collections \
            compile \
@@ -17,6 +17,7 @@ SUBDIRS += _networkselftest \
 #	   mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
            moc \
            modeltest \
+           networkselftest \
            q3accel \
            q3action \
            q3actiongroup \
@@ -224,8 +225,8 @@ SUBDIRS += _networkselftest \
            qpixmapfilter \
            qplaintextedit \
            qpoint \
-           qpointarray \
            qpointer \
+           qpolygon \
            qprinter \
            qprinterinfo \
            qprocess \
@@ -247,9 +248,9 @@ SUBDIRS += _networkselftest \
            qscriptcontextinfo \
            qscriptengine \
            qscriptengineagent \
+           qscriptextqobject \
            qscriptjstestsuite \
            qscriptv8testsuite \
-           qscriptqobject \
            qscriptstring \
            qscriptvalue \
            qscriptvalueiterator \

@@ -46,7 +46,7 @@
 
 #include "private/qcssparser_p.h"
 
-class tst_CssParser : public QObject
+class tst_QCssParser : public QObject
 {
     Q_OBJECT
 private slots:
@@ -93,7 +93,7 @@ private slots:
     void quotedAndUnquotedIdentifiers();
 };
 
-void tst_CssParser::scanner_data()
+void tst_QCssParser::scanner_data()
 {
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("output");
@@ -125,7 +125,7 @@ static void debug(const QVector<QCss::Symbol> &symbols, int index = -1)
 
 //static void debug(const QCss::Parser &p) { debug(p.symbols); }
 
-void tst_CssParser::scanner()
+void tst_QCssParser::scanner()
 {
     QFETCH(QString, input);
     QFETCH(QString, output);
@@ -174,7 +174,7 @@ void tst_CssParser::scanner()
 
 Q_DECLARE_METATYPE(QCss::Value)
 
-void tst_CssParser::term_data()
+void tst_QCssParser::term_data()
 {
     QTest::addColumn<bool>("parseSuccess");
     QTest::addColumn<QString>("css");
@@ -289,7 +289,7 @@ void tst_CssParser::term_data()
     QTest::newRow("ItaLIc") << true << "ItaLIc" << val;
 }
 
-void tst_CssParser::term()
+void tst_QCssParser::term()
 {
     QFETCH(bool, parseSuccess);
     QFETCH(QString, css);
@@ -310,7 +310,7 @@ void tst_CssParser::term()
 
 Q_DECLARE_METATYPE(QVector<QCss::Value>)
 
-void tst_CssParser::expr_data()
+void tst_QCssParser::expr_data()
 {
     QTest::addColumn<bool>("parseSuccess");
     QTest::addColumn<QString>("css");
@@ -335,7 +335,7 @@ void tst_CssParser::expr_data()
     values.clear();
 }
 
-void tst_CssParser::expr()
+void tst_QCssParser::expr()
 {
     QFETCH(bool, parseSuccess);
     QFETCH(QString, css);
@@ -355,7 +355,7 @@ void tst_CssParser::expr()
     }
 }
 
-void tst_CssParser::import()
+void tst_QCssParser::import()
 {
     QCss::Parser parser("@import \"plainstring\";");
     QVERIFY(parser.testImport());
@@ -372,7 +372,7 @@ void tst_CssParser::import()
     QCOMPARE(rule.media.at(1), QString("screen"));
 }
 
-void tst_CssParser::media()
+void tst_QCssParser::media()
 {
     QCss::Parser parser("@media print/*comment*/,screen /*comment to ignore*/{ }");
     QVERIFY(parser.testMedia());
@@ -384,7 +384,7 @@ void tst_CssParser::media()
     QVERIFY(rule.styleRules.isEmpty());
 }
 
-void tst_CssParser::page()
+void tst_QCssParser::page()
 {
     QCss::Parser parser("@page :first/*comment to ignore*/{ }");
     QVERIFY(parser.testPage());
@@ -394,7 +394,7 @@ void tst_CssParser::page()
     QVERIFY(rule.declarations.isEmpty());
 }
 
-void tst_CssParser::ruleset()
+void tst_QCssParser::ruleset()
 {
     {
         QCss::Parser parser("p/*foo*/{ }");
@@ -442,7 +442,7 @@ void tst_CssParser::ruleset()
 
 Q_DECLARE_METATYPE(QCss::Selector)
 
-void tst_CssParser::selector_data()
+void tst_QCssParser::selector_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<QCss::Selector>("expectedSelector");
@@ -644,7 +644,7 @@ void tst_CssParser::selector_data()
     }
 }
 
-void tst_CssParser::selector()
+void tst_QCssParser::selector()
 {
     QFETCH(QString, css);
     QFETCH(QCss::Selector, expectedSelector);
@@ -676,7 +676,7 @@ void tst_CssParser::selector()
     }
 }
 
-void tst_CssParser::prio()
+void tst_QCssParser::prio()
 {
     {
         QCss::Parser parser("!important");
@@ -698,14 +698,14 @@ void tst_CssParser::prio()
     }
 }
 
-void tst_CssParser::escapes()
+void tst_QCssParser::escapes()
 {
     QCss::Parser parser("\\hello");
     parser.test(QCss::IDENT);
     QCOMPARE(parser.lexem(), QString("hello"));
 }
 
-void tst_CssParser::malformedDeclarations_data()
+void tst_QCssParser::malformedDeclarations_data()
 {
     QTest::addColumn<QString>("css");
 
@@ -718,7 +718,7 @@ void tst_CssParser::malformedDeclarations_data()
     QTest::newRow("7") << QString("p { color:red;   color{;color:maroon}; color:green } /* same with recovery */");
 }
 
-void tst_CssParser::malformedDeclarations()
+void tst_QCssParser::malformedDeclarations()
 {
     QFETCH(QString, css);
     QCss::Parser parser(css);
@@ -737,7 +737,7 @@ void tst_CssParser::malformedDeclarations()
     QCOMPARE(rule.declarations.last().d->values.at(0).variant.toString(), QString("green"));
 }
 
-void tst_CssParser::invalidAtKeywords()
+void tst_QCssParser::invalidAtKeywords()
 {
     QCss::Parser parser(""
     "@three-dee {"
@@ -769,7 +769,7 @@ void tst_CssParser::invalidAtKeywords()
 
 Q_DECLARE_METATYPE(QColor)
 
-void tst_CssParser::colorValue_data()
+void tst_QCssParser::colorValue_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<QColor>("expectedColor");
@@ -790,7 +790,7 @@ void tst_CssParser::colorValue_data()
     QTest::newRow("transparent") << "color: transparent" << QColor(Qt::transparent);
 }
 
-void tst_CssParser::colorValue()
+void tst_QCssParser::colorValue()
 {
     QFETCH(QString, css);
     QFETCH(QColor, expectedColor);
@@ -845,7 +845,7 @@ private:
 
 Q_DECLARE_METATYPE(QDomDocument);
 
-void tst_CssParser::marginValue_data()
+void tst_QCssParser::marginValue_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<QString>("expectedMargin");
@@ -873,7 +873,7 @@ void tst_CssParser::marginValue_data()
     QTest::newRow("crap") << "margin: crap" << "0 0 0 0";
 }
 
-void tst_CssParser::marginValue()
+void tst_QCssParser::marginValue()
 {
     QFETCH(QString, css);
     QFETCH(QString, expectedMargin);
@@ -906,7 +906,7 @@ void tst_CssParser::marginValue()
     }
 }
 
-void tst_CssParser::styleSelector_data()
+void tst_QCssParser::styleSelector_data()
 {
     QTest::addColumn<bool>("match");
     QTest::addColumn<QString>("selector");
@@ -1021,7 +1021,7 @@ void tst_CssParser::styleSelector_data()
     QTest::newRow("unknown-pseudo") << false << QString("p:enabled:foobar") << QString("<p/>") << QString();
 }
 
-void tst_CssParser::styleSelector()
+void tst_QCssParser::styleSelector()
 {
     QFETCH(bool, match);
     QFETCH(QString, selector);
@@ -1065,7 +1065,7 @@ void tst_CssParser::styleSelector()
     }
 }
 
-void tst_CssParser::specificity_data()
+void tst_QCssParser::specificity_data()
 {
     QTest::addColumn<QString>("selector");
     QTest::addColumn<int>("specificity");
@@ -1088,7 +1088,7 @@ void tst_CssParser::specificity_data()
     QTest::newRow("id") << QString("#x34y") << 1 * 0x100;
 }
 
-void tst_CssParser::specificity()
+void tst_QCssParser::specificity()
 {
     QFETCH(QString, selector);
 
@@ -1105,7 +1105,7 @@ void tst_CssParser::specificity()
     QTEST(rule.selectors.at(0).specificity(), "specificity");
 }
 
-void tst_CssParser::specificitySort_data()
+void tst_QCssParser::specificitySort_data()
 {
     QTest::addColumn<QString>("firstSelector");
     QTest::addColumn<QString>("secondSelector");
@@ -1118,7 +1118,7 @@ void tst_CssParser::specificitySort_data()
     QTest::newRow("class") << QString("p") << QString(".hey") << QString("<p class=\"hey\" />");
 }
 
-void tst_CssParser::specificitySort()
+void tst_QCssParser::specificitySort()
 {
     QFETCH(QString, firstSelector);
     QFETCH(QString, secondSelector);
@@ -1164,7 +1164,7 @@ void tst_CssParser::specificitySort()
     }
 }
 
-void tst_CssParser::rulesForNode_data()
+void tst_QCssParser::rulesForNode_data()
 {
     QTest::addColumn<QString>("xml");
     QTest::addColumn<QString>("css");
@@ -1208,7 +1208,7 @@ void tst_CssParser::rulesForNode_data()
         << quint64(QCss::PseudoClass_Pressed) << 1 << "blue" << "";
 }
 
-void tst_CssParser::rulesForNode()
+void tst_QCssParser::rulesForNode()
 {
     QFETCH(QString, xml);
     QFETCH(QString, css);
@@ -1250,7 +1250,7 @@ void tst_CssParser::rulesForNode()
         QCOMPARE(decls.at(1).d->values.at(0).variant.toString(), value1);
 }
 
-void tst_CssParser::shorthandBackgroundProperty_data()
+void tst_QCssParser::shorthandBackgroundProperty_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<QBrush>("expectedBrush");
@@ -1270,7 +1270,7 @@ void tst_CssParser::shorthandBackgroundProperty_data()
     QTest::newRow("multi3") << "background: url(blah.png) top right" << QBrush() << QString("blah.png") << int(QCss::Repeat_XY) << int(Qt::AlignTop | Qt::AlignRight);
 }
 
-void tst_CssParser::shorthandBackgroundProperty()
+void tst_QCssParser::shorthandBackgroundProperty()
 {
     QFETCH(QString, css);
 
@@ -1309,7 +1309,7 @@ void tst_CssParser::shorthandBackgroundProperty()
     QTEST(int(alignment), "expectedAlignment");
 }
 
-void tst_CssParser::pseudoElement_data()
+void tst_QCssParser::pseudoElement_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<QString>("pseudoElement");
@@ -1343,7 +1343,7 @@ void tst_CssParser::pseudoElement_data()
       << "pe2" << 1;
 }
 
-void tst_CssParser::pseudoElement()
+void tst_QCssParser::pseudoElement()
 {
     QFETCH(QString, css);
     QFETCH(QString, pseudoElement);
@@ -1372,7 +1372,7 @@ void tst_CssParser::pseudoElement()
     QVERIFY(decls.count() == declCount);
 }
 
-void tst_CssParser::gradient_data()
+void tst_QCssParser::gradient_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<QString>("type");
@@ -1417,7 +1417,7 @@ void tst_CssParser::gradient_data()
     */
 }
 
-void tst_CssParser::gradient()
+void tst_QCssParser::gradient()
 {
     QFETCH(QString, css);
     QFETCH(QString, type);
@@ -1465,7 +1465,7 @@ void tst_CssParser::gradient()
     QVERIFY(g->stops().at(1).second == color1);
 }
 
-void tst_CssParser::extractFontFamily_data()
+void tst_QCssParser::extractFontFamily_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<QString>("expectedFamily");
@@ -1481,7 +1481,7 @@ void tst_CssParser::extractFontFamily_data()
     QTest::newRow("shorthand multiple") << "font: 12pt invalid, Times New Roman " << QString("Times New Roman");
 }
 
-void tst_CssParser::extractFontFamily()
+void tst_QCssParser::extractFontFamily()
 {
     QFETCH(QString, css);
     css.prepend("dummy {");
@@ -1506,7 +1506,7 @@ void tst_CssParser::extractFontFamily()
     QTEST(info.family(), "expectedFamily");
 }
 
-void tst_CssParser::extractBorder_data()
+void tst_QCssParser::extractBorder_data()
 {
     QTest::addColumn<QString>("css");
     QTest::addColumn<int>("expectedTopWidth");
@@ -1534,7 +1534,7 @@ void tst_CssParser::extractBorder_data()
     QTest::newRow("top-width+color") << "border-top: 3px green" << 3 << (int)QCss::BorderStyle_None << QColor("green");
 }
 
-void tst_CssParser::extractBorder()
+void tst_QCssParser::extractBorder()
 {
     QFETCH(QString, css);
     QFETCH(int, expectedTopWidth);
@@ -1566,7 +1566,7 @@ void tst_CssParser::extractBorder()
     QVERIFY(colors[QCss::TopEdge] == expectedTopColor);
 }
 
-void tst_CssParser::noTextDecoration()
+void tst_QCssParser::noTextDecoration()
 {
     QCss::Parser parser("dummy { text-decoration: none; }");
     QCss::StyleSheet sheet;
@@ -1591,7 +1591,7 @@ void tst_CssParser::noTextDecoration()
     QVERIFY(!f.strikeOut());
 }
 
-void tst_CssParser::quotedAndUnquotedIdentifiers()
+void tst_QCssParser::quotedAndUnquotedIdentifiers()
 {
     QCss::Parser parser("foo { font-style: \"italic\"; font-weight: bold }");
     QCss::StyleSheet sheet;
@@ -1612,5 +1612,6 @@ void tst_CssParser::quotedAndUnquotedIdentifiers()
     QCOMPARE(decls.at(1).d->values.first().toString(), QLatin1String("bold"));
 }
 
-QTEST_MAIN(tst_CssParser)
-#include "tst_cssparser.moc"
+QTEST_MAIN(tst_QCssParser)
+#include "tst_qcssparser.moc"
+
