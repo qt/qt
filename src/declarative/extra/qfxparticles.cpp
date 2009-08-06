@@ -680,17 +680,18 @@ int QFxParticles::count() const
 void QFxParticles::setCount(int cnt)
 {
     Q_D(QFxParticles);
-    if (cnt != d->count) {
-        int oldCount = d->count;
-        d->count = cnt;
-        d->addParticleTime = 0;
-        d->addParticleCount = d->particles.count();
-        if (!oldCount && d->clock.state() != QAbstractAnimation::Running) {
-            d->clock.start();
-        }
-        d->paintItem->updateSize();
-        d->paintItem->update();
+    if (cnt == d->count)
+        return;
+
+    int oldCount = d->count;
+    d->count = cnt;
+    d->addParticleTime = 0;
+    d->addParticleCount = d->particles.count();
+    if (!oldCount && d->clock.state() != QAbstractAnimation::Running && d->count) {
+        d->clock.start();
     }
+    d->paintItem->updateSize();
+    d->paintItem->update();
 }
 
 /*!
@@ -1043,6 +1044,9 @@ void QFxParticles::setMotion(QFxParticleMotion *motion)
 
 void QFxParticlesPainter::updateSize()
 {
+    if (!isComponentComplete())
+        return;
+
     const int parentX = parentItem()->x();
     const int parentY = parentItem()->y();
     for (int i = 0; i < d->particles.count(); ++i) {
