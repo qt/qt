@@ -1351,6 +1351,10 @@ void tst_QCompleter::task247560_keyboardNavigation()
     edit.show();
     edit.setFocus();
 
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&edit);
+#endif
+
     QTest::qWait(100);
 
     QTest::keyClick(&edit, 'r');
