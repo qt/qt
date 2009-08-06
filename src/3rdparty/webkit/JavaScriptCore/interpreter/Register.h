@@ -61,7 +61,7 @@ namespace JSC {
         int32_t i() const;
         void* v() const;
 
-    public:
+    private:
         friend class ExecState;
         friend class Interpreter;
 
