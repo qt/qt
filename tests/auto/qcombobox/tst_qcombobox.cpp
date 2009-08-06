@@ -2092,7 +2092,7 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
 #endif
 
     // box should be resized to the same size as correctBox
-    QCOMPARE(box.size(), correctBox.size());
+    QTRY_COMPARE(box.size(), correctBox.size());
 }
 
 void tst_QComboBox::task248169_popupWithMinimalSize()
@@ -2199,7 +2199,7 @@ void tst_QComboBox::noScrollbar()
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
-    
+
     {
         QTableWidget *table = new QTableWidget(2,2);
         QComboBox comboBox;

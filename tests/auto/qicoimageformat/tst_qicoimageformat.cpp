@@ -42,13 +42,13 @@
 #include <QtGui>
 #include <QtCore>
 
-class tst_QtIcoImageFormat : public QObject
+class tst_QIcoImageFormat : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QtIcoImageFormat();
-    virtual ~tst_QtIcoImageFormat();
+    tst_QIcoImageFormat();
+    virtual ~tst_QIcoImageFormat();
 
 
 public slots:
@@ -78,45 +78,45 @@ private:
 };
 
 
-tst_QtIcoImageFormat::tst_QtIcoImageFormat()
+tst_QIcoImageFormat::tst_QIcoImageFormat()
 {
     m_IconPath = QLatin1String(SRCDIR) + "/icons";
     qDebug() << m_IconPath;
 }
 
-tst_QtIcoImageFormat::~tst_QtIcoImageFormat()
+tst_QIcoImageFormat::~tst_QIcoImageFormat()
 {
 
 }
 
-void tst_QtIcoImageFormat::init()
+void tst_QIcoImageFormat::init()
 {
 
 }
 
-void tst_QtIcoImageFormat::cleanup()
+void tst_QIcoImageFormat::cleanup()
 {
 
 }
 
-void tst_QtIcoImageFormat::initTestCase()
+void tst_QIcoImageFormat::initTestCase()
 {
 
 }
 
-void tst_QtIcoImageFormat::cleanupTestCase()
+void tst_QIcoImageFormat::cleanupTestCase()
 {
 
 }
 
-void tst_QtIcoImageFormat::format()
+void tst_QIcoImageFormat::format()
 {
     QImageReader reader(m_IconPath + "/valid/35FLOPPY.ICO", "ico");
     QByteArray fmt = reader.format();
     QCOMPARE(const_cast<const char*>(fmt.data()), "ico" );
 }
 
-void tst_QtIcoImageFormat::canRead_data()
+void tst_QIcoImageFormat::canRead_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("isValid");
@@ -135,7 +135,7 @@ void tst_QtIcoImageFormat::canRead_data()
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 1;
 }
 
-void tst_QtIcoImageFormat::canRead()
+void tst_QIcoImageFormat::canRead()
 {
     QFETCH(QString, fileName);
     QFETCH(int, isValid);
@@ -157,7 +157,7 @@ public:
 
 };
 
-void tst_QtIcoImageFormat::SequentialFile_data()
+void tst_QIcoImageFormat::SequentialFile_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("isValid");
@@ -169,7 +169,7 @@ void tst_QtIcoImageFormat::SequentialFile_data()
 
 }
 
-void tst_QtIcoImageFormat::SequentialFile()
+void tst_QIcoImageFormat::SequentialFile()
 {
     QFETCH(QString, fileName);
     QFETCH(int, isValid);
@@ -187,7 +187,7 @@ void tst_QtIcoImageFormat::SequentialFile()
 }
 
 
-void tst_QtIcoImageFormat::imageCount_data()
+void tst_QIcoImageFormat::imageCount_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("count");
@@ -206,7 +206,7 @@ void tst_QtIcoImageFormat::imageCount_data()
 
 }
 
-void tst_QtIcoImageFormat::imageCount()
+void tst_QIcoImageFormat::imageCount()
 {
     QFETCH(QString, fileName);
     QFETCH(int, count);
@@ -216,7 +216,7 @@ void tst_QtIcoImageFormat::imageCount()
 
 }
 
-void tst_QtIcoImageFormat::jumpToNextImage_data()
+void tst_QIcoImageFormat::jumpToNextImage_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("count");
@@ -233,7 +233,7 @@ void tst_QtIcoImageFormat::jumpToNextImage_data()
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
 }
 
-void tst_QtIcoImageFormat::jumpToNextImage()
+void tst_QIcoImageFormat::jumpToNextImage()
 {
     QFETCH(QString, fileName);
     QFETCH(int, count);
@@ -247,7 +247,7 @@ void tst_QtIcoImageFormat::jumpToNextImage()
     QCOMPARE(count, 0);
 }
 
-void tst_QtIcoImageFormat::loopCount_data()
+void tst_QIcoImageFormat::loopCount_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("count");
@@ -256,7 +256,7 @@ void tst_QtIcoImageFormat::loopCount_data()
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
 }
 
-void tst_QtIcoImageFormat::loopCount()
+void tst_QIcoImageFormat::loopCount()
 {
     QFETCH(QString, fileName);
     QFETCH(int, count);
@@ -265,7 +265,7 @@ void tst_QtIcoImageFormat::loopCount()
     QCOMPARE(reader.loopCount(), count);
 }
 
-void tst_QtIcoImageFormat::nextImageDelay_data()
+void tst_QIcoImageFormat::nextImageDelay_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("count");
@@ -283,7 +283,7 @@ void tst_QtIcoImageFormat::nextImageDelay_data()
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
 }
 
-void tst_QtIcoImageFormat::nextImageDelay()
+void tst_QIcoImageFormat::nextImageDelay()
 {
     QFETCH(QString, fileName);
     QFETCH(int, count);
@@ -300,7 +300,7 @@ void tst_QtIcoImageFormat::nextImageDelay()
     }
 }
 
-void tst_QtIcoImageFormat::pngCompression_data()
+void tst_QIcoImageFormat::pngCompression_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("index");
@@ -310,7 +310,7 @@ void tst_QtIcoImageFormat::pngCompression_data()
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4 << 256 << 256;
 }
 
-void tst_QtIcoImageFormat::pngCompression()
+void tst_QIcoImageFormat::pngCompression()
 {
     QFETCH(QString, fileName);
     QFETCH(int, index);
@@ -327,5 +327,6 @@ void tst_QtIcoImageFormat::pngCompression()
     QCOMPARE(image.height(), height);
 }
 
-QTEST_MAIN(tst_QtIcoImageFormat)
-#include "tst_qticoimageformat.moc"
+QTEST_MAIN(tst_QIcoImageFormat)
+#include "tst_qicoimageformat.moc"
+

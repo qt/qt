@@ -343,6 +343,9 @@ Q_SIGNALS:
     void editingFinished();
     void updateNeeded(const QRect &);
 
+#ifdef QT_KEYPAD_NAVIGATION
+    void editFocusChange(bool);
+#endif
 protected:
     virtual void timerEvent(QTimerEvent *event);
 

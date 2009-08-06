@@ -815,8 +815,6 @@ void qt_init(QApplicationPrivate *priv, int)
         ptrSetProcessDPIAware();
 #endif
 
-    priv->lastGestureId = 0;
-
     priv->GetGestureInfo =
         (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
                                              "GetGestureInfo");
@@ -3718,13 +3716,8 @@ bool QETWidget::translateCloseEvent(const MSG &)
 bool QETWidget::translateGestureEvent(const MSG &msg)
 {
     GESTUREINFO gi;
+    memset(&gi, 0, sizeof(GESTUREINFO));
     gi.cbSize = sizeof(GESTUREINFO);
-    gi.dwFlags       = 0;
-    gi.ptsLocation.x = 0;
-    gi.ptsLocation.y = 0;
-    gi.dwID          = 0;
-    gi.dwInstanceID  = 0;
-    gi.dwSequenceID  = 0;
 
     QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
     BOOL bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
@@ -3758,6 +3751,7 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
         default:
             break;
         }
+        qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
         if (event.gestureType != QNativeGestureEvent::None)
             qt_sendSpontaneousEvent(widget, &event);
     } else {
@@ -3765,7 +3759,6 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
         if (dwErr > 0)
             qWarning() << "translateGestureEvent: error = " << dwErr;
     }
-    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
     return true;
 }
 

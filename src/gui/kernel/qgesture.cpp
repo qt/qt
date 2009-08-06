@@ -197,11 +197,44 @@ Qt::GestureState QGesture::state() const
 }
 
 /*!
-  Sets this gesture's recognition state to \a state.
+  Sets this gesture's recognition state to \a state and emits appropriate
+  signals.
+
+  This functions emits the signals according to the old state and the new
+  \a state, and it should be called after all the internal properties have been
+  initialized.
+
+  \sa started, triggered, finished, cancelled
  */
-void QGesture::setState(Qt::GestureState state)
+void QGesture::updateState(Qt::GestureState state)
 {
-    d_func()->state = state;
+    Q_D(QGesture);
+    if (d->state == state) {
+        if (state == Qt::GestureUpdated)
+            emit triggered();
+        return;
+    }
+    const Qt::GestureState oldState = d->state;
+    d->state = state;
+    if (state != Qt::NoGesture && oldState > state) {
+        // comparing the state as ints: state should only be changed from
+        // started to (optionally) updated and to finished.
+        qWarning("QGesture::updateState: incorrect new state");
+        return;
+    }
+    if (oldState == Qt::NoGesture)
+        emit started();
+    if (state == Qt::GestureUpdated)
+        emit triggered();
+    else if (state == Qt::GestureFinished)
+        emit finished();
+    else if (state == Qt::NoGesture)
+        emit cancelled();
+
+    if (state == Qt::GestureFinished) {
+        // gesture is finished, so we reset the internal state.
+        d->state = Qt::NoGesture;
+    }
 }
 
 /*!
@@ -238,14 +271,13 @@ QGraphicsItem* QGesture::graphicsItem() const
 
     Resets the internal state of the gesture. This function might be called by
     the filterEvent() implementation in a derived class, or by the user to
-    cancel a gesture.  The base class implementation emits the cancelled()
-    signal if the state() of the gesture wasn't empty.
+    cancel a gesture.  The base class implementation calls
+    updateState(Qt::NoGesture) which emits the cancelled()
+    signal if the state() of the gesture indicated it was active.
 */
 void QGesture::reset()
 {
-    if (state() != Qt::NoGesture)
-        emit cancelled();
-    setState(Qt::NoGesture);
+    updateState(Qt::NoGesture);
 }
 
 QT_END_NAMESPACE

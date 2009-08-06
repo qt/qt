@@ -1295,7 +1295,7 @@ bool QLineControl::processEvent(QEvent* ev)
                 }
                 if ((ev->type() == QEvent::KeyRelease)
                     && !isReadOnly()
-                    && deleteAllTimer) {
+                    && m_deleteAllTimer) {
                     killTimer(m_deleteAllTimer);
                     m_deleteAllTimer = 0;
                     backspace();
@@ -1701,12 +1701,12 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
                     if (text().length() == 0) {
                         setText(m_cancelText);
 
-                        if (passwordEchoEditing)
+                        if (passwordEchoEditing())
                             updatePasswordEchoEditing(false);
 
-                        setEditFocus(false);
-                    } else if (!deleteAllTimer) {
-                        deleteAllTimer = startTimer(750);
+                        emit editFocusChange(false);
+                    } else if (!m_deleteAllTimer) {
+                        m_deleteAllTimer = startTimer(750);
                     }
                 } else {
                     unknown = true;

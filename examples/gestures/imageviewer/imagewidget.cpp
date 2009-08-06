@@ -67,6 +67,7 @@ ImageWidget::ImageWidget(QWidget *parent)
 
     tapAndHoldGesture = new TapAndHoldGesture(this);
     connect(tapAndHoldGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
+    connect(tapAndHoldGesture, SIGNAL(finished()), this, SLOT(gestureTriggered()));
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)
@@ -112,7 +113,7 @@ void ImageWidget::paintEvent(QPaintEvent*)
                 touchFeedback.position + QPoint(-10,  10),
                 touchFeedback.position + QPoint(-15,   0)
             };
-            for (int i = 0; i < (touchFeedback.tapAndHoldState-20)/10; ++i)
+            for (int i = 0; i < touchFeedback.tapAndHoldState/5; ++i)
                 p.drawEllipse(pts[i], 3, 3);
         }
     } else if (touchFeedback.sliding) {
@@ -156,10 +157,9 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ImageWidget::gestureTriggered()
 {
-    touchFeedback.tapped = false;
-    touchFeedback.doubleTapped = false;
-
     if (sender() == panGesture) {
+        touchFeedback.tapped = false;
+        touchFeedback.doubleTapped = false;
         QPanGesture *pg = qobject_cast<QPanGesture*>(sender());
         if (zoomedIn) {
 #ifndef QT_NO_CURSOR
@@ -174,7 +174,6 @@ void ImageWidget::gestureTriggered()
 #endif
             horizontalOffset += pg->lastOffset().width();
             verticalOffset += pg->lastOffset().height();
-            update();
         } else {
             // only slide gesture should be accepted
             if (pg->state() == Qt::GestureFinished) {
@@ -187,6 +186,7 @@ void ImageWidget::gestureTriggered()
                 updateImage();
             }
         }
+        update();
         feedbackFadeOutTimer.start(500, this);
     } else if (sender() == tapAndHoldGesture) {
         if (tapAndHoldGesture->state() == Qt::GestureFinished) {
@@ -199,6 +199,9 @@ void ImageWidget::gestureTriggered()
             menu.addAction("Action 2");
             menu.addAction("Action 3");
             menu.exec(mapToGlobal(tapAndHoldGesture->pos()));
+        } else {
+            ++touchFeedback.tapAndHoldState;
+            update();
         }
         feedbackFadeOutTimer.start(500, this);
     }

@@ -2018,8 +2018,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
       assume that NumParagraphs is 37. Each paragraph is a
       QMap<QString, const Node *>.
     */
-    QMap<QString, const Node *> paragraph[NumParagraphs];
-    QString paragraphName[NumParagraphs];
+    QMap<QString, const Node *> paragraph[NumParagraphs+1];
+    QString paragraphName[NumParagraphs+1];
 
     QMap<QString, const Node *>::ConstIterator c = classMap.begin();
     while (c != classMap.end()) {
@@ -2052,22 +2052,22 @@ void HtmlGenerator::generateCompactList(const Node *relative,
       We now want to compute the paragraph offset. Paragraphs 0 to 6
       start at offsets 0, 3, 4, 8, 9, 14, 23.
     */
-    int paragraphOffset[NumParagraphs + 1];
+    int paragraphOffset[NumParagraphs + 1];     // 37 + 1
     int i, j, k;
 
     paragraphOffset[0] = 0;
-    for (j = 0; j < NumParagraphs; j++)
+    for (j = 0; j < NumParagraphs; j++)         // j = 0..36
         paragraphOffset[j + 1] = paragraphOffset[j] + paragraph[j].count();
 
-    int firstOffset[NumColumns + 1];
-    int currentOffset[NumColumns];
-    int currentParagraphNo[NumColumns];
-    int currentOffsetInParagraph[NumColumns];
+    int firstOffset[NumColumns + 1];            // 4 + 1
+    int currentOffset[NumColumns];              // 4
+    int currentParagraphNo[NumColumns];         // 4
+    int currentOffsetInParagraph[NumColumns];   // 4
 
     int numRows = (classMap.count() + NumColumns - 1) / NumColumns;
     int curParagNo = 0;
 
-    for (i = 0; i < NumColumns; i++) {
+    for (i = 0; i < NumColumns; i++) {          // i = 0..3
         firstOffset[i] = qMin(i * numRows, classMap.size());
         currentOffset[i] = firstOffset[i];
 
@@ -2092,16 +2092,18 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                 out() << "<td>\n</td>\n";
             }
             else {
-                while (currentOffsetInParagraph[i] == paragraph[currentParagraphNo[i]].count()) {
+                while ((currentParagraphNo[i] < NumParagraphs) &&
+                       (currentOffsetInParagraph[i] == paragraph[currentParagraphNo[i]].count())) {
                     ++currentParagraphNo[i];
                     currentOffsetInParagraph[i] = 0;
                 }
-
+#if 0
                 if (currentParagraphNo[i] >= NumParagraphs) {
-                    qDebug() << "### Internal error ###" << __FILE__ << __LINE__;
+                    qDebug() << "### Internal error ###" << __FILE__ << __LINE__
+                             << currentParagraphNo[i] << NumParagraphs;
                     currentParagraphNo[i] = NumParagraphs - 1;
                 }
-
+#endif
                 out() << "<td align=\"right\">";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
@@ -2111,7 +2113,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                 }
                 out() << "</td>\n";
                     
-                if (!paragraphName[currentParagraphNo[i]].isEmpty()) {
+                if ((currentParagraphNo[i] < NumParagraphs) &&
+                    !paragraphName[currentParagraphNo[i]].isEmpty()) {
                     QMap<QString, const Node *>::Iterator it;
                     it = paragraph[currentParagraphNo[i]].begin();
                     for (j = 0; j < currentOffsetInParagraph[i]; j++)
@@ -3710,12 +3713,6 @@ QString HtmlGenerator::getLink(const Atom *atom,
                                 }
                                 inObsoleteLink = true;
                             }
-#if 0                            
-                            qDebug() << "Link to Obsolete entity"
-                                     << (*node)->name();
-                            qDebug() << "  relative entity"
-                                     << relative->name();
-#endif                            
                         }
                     }
                 }
@@ -3731,8 +3728,6 @@ QString HtmlGenerator::getLink(const Atom *atom,
             else if ((*node)->status() == Node::Internal) {
                 qDebug() << "Link to Internal entity";
             }
-            //else
-            //qDebug() << "Node Status:" << (*node)->status();
 #endif                
         }
 
@@ -4016,10 +4011,6 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
                 generateText(text, cn, marker);
                 out() << "</p>";
             }
-//            else
-//                qDebug() << "generateQmlInherits(): "
-//                         << "Inherited element not documented -->"
-//                         << linkPair.first;
         }
     }
 }

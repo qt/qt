@@ -92,4 +92,4 @@ void tst_QPolygon::makeEllipse()
 }
 
 QTEST_APPLESS_MAIN(tst_QPolygon)
-#include "tst_qpointarray.moc"
+#include "tst_qpolygon.moc"
