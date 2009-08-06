@@ -64,10 +64,6 @@ class Q_GUI_EXPORT QGesture : public QObject
 
     Q_PROPERTY(Qt::GestureState state READ state)
 
-    Q_PROPERTY(QPoint startPos READ startPos WRITE setStartPos)
-    Q_PROPERTY(QPoint lastPos READ lastPos WRITE setLastPos)
-    Q_PROPERTY(QPoint pos READ pos WRITE setPos)
-
 public:
     explicit QGesture(QObject *parent = 0);
     ~QGesture();
@@ -80,18 +76,12 @@ public:
     virtual void reset();
 
     Qt::GestureState state() const;
-    void setState(Qt::GestureState state);
-
-    QPoint startPos() const;
-    void setStartPos(const QPoint &point);
-    QPoint lastPos() const;
-    void setLastPos(const QPoint &point);
-    QPoint pos() const;
-    void setPos(const QPoint &point);
 
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
     bool eventFilter(QObject*, QEvent*);
+
+    void setState(Qt::GestureState state);
 
 Q_SIGNALS:
     void started();

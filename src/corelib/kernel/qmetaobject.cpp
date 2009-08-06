@@ -1352,6 +1352,8 @@ int QMetaMethod::attributes() const
 }
 
 /*!
+  \since 4.6
+
   Returns this method's index.
 */
 int QMetaMethod::methodIndex() const
@@ -2078,6 +2080,8 @@ int QMetaProperty::userType() const
 }
 
 /*!
+  \since 4.6
+
   Returns this property's index.
 */
 int QMetaProperty::propertyIndex() const

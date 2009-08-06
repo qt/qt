@@ -133,7 +133,7 @@
 
     To access the pointer that QWeakPointer is tracking, you
     must first create a QSharedPointer object and verify if the pointer
-    is null or not.
+    is null or not. See QWeakPointer::toStrongRef() for more information.
 
     \sa QSharedPointer, QScopedPointer
 */
@@ -215,6 +215,8 @@
     If \tt T is a derived type of the template parameter of this
     class, QSharedPointer will perform an automatic cast. Otherwise,
     you will get a compiler error.
+
+    \sa QWeakPointer::toStrongRef()
 */
 
 /*!
@@ -367,6 +369,8 @@
 
     Returns a weak reference object that shares the pointer referenced
     by this object.
+
+    \sa QWeakPointer::QWeakPointer(const QSharedPointer<T> &)
 */
 
 /*!
@@ -483,10 +487,78 @@
 */
 
 /*!
+    \fn T *QWeakPointer::data() const
+    \since 4.6
+
+    Returns the value of the pointer being tracked by this QWeakPointer,
+    \b without ensuring that it cannot get deleted. To have that guarantee,
+    use toStrongRef(), which returns a QSharedPointer object. If this
+    function can determine that the pointer has already been deleted, it
+    returns 0.
+
+    It is ok to obtain the value of the pointer and using that value itself,
+    like for example in debugging statements:
+
+    \code
+        qDebug("Tracking %p", weakref.data());
+    \endcode
+
+    However, dereferencing the pointer is only allowed if you can guarantee
+    by external means that the pointer does not get deleted. For example,
+    if you can be certain that no other thread can delete it, nor the
+    functions that you may call.
+
+    If that is the case, then the following code is valid:
+
+    \code
+        // this pointer cannot be used in another thread
+        // so other threads cannot delete it
+        QWeakPointer<int> weakref = obtainReference();
+
+        Object *obj = weakref.data();
+        if (obj) {
+            // if the pointer wasn't deleted yet, we know it can't get
+            // deleted by our own code here nor the functions we call
+            otherFunction(obj);
+        }
+    \endcode
+
+    Use this function with care.
+
+    \sa isNull(), toStrongRef()
+*/
+
+/*!
     \fn QSharedPointer<T> QWeakPointer::toStrongRef() const
 
     Promotes this weak reference to a strong one and returns a
-    QSharedPointer object holding that reference.
+    QSharedPointer object holding that reference. When promoting to
+    QSharedPointer, this function verifies if the object has been deleted
+    already or not. If it hasn't, this function increases the reference
+    count to the shared object, thus ensuring that it will not get
+    deleted.
+
+    Since this function can fail to obtain a valid strong reference to the
+    shared object, you should always verify if the conversion succeeded,
+    by calling QSharedPointer::isNull() on the returned object.
+
+    For example, the following code promotes a QWeakPointer that was held
+    to a strong reference and, if it succeeded, it prints the value of the
+    integer that was held:
+
+    \code
+        QWeakPointer<int> weakref;
+
+        // ...
+
+        QSharedPointer<int> strong = weakref.toStrongRef();
+        if (strong)
+            qDebug() << "The value is:" << *strong;
+        else
+            qDebug() << "The value has already been deleted";
+    \endcode
+
+    \sa QSharedPointer::QSharedPointer(const QWeakPointer<T> &)
 */
 
 /*!

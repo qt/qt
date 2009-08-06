@@ -1672,7 +1672,7 @@ bool QPainter::begin(QPaintDevice *pd)
 
     if (!d->engine) {
         qWarning("QPainter::begin: Paint device returned engine == 0, type: %d", pd->devType());
-        return true;
+        return false;
     }
 
     // Slip a painter state into the engine before we do any other operations

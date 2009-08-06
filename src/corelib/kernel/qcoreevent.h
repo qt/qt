@@ -276,7 +276,7 @@ public:
         TouchUpdate = 195,
         TouchEnd = 196,
 
-        WinGesture = 197,
+        NativeGesture = 197,                    // Internal for platform gesture support
 
         RequestSoftwareInputPanel = 199,
         CloseSoftwareInputPanel = 200,

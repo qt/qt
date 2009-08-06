@@ -96,6 +96,7 @@ private slots:
     void task256918_setFont();
     void menuSizeHint();
     void task258920_mouseBorder();
+    void setFixedWidth();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -804,6 +805,17 @@ void tst_QMenu::task258920_mouseBorder()
     QCOMPARE(static_cast<QAction*>(0), menu.activeAction());
     QVERIFY(menu.painted);
 }
+
+void tst_QMenu::setFixedWidth()
+{
+    QMenu menu;
+    menu.addAction("action");
+    menu.setFixedWidth(300);
+    //the sizehint should reflect the minimumwidth because the action will try to
+    //get as much space as possible
+    QCOMPARE(menu.sizeHint().width(), menu.minimumWidth());
+}
+
 
 
 QTEST_MAIN(tst_QMenu)

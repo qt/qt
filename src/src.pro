@@ -25,6 +25,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, o
 contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
 contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
+contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, webkit)  {
     #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
@@ -73,6 +74,8 @@ src_qt3support.subdir = $$QT_SOURCE_TREE/src/qt3support
 src_qt3support.target = sub-qt3support
 src_phonon.subdir = $$QT_SOURCE_TREE/src/phonon
 src_phonon.target = sub-phonon
+src_multimedia.subdir = $$QT_SOURCE_TREE/src/multimedia
+src_multimedia.target = sub-multimedia
 src_tools_uic3.subdir = $$QT_SOURCE_TREE/src/tools/uic3
 src_tools_uic3.target = sub-uic3
 src_activeqt.subdir = $$QT_SOURCE_TREE/src/activeqt
@@ -109,6 +112,7 @@ src_webkit.target = sub-webkit
    src_testlib.depends = src_corelib
    src_qt3support.depends = src_gui src_xml src_network src_sql
    src_phonon.depends = src_gui
+   src_multimedia.depends = src_gui
    src_tools_uic3.depends = src_qt3support src_xml
    src_tools_idc.depends = src_corelib
    src_tools_activeqt.depends = src_tools_idc src_gui

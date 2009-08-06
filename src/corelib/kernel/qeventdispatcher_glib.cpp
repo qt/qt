@@ -263,6 +263,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     (void) new (&timerSource->timerList) QTimerInfoList();
     timerSource->processEventsFlags = QEventLoop::AllEvents;
     g_source_set_can_recurse(&timerSource->source, true);
+    g_source_set_priority(&timerSource->source, G_PRIORITY_DEFAULT_IDLE);
     g_source_attach(&timerSource->source, mainContext);
 }
 

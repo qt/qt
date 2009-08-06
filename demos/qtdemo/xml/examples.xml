@@ -154,6 +154,11 @@
   <category dirname="phonon" name="Phonon">
     <example filename="musicplayer" name="Music Player" />
   </category>
+  <category dirname="multimedia/audio" name="Multimedia">
+    <example filename="audiodevices" name="Audio Devices" />
+    <example filename="audiooutput" name="Audio Output" />
+    <example filename="audioinput" name="Audio Input" />
+  </category>
   <category dirname="richtext" name="Rich Text">
     <example filename="calendar" name="Calendar" />
     <example filename="orderform" name="Order Form" />

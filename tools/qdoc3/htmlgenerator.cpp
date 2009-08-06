@@ -537,6 +537,20 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             out() << formattingRightMap()[atom->string()];
         }
         break;
+    case Atom::AnnotatedList:
+        {
+            const FakeNode *fake = static_cast<const FakeNode *>(relative);
+            if (fake && !fake->groupMembers().isEmpty()) {
+                QList<Node*> values = tre->groups().values(atom->string());
+                QMap<QString, const Node*> nodeMap;
+                for (int i = 0; i < values.size(); ++i) {
+                    const Node* n = values.at(i);
+                    nodeMap.insert(n->name(),n);
+                }
+                generateAnnotatedList(fake, marker, nodeMap);
+            }
+        }
+        break;
     case Atom::GeneratedList:
         if (atom->string() == "annotatedclasses") {
             generateAnnotatedList(relative, marker, nonCompatClasses);

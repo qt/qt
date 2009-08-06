@@ -3204,12 +3204,12 @@ static const char qt_meta_stringdata_QAxBase[] = {
 };
 
 static QMetaObject qaxobject_staticMetaObject = {
-    &QObject::staticMetaObject, qt_meta_stringdata_QAxBase,
-        qt_meta_data_QAxBase, 0
+    { &QObject::staticMetaObject, qt_meta_stringdata_QAxBase,
+        qt_meta_data_QAxBase, 0 }
 };
 static QMetaObject qaxwidget_staticMetaObject = {
-    &QWidget::staticMetaObject, qt_meta_stringdata_QAxBase,
-        qt_meta_data_QAxBase, 0
+    { &QWidget::staticMetaObject, qt_meta_stringdata_QAxBase,
+        qt_meta_data_QAxBase, 0 }
 };
 
 /*!
@@ -3692,6 +3692,8 @@ int QAxBase::qt_metacall(QMetaObject::Call call, int id, void **v)
         case QMetaMethod::Slot:
             id = internalInvoke(call, id, v);
             break;
+        default:
+            break;
         }
         break;
     case QMetaObject::ReadProperty:
@@ -3705,6 +3707,8 @@ int QAxBase::qt_metacall(QMetaObject::Call call, int id, void **v)
     case QMetaObject::QueryPropertyEditable:
     case QMetaObject::QueryPropertyUser:
         id -= mo->propertyCount();
+        break;
+    default:
         break;
     }
     Q_ASSERT(id < 0);
@@ -3905,7 +3909,7 @@ bool QAxBase::dynamicCallHelper(const char *name, void *inout, QList<QVariant> &
             else
                 paramType = d->metaobj->paramType(normFunction, i, &out);
 
-            if (!parse && d->useMetaObject && var.type() == QVariant::String || var.type() == QVariant::ByteArray) {
+            if ((!parse && d->useMetaObject && var.type() == QVariant::String) || var.type() == QVariant::ByteArray) {
                 int enumIndex =mo->indexOfEnumerator(paramType);
                 if (enumIndex != -1) {
                     QMetaEnum metaEnum =mo->enumerator(enumIndex);

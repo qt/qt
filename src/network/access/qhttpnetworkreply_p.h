@@ -149,6 +149,7 @@ private:
     Q_DECLARE_SCOPED_PRIVATE(QHttpNetworkReply)
     friend class QHttpNetworkConnection;
     friend class QHttpNetworkConnectionPrivate;
+    friend class QHttpNetworkConnectionChannel;
 };
 
 
@@ -170,6 +171,10 @@ public:
     qint64 readReplyBodyRaw(QIODevice *in, QByteDataBuffer *out, qint64 size);
     qint64 readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out);
     qint64 getChunkSize(QIODevice *in, qint64 *chunkSize);
+
+    void appendUncompressedReplyData(QByteArray &qba);
+    void appendUncompressedReplyData(QByteDataBuffer &data);
+    void appendCompressedReplyData(QByteDataBuffer &data);
 
     qint64 bytesAvailable() const;
     bool isChunked();

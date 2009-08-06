@@ -1547,7 +1547,7 @@ void tst_QItemSelectionModel::resetModel()
     model.reset();
 
     QVERIFY(view.selectionModel()->selection().isEmpty());
-    QVERIFY(view.selectionModel()->hasSelection());
+    QVERIFY(view.selectionModel()->hasSelection() == false);
 
     view.selectionModel()->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
 

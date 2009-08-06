@@ -181,7 +181,21 @@ QString indexFilesFolder(const QString &collectionFile)
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    // First do a quick search for arguments that imply command-line mode.
+    const char * cmdModeArgs[] = {
+        "-help", "-register", "-unregister", "-remove-search-index"
+    };
+    bool useGui = true;
+    for (int i = 1; i < argc; ++i) {
+        for (size_t j = 0; j < sizeof cmdModeArgs/sizeof *cmdModeArgs; ++j) {
+            if(strcmp(argv[i], cmdModeArgs[j]) == 0) {
+                useGui = false;
+                break;
+            }
+        }
+    }
+
+    QApplication a(argc, argv, useGui);
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
 
     CmdLineParser cmd;

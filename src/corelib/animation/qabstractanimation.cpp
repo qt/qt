@@ -177,17 +177,6 @@ QUnifiedTimer *QUnifiedTimer::instance()
     return inst;
 }
 
-void QUnifiedTimer::updateRecentlyStartedAnimations()
-{
-    if (animationsToStart.isEmpty())
-        return;
-
-    animations += animationsToStart;
-    updateTimer(); //we make sure we start the timer there
-
-    animationsToStart.clear();
-}
-
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
     //this is simply the time we last received a tick
@@ -195,15 +184,16 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
     if (time.isValid())
         lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
 
-    //we transfer the waiting animations into the "really running" state
-    updateRecentlyStartedAnimations();
 
     if (event->timerId() == startStopAnimationTimer.timerId()) {
         startStopAnimationTimer.stop();
+        //we transfer the waiting animations into the "really running" state
+        animations += animationsToStart;
+        animationsToStart.clear();
         if (animations.isEmpty()) {
             animationTimer.stop();
             time = QTime();
-        } else {
+        } else if (!animationTimer.isActive()) {
             animationTimer.start(timingInterval, this);
             lastTick = 0;
             time.start();
@@ -219,27 +209,19 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
     }
 }
 
-void QUnifiedTimer::updateTimer()
-{
-    //we delay the call to start and stop for the animation timer so that if you
-    //stop and start animations in batch you don't stop/start the timer too often.
-    if (!startStopAnimationTimer.isActive())
-        startStopAnimationTimer.start(0, this); // we delay the actual start of the animation
-}
-
 void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
 {
     if (animations.contains(animation) ||animationsToStart.contains(animation))
         return;
     animationsToStart << animation;
-    updateTimer();
+    startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
 }
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
 {
     animations.removeAll(animation);
     animationsToStart.removeAll(animation);
-    updateTimer();
+    startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
 }
 
 

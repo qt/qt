@@ -229,6 +229,10 @@ void QMenuPrivate::updateActionRects() const
     const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, 0, q),
               vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, 0, q),
               icone = style->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
+    const int fw = style->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
+
+    const int sfcMargin = style->sizeFromContents(QStyle::CT_Menu, 0, QApplication::globalStrut(), q).width() - QApplication::globalStrut().width();
+    const int min_column_width = q->minimumWidth() - (sfcMargin + leftmargin + rightmargin + 2 * (fw + hmargin));
 
     //for compatability now - will have to refactor this away..
     tabWidth = 0;
@@ -301,7 +305,7 @@ void QMenuPrivate::updateActionRects() const
 
 
         if (!sz.isEmpty()) {
-            max_column_width = qMax(max_column_width, sz.width());
+            max_column_width = qMax(min_column_width, qMax(max_column_width, sz.width()));
             //wrapping
             if (!scroll &&
                y+sz.height()+vmargin > dh - (style->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q) * 2)) {
@@ -317,7 +321,6 @@ void QMenuPrivate::updateActionRects() const
     max_column_width += tabWidth; //finally add in the tab width
 
     //calculate position
-    const int fw = style->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
     const int base_y = vmargin + fw + topmargin +
         (scroll ? scroll->scrollOffset : 0) +
         (tearoff ? style->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, q) : 0);
@@ -1710,9 +1713,7 @@ QSize QMenu::sizeHint() const
 
     QSize s;
     QStyleOption opt(0);
-    opt.rect = rect();
-    opt.palette = palette();
-    opt.state = QStyle::State_None;
+    opt.init(this);
     for (int i = 0; i < d->actionRects.count(); ++i) {
         const QRect &rect = d->actionRects.at(i);
         if (rect.isNull())

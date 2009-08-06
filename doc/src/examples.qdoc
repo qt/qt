@@ -255,6 +255,14 @@
     \o \l{phonon/musicplayer}{Music Player}\raisedaster
     \endlist
 
+    \section1 Multimedia
+
+    \list
+    \o \l{multimedia/audio/audiodevices}{Audio Devices}\raisedaster
+    \o \l{multimedia/audio/audiooutput}{Audio Output}\raisedaster
+    \o \l{multimedia/audio/audioinput}{Audio Input}\raisedaster
+    \endlist
+
     \section1 Qt Designer
 
     \list

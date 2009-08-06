@@ -73,22 +73,11 @@ public:
     {
     }
 
-    void init(const QPoint &startPos, const QPoint &lastPos,
-              const QPoint &pos)
-    {
-        this->startPos = startPos;
-        this->lastPos = lastPos;
-        this->pos = pos;
-    }
 
     QGraphicsItem *graphicsItem;
     QGraphicsItem *eventFilterProxyGraphicsItem;
 
     Qt::GestureState state;
-
-    QPoint startPos;
-    QPoint lastPos;
-    QPoint pos;
 };
 
 QT_END_NAMESPACE

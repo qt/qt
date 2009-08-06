@@ -271,6 +271,10 @@
         <Test name="qsocks5socketengine" location="tests/auto/qsocks5socketengine/tst_qsocks5socketengine" />
         <Test name="qsortfilterproxymodel" location="tests/auto/qsortfilterproxymodel/tst_qsortfilterproxymodel" />
         <Test name="qsound" location="tests/auto/qsound/tst_qsound" />
+        <Test name="qaudiodeviceid" location="tests/auto/qaudiodeviceid/tst_qaudiodeviceid" />
+        <Test name="qaudioformat" location="tests/auto/qaudioformat/tst_qaudioformat" />
+        <Test name="qaudiooutput" location="tests/auto/qaudiooutput/tst_qaudiooutput" />
+        <Test name="qaudioinput" location="tests/auto/qaudioinput/tst_qaudioinput" />
         <Test name="qsourcelocation" location="tests/auto/qsourcelocation/tst_qsourcelocation" />
         <Test name="qspinbox" location="tests/auto/qspinbox/tst_qspinbox" />
         <Test name="qsplitter" location="tests/auto/qsplitter/tst_qsplitter" />
@@ -676,6 +680,10 @@
             <Test id="qsocks5socketengine" />
             <Test id="qsortfilterproxymodel" />
             <Test id="qsound" />
+            <Test id="qaudiodeviceid" />
+            <Test id="qaudioformat" />
+            <Test id="qaudiooutput" />
+            <Test id="qaudioinput" />
             <Test id="qsourcelocation" />
             <Test id="qspinbox" />
             <Test id="qsplitter" />

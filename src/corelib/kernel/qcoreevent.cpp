@@ -272,7 +272,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue CocoaRequestModal
     \omitvalue Signal
     \omitvalue SymbianDeferredFocusChanged
-    \omitvalue WinGesture
+    \omitvalue NativeGesture
 */
 
 /*!

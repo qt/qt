@@ -126,6 +126,7 @@ public:
         depth(0),
         focusProxy(0),
         subFocusItem(0),
+        imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
         explicitlyHidden(0),
@@ -419,8 +420,9 @@ public:
     int depth;
     QGraphicsItem *focusProxy;
     QGraphicsItem *subFocusItem;
+    Qt::InputMethodHints imHints;
 
-    // Packed 32 bytes
+    // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;

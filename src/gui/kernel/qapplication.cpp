@@ -4129,7 +4129,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = d->notify_helper(receiver, e);
         break;
 
-    case QEvent::WinGesture:
+    case QEvent::NativeGesture:
     {
         // only propagate the first gesture event (after the GID_BEGIN)
         QWidget *w = static_cast<QWidget *>(receiver);

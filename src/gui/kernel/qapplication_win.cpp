@@ -3735,22 +3735,22 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
         alienWidget = 0;
     QWidget *widget = alienWidget ? alienWidget : this;
 
-    QWinGestureEvent event;
+    QNativeGestureEvent event;
     event.sequenceId = gi.dwSequenceID;
     event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
     if (bResult) {
         switch (gi.dwID) {
         case GID_BEGIN:
-            // we are not interested in this type of event.
+            event.gestureType = QNativeGestureEvent::GestureBegin;
             break;
         case GID_END:
-            event.gestureType = QWinGestureEvent::GestureEnd;
+            event.gestureType = QNativeGestureEvent::GestureEnd;
             break;
         case GID_ZOOM:
-            event.gestureType = QWinGestureEvent::Pinch;
+            event.gestureType = QNativeGestureEvent::Pinch;
             break;
         case GID_PAN:
-            event.gestureType = QWinGestureEvent::Pan;
+            event.gestureType = QNativeGestureEvent::Pan;
             break;
         case GID_ROTATE:
         case GID_TWOFINGERTAP:
@@ -3758,7 +3758,7 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
         default:
             break;
         }
-        if (event.gestureType != QWinGestureEvent::None)
+        if (event.gestureType != QNativeGestureEvent::None)
             qt_sendSpontaneousEvent(widget, &event);
     } else {
         DWORD dwErr = GetLastError();
