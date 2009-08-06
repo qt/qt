@@ -51,7 +51,6 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
-QApplicationPrivate* getQApplicationPrivateInternal();
 QWidgetPrivate *qt_widget_private(QWidget *widget);
 #endif
 
@@ -74,7 +73,7 @@ QPanGesture::QPanGesture(QWidget *parent)
     : QGesture(*new QPanGesturePrivate, parent)
 {
     if (parent) {
-        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         qAppPriv->widgetGestures[parent].pan = this;
 #ifdef Q_WS_WIN
         qt_widget_private(parent)->winSetupGestures();
@@ -88,7 +87,7 @@ bool QPanGesture::event(QEvent *event)
     switch (event->type()) {
     case QEvent::ParentAboutToChange:
         if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            getQApplicationPrivateInternal()->widgetGestures[w].pan = 0;
+            QApplicationPrivate::instance()->widgetGestures[w].pan = 0;
 #ifdef Q_WS_WIN
             qt_widget_private(w)->winSetupGestures();
 #endif
@@ -96,7 +95,7 @@ bool QPanGesture::event(QEvent *event)
         break;
     case QEvent::ParentChange:
         if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            getQApplicationPrivateInternal()->widgetGestures[w].pan = this;
+            QApplicationPrivate::instance()->widgetGestures[w].pan = this;
 #ifdef Q_WS_WIN
             qt_widget_private(w)->winSetupGestures();
 #endif
@@ -128,7 +127,7 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
     Q_D(QPanGesture);
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
-        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
         it = qAppPriv->widgetGestures.find(static_cast<QWidget*>(receiver));
         if (it == qAppPriv->widgetGestures.end())
