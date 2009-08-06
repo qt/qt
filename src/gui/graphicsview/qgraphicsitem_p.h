@@ -517,14 +517,16 @@ struct QGraphicsItemPrivate::TransformData {
 struct QGraphicsItemPaintInfo
 {
     inline QGraphicsItemPaintInfo(const QTransform *const xform1, const QTransform *const xform2,
+                                  const QTransform *const xform3,
                                   QRegion *r, QWidget *w, QStyleOptionGraphicsItem *opt,
                                   QPainter *p, qreal o, bool b1, bool b2)
-        : viewTransform(xform1), transformPtr(xform2), exposedRegion(r), widget(w),
+        : viewTransform(xform1), transformPtr(xform2), effectTransform(xform3), exposedRegion(r), widget(w),
           option(opt), painter(p), opacity(o), wasDirtySceneTransform(b1), drawItem(b2)
     {}
 
     const QTransform *viewTransform;
     const QTransform *transformPtr;
+    const QTransform *effectTransform;
     QRegion *exposedRegion;
     QWidget *widget;
     QStyleOptionGraphicsItem *option;
