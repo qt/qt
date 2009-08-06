@@ -3740,7 +3740,7 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
             event.gestureType = QNativeGestureEvent::GestureEnd;
             break;
         case GID_ZOOM:
-            event.gestureType = QNativeGestureEvent::Pinch;
+            event.gestureType = QNativeGestureEvent::Zoom;
             break;
         case GID_PAN:
             event.gestureType = QNativeGestureEvent::Pan;
