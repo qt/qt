@@ -331,12 +331,12 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "found existing qpf:" << fileName;
 #endif
-            if (::access(encodedName, W_OK | R_OK) == 0) {
-                fd = QT_OPEN(encodedName, O_RDWR);
+            if (::access(encodedFileName, W_OK | R_OK) == 0) {
+                fd = QT_OPEN(encodedFileName, O_RDWR);
             }
             // read-write access failed - try read-only access
-            if (fd == -1 && ::access(encodedName, R_OK) == 0) {
-                fd = QT_OPEN(encodedName, O_RDONLY);
+            if (fd == -1 && ::access(encodedFileName, R_OK) == 0) {
+                fd = QT_OPEN(encodedFileName, O_RDONLY);
                 if (fd == -1) {
 #if defined(DEBUG_FONTENGINE)
                     qErrnoWarning("QFontEngineQPF: unable to open %s", encodedName.constData());
@@ -355,7 +355,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
             qDebug() << "creating qpf on the fly:" << fileName;
 #endif
             if (::access(QFile::encodeName(qws_fontCacheDir()), W_OK) == 0) {
-                fd = QT_OPEN(encodedName, O_RDWR | O_EXCL | O_CREAT, 0644);
+                fd = QT_OPEN(encodedFileName, O_RDWR | O_EXCL | O_CREAT, 0644);
                 if (fd == -1) {
 #if defined(DEBUG_FONTENGINE)
                     qErrnoWarning(errno, "QFontEngineQPF: open() failed for %s", encodedName.constData());
