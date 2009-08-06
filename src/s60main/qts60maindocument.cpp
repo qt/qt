@@ -41,8 +41,8 @@
 
 // INCLUDE FILES
 #include <exception>
-#include "qts60mainappui.h"
-#include "qts60maindocument.h"
+#include "qts60mainappui_p.h"
+#include "qts60maindocument_p.h"
 
 // ============================ MEMBER FUNCTIONS ===============================
 

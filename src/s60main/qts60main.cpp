@@ -42,7 +42,7 @@
 // INCLUDE FILES
 #include <exception>
 #include <eikstart.h>
-#include "qts60mainapplication.h"
+#include "qts60mainapplication_p.h"
 
 /**
  * factory function to create the QtS60Main application class

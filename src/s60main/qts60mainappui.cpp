@@ -48,7 +48,7 @@
 #include <s60main.rsg>
 #include <avkon.rsg>
 
-#include "qts60mainappui.h"
+#include "qts60mainappui_p.h"
 #include <QtGui/qapplication.h>
 #include <QtGui/qmenu.h>
 #include <QtGui/private/qt_s60_p.h>

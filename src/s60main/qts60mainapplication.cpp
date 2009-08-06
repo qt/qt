@@ -41,8 +41,8 @@
 
 // INCLUDE FILES
 #include <exception>
-#include "qts60maindocument.h"
-#include "qts60mainapplication.h"
+#include "qts60maindocument_p.h"
+#include "qts60mainapplication_p.h"
 #include <bautils.h>
 #include <coemain.h>
 
