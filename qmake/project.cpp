@@ -153,91 +153,6 @@ QMap<QString, TestFunc> qmake_testFunctions()
     return *qmake_test_functions;
 }
 
-QT_END_NAMESPACE
-
-#ifdef QTSCRIPT_SUPPORT
-#include "qscriptvalue.h"
-#include "qscriptengine.h"
-#include "qscriptvalueiterator.h"
-
-QT_BEGIN_NAMESPACE
-
-static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *project,
-                                    const QMap<QString, QStringList> &place);
-
-static bool qscript_createQMakeProjectMap(QMap<QString, QStringList> &vars, QScriptValue js)
-{
-    QScriptValueIterator it(js);
-    while(it.hasNext()) {
-        it.next();
-        vars[it.name()] = qscriptvalue_cast<QStringList>(it.value());
-    }
-    return true;
-}
-
-static QScriptValue qscript_call_testfunction(QScriptContext *context, QScriptEngine *engine)
-{
-    QMakeProject *self = qscriptvalue_cast<QMakeProject*>(context->callee().property("qmakeProject"));
-    QString func = context->callee().property("functionName").toString();
-    QStringList args;
-    for(int i = 0; i < context->argumentCount(); ++i)
-        args += context->argument(i).toString();
-    QMap<QString, QStringList> place = self->variables();
-    qscript_createQMakeProjectMap(place, engine->globalObject().property("qmake"));
-    QScriptValue ret(engine, self->doProjectTest(func, args, place));
-    engine->globalObject().setProperty("qmake", qscript_projectWrapper(engine, self, place));
-    return ret;
-}
-
-static QScriptValue qscript_call_expandfunction(QScriptContext *context, QScriptEngine *engine)
-{
-    QMakeProject *self = qscriptvalue_cast<QMakeProject*>(context->callee().property("qmakeProject"));
-    QString func = context->callee().property("functionName").toString();
-    QStringList args;
-    for(int i = 0; i < context->argumentCount(); ++i)
-        args += context->argument(i).toString();
-    QMap<QString, QStringList> place = self->variables();
-    qscript_createQMakeProjectMap(place, engine->globalObject().property("qmake"));
-    QScriptValue ret = qScriptValueFromValue(engine, self->doProjectExpand(func, args, place));
-    engine->globalObject().setProperty("qmake", qscript_projectWrapper(engine, self, place));
-    return ret;
-}
-
-static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *project,
-                                           const QMap<QString, QStringList> &place)
-{
-    QScriptValue ret = eng->newObject();
-    {
-        QStringList testFuncs = qmake_testFunctions().keys() + project->userTestFunctions();
-        for(int i = 0; i < testFuncs.size(); ++i) {
-            QString funcName = testFuncs.at(i);
-            QScriptValue fun = eng->newFunction(qscript_call_testfunction);
-            fun.setProperty("qmakeProject", eng->newVariant(qVariantFromValue(project)));
-            fun.setProperty("functionName", QScriptValue(eng, funcName));
-            eng->globalObject().setProperty(funcName, fun);
-        }
-    }
-    {
-        QStringList testFuncs = qmake_expandFunctions().keys() + project->userExpandFunctions();
-        for(int i = 0; i < testFuncs.size(); ++i) {
-            QString funcName = testFuncs.at(i);
-            QScriptValue fun = eng->newFunction(qscript_call_expandfunction);
-            fun.setProperty("qmakeProject", eng->newVariant(qVariantFromValue(project)));
-            fun.setProperty("functionName", QScriptValue(eng, funcName));
-            eng->globalObject().setProperty(funcName, fun);
-        }
-    }
-    for(QMap<QString, QStringList>::ConstIterator it = place.begin(); it != place.end(); ++it)
-        ret.setProperty(it.key(), qScriptValueFromValue(eng, it.value()));
-    return ret;
-}
-
-QT_END_NAMESPACE
-
-#endif
-
-QT_BEGIN_NAMESPACE
-
 struct parser_info {
     QString file;
     int line_no;
@@ -1797,27 +1712,8 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
     bool parsed = false;
     parser_info pi = parser;
     if(format == JSFormat) {
-#ifdef QTSCRIPT_SUPPORT
-        eng.globalObject().setProperty("qmake", qscript_projectWrapper(&eng, this, place));
-        QFile f(file);
-        if (f.open(QFile::ReadOnly)) {
-            QString code = f.readAll();
-            QScriptValue r = eng.evaluate(code);
-            if(eng.hasUncaughtException()) {
-                const int lineNo = eng.uncaughtExceptionLineNumber();
-                fprintf(stderr, "%s:%d: %s\n", file.toLatin1().constData(), lineNo,
-                        r.toString().toLatin1().constData());
-            } else {
-                parsed = true;
-                QScriptValue variables = eng.globalObject().property("qmake");
-                if (variables.isValid() && variables.isObject())
-                    qscript_createQMakeProjectMap(place, variables);
-            }
-        }
-#else
         warn_msg(WarnParser, "%s:%d: QtScript support disabled for %s.",
                  pi.file.toLatin1().constData(), pi.line_no, orig_file.toLatin1().constData());
-#endif
     } else {
         QStack<ScopeBlock> sc = scope_blocks;
         IteratorBlock *it = iterator;
@@ -2306,19 +2202,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         }
         break; }
     default: {
-#ifdef QTSCRIPT_SUPPORT
-        {
-            QScriptValue jsFunc = eng.globalObject().property(func);
-            if(jsFunc.isFunction()) {
-                QScriptValueList jsArgs;
-                for(int i = 0; i < args.size(); ++i)
-                    jsArgs += QScriptValue(&eng, args.at(i));
-                QScriptValue jsRet = jsFunc.call(eng.globalObject(), jsArgs);
-                ret = qscriptvalue_cast<QStringList>(jsRet);
-                break;
-            }
-        }
-#endif
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
                 parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
@@ -2782,20 +2665,6 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
 #endif
         return true; }
     default:
-#ifdef QTSCRIPT_SUPPORT
-        {
-            QScriptValue jsFunc = eng.globalObject().property(func);
-            if(jsFunc.isFunction()) {
-                QScriptValueList jsArgs;
-                for(int i = 0; i < args.size(); ++i)
-                    jsArgs += QScriptValue(&eng, args.at(i));
-                QScriptValue jsRet = jsFunc.call(eng.globalObject(), jsArgs);
-                if(eng.hasUncaughtException())
-                    return false;
-                return qscriptvalue_cast<bool>(jsRet);
-            }
-        }
-#endif
         fprintf(stderr, "%s:%d: Unknown test function: %s\n", parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
     }
