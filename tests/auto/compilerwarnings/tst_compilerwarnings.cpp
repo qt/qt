@@ -138,10 +138,11 @@ void tst_CompilerWarnings::warnings()
     }
     static QString tmpSourceFile;
     bool openResult = true;
-    QString templatePath = QDir::temp().absoluteFilePath("XXXXXX-test.cpp");
-    QTemporaryFile tmpQSourceFile(templatePath);
+    const QString tmpBaseName("XXXXXX-test.cpp");
+    QString templatePath = QDir::temp().absoluteFilePath(tmpBaseName);
+    QFile tmpQSourceFile(templatePath);
     if (tmpSourceFile.isEmpty()) {
-        tmpQSourceFile.open();
+        tmpQSourceFile.open(QIODevice::ReadWrite | QIODevice::Truncate);
         tmpSourceFile = tmpQSourceFile.fileName();
         QFile cppSource(":/test.cpp");
         bool openResult = cppSource.open(QIODevice::ReadOnly);
@@ -152,6 +153,7 @@ void tst_CompilerWarnings::warnings()
             out << in.readAll();
         }
     }
+    tmpQSourceFile.close();
     QVERIFY2(openResult, "Need resource temporary \"test.cpp\"");
 
     QStringList args;
@@ -228,8 +230,8 @@ void tst_CompilerWarnings::warnings()
 
 #ifdef Q_CC_MSVC
     QString errs = QString::fromLocal8Bit(proc.readAllStandardOutput().constData());
-    if (errs.startsWith(tmpSourceFile))
-        errs = errs.mid(10);
+    if (errs.startsWith(tmpBaseName))
+        errs = errs.mid(tmpBaseName.size()).simplified();;
 #else
     QString errs = QString::fromLocal8Bit(proc.readAllStandardError().constData());
 #endif
@@ -243,6 +245,8 @@ void tst_CompilerWarnings::warnings()
     }
     QCOMPARE(errList.count(), 0); // verbose info how many lines of errors in output
     QVERIFY(errs.isEmpty());
+
+    tmpQSourceFile.remove();
 }
 
 QTEST_APPLESS_MAIN(tst_CompilerWarnings)
