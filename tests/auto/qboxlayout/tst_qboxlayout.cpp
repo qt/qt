@@ -222,6 +222,8 @@ void tst_QBoxLayout::setStyleShouldChangeSpacing()
     QHBoxLayout *hbox = new QHBoxLayout(window);
     QPushButton *pb1 = new QPushButton(tr("The spacing between this"));
     QPushButton *pb2 = new QPushButton(tr("and this button should depend on the style of the parent widget"));;
+    pb1->setAttribute(Qt::WA_LayoutUsesWidgetRect);
+    pb2->setAttribute(Qt::WA_LayoutUsesWidgetRect);
     hbox->addWidget(pb1);
     hbox->addWidget(pb2);
     CustomLayoutStyle *style1 = new CustomLayoutStyle;
