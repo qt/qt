@@ -13,9 +13,10 @@ SUBDIRS       = blockingfortuneclient \
                 googlesuggest \
                 torrent
 
-symbian: SUBDIRS = ftp
 # no QProcess
 !vxworks:!qnx:SUBDIRS += network-chat
+
+symbian: SUBDIRS = ftp
 
 contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient
 
