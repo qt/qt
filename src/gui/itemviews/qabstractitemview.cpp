@@ -960,7 +960,8 @@ void QAbstractItemView::reset()
     d->currentIndexSet = false;
     setState(NoState);
     setRootIndex(QModelIndex());
-    d->selectionModel->reset();
+    if (d->selectionModel)
+        d->selectionModel->reset();
 }
 
 /*!
