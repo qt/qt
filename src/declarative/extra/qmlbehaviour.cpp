@@ -125,7 +125,8 @@ QmlBehaviour::QmlBehaviour(QObject *parent)
 : QmlPropertyValueSource(*(new QmlBehaviourPrivate), parent)
 {
     Q_D(QmlBehaviour);
-    d->group = new QParallelAnimationGroup(this);
+    d->group = new QParallelAnimationGroup;
+    QFx_setParent_noEvent(d->group, this);
 }
 
 /*!
