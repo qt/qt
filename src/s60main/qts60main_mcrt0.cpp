@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
