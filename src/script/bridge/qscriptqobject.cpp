@@ -1528,7 +1528,7 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
                     ? meta->propertyOffset() : 0;
         for ( ; i < meta->propertyCount(); ++i) {
             QMetaProperty prop = meta->property(i);
-            if ((listedAttributes & JSC::Structure::NonEnumerable) || isEnumerableMetaProperty(prop, meta, i)) {
+            if (isEnumerableMetaProperty(prop, meta, i)) {
                 QString name = QString::fromLatin1(prop.name());
                 propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(name)));
             }
