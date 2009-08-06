@@ -3814,7 +3814,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         NEXT_INSTRUCTION();
     }
     DEFINE_OPCODE(op_debug) {
-        /* debug debugHookID(n) firstLine(n) lastLine(n)
+        /* debug debugHookID(n) firstLine(n) lastLine(n) columnNumber(n)
 
          Notifies the debugger of the current state of execution. This opcode
          is only generated while the debugger is attached.
@@ -3822,6 +3822,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         int debugHookID = (++vPC)->u.operand;
         int firstLine = (++vPC)->u.operand;
         int lastLine = (++vPC)->u.operand;
+        int column = (++vPC)->u.operand;
 
         debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine);
 

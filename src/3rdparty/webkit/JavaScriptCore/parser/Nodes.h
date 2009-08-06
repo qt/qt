@@ -191,9 +191,10 @@ namespace JSC {
     public:
         StatementNode(JSGlobalData*);
 
-        void setLoc(int line0, int line1);
+        void setLoc(int line0, int line1, int column);
         int firstLine() const { return lineNo(); }
         int lastLine() const { return m_lastLine; }
+        int column() const { return m_column; }
 
         virtual bool isEmptyStatement() const { return false; }
         virtual bool isReturnNode() const { return false; }
@@ -203,6 +204,7 @@ namespace JSC {
 
     private:
         int m_lastLine;
+        int m_column;
     };
 
     class NullNode : public ExpressionNode {
