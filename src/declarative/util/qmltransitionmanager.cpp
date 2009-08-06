@@ -239,7 +239,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
         }
     }
     if (!transition)
-        d->applyBindings(); //### merge into above foreach?
+        d->applyBindings();
 
 }
 
@@ -251,6 +251,18 @@ void QmlTransitionManager::cancel()
         d->transition = 0;
     }
 
+    for(int i = 0; i < d->bindingsList.count(); ++i) {
+        Action action = d->bindingsList[i];
+        if (action.toBinding && action.deletableToBinding) {
+            action.property.setBinding(0);
+            delete action.toBinding;
+            action.toBinding = 0;
+            action.deletableToBinding = false;
+        } else if (action.event) {
+            //### what do we do here?
+        }
+
+    }
     d->bindingsList.clear();
     d->completeList.clear();
 

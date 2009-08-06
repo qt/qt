@@ -137,7 +137,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-    void mouseUngrabEvent();
+    bool sceneEvent(QEvent *);
     void timerEvent(QTimerEvent *event);
 
 private:

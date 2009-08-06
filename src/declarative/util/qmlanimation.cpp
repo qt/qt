@@ -723,7 +723,6 @@ QmlColorAnimation::QmlColorAnimation(QObject *parent)
 : QmlPropertyAnimation(parent)
 {
     Q_D(QmlPropertyAnimation);
-    d->init();
     d->interpolatorType = QMetaType::QColor;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
     d->defaultToInterpolatorType = true;
@@ -1199,7 +1198,6 @@ QmlNumberAnimation::QmlNumberAnimation(QObject *parent)
 : QmlPropertyAnimation(parent)
 {
     Q_D(QmlPropertyAnimation);
-    d->init();
     d->interpolatorType = QMetaType::QReal;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
 }
@@ -1496,7 +1494,9 @@ QmlPropertyAnimation::~QmlPropertyAnimation()
 void QmlPropertyAnimationPrivate::init()
 {
     Q_Q(QmlPropertyAnimation);
-    va = new QmlTimeLineValueAnimator(q);
+    va = new QmlTimeLineValueAnimator;
+    QFx_setParent_noEvent(va, q);
+
     va->setStartValue(QVariant(0.0f));
     va->setEndValue(QVariant(1.0f));
 }

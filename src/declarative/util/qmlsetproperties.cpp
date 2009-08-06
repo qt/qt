@@ -335,6 +335,7 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
                 a.toValue = d->expressions.at(ii).second->value();
             } else {
                 a.toBinding = new QmlBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                a.deletableToBinding = true;
                 a.toBinding->setTarget(prop);
             }
 

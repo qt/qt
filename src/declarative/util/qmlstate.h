@@ -64,6 +64,7 @@ public:
     bool restore:1;
     bool actionDone:1;
     bool reverseEvent:1;
+    bool deletableToBinding:1;
 
     QmlMetaProperty property;
     QVariant fromValue;

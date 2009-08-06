@@ -203,7 +203,6 @@ protected:
     virtual bool sceneEvent(QEvent *);
     virtual bool event(QEvent *);
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
-    virtual void mouseUngrabEvent();
 
     void setImplicitWidth(qreal);
     bool widthValid() const; // ### better name?
@@ -251,6 +250,8 @@ T qobject_cast(QGraphicsItem *item)
     QObject *o = item->toGraphicsObject();
     return qobject_cast<T>(o);
 }
+
+QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, QFxItem *item);
 
 QT_END_NAMESPACE
 

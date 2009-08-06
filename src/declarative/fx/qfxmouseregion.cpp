@@ -437,17 +437,21 @@ void QFxMouseRegion::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     }
 }
 
-void QFxMouseRegion::mouseUngrabEvent()
+bool QFxMouseRegion::sceneEvent(QEvent *event)
 {
-    Q_D(QFxMouseRegion);
-    if (d->pressed) {
-        // if our mouse grab has been removed (probably by Flickable), fix our 
-        // state
-        d->pressed = false;
-        setKeepMouseGrab(false);
-        emit pressedChanged();
-        //emit hoveredChanged();
+    bool rv = QFxItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        Q_D(QFxMouseRegion);
+        if (d->pressed) {
+            // if our mouse grab has been removed (probably by Flickable), fix our
+            // state
+            d->pressed = false;
+            setKeepMouseGrab(false);
+            emit pressedChanged();
+            //emit hoveredChanged();
+        }
     }
+    return rv;
 }
 
 void QFxMouseRegion::timerEvent(QTimerEvent *event)

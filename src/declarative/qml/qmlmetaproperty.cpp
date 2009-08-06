@@ -56,25 +56,53 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-QmlMetaObjectCache::Data 
+QmlMetaObjectCache::QmlMetaObjectCache()
+: propertyCache(0)
+{
+}
+
+void QmlMetaObjectCache::init(const QMetaObject *metaObject)
+{
+    if (propertyCache || !metaObject)
+        return;
+
+    int propCount = metaObject->propertyCount();
+
+    propertyCache = new Data[propCount];
+    for (int ii = 0; ii < propCount; ++ii) {
+        QMetaProperty p = metaObject->property(ii);
+        propertyCache[ii].propType = p.userType();
+        propertyCache[ii].coreIndex = ii;
+        propertyCache[ii].name = QLatin1String(p.name());
+
+        propertyNameCache.insert(propertyCache[ii].name, ii);
+    }
+}
+
+QmlMetaObjectCache::~QmlMetaObjectCache()
+{
+    delete [] propertyCache;
+}
+
+QmlMetaObjectCache::Data *
+QmlMetaObjectCache::property(int index, const QMetaObject *metaObject)
+{
+    init(metaObject);
+
+    return propertyCache + index;
+}
+
+QmlMetaObjectCache::Data *
 QmlMetaObjectCache::property(const QString &name, const QMetaObject *metaObject)
 {
-    QHash<QString, Data>::ConstIterator iter = properties.find(name);
-    if (iter != properties.end()) {
-        return *iter;
+    init(metaObject);
+
+    QHash<QString, int>::ConstIterator iter = propertyNameCache.find(name);
+
+    if (iter != propertyNameCache.end()) {
+        return propertyCache + *iter;
     } else {
-        Data cacheData = { -1, -1 };
-
-        int idx = metaObject->indexOfProperty(name.toUtf8().constData());
-        if (idx == -1)
-            return cacheData;
-
-        QMetaProperty property = metaObject->property(idx);
-        cacheData.propType = property.userType();
-        cacheData.coreIndex = idx;
-        properties.insert(name, cacheData);
-
-        return cacheData;
+        return 0;
     }
 }
 
@@ -98,14 +126,6 @@ QmlMetaProperty::~QmlMetaProperty()
 {
     delete d; d = 0;
 }
-
-struct CachedPropertyData {
-    CachedPropertyData(const QString &n, int pt, int ci)
-    : name(n), propType(pt), coreIdx(ci) {}
-    QString name;
-    int propType;
-    int coreIdx;
-};
 
 /*!
     Creates a QmlMetaProperty for the default property of \a obj. If there is no
@@ -218,15 +238,14 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
     } 
 
     // Property
-    if (!QObjectPrivate::get(obj)->metaObject && enginePrivate) {
-        // Can cache
-        QmlMetaObjectCache &cache = 
-            enginePrivate->propertyCache[obj->metaObject()];
-        QmlMetaObjectCache::Data data = cache.property(name, obj->metaObject());
-        if (data.coreIndex != -1) {
+    QmlMetaObjectCache *cache = QmlEnginePrivate::cache(enginePrivate, obj);
+    if (cache) {
+        QmlMetaObjectCache::Data *data = 
+            cache->property(name, obj->metaObject());
+        if (data) {
             type = QmlMetaProperty::Property;
-            propType = data.propType;
-            coreIdx = data.coreIndex;
+            propType = data->propType;
+            coreIdx = data->coreIndex;
         }
     } else {
         // Can't cache
@@ -291,14 +310,23 @@ QmlMetaPropertyPrivate::propertyCategory() const
             category = QmlMetaProperty::Normal;
         else if (type == qMetaTypeId<QmlBinding *>())
             category = QmlMetaProperty::Bindable;
-        else if (QmlMetaType::isList(type))
-            category = QmlMetaProperty::List;
-        else if (QmlMetaType::isQmlList(type))
-            category = QmlMetaProperty::QmlList;
-        else if (QmlMetaType::isObject(type))
-            category = QmlMetaProperty::Object;
-        else 
-            category = QmlMetaProperty::Normal;
+        else {
+            QmlMetaType::TypeCategory tc = QmlMetaType::typeCategory(type);
+            switch(tc) {
+            case QmlMetaType::Object:
+                category = QmlMetaProperty::Object;
+                break;
+            case QmlMetaType::QmlList:
+                category = QmlMetaProperty::QmlList;
+                break;
+            case QmlMetaType::List:
+                category = QmlMetaProperty::List;
+                break;
+            case QmlMetaType::Unknown:
+                category = QmlMetaProperty::Normal;
+                break;
+            }
+        }
     }
     return category;
 }
@@ -492,7 +520,7 @@ QmlBinding *QmlMetaProperty::binding() const
         QObject *child = *iter;
         if (child->metaObject() == &QmlBinding::staticMetaObject) {
             QmlBinding *v = static_cast<QmlBinding *>(child);
-            if (v->property() == *this)
+            if (v->property() == *this && v->enabled())
                 return v;
         }
     }
@@ -1015,6 +1043,10 @@ quint32 QmlMetaPropertyPrivate::saveProperty(int core)
 */
 void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
 {
+    QmlEnginePrivate *enginePrivate = 0;
+    if (ctxt && ctxt->engine())
+        enginePrivate = QmlEnginePrivate::get(ctxt->engine());
+
     d->object = obj;
     d->context = ctxt;
 
@@ -1042,10 +1074,22 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
         d->valueTypeId = p.type();
 
     } else if (d->type & Property) {
-        QMetaProperty p(obj->metaObject()->property(id));
-        d->name = QLatin1String(p.name());
-        d->propType = p.userType();
+
+        QmlMetaObjectCache *cache = QmlEnginePrivate::cache(enginePrivate, obj);
+
         d->coreIdx = id;
+
+        if (cache) {
+            QmlMetaObjectCache::Data *data = 
+                cache->property(id, obj->metaObject());
+            d->propType = data->propType;
+            d->name = data->name;
+        } else {
+            QMetaProperty p(obj->metaObject()->property(id));
+            d->name = QLatin1String(p.name());
+            d->propType = p.userType();
+        }
+
     } else if (d->type & SignalProperty) {
         d->signal = obj->metaObject()->method(id);
         d->coreIdx = id;
