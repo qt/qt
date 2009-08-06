@@ -444,7 +444,6 @@ void tst_QScriptEngine::newVariant()
         QScriptValue value = object.property("valueOf").call(object);
         QVERIFY(value.isObject());
         QVERIFY(value.strictlyEquals(object));
-        QEXPECT_FAIL("", "QVariant.prototype.toString is not correctly implemented", Continue);
         QCOMPARE(object.toString(), QString::fromLatin1("QVariant(QPoint)"));
     }
 }
