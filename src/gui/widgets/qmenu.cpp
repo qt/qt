@@ -204,6 +204,8 @@ void QMenuPrivate::updateActionRects() const
     Q_Q(const QMenu);
     if (!itemsDirty)
         return;
+		
+    q->ensurePolished();
 
     //let's reinitialize the buffer
     actionRects.resize(actions.count());
@@ -1705,12 +1707,9 @@ QRect QMenu::actionGeometry(QAction *act) const
 QSize QMenu::sizeHint() const
 {
     Q_D(const QMenu);
-    ensurePolished();
     d->updateActionRects();
 
     QSize s;
-    QStyleOption opt(0);
-    opt.init(this);
     for (int i = 0; i < d->actionRects.count(); ++i) {
         const QRect &rect = d->actionRects.at(i);
         if (rect.isNull())
@@ -1723,15 +1722,11 @@ QSize QMenu::sizeHint() const
     // Note that the action rects calculated above already include
     // the top and left margins, so we only need to add margins for
     // the bottom and right.
-    if (const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, this)) {
-        s.rwidth() += fw;
-        s.rheight() += fw;
-    }
-
-    s.rwidth() += style()->pixelMetric(QStyle::PM_MenuHMargin, &opt, this);
-    s.rheight() += style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, this);
-
-    s += QSize(d->rightmargin, d->bottommargin);
+    QStyleOption opt(0);
+    opt.init(this);
+    const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, this);
+    s.rwidth() += style()->pixelMetric(QStyle::PM_MenuHMargin, &opt, this) + fw + d->rightmargin;
+    s.rheight() += style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, this) + fw + d->bottommargin;
 
     return style()->sizeFromContents(QStyle::CT_Menu, &opt,
                                     s.expandedTo(QApplication::globalStrut()), this);
