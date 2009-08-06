@@ -2880,4 +2880,4 @@ void tst_QScriptExtQObject::connectToDestroyedSignal()
 }
 
 QTEST_MAIN(tst_QScriptExtQObject)
-#include "tst_qscriptqobject.moc"
+#include "tst_qscriptextqobject.moc"

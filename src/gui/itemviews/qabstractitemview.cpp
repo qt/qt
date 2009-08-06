@@ -2676,6 +2676,7 @@ void QAbstractItemView::keyboardSearch(const QString &search)
     QModelIndex current = start;
     QModelIndexList match;
     QModelIndex firstMatch;
+    QModelIndex startMatch;
     QModelIndexList previous;
     do {
         match = d->model->match(current, Qt::DisplayRole, searchString);
@@ -2692,6 +2693,12 @@ void QAbstractItemView::keyboardSearch(const QString &search)
             if (row >= d->model->rowCount(firstMatch.parent()))
                 row = 0;
             current = firstMatch.sibling(row, firstMatch.column());
+
+            //avoid infinite loop if all the matching items are disabled.
+            if (!startMatch.isValid())
+                startMatch = firstMatch;
+            else if (startMatch == firstMatch)
+                break;
         }
     } while (current != start && firstMatch.isValid());
 }

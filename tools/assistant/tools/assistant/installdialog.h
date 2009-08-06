@@ -47,6 +47,8 @@
 #include <QtNetwork/QHttpResponseHeader>
 #include "ui_installdialog.h"
 
+#ifndef QT_NO_HTTP
+
 QT_BEGIN_NAMESPACE
 
 class QHttp;
@@ -97,5 +99,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif
 
 #endif // INSTALLDIALOG_H
