@@ -1180,7 +1180,7 @@ void tst_Moc::typenameWithUnsigned()
     QVERIFY(mobj->indexOfSlot("l(unsignedQImage)") != -1);
 }
 
-QTEST_MAIN(tst_Moc)
+QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
 
 

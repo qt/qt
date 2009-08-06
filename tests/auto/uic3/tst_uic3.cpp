@@ -183,7 +183,7 @@ QString tst_uic3::workingDir() const
     return QDir::cleanPath(SRCDIR);
 }
 
-QTEST_MAIN(tst_uic3)
+QTEST_APPLESS_MAIN(tst_uic3)
 #include "tst_uic3.moc"
 #else
 QTEST_NOOP_MAIN
