@@ -62,7 +62,7 @@
 SymbianAbldMakefileGenerator::SymbianAbldMakefileGenerator() : SymbianMakefileGenerator() { }
 SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 
-bool SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
+void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
     QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
     removeSpecialCharacters(gnuMakefileName);
@@ -148,8 +148,6 @@ bool SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
 
         t << endl;
     } // if(ft.open(QIODevice::WriteOnly))
-
-    return true;
 }
 
 void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile)
@@ -162,8 +160,6 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     QStringList debugPlatforms = allPlatforms;
     QStringList releasePlatforms = allPlatforms;
     releasePlatforms.removeAll("winscw"); // No release for emulator
-
-    bool isSubdirs = getTargetExtension() == "subdirs";
 
     QString testClause;
     if (project->values("CONFIG").contains("symbian_test", Qt::CaseInsensitive))
@@ -285,7 +281,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     // Unfortunately, Symbian build chain doesn't support linking generated objects to target,
     // so supporting generating sources is the best we can do. This is enough for mocs.
 
-    if (!isSubdirs) {
+    if (targetType != TypeSubdirs) {
         writeExtraTargets(t);
         writeExtraCompilerTargets(t);
 
@@ -365,17 +361,16 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << endl;
 
     // Create execution target
-    if (debugPlatforms.contains("winscw") && getTargetExtension() == "exe") {
+    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
         t << "run:" << endl;
         t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
     }
 }
 
-bool SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
+void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
 {
     // We don't use extensions for anything in abld
     Q_UNUSED(t);
-    return true;
 }
 
 bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
@@ -417,7 +412,7 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
 {
     // Normally emulator deployment gets done via regular makefile, but since subdirs
     // do not get that, special deployment only makefile is generated for them if needed.
-    if(getTargetExtension() != "subdirs" || addDeploymentExtension) {
+    if(targetType != TypeSubdirs || addDeploymentExtension) {
         QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
         removeSpecialCharacters(gnuMakefileName);
         gnuMakefileName.append(".mk");

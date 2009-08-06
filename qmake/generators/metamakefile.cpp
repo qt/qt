@@ -534,7 +534,7 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
         int start = oldpwd.lastIndexOf("/", end - 2);
         QString parentMmpFilename = oldpwd.mid(start + 1, end - start - 1);
         parentMmpFilename.prepend(oldpwd);
-        parentMmpFilename = parentMmpFilename.append(".mmp");
+        parentMmpFilename = parentMmpFilename.append(Option::mmp_ext);
 
 
         const QStringList &subdirs = project->values("SUBDIRS");
@@ -560,13 +560,13 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
                 childMmpFilename = subdir.fileName();
                 childMmpFilename = subdir.absoluteFilePath();
                 childMmpFilename.replace(Option::pro_ext, QString(""));
-                childMmpFilename.append(".mmp");
+                childMmpFilename.append(Option::mmp_ext);
             }
             else {
                 childMmpFilename = subdir.absoluteFilePath();
-                childMmpFilename.replace(QString(".pro"), QString(".mmp"));
+                childMmpFilename.replace(Option::pro_ext, Option::mmp_ext);
                 sub_name = childMmpFilename;
-                sub_name.replace(QString(".mmp"), QString(""));
+                sub_name.replace(Option::mmp_ext, QString(""));
                 sub_name.replace(0, sub_name.lastIndexOf("/") + 1, QString(""));
                 project->values("SHADOW_BLD_INFS").append(QString("bld.inf.") + sub_name);
             }
@@ -643,7 +643,7 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
     int start = newpwd.lastIndexOf("/", end - 2);
     QString mmpFilename = newpwd.mid(start + 1, end - start - 1);
     mmpFilename.prepend(newpwd);
-    mmpFilename = mmpFilename.append(".mmp");
+    mmpFilename = mmpFilename.append(Option::mmp_ext);
 
     // map mmpfile to its absolute filepath
     mmpPaths.insert(mmpFilename, newpwd);

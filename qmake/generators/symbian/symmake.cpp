@@ -62,24 +62,17 @@
 #define BLD_INF_TAG_MMPFILES "prj_mmpfiles"
 #define BLD_INF_TAG_TESTMMPFILES "prj_testmmpfiles"
 #define BLD_INF_TAG_EXTENSIONS "prj_extensions"
+
 #define RSS_RULES "RSS_RULES"
 #define RSS_RULES_BASE "RSS_RULES."
 #define RSS_TAG_NBROFICONS "number_of_icons"
 #define RSS_TAG_ICONFILE "icon_file"
 
-#define DUMP_VAR(v) \
-{ \
-    QString s(v); \
-    QStringList list = project->values(s); \
-    printf("----------------------------------\n", qPrintable(s)); \
-    printf("Dumping %s (%d items) from %s, %d\n", \
-            qPrintable(s), \
-            list.count(), \
-            __FILE__, \
-            __LINE__); \
-    foreach(QString l, list) \
-        printf("\t%s\n", qPrintable(l)); \
-}
+#define MMP_TARGET "TARGET"
+#define MMP_TARGETTYPE "TARGETTYPE"
+#define MMP_SECUREID "SECUREID"
+
+#define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
 QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const QDir& parentDir)
 {
@@ -163,7 +156,7 @@ void SymbianMakefileGenerator::writeHeader(QTextStream &t)
 
     QString shortProFilename = project->projectFile();
     shortProFilename.replace(0, shortProFilename.lastIndexOf("/") + 1, QString(""));
-    shortProFilename.replace(QString(".pro"), QString(""));
+    shortProFilename.replace(Option::pro_ext, QString(""));
 
     QString bldinfDefine = shortProFilename;
     bldinfDefine.append("_");
@@ -189,7 +182,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     // Generate pkg files if there are any actual files to deploy
     bool generatePkg = false;
-    if (getTargetExtension() == "exe") {
+    if (targetType == TypeExe) {
         generatePkg = true;
     } else {
         foreach(QString item, project->values("DEPLOYMENT")) {
@@ -226,11 +219,11 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     if(wrapperMakefile.open(QIODevice::WriteOnly)) {
         generatedFiles << wrapperFileName;
     } else {
-        fprintf(stderr, "Error: Could not open wrapper makefile '%s'\n", qPrintable(wrapperFileName));
+        PRINT_FILE_CREATE_ERROR(wrapperFileName);
         return false;
     }
 
-    if (getTargetExtension() == "subdirs") {
+    if (targetType == TypeSubdirs) {
             // If we have something to deploy, generate extension makefile for just that, since
             // normal extension makefile is not getting generated and we need emulator deployment to be done.
             if (generatePkg)
@@ -243,21 +236,19 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     QString shortProFilename = project->projectFile();
     shortProFilename.replace(0, shortProFilename.lastIndexOf("/") + 1, QString(""));
-    shortProFilename.replace(QString(".pro"), QString(""));
+    shortProFilename.replace(Option::pro_ext, QString(""));
 
     QString mmpFilename = shortProFilename;
     mmpFilename.append("_");
     mmpFilename.append(uid3);
-    mmpFilename.append(".mmp");
+    mmpFilename.append(Option::mmp_ext);
     writeMmpFile(mmpFilename, symbianLangCodes);
 
-    if (getTargetExtension() == "exe") {
+    if (targetType == TypeExe) {
         if (!project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
-            QString appname = escapeFilePath(fileFixify(project->first("TARGET")));
-            appname = removePathSeparators(appname);
-            writeRegRssFile(appname, userRssRules);
-            writeRssFile(appname, numberOfIcons, iconFile);
-            writeLocFile(appname, symbianLangCodes);
+            writeRegRssFile(fixedTarget, userRssRules);
+            writeRssFile(fixedTarget, numberOfIcons, iconFile);
+            writeLocFile(fixedTarget, symbianLangCodes);
         }
     }
 
@@ -267,7 +258,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     return true;
 }
 
-bool SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile)
+void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile)
 {
     QString build = ( config == "udeb" ) ? "debug" : "release";
     QString pkgFilename = QString("%1_%2-%3.%4")
@@ -276,8 +267,10 @@ bool SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
                           .arg(compiler)
                           .arg("pkg");
     QFile pkgFile(pkgFilename);
-    if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return false;
+    if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        PRINT_FILE_CREATE_ERROR(pkgFilename);
+        return;
+    }
 
     generatedFiles << pkgFile.fileName();
 
@@ -317,14 +310,11 @@ bool SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
     }
 
     // name of application, UID and version
-    QString applicationName = project->first("TARGET");
-    int last = applicationName.lastIndexOf(QLatin1Char('/'));
-    applicationName = applicationName.mid( last == -1 ? 0 : last+1 );
     QString applicationVersion = project->first("VERSION").isEmpty() ? "1,0,0" : project->first("VERSION").replace('.', ',');
 
     if(!containsStartWithItem('#', rawPkgPreRules)) {
         t << "; SIS header: name, uid, version" << endl;
-        t << QString("#{\"%1\"},(%2),%3").arg(applicationName).arg(uid3).arg(applicationVersion) << endl << endl;
+        t << QString("#{\"%1\"},(%2),%3").arg(fixedTarget).arg(uid3).arg(applicationVersion) << endl << endl;
     }
 
     // Localized vendor name
@@ -360,10 +350,10 @@ bool SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
                               .arg(config);
 
 
-    if (getTargetExtension() == "exe") {
+    if (targetType == TypeExe) {
         // deploy .exe file
         t << "; Executable and default resource files" << endl;
-        QString exeFile = applicationName + ".exe";
+        QString exeFile = fixedTarget + ".exe";
         t << QString("\"%1/%2\"    - \"%3\\%4\"")
              .arg(epocReleasePath)
              .arg(exeFile)
@@ -374,15 +364,15 @@ bool SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
         if (!project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
             t << QString("\"%1epoc32/data/z/resource/apps/%2\"    - \"%3\\%4\"")
                  .arg(epocRoot())
-                 .arg(applicationName + ".rsc")
+                 .arg(fixedTarget + ".rsc")
                  .arg(installPathResource)
-                 .arg(applicationName + ".rsc") << endl;
+                 .arg(fixedTarget + ".rsc") << endl;
 
             t << QString("\"%1epoc32/data/z/private/10003a3f/import/apps/%2\"    - \"%3\\%4\"")
                  .arg(epocRoot())
-                 .arg(applicationName + "_reg.rsc")
+                 .arg(fixedTarget + "_reg.rsc")
                  .arg(installPathRegResource)
-                 .arg(applicationName + "_reg.rsc") << endl;
+                 .arg(fixedTarget + "_reg.rsc") << endl;
 
             QString myIconFile = iconFile;
             myIconFile = myIconFile.replace("\\\\", "\\");
@@ -428,8 +418,6 @@ bool SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
             t << endl;
         }
     }
-
-    return true;
 }
 
 bool SymbianMakefileGenerator::containsStartWithItem(const QChar &c, const QStringList& src)
@@ -444,9 +432,9 @@ bool SymbianMakefileGenerator::containsStartWithItem(const QChar &c, const QStri
      return result;
 }
 
-bool SymbianMakefileGenerator::writeCustomDefFile()
+void SymbianMakefileGenerator::writeCustomDefFile()
 {
-    if(targetType.compare("plugin", Qt::CaseInsensitive) == 0 && !project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
+    if(targetType == TypePlugin && !project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
         // Create custom def file for plugin
         QFile ft(QLatin1String(PLUGIN_COMMON_DEF_FILE_ACTUAL));
 
@@ -473,16 +461,16 @@ bool SymbianMakefileGenerator::writeCustomDefFile()
             t << "\tqt_plugin_instance @ 2 NONAME" << endl;
             t << endl;
         } else {
-            return false;
+            PRINT_FILE_CREATE_ERROR(QString(PLUGIN_COMMON_DEF_FILE_ACTUAL))
         }
     }
-
-    return true;
 }
 
 void SymbianMakefileGenerator::init()
 {
     MakefileGenerator::init();
+    fixedTarget = escapeFilePath(fileFixify(project->first("TARGET")));
+    fixedTarget = removePathSeparators(fixedTarget);
 
     if(0 != project->values("QMAKE_PLATFORM").size())
         platform = varGlue("QMAKE_PLATFORM", "", " ", "");
@@ -490,9 +478,7 @@ void SymbianMakefileGenerator::init()
     if(0 == project->values("QMAKESPEC").size())
         project->values("QMAKESPEC").append(qgetenv("QMAKESPEC"));
 
-    if(!isConfigSetToSymbian())
-        project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
-
+    project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
 
     // bld.inf
     project->values("MAKEFILE") += BLD_INF_FILENAME;
@@ -508,25 +494,25 @@ void SymbianMakefileGenerator::init()
     }
 
     if((project->values("TEMPLATE")).contains("app"))
-        targetType = "exe";
+        targetType = TypeExe;
     else if((project->values("TEMPLATE")).contains("lib")) {
         // Check CONFIG to see if we are to build staticlib or dll
         if(project->values("CONFIG").contains("staticlib") || project->values("CONFIG").contains("static"))
-            targetType = "staticlib";
+            targetType = TypeLib;
         else if (project->values("CONFIG").contains("plugin"))
-            targetType = "plugin";
+            targetType = TypePlugin;
         else
-            targetType = "dll";
+            targetType = TypeDll;
     }
     else
-        targetType = "subdirs";
+        targetType = TypeSubdirs;
 
     if(0 != project->values("TARGET.UID2").size()) {
         uid2 = project->first("TARGET.UID2");
     } else if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
         uid2 = "0x20004C45";
     } else {
-        if(getTargetExtension() == "exe") {
+        if(targetType == TypeExe) {
             if(project->values("QT").contains("gui", Qt::CaseInsensitive)) {
                 // exe and gui -> uid2 needed
                 uid2 = "0x100039CE";
@@ -534,7 +520,7 @@ void SymbianMakefileGenerator::init()
                 // exe but not gui: uid2 is ignored anyway -> set it to 0
                 uid2 = "0";
             }
-        } else if(getTargetExtension() == "dll" || getTargetExtension() == "lib") {
+        } else if(targetType == TypeDll || targetType == TypeLib || targetType == TypePlugin) {
             uid2 = "0x1000008d";
         }
     }
@@ -548,7 +534,7 @@ void SymbianMakefileGenerator::init()
     uint uidNum = uid3.toUInt(&conversionOk, 0);
 
     if (!conversionOk) {
-        fprintf(stderr, "Error: Invalid UID \"%s\".", uid3.toUtf8().constData());
+        fprintf(stderr, "Error: Invalid UID \"%s\".\n", uid3.toUtf8().constData());
     } else {
         privateDirUid.setNum(uidNum, 16);
         while (privateDirUid.length() < 8)
@@ -559,25 +545,20 @@ void SymbianMakefileGenerator::init()
 QString SymbianMakefileGenerator::getTargetExtension()
 {
     QString ret;
-    if(targetType.compare("exe", Qt::CaseInsensitive) == 0 || targetType.compare("app", Qt::CaseInsensitive) == 0) {
+    if(targetType == TypeExe) {
         ret.append("exe");
-    } else if (targetType.compare("staticlib",Qt::CaseInsensitive) == 0) {
+    } else if (targetType == TypeLib) {
         ret.append("lib");
-    } else if (targetType.compare("dll", Qt::CaseInsensitive) == 0 || targetType.compare("plugin", Qt::CaseInsensitive) == 0) {
+    } else if (targetType == TypeDll || targetType == TypePlugin) {
         ret.append("dll");
-    } else if (targetType.compare("subdirs", Qt::CaseInsensitive) == 0) {
-        ret.append("subdirs");
+    } else if (targetType == TypeSubdirs) {
+        // Not actually usable, so return empty
     } else {
         // If nothing else set, default to exe
         ret.append("exe");
     }
 
     return ret;
-}
-
-bool SymbianMakefileGenerator::isConfigSetToSymbian()
-{
-    return project->values("CONFIG").contains("symbian", Qt::CaseInsensitive);
 }
 
 QString SymbianMakefileGenerator::generateUID3()
@@ -588,7 +569,7 @@ QString SymbianMakefileGenerator::generateUID3()
     return generate_test_uid(target);
 }
 
-bool SymbianMakefileGenerator::initMmpVariables()
+void SymbianMakefileGenerator::initMmpVariables()
 {
     QStringList sysincspaths;
     QStringList srcincpaths;
@@ -668,8 +649,6 @@ bool SymbianMakefileGenerator::initMmpVariables()
     sysincspaths << temporary;
 
     systeminclude.insert("SYSTEMINCLUDE", sysincspaths);
-
-    return true;
 }
 
 bool SymbianMakefileGenerator::removeDuplicatedStrings(QStringList& stringList)
@@ -689,20 +668,18 @@ bool SymbianMakefileGenerator::removeDuplicatedStrings(QStringList& stringList)
     return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileHeader(QTextStream &t)
+void SymbianMakefileGenerator::writeMmpFileHeader(QTextStream &t)
 {
     t << "// ==============================================================================" << endl;
     t << "// Generated by qmake (" << qmake_version() << ") (Qt " << QT_VERSION_STR << ") on: ";
     t << QDateTime::currentDateTime().toString(Qt::ISODate) << endl;
     t << "// This file is generated by qmake and should not be modified by the" << endl;
     t << "// user." << endl;
-    t << "//  Name        : " << escapeFilePath(fileFixify(project->projectFile().remove(project->projectFile().length()-4,4))) << ".mmp" << endl;
+    t << "//  Name        : " << escapeFilePath(fileFixify(project->projectFile().remove(project->projectFile().length()-4,4))) << Option::mmp_ext << endl;
     t << "// ==============================================================================" << endl << endl;
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symbianLangCodes)
+void SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symbianLangCodes)
 {
     QFile ft(filename);
     if(ft.open(QIODevice::WriteOnly)) {
@@ -749,18 +726,13 @@ bool SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symb
 
         writeMmpFileRulesPart(t);
     } else {
-        return false;
+        PRINT_FILE_CREATE_ERROR(filename)
     }
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileMacrosPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileMacrosPart(QTextStream& t)
 {
     t << endl;
-
-    if(isConfigSetToSymbian())
-        return true;
 
     QStringList &defines = project->values("DEFINES");
     if (defines.size())
@@ -780,39 +752,36 @@ bool SymbianMakefileGenerator::writeMmpFileMacrosPart(QTextStream& t)
     }
 
     t << endl;
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::addMacro(QTextStream& t, const QString& value)
+void SymbianMakefileGenerator::addMacro(QTextStream& t, const QString& value)
 {
      t << "MACRO" << "\t\t" <<  value << endl;
-     return true;
 }
 
 
-bool SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 {
-    if(getTargetExtension() == "exe") {
-        t << "TARGET" << "\t\t" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << "\n";
+    if(targetType == TypeExe) {
+        t << MMP_TARGET << "\t\t" << fixedTarget.append(".exe") << "\n";
         if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
-            t << "TARGETTYPE" << "\t\t" << "STDEXE" << endl;
+            t << MMP_TARGETTYPE << "\t\t" << "STDEXE" << endl;
         else
-            t << "TARGETTYPE" << "\t\t" << "EXE" << endl;
-    } else if (getTargetExtension() == "dll"){
-        t << "TARGET" << "\t\t" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".dll")) << "\n";
+            t << MMP_TARGETTYPE << "\t\t" << "EXE" << endl;
+    } else if (targetType == TypeDll || targetType == TypePlugin){
+        t << MMP_TARGET << "\t\t" << fixedTarget.append(".dll") << "\n";
         if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
-            t << "TARGETTYPE" << "\t\t" << "STDDLL" << endl;
+            t << MMP_TARGETTYPE << "\t\t" << "STDDLL" << endl;
         else
-            t << "TARGETTYPE" << "\t\t" << "DLL" << endl;
-    } else if (getTargetExtension() == "lib"){
-        t << "TARGET" << "\t\t" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".lib")) << "\n";
+            t << MMP_TARGETTYPE << "\t\t" << "DLL" << endl;
+    } else if (targetType == TypeLib){
+        t << MMP_TARGET << "\t\t" << fixedTarget.append(".lib") << "\n";
         if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
-            t << "TARGETTYPE" << "\t\t" << "STDLIB" << endl;
+            t << MMP_TARGETTYPE << "\t\t" << "STDLIB" << endl;
         else
-            t << "TARGETTYPE" << "\t\t" << "LIB" << endl;
+            t << MMP_TARGETTYPE << "\t\t" << "LIB" << endl;
     } else {
-        printf("unexpected target and targettype %s\n", getTargetExtension().toAscii().data());
+        fprintf(stderr, "Error: Unexpected targettype (%d) in SymbianMakefileGenerator::writeMmpFileTargetPart\n", targetType);
     }
 
     t << endl;
@@ -820,12 +789,12 @@ bool SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     t << "UID" << "\t\t" << uid2 << " " << uid3 << endl;
 
     if(0 != project->values("TARGET.SID").size()) {
-        t << "SECUREID" << "\t\t" << project->values("TARGET.SID").join(" ") << endl;
+        t << MMP_SECUREID << "\t\t" << project->values("TARGET.SID").join(" ") << endl;
     } else {
         if(0 == uid3.size())
-            t << "SECUREID" << "\t\t" << "0" << endl;
+            t << MMP_SECUREID << "\t\t" << "0" << endl;
         else
-            t << "SECUREID" << "\t\t" << uid3 << endl;
+            t << MMP_SECUREID << "\t\t" << uid3 << endl;
     }
 
     // default value used from mkspecs is 0
@@ -842,14 +811,12 @@ bool SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     if(0 != project->values("TARGET.EPOCALLOWDLLDATA").size())
         t << "EPOCALLOWDLLDATA" << endl;
 
-    if(targetType.compare("plugin", Qt::CaseInsensitive) == 0 && !project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
+    if(targetType == TypePlugin && !project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
         // Use custom def file for Qt plugins
         t << "DEFFILE " PLUGIN_COMMON_DEF_FILE_FOR_MMP << endl;
     }
 
     t << endl;
-
-    return true;
 }
 
 
@@ -857,14 +824,12 @@ bool SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     Application registration resource files should be installed to the
     \private\10003a3f\import\apps directory.
 */
-bool SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, QStringList &symbianLangCodes)
+void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, QStringList &symbianLangCodes)
 {
-    if((getTargetExtension() == "exe") &&
+    if((targetType == TypeExe) &&
         !project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
-        QString target = escapeFilePath(fileFixify(project->first("TARGET")));
-        target = removePathSeparators(target);
 
-        QString locTarget = target;
+        QString locTarget = fixedTarget;
         locTarget.append(".rss");
 
         t << "SOURCEPATH\t\t\t. " << endl;
@@ -878,22 +843,20 @@ bool SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, QStringL
         t << "TARGETPATH\t\t\t" RESOURCE_DIRECTORY_MMP<< endl;
         t << "END" << endl << endl;
 
-        QString regTarget = target;
+        QString regTarget = fixedTarget;
         regTarget.append("_reg.rss");
 
         t << "SOURCEPATH\t\t\t." << endl;
         t << "START RESOURCE\t\t" << regTarget << endl;
         if (isForSymbianSbsv2())
-            t << "DEPENDS " << target << ".rsg" << endl;
+            t << "DEPENDS " << fixedTarget << ".rsg" << endl;
         t << "TARGETPATH\t\t" REGISTRATION_RESOURCE_DIRECTORY_HW << endl;
         t << "END" << endl << endl;
      }
-     return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileSystemIncludePart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileSystemIncludePart(QTextStream& t)
 {
-
     QDir current = QDir::current();
 
     for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
@@ -905,19 +868,14 @@ bool SymbianMakefileGenerator::writeMmpFileSystemIncludePart(QTextStream& t)
     }
 
     t << endl;
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileIncludePart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileIncludePart(QTextStream& t)
 {
-
     writeMmpFileSystemIncludePart(t);
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
 {
     QStringList &libs = project->values("LIBS");
     libs << project->values("QMAKE_LIBS");
@@ -955,11 +913,9 @@ bool SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
     }
 
     t << endl;
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileCapabilityPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileCapabilityPart(QTextStream& t)
 {
     if(0 != project->first("TARGET.CAPABILITY").size()) {
         QStringList &capabilities = project->values("TARGET.CAPABILITY");
@@ -974,11 +930,9 @@ bool SymbianMakefileGenerator::writeMmpFileCapabilityPart(QTextStream& t)
         t << "CAPABILITY" << "\t\t" << "None";
     }
     t << endl << endl;
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
 {
     QString cw, armcc;
 
@@ -1027,10 +981,9 @@ bool SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         t << "OPTION" << '\t' << " ARMCC "<< armcc <<  endl;
 
     t <<  endl;
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileBinaryVersionPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileBinaryVersionPart(QTextStream& t)
 {
     QString applicationVersion = project->first("VERSION");
     QStringList verNumList = applicationVersion.split('.');
@@ -1064,11 +1017,9 @@ bool SymbianMakefileGenerator::writeMmpFileBinaryVersionPart(QTextStream& t)
     }
 
     t << "VERSION " << mmpVersion  << endl;
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
 {
     foreach(QString item, project->values("MMP_RULES")) {
         t << endl;
@@ -1082,10 +1033,9 @@ bool SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
             }
         }
     }
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension)
+void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension)
 {
     // Read user defined bld inf rules
     QMap<QString, QStringList> userBldInfRules;
@@ -1116,7 +1066,7 @@ bool SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     // Add includes of subdirs bld.inf files
 
     QString mmpfilename = escapeFilePath(fileFixify(project->projectFile()));
-    mmpfilename = mmpfilename.replace(mmpfilename.lastIndexOf(".")+1, 3, "mmp");
+    mmpfilename = mmpfilename.replace(mmpfilename.lastIndexOf("."), 4, Option::mmp_ext);
     QString currentPath = qmake_getpwd();
 
     if(!currentPath.endsWith(QString("/")))
@@ -1137,11 +1087,11 @@ bool SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         QString bldinfFilename;
 
         QString fullProFilename = fullMmpName;
-        fullProFilename.replace(QString(".mmp"), QString(".pro"));
+        fullProFilename.replace(Option::mmp_ext, Option::pro_ext);
         QString uid = generate_uid(fullProFilename);
 
         QString cleanMmpName = fullProFilename;
-        cleanMmpName.replace(QString(".pro"), QString(""));
+        cleanMmpName.replace(Option::pro_ext, QString(""));
         cleanMmpName.replace(0, cleanMmpName.lastIndexOf("/") + 1, QString(""));
 
         if(shadowProjects.contains(BLD_INF_FILENAME "." + cleanMmpName)) { // shadow project
@@ -1200,16 +1150,14 @@ bool SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     t << endl << mmpTag << endl << endl;
 
     writeBldInfMkFilePart(t, addDeploymentExtension);
-    if (getTargetExtension() == "subdirs") {
+    if (targetType == TypeSubdirs) {
         mmpProjects.removeOne(mmpfilename);
-    }
-
-    if(getTargetExtension() != "subdirs") {
+    } else {
         QString shortProFilename = project->projectFile();
         shortProFilename.replace(0, shortProFilename.lastIndexOf("/") + 1, QString(""));
-        shortProFilename.replace(QString(".pro"), QString(""));
+        shortProFilename.replace(Option::pro_ext, QString(""));
 
-        QString mmpFilename = shortProFilename + QString("_") + uid3 + QString(".mmp");
+        QString mmpFilename = shortProFilename + QString("_") + uid3 + Option::mmp_ext;
 
         t << mmpFilename << endl;
     }
@@ -1237,11 +1185,9 @@ bool SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         foreach(QString item, userItems)
             t << item << endl;
     }
-
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &userItems)
+void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &userItems)
 {
     QString filename(appName);
     filename.append("_reg.rss");
@@ -1272,12 +1218,11 @@ bool SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &us
             t << "\t" << item << endl;
         t << "\t}" << endl;
     } else {
-        return false;
+        PRINT_FILE_CREATE_ERROR(filename)
     }
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfIcons, QString &iconFile)
+void SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfIcons, QString &iconFile)
 {
     QString filename(appName);
     filename.append(".rss");
@@ -1317,12 +1262,11 @@ bool SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfI
         t << "\t}" << endl;
         t << endl;
     } else {
-        return false;
+        PRINT_FILE_CREATE_ERROR(filename);
     }
-    return true;
 }
 
-bool SymbianMakefileGenerator::writeLocFile(QString &appName, QStringList &symbianLangCodes)
+void SymbianMakefileGenerator::writeLocFile(QString &appName, QStringList &symbianLangCodes)
 {
     QString filename(appName);
     filename.append(".loc");
@@ -1352,9 +1296,8 @@ bool SymbianMakefileGenerator::writeLocFile(QString &appName, QStringList &symbi
         t << "#define STRING_r_caption \"" << appName  << "\"" << endl;
         t << "#endif" << endl;
     } else {
-        return false;
+        PRINT_FILE_CREATE_ERROR(filename);
     }
-    return true;
 }
 
 void SymbianMakefileGenerator::readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules)

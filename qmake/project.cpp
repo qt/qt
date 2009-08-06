@@ -1606,8 +1606,8 @@ QMakeProject::read(uchar cmd)
 
     if(cmd & ReadProFile) { // parse project file
         debug_msg(1, "Project file: reading %s", pfile.toLatin1().constData());
-        if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(".pro"))
-            pfile += ".pro";
+        if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(Option::pro_ext))
+            pfile += Option::pro_ext;
         if(!read(pfile, vars))
             return false;
     }
@@ -3339,7 +3339,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
 
 
 // UIDs starting with 0xE are test UIDs in symbian
-QString generate_test_uid(const QString& target) 
+QString generate_test_uid(const QString& target)
 {
     QString tmp = generate_uid(target);
     tmp.replace(0,1,"E");
@@ -3350,7 +3350,7 @@ QString generate_test_uid(const QString& target)
 
 
 // UIDs starting with 0xE are test UIDs in symbian
-QString generate_uid(const QString& target) 
+QString generate_uid(const QString& target)
 {
     static QMap<QString, QString> targetToUid;
 

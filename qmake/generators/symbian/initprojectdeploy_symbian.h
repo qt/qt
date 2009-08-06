@@ -66,4 +66,5 @@ extern void initProjectDeploySymbian(QMakeProject* project,
                               const QString &build,
                               QStringList& generatedDirs,
                               QStringList& generatedFiles);
+
 #endif // INITPROJECTDEPLOYSYMBIAN_H

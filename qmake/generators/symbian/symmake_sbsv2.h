@@ -51,9 +51,9 @@ class SymbianSbsv2MakefileGenerator : public SymbianMakefileGenerator
 protected:
 
     // Inherited from parent
-    virtual bool writeBldInfExtensionRulesPart(QTextStream& t);
+    virtual void writeBldInfExtensionRulesPart(QTextStream& t);
     virtual void writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension);
-    virtual bool writeMkFile(const QString& wrapperFileName, bool deploymentOnly);
+    virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly);
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile);
 
 public:
