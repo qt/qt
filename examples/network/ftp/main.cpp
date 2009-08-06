@@ -55,12 +55,12 @@ int main(int argc, char *argv[])
     // in order that user can access the downloaded content
     QDir::setCurrent( "c:\\data" );
 #endif
-    QApplication app(argc, argv);  
+    QApplication app(argc, argv);
     FtpWindow ftpWin;
-#ifdef Q_OS_SYMBIAN    
+#ifdef Q_OS_SYMBIAN
     // Make application better looking and more usable on small screen
     ftpWin.showMaximized();
-#else    
+#else
     ftpWin.show();
 #endif
     return ftpWin.exec();

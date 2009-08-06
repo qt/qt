@@ -423,7 +423,7 @@ void HybridFuncLX(THybridAction aAction)
 
 void tst_qmainexceptions::testHybrid()
 {
-    TRAPD(error, 
+    TRAPD(error,
         QT_TRYCATCH_LEAVING(
             HybridFuncLX(EHybridLeave);
         ) );
@@ -432,8 +432,8 @@ void tst_qmainexceptions::testHybrid()
     QCOMPARE(int(sizeof(expected1)/sizeof(int)), int(recDtor - dtorFired));
     for (int i=0; i<sizeof(expected1)/sizeof(int); i++)
         QCOMPARE(expected1[i], dtorFired[i]);
-    
-    TRAP(error, 
+
+    TRAP(error,
         QT_TRYCATCH_LEAVING(
             HybridFuncLX(EHybridThrow);
         ) );
@@ -443,7 +443,7 @@ void tst_qmainexceptions::testHybrid()
     for (int i=0; i<sizeof(expected2)/sizeof(int); i++)
         QCOMPARE(expected2[i], dtorFired[i]);
 
-    TRAP(error, 
+    TRAP(error,
         QT_TRYCATCH_LEAVING(
             HybridFuncLX(EHybridPass);
         ) );

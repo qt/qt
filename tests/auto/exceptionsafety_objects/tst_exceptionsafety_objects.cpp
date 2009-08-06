@@ -71,49 +71,60 @@ private slots:
 
     void widgets_data();
     void widgets();
+
+    void vector_data();
+    void vector();
+
+    void list_data();
+    void list();
+
+    void linkedList_data();
+    void linkedList();
 };
 
 // helper structs to create an arbitrary widget
-struct AbstractObjectCreator
+struct AbstractTester
 {
-    virtual void test(QObject *parent) = 0;
+    virtual void operator()(QObject *parent) = 0;
 };
+Q_DECLARE_METATYPE(AbstractTester *)
 
-Q_DECLARE_METATYPE(AbstractObjectCreator *)
+typedef void (*TestFunction)(QObject*);
+Q_DECLARE_METATYPE(TestFunction)
 
 template <typename T>
-struct ObjectCreator : public AbstractObjectCreator
+struct ObjectCreator : public AbstractTester
 {
-    void test(QObject *)
+    void operator()(QObject *)
     {
         QScopedPointer<T> ptr(new T);
     }
 };
 
-struct BitArrayCreator : public AbstractObjectCreator
+struct BitArrayCreator : public AbstractTester
 {
-    void test(QObject *)
+    void operator()(QObject *)
     { QScopedPointer<QBitArray> bitArray(new QBitArray(100, true)); }
 };
 
-struct ByteArrayMatcherCreator : public AbstractObjectCreator
+struct ByteArrayMatcherCreator : public AbstractTester
 {
-    void test(QObject *)
+    void operator()(QObject *)
     { QScopedPointer<QByteArrayMatcher> ptr(new QByteArrayMatcher("ralf test",8)); }
 };
 
-struct CryptographicHashCreator : public AbstractObjectCreator
+struct CryptographicHashCreator : public AbstractTester
 {
-    void test(QObject *)
+    void operator()(QObject *)
     {
         QScopedPointer<QCryptographicHash> ptr(new QCryptographicHash(QCryptographicHash::Sha1));
         ptr->addData("ralf test",8);
     }
 };
 
-struct DataStreamCreator : public AbstractObjectCreator
+struct DataStreamCreator : public AbstractTester
 {
-    void test(QObject *)
+    void operator()(QObject *)
     {
         QScopedPointer<QByteArray> arr(new QByteArray("hallo, test"));
         QScopedPointer<QDataStream> ptr(new QDataStream(arr.data(), QIODevice::ReadWrite));
@@ -121,9 +132,9 @@ struct DataStreamCreator : public AbstractObjectCreator
     }
 };
 
-struct DirCreator : public AbstractObjectCreator
+struct DirCreator : public AbstractTester
 {
-    void test(QObject *)
+    void operator()(QObject *)
     {
         QDir::cleanPath("../////././");
         QScopedPointer<QDir> ptr(new QDir("."));
@@ -140,9 +151,9 @@ struct DirCreator : public AbstractObjectCreator
 
 void tst_ExceptionSafetyObjects::objects_data()
 {
-    QTest::addColumn<AbstractObjectCreator *>("objectCreator");
+    QTest::addColumn<AbstractTester *>("objectCreator");
 
-#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractObjectCreator *>(new ObjectCreator<T >)
+#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractTester *>(new ObjectCreator<T >)
     NEWROW(QObject);
     NEWROW(QBuffer);
     NEWROW(QFile);
@@ -154,7 +165,7 @@ void tst_ExceptionSafetyObjects::objects_data()
     NEWROW(QTranslator);
     NEWROW(QFSFileEngine);
 
-#define NEWROW2(T, CREATOR) QTest::newRow(#T) << static_cast<AbstractObjectCreator *>(new CREATOR)
+#define NEWROW2(T, CREATOR) QTest::newRow(#T) << static_cast<AbstractTester *>(new CREATOR)
     NEWROW2(QBitArray, BitArrayCreator);
     NEWROW2(QByteArrayMatcher, ByteArrayMatcherCreator);
     NEWROW2(QCryptographicHash, CryptographicHashCreator);
@@ -165,9 +176,10 @@ void tst_ExceptionSafetyObjects::objects_data()
 
 // create and destructs an object, and lets each and every allocation
 // during construction and destruction fail.
-static void doOOMTest(AbstractObjectCreator *creator, QObject *parent)
+template <typename T>
+static void doOOMTest(T &testFunc, QObject *parent, int start=0)
 {
-    int currentOOMIndex = 0;
+    int currentOOMIndex = start;
     bool caught = false;
     bool done = false;
 
@@ -180,7 +192,7 @@ static void doOOMTest(AbstractObjectCreator *creator, QObject *parent)
         caught = false;
 
         try {
-            creator->test(parent);
+            testFunc(parent);
         } catch (const std::bad_alloc &) {
             caught = true;
         } catch (const std::exception &ex) {
@@ -198,6 +210,10 @@ static void doOOMTest(AbstractObjectCreator *creator, QObject *parent)
             }
         }
 
+        // if we get a FAIL, stop executing now
+        if (QTest::currentTestFailed())
+            done = true;
+
 //#define REALLY_VERBOSE
 #ifdef REALLY_VERBOSE
     fprintf(stderr, " OOM Index: %d\n", currentOOMIndex);
@@ -212,6 +228,8 @@ static void doOOMTest(AbstractObjectCreator *creator, QObject *parent)
 #ifdef VERBOSE
     fprintf(stderr, "OOM Test done, checked allocs: %d (range %d - %d)\n", currentOOMIndex,
                 allocCountBefore, allocFailer.currentAllocIndex());
+#else
+    Q_UNUSED(allocCountBefore);
 #endif
 }
 
@@ -278,7 +296,9 @@ void tst_ExceptionSafetyObjects::initTestCase()
     (void) std::set_new_handler(nh_func);
 #endif
 
-    doOOMTest(new ObjectCreator<SelfTestObject>, 0);
+    ObjectCreator<SelfTestObject> *selfTest = new ObjectCreator<SelfTestObject>;
+    doOOMTest(*selfTest, 0);
+    delete selfTest;
     QCOMPARE(alloc1Failed, 1);
     QCOMPARE(alloc2Failed, 1);
     QCOMPARE(alloc3Failed, 2);
@@ -289,15 +309,17 @@ void tst_ExceptionSafetyObjects::initTestCase()
 
 void tst_ExceptionSafetyObjects::objects()
 {
-    QFETCH(AbstractObjectCreator *, objectCreator);
+    QFETCH(AbstractTester *, objectCreator);
 
-    doOOMTest(objectCreator, 0);
+    doOOMTest(*objectCreator, 0);
+    
+    delete objectCreator;
 }
 
 template <typename T>
-struct WidgetCreator : public AbstractObjectCreator
+struct WidgetCreator : public AbstractTester
 {
-    void test(QObject *parent)
+    void operator()(QObject *parent)
     {
         Q_ASSERT(!parent || parent->isWidgetType());
         QScopedPointer<T> ptr(parent ? new T(static_cast<QWidget *>(parent)) : new T);
@@ -305,9 +327,9 @@ struct WidgetCreator : public AbstractObjectCreator
 };
 
 // QSizeGrip doesn't have a default constructor - always pass parent (even though it might be 0)
-template <> struct WidgetCreator<QSizeGrip> : public AbstractObjectCreator
+template <> struct WidgetCreator<QSizeGrip> : public AbstractTester
 {
-    void test(QObject *parent)
+    void operator()(QObject *parent)
     {
         Q_ASSERT(!parent || parent->isWidgetType());
         QScopedPointer<QSizeGrip> ptr(new QSizeGrip(static_cast<QWidget *>(parent)));
@@ -315,9 +337,9 @@ template <> struct WidgetCreator<QSizeGrip> : public AbstractObjectCreator
 };
 
 // QDesktopWidget doesn't need a parent.
-template <> struct WidgetCreator<QDesktopWidget> : public AbstractObjectCreator
+template <> struct WidgetCreator<QDesktopWidget> : public AbstractTester
 {
-    void test(QObject *parent)
+    void operator()(QObject *parent)
     {
         Q_ASSERT(!parent || parent->isWidgetType());
         QScopedPointer<QDesktopWidget> ptr(new QDesktopWidget());
@@ -325,10 +347,10 @@ template <> struct WidgetCreator<QDesktopWidget> : public AbstractObjectCreator
 };
 void tst_ExceptionSafetyObjects::widgets_data()
 {
-    QTest::addColumn<AbstractObjectCreator *>("widgetCreator");
+    QTest::addColumn<AbstractTester *>("widgetCreator");
 
 #undef NEWROW
-#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractObjectCreator *>(new WidgetCreator<T >)
+#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractTester *>(new WidgetCreator<T >)
 
     NEWROW(QWidget);
 
@@ -389,15 +411,237 @@ void tst_ExceptionSafetyObjects::widgets_data()
 
 void tst_ExceptionSafetyObjects::widgets()
 {
-    QFETCH(AbstractObjectCreator *, widgetCreator);
+    QFETCH(AbstractTester *, widgetCreator);
 
-    doOOMTest(widgetCreator, 0);
+    doOOMTest(*widgetCreator, 0, 00000);
 
     QWidget parent;
-    doOOMTest(widgetCreator, &parent);
+    doOOMTest(*widgetCreator, &parent, 00000);
+
+    delete widgetCreator;
 
     // if the test reaches here without crashing, we passed :)
     QVERIFY(true);
+}
+
+struct Integer
+{
+    Integer(int value = 42)
+        : ptr(new int(value))
+    {
+        ++instanceCount;
+    }
+
+    Integer(const Integer &other)
+        : ptr(new int(*other.ptr))
+    {
+        ++instanceCount;
+    }
+
+    Integer &operator=(const Integer &other)
+    {
+        int *newPtr = new int(*other.ptr);
+        delete ptr;
+        ptr = newPtr;
+        return *this;
+    }
+
+    ~Integer()
+    {
+        --instanceCount;
+        delete ptr;
+    }
+
+    int value() const
+    {
+        return *ptr;
+    }
+
+    int *ptr;
+    static int instanceCount;
+};
+
+int Integer::instanceCount = 0;
+
+template <template<typename T> class Container>
+void containerInsertTest(QObject*)
+{
+    Container<Integer> container;
+
+    // insert an item in an empty container
+    try {
+        container.insert(container.begin(), 41);
+    } catch (...) {
+        QVERIFY(container.isEmpty());
+        QCOMPARE(Integer::instanceCount, 0);
+        return;
+    }
+
+    QCOMPARE(container.size(), 1);
+    QCOMPARE(Integer::instanceCount, 1);
+
+    // insert an item before another item
+    try {
+        container.insert(container.begin(), 42);
+    } catch (...) {
+        QCOMPARE(container.size(), 1);
+        QCOMPARE(container.first().value(), 41);
+        QCOMPARE(Integer::instanceCount, 1);
+        return;
+    }
+
+    QCOMPARE(Integer::instanceCount, 2);
+
+    // insert an item in between
+    try {
+        container.insert(container.begin() + 1, 43);
+    } catch (...) {
+        QCOMPARE(container.size(), 2);
+        QCOMPARE(container.first().value(), 41);
+        QCOMPARE((container.begin() + 1)->value(), 42);
+        QCOMPARE(Integer::instanceCount, 2);
+        return;
+    }
+
+    QCOMPARE(Integer::instanceCount, 3);
+}
+
+template <template<typename T> class Container>
+void containerAppendTest(QObject*)
+{
+    Container<Integer> container;
+
+    // append to an empty container
+    try {
+        container.append(42);
+    } catch (...) {
+        QCOMPARE(container.size(), 0);
+        QCOMPARE(Integer::instanceCount, 0);
+        return;
+    }
+
+    // append to a container with one item
+    try {
+        container.append(43);
+    } catch (...) {
+        QCOMPARE(container.size(), 1);
+        QCOMPARE(container.first().value(), 42);
+        QCOMPARE(Integer::instanceCount, 1);
+        return;
+    }
+}
+
+template <template<typename T> class Container>
+void containerEraseTest(QObject*)
+{
+    Container<Integer> container;
+
+    try {
+        container.append(42);
+        container.append(43);
+        container.append(44);
+        container.append(45);
+        container.append(46);
+    } catch (...) {
+        // don't care
+        return;
+    }
+
+    // sanity checks
+    QCOMPARE(container.size(), 5);
+    QCOMPARE(Integer::instanceCount, 5);
+
+    // delete the first one
+    try {
+        container.erase(container.begin());
+    } catch (...) {
+        QCOMPARE(container.size(), 5);
+        QCOMPARE(container.first().value(), 42);
+        QCOMPARE(Integer::instanceCount, 5);
+        return;
+    }
+
+    QCOMPARE(container.size(), 4);
+    QCOMPARE(container.first().value(), 43);
+    QCOMPARE(Integer::instanceCount, 4);
+
+    // delete the last one
+    try {
+        container.erase(container.end() - 1);
+    } catch (...) {
+        QCOMPARE(container.size(), 4);
+        QCOMPARE(Integer::instanceCount, 4);
+        return;
+    }
+
+    QCOMPARE(container.size(), 3);
+    QCOMPARE(container.first().value(), 43);
+    QCOMPARE((container.begin() + 1)->value(), 44);
+    QCOMPARE((container.begin() + 2)->value(), 45);
+    QCOMPARE(Integer::instanceCount, 3);
+
+    // delete the middle one
+    try {
+        container.erase(container.begin() + 1);
+    } catch (...) {
+        QCOMPARE(container.size(), 3);
+        QCOMPARE(container.first().value(), 43);
+        QCOMPARE((container.begin() + 1)->value(), 44);
+        QCOMPARE((container.begin() + 2)->value(), 45);
+        QCOMPARE(Integer::instanceCount, 3);
+        return;
+    }
+
+    QCOMPARE(container.size(), 2);
+    QCOMPARE(container.first().value(), 43);
+    QCOMPARE((container.begin() + 1)->value(), 45);
+    QCOMPARE(Integer::instanceCount, 2);
+}
+
+template <template<typename T> class Container>
+static void containerData()
+{
+    QTest::addColumn<TestFunction>("testFunction");
+
+    QTest::newRow("insert") << static_cast<TestFunction>(containerInsertTest<Container>);
+    QTest::newRow("append") << static_cast<TestFunction>(containerAppendTest<Container>);
+    QTest::newRow("erase") << static_cast<TestFunction>(containerEraseTest<Container>);
+}
+
+void tst_ExceptionSafetyObjects::vector_data()
+{
+    containerData<QVector>();
+}
+
+void tst_ExceptionSafetyObjects::vector()
+{
+    QFETCH(TestFunction, testFunction);
+
+    doOOMTest(testFunction, 0);
+}
+
+void tst_ExceptionSafetyObjects::list_data()
+{
+    containerData<QList>();
+}
+
+void tst_ExceptionSafetyObjects::list()
+{
+    QFETCH(TestFunction, testFunction);
+
+    doOOMTest(testFunction, 0);
+}
+
+void tst_ExceptionSafetyObjects::linkedList_data()
+{
+    containerData<QLinkedList>();
+}
+
+void tst_ExceptionSafetyObjects::linkedList()
+{
+    QFETCH(TestFunction, testFunction);
+
+    doOOMTest(testFunction, 0);
 }
 
 QTEST_MAIN(tst_ExceptionSafetyObjects)

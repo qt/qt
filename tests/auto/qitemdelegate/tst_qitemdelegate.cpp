@@ -1120,7 +1120,7 @@ void tst_QItemDelegate::enterKey()
 
     QTest::keyClick(editor, Qt::Key(key));
     QApplication::processEvents();
-    
+
     if (widget == 2 || widget == 3) {
         QVERIFY(!editor.isNull());
         QCOMPARE(editor && editor->hasFocus(), expectedFocus);

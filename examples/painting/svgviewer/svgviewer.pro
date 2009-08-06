@@ -28,5 +28,5 @@ symbian: {
      TARGET.UID3 = 0xA000A64E
      addFiles.sources = files\*.svg
      addFiles.path = .
-     DEPLOYMENT += addFiles     
+     DEPLOYMENT += addFiles
 }

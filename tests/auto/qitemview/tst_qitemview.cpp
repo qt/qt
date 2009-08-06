@@ -256,7 +256,7 @@ void tst_QItemView::populate()
 {
     treeModel = new CheckerModel;
     QModelIndex parent;
-#if defined(QT_ARCH_ARM) || defined(Q_OS_SYMBIAN) 
+#if defined(QT_ARCH_ARM) || defined(Q_OS_SYMBIAN)
     const int baseInsert = 4;
 #else
     const int baseInsert = 26;
@@ -360,7 +360,7 @@ void tst_QItemView::nonDestructiveBasicTest()
     QCOMPARE(view->showDropIndicator(), false);
     view->setDropIndicatorShown(true);
     QCOMPARE(view->showDropIndicator(), true);
-    
+
     // setDragEnabled
     view->setDragEnabled(false);
     QCOMPARE(view->dragEnabled(), false);

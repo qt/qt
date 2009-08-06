@@ -456,7 +456,7 @@ void tst_QAbstractItemView::basic_tests(TestView *view)
     view->setDragEnabled(true);
     QCOMPARE(view->dragEnabled(), true);
 #endif
-    
+
     // setAlternatingRowColors
     view->setAlternatingRowColors(false);
     QCOMPARE(view->alternatingRowColors(), false);
@@ -569,7 +569,7 @@ void tst_QAbstractItemView::basic_tests(TestView *view)
     view->tst_setState(TestView::CollapsingState);
     QVERIFY(view->tst_state()==TestView::CollapsingState);
 #endif
-    
+
     view->tst_startAutoScroll();
     view->tst_stopAutoScroll();
     view->tst_doAutoScroll();

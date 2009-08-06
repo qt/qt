@@ -299,6 +299,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
     CCoeControl *destroyw = 0;
 
+    createExtra();
     if(window) {
         if (destroyOldWindow)
             destroyw = data.winid;
@@ -311,7 +312,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         if (!q->testAttribute(Qt::WA_Moved) && !q->testAttribute(Qt::WA_DontShowOnScreen))
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
         QSymbianControl *control= q_check_ptr(new QSymbianControl(q));
+        id = (WId)control;
+        setWinId(id);
         QT_TRAP_THROWING(control->ConstructL(true,desktop));
+        
         if (!desktop) {
             TInt stackingFlags;
             if ((q->windowType() & Qt::Popup) == Qt::Popup) {
@@ -336,11 +340,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             }
         }
 
-
-        id = (WId)control;
-
-        setWinId(id);
-
         q->setAttribute(Qt::WA_WState_Created);
 
         int x, y, w, h;
@@ -348,6 +347,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         control->SetRect(TRect(TPoint(x, y), TSize(w, h)));
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create native child widget
         QSymbianControl *control = new QSymbianControl(q);
+        setWinId(control);
         QT_TRAP_THROWING(control->ConstructL(!parentWidget));
 
         TInt stackingFlags;
@@ -358,7 +358,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         }
         control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags);
 
-        setWinId(control);
         WId parentw = parentWidget->effectiveWinId();
         QT_TRAP_THROWING(control->SetContainerWindowL(*parentw));
 
@@ -852,7 +851,12 @@ void QWidgetPrivate::createSysExtra()
 
 void QWidgetPrivate::deleteSysExtra()
 {
-
+    // this should only be non-zero if destroy() has not run due to constructor fail
+    if (data.winid) {
+        data.winid->ControlEnv()->AppUi()->RemoveFromStack(data.winid);
+        delete data.winid;
+        data.winid = 0;
+    }
 }
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
@@ -1079,6 +1083,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(geometry());
     d->deactivateWidgetCleanup();
+    WId id = internalWinId();
     if (testAttribute(Qt::WA_WState_Created)) {
 
 #ifndef QT_NO_IM
@@ -1104,12 +1109,10 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             releaseMouse();
         if (QWidgetPrivate::keyboardGrabber == this)
             releaseKeyboard();
-        if (destroyWindow && !(windowType() == Qt::Desktop) && internalWinId()) {
-            WId id = internalWinId();
+        if (destroyWindow && !(windowType() == Qt::Desktop) && id) {
             if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
                 id->SetFocus(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
-            CBase::Delete(id);
 
             // Hack to activate window under destroyed one. With this activation
             // the next visible window will get keyboard focus
@@ -1117,17 +1120,22 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (wid) {
                 QWidget *widget = QWidget::find(wid);
                 QApplication::setActiveWindow(widget);
-                // Reset global window title for focusing window
-                widget->d_func()->setWindowTitle_sys(widget->windowTitle());
+                if (widget) {
+                    // Reset global window title for focusing window
+                    widget->d_func()->setWindowTitle_sys(widget->windowTitle());
+                }
             }
-
         }
+    }
 
-        QT_TRY {
-            d->setWinId(0);
-        } QT_CATCH (const std::bad_alloc &) {
-            // swallow - destructors must not throw
-        }
+    QT_TRY {
+        d->setWinId(0);
+    } QT_CATCH (const std::bad_alloc &) {
+        // swallow - destructors must not throw
+    }
+
+    if (destroyWindow) {
+        delete id;
     }
 }
 

@@ -179,7 +179,7 @@ void tst_QKeyEvent::sendRecieveKeyEvents()
     QFETCH( QString, text );
     testWidget->recievedKeyPress = false;
 
-#ifdef Q_WS_WIN 
+#ifdef Q_WS_WIN
     // Will be eaten by Windows system
     if ( key == Qt::Key_Print )
 	return;
@@ -208,7 +208,7 @@ void tst_QKeyEvent::sendRecieveKeyEvents()
     if ( key >= Qt::Key_BracketRight && key <= Qt::Key_ydiaeresis )
 	return;
 #endif // Q_WS_WIN
-    
+
 #ifdef Q_OS_SYMBIAN
     // Not supported on symbian
     if ( key == Qt::Key_Print )
@@ -238,7 +238,7 @@ void tst_QKeyEvent::sendRecieveKeyEvents()
     if ( key >= Qt::Key_BracketRight && key <= Qt::Key_ydiaeresis )
     return;
 #endif // Q_WS_WIN
-    
+
     if ( key == Qt::Key_F1 )
 	return; // Ignore for the moment
 

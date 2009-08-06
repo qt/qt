@@ -1423,7 +1423,7 @@ void tst_QObject::moveToThread()
 #if defined(Q_OS_SYMBIAN)
         // Child timer will be registered after parent timer in the new
         // thread, and 10ms is less than symbian timer resolution, so
-        // child->timerEventThread compare after thread.wait() will 
+        // child->timerEventThread compare after thread.wait() will
         // usually fail unless timers are farther apart.
         child->startTimer(100);
         object->startTimer(150);

@@ -902,12 +902,12 @@ void tst_QTcpSocket::disconnectWhileConnecting()
         socket->disconnectFromHost();
     }
 
-    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));    
-#ifndef Q_OS_SYMBIAN    
+    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
+#ifndef Q_OS_SYMBIAN
     enterLoop(10);
-#else    
+#else
     enterLoop(30);
-#endif    
+#endif
     QVERIFY2(!timeout(), "Network timeout");
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
@@ -971,11 +971,11 @@ protected:
 
         QTcpSocket *socket = server->nextPendingConnection();
         while (!quit) {
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
             if (socket->waitForDisconnected(500))
-#else    
+#else
             if (socket->waitForDisconnected(5000))
-#endif     
+#endif
                 break;
             if (socket->error() != QAbstractSocket::SocketTimeoutError)
                 return;
@@ -1023,11 +1023,11 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
         socket->disconnectFromHost();
     }
 
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
     QVERIFY2(socket->waitForDisconnected(10000), "Network timeout");
-#else    
+#else
     QVERIFY2(socket->waitForDisconnected(30000), "Network timeout");
-#endif     
+#endif
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
         QCOMPARE(int(socket->openMode()), int(QIODevice::ReadWrite));
@@ -1073,11 +1073,11 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 
     // let anything queued happen
     QEventLoop loop;
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
     QTimer::singleShot(50, &loop, SLOT(quit()));
-#else    
+#else
     QTimer::singleShot(5000, &loop, SLOT(quit()));
-#endif     
+#endif
     loop.exec();
 
     // recheck
@@ -1783,7 +1783,7 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
     QCOMPARE(readyReadSpy.count(), 1);
 
     QString s = socket->readLine();
-#ifdef TEST_QNETWORK_PROXY    
+#ifdef TEST_QNETWORK_PROXY
     QNetworkProxy::ProxyType proxyType = QNetworkProxy::applicationProxy().type();
     if(proxyType == QNetworkProxy::NoProxy) {
         QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4REV1] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
@@ -1791,8 +1791,8 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
         QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
     }
 #else
-    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData()); 
-#endif    
+    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+#endif
     QCOMPARE(socket->bytesAvailable(), qint64(0));
 
     QCoreApplication::instance()->processEvents();
@@ -2011,7 +2011,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
 #if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
     QSKIP("stressTest subprocess needs Qt3Support", SkipAll);
 #elif defined( Q_OS_SYMBIAN )
-    QSKIP("Symbian: QProcess IO is not yet supported, fix when supported", SkipAll);    
+    QSKIP("Symbian: QProcess IO is not yet supported, fix when supported", SkipAll);
 #else
     QFETCH(QString, client);
     QFETCH(QString, server);

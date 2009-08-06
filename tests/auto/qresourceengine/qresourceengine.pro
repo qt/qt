@@ -7,12 +7,12 @@ load(resources)
 
 # Input
 SOURCES += tst_resourceengine.cpp
-RESOURCES += testqrc/test.qrc 
+RESOURCES += testqrc/test.qrc
 
 symbian-sbsv2 {
-    runtime_resource.target = $$PWD/runtime_resource.rcc 
+    runtime_resource.target = $$PWD/runtime_resource.rcc
 } else {
-    runtime_resource.target = runtime_resource.rcc 
+    runtime_resource.target = runtime_resource.rcc
 }
 runtime_resource.depends = $$PWD/testqrc/test.qrc
 runtime_resource.commands = $$QMAKE_RCC -root /runtime_resource/ -binary $${runtime_resource.depends} -o $${runtime_resource.target}
@@ -22,15 +22,15 @@ PRE_TARGETDEPS += $${runtime_resource.target}
 QT = core
 wince*|symbian*:{
     deploy.sources += runtime_resource.rcc parentdir.txt
-    test.sources = testqrc/* 
+    test.sources = testqrc/*
     test.path = testqrc
     alias.sources = testqrc/aliasdir/*
     alias.path = testqrc/aliasdir
-    other.sources = testqrc/otherdir/* 
+    other.sources = testqrc/otherdir/*
     other.path = testqrc/otherdir
-    search1.sources = testqrc/searchpath1/* 
+    search1.sources = testqrc/searchpath1/*
     search1.path = testqrc/searchpath1
-    search2.sources = testqrc/searchpath2/* 
+    search2.sources = testqrc/searchpath2/*
     search2.path = testqrc/searchpath2
     sub.sources = testqrc/subdir/*
     sub.path = testqrc/subdir

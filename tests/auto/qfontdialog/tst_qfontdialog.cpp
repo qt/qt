@@ -171,7 +171,7 @@ void tst_QFontDialog::task256466_wrongStyle()
         QModelIndex currentFamily = familyList->model()->index(i, 0);
         familyList->setCurrentIndex(currentFamily);
         const QFont current = dialog.currentFont(),
-                    expected = fdb.font(currentFamily.data().toString(), 
+                    expected = fdb.font(currentFamily.data().toString(),
             styleList->currentIndex().data().toString(), sizeList->currentIndex().data().toInt());
         QCOMPARE(current.family(), expected.family());
         QCOMPARE(current.style(), expected.style());

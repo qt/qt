@@ -52,8 +52,8 @@ class tst_NetworkSelfTest: public QObject
     Q_OBJECT
 public:
     tst_NetworkSelfTest();
-    virtual ~tst_NetworkSelfTest();    
-    
+    virtual ~tst_NetworkSelfTest();
+
 private slots:
     void hostTest();
     void dnsResolution_data();
@@ -68,7 +68,7 @@ private slots:
     void httpServer();
     void httpsServer();
     void httpProxy();
-    void httpProxyBasicAuth(); 
+    void httpProxyBasicAuth();
     void httpProxyNtlmAuth();
     void socks5Proxy();
     void socks5ProxyAuth();
@@ -371,7 +371,7 @@ void tst_NetworkSelfTest::remotePortsOpen_data()
     QTest::newRow("https") << 443;
     QTest::newRow("http-proxy") << 3128;
     QTest::newRow("http-proxy-auth-basic") << 3129;
-    QTest::newRow("http-proxy-auth-ntlm") << 3130;      
+    QTest::newRow("http-proxy-auth-ntlm") << 3130;
     QTest::newRow("socks5-proxy") << 1080;
     QTest::newRow("socks5-proxy-auth") << 1081;
 }
@@ -381,8 +381,8 @@ void tst_NetworkSelfTest::remotePortsOpen()
 #ifdef Q_OS_SYMBIAN
     if (qstrcmp(QTest::currentDataTag(), "http-proxy-auth-ntlm") == 0)
         QSKIP("NTML authentication not yet supported in Symbian", SkipSingle);
-#endif    
-    
+#endif
+
     QFETCH(int, portNumber);
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), portNumber);
@@ -538,7 +538,7 @@ void tst_NetworkSelfTest::httpProxyNtlmAuth()
 {
 #ifdef Q_OS_SYMBIAN
     QSKIP("NTML authentication not yet supported in Symbian", SkipAll);
-#else    
+#else
     netChat(3130, QList<Chat>()
             // test auth required response
             << Chat::send("GET http://" + QtNetworkSettings::serverName().toLatin1() + "/ HTTP/1.0\r\n"
@@ -551,7 +551,7 @@ void tst_NetworkSelfTest::httpProxyNtlmAuth()
             << Chat::discardUntil("\r\nProxy-Authenticate: NTLM\r\n")
             << Chat::DiscardUntilDisconnect
             );
-#endif            
+#endif
 }
 
 // SOCKSv5 is a binary protocol

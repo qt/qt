@@ -549,4 +549,3 @@ void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
 
 QTEST_MAIN(tst_QTimer)
 #include "tst_qtimer.moc"
-

@@ -193,7 +193,7 @@ tst_QFtp::tst_QFtp()
 }
 
 tst_QFtp::~tst_QFtp()
-{  
+{
 }
 
 void tst_QFtp::initTestCase_data()
@@ -201,12 +201,12 @@ void tst_QFtp::initTestCase_data()
     QTest::addColumn<bool>("setProxy");
     QTest::addColumn<int>("proxyType");
 
-    QTest::newRow("WithoutProxy") << false << 0;        
-#ifdef TEST_QNETWORK_PROXY          
+    QTest::newRow("WithoutProxy") << false << 0;
+#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
     //### doesn't work well yet.
     //QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
-#endif    
+#endif
 }
 
 void tst_QFtp::initTestCase()
@@ -1293,7 +1293,7 @@ void tst_QFtp::abort_data()
     QTest::newRow( "get_fluke02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/rfc3252") << QByteArray();
 
     // Qt/CE and Symbian test environment has to less memory for this test
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN) 
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QByteArray bigData( 10*1024*1024, 0 );
     bigData.fill( 'B' );
 

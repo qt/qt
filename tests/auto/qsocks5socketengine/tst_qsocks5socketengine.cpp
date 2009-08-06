@@ -336,7 +336,7 @@ void tst_QSocks5SocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());            
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
@@ -528,10 +528,10 @@ void tst_QSocks5SocketEngine::serverTest()
 //---------------------------------------------------------------------------
 void tst_QSocks5SocketEngine::udpTest()
 {
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY    
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
     QSKIP("UDP works bads on non WinPCAP emulator setting", SkipAll);
-#endif    
-    
+#endif
+
     QSocks5SocketEngine udpSocket;
 
     // Initialize device #1
@@ -669,10 +669,10 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
     }
 
     // Read greeting
-    QVERIFY(!tcpSocketNonBlocking_data.isEmpty());        
-    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(), 
-            QtNetworkSettings::expectedReplyIMAP().constData()); 
-            
+    QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
+    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
+            QtNetworkSettings::expectedReplyIMAP().constData());
+
     tcpSocketNonBlocking_data.clear();
 
     tcpSocketNonBlocking_totalWritten = 0;
@@ -857,9 +857,9 @@ void tst_QSocks5SocketEngine::passwordAuth()
     array.resize(available);
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
-    // Check that the greeting is what we expect it to be 
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData()); 
-        
+    // Check that the greeting is what we expect it to be
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
     QVERIFY(socketDevice.write(array2.data(),
@@ -925,9 +925,9 @@ void tst_QSocks5SocketEngine::passwordAuth2()
     array.resize(available);
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
-    // Check that the greeting is what we expect it to be 
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData()); 
-        
+    // Check that the greeting is what we expect it to be
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
     QVERIFY(socketDevice.write(array2.data(),

@@ -44,8 +44,8 @@
 #include <QtTest/QtTest>
 
 
-enum { OneMinute = 60 * 1000, 
-       TwoMinutes = OneMinute * 2, 
+enum { OneMinute = 60 * 1000,
+       TwoMinutes = OneMinute * 2,
        TenMinutes = OneMinute * 10,
        TwentyFiveMinutes = OneMinute * 25 };
 
@@ -143,7 +143,7 @@ void tst_QObjectRace::moveToThreadRace()
     // ### FIXME: task 257411 - remove xfail once this is fixed
     QEXPECT_FAIL("", "Symbian event dispatcher can't handle this kind of race, see task: 257411", Abort);
     QVERIFY(false);
-#endif    
+#endif
     RaceObject *object = new RaceObject;
 
     enum { ThreadCount = 6 };
@@ -222,7 +222,7 @@ public:
 // Symbian needs "a bit" more time
 # define EXTRA_THREAD_WAIT TenMinutes
 # define MAIN_THREAD_WAIT TwentyFiveMinutes
-#else    
+#else
 # define EXTRA_THREAD_WAIT 3000
 # define MAIN_THREAD_WAIT TwoMinutes
 #endif
@@ -230,13 +230,13 @@ public:
 void tst_QObjectRace::destroyRace()
 {
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    // ### FIXME: task 257411 - remove xfail once this is fixed. 
+    // ### FIXME: task 257411 - remove xfail once this is fixed.
 	// Oddly enough, this seems to work properly in HW, if given enough time and memory.
     QEXPECT_FAIL("", "Symbian event dispatcher can't handle this kind of race on emulator, see task: 257411", Abort);
     QVERIFY(false);
-#endif    
+#endif
 
-    enum { ThreadCount = 10, ObjectCountPerThread = 733, 
+    enum { ThreadCount = 10, ObjectCountPerThread = 733,
            ObjectCount = ThreadCount * ObjectCountPerThread };
 
     const char *_slots[] = { SLOT(slot1()) , SLOT(slot2()) , SLOT(slot3()),

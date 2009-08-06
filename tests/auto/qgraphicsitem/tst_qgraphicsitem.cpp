@@ -6638,7 +6638,7 @@ public:
         QGraphicsRectItem::paint(painter, option, widget);
         painter->drawText(boundingRect(), Qt::AlignCenter, QString("%1x%2\n%3x%4").arg(p.x()).arg(p.y()).arg(sp.x()).arg(sp.y()));
     }
-    
+
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     {
@@ -6989,7 +6989,7 @@ void tst_QGraphicsItem::setTransformProperties()
 
         QCOMPARE_TRANSFORM(item1->sceneTransform(), item2->sceneTransform());
 
-        QCOMPARE_TRANSFORM(item1->itemTransform(item2), QTransform()); 
+        QCOMPARE_TRANSFORM(item1->itemTransform(item2), QTransform());
         QCOMPARE_TRANSFORM(item2->itemTransform(item1), QTransform());
     }
 }

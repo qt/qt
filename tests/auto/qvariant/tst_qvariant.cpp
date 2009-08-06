@@ -3063,9 +3063,9 @@ void tst_QVariant::toIntFromQString() const
  */
 void tst_QVariant::toIntFromDouble() const
 {
-    double d = 2147483630;  // max int 2147483647	
+    double d = 2147483630;  // max int 2147483647
     QVERIFY((int)d == 2147483630);
-    
+
     QVariant var(d);
     QVERIFY( var.canConvert( QVariant::Int ) );
 
@@ -3086,7 +3086,7 @@ void tst_QVariant::task256984_setValue()
     QVERIFY( !v2.isDetached() );
 
     qVariantSetValue(v2, 3); //set an integer value
-    
+
     QVERIFY( v1.isDetached() );
     QVERIFY( v2.isDetached() );
 }

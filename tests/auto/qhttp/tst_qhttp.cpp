@@ -198,9 +198,9 @@ void tst_QHttp::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY        
+#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
-#endif        
+#endif
 }
 
 void tst_QHttp::initTestCase()
@@ -426,7 +426,7 @@ void tst_QHttp::head_data()
 
     QTest::newRow( "failprot_01" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("/t") << 1 << 404 << 0u;
-	
+
     QTest::newRow( "failprot_02" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("qtest/rfc3252.txt") << 1 << 400 << 0u;
 
@@ -1242,11 +1242,11 @@ void tst_QHttp::unexpectedRemoteClose()
     QCoreApplication::instance()->processEvents();
 
     QEventLoop loop;
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
     QTimer::singleShot(3000, &loop, SLOT(quit()));
-#else   
+#else
     QTimer::singleShot(30000, &loop, SLOT(quit()));
-#endif   
+#endif
 
     QHttp http;
     QObject::connect(&http, SIGNAL(done(bool)), &loop, SLOT(quit()));

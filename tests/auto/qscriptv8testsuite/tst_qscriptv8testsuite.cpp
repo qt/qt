@@ -256,8 +256,8 @@ tst_Suite::tst_Suite()
 
 #ifdef Q_OS_SYMBIAN
     addTestExclusion("nested-repetition-count-overflow", "Demands too much memory on Symbian");
-    addTestExclusion("unicode-test", "Demands too much memory on Symbian");    
-#endif    
+    addTestExclusion("unicode-test", "Demands too much memory on Symbian");
+#endif
 
     QVector<uint> *data = qt_meta_data_tst_Suite();
     // content:

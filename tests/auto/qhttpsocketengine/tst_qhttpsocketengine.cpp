@@ -324,9 +324,9 @@ void tst_QHttpSocketEngine::simpleConnectToIMAP()
     array.resize(available);
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
-    // Check that the greeting is what we expect it to be  
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());            
-            
+    // Check that the greeting is what we expect it to be
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
@@ -455,7 +455,7 @@ void tst_QHttpSocketEngine::tcpSocketBlockingTest()
     // Read greeting
     QVERIFY(socket.waitForReadyRead(5000));
     QString s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());         
+    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
 
     // Write NOOP
     QCOMPARE((int) socket.write("1 NOOP\r\n", 8), 8);
@@ -528,11 +528,11 @@ void tst_QHttpSocketEngine::tcpSocketNonBlockingTest()
     }
 
     // Read greeting
-    QVERIFY(!tcpSocketNonBlocking_data.isEmpty()); 
-    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(), 
-            QtNetworkSettings::expectedReplyIMAP().constData());     
-                        
-            
+    QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
+    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
+            QtNetworkSettings::expectedReplyIMAP().constData());
+
+
     tcpSocketNonBlocking_data.clear();
 
     tcpSocketNonBlocking_totalWritten = 0;
@@ -710,10 +710,10 @@ void tst_QHttpSocketEngine::passwordAuth()
     QByteArray array;
     array.resize(available);
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
-           
+
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());     
-            
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";

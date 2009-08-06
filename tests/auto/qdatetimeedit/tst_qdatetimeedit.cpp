@@ -2216,12 +2216,12 @@ void tst_QDateTimeEdit::mousePress()
 
     // Ask the SC_SpinBoxUp button location from style
     QStyleOptionSpinBox so;
-    so.rect = testWidget->rect();    
+    so.rect = testWidget->rect();
     QRect rectUp = testWidget->style()->subControlRect(QStyle::CC_SpinBox, &so, QStyle::SC_SpinBoxUp, testWidget);
-    
+
     // Send mouseClick to center of SC_SpinBoxUp
     QTest::mouseClick(testWidget, Qt::LeftButton, 0, rectUp.center());
-    QCOMPARE(testWidget->date().year(), 2005);    
+    QCOMPARE(testWidget->date().year(), 2005);
 
 }
 

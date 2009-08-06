@@ -1,7 +1,7 @@
 load(qttest_p4)
-HEADERS += 
+HEADERS +=
 SOURCES += tst_orientationchange.cpp
 
-symbian {   
+symbian {
     INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 }

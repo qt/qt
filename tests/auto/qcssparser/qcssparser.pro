@@ -13,4 +13,3 @@ wince*|symbian: {
    addFiles.path = .
    DEPLOYMENT += addFiles
 }
-

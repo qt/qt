@@ -1112,7 +1112,7 @@ void tst_QFileInfo::isExecutable()
 #ifdef Q_OS_SYMBIAN
 # if defined(Q_CC_NOKIAX86)
     QSKIP("Impossible to implement reading/touching of application binaries in Symbian emulator", SkipAll);
-# endif    
+# endif
     QString appPath = "c:/sys/bin/tst_qfileinfo.exe";
 #else
     QString appPath = QCoreApplication::applicationDirPath();

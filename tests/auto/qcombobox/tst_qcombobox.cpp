@@ -1246,7 +1246,7 @@ void tst_QComboBox::insertItem()
 
     QCOMPARE(testWidget->count(), initialItems.count() + 1);
     QCOMPARE(testWidget->itemText(expectedIndex), itemLabel);
-    
+
     if (editable)
         QCOMPARE(testWidget->currentText(), QString("FOO"));
 }
@@ -2202,7 +2202,7 @@ void tst_QComboBox::noScrollbar()
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
-    
+
     {
         QTableWidget *table = new QTableWidget(2,2);
         QComboBox comboBox;
