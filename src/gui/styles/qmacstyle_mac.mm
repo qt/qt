@@ -5510,9 +5510,15 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 break;
             }
             case SC_SpinBoxEditField:
-                ret.setRect(fw, fw,
-                            spin->rect.width() - spinner_w - fw * 2 - spinBoxSep,
-                            spin->rect.height() - fw * 2);
+                if (spin->buttonSymbols == QAbstractSpinBox::NoButtons) {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2,
+                                spin->rect.height() - fw * 2);
+                } else {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2 - spinBoxSep - spinner_w,
+                                spin->rect.height() - fw * 2);
+                }
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:
