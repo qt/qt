@@ -1139,8 +1139,8 @@ void tst_QCssParser::specificity()
     QVERIFY(parser.parse(&sheet));
 
     QCOMPARE(sheet.styleRules.count() + sheet.nameIndex.count() + sheet.idIndex.count() , 1);
-    QCss::StyleRule rule =  (!sheet.styleRules.isEmpty()) ? sheet.styleRules.at(0) 
-                        :  (!sheet.nameIndex.isEmpty())  ? *sheet.nameIndex.begin() 
+    QCss::StyleRule rule =  (!sheet.styleRules.isEmpty()) ? sheet.styleRules.at(0)
+                        :  (!sheet.nameIndex.isEmpty())  ? *sheet.nameIndex.begin()
                         :  *sheet.idIndex.begin();
     QCOMPARE(rule.selectors.count(), 1);
     QTEST(rule.selectors.at(0).specificity(), "specificity");
@@ -1508,6 +1508,9 @@ void tst_QCssParser::gradient()
 
 void tst_QCssParser::extractFontFamily_data()
 {
+    if (QFontInfo(QFont("Times New Roman")).family() != "Times New Roman")
+        QSKIP("'Times New Roman' font not found ", SkipAll);
+
     QTest::addColumn<QString>("css");
     QTest::addColumn<QString>("expectedFamily");
 
