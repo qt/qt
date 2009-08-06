@@ -99,6 +99,18 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDirIteratorPrivateIteratorStack : public QStack<QAbstractFileEngineIterator *>
+{
+public:
+    ~QDirIteratorPrivateIteratorStack();
+};
+
+QDirIteratorPrivateIteratorStack::~QDirIteratorPrivateIteratorStack()
+{
+    qDeleteAll(*this);
+}
+
+
 class QDirIteratorPrivate
 {
 public:
@@ -113,8 +125,8 @@ public:
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
     QSet<QString> visitedLinks;
-    QAbstractFileEngine *engine;
-    QStack<QAbstractFileEngineIterator *> fileEngineIterators;
+    QScopedPointer<QAbstractFileEngine> engine;
+    QDirIteratorPrivateIteratorStack fileEngineIterators;
     QString path;
     QFileInfo nextFileInfo;
     //This fileinfo is the current that we will return from the public API
@@ -135,7 +147,7 @@ public:
 */
 QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
-    : engine(0), path(path), nextFileInfo(path), iteratorFlags(flags), followNextDir(false), first(true), done(false)
+    : path(path), nextFileInfo(path), iteratorFlags(flags), followNextDir(false), first(true), done(false)
 {
     if (filters == QDir::NoFilter)
         filters = QDir::AllEntries;
@@ -151,7 +163,6 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
 */
 QDirIteratorPrivate::~QDirIteratorPrivate()
 {
-    delete engine;
 }
 
 /*!
@@ -170,7 +181,11 @@ void QDirIteratorPrivate::pushSubDirectory(const QString &path, const QStringLis
         }
     }
     
-    if (engine || (engine = QAbstractFileEngine::create(this->path))) {
+    if (engine.isNull()) {
+        engine.reset(QAbstractFileEngine::create(this->path));
+    }
+    
+    if (!engine.isNull()) {
         engine->setFileName(path);
         QAbstractFileEngineIterator *it = engine->beginEntryList(filters, nameFilters);
         if (it) {
@@ -461,8 +476,6 @@ QDirIterator::QDirIterator(const QString &path, const QStringList &nameFilters,
 */
 QDirIterator::~QDirIterator()
 {
-    qDeleteAll(d->fileEngineIterators);
-    delete d;
 }
 
 /*!
