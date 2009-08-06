@@ -798,6 +798,9 @@ QmlMetaType::TypeCategory QmlMetaType::typeCategory(int userType)
 {
     if (userType < 0)
         return Unknown;
+    if (userType == QMetaType::QObjectStar)
+        return Object;
+
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     if (userType < data->objects.size() && data->objects.testBit(userType))
@@ -812,6 +815,9 @@ QmlMetaType::TypeCategory QmlMetaType::typeCategory(int userType)
 
 bool QmlMetaType::isObject(int userType)
 {
+    if (userType == QMetaType::QObjectStar)
+        return true;
+
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     return userType >= 0 && userType < data->objects.size() && data->objects.testBit(userType);
