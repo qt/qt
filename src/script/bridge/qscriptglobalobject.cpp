@@ -116,12 +116,12 @@ bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identi
     return JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     if (customGlobalObject)
-        customGlobalObject->getPropertyNames(exec, propertyNames, includeNonEnumerable);
+        customGlobalObject->getPropertyNames(exec, propertyNames, listedAttributes);
     else
-        JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, includeNonEnumerable);
+        JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 } // namespace QScript

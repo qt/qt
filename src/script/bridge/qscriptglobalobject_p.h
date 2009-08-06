@@ -81,7 +81,8 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, bool includeNonEnumerable = false);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
+                                  unsigned listedAttributes = JSC::Structure::Prototype);
 
 public:
     JSC::JSObject *customGlobalObject;
@@ -118,8 +119,9 @@ public:
     virtual bool getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                        unsigned& attributes) const
     { return originalGlobalObject->JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes); }
-    virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable = false)
-    { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, includeNonEnumerable); }
+    virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames,
+                                  unsigned listedAttributes = JSC::Structure::Prototype)
+    { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, listedAttributes); }
 private:
     JSC::JSGlobalObject *originalGlobalObject;
 };
