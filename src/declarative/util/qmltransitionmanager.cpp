@@ -242,7 +242,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
         d->applyBindings();
 
 }
-#include <QDebug>
+
 void QmlTransitionManager::cancel()
 {
     if (d->transition) {
