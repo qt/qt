@@ -918,6 +918,7 @@ void tst_QLocalSocket::writeOnlySocket()
 
     QVERIFY(server.waitForNewConnection());
     QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
 
     QCOMPARE(client.bytesAvailable(), qint64(0));
     QCOMPARE(client.state(), QLocalSocket::ConnectedState);
