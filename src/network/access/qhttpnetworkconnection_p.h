@@ -89,6 +89,7 @@ class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
 public:
 
     QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
+    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
     ~QHttpNetworkConnection();
 
     //The hostname to which this is connected to.
@@ -153,7 +154,9 @@ class QHttpNetworkConnectionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QHttpNetworkConnection)
 public:
+    static const int defaultChannelCount;
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
+    QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt);
     ~QHttpNetworkConnectionPrivate();
     void init();
 
@@ -189,7 +192,7 @@ public:
     quint16 port;
     bool encrypt;
 
-    static const int channelCount;
+    const int channelCount;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
 
     bool pendingAuthSignal; // there is an incomplete authentication signal

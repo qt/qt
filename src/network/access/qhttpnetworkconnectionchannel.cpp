@@ -41,6 +41,7 @@
 
 #include "qhttpnetworkconnection_p.h"
 #include "qhttpnetworkconnectionchannel_p.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 
 #include <qpair.h>
 #include <qdebug.h>
@@ -51,9 +52,6 @@
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
 #    include <QtNetwork/qsslconfiguration.h>
-
-#include "private/qnoncontiguousbytedevice_p.h"
-
 #endif
 
 QT_BEGIN_NAMESPACE

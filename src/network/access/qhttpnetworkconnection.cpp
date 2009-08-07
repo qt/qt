@@ -65,18 +65,31 @@
 
 QT_BEGIN_NAMESPACE
 
-const int QHttpNetworkConnectionPrivate::channelCount = 6;
+const int QHttpNetworkConnectionPrivate::defaultChannelCount = 6;
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
 : hostName(hostName), port(port), encrypt(encrypt),
+  channelCount(defaultChannelCount),
   pendingAuthSignal(false), pendingProxyAuthSignal(false)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
-
 {
     channels = new QHttpNetworkConnectionChannel[channelCount];
 }
+
+QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt)
+: hostName(hostName), port(port), encrypt(encrypt),
+  channelCount(channelCount),
+  pendingAuthSignal(false), pendingProxyAuthSignal(false)
+#ifndef QT_NO_NETWORKPROXY
+  , networkProxy(QNetworkProxy::NoProxy)
+#endif
+{
+    channels = new QHttpNetworkConnectionChannel[channelCount];
+}
+
+
 
 QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
 {
@@ -568,6 +581,13 @@ void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
 
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
+{
+    Q_D(QHttpNetworkConnection);
+    d->init();
+}
+
+QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt, QObject *parent)
+     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt)), parent)
 {
     Q_D(QHttpNetworkConnection);
     d->init();
