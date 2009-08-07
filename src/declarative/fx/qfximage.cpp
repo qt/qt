@@ -41,7 +41,7 @@
 
 #include "qfximage.h"
 #include "qfximage_p.h"
-#include <private/qfxperf_p.h>
+//#include <private/qfxperf_p.h>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
@@ -144,13 +144,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
 */
 
 QFxImage::QFxImage(QFxItem *parent)
-  : QFxItem(*(new QFxImagePrivate), parent)
+  : QFxImageBase(*(new QFxImagePrivate), parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxImage::QFxImage(QFxImagePrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+  : QFxImageBase(dd, parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }

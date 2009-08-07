@@ -55,6 +55,7 @@
 
 #include "qfxitem_p.h"
 #include "qfxscalegrid_p.h"
+#include "qfximagebase_p.h"
 
 #include <QtCore/qpointer.h>
 
@@ -65,7 +66,7 @@ class QWebPage;
 class QNetworkReply;
 class QIODevice;
 
-class QFxImagePrivate : public QFxItemPrivate
+class QFxImagePrivate : public QFxImageBasePrivate
 {
     Q_DECLARE_PUBLIC(QFxImage)
 
