@@ -4811,6 +4811,13 @@ void QGraphicsItem::update(const QRectF &rect)
     if (rect.isEmpty() && !rect.isNull())
         return;
 
+    // Make sure we notify effects about invalidated source.
+    QGraphicsItem *item = this;
+    do {
+        if (item->d_ptr->graphicsEffect)
+            item->d_ptr->notifyInvalidated = 1;
+    } while (item = item->d_ptr->parent);
+
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         QGraphicsItemCache *cache = d_ptr->extraItemCache();
         if (d_ptr->discardUpdateRequest(/* ignoreVisibleBit = */ false,

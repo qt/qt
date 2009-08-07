@@ -165,6 +165,7 @@ public:
         filtersDescendantEvents(0),
         sceneTransformTranslateOnly(0),
         notifyBoundingRectChanged(0),
+        notifyInvalidated(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -459,7 +460,8 @@ public:
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
-    quint32 unused : 5; // feel free to use
+    quint32 notifyInvalidated : 1;
+    quint32 unused : 4; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

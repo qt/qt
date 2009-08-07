@@ -282,6 +282,7 @@ void tst_QGraphicsEffect::draw()
     QTest::qWait(50);
     QCOMPARE(effect->numRepaints, 1);
     QCOMPARE(item->numRepaints, 1);
+    QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceInvalidated);
     effect->reset();
     item->reset();
 
