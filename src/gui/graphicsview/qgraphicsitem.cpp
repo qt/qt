@@ -4816,7 +4816,7 @@ void QGraphicsItem::update(const QRectF &rect)
     do {
         if (item->d_ptr->graphicsEffect)
             item->d_ptr->notifyInvalidated = 1;
-    } while (item = item->d_ptr->parent);
+    } while ((item = item->d_ptr->parent));
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         QGraphicsItemCache *cache = d_ptr->extraItemCache();
