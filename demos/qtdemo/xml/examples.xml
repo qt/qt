@@ -183,6 +183,7 @@
   </category>
   <category dirname="statemachine" name="State Machine">
     <example filename="eventtransitions" name="Event Transitions" />
+    <example filename="rogue" name="Rogue" />
     <example filename="tankgame" name="Tank Game" />
     <example filename="trafficlight" name="Traffic Light" />
     <example filename="twowaybutton" name="Two-way Button" />
