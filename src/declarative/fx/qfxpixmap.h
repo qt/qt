@@ -54,29 +54,13 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QmlEngine;
 class QNetworkReply;
-class QFxPixmapPrivate;
-class Q_DECLARATIVE_EXPORT QFxPixmap
+class Q_DECLARATIVE_EXPORT QFxPixmap    //### rename QFxPixmapCache
 {
 public:
-    QFxPixmap();
-    QFxPixmap(const QUrl& url); // url must have been passed to QFxPixmap::get, and finished.
-    QFxPixmap(const QFxPixmap &);
-    virtual ~QFxPixmap();
-
-    QFxPixmap &operator=(const QFxPixmap &);
-
-    static QNetworkReply *get(QmlEngine *, const QUrl& url, QObject*, const char* slot);
+    static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
     static void cancelGet(const QUrl& url, QObject* obj);
 
-    bool isNull() const;
-
-    int width() const;
-    int height() const;
-
-    operator const QPixmap &() const;
-
-private:
-    QFxPixmapPrivate *d;
+    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmap::get, and finished. Or must be a local file.
 };
 
 
