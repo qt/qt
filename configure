@@ -5706,7 +5706,9 @@ fi
 if [ "$CFG_INOTIFY" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG inotify"
 fi
-if [ "$CFG_LIBJPEG" = "system" ]; then
+if [ "$CFG_LIBJPEG" = "no" ]; then
+    CFG_JPEG="no"
+elif [ "$CFG_LIBJPEG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-jpeg"
 fi
 if [ "$CFG_JPEG" = "no" ]; then
@@ -5714,7 +5716,9 @@ if [ "$CFG_JPEG" = "no" ]; then
 elif [ "$CFG_JPEG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG jpeg"
 fi
-if [ "$CFG_LIBMNG" = "system" ]; then
+if [ "$CFG_LIBMNG" = "no" ]; then
+    CFG_MNG="no"
+elif [ "$CFG_LIBMNG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-mng"
 fi
 if [ "$CFG_MNG" = "no" ]; then
@@ -5738,7 +5742,9 @@ if [ "$CFG_GIF" = "no" ]; then
 elif [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
-if [ "$CFG_LIBTIFF" = "system" ]; then
+if [ "$CFG_LIBTIFF" = "no" ]; then
+    CFG_TIFF="no"
+elif [ "$CFG_LIBTIFF" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-tiff"
 fi
 if [ "$CFG_TIFF" = "no" ]; then
