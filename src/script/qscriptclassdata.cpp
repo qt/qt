@@ -114,4 +114,4 @@ QScriptClassDataIterator::~QScriptClassDataIterator()
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_SCRIPT
