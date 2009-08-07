@@ -616,7 +616,7 @@ bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
 /*!
     Run the script in \a context and return the result.  
  */
-QVariant QmlBasicScript::run(QmlContext *context)
+QVariant QmlBasicScript::run(QmlContext *context, QObject *me)
 {
     if (!isValid())
         return QVariant();
@@ -640,18 +640,16 @@ QVariant QmlBasicScript::run(QmlContext *context)
 
             case ScriptInstruction::FetchContextConstant:
             {
-                QObject *obj = contextPrivate->defaultObjects.at(0);
-
-                stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                if (obj && instr.constant.notify != 0)
+                stack.push(fetch_value(me, instr.constant.idx, instr.constant.type));
+                if (me && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
-                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify);
+                        QmlEnginePrivate::CapturedProperty(me, instr.constant.idx, instr.constant.notify);
             }
                 break;
 
             case ScriptInstruction::FetchRootConstant:
             {
-                QObject *obj = contextPrivate->defaultObjects.at(1);
+                QObject *obj = contextPrivate->defaultObjects.at(0);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
                 if (obj && instr.constant.notify != 0)

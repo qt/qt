@@ -231,13 +231,8 @@ QVariant QmlExpressionPrivate::evalSSE()
 #endif
 
     QmlContextPrivate *ctxtPriv = ctxt->d_func();
-    if (me)
-        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount , me);
 
-    QVariant rv = sse.run(ctxt);
-
-    if (me)
-        ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
+    QVariant rv = sse.run(ctxt, me);
 
     return rv;
 }

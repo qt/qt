@@ -96,7 +96,7 @@ public:
 
     void dump();
 
-    QVariant run(QmlContext *);
+    QVariant run(QmlContext *, QObject *);
 
 private:
     int flags;
