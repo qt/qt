@@ -41,8 +41,6 @@
 
 #include "qscriptglobalobject_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "../api/qscriptengine.h"
 #include "../api/qscriptengine_p.h"
 
@@ -127,5 +125,3 @@ void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

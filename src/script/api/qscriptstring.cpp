@@ -41,8 +41,6 @@
 
 #include "qscriptstring.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptstring_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -210,5 +208,3 @@ QScriptString::operator QString() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

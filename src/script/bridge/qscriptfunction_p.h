@@ -55,8 +55,6 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptengine.h"
 
 #include "PrototypeFunction.h"
@@ -135,7 +133,5 @@ private:
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

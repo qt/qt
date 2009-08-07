@@ -41,8 +41,6 @@
 
 #include "qscriptvalue.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptvalue_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
@@ -2555,5 +2553,3 @@ qint64 QScriptValue::objectId() const
     return d_ptr?d_ptr->id:-1;
 }
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

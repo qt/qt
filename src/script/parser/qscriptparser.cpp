@@ -43,8 +43,6 @@
 
 #include <QtCore/QtDebug>
 
-#ifndef QT_NO_SCRIPT
-
 #include <string.h>
 
 #include "qscriptast_p.h"
@@ -1158,5 +1156,3 @@ case 266: {
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

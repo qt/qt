@@ -41,8 +41,6 @@
 
 #include "qscriptengineagent.h"
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -444,5 +442,3 @@ QScriptEngine *QScriptEngineAgent::engine() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

@@ -41,8 +41,6 @@
 
 #include "qscriptsyntaxchecker_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptlexer_p.h"
 #include "qscriptparser_p.h"
 
@@ -214,5 +212,3 @@ SyntaxChecker::Result SyntaxChecker::checkSyntax(const QString &code)
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

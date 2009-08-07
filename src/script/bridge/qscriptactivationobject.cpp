@@ -41,8 +41,6 @@
 
 #include "qscriptactivationobject_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "JSVariableObject.h"
 
 namespace JSC
@@ -86,6 +84,4 @@ void QScriptActivationObject::putWithAttributes(JSC::ExecState *exec, const JSC:
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 

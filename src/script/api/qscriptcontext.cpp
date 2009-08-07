@@ -41,8 +41,6 @@
 
 #include "qscriptcontext.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptcontext_p.h"
 #include "qscriptcontextinfo.h"
 #include "qscriptengine.h"
@@ -696,5 +694,3 @@ QScriptValue QScriptContext::popScope()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

@@ -43,8 +43,6 @@
 #include "qscriptsyntaxchecker_p.h"
 #include "qnumeric.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptengine_p.h"
 #include "qscriptcontext_p.h"
 #include "qscriptstring_p.h"
@@ -3738,5 +3736,3 @@ QScriptSyntaxCheckResult &QScriptSyntaxCheckResult::operator=(const QScriptSynta
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

@@ -44,8 +44,6 @@
 
 #include <QtCore/qfactoryinterface.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
@@ -69,5 +67,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QT_NO_SCRIPT
 #endif // QSCRIPTEXTENSIONINTERFACE_H

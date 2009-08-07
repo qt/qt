@@ -41,8 +41,6 @@
 
 #include "qscriptclass.h"
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -398,5 +396,3 @@ QVariant QScriptClass::extension(Extension extension, const QVariant &argument)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

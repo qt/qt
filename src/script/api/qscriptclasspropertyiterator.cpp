@@ -41,8 +41,6 @@
 
 #include "qscriptclasspropertyiterator.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptstring.h"
 
 QT_BEGIN_NAMESPACE
@@ -224,5 +222,3 @@ QScriptValue::PropertyFlags QScriptClassPropertyIterator::flags() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

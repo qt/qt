@@ -55,8 +55,6 @@
 
 #include <QtCore/qobjectdefs.h>
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 namespace JSC
@@ -74,7 +72,5 @@ class QScriptEnginePrivate;
 class QScriptContext;
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

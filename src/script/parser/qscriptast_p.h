@@ -55,8 +55,6 @@
 
 #include <QtCore/QString>
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptastvisitor_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -1494,8 +1492,6 @@ public:
 };
 
 } } // namespace AST
-
-#endif // QT_NO_SCRIPT
 
 QT_END_NAMESPACE
 

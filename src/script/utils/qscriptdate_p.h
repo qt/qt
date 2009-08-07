@@ -55,8 +55,6 @@
 
 #include <QtCore/qdatetime.h>
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 typedef double qsreal;
@@ -68,7 +66,5 @@ namespace QScript
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

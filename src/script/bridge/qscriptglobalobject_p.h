@@ -55,8 +55,6 @@
 
 #include <QtCore/qobjectdefs.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include "JSGlobalObject.h"
 
 QT_BEGIN_NAMESPACE
@@ -129,7 +127,5 @@ private:
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

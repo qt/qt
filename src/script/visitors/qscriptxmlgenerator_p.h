@@ -55,8 +55,6 @@
 
 #include <QtCore/qobjectdefs.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include "../parser/qscriptastvisitor_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -322,8 +320,6 @@ private:
 };
 
 } // namespace QScript
-
-#endif // QT_NO_SCRIPT
 
 QT_END_NAMESPACE
 

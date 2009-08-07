@@ -41,8 +41,6 @@
 
 #include "qscriptdate_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qnumeric.h>
 #include <QtCore/qstringlist.h>
 
@@ -383,5 +381,3 @@ QDateTime ToDateTime(qsreal t, Qt::TimeSpec spec)
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

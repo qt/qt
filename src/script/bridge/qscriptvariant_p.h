@@ -55,8 +55,6 @@
 
 #include <QtCore/qvariant.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptobject_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -89,7 +87,5 @@ public:
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

@@ -55,8 +55,6 @@
 
 #include <QtCore/qstring.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptgrammar_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -112,7 +110,5 @@ inline void SyntaxChecker::reallocateStack()
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

@@ -44,8 +44,6 @@
 
 #include <QtCore/qobjectdefs.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qlist.h>
 #include <QtCore/qstringlist.h>
 
@@ -119,7 +117,5 @@ Q_SCRIPT_EXPORT QDataStream &operator>>(QDataStream &, QScriptContextInfo &);
 QT_END_NAMESPACE
 
 QT_END_HEADER
-
-#endif // QT_NO_SCRIPT
 
 #endif

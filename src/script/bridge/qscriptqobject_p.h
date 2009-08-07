@@ -55,8 +55,6 @@
 
 #include "qscriptobject_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptengine.h"
 #include <QtCore/qpointer.h>
 
@@ -336,7 +334,5 @@ public:
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

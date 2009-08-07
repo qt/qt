@@ -41,8 +41,6 @@
 
 #include "qscriptvariant_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "../api/qscriptengine.h"
 #include "../api/qscriptengine_p.h"
 
@@ -158,5 +156,3 @@ QVariantPrototype::QVariantPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

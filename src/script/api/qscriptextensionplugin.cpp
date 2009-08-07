@@ -41,8 +41,6 @@
 
 #include "qscriptextensionplugin.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptvalue.h"
 #include "qscriptengine.h"
 
@@ -143,5 +141,3 @@ QScriptValue QScriptExtensionPlugin::setupPackage(
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

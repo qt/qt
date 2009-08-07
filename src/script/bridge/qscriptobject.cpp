@@ -41,8 +41,6 @@
 
 #include "qscriptobject_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 namespace JSC
@@ -248,5 +246,3 @@ bool QScriptObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecState* e
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

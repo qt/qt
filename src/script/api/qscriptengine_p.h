@@ -55,8 +55,6 @@
 
 #include "private/qobject_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qhash.h>
 #include <QtCore/qset.h>
 
@@ -263,7 +261,5 @@ class QScriptPushScopeHelper
 
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

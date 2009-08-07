@@ -62,8 +62,6 @@
 
 #include "qscriptgrammar_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptastfwd_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -161,7 +159,5 @@ inline void QScriptParser::reallocateStack()
 #define Q_SCRIPT_REGEXPLITERAL_RULE2 8
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif // QSCRIPTPARSER_P_H

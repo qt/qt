@@ -41,8 +41,6 @@
 
 #include "qscriptqobject_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
@@ -2216,5 +2214,3 @@ namespace JSC
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

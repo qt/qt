@@ -44,8 +44,6 @@
 
 #include <QtCore/qmetatype.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qvariant.h>
 
 #ifndef QT_NO_QOBJECT
@@ -476,5 +474,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QT_NO_SCRIPT
 #endif // QSCRIPTENGINE_H

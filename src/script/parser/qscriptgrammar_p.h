@@ -57,8 +57,6 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 class QScriptGrammar
@@ -202,7 +200,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif // QSCRIPTGRAMMAR_P_H

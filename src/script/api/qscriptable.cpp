@@ -45,8 +45,6 @@
 #include "qscriptable_p.h"
 #include "qscriptengine.h"
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -185,7 +183,6 @@ QScriptValue QScriptable::argument(int index) const
     return QScriptValue();
 }
 
-#endif // QT_NO_SCRIPT
 #endif // QT_NO_QOBJECT
 
 QT_END_NAMESPACE

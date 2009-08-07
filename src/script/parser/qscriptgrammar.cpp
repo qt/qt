@@ -42,8 +42,6 @@
 
 #include "qscriptgrammar_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 QT_BEGIN_NAMESPACE
 
 const char *const QScriptGrammar::spell [] = {
@@ -971,5 +969,3 @@ const int QScriptGrammar::action_check [] = {
   -1, -1, -1, -1, -1, -1, -1, -1};
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

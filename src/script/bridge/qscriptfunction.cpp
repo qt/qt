@@ -41,8 +41,6 @@
 
 #include "qscriptfunction_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "private/qscriptengine_p.h"
 #include "qscriptcontext.h"
 #include "private/qscriptcontext_p.h"
@@ -173,5 +171,3 @@ JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *exec, JSC:
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

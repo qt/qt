@@ -41,8 +41,6 @@
 
 #include "qscriptast_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptastvisitor_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -785,5 +783,3 @@ void DebuggerStatement::accept0(Visitor *visitor)
 } } // namespace QScript::AST
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

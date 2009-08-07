@@ -41,8 +41,6 @@
 
 #include "qscriptcontextinfo.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptcontext_p.h"
 #include "../bridge/qscriptqobject_p.h"
 #include <QtCore/qdatastream.h>
@@ -515,5 +513,3 @@ Q_SCRIPT_EXPORT QDataStream &operator>>(QDataStream &in, QScriptContextInfo &inf
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

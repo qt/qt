@@ -110,8 +110,6 @@
 
 #include <QtCore/QtDebug>
 
-#ifndef QT_NO_SCRIPT
-
 #include <string.h>
 
 #include "qscriptengine.h"
@@ -167,8 +165,6 @@
 #define QSCRIPTPARSER_P_H
 
 #include "qscriptgrammar_p.h"
-
-#ifndef QT_NO_SCRIPT
 
 #include "qscriptastfwd_p.h"
 
@@ -2066,13 +2062,9 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 ./
 /:
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif // QSCRIPTPARSER_P_H
 :/

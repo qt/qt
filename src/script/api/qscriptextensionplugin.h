@@ -44,8 +44,6 @@
 
 #include <QtCore/qplugin.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtScript/qscriptextensioninterface.h>
 
 QT_BEGIN_HEADER
@@ -75,5 +73,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QT_NO_SCRIPT
 #endif // QSCRIPTEXTENSIONPLUGIN_H

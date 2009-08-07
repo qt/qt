@@ -41,8 +41,6 @@
 
 #include "qscriptlexer_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptgrammar_p.h"
 #include <ctype.h>
 #include <stdlib.h>
@@ -1111,5 +1109,3 @@ void QScript::Lexer::syncProhibitAutomaticSemicolon()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

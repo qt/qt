@@ -41,8 +41,6 @@
 
 #include "qscriptvalueiterator.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "qscriptstring.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
@@ -359,5 +357,3 @@ QScriptValueIterator& QScriptValueIterator::operator=(QScriptValue &object)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

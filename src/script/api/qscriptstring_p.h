@@ -55,8 +55,6 @@
 
 #include <QtCore/qobjectdefs.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qstring.h>
 #include <QtCore/qpointer.h>
 #include "qscriptengine.h"
@@ -86,7 +84,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT
 
 #endif

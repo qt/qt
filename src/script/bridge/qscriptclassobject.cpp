@@ -41,8 +41,6 @@
 
 #include "qscriptclassobject_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "../api/qscriptengine.h"
 #include "../api/qscriptengine_p.h"
 #include "../api/qscriptcontext.h"
@@ -265,5 +263,3 @@ bool ClassObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecState *exe
 } // namespace QScript
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

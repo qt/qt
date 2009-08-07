@@ -41,8 +41,6 @@
 
 #include "qscriptxmlgenerator_p.h"
 
-#ifndef QT_NO_SCRIPT
-
 #include "../parser/qscriptast_p.h"
 
 #include <QtCore/qstring.h>
@@ -1110,5 +1108,3 @@ Q_SCRIPT_EXPORT QString qt_scriptToXml(const QString &program, int lineNumber = 
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SCRIPT

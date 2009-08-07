@@ -44,8 +44,6 @@
 
 #include <QtCore/qobjectdefs.h>
 
-#ifndef QT_NO_SCRIPT
-
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
@@ -106,7 +104,5 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
-
-#endif // QT_NO_SCRIPT
 
 #endif
