@@ -455,6 +455,7 @@ void QStaticTextPrivate::init()
     DrawTextItemDevice counterDevice;
     {
         QPainter painter(&counterDevice);
+        painter.setFont(font);
 
         if (size.isValid())
             painter.drawText(QRectF(QPointF(0, 0), size), text);
@@ -475,6 +476,7 @@ void QStaticTextPrivate::init()
                                       glyphLayoutMemory, logClusterMemory);
     {
         QPainter painter(&recorderDevice);
+        painter.setFont(font);
 
         if (size.isValid())
             painter.drawText(QRectF(QPointF(0, 0), size), text);

@@ -5728,11 +5728,30 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     if (!d->engine || staticText.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-    const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);
+    const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);        
+    bool restoreWhenFinished = false;
+
+    if (staticText_d->size.isValid()) {
+        setClipRect(QRectF(position, staticText_d->size));
+
+        save();
+        restoreWhenFinished = true;
+    }
+
+    if (font() != staticText_d->font) {
+        setFont(staticText_d->font);
+
+        save();
+        restoreWhenFinished = true;
+    }
+
     for (int i=0; i<staticText_d->itemCount; ++i) {
         const QTextItemInt &gf = staticText_d->items[i];
         d->engine->drawTextItem(staticText_d->itemPositions[i] + position, gf);
     }
+
+    if (restoreWhenFinished)
+        restore();
 }
 
 /*!
