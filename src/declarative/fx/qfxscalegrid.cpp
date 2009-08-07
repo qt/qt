@@ -203,7 +203,7 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
     _pix = imgFile;
 }
 
-QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s) const
+QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s)
 {
     if (s == QLatin1String("Stretch"))
         return QFxScaleGrid::Stretch;

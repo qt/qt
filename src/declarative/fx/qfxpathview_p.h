@@ -86,7 +86,7 @@ public:
     {
         Q_Q(QFxPathView);
         _offset = 0;
-        q->setAcceptedMouseButtons(Qt::NoButton);
+        q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
         q->setFiltersChildEvents(true);
         q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
