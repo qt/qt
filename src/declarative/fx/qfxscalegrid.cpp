@@ -41,6 +41,7 @@
 
 #include <QBuffer>
 #include <qml.h>
+#include <QDebug>
 #include "qfxscalegrid_p.h"
 
 
@@ -202,7 +203,7 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
     _pix = imgFile;
 }
 
-QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s) const
+QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s)
 {
     if (s == QLatin1String("Stretch"))
         return QFxScaleGrid::Stretch;
@@ -210,6 +211,9 @@ QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s) const
         return QFxScaleGrid::Repeat;
     if (s == QLatin1String("Round"))
         return QFxScaleGrid::Round;
+
+    qWarning() << "Unknown tile rule specified. Using Stretch";
+    return QFxScaleGrid::Stretch;
 }
 
 bool QFxGridScaledImage::isValid() const

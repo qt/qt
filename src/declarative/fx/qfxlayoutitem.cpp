@@ -78,7 +78,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LayoutItem,QFxLayoutItem)
 */
 
 QFxLayoutItem::QFxLayoutItem(QFxItem* parent)
-    : QFxItem(parent), m_maximumSize(INT_MAX,INT_MAX), m_preferredSize(100,100), m_minimumSize(0,0)
+    : QFxItem(parent), m_maximumSize(INT_MAX,INT_MAX), m_minimumSize(0,0), m_preferredSize(100,100)
 {
     setGraphicsItem(this);
 }
@@ -93,6 +93,7 @@ void QFxLayoutItem::setGeometry(const QRectF & rect)
 
 QSizeF QFxLayoutItem::sizeHint(Qt::SizeHint w, const QSizeF &constraint) const
 {
+    Q_UNUSED(constraint);
     if(w == Qt::MinimumSize){
         return m_minimumSize;
     }else if(w == Qt::MaximumSize){

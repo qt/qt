@@ -119,7 +119,7 @@ public:
     QString pixmapUrl() const;
 
 private:
-    QFxScaleGrid::TileRule stringToRule(const QString &) const;
+    static QFxScaleGrid::TileRule stringToRule(const QString &);
 
 private:
     int _l;
