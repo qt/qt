@@ -820,43 +820,6 @@ void filter_unprintable(char *str)
 
 /*! \internal
  */
-int qt_asprintf(char **str, const char *format, ...)
-{
-    static const int MAXSIZE = 1024*1024*2;
-
-    int size = 32;
-    delete[] *str;
-    *str = new char[size];
-
-    va_list ap;
-    int res = 0;
-
-    for (;;) {
-        va_start(ap, format);
-        res = qvsnprintf(*str, size, format, ap);
-        va_end(ap);
-        (*str)[size - 1] = '\0';
-        if (res >= 0 && res < size) {
-            // We succeeded
-            break;
-        }
-        // buffer wasn't big enough, try again.
-        // Note, we're assuming that a result of -1 is always due to running out of space.
-        size *= 2;
-        if (size > MAXSIZE) {
-            break;
-        }
-        delete[] *str;
-        *str = new char[size];
-    }
-
-    filter_unprintable(*str);
-
-    return res;
-}
-
-/*! \internal
- */
 int qt_snprintf(char *str, int size, const char *format, ...)
 {
     va_list ap;
