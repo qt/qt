@@ -256,7 +256,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
 
 class Q_GUI_EXPORT QPainterPathStroker
 {
-    Q_DECLARE_SCOPED_PRIVATE(QPainterPathStroker)
+    Q_DECLARE_PRIVATE(QPainterPathStroker)
 public:
     QPainterPathStroker();
     ~QPainterPathStroker();

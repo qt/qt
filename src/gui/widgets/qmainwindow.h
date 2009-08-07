@@ -202,7 +202,7 @@ protected:
     bool event(QEvent *event);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QMainWindow)
+    Q_DECLARE_PRIVATE(QMainWindow)
     Q_DISABLE_COPY(QMainWindow)
 };
 

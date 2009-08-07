@@ -125,7 +125,7 @@ public:
                        const QVariant &argument = QVariant());
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerAgent)
+    Q_DECLARE_PRIVATE(QScriptDebuggerAgent)
     Q_DISABLE_COPY(QScriptDebuggerAgent)
 };
 

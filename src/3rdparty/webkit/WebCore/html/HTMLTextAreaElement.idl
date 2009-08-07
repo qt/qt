@@ -27,12 +27,16 @@ module html {
     ] HTMLTextAreaElement : HTMLElement {
                  attribute  [ConvertNullToNullString] DOMString            defaultValue;
         readonly attribute  HTMLFormElement      form;
+#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
+        readonly attribute  ValidityState        validity;
+#endif
                  attribute  [ConvertNullToNullString] DOMString            accessKey;
                  attribute  long                 cols;
                  attribute  boolean              disabled;
                  attribute  boolean              autofocus;
                  attribute  [ConvertNullToNullString] DOMString            name;
                  attribute  boolean              readOnly;
+                 attribute  boolean              required;
                  attribute  long                 rows;
         readonly attribute  DOMString            type;
                  attribute  [ConvertNullToNullString] DOMString            value;

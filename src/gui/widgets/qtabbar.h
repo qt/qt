@@ -212,11 +212,9 @@ Q_SIGNALS:
     friend class QAccessibleTabBar;
 private:
     Q_DISABLE_COPY(QTabBar)
-    Q_DECLARE_SCOPED_PRIVATE(QTabBar)
+    Q_DECLARE_PRIVATE(QTabBar)
     Q_PRIVATE_SLOT(d_func(), void _q_scrollTabs())
     Q_PRIVATE_SLOT(d_func(), void _q_closeTab())
-    Q_PRIVATE_SLOT(d_func(), void _q_moveTab(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_moveTabFinished())
 };
 
 #endif // QT_NO_TABBAR

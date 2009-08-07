@@ -47,7 +47,7 @@ static const HashTableValue JSWebKitCSSKeyframesRuleTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSKeyframesRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSKeyframesRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSWebKitCSSKeyframesRuleTableValues, 0 };
 #else
@@ -61,19 +61,19 @@ static const HashTableValue JSWebKitCSSKeyframesRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSKeyframesRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSKeyframesRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitCSSKeyframesRuleConstructorTableValues, 0 };
 #else
     { 1, 0, JSWebKitCSSKeyframesRuleConstructorTableValues, 0 };
 #endif
 
-class JSWebKitCSSKeyframesRuleConstructor : public DOMObject {
+class JSWebKitCSSKeyframesRuleConstructor : public DOMConstructorObject {
 public:
-    JSWebKitCSSKeyframesRuleConstructor(ExecState* exec)
-        : DOMObject(JSWebKitCSSKeyframesRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSWebKitCSSKeyframesRuleConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSWebKitCSSKeyframesRuleConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitCSSKeyframesRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitCSSKeyframesRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -102,7 +102,7 @@ static const HashTableValue JSWebKitCSSKeyframesRulePrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSKeyframesRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSKeyframesRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSWebKitCSSKeyframesRulePrototypeTableValues, 0 };
 #else
@@ -123,8 +123,8 @@ bool JSWebKitCSSKeyframesRulePrototype::getOwnPropertySlot(ExecState* exec, cons
 
 const ClassInfo JSWebKitCSSKeyframesRule::s_info = { "WebKitCSSKeyframesRule", &JSCSSRule::s_info, &JSWebKitCSSKeyframesRuleTable, 0 };
 
-JSWebKitCSSKeyframesRule::JSWebKitCSSKeyframesRule(PassRefPtr<Structure> structure, PassRefPtr<WebKitCSSKeyframesRule> impl)
-    : JSCSSRule(structure, impl)
+JSWebKitCSSKeyframesRule::JSWebKitCSSKeyframesRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSKeyframesRule> impl)
+    : JSCSSRule(structure, globalObject, impl)
 {
 }
 
@@ -160,21 +160,24 @@ bool JSWebKitCSSKeyframesRule::getOwnPropertySlot(ExecState* exec, unsigned prop
 
 JSValue jsWebKitCSSKeyframesRuleName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWebKitCSSKeyframesRule* castedThis = static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()))->impl());
+    WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(castedThis->impl());
     return jsStringOrNull(exec, imp->name());
 }
 
 JSValue jsWebKitCSSKeyframesRuleCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWebKitCSSKeyframesRule* castedThis = static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->cssRules()));
+    WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
 }
 
 JSValue jsWebKitCSSKeyframesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSWebKitCSSKeyframesRule* domObject = static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()));
+    return JSWebKitCSSKeyframesRule::getConstructor(exec, domObject->globalObject());
 }
 void JSWebKitCSSKeyframesRule::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -194,9 +197,9 @@ void JSWebKitCSSKeyframesRule::getPropertyNames(ExecState* exec, PropertyNameArr
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSWebKitCSSKeyframesRule::getConstructor(ExecState* exec)
+JSValue JSWebKitCSSKeyframesRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSWebKitCSSKeyframesRuleConstructor>(exec);
+    return getDOMConstructor<JSWebKitCSSKeyframesRuleConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsWebKitCSSKeyframesRulePrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -235,7 +238,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSKeyframesRulePrototypeFunctionFindRule(ExecStat
     const UString& key = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->findRule(key)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->findRule(key)));
     return result;
 }
 
@@ -243,7 +246,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSKeyframesRulePrototypeFunctionFindRule(ExecStat
 JSValue JSWebKitCSSKeyframesRule::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSWebKitCSSKeyframesRule* thisObj = static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()));
-    return toJS(exec, static_cast<WebKitCSSKeyframesRule*>(thisObj->impl())->item(slot.index()));
+    return toJS(exec, thisObj->globalObject(), static_cast<WebKitCSSKeyframesRule*>(thisObj->impl())->item(slot.index()));
 }
 
 }

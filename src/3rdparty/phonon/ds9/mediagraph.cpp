@@ -68,6 +68,8 @@ namespace Phonon
             return ret;
         }
                 
+
+/*
         static HRESULT saveToFile(Graph graph, const QString &filepath)
         {
             const WCHAR wszStreamName[] = L"ActiveMovieGraph";
@@ -103,7 +105,7 @@ namespace Phonon
 
             return hr;
         }
-
+*/
 
         MediaGraph::MediaGraph(MediaObject *mo, short index) :
             m_graph(CLSID_FilterGraph, IID_IGraphBuilder),
@@ -537,7 +539,7 @@ namespace Phonon
                     const QList<OutputPin> outputs = BackendNode::pins(filter, PINDIR_OUTPUT);
                     for(int i = 0; i < outputs.count(); ++i) {
                         const OutputPin &pin = outputs.at(i);
-                        if (VFW_E_NOT_CONNECTED == pin->ConnectedTo(inPin.pparam())) {
+                        if (HRESULT(VFW_E_NOT_CONNECTED) == pin->ConnectedTo(inPin.pparam())) {
                             return SUCCEEDED(pin->Connect(newIn, 0));
                         }
                     }
@@ -809,7 +811,7 @@ namespace Phonon
                 for (int i = 0; i < outputs.count(); ++i) {
                     const OutputPin &out = outputs.at(i);
                     InputPin pin;
-                    if (out->ConnectedTo(pin.pparam()) == VFW_E_NOT_CONNECTED) {
+                    if (out->ConnectedTo(pin.pparam()) == HRESULT(VFW_E_NOT_CONNECTED)) {
                         m_decoderPins += out; //unconnected outputs can be decoded outputs
                     }
                 }

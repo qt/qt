@@ -24,6 +24,9 @@
  */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "JSDataGridColumnList.h"
 
 #include "AtomicString.h"
@@ -43,7 +46,9 @@ bool JSDataGridColumnList::canGetItemsForName(ExecState*, DataGridColumnList* im
 JSValue JSDataGridColumnList::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
 {
     JSDataGridColumnList* thisObj = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->impl()->itemWithName(propertyName));
+    return toJS(exec, thisObj->globalObject(), thisObj->impl()->itemWithName(propertyName));
 }
 
 } // namespace WebCore
+
+#endif

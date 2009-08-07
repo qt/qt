@@ -42,6 +42,7 @@
 #include <QStack>
 
 #include "qabstractxmlreceiver.h"
+#include "qabstractxmlnodemodel_p.h"
 #include "qacceliterators_p.h"
 #include "qacceltree_p.h"
 #include "qatomicstring_p.h"
@@ -54,6 +55,37 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QPatternist;
+
+namespace QPatternist {
+
+    class AccelTreePrivate : public QAbstractXmlNodeModelPrivate
+    {
+        public:
+            AccelTreePrivate(AccelTree *accelTree)
+                : m_accelTree(accelTree)
+            {
+            }
+
+            virtual QSourceLocation sourceLocation(const QXmlNodeModelIndex &index) const
+            {
+                return m_accelTree->sourceLocation(index);
+            }
+
+        private:
+            AccelTree *m_accelTree;
+    };
+}
+
+AccelTree::AccelTree(const QUrl &docURI, const QUrl &bURI)
+     : QAbstractXmlNodeModel(new AccelTreePrivate(this))
+     , m_documentURI(docURI)
+     , m_baseURI(bURI)
+{
+    /* Pre-allocate at least a little bit. */
+    // TODO. Do it according to what an average 4 KB doc contains.
+    basicData.reserve(100);
+    data.reserve(30);
+}
 
 void AccelTree::printStats(const NamePool::Ptr &np) const
 {
@@ -672,6 +704,17 @@ void AccelTree::copyNodeTo(const QXmlNodeModelIndex &node,
             receiver->item(node);
     }
 
+}
+
+QSourceLocation AccelTree::sourceLocation(const QXmlNodeModelIndex &index) const
+{
+    const PreNumber key = toPreNumber(index);
+    if (sourcePositions.contains(key)) {
+        const QPair<qint64, qint64> position = sourcePositions.value(key);
+        return QSourceLocation(m_documentURI, position.first, position.second);
+    } else {
+        return QSourceLocation();
+    }
 }
 
 void AccelTree::copyChildren(const QXmlNodeModelIndex &node,

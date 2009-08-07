@@ -49,7 +49,7 @@ struct Token;
  * The parser for HTML. It receives a stream of tokens from the HTMLTokenizer, and
  * builds up the Document structure from it.
  */
-class HTMLParser : Noncopyable {
+class HTMLParser : public Noncopyable {
 public:
     HTMLParser(HTMLDocument*, bool reportErrors);
     HTMLParser(DocumentFragment*);
@@ -102,6 +102,8 @@ private:
     bool noscriptCreateErrorCheck(Token*, RefPtr<Node>&);
     bool pCloserCreateErrorCheck(Token*, RefPtr<Node>&);
     bool pCloserStrictCreateErrorCheck(Token*, RefPtr<Node>&);
+    bool rpCreateErrorCheck(Token*, RefPtr<Node>&);
+    bool rtCreateErrorCheck(Token*, RefPtr<Node>&);
     bool selectCreateErrorCheck(Token*, RefPtr<Node>&);
     bool tableCellCreateErrorCheck(Token*, RefPtr<Node>&);
     bool tableSectionCreateErrorCheck(Token*, RefPtr<Node>&);

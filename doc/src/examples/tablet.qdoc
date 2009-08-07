@@ -275,7 +275,10 @@
 
     In this function we draw on the image based on the movement of the
     device. If the device used on the tablet is a stylus we want to draw a
-    line between the positions of the stylus recorded in \c polyLine.
+    line between the positions of the stylus recorded in \c polyLine. We
+    also assume that this is a reasonable handling of any unknown device,
+    but update the statusbar with a warning so that the user can see that
+    for his tablet he might have to implement special handling.
     If it is an airbrush we want to draw a circle of points with a
     point density based on the tangential pressure, which is the position
     of the finger wheel on the airbrush. We use the Qt::BrushStyle to

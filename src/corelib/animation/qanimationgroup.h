@@ -76,7 +76,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAnimationGroup)
-    Q_DECLARE_SCOPED_PRIVATE(QAnimationGroup)
+    Q_DECLARE_PRIVATE(QAnimationGroup)
 };
 
 #endif //QT_NO_ANIMATION

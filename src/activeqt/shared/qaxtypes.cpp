@@ -37,11 +37,6 @@
 **
 ****************************************************************************/
 
-#ifndef UNICODE
-#define UNICODE
-#endif
-
-
 #include <ocidl.h>
 #include <olectl.h>
 
@@ -123,7 +118,7 @@ static QFont IFontToQFont(IFont *f)
     f->get_Strikethrough(&strike);
     f->get_Underline(&underline);
     f->get_Weight(&weight);
-    QFont font(QString::fromUtf16((const ushort *)name), size.Lo/9750, weight / 97, italic);
+    QFont font(QString::fromWCharArray(name), size.Lo/9750, weight / 97, italic);
     font.setBold(bold);
     font.setStrikeOut(strike);
     font.setUnderline(underline);
@@ -557,7 +552,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                 int maxColumns = col.count();
                 if (maxColumns) {
                     is2D = true;
-                    SAFEARRAYBOUND rgsabound[2] = {0};
+                    SAFEARRAYBOUND rgsabound[2] = { {0} };
                     rgsabound[0].cElements = count;
                     rgsabound[1].cElements = maxColumns;
                     array = SafeArrayCreate(VT_VARIANT, 2, rgsabound);
@@ -925,10 +920,10 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
     QVariant var;
     switch(arg.vt) {
     case VT_BSTR:
-        var = QString::fromUtf16((const ushort *)arg.bstrVal);
+        var = QString::fromWCharArray(arg.bstrVal);
         break;
     case VT_BSTR|VT_BYREF:
-        var = QString::fromUtf16((const ushort *)*arg.pbstrVal);
+        var = QString::fromWCharArray(*arg.pbstrVal);
         break;
     case VT_BOOL:
         var = QVariant((bool)arg.boolVal);
@@ -1245,7 +1240,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
             for (long i = lBound; i <= uBound; ++i) {
                 BSTR bstr;
                 SafeArrayGetElement(array, &i, &bstr);
-                strings << QString::fromUtf16((const ushort *)bstr);
+                strings << QString::fromWCharArray(bstr);
                 SysFreeString(bstr);
             }
             

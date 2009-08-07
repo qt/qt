@@ -144,19 +144,20 @@ public:
 
     void sortByColumn(int column, Qt::SortOrder order);
 
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void selectAll();
+
 Q_SIGNALS:
     void expanded(const QModelIndex &index);
     void collapsed(const QModelIndex &index);
 
 public Q_SLOTS:
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void hideColumn(int column);
     void showColumn(int column);
     void expand(const QModelIndex &index);
     void collapse(const QModelIndex &index);
     void resizeColumnToContents(int column);
     void sortByColumn(int column);
-    void selectAll();
     void expandAll();
     void collapseAll();
     void expandToDepth(int depth);
@@ -220,16 +221,13 @@ private:
     friend class QAccessibleItemView;
     int visualIndex(const QModelIndex &index) const;
 
-    Q_DECLARE_SCOPED_PRIVATE(QTreeView)
+    Q_DECLARE_PRIVATE(QTreeView)
     Q_DISABLE_COPY(QTreeView)
+#ifndef QT_NO_ANIMATION
     Q_PRIVATE_SLOT(d_func(), void _q_endAnimatedOperation())
-    Q_PRIVATE_SLOT(d_func(), void _q_animate())
-    Q_PRIVATE_SLOT(d_func(), void _q_currentChanged(const QModelIndex&, const QModelIndex &))
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsAboutToBeRemoved(const QModelIndex &, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsRemoved(const QModelIndex &, int, int))
+#endif //QT_NO_ANIMATION
     Q_PRIVATE_SLOT(d_func(), void _q_modelAboutToBeReset())
     Q_PRIVATE_SLOT(d_func(), void _q_sortIndicatorChanged(int column, Qt::SortOrder order))
-    Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
 };
 
 #endif // QT_NO_TREEVIEW

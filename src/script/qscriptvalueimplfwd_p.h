@@ -64,6 +64,10 @@ QT_BEGIN_NAMESPACE
 // We mean it.
 //
 
+#if defined(Q_OS_VXWORKS) && defined(m_type)
+#  undef m_type
+#endif
+
 class QScriptValueImpl;
 typedef QList<QScriptValueImpl> QScriptValueImplList;
 

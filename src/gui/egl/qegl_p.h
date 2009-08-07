@@ -122,6 +122,9 @@ public:
 
     void dumpAllConfigs();
 
+    QString extensions();
+    bool hasExtension(const char* extensionName);
+
 private:
     QEgl::API apiType;
     EGLDisplay dpy;

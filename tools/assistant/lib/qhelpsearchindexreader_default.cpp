@@ -492,56 +492,17 @@ void Reader::cleanupIndex(EntryTable &entryTable)
 }
 
 
-QHelpSearchIndexReader::QHelpSearchIndexReader()
-    : QThread()
-    , m_cancel(false)
+QHelpSearchIndexReaderDefault::QHelpSearchIndexReaderDefault()
+    : QHelpSearchIndexReader()
 {
     // nothing todo
 }
 
-QHelpSearchIndexReader::~QHelpSearchIndexReader()
+QHelpSearchIndexReaderDefault::~QHelpSearchIndexReaderDefault()
 {
-    mutex.lock();
-    this->m_cancel = true;
-    waitCondition.wakeOne();
-    mutex.unlock();
-
-    wait();
 }
 
-void QHelpSearchIndexReader::cancelSearching()
-{
-    mutex.lock();
-    this->m_cancel = true;
-    mutex.unlock();
-}
-
-void QHelpSearchIndexReader::search(const QString &collectionFile,
-                                    const QString &indexFilesFolder,
-                                    const QList<QHelpSearchQuery> &queryList)
-{
-    QMutexLocker lock(&mutex);
-
-    this->hitList.clear();
-    this->m_cancel = false;
-    this->m_query = queryList;
-    this->m_collectionFile = collectionFile;
-    this->m_indexFilesFolder = indexFilesFolder;
-
-    start(QThread::NormalPriority);
-}
-
-int QHelpSearchIndexReader::hitsCount() const
-{
-    return hitList.count();
-}
-
-QHelpSearchEngine::SearchHit QHelpSearchIndexReader::hit(int index) const
-{
-    return hitList.at(index);
-}
-
-void QHelpSearchIndexReader::run()
+void QHelpSearchIndexReaderDefault::run()
 {
     mutex.lock();
 
@@ -571,7 +532,7 @@ void QHelpSearchIndexReader::run()
     QHelpEngineCore engine(collectionFile, 0);
     if (!engine.setupData())
         return;
-    
+
     const QStringList registeredDocs = engine.registeredDocumentations();
     const QStringList indexedNamespaces = engine.customValue(key).toString().
         split(QLatin1String("|"), QString::SkipEmptyParts);

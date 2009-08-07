@@ -51,7 +51,7 @@ equals(UI_DIR, .) {
 uic3 {
     isEmpty(FORMS3) {
         UIC3_FORMS = FORMS
-        !build_pass:message("Project contains CONFIG+=uic3, but no files in FORMS3; .ui files in FORMS treated as UIC3 form files.")
+        !build_pass:message("Project contains CONFIG+=uic3, but no files in FORMS3; UI files in FORMS treated as UIC3 form files.")
     } else {
         UIC3_FORMS = FORMS3
     }

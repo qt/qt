@@ -92,7 +92,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerScriptsModel)
+    Q_DECLARE_PRIVATE(QScriptDebuggerScriptsModel)
     Q_DISABLE_COPY(QScriptDebuggerScriptsModel)
 };
 

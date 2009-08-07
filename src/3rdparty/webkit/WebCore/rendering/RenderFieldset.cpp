@@ -99,7 +99,7 @@ RenderObject* RenderFieldset::layoutLegend(bool relayoutChildren)
         int b = borderTop();
         int h = legend->height();
         legend->setLocation(xPos, max((b-h)/2, 0));
-        setHeight(max(b,h) + paddingTop());
+        setHeight(max(b, h) + paddingTop());
     }
     return legend;
 }
@@ -131,9 +131,10 @@ void RenderFieldset::paintBoxDecorations(PaintInfo& paintInfo, int tx, int ty)
     h -= yOff;
     ty += yOff;
 
-    paintBoxShadow(paintInfo.context, tx, ty, w, h, style());
+    paintBoxShadow(paintInfo.context, tx, ty, w, h, style(), Normal);
 
     paintFillLayers(paintInfo, style()->backgroundColor(), style()->backgroundLayers(), tx, ty, w, h);
+    paintBoxShadow(paintInfo.context, tx, ty, w, h, style(), Inset);
 
     if (!style()->hasBorder())
         return;

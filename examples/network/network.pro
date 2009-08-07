@@ -2,7 +2,6 @@ TEMPLATE      = subdirs
 SUBDIRS       = blockingfortuneclient \
                 broadcastreceiver \
                 broadcastsender \
-                network-chat \
                 download \
                 downloadmanager \
                 fortuneclient \
@@ -13,6 +12,9 @@ SUBDIRS       = blockingfortuneclient \
                 threadedfortuneserver \
                 googlesuggest \
                 torrent
+
+# no QProcess
+!vxworks:!qnx:SUBDIRS += network-chat
 
 symbian: SUBDIRS = ftp
 

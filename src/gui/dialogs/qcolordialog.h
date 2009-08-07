@@ -57,7 +57,7 @@ class QColorDialogPrivate;
 class Q_GUI_EXPORT QColorDialog : public QDialog
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QColorDialog)
+    Q_DECLARE_PRIVATE(QColorDialog)
     Q_ENUMS(ColorDialogOption)
     Q_PROPERTY(QColor currentColor READ currentColor WRITE setCurrentColor
                NOTIFY currentColorChanged)

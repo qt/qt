@@ -58,13 +58,13 @@ public:
     InlineFlowBox* prevFlowBox() const { return static_cast<InlineFlowBox*>(m_prevLine); }
     InlineFlowBox* nextFlowBox() const { return static_cast<InlineFlowBox*>(m_nextLine); }
 
-    InlineBox* firstChild() { checkConsistency(); return m_firstChild; }
-    InlineBox* lastChild() { checkConsistency(); return m_lastChild; }
+    InlineBox* firstChild() const { checkConsistency(); return m_firstChild; }
+    InlineBox* lastChild() const { checkConsistency(); return m_lastChild; }
 
-    virtual InlineBox* firstLeafChild();
-    virtual InlineBox* lastLeafChild();
-    InlineBox* firstLeafChildAfterBox(InlineBox* start = 0);
-    InlineBox* lastLeafChildBeforeBox(InlineBox* start = 0);
+    virtual bool isLeaf() const { return false; }
+    
+    InlineBox* firstLeafChild() const;
+    InlineBox* lastLeafChild() const;
 
     virtual void setConstructed()
     {
@@ -89,7 +89,7 @@ public:
     virtual void paintMask(RenderObject::PaintInfo&, int tx, int ty);
     void paintFillLayers(const RenderObject::PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int w, int h, CompositeOperator = CompositeSourceOver);
     void paintFillLayer(const RenderObject::PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int w, int h, CompositeOperator = CompositeSourceOver);
-    void paintBoxShadow(GraphicsContext*, RenderStyle*, int tx, int ty, int w, int h);
+    void paintBoxShadow(GraphicsContext*, RenderStyle*, ShadowStyle, int tx, int ty, int w, int h);
     virtual void paintTextDecorations(RenderObject::PaintInfo&, int tx, int ty, bool paintedChildren = false);
     virtual void paint(RenderObject::PaintInfo&, int tx, int ty);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty);

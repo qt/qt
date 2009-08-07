@@ -105,6 +105,10 @@ void tst_QAction::getSetCheck()
     obj1.setMenu((QMenu *)0);
     QCOMPARE((QMenu *)0, obj1.menu());
     delete var2;
+
+    QCOMPARE(obj1.priority(), QAction::NormalPriority);
+    obj1.setPriority(QAction::LowPriority);
+    QCOMPARE(obj1.priority(), QAction::LowPriority);
 }
 
 class MyWidget : public QWidget

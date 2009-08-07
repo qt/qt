@@ -28,26 +28,26 @@ win32:DEFINES += QT_NODLL
 INCLUDEPATH	+= $$QT_BUILD_TREE/include \
                    $$QT_BUILD_TREE/include/QtCore \
                    $$QT_BUILD_TREE/include/QtXml \
-                   ../../xml
+                   $$QT_SOURCE_TREE/src/xml
 DEPENDPATH	+= $$INCLUDEPATH \
-                   ../../corelib/global \
-                   ../../corelib/kernel \
-                   ../../corelib/tools \
-                   ../../corelib/io \
-                   ../../corelib/codecs \
-                   ../../xml
+                   $$QT_SOURCE_TREE/src/corelib/global \
+                   $$QT_SOURCE_TREE/src/corelib/kernel \
+                   $$QT_SOURCE_TREE/src/corelib/tools \
+                   $$QT_SOURCE_TREE/src/corelib/io \
+                   $$QT_SOURCE_TREE/src/corelib/codecs \
+                   $$QT_SOURCE_TREE/src/xml
 
 hpux-acc*|hpuxi-acc* {
     LIBS += ../bootstrap/libbootstrap.a
 } else {
     contains(CONFIG, debug_and_release_target) {
         CONFIG(debug, debug|release) {
-            LIBS+=-L../bootstrap/debug
+            LIBS+=-L$$QT_BUILD_TREE/src/tools/bootstrap/debug
         } else {
-            LIBS+=-L../bootstrap/release
+            LIBS+=-L$$QT_BUILD_TREE/src/tools/bootstrap/release
         }
     } else {
-        LIBS += -L../bootstrap
+        LIBS += -L$$QT_BUILD_TREE/src/tools/bootstrap
     }
     LIBS += -lbootstrap
 }

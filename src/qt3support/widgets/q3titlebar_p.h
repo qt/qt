@@ -67,7 +67,7 @@ class QPixmap;
 class Q_COMPAT_EXPORT Q3TitleBar : public QWidget
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(Q3TitleBar)
+    Q_DECLARE_PRIVATE(Q3TitleBar)
     Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
     Q_PROPERTY(bool movable READ isMovable WRITE setMovable)
 

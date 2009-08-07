@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLTitleElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTitleElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTitleElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSHTMLTitleElementTableValues, 0 };
 #else
@@ -55,19 +55,19 @@ static const HashTableValue JSHTMLTitleElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTitleElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTitleElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTitleElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLTitleElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLTitleElementConstructor : public DOMObject {
+class JSHTMLTitleElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLTitleElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLTitleElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLTitleElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLTitleElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLTitleElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLTitleElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLTitleElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTitleElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTitleElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTitleElementPrototypeTableValues, 0 };
 #else
@@ -109,8 +109,8 @@ JSObject* JSHTMLTitleElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLTitleElement::s_info = { "HTMLTitleElement", &JSHTMLElement::s_info, &JSHTMLTitleElementTable, 0 };
 
-JSHTMLTitleElement::JSHTMLTitleElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLTitleElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLTitleElement::JSHTMLTitleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTitleElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +126,16 @@ bool JSHTMLTitleElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLTitleElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTitleElement* castedThis = static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(castedThis->impl());
     return jsString(exec, imp->text());
 }
 
 JSValue jsHTMLTitleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLTitleElement* domObject = static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()));
+    return JSHTMLTitleElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLTitleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -146,9 +148,9 @@ void setJSHTMLTitleElementText(ExecState* exec, JSObject* thisObject, JSValue va
     imp->setText(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLTitleElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTitleElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLTitleElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLTitleElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

@@ -32,8 +32,7 @@ class MouseEvent;
 
 enum FrameEdge { LeftFrameEdge, RightFrameEdge, TopFrameEdge, BottomFrameEdge };
 
-struct FrameEdgeInfo
-{
+struct FrameEdgeInfo {
     FrameEdgeInfo(bool preventResize = false, bool allowBorder = true)
         : m_preventResize(4)
         , m_allowBorder(4)
@@ -84,7 +83,7 @@ public:
 private:
     static const int noSplit = -1;
 
-    class GridAxis : Noncopyable {
+    class GridAxis : public Noncopyable {
     public:
         GridAxis();
         void resize(int);

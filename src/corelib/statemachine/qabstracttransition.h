@@ -72,7 +72,6 @@ class Q_CORE_EXPORT QAbstractTransition : public QObject
     Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates)
 public:
     QAbstractTransition(QState *sourceState = 0);
-    QAbstractTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);
     virtual ~QAbstractTransition();
 
     QState *sourceState() const;
@@ -104,12 +103,10 @@ protected:
 
 protected:
     QAbstractTransition(QAbstractTransitionPrivate &dd, QState *parent);
-    QAbstractTransition(QAbstractTransitionPrivate &dd,
-                        const QList<QAbstractState*> &targets, QState *parent);
 
 private:
     Q_DISABLE_COPY(QAbstractTransition)
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractTransition)
+    Q_DECLARE_PRIVATE(QAbstractTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

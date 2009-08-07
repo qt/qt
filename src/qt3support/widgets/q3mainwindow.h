@@ -66,7 +66,7 @@ template<class T> class QList;
 class Q_COMPAT_EXPORT Q3MainWindow: public QWidget
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(Q3MainWindow)
+    Q_DECLARE_PRIVATE(Q3MainWindow)
 
     Q_PROPERTY(bool rightJustification READ rightJustification WRITE setRightJustification DESIGNABLE false)
     Q_PROPERTY(bool usesBigPixmaps READ usesBigPixmaps WRITE setUsesBigPixmaps)

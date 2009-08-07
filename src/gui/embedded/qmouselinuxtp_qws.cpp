@@ -47,6 +47,7 @@
 #include "qtimer.h"
 #include "qapplication.h"
 #include "qscreen_qws.h"
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -190,7 +191,7 @@ QWSLinuxTPMouseHandlerPrivate::QWSLinuxTPMouseHandlerPrivate(QWSLinuxTPMouseHand
     } else {
         mousedev = device;
     }
-    if ((mouseFD = open(mousedev.toLatin1().constData(), O_RDONLY | O_NDELAY)) < 0) {
+    if ((mouseFD = QT_OPEN(mousedev.toLatin1().constData(), O_RDONLY | O_NDELAY)) < 0) {
         qWarning("Cannot open %s (%s)", qPrintable(mousedev), strerror(errno));
         return;
     }
@@ -205,7 +206,7 @@ QWSLinuxTPMouseHandlerPrivate::QWSLinuxTPMouseHandlerPrivate(QWSLinuxTPMouseHand
 QWSLinuxTPMouseHandlerPrivate::~QWSLinuxTPMouseHandlerPrivate()
 {
     if (mouseFD >= 0)
-        close(mouseFD);
+        QT_CLOSE(mouseFD);
 }
 
 void QWSLinuxTPMouseHandlerPrivate::suspend()
@@ -233,7 +234,7 @@ void QWSLinuxTPMouseHandlerPrivate::readMouseData()
 
     int n;
     do {
-        n = read(mouseFD, mouseBuf+mouseIdx, mouseBufSize-mouseIdx);
+        n = QT_READ(mouseFD, mouseBuf+mouseIdx, mouseBufSize-mouseIdx);
         if (n > 0)
             mouseIdx += n;
     } while (n > 0 && mouseIdx < mouseBufSize);

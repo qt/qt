@@ -792,7 +792,8 @@ QPrinter::OutputFormat QPrinter::outputFormat() const
 
 
 
-/*! \reimp */
+/*! \internal
+*/
 int QPrinter::devType() const
 {
     return QInternal::Printer;
@@ -2160,8 +2161,8 @@ bool QPrinter::collateCopiesEnabled() const
 }
 
 /*!
-    Use QPrintDialog::addEnabledOption(QPrintDialog::PrintCollateCopies)
-    or QPrintDialog::setEnabledOptions(QPrintDialog::enabledOptions()
+    Use QPrintDialog::setOption(QPrintDialog::PrintCollateCopies)
+    or QPrintDialog::setOptions(QPrintDialog::options()
     & ~QPrintDialog::PrintCollateCopies) instead, depending on \a
     enable.
 */

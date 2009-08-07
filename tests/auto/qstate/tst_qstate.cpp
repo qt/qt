@@ -60,10 +60,10 @@ tst_QState::~tst_QState()
 void tst_QState::test()
 {
     QStateMachine machine;
-    QState *s1 = new QState(machine.rootState());
+    QState *s1 = new QState(&machine);
 
     QCOMPARE(s1->machine(), &machine);
-    QCOMPARE(s1->parentState(), machine.rootState());
+    QCOMPARE(s1->parentState(), &machine);
     QCOMPARE(s1->initialState(), (QState*)0);
     QVERIFY(s1->childStates().isEmpty());
     QVERIFY(s1->transitions().isEmpty());
@@ -218,7 +218,7 @@ void tst_QState::assignProperty()
     QObject *object = new QObject();
     object->setProperty("fooBar", 10);
 
-    QState *s1 = new QState(machine.rootState());
+    QState *s1 = new QState(&machine);
     s1->assignProperty(object, "fooBar", 20);
     
     machine.setInitialState(s1);
@@ -235,7 +235,7 @@ void tst_QState::assignPropertyTwice()
     QObject *object = new QObject();
     object->setProperty("fooBar", 10);
 
-    QState *s1 = new QState(machine.rootState());
+    QState *s1 = new QState(&machine);
     s1->assignProperty(object, "fooBar", 20);
     s1->assignProperty(object, "fooBar", 30);
     
@@ -250,8 +250,9 @@ class EventTestTransition: public QAbstractTransition
 {
 public:
     EventTestTransition(QEvent::Type type, QState *targetState) 
-        : QAbstractTransition(QList<QAbstractState*>() << targetState), m_type(type)
-    {        
+        : QAbstractTransition(), m_type(type)
+    {
+        setTargetState(targetState);
     }
 
 protected:
@@ -271,9 +272,9 @@ void tst_QState::historyInitialState()
 {
     QStateMachine machine;
 
-    QState *s1 = new QState(machine.rootState());
+    QState *s1 = new QState(&machine);
     
-    QState *s2 = new QState(machine.rootState());
+    QState *s2 = new QState(&machine);
     QHistoryState *h1 = new QHistoryState(s2);
     
     s2->setInitialState(h1);

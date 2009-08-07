@@ -29,8 +29,10 @@
 #include "JSHTMLFormElement.h"
 #include "JSHTMLOptionsCollection.h"
 #include "JSNode.h"
+#include "JSValidityState.h"
 #include "KURL.h"
 #include "Node.h"
+#include "ValidityState.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
@@ -45,13 +47,14 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLSelectElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLSelectElementTableValues[14] =
+static const HashTableValue JSHTMLSelectElementTableValues[15] =
 {
     { "type", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementType, (intptr_t)0 },
     { "selectedIndex", DontDelete, (intptr_t)jsHTMLSelectElementSelectedIndex, (intptr_t)setJSHTMLSelectElementSelectedIndex },
     { "value", DontDelete, (intptr_t)jsHTMLSelectElementValue, (intptr_t)setJSHTMLSelectElementValue },
     { "length", DontDelete, (intptr_t)jsHTMLSelectElementLength, (intptr_t)setJSHTMLSelectElementLength },
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementForm, (intptr_t)0 },
+    { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementValidity, (intptr_t)0 },
     { "willValidate", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementWillValidate, (intptr_t)0 },
     { "options", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementOptions, (intptr_t)0 },
     { "disabled", DontDelete, (intptr_t)jsHTMLSelectElementDisabled, (intptr_t)setJSHTMLSelectElementDisabled },
@@ -63,11 +66,11 @@ static const HashTableValue JSHTMLSelectElementTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLSelectElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLSelectElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLSelectElementTableValues, 0 };
 #else
-    { 34, 31, JSHTMLSelectElementTableValues, 0 };
+    { 35, 31, JSHTMLSelectElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -77,19 +80,19 @@ static const HashTableValue JSHTMLSelectElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLSelectElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLSelectElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLSelectElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLSelectElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLSelectElementConstructor : public DOMObject {
+class JSHTMLSelectElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLSelectElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLSelectElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLSelectElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLSelectElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLSelectElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLSelectElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -119,7 +122,7 @@ static const HashTableValue JSHTMLSelectElementPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLSelectElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLSelectElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLSelectElementPrototypeTableValues, 0 };
 #else
@@ -140,8 +143,8 @@ bool JSHTMLSelectElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSHTMLSelectElement::s_info = { "HTMLSelectElement", &JSHTMLElement::s_info, &JSHTMLSelectElementTable, 0 };
 
-JSHTMLSelectElement::JSHTMLSelectElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLSelectElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLSelectElement::JSHTMLSelectElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLSelectElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -177,91 +180,112 @@ bool JSHTMLSelectElement::getOwnPropertySlot(ExecState* exec, unsigned propertyN
 
 JSValue jsHTMLSelectElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLSelectElementSelectedIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsNumber(exec, imp->selectedIndex());
 }
 
 JSValue jsHTMLSelectElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsString(exec, imp->value());
 }
 
 JSValue jsHTMLSelectElementLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsHTMLSelectElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->form()));
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
+}
+
+JSValue jsHTMLSelectElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLSelectElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsBoolean(imp->willValidate());
 }
 
 JSValue jsHTMLSelectElementOptions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->options()));
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->options()));
 }
 
 JSValue jsHTMLSelectElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsBoolean(imp->disabled());
 }
 
 JSValue jsHTMLSelectElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsBoolean(imp->autofocus());
 }
 
 JSValue jsHTMLSelectElementMultiple(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsBoolean(imp->multiple());
 }
 
 JSValue jsHTMLSelectElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsHTMLSelectElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLSelectElement* castedThis = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(castedThis->impl());
     return jsNumber(exec, imp->size());
 }
 
 JSValue jsHTMLSelectElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLSelectElement* domObject = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
+    return JSHTMLSelectElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLSelectElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -337,9 +361,9 @@ void JSHTMLSelectElement::getPropertyNames(ExecState* exec, PropertyNameArray& p
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSHTMLSelectElement::getConstructor(ExecState* exec)
+JSValue JSHTMLSelectElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLSelectElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLSelectElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLSelectElementPrototypeFunctionAdd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -381,7 +405,7 @@ JSValue JSC_HOST_CALL jsHTMLSelectElementPrototypeFunctionItem(ExecState* exec, 
     }
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->item(index)));
     return result;
 }
 
@@ -395,7 +419,7 @@ JSValue JSC_HOST_CALL jsHTMLSelectElementPrototypeFunctionNamedItem(ExecState* e
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->namedItem(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->namedItem(name)));
     return result;
 }
 
@@ -403,7 +427,7 @@ JSValue JSC_HOST_CALL jsHTMLSelectElementPrototypeFunctionNamedItem(ExecState* e
 JSValue JSHTMLSelectElement::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLSelectElement* thisObj = static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()));
-    return toJS(exec, static_cast<HTMLSelectElement*>(thisObj->impl())->item(slot.index()));
+    return toJS(exec, thisObj->globalObject(), static_cast<HTMLSelectElement*>(thisObj->impl())->item(slot.index()));
 }
 
 }

@@ -51,6 +51,7 @@
 #if !defined(QT_NO_FREETYPE)
 #include "private/qfontengine_ft_p.h"
 #endif
+#include "private/qcore_unix_p.h" // overrides QT_OPEN
 
 // for mmap
 #include <stdlib.h>
@@ -252,7 +253,7 @@ QList<QByteArray> QFontEngineQPF::cleanUpAfterClientCrash(const QList<int> &cras
     for (int i = 0; i < int(dir.count()); ++i) {
         const QByteArray fileName = QFile::encodeName(dir.absoluteFilePath(dir[i]));
 
-        int fd = ::open(fileName.constData(), O_RDONLY, 0);
+        int fd = QT_OPEN(fileName.constData(), O_RDONLY, 0);
         if (fd >= 0) {
             void *header = ::mmap(0, sizeof(QFontEngineQPF::Header), PROT_READ, MAP_SHARED, fd, 0);
             if (header && header != MAP_FAILED) {
@@ -265,7 +266,7 @@ QList<QByteArray> QFontEngineQPF::cleanUpAfterClientCrash(const QList<int> &cras
 
                 ::munmap(header, sizeof(QFontEngineQPF::Header));
             }
-            ::close(fd);
+            QT_CLOSE(fd);
         }
     }
     if (!removedFonts.isEmpty())
@@ -330,16 +331,37 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "found existing qpf:" << fileName;
 #endif
-            if (::access(encodedFileName, W_OK | R_OK) == 0)
-                fd = ::open(encodedFileName, O_RDWR, 0);
-            else if (::access(encodedFileName, R_OK) == 0)
-                fd = ::open(encodedFileName, O_RDONLY, 0);
+            if (::access(encodedFileName, W_OK | R_OK) == 0) {
+                fd = QT_OPEN(encodedFileName, O_RDWR);
+            }
+            // read-write access failed - try read-only access
+            if (fd == -1 && ::access(encodedFileName, R_OK) == 0) {
+                fd = QT_OPEN(encodedFileName, O_RDONLY);
+                if (fd == -1) {
+#if defined(DEBUG_FONTENGINE)
+                    qErrnoWarning("QFontEngineQPF: unable to open %s", encodedName.constData());
+#endif
+                    return;
+                }
+            }
+            if (fd == -1) {
+#if defined(DEBUG_FONTENGINE)
+                qWarning("QFontEngineQPF: insufficient access rights to %s", encodedName.constData());
+#endif
+                return;
+            }
         } else {
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "creating qpf on the fly:" << fileName;
 #endif
             if (::access(QFile::encodeName(qws_fontCacheDir()), W_OK) == 0) {
-                fd = ::open(encodedFileName, O_RDWR | O_EXCL | O_CREAT, 0644);
+                fd = QT_OPEN(encodedFileName, O_RDWR | O_EXCL | O_CREAT, 0644);
+                if (fd == -1) {
+#if defined(DEBUG_FONTENGINE)
+                    qErrnoWarning(errno, "QFontEngineQPF: open() failed for %s", encodedName.constData());
+#endif
+                    return;
+                }
 
                 QBuffer buffer;
                 buffer.open(QIODevice::ReadWrite);
@@ -347,7 +369,17 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                 generator.generate();
                 buffer.close();
                 const QByteArray &data = buffer.data();
-                QT_WRITE(fd, data.constData(), data.size());
+                if (QT_WRITE(fd, data.constData(), data.size()) == -1) {
+#if defined(DEBUG_FONTENGINE)
+                    qErrnoWarning(errno, "QFontEngineQPF: write() failed for %s", encodedName.constData());
+#endif
+                    return;
+                }
+            } else {
+#if defined(DEBUG_FONTENGINE)
+                qErrnoWarning(errno, "QFontEngineQPF: access() failed for %s", qPrintable(qws_fontCacheDir()));
+#endif
+                return;
             }
         }
     }
@@ -355,7 +387,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
     QT_STATBUF st;
     if (QT_FSTAT(fd, &st)) {
 #if defined(DEBUG_FONTENGINE)
-        qDebug() << "stat failed!";
+        qErrnoWarning(errno, "QFontEngineQPF: fstat failed!");
 #endif
         return;
     }
@@ -491,8 +523,13 @@ QFontEngineQPF::~QFontEngineQPF()
     }
 #endif
     delete renderingFontEngine;
-    if (fontData)
-        munmap((void *)fontData, dataSize);
+    if (fontData) {
+        if (munmap((void *)fontData, dataSize) == -1) {
+#if defined(DEBUG_FONTENGINE)
+            qErrnoWarning(errno, "~QFontEngineQPF: Unable to munmap");
+#endif
+        }
+    }
     if (fd != -1)
         ::close(fd);
 #if !defined(QT_NO_FREETYPE)

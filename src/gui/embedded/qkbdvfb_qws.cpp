@@ -55,6 +55,7 @@
 #include <qwindowsystem_qws.h>
 #include <qsocketnotifier.h>
 #include <qapplication.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 QT_BEGIN_NAMESPACE
 
@@ -69,13 +70,13 @@ QVFbKeyboardHandler::QVFbKeyboardHandler(const QString &device)
     kbdBufferLen = sizeof(QVFbKeyData) * 5;
     kbdBuffer = new unsigned char [kbdBufferLen];
 
-    if ((kbdFD = open(terminalName.toLatin1().constData(), O_RDONLY | O_NDELAY)) < 0) {
+    if ((kbdFD = QT_OPEN(terminalName.toLatin1().constData(), O_RDONLY | O_NDELAY)) < 0) {
         qWarning("Cannot open %s (%s)", terminalName.toLatin1().constData(),
         strerror(errno));
     } else {
         // Clear pending input
         char buf[2];
-        while (read(kbdFD, buf, 1) > 0) { }
+        while (QT_READ(kbdFD, buf, 1) > 0) { }
 
         notifier = new QSocketNotifier(kbdFD, QSocketNotifier::Read, this);
         connect(notifier, SIGNAL(activated(int)),this, SLOT(readKeyboardData()));
@@ -85,7 +86,7 @@ QVFbKeyboardHandler::QVFbKeyboardHandler(const QString &device)
 QVFbKeyboardHandler::~QVFbKeyboardHandler()
 {
     if (kbdFD >= 0)
-        close(kbdFD);
+        QT_CLOSE(kbdFD);
     delete [] kbdBuffer;
 }
 
@@ -94,7 +95,7 @@ void QVFbKeyboardHandler::readKeyboardData()
 {
     int n;
     do {
-        n  = read(kbdFD, kbdBuffer+kbdIdx, kbdBufferLen - kbdIdx);
+        n  = QT_READ(kbdFD, kbdBuffer+kbdIdx, kbdBufferLen - kbdIdx);
         if (n > 0)
             kbdIdx += n;
     } while (n > 0);

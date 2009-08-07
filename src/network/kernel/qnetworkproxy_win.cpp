@@ -43,15 +43,13 @@
 
 #ifndef QT_NO_NETWORKPROXY
 
-#if defined(UNICODE)
-
 #include <qmutex.h>
 #include <qstringlist.h>
 #include <qregexp.h>
 #include <qurl.h>
 
 #include <string.h>
-#include <windows.h>
+#include <qt_windows.h>
 #include <wininet.h>
 
 /*
@@ -269,15 +267,13 @@ void QWindowsSystemProxy::init()
     if (initialized)
         return;
     initialized = true;
-    if (QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based)
-        return;                 // no point, this library is only available on 2k, XP and up
 
 #ifdef Q_OS_WINCE
     // Windows CE does not have any of the following API
     return;
 #else
     // load the winhttp.dll library
-    HINSTANCE winhttpHnd = LoadLibraryW(L"winhttp");
+    HINSTANCE winhttpHnd = LoadLibrary(L"winhttp");
     if (!winhttpHnd)
         return;                 // failed to load
 
@@ -400,15 +396,6 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
 
     return parseServerList(query, sp->proxyServerList);
 }
-
-#else  // !UNICODE
-
-QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &)
-{
-    return QList<QNetworkProxy>() << QNetworkProxy::NoProxy;
-}
-
-#endif
 
 QT_END_NAMESPACE
 

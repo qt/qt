@@ -66,6 +66,13 @@
 #ifdef Q_OS_BSD4
 #include <sys/sysctl.h>
 #endif
+#ifdef Q_OS_VXWORKS
+#  if (_WRS_VXWORKS_MAJOR > 6) || ((_WRS_VXWORKS_MAJOR == 6) && (_WRS_VXWORKS_MINOR >= 6))
+#    include <vxCpuLib.h>
+#    include <cpuset.h>
+#    define QT_VXWORKS_HAS_CPUSET
+#  endif
+#endif
 
 #if defined(Q_OS_MAC)
 # ifdef qDebug
@@ -90,6 +97,13 @@ static pthread_key_t current_thread_data_key;
 
 static void destroy_current_thread_data(void *p)
 {
+#if defined(Q_OS_VXWORKS)
+    // Calling setspecific(..., 0) sets the value to 0 for ALL threads.
+    // The 'set to 1' workaround adds a bit of an overhead though,
+    // since this function is called twice now.
+    if (p == (void *)1)
+        return;
+#endif
     // POSIX says the value in our key is set to zero before calling
     // this destructor function, so we need to set it back to the
     // right value...
@@ -98,7 +112,12 @@ static void destroy_current_thread_data(void *p)
     // ... but we must reset it to zero before returning so we aren't
     // called again (POSIX allows implementations to call destructor
     // functions repeatedly until all values are zero)
-    pthread_setspecific(current_thread_data_key, 0);
+    pthread_setspecific(current_thread_data_key,
+#if defined(Q_OS_VXWORKS)
+                                                 (void *)1);
+#else
+                                                 0);
+#endif
 }
 
 static void create_current_thread_data_key()
@@ -323,10 +342,28 @@ int QThread::idealThreadCount()
     // IRIX
     cores = (int)sysconf(_SC_NPROC_ONLN);
 #elif defined(Q_OS_INTEGRITY)
-    // ### TODO - how to get the amound of CPUs on INTEGRITY?
-#elif defined(Q_OS_SYMBIAN)
-    // ### TODO - Get the number of cores from HAL? when multicore architectures (SMP) are supported
+    // as of aug 2008 Integrity only supports one single core CPU
     cores = 1;
+#elif defined(Q_OS_SYMBIAN)
+	 // ### TODO - Get the number of cores from HAL? when multicore architectures (SMP) are supported
+    cores = 1;
+#elif defined(Q_OS_VXWORKS)
+    // VxWorks
+#  if defined(QT_VXWORKS_HAS_CPUSET)
+    cpuset_t cpus = vxCpuEnabledGet();
+    cores = 0;
+
+    // 128 cores should be enough for everyone ;)
+    for (int i = 0; i < 128 && !CPUSET_ISZERO(cpus); ++i) {
+        if (CPUSET_ISSET(cpus, i)) {
+            CPUSET_CLR(cpus, i);
+            cores++;
+        }
+    }
+#  else
+    // as of aug 2008 VxWorks < 6.6 only supports one single core CPU
+    cores = 1;
+#  endif
 #else
     // the rest: Linux, Solaris, AIX, Tru64
     cores = (int)sysconf(_SC_NPROCESSORS_ONLN);

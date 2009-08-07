@@ -527,7 +527,7 @@ void QBoxLayoutPrivate::calcHfw(int w)
     You will almost always want to use QVBoxLayout and QHBoxLayout
     rather than QBoxLayout because of their convenient constructors.
 
-    \sa QGridLayout, QStackedLayout, {Layout Classes}
+    \sa QGridLayout, QStackedLayout, {Layout Management}
 */
 
 /*!
@@ -1314,7 +1314,7 @@ QBoxLayout::Direction QBoxLayout::direction() const
 
     \image qhboxlayout-with-5-children.png Horizontal box layout with five child widgets
 
-    \sa QVBoxLayout, QGridLayout, QStackedLayout, {Layout Classes}, {Basic Layouts Example}
+    \sa QVBoxLayout, QGridLayout, QStackedLayout, {Layout Management}, {Basic Layouts Example}
 */
 
 
@@ -1432,7 +1432,7 @@ QHBoxLayout::~QHBoxLayout()
 
     \image qvboxlayout-with-5-children.png Horizontal box layout with five child widgets
 
-    \sa QHBoxLayout, QGridLayout, QStackedLayout, {Layout Classes}, {Basic Layouts Example}
+    \sa QHBoxLayout, QGridLayout, QStackedLayout, {Layout Management}, {Basic Layouts Example}
 */
 
 /*!

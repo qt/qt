@@ -37,24 +37,18 @@ struct NodeListsNodeData {
     typedef HashSet<DynamicNodeList*> NodeListSet;
     NodeListSet m_listsWithCaches;
     
-    DynamicNodeList::Caches m_childNodeListCaches;
+    RefPtr<DynamicNodeList::Caches> m_childNodeListCaches;
     
-    typedef HashMap<String, DynamicNodeList::Caches*> CacheMap;
+    typedef HashMap<String, RefPtr<DynamicNodeList::Caches> > CacheMap;
     CacheMap m_classNodeListCaches;
     CacheMap m_nameNodeListCaches;
     
-    typedef HashMap<QualifiedName, DynamicNodeList::Caches*> TagCacheMap;
+    typedef HashMap<QualifiedName, RefPtr<DynamicNodeList::Caches> > TagCacheMap;
     TagCacheMap m_tagNodeListCaches;
 
-    static PassOwnPtr<NodeListsNodeData> create() {
-        return new NodeListsNodeData;
-    }
-
-    ~NodeListsNodeData()
+    static PassOwnPtr<NodeListsNodeData> create()
     {
-        deleteAllValues(m_classNodeListCaches);
-        deleteAllValues(m_nameNodeListCaches);
-        deleteAllValues(m_tagNodeListCaches);
+        return new NodeListsNodeData;
     }
     
     void invalidateCaches();
@@ -62,7 +56,10 @@ struct NodeListsNodeData {
     bool isEmpty() const;
 
 private:
-    NodeListsNodeData() { }
+    NodeListsNodeData()
+        : m_childNodeListCaches(DynamicNodeList::Caches::create())
+    {
+    }
 };
     
 class NodeRareData {

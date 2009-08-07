@@ -55,7 +55,7 @@ class QEventLoopPrivate;
 class Q_CORE_EXPORT QEventLoop : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QEventLoop)
+    Q_DECLARE_PRIVATE(QEventLoop)
 
 public:
     explicit QEventLoop(QObject *parent = 0);

@@ -60,7 +60,7 @@ class QVariant;
 class QImageIOHandlerPrivate;
 class Q_GUI_EXPORT QImageIOHandler
 {
-    Q_DECLARE_SCOPED_PRIVATE(QImageIOHandler)
+    Q_DECLARE_PRIVATE(QImageIOHandler)
 public:
     QImageIOHandler();
     virtual ~QImageIOHandler();

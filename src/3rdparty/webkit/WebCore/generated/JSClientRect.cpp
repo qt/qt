@@ -45,7 +45,7 @@ static const HashTableValue JSClientRectTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClientRectTable =
+static JSC_CONST_HASHTABLE HashTable JSClientRectTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSClientRectTableValues, 0 };
 #else
@@ -59,19 +59,19 @@ static const HashTableValue JSClientRectConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClientRectConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSClientRectConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSClientRectConstructorTableValues, 0 };
 #else
     { 1, 0, JSClientRectConstructorTableValues, 0 };
 #endif
 
-class JSClientRectConstructor : public DOMObject {
+class JSClientRectConstructor : public DOMConstructorObject {
 public:
-    JSClientRectConstructor(ExecState* exec)
-        : DOMObject(JSClientRectConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSClientRectConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSClientRectConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSClientRectPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSClientRectPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -97,7 +97,7 @@ static const HashTableValue JSClientRectPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClientRectPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSClientRectPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSClientRectPrototypeTableValues, 0 };
 #else
@@ -113,8 +113,8 @@ JSObject* JSClientRectPrototype::self(ExecState* exec, JSGlobalObject* globalObj
 
 const ClassInfo JSClientRect::s_info = { "ClientRect", 0, &JSClientRectTable, 0 };
 
-JSClientRect::JSClientRect(PassRefPtr<Structure> structure, PassRefPtr<ClientRect> impl)
-    : DOMObject(structure)
+JSClientRect::JSClientRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ClientRect> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -136,58 +136,65 @@ bool JSClientRect::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsClientRectTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ClientRect* imp = static_cast<ClientRect*>(static_cast<JSClientRect*>(asObject(slot.slotBase()))->impl());
+    ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
     return jsNumber(exec, imp->top());
 }
 
 JSValue jsClientRectRight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ClientRect* imp = static_cast<ClientRect*>(static_cast<JSClientRect*>(asObject(slot.slotBase()))->impl());
+    ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
     return jsNumber(exec, imp->right());
 }
 
 JSValue jsClientRectBottom(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ClientRect* imp = static_cast<ClientRect*>(static_cast<JSClientRect*>(asObject(slot.slotBase()))->impl());
+    ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
     return jsNumber(exec, imp->bottom());
 }
 
 JSValue jsClientRectLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ClientRect* imp = static_cast<ClientRect*>(static_cast<JSClientRect*>(asObject(slot.slotBase()))->impl());
+    ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
     return jsNumber(exec, imp->left());
 }
 
 JSValue jsClientRectWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ClientRect* imp = static_cast<ClientRect*>(static_cast<JSClientRect*>(asObject(slot.slotBase()))->impl());
+    ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
     return jsNumber(exec, imp->width());
 }
 
 JSValue jsClientRectHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    ClientRect* imp = static_cast<ClientRect*>(static_cast<JSClientRect*>(asObject(slot.slotBase()))->impl());
+    ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
     return jsNumber(exec, imp->height());
 }
 
 JSValue jsClientRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSClientRect*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSClientRect* domObject = static_cast<JSClientRect*>(asObject(slot.slotBase()));
+    return JSClientRect::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSClientRect::getConstructor(ExecState* exec)
+JSValue JSClientRect::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSClientRectConstructor>(exec);
+    return getDOMConstructor<JSClientRectConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, ClientRect* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, ClientRect* object)
 {
-    return getDOMObjectWrapper<JSClientRect>(exec, object);
+    return getDOMObjectWrapper<JSClientRect>(exec, globalObject, object);
 }
 ClientRect* toClientRect(JSC::JSValue value)
 {

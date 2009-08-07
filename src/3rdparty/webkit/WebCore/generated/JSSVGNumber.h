@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "JSSVGPODTypeWrapper.h"
 #include "SVGElement.h"
@@ -31,10 +32,10 @@
 
 namespace WebCore {
 
-class JSSVGNumber : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGNumber : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGNumber(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<float> >, SVGElement* context);
+    JSSVGNumber(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<float> >, SVGElement* context);
     virtual ~JSSVGNumber();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,15 +48,13 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    JSSVGPODTypeWrapper<float>* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
+    JSSVGPODTypeWrapper<float> * impl() const { return m_impl.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
     RefPtr<JSSVGPODTypeWrapper<float> > m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<float>*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<float>*, SVGElement* context);
 float toSVGNumber(JSC::JSValue);
 
 class JSSVGNumberPrototype : public JSC::JSObject {

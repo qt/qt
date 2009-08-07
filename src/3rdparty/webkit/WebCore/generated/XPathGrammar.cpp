@@ -1,24 +1,23 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton implementation for Bison's Yacc-like parsers in C
-
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   
+      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -29,7 +28,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -47,7 +46,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.3"
+#define YYBISON_VERSION "2.4.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -55,17 +54,78 @@
 /* Pure parsers.  */
 #define YYPURE 1
 
+/* Push parsers.  */
+#define YYPUSH 0
+
+/* Pull parsers.  */
+#define YYPULL 1
+
 /* Using locations.  */
 #define YYLSP_NEEDED 0
 
 /* Substitute the variable and function names.  */
-#define yyparse xpathyyparse
-#define yylex   xpathyylex
-#define yyerror xpathyyerror
-#define yylval  xpathyylval
-#define yychar  xpathyychar
-#define yydebug xpathyydebug
-#define yynerrs xpathyynerrs
+#define yyparse         xpathyyparse
+#define yylex           xpathyylex
+#define yyerror         xpathyyerror
+#define yylval          xpathyylval
+#define yychar          xpathyychar
+#define yydebug         xpathyydebug
+#define yynerrs         xpathyynerrs
+
+
+/* Copy the first part of user declarations.  */
+
+/* Line 189 of yacc.c  */
+#line 28 "../xml/XPathGrammar.y"
+
+
+#include "config.h"
+
+#if ENABLE(XPATH)
+
+#include "XPathFunctions.h"
+#include "XPathNSResolver.h"
+#include "XPathParser.h"
+#include "XPathPath.h"
+#include "XPathPredicate.h"
+#include "XPathVariableReference.h"
+#include <wtf/FastMalloc.h>
+
+#define YYMALLOC fastMalloc
+#define YYFREE fastFree
+
+#define YYENABLE_NLS 0
+#define YYLTYPE_IS_TRIVIAL 1
+#define YYDEBUG 0
+#define YYMAXDEPTH 10000
+#define YYPARSE_PARAM parserParameter
+#define PARSER static_cast<Parser*>(parserParameter)
+
+using namespace WebCore;
+using namespace XPath;
+
+
+
+/* Line 189 of yacc.c  */
+#line 111 "WebCore/tmp/../generated/XPathGrammar.tab.c"
+
+/* Enabling traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+
+/* Enabling verbose error messages.  */
+#ifdef YYERROR_VERBOSE
+# undef YYERROR_VERBOSE
+# define YYERROR_VERBOSE 1
+#else
+# define YYERROR_VERBOSE 0
+#endif
+
+/* Enabling the token table.  */
+#ifndef YYTOKEN_TABLE
+# define YYTOKEN_TABLE 0
+#endif
 
 
 /* Tokens.  */
@@ -94,78 +154,16 @@
      XPATH_ERROR = 275
    };
 #endif
-/* Tokens.  */
-#define MULOP 258
-#define RELOP 259
-#define EQOP 260
-#define MINUS 261
-#define PLUS 262
-#define AND 263
-#define OR 264
-#define AXISNAME 265
-#define NODETYPE 266
-#define PI 267
-#define FUNCTIONNAME 268
-#define LITERAL 269
-#define VARIABLEREFERENCE 270
-#define NUMBER 271
-#define DOTDOT 272
-#define SLASHSLASH 273
-#define NAMETEST 274
-#define XPATH_ERROR 275
 
 
-
-
-/* Copy the first part of user declarations.  */
-#line 28 "../xml/XPathGrammar.y"
-
-
-#include "config.h"
-
-#if ENABLE(XPATH)
-
-#include "XPathFunctions.h"
-#include "XPathNSResolver.h"
-#include "XPathParser.h"
-#include "XPathPath.h"
-#include "XPathPredicate.h"
-#include "XPathVariableReference.h"
-
-#define YYENABLE_NLS 0
-#define YYLTYPE_IS_TRIVIAL 1
-#define YYDEBUG 0
-#define YYMAXDEPTH 10000
-#define YYPARSE_PARAM parserParameter
-#define PARSER static_cast<Parser*>(parserParameter)
-
-using namespace WebCore;
-using namespace XPath;
-
-
-
-/* Enabling traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
-
-/* Enabling the token table.  */
-#ifndef YYTOKEN_TABLE
-# define YYTOKEN_TABLE 0
-#endif
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 56 "../xml/XPathGrammar.y"
 {
+
+/* Line 214 of yacc.c  */
+#line 60 "../xml/XPathGrammar.y"
+
     Step::Axis axis;
     Step::NodeTest* nodeTest;
     NumericOp::Opcode numop;
@@ -176,19 +174,22 @@ typedef union YYSTYPE
     Vector<Expression*>* argList;
     Step* step;
     LocationPath* locationPath;
-}
-/* Line 187 of yacc.c.  */
+
+
+
+/* Line 214 of yacc.c  */
 #line 182 "WebCore/tmp/../generated/XPathGrammar.tab.c"
-	YYSTYPE;
+} YYSTYPE;
+# define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
-# define YYSTYPE_IS_TRIVIAL 1
 #endif
 
 
-
 /* Copy the second part of user declarations.  */
-#line 69 "../xml/XPathGrammar.y"
+
+/* Line 264 of yacc.c  */
+#line 73 "../xml/XPathGrammar.y"
 
 
 static int xpathyylex(YYSTYPE* yylval) { return Parser::current()->lex(yylval); }
@@ -196,8 +197,8 @@ static void xpathyyerror(const char*) { }
     
 
 
-/* Line 216 of yacc.c.  */
-#line 201 "WebCore/tmp/../generated/XPathGrammar.tab.c"
+/* Line 264 of yacc.c  */
+#line 202 "WebCore/tmp/../generated/XPathGrammar.tab.c"
 
 #ifdef short
 # undef short
@@ -272,14 +273,14 @@ typedef short int yytype_int16;
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static int
-YYID (int i)
+YYID (int yyi)
 #else
 static int
-YYID (i)
-    int i;
+YYID (yyi)
+    int yyi;
 #endif
 {
-  return i;
+  return yyi;
 }
 #endif
 
@@ -360,9 +361,9 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss;
-  YYSTYPE yyvs;
-  };
+  yytype_int16 yyss_alloc;
+  YYSTYPE yyvs_alloc;
+};
 
 /* The size of the maximum gap between one aligned stack and the next.  */
 # define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
@@ -396,12 +397,12 @@ union yyalloc
    elements in the stack, and YYPTR gives the new location of the
    stack.  Advance YYPTR to a properly aligned location for the next
    stack.  */
-# define YYSTACK_RELOCATE(Stack)					\
+# define YYSTACK_RELOCATE(Stack_alloc, Stack)				\
     do									\
       {									\
 	YYSIZE_T yynewbytes;						\
-	YYCOPY (&yyptr->Stack, Stack, yysize);				\
-	Stack = &yyptr->Stack;						\
+	YYCOPY (&yyptr->Stack_alloc, Stack, yysize);			\
+	Stack = &yyptr->Stack_alloc;					\
 	yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
 	yyptr += yynewbytes / sizeof (*yyptr);				\
       }									\
@@ -503,13 +504,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   117,   117,   124,   129,   136,   142,   147,   156,   164,
-     170,   180,   191,   209,   220,   238,   242,   244,   251,   264,
-     271,   282,   286,   290,   298,   306,   313,   321,   327,   335,
-     342,   347,   354,   361,   365,   374,   386,   394,   402,   406,
-     408,   420,   425,   427,   436,   449,   451,   461,   463,   473,
-     475,   485,   487,   497,   499,   509,   511,   519,   529,   531,
-     541,   543
+       0,   121,   121,   128,   133,   140,   146,   151,   160,   168,
+     174,   184,   195,   213,   224,   242,   246,   248,   255,   268,
+     275,   286,   290,   294,   302,   310,   317,   325,   331,   339,
+     346,   351,   358,   365,   369,   378,   390,   398,   406,   410,
+     412,   424,   429,   431,   440,   453,   455,   465,   467,   477,
+     479,   489,   491,   501,   503,   513,   515,   523,   533,   535,
+     545,   547
 };
 #endif
 
@@ -854,17 +855,20 @@ yy_symbol_print (yyoutput, yytype, yyvaluep)
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yy_stack_print (yytype_int16 *bottom, yytype_int16 *top)
+yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
 #else
 static void
-yy_stack_print (bottom, top)
-    yytype_int16 *bottom;
-    yytype_int16 *top;
+yy_stack_print (yybottom, yytop)
+    yytype_int16 *yybottom;
+    yytype_int16 *yytop;
 #endif
 {
   YYFPRINTF (stderr, "Stack now");
-  for (; bottom <= top; ++bottom)
-    YYFPRINTF (stderr, " %d", *bottom);
+  for (; yybottom <= yytop; yybottom++)
+    {
+      int yybot = *yybottom;
+      YYFPRINTF (stderr, " %d", yybot);
+    }
   YYFPRINTF (stderr, "\n");
 }
 
@@ -898,11 +902,11 @@ yy_reduce_print (yyvsp, yyrule)
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
-      fprintf (stderr, "   $%d = ", yyi + 1);
+      YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr, yyrhs[yyprhs[yyrule] + yyi],
 		       &(yyvsp[(yyi + 1) - (yynrhs)])
 		       		       );
-      fprintf (stderr, "\n");
+      YYFPRINTF (stderr, "\n");
     }
 }
 
@@ -1182,10 +1186,8 @@ yydestruct (yymsg, yytype, yyvaluep)
 	break;
     }
 }
-
 
 /* Prevent warnings from -Wmissing-prototypes.  */
-
 #ifdef YYPARSE_PARAM
 #if defined __STDC__ || defined __cplusplus
 int yyparse (void *YYPARSE_PARAM);
@@ -1204,10 +1206,9 @@ int yyparse ();
 
 
 
-
-/*----------.
-| yyparse.  |
-`----------*/
+/*-------------------------.
+| yyparse or yypush_parse.  |
+`-------------------------*/
 
 #ifdef YYPARSE_PARAM
 #if (defined __STDC__ || defined __C99__FUNC__ \
@@ -1231,22 +1232,46 @@ yyparse ()
 #endif
 #endif
 {
-  /* The look-ahead symbol.  */
+/* The lookahead symbol.  */
 int yychar;
 
-/* The semantic value of the look-ahead symbol.  */
+/* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval;
 
-/* Number of syntax errors so far.  */
-int yynerrs;
+    /* Number of syntax errors so far.  */
+    int yynerrs;
 
-  int yystate;
+    int yystate;
+    /* Number of tokens to shift before error messages enabled.  */
+    int yyerrstatus;
+
+    /* The stacks and their tools:
+       `yyss': related to states.
+       `yyvs': related to semantic values.
+
+       Refer to the stacks thru separate pointers, to allow yyoverflow
+       to reallocate them elsewhere.  */
+
+    /* The state stack.  */
+    yytype_int16 yyssa[YYINITDEPTH];
+    yytype_int16 *yyss;
+    yytype_int16 *yyssp;
+
+    /* The semantic value stack.  */
+    YYSTYPE yyvsa[YYINITDEPTH];
+    YYSTYPE *yyvs;
+    YYSTYPE *yyvsp;
+
+    YYSIZE_T yystacksize;
+
   int yyn;
   int yyresult;
-  /* Number of tokens to shift before error messages enabled.  */
-  int yyerrstatus;
-  /* Look-ahead token as an internal (translated) token number.  */
-  int yytoken = 0;
+  /* Lookahead token as an internal (translated) token number.  */
+  int yytoken;
+  /* The variables used to return semantic value and location from the
+     action routines.  */
+  YYSTYPE yyval;
+
 #if YYERROR_VERBOSE
   /* Buffer for error messages, and its allocated size.  */
   char yymsgbuf[128];
@@ -1254,51 +1279,28 @@ int yynerrs;
   YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
-  /* Three stacks and their tools:
-     `yyss': related to states,
-     `yyvs': related to semantic values,
-     `yyls': related to locations.
-
-     Refer to the stacks thru separate pointers, to allow yyoverflow
-     to reallocate them elsewhere.  */
-
-  /* The state stack.  */
-  yytype_int16 yyssa[YYINITDEPTH];
-  yytype_int16 *yyss = yyssa;
-  yytype_int16 *yyssp;
-
-  /* The semantic value stack.  */
-  YYSTYPE yyvsa[YYINITDEPTH];
-  YYSTYPE *yyvs = yyvsa;
-  YYSTYPE *yyvsp;
-
-
-
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
-
-  YYSIZE_T yystacksize = YYINITDEPTH;
-
-  /* The variables used to return semantic value and location from the
-     action routines.  */
-  YYSTYPE yyval;
-
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
+
+  yytoken = 0;
+  yyss = yyssa;
+  yyvs = yyvsa;
+  yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yystate = 0;
   yyerrstatus = 0;
   yynerrs = 0;
-  yychar = YYEMPTY;		/* Cause a token to be read.  */
+  yychar = YYEMPTY; /* Cause a token to be read.  */
 
   /* Initialize stack pointers.
      Waste one element of value and location stack
      so that they stay on the same level as the state stack.
      The wasted elements are never initialized.  */
-
   yyssp = yyss;
   yyvsp = yyvs;
 
@@ -1328,7 +1330,6 @@ int yynerrs;
 	YYSTYPE *yyvs1 = yyvs;
 	yytype_int16 *yyss1 = yyss;
 
-
 	/* Each stack pointer address is followed by the size of the
 	   data in use in that stack, in bytes.  This used to be a
 	   conditional around just the two extra args, but that might
@@ -1336,7 +1337,6 @@ int yynerrs;
 	yyoverflow (YY_("memory exhausted"),
 		    &yyss1, yysize * sizeof (*yyssp),
 		    &yyvs1, yysize * sizeof (*yyvsp),
-
 		    &yystacksize);
 
 	yyss = yyss1;
@@ -1359,9 +1359,8 @@ int yynerrs;
 	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
 	if (! yyptr)
 	  goto yyexhaustedlab;
-	YYSTACK_RELOCATE (yyss);
-	YYSTACK_RELOCATE (yyvs);
-
+	YYSTACK_RELOCATE (yyss_alloc, yyss);
+	YYSTACK_RELOCATE (yyvs_alloc, yyvs);
 #  undef YYSTACK_RELOCATE
 	if (yyss1 != yyssa)
 	  YYSTACK_FREE (yyss1);
@@ -1372,7 +1371,6 @@ int yynerrs;
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
-
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
 		  (unsigned long int) yystacksize));
 
@@ -1382,6 +1380,9 @@ int yynerrs;
 
   YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
+  if (yystate == YYFINAL)
+    YYACCEPT;
+
   goto yybackup;
 
 /*-----------.
@@ -1390,16 +1391,16 @@ int yynerrs;
 yybackup:
 
   /* Do appropriate processing given the current state.  Read a
-     look-ahead token if we need one and don't already have one.  */
+     lookahead token if we need one and don't already have one.  */
 
-  /* First try to decide what to do without reference to look-ahead token.  */
+  /* First try to decide what to do without reference to lookahead token.  */
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
 
-  /* Not known => get a look-ahead token if don't already have one.  */
+  /* Not known => get a lookahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid look-ahead symbol.  */
+  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token: "));
@@ -1431,20 +1432,16 @@ yybackup:
       goto yyreduce;
     }
 
-  if (yyn == YYFINAL)
-    YYACCEPT;
-
   /* Count tokens shifted since error; after three, turn off error
      status.  */
   if (yyerrstatus)
     yyerrstatus--;
 
-  /* Shift the look-ahead token.  */
+  /* Shift the lookahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
-  /* Discard the shifted token unless it is eof.  */
-  if (yychar != YYEOF)
-    yychar = YYEMPTY;
+  /* Discard the shifted token.  */
+  yychar = YYEMPTY;
 
   yystate = yyn;
   *++yyvsp = yylval;
@@ -1484,28 +1481,36 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 118 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 122 "../xml/XPathGrammar.y"
     {
         PARSER->m_topExpr = (yyvsp[(1) - (1)].expr);
     ;}
     break;
 
   case 3:
-#line 125 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 129 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->setAbsolute(false);
     ;}
     break;
 
   case 4:
-#line 130 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 134 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->setAbsolute(true);
     ;}
     break;
 
   case 5:
-#line 137 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 141 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = new LocationPath;
         PARSER->registerParseNode((yyval.locationPath));
@@ -1513,14 +1518,18 @@ yyreduce:
     break;
 
   case 6:
-#line 143 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 147 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = (yyvsp[(2) - (2)].locationPath);
     ;}
     break;
 
   case 7:
-#line 148 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 152 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = (yyvsp[(2) - (2)].locationPath);
         (yyval.locationPath)->insertFirstStep((yyvsp[(1) - (2)].step));
@@ -1529,7 +1538,9 @@ yyreduce:
     break;
 
   case 8:
-#line 157 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 161 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath) = new LocationPath;
         (yyval.locationPath)->appendStep((yyvsp[(1) - (1)].step));
@@ -1539,7 +1550,9 @@ yyreduce:
     break;
 
   case 9:
-#line 165 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 169 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->appendStep((yyvsp[(3) - (3)].step));
         PARSER->unregisterParseNode((yyvsp[(3) - (3)].step));
@@ -1547,7 +1560,9 @@ yyreduce:
     break;
 
   case 10:
-#line 171 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 175 "../xml/XPathGrammar.y"
     {
         (yyval.locationPath)->appendStep((yyvsp[(2) - (3)].step));
         (yyval.locationPath)->appendStep((yyvsp[(3) - (3)].step));
@@ -1557,7 +1572,9 @@ yyreduce:
     break;
 
   case 11:
-#line 181 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 185 "../xml/XPathGrammar.y"
     {
         if ((yyvsp[(2) - (2)].predList)) {
             (yyval.step) = new Step(Step::ChildAxis, *(yyvsp[(1) - (2)].nodeTest), *(yyvsp[(2) - (2)].predList));
@@ -1570,7 +1587,9 @@ yyreduce:
     break;
 
   case 12:
-#line 192 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 196 "../xml/XPathGrammar.y"
     {
         String localName;
         String namespaceURI;
@@ -1590,7 +1609,9 @@ yyreduce:
     break;
 
   case 13:
-#line 210 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 214 "../xml/XPathGrammar.y"
     {
         if ((yyvsp[(3) - (3)].predList)) {
             (yyval.step) = new Step((yyvsp[(1) - (3)].axis), *(yyvsp[(2) - (3)].nodeTest), *(yyvsp[(3) - (3)].predList));
@@ -1603,7 +1624,9 @@ yyreduce:
     break;
 
   case 14:
-#line 221 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 225 "../xml/XPathGrammar.y"
     {
         String localName;
         String namespaceURI;
@@ -1623,14 +1646,18 @@ yyreduce:
     break;
 
   case 17:
-#line 245 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 249 "../xml/XPathGrammar.y"
     {
         (yyval.axis) = Step::AttributeAxis;
     ;}
     break;
 
   case 18:
-#line 252 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 256 "../xml/XPathGrammar.y"
     {
         if (*(yyvsp[(1) - (3)].str) == "node")
             (yyval.nodeTest) = new Step::NodeTest(Step::NodeTest::AnyNodeTest);
@@ -1645,7 +1672,9 @@ yyreduce:
     break;
 
   case 19:
-#line 265 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 269 "../xml/XPathGrammar.y"
     {
         (yyval.nodeTest) = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest);
         PARSER->deleteString((yyvsp[(1) - (3)].str));        
@@ -1654,7 +1683,9 @@ yyreduce:
     break;
 
   case 20:
-#line 272 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 276 "../xml/XPathGrammar.y"
     {
         (yyval.nodeTest) = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest, (yyvsp[(3) - (4)].str)->stripWhiteSpace());
         PARSER->deleteString((yyvsp[(1) - (4)].str));        
@@ -1664,14 +1695,18 @@ yyreduce:
     break;
 
   case 21:
-#line 282 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 286 "../xml/XPathGrammar.y"
     {
         (yyval.predList) = 0;
     ;}
     break;
 
   case 23:
-#line 291 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 295 "../xml/XPathGrammar.y"
     {
         (yyval.predList) = new Vector<Predicate*>;
         (yyval.predList)->append(new Predicate((yyvsp[(1) - (1)].expr)));
@@ -1681,7 +1716,9 @@ yyreduce:
     break;
 
   case 24:
-#line 299 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 303 "../xml/XPathGrammar.y"
     {
         (yyval.predList)->append(new Predicate((yyvsp[(2) - (2)].expr)));
         PARSER->unregisterParseNode((yyvsp[(2) - (2)].expr));
@@ -1689,14 +1726,18 @@ yyreduce:
     break;
 
   case 25:
-#line 307 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 311 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = (yyvsp[(2) - (3)].expr);
     ;}
     break;
 
   case 26:
-#line 314 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 318 "../xml/XPathGrammar.y"
     {
         (yyval.step) = new Step(Step::DescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
         PARSER->registerParseNode((yyval.step));
@@ -1704,7 +1745,9 @@ yyreduce:
     break;
 
   case 27:
-#line 322 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 326 "../xml/XPathGrammar.y"
     {
         (yyval.step) = new Step(Step::SelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
         PARSER->registerParseNode((yyval.step));
@@ -1712,7 +1755,9 @@ yyreduce:
     break;
 
   case 28:
-#line 328 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 332 "../xml/XPathGrammar.y"
     {
         (yyval.step) = new Step(Step::ParentAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
         PARSER->registerParseNode((yyval.step));
@@ -1720,7 +1765,9 @@ yyreduce:
     break;
 
   case 29:
-#line 336 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 340 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new VariableReference(*(yyvsp[(1) - (1)].str));
         PARSER->deleteString((yyvsp[(1) - (1)].str));
@@ -1729,14 +1776,18 @@ yyreduce:
     break;
 
   case 30:
-#line 343 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 347 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = (yyvsp[(2) - (3)].expr);
     ;}
     break;
 
   case 31:
-#line 348 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 352 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new StringExpression(*(yyvsp[(1) - (1)].str));
         PARSER->deleteString((yyvsp[(1) - (1)].str));
@@ -1745,7 +1796,9 @@ yyreduce:
     break;
 
   case 32:
-#line 355 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 359 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Number((yyvsp[(1) - (1)].str)->toDouble());
         PARSER->deleteString((yyvsp[(1) - (1)].str));
@@ -1754,7 +1807,9 @@ yyreduce:
     break;
 
   case 34:
-#line 366 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 370 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = createFunction(*(yyvsp[(1) - (3)].str));
         if (!(yyval.expr))
@@ -1765,7 +1820,9 @@ yyreduce:
     break;
 
   case 35:
-#line 375 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 379 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = createFunction(*(yyvsp[(1) - (4)].str), *(yyvsp[(3) - (4)].argList));
         if (!(yyval.expr))
@@ -1777,7 +1834,9 @@ yyreduce:
     break;
 
   case 36:
-#line 387 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 391 "../xml/XPathGrammar.y"
     {
         (yyval.argList) = new Vector<Expression*>;
         (yyval.argList)->append((yyvsp[(1) - (1)].expr));
@@ -1787,7 +1846,9 @@ yyreduce:
     break;
 
   case 37:
-#line 395 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 399 "../xml/XPathGrammar.y"
     {
         (yyval.argList)->append((yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(3) - (3)].expr));
@@ -1795,7 +1856,9 @@ yyreduce:
     break;
 
   case 40:
-#line 409 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 413 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Union;
         (yyval.expr)->addSubExpression((yyvsp[(1) - (3)].expr));
@@ -1807,14 +1870,18 @@ yyreduce:
     break;
 
   case 41:
-#line 421 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 425 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = (yyvsp[(1) - (1)].locationPath);
     ;}
     break;
 
   case 43:
-#line 428 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 432 "../xml/XPathGrammar.y"
     {
         (yyvsp[(3) - (3)].locationPath)->setAbsolute(true);
         (yyval.expr) = new Path(static_cast<Filter*>((yyvsp[(1) - (3)].expr)), (yyvsp[(3) - (3)].locationPath));
@@ -1825,7 +1892,9 @@ yyreduce:
     break;
 
   case 44:
-#line 437 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 441 "../xml/XPathGrammar.y"
     {
         (yyvsp[(3) - (3)].locationPath)->insertFirstStep((yyvsp[(2) - (3)].step));
         (yyvsp[(3) - (3)].locationPath)->setAbsolute(true);
@@ -1838,7 +1907,9 @@ yyreduce:
     break;
 
   case 46:
-#line 452 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 456 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Filter((yyvsp[(1) - (2)].expr), *(yyvsp[(2) - (2)].predList));
         PARSER->unregisterParseNode((yyvsp[(1) - (2)].expr));
@@ -1848,7 +1919,9 @@ yyreduce:
     break;
 
   case 48:
-#line 464 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 468 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new LogicalOp(LogicalOp::OP_Or, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1858,7 +1931,9 @@ yyreduce:
     break;
 
   case 50:
-#line 476 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 480 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new LogicalOp(LogicalOp::OP_And, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1868,7 +1943,9 @@ yyreduce:
     break;
 
   case 52:
-#line 488 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 492 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new EqTestOp((yyvsp[(2) - (3)].eqop), (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1878,7 +1955,9 @@ yyreduce:
     break;
 
   case 54:
-#line 500 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 504 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new EqTestOp((yyvsp[(2) - (3)].eqop), (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1888,7 +1967,9 @@ yyreduce:
     break;
 
   case 56:
-#line 512 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 516 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new NumericOp(NumericOp::OP_Add, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1898,7 +1979,9 @@ yyreduce:
     break;
 
   case 57:
-#line 520 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 524 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new NumericOp(NumericOp::OP_Sub, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1908,7 +1991,9 @@ yyreduce:
     break;
 
   case 59:
-#line 532 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 536 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new NumericOp((yyvsp[(2) - (3)].numop), (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
         PARSER->unregisterParseNode((yyvsp[(1) - (3)].expr));
@@ -1918,7 +2003,9 @@ yyreduce:
     break;
 
   case 61:
-#line 544 "../xml/XPathGrammar.y"
+
+/* Line 1455 of yacc.c  */
+#line 548 "../xml/XPathGrammar.y"
     {
         (yyval.expr) = new Negative;
         (yyval.expr)->addSubExpression((yyvsp[(2) - (2)].expr));
@@ -1928,8 +2015,9 @@ yyreduce:
     break;
 
 
-/* Line 1267 of yacc.c.  */
-#line 1933 "WebCore/tmp/../generated/XPathGrammar.tab.c"
+
+/* Line 1455 of yacc.c  */
+#line 2021 "WebCore/tmp/../generated/XPathGrammar.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1939,7 +2027,6 @@ yyreduce:
   YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
-
 
   /* Now `shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
@@ -2005,7 +2092,7 @@ yyerrlab:
 
   if (yyerrstatus == 3)
     {
-      /* If just tried and failed to reuse look-ahead token after an
+      /* If just tried and failed to reuse lookahead token after an
 	 error, discard it.  */
 
       if (yychar <= YYEOF)
@@ -2022,7 +2109,7 @@ yyerrlab:
 	}
     }
 
-  /* Else will try to reuse look-ahead token after shifting the error
+  /* Else will try to reuse lookahead token after shifting the error
      token.  */
   goto yyerrlab1;
 
@@ -2079,9 +2166,6 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
-  if (yyn == YYFINAL)
-    YYACCEPT;
-
   *++yyvsp = yylval;
 
 
@@ -2106,7 +2190,7 @@ yyabortlab:
   yyresult = 1;
   goto yyreturn;
 
-#ifndef yyoverflow
+#if !defined(yyoverflow) || YYERROR_VERBOSE
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
@@ -2117,7 +2201,7 @@ yyexhaustedlab:
 #endif
 
 yyreturn:
-  if (yychar != YYEOF && yychar != YYEMPTY)
+  if (yychar != YYEMPTY)
      yydestruct ("Cleanup: discarding lookahead",
 		 yytoken, &yylval);
   /* Do not reclaim the symbols of the rule which action triggered
@@ -2143,7 +2227,9 @@ yyreturn:
 }
 
 
-#line 552 "../xml/XPathGrammar.y"
+
+/* Line 1675 of yacc.c  */
+#line 556 "../xml/XPathGrammar.y"
 
 
 #endif

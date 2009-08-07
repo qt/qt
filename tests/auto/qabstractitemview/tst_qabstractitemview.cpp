@@ -55,6 +55,7 @@
 #include <qpushbutton.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
+#include <qlineedit.h>
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
@@ -214,6 +215,8 @@ private slots:
 
     void task221955_selectedEditor();
     void task250754_fontChange();
+    void task200665_itemEntered();
+    void task257481_emptyEditor();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1205,6 +1208,59 @@ void tst_QAbstractItemView::task250754_fontChange()
 
     qApp->setStyleSheet(app_css);
 }
+
+void tst_QAbstractItemView::task200665_itemEntered()
+{
+    //we test that view will emit entered
+    //when the scrollbar move but not the mouse itself
+    QStandardItemModel model(1000,1);
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(200);
+    QRect rect = view.visualRect(model.index(0,0));
+    QCursor::setPos( view.viewport()->mapToGlobal(rect.center()) );
+    QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
+    view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
+    QCOMPARE(spy.count(), 1);
+
+}
+
+void tst_QAbstractItemView::task257481_emptyEditor()
+{
+    QIcon icon = qApp->style()->standardIcon(QStyle::SP_ComputerIcon);
+
+    QStandardItemModel model;
+
+    model.appendRow( new QStandardItem(icon, QString()) );
+    model.appendRow( new QStandardItem(icon, "Editor works") );
+    model.appendRow( new QStandardItem( QString() ) );
+
+    QTreeView treeView;
+    treeView.setRootIsDecorated(false);
+    treeView.setModel(&model);
+    treeView.show();
+
+    treeView.edit(model.index(0,0));
+    QList<QLineEdit *> lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    QCOMPARE(lineEditors.count(), 1);
+    QVERIFY(!lineEditors.first()->size().isEmpty());
+
+    QTest::qWait(30);
+
+    treeView.edit(model.index(1,0));
+    lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    QCOMPARE(lineEditors.count(), 1);
+    QVERIFY(!lineEditors.first()->size().isEmpty());
+
+    QTest::qWait(30);
+
+    treeView.edit(model.index(2,0));
+    lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    QCOMPARE(lineEditors.count(), 1);
+    QVERIFY(!lineEditors.first()->size().isEmpty());
+}
+
 
 QTEST_MAIN(tst_QAbstractItemView)
 #include "tst_qabstractitemview.moc"

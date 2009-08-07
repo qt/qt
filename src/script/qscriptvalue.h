@@ -225,7 +225,7 @@ private:
 private:
     QCustomScopedPointer<QScriptValuePrivate, QScriptValuePrivatePointerDeleter> d_ptr;
 
-    Q_DECLARE_SCOPED_PRIVATE(QScriptValue)
+    Q_DECLARE_PRIVATE(QScriptValue)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QScriptValue::ResolveFlags)

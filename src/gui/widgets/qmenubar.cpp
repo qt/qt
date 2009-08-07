@@ -218,7 +218,7 @@ void QMenuBarPrivate::updateGeometries()
     bool hasHiddenActions = false;
     for (int i = 0; i < actions.count(); ++i) {
         const QRect &rect = actionRects.at(i);
-        if (!menuRect.contains(rect)) {
+        if (rect.isValid() && !menuRect.contains(rect)) {
             hasHiddenActions = true;
             break;
         }
@@ -229,7 +229,7 @@ void QMenuBarPrivate::updateGeometries()
         menuRect = this->menuRect(true);
         for (int i = 0; i < actions.count(); ++i) {
             const QRect &rect = actionRects.at(i);
-            if (!menuRect.contains(rect)) {
+            if (rect.isValid() && !menuRect.contains(rect)) {
                 hiddenActions.append(actions.at(i));
             }
         }
@@ -279,6 +279,7 @@ QRect QMenuBarPrivate::actionRect(QAction *act) const
 void QMenuBarPrivate::focusFirstAction()
 {
     if(!currentAction) {
+        updateGeometries();
         int index = 0;
         while (index < actions.count() && actionRects.at(index).isNull()) ++index;
         if (index < actions.count())
@@ -445,16 +446,12 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
             continue; //we don't really position these!
         } else {
             const QString s = action->text();
-            if(!s.isEmpty()) {
-                const int w = fm.width(s)
-                    - s.count(QLatin1Char('&')) * fm.width(QLatin1Char('&'))
-                    + s.count(QLatin1String("&&")) * fm.width(QLatin1Char('&'));
-                sz = QSize(w, fm.height());
-            }
-
             QIcon is = action->icon();
+            // If an icon is set, only the icon is visible
             if (!is.isNull())
                 sz = sz.expandedTo(QSize(icone, icone));
+            else if (!s.isEmpty())
+                sz = fm.size(Qt::TextShowMnemonic, s);
         }
 
         //let the style modify the above size..
@@ -719,7 +716,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     application examples} also provide menus using these classes.
 
     \sa QMenu, QShortcut, QAction,
-        {http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/index.html}{Introduction to Apple Human Interface Guidelines},
+        {http://developer.apple.com/documentation/UserExperience/Conceptual/AppleHIGuidelines/XHIGIntro/XHIGIntro.html}{Introduction to Apple Human Interface Guidelines},
         {fowler}{GUI Design Handbook: Menu Bar}, {Menus Example}
 */
 
@@ -764,6 +761,7 @@ void QMenuBarPrivate::init()
 QAction *QMenuBarPrivate::getNextAction(const int _start, const int increment) const
 {
     Q_Q(const QMenuBar);
+    const_cast<QMenuBarPrivate*>(this)->updateGeometries();
     bool allowActiveAndDisabled = q->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled, 0, q);
     const int start = (_start == -1 && increment == -1) ? actions.count() : _start;
     const int end =  increment == -1 ? 0 : actions.count() - 1;
@@ -964,6 +962,13 @@ void QMenuBar::setActiveAction(QAction *act)
 /*!
     Removes all the actions from the menu bar.
 
+    \note On Mac OS X, menu items that have been merged to the system
+    menu bar are not removed by this function. One way to handle this
+    would be to remove the extra actions yourself. You can set the
+    \l{QAction::MenuRole}{menu role} on the different menus, so that
+    you know ahead of time which menu items get merged and which do
+    not. Then decide what to recreate or remove yourself.
+
     \sa removeAction()
 */
 void QMenuBar::clear()
@@ -1140,6 +1145,7 @@ void QMenuBar::mouseReleaseEvent(QMouseEvent *e)
 void QMenuBar::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QMenuBar);
+    d->updateGeometries();
     int key = e->key();
     if(isRightToLeft()) {  // in reverse mode open/close key for submenues are reversed
         if(key == Qt::Key_Left)
@@ -1630,6 +1636,7 @@ QSize QMenuBar::minimumSizeHint() const
 
     ensurePolished();
     QSize ret(0, 0);
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     const int hmargin = style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, this);
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
@@ -1782,6 +1789,9 @@ void QMenuBarPrivate::_q_internalShortcutActivated(int id)
         activateAction(act, QAction::Trigger);
         //100 is the same as the default value in QPushButton::animateClick
         autoReleaseTimer.start(100, q);
+    } else if (act && q->style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation, 0, q)) {
+        // When we open a menu using a shortcut, we should end up in keyboard state
+        setKeyboardMode(true);
     }
 }
 

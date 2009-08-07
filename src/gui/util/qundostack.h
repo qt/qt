@@ -90,7 +90,7 @@ private:
 class Q_GUI_EXPORT QUndoStack : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QUndoStack)
+    Q_DECLARE_PRIVATE(QUndoStack)
     Q_PROPERTY(bool active READ isActive WRITE setActive)
     Q_PROPERTY(int undoLimit READ undoLimit WRITE setUndoLimit)
 

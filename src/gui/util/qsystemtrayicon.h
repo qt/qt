@@ -117,7 +117,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QSystemTrayIcon)
-    Q_DECLARE_SCOPED_PRIVATE(QSystemTrayIcon)
+    Q_DECLARE_PRIVATE(QSystemTrayIcon)
 
     friend class QSystemTrayIconSys;
     friend class QBalloonTip;

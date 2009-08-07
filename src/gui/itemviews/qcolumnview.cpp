@@ -52,7 +52,6 @@
 #include <qscrollbar.h>
 #include <qpainter.h>
 #include <qdebug.h>
-#include <qpainterpath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -108,9 +107,13 @@ void QColumnViewPrivate::initialize()
 {
     Q_Q(QColumnView);
     q->setTextElideMode(Qt::ElideMiddle);
-    QObject::connect(&currentAnimation, SIGNAL(frameChanged(int)),
-            hbar, SLOT(setValue(int)));
+#ifndef QT_NO_ANIMATION
     QObject::connect(&currentAnimation, SIGNAL(finished()), q, SLOT(_q_changeCurrentColumn()));
+    currentAnimation.setDuration(ANIMATION_DURATION_MSEC);
+    currentAnimation.setTargetObject(hbar);
+    currentAnimation.setPropertyName("value");
+    currentAnimation.setEasingCurve(QEasingCurve::InOutQuad);
+#endif //QT_NO_ANIMATION
     delete itemDelegate;
     q->setItemDelegate(new QColumnViewDelegate(q));
 }
@@ -260,10 +263,12 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
     if (!index.isValid() || d->columns.isEmpty())
         return;
 
-    if (d->currentAnimation.state() == QTimeLine::Running)
+#ifndef QT_NO_ANIMATION
+    if (d->currentAnimation.state() == QPropertyAnimation::Running)
         return;
 
     d->currentAnimation.stop();
+#endif //QT_NO_ANIMATION
 
     // Fill up what is needed to get to index
     d->closeColumns(index, true);
@@ -326,22 +331,12 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
         }
     }
 
-    //horizontalScrollBar()->setValue(newScrollbarValue);
-    //d->_q_changeCurrentColumn();
-    //return;
-    // or do the following currentAnimation
-
-    int oldValue = horizontalScrollBar()->value();
-
-    if (oldValue < newScrollbarValue) {
-        d->currentAnimation.setFrameRange(oldValue, newScrollbarValue);
-        d->currentAnimation.setDirection(QTimeLine::Forward);
-        d->currentAnimation.setCurrentTime(0);
-    } else {
-        d->currentAnimation.setFrameRange(newScrollbarValue, oldValue);
-        d->currentAnimation.setDirection(QTimeLine::Backward);
-    }
+#ifndef QT_NO_ANIMATION
+    d->currentAnimation.setEndValue(newScrollbarValue);
     d->currentAnimation.start();
+#else
+    horizontalScrollBar()->setValue(newScrollbarValue);
+#endif //QT_NO_ANIMATION
 }
 
 /*!
@@ -410,8 +405,10 @@ void QColumnView::resizeEvent(QResizeEvent *event)
 void QColumnViewPrivate::updateScrollbars()
 {
     Q_Q(QColumnView);
-    if (currentAnimation.state() == QTimeLine::Running)
+#ifndef QT_NO_ANIMATION
+    if (currentAnimation.state() == QPropertyAnimation::Running)
         return;
+#endif //QT_NO_ANIMATION
 
     // find the total horizontal length of the laid out columns
     int horizontalLength = 0;
@@ -896,6 +893,15 @@ QList<int> QColumnView::columnWidths() const
 /*!
     \reimp
 */
+void QColumnView::rowsInserted(const QModelIndex &parent, int start, int end)
+{
+    QAbstractItemView::rowsInserted(parent, start, end);
+    d_func()->checkColumnCreation(parent);
+}
+
+/*!
+    \reimp
+*/
 void QColumnView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_D(QColumnView);
@@ -1036,7 +1042,6 @@ QColumnViewPrivate::QColumnViewPrivate()
 :  QAbstractItemViewPrivate()
 ,showResizeGrips(true)
 ,offset(0)
-,currentAnimation(ANIMATION_DURATION_MSEC)
 ,previewWidget(0)
 ,previewColumn(0)
 {
@@ -1044,6 +1049,41 @@ QColumnViewPrivate::QColumnViewPrivate()
 
 QColumnViewPrivate::~QColumnViewPrivate()
 {
+}
+
+/*!
+    \internal
+
+  */
+void QColumnViewPrivate::_q_columnsInserted(const QModelIndex &parent, int start, int end)
+{
+    QAbstractItemViewPrivate::_q_columnsInserted(parent, start, end);
+    checkColumnCreation(parent);
+}
+
+/*!
+    \internal
+
+    Makes sure we create a corresponding column as a result of changing the model.
+
+  */
+void QColumnViewPrivate::checkColumnCreation(const QModelIndex &parent)
+{
+    if (parent == q_func()->currentIndex() && model->hasChildren(parent)) {
+        //the parent has children and is the current
+        //let's try to find out if there is already a mapping that is good
+        for (int i = 0; i < columns.count(); ++i) {
+            QAbstractItemView *view = columns.at(i);
+            if (view->rootIndex() == parent) {
+                if (view == previewColumn) {
+                    //let's recreate the parent
+                    closeColumns(parent, false);
+                    createColumn(parent, true /*show*/);
+                }
+                break;
+            }
+        }
+    }
 }
 
 /*!

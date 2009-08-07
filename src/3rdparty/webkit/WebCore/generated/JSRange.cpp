@@ -53,7 +53,7 @@ static const HashTableValue JSRangeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangeTable =
+static JSC_CONST_HASHTABLE HashTable JSRangeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSRangeTableValues, 0 };
 #else
@@ -75,19 +75,19 @@ static const HashTableValue JSRangeConstructorTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangeConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSRangeConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSRangeConstructorTableValues, 0 };
 #else
     { 18, 15, JSRangeConstructorTableValues, 0 };
 #endif
 
-class JSRangeConstructor : public DOMObject {
+class JSRangeConstructor : public DOMConstructorObject {
 public:
-    JSRangeConstructor(ExecState* exec)
-        : DOMObject(JSRangeConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSRangeConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSRangeConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSRangePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSRangePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -144,7 +144,7 @@ static const HashTableValue JSRangePrototypeTableValues[32] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSRangePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSRangePrototypeTableValues, 0 };
 #else
@@ -165,8 +165,8 @@ bool JSRangePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 const ClassInfo JSRange::s_info = { "Range", 0, &JSRangeTable, 0 };
 
-JSRange::JSRange(PassRefPtr<Structure> structure, PassRefPtr<Range> impl)
-    : DOMObject(structure)
+JSRange::JSRange(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Range> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -188,17 +188,19 @@ bool JSRange::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName
 
 JSValue jsRangeStartContainer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    Range* imp = static_cast<Range*>(static_cast<JSRange*>(asObject(slot.slotBase()))->impl());
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->startContainer(ec)));
+    Range* imp = static_cast<Range*>(castedThis->impl());
+    JSC::JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->startContainer(ec)));
     setDOMException(exec, ec);
     return result;
 }
 
 JSValue jsRangeStartOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    Range* imp = static_cast<Range*>(static_cast<JSRange*>(asObject(slot.slotBase()))->impl());
+    Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->startOffset(ec));
     setDOMException(exec, ec);
     return result;
@@ -206,17 +208,19 @@ JSValue jsRangeStartOffset(ExecState* exec, const Identifier&, const PropertySlo
 
 JSValue jsRangeEndContainer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    Range* imp = static_cast<Range*>(static_cast<JSRange*>(asObject(slot.slotBase()))->impl());
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->endContainer(ec)));
+    Range* imp = static_cast<Range*>(castedThis->impl());
+    JSC::JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->endContainer(ec)));
     setDOMException(exec, ec);
     return result;
 }
 
 JSValue jsRangeEndOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    Range* imp = static_cast<Range*>(static_cast<JSRange*>(asObject(slot.slotBase()))->impl());
+    Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->endOffset(ec));
     setDOMException(exec, ec);
     return result;
@@ -224,8 +228,9 @@ JSValue jsRangeEndOffset(ExecState* exec, const Identifier&, const PropertySlot&
 
 JSValue jsRangeCollapsed(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    Range* imp = static_cast<Range*>(static_cast<JSRange*>(asObject(slot.slotBase()))->impl());
+    Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = jsBoolean(imp->collapsed(ec));
     setDOMException(exec, ec);
     return result;
@@ -233,20 +238,22 @@ JSValue jsRangeCollapsed(ExecState* exec, const Identifier&, const PropertySlot&
 
 JSValue jsRangeCommonAncestorContainer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
     ExceptionCode ec = 0;
-    Range* imp = static_cast<Range*>(static_cast<JSRange*>(asObject(slot.slotBase()))->impl());
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->commonAncestorContainer(ec)));
+    Range* imp = static_cast<Range*>(castedThis->impl());
+    JSC::JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->commonAncestorContainer(ec)));
     setDOMException(exec, ec);
     return result;
 }
 
 JSValue jsRangeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSRange*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSRange* domObject = static_cast<JSRange*>(asObject(slot.slotBase()));
+    return JSRange::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSRange::getConstructor(ExecState* exec)
+JSValue JSRange::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSRangeConstructor>(exec);
+    return getDOMConstructor<JSRangeConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsRangePrototypeFunctionSetStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -427,7 +434,7 @@ JSValue JSC_HOST_CALL jsRangePrototypeFunctionExtractContents(ExecState* exec, J
     ExceptionCode ec = 0;
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->extractContents(ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->extractContents(ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -442,7 +449,7 @@ JSValue JSC_HOST_CALL jsRangePrototypeFunctionCloneContents(ExecState* exec, JSO
     ExceptionCode ec = 0;
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->cloneContents(ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->cloneContents(ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -487,7 +494,7 @@ JSValue JSC_HOST_CALL jsRangePrototypeFunctionCloneRange(ExecState* exec, JSObje
     ExceptionCode ec = 0;
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->cloneRange(ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->cloneRange(ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -532,7 +539,7 @@ JSValue JSC_HOST_CALL jsRangePrototypeFunctionCreateContextualFragment(ExecState
     const UString& html = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createContextualFragment(html, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createContextualFragment(html, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -645,9 +652,9 @@ JSValue jsRangeNODE_INSIDE(ExecState* exec, const Identifier&, const PropertySlo
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Range* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Range* object)
 {
-    return getDOMObjectWrapper<JSRange>(exec, object);
+    return getDOMObjectWrapper<JSRange>(exec, globalObject, object);
 }
 Range* toRange(JSC::JSValue value)
 {

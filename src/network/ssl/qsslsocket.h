@@ -169,6 +169,7 @@ public:
     QList<QSslError> sslErrors() const;
 
     static bool supportsSsl();
+    void ignoreSslErrors(const QList<QSslError> &errors);
 
 public Q_SLOTS:
     void startClientEncryption();
@@ -192,7 +193,7 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QSslSocket)
+    Q_DECLARE_PRIVATE(QSslSocket)
     Q_DISABLE_COPY(QSslSocket)
     Q_PRIVATE_SLOT(d_func(), void _q_connectedSlot())
     Q_PRIVATE_SLOT(d_func(), void _q_hostFoundSlot())

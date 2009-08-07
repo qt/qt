@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+
+#include "qplatformdefs.h"
+
 #include "qbackingstore_p.h"
 
 #include <QtCore/qglobal.h>

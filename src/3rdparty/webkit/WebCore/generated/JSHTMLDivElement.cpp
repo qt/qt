@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLDivElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDivElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDivElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLDivElementTableValues, 0 };
 #else
@@ -55,19 +55,19 @@ static const HashTableValue JSHTMLDivElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDivElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDivElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDivElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLDivElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLDivElementConstructor : public DOMObject {
+class JSHTMLDivElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLDivElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLDivElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLDivElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLDivElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDivElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDivElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLDivElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDivElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDivElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDivElementPrototypeTableValues, 0 };
 #else
@@ -109,8 +109,8 @@ JSObject* JSHTMLDivElementPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSHTMLDivElement::s_info = { "HTMLDivElement", &JSHTMLElement::s_info, &JSHTMLDivElementTable, 0 };
 
-JSHTMLDivElement::JSHTMLDivElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLDivElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLDivElement::JSHTMLDivElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDivElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +126,16 @@ bool JSHTMLDivElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsHTMLDivElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDivElement* castedThis = static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDivElement* imp = static_cast<HTMLDivElement*>(static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDivElement* imp = static_cast<HTMLDivElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLDivElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLDivElement* domObject = static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()));
+    return JSHTMLDivElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDivElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -146,9 +148,9 @@ void setJSHTMLDivElementAlign(ExecState* exec, JSObject* thisObject, JSValue val
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLDivElement::getConstructor(ExecState* exec)
+JSValue JSHTMLDivElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLDivElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLDivElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

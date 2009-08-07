@@ -134,7 +134,9 @@
 
 #define ErrRaster_MemoryOverflow   -4
 
-
+#if defined(VXWORKS)
+#  include <vxWorksCommon.h>    /* needed for setjmp.h */
+#endif
 #include <string.h>             /* for qt_ft_memcpy() */
 #include <setjmp.h>
 #include <limits.h>

@@ -69,7 +69,7 @@ public:
     virtual int qt_metacall(QMetaObject::Call, int, void **);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QDBusInterface)
+    Q_DECLARE_PRIVATE(QDBusInterface)
 };
 
 QT_END_NAMESPACE

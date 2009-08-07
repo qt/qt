@@ -58,7 +58,7 @@ class QLocalSocketPrivate;
 class Q_NETWORK_EXPORT QLocalSocket : public QIODevice
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QLocalSocket)
+    Q_DECLARE_PRIVATE(QLocalSocket)
 
 public:
     enum LocalSocketError
@@ -134,6 +134,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_notified())
     Q_PRIVATE_SLOT(d_func(), void _q_canWrite())
     Q_PRIVATE_SLOT(d_func(), void _q_pipeClosed())
+    Q_PRIVATE_SLOT(d_func(), void _q_emitReadyRead())
 #else
     Q_PRIVATE_SLOT(d_func(), void _q_stateChanged(QAbstractSocket::SocketState))
     Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))

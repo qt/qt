@@ -111,7 +111,7 @@ Q_SIGNALS:
     void currentIndexChanged(int index);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QDataWidgetMapper)
+    Q_DECLARE_PRIVATE(QDataWidgetMapper)
     Q_DISABLE_COPY(QDataWidgetMapper)
     Q_PRIVATE_SLOT(d_func(), void _q_dataChanged(const QModelIndex &, const QModelIndex &))
     Q_PRIVATE_SLOT(d_func(), void _q_commitData(QWidget *))

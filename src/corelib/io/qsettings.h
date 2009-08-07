@@ -80,7 +80,7 @@ class Q_CORE_EXPORT QSettings
 #else
     QScopedPointer<QSettingsPrivate> d_ptr;
 #endif
-    Q_DECLARE_SCOPED_PRIVATE(QSettings)
+    Q_DECLARE_PRIVATE(QSettings)
 
 public:
     enum Status {

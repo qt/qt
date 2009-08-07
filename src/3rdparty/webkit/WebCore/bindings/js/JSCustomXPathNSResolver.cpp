@@ -72,7 +72,7 @@ String JSCustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     if (!m_frame->script()->isEnabled())
         return String();
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     JSGlobalObject* globalObject = m_frame->script()->globalObject();
     ExecState* exec = globalObject->globalExec();
@@ -84,7 +84,7 @@ String JSCustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
         callType = m_customResolver->getCallData(callData);
         if (callType == CallTypeNone) {
             // FIXME: Pass actual line number and source URL.
-            m_frame->domWindow()->console()->addMessage(JSMessageSource, ErrorMessageLevel, "XPathNSResolver does not have a lookupNamespaceURI method.", 0, String());
+            m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, "XPathNSResolver does not have a lookupNamespaceURI method.", 0, String());
             return String();
         }
         function = m_customResolver;

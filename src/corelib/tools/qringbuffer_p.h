@@ -299,6 +299,54 @@ public:
         return read(size());
     }
 
+    // read an unspecified amount (will read the first buffer)
+    inline QByteArray read() {
+        if (bufferSize == 0)
+            return QByteArray();
+
+        // multiple buffers, just take the first one
+        if (head == 0 && tailBuffer != 0) {
+            QByteArray qba = buffers.takeFirst();
+            --tailBuffer;
+            bufferSize -= qba.length();
+            return qba;
+        }
+
+        // one buffer with good value for head. Just take it.
+        if (head == 0 && tailBuffer == 0) {
+            QByteArray qba = buffers.takeFirst();
+            qba.resize(tail);
+            buffers << QByteArray();
+            bufferSize = 0;
+            tail = 0;
+            return qba;
+        }
+
+        // Bad case: We have to memcpy.
+        // We can avoid by initializing the QRingBuffer with basicBlockSize of 0
+        // and only using this read() function.
+        QByteArray qba(readPointer(), nextDataBlockSize());
+        buffers.removeFirst();
+        head = 0;
+        if (tailBuffer == 0) {
+            buffers << QByteArray();
+            tail = 0;
+        } else {
+            --tailBuffer;
+        }
+        bufferSize -= qba.length();
+        return qba;        
+    }
+
+    // append a new buffer to the end
+    inline void append(const QByteArray &qba) {
+        buffers[tailBuffer].resize(tail);
+        buffers << qba;
+        ++tailBuffer;
+        tail = qba.length();
+        bufferSize += qba.length();
+    }
+
     inline QByteArray peek(int maxLength) const {
         int bytesToRead = qMin(size(), maxLength);
         if(maxLength <= 0)
@@ -353,7 +401,7 @@ public:
 private:
     QList<QByteArray> buffers;
     int head, tail;
-    int tailBuffer;
+    int tailBuffer; // always buffers.size() - 1
     int basicBlockSize;
     int bufferSize;
 };

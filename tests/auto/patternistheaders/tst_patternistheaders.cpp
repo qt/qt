@@ -94,6 +94,10 @@ void tst_PatternistHeaders::run() const
 #include <qxmlquery.h>
 #include <QXmlResultItems>
 #include <qxmlresultitems.h>
+#include <QXmlSchema>
+#include <qxmlschema.h>
+#include <QXmlSchemaValidator>
+#include <qxmlschemavalidator.h>
 #include <QXmlSerializer>
 #include <qxmlserializer.h>
 
@@ -122,6 +126,10 @@ void tst_PatternistHeaders::run() const
 #include <QtXmlPatterns/qxmlquery.h>
 #include <QtXmlPatterns/QXmlResultItems>
 #include <QtXmlPatterns/qxmlresultitems.h>
+#include <QtXmlPatterns/QXmlSchema>
+#include <QtXmlPatterns/qxmlschema.h>
+#include <QtXmlPatterns/QXmlSchemaValidator>
+#include <QtXmlPatterns/qxmlschemavalidator.h>
 #include <QtXmlPatterns/QXmlSerializer>
 #include <QtXmlPatterns/qxmlserializer.h>
 

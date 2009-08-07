@@ -44,6 +44,7 @@
 #include "qhelpsearchquerywidget.h"
 #include "qhelpsearchresultwidget.h"
 
+#include "qhelpsearchindexreader_p.h"
 #if defined(QT_CLUCENE_SUPPORT)
 #   include "qhelpsearchindexreader_clucene_p.h"
 #   include "qhelpsearchindexwriter_clucene_p.h"
@@ -147,8 +148,11 @@ private:
             return;
 
         if (!indexReader) {
-            indexReader = new QHelpSearchIndexReader();
-
+#if defined(QT_CLUCENE_SUPPORT)
+            indexReader = new QHelpSearchIndexReaderClucene();
+#else
+            indexReader = new QHelpSearchIndexReaderDefault();
+#endif // QT_CLUCENE_SUPPORT
             connect(indexReader, SIGNAL(searchingStarted()), this, SIGNAL(searchingStarted()));
             connect(indexReader, SIGNAL(searchingFinished(int)), this, SIGNAL(searchingFinished(int)));
         }
@@ -181,7 +185,7 @@ private slots:
     {
 #if defined(QT_CLUCENE_SUPPORT)
         if (indexWriter && !helpEngine.isNull()) {
-            indexWriter->optimizeIndex();            
+            indexWriter->optimizeIndex();
         }
 #endif
     }
@@ -192,7 +196,7 @@ private:
     QHelpSearchQueryWidget *queryWidget;
     QHelpSearchResultWidget *resultWidget;
 
-    QHelpSearchIndexReader *indexReader;
+    qt::fulltextsearch::QHelpSearchIndexReader *indexReader;
     QHelpSearchIndexWriter *indexWriter;
 
     QPointer<QHelpEngineCore> helpEngine;
@@ -321,7 +325,7 @@ QHelpSearchEngine::QHelpSearchEngine(QHelpEngineCore *helpEngine, QObject *paren
     : QObject(parent)
 {
     d = new QHelpSearchEnginePrivate(helpEngine);
-    
+
     connect(helpEngine, SIGNAL(setupFinished()), this, SLOT(indexDocumentation()));
 
     connect(d, SIGNAL(indexingStarted()), this, SIGNAL(indexingStarted()));

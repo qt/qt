@@ -294,9 +294,9 @@ SubdirsMetaMakefileGenerator::init()
     init_flag = true;
 
     if(Option::recursive) {
-        QString old_output_dir = QDir::cleanPath(Option::output_dir);
+        QString old_output_dir = Option::output_dir;
 	QString old_output = Option::output.fileName();
-        QString oldpwd = QDir::cleanPath(qmake_getpwd());
+        QString oldpwd = qmake_getpwd();
         QString thispwd = oldpwd;
         if(!thispwd.endsWith('/'))
            thispwd += '/';
@@ -452,18 +452,17 @@ QStringList SymbianSubdirsMetaMakefileGenerator::getDependencyList(QString mmpFi
     QStringList list;
 
     QList<QString> values = mmpDependency.values(mmpFilename);
-    if(recursionDepth < 0) {
+    if (recursionDepth < 0) {
         // special case; just first dependency level
         list = values;
         return list;
     }
-    if(values.size() == 0) {
+    if (values.size() == 0) {
         //reached recursion END condition
-        if(recursionDepth == 0) {
+        if (recursionDepth == 0) {
             --recursionDepth;
             return list; // empty list // no dependencies / return
-        }
-        else {
+        } else {
             list.append(mmpFilename);
             recursionDepth--;
             return list; // leaf // return
@@ -473,13 +472,13 @@ QStringList SymbianSubdirsMetaMakefileGenerator::getDependencyList(QString mmpFi
         for (int i = 0; i < values.size(); ++i) {
             QString current = values.at(i);
             QStringList tailList = getDependencyList(current, recursionDepth);
-            for(int j = 0; j < tailList.size(); ++j) {
-               QString path = tailList.at(j);
-               list.append(path);
+            for (int j = 0; j < tailList.size(); ++j) {
+                QString path = tailList.at(j);
+                list.append(path);
             }
         }
 
-        if(recursionDepth > 0) {
+        if (recursionDepth > 0) {
             //for mmp somewhere in middle
             list.append(mmpFilename);
         }
@@ -510,7 +509,7 @@ QString SymbianSubdirsMetaMakefileGenerator::cleanFromSpecialCharacters(QString&
 
 bool SymbianSubdirsMetaMakefileGenerator::init()
 {
-    if(init_flag)
+    if (init_flag)
         return false;
 
     init_flag = true;
@@ -519,54 +518,53 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
 
     Option::recursive = true;
 
-    if(Option::recursive) {
+    if (Option::recursive) {
         QString old_output_dir = QDir::cleanPath(Option::output_dir);
-        if(!old_output_dir.endsWith('/'))
-           old_output_dir += '/';
-	QString old_output = Option::output.fileName();
+        if (!old_output_dir.endsWith('/'))
+            old_output_dir += '/';
+        QString old_output = Option::output.fileName();
         QString oldpwd = QDir::cleanPath(qmake_getpwd());
 
-        if(!oldpwd.endsWith('/'))
-           oldpwd += '/';
+        if (!oldpwd.endsWith('/'))
+            oldpwd += '/';
 
         // find the parent mmp filename
         int end = oldpwd.size() - 1;
         int start = oldpwd.lastIndexOf("/", end - 2);
         QString parentMmpFilename = oldpwd.mid(start + 1, end - start - 1);
         parentMmpFilename.prepend(oldpwd);
-        parentMmpFilename = parentMmpFilename.append(".mmp");
+        parentMmpFilename = parentMmpFilename.append(Option::mmp_ext);
 
 
         const QStringList &subdirs = project->values("SUBDIRS");
         static int recurseDepth = -1;
         ++recurseDepth;
-        for(int i = 0; i < subdirs.size(); ++i) {
+        for (int i = 0; i < subdirs.size(); ++i) {
             Subdir *sub = new Subdir;
             sub->indent = recurseDepth;
 
             QFileInfo subdir(subdirs.at(i));
             // childMmpFielname should be derived from subdirName
             QString subdirName = subdirs.at(i);
-            if(!project->isEmpty(subdirs.at(i) + ".file"))
+            if (!project->isEmpty(subdirs.at(i) + ".file"))
                 subdir = project->first(subdirs.at(i) + ".file");
-            else if(!project->isEmpty(subdirs.at(i) + ".subdir"))
+            else if (!project->isEmpty(subdirs.at(i) + ".subdir"))
                 subdir = project->first(subdirs.at(i) + ".subdir");
             QString sub_name;
 
             QString childMmpFilename;
 
-            if(subdir.isDir()) {
+            if (subdir.isDir()) {
                 subdir = QFileInfo(subdir.filePath() + "/" + subdir.fileName() + Option::pro_ext);
                 childMmpFilename = subdir.fileName();
                 childMmpFilename = subdir.absoluteFilePath();
                 childMmpFilename.replace(Option::pro_ext, QString(""));
-                childMmpFilename.append(".mmp");
-            }
-            else {
+                childMmpFilename.append(Option::mmp_ext);
+            } else {
                 childMmpFilename = subdir.absoluteFilePath();
-                childMmpFilename.replace(QString(".pro"), QString(".mmp"));
+                childMmpFilename.replace(Option::pro_ext, Option::mmp_ext);
                 sub_name = childMmpFilename;
-                sub_name.replace(QString(".mmp"), QString(""));
+                sub_name.replace(Option::mmp_ext, QString(""));
                 sub_name.replace(0, sub_name.lastIndexOf("/") + 1, QString(""));
                 project->values("SHADOW_BLD_INFS").append(QString("bld.inf.") + sub_name);
             }
@@ -576,7 +574,7 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
             for (int ind = 0; ind < sub->indent; ++ind)
                 printf(" ");
             sub->input_dir = subdir.absolutePath();
-            if(subdir.isRelative() && old_output_dir != oldpwd) {
+            if (subdir.isRelative() && old_output_dir != oldpwd) {
                 sub->output_dir = old_output_dir + "/" + subdir.path();
                 printf("Reading %s [%s]\n", subdir.absoluteFilePath().toLatin1().constData(), sub->output_dir.toLatin1().constData());
             } else {
@@ -590,10 +588,10 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
             QString newpwd = qmake_getpwd();
 
             Option::output_dir = sub->output_dir;
-            if(Option::output_dir.at(Option::output_dir.length()-1) != QLatin1Char('/'))
+            if (Option::output_dir.at(Option::output_dir.length() - 1) != QLatin1Char('/'))
                 Option::output_dir += QLatin1Char('/');
             sub_proj->read(subdir.fileName());
-            if(!sub_proj->variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
+            if (!sub_proj->variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
                 fprintf(stderr, "Project file(%s) not recursed because all requirements not met:\n\t%s\n",
                         subdir.fileName().toLatin1().constData(),
                         sub_proj->values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
@@ -608,7 +606,7 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
                 mmpDependency.insert(parentMmpFilename, childMmpFilename);
 
                 sub->makefile = MetaMakefileGenerator::createMetaGenerator(sub_proj, sub_name);
-                if(0 && sub->makefile->type() == SUBDIRSMETATYPE) {
+                if (0 && sub->makefile->type() == SUBDIRSMETATYPE) {
                     subs.append(sub);
                 } else {
                     const QString output_name = Option::output.fileName();
@@ -626,7 +624,7 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
 
         }
         --recurseDepth;
-	Option::output.setFileName(old_output);
+        Option::output.setFileName(old_output);
         Option::output_dir = old_output_dir;
         qmake_setpwd(oldpwd);
     }
@@ -637,27 +635,27 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
     // To fully expand find all dependencies:
     // Do as recursion, then insert result as subdirs data in project
     QString newpwd = qmake_getpwd();
-    if(!newpwd.endsWith('/'))
+    if (!newpwd.endsWith('/'))
         newpwd += '/';
     int end = newpwd.size() - 1;
     int start = newpwd.lastIndexOf("/", end - 2);
     QString mmpFilename = newpwd.mid(start + 1, end - start - 1);
     mmpFilename.prepend(newpwd);
-    mmpFilename = mmpFilename.append(".mmp");
+    mmpFilename = mmpFilename.append(Option::mmp_ext);
 
     // map mmpfile to its absolute filepath
     mmpPaths.insert(mmpFilename, newpwd);
 
     QStringList directDependencyList = getDependencyList(mmpFilename, -1);
-    for(int i = 0; i < directDependencyList.size(); ++i) {
+    for (int i = 0; i < directDependencyList.size(); ++i) {
         project->values("MMPFILES_DIRECT_DEPENDS").append(directDependencyList.at(i));
     }
 
     QStringList dependencyList = getDependencyList(mmpFilename, 0);
 
     self->output_dir = Option::output_dir;
-    if(!Option::recursive || (!Option::output.fileName().endsWith(Option::dir_sep) && !QFileInfo(Option::output).isDir()))
-	self->output_file = Option::output.fileName();
+    if (!Option::recursive || (!Option::output.fileName().endsWith(Option::dir_sep) && !QFileInfo(Option::output).isDir()))
+        self->output_file = Option::output.fileName();
     self->makefile = new BuildsMetaMakefileGenerator(project, name, false);
     self->makefile->init();
     subs.append(self);
@@ -665,17 +663,18 @@ bool SymbianSubdirsMetaMakefileGenerator::init()
     return true;
 }
 
-QStringList SymbianSubdirsMetaMakefileGenerator::calculateRelativePaths(QString mmpParent, QStringList mmpChildren) {
+QStringList SymbianSubdirsMetaMakefileGenerator::calculateRelativePaths(QString mmpParent, QStringList mmpChildren)
+{
     QStringList mmpRelativePaths;
     QString parentDir = mmpPaths.value(mmpParent);
     QDir directory(parentDir);
-    for(int i = 0; i < mmpChildren.size(); ++i) {
+    for (int i = 0; i < mmpChildren.size(); ++i) {
         QString childDir = mmpPaths.value(mmpChildren.at(i));
-        if(mmpChildren.at(i) == mmpParent)
+        if (mmpChildren.at(i) == mmpParent)
             mmpRelativePaths.append(mmpChildren.at(i));
         else {
             QString relativePath = directory.relativeFilePath(childDir);
-            if(relativePath.startsWith(".."))
+            if (relativePath.startsWith(".."))
                 mmpRelativePaths.append(childDir);
             else
                 directory.relativeFilePath(relativePath);
@@ -750,15 +749,15 @@ MetaMakefileGenerator *
 MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op)
 {
     MetaMakefileGenerator *ret = 0;
-    if((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
-        Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
-        if(proj->first("MAKEFILE_GENERATOR").startsWith("SYMBIAN") && proj->values("TEMPLATE").contains("subdirs")) {
+    if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
+         Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
+        if (proj->first("MAKEFILE_GENERATOR").startsWith("SYMBIAN") && proj->values("TEMPLATE").contains("subdirs")) {
             // new metamakefilegenerator type to support subdirs for symbian related projects
             ret = new SymbianSubdirsMetaMakefileGenerator(proj, name, op);
         } else if (proj->first("TEMPLATE").endsWith("subdirs"))
             ret = new SubdirsMetaMakefileGenerator(proj, name, op);
     }
-    if(!ret)
+    if (!ret)
         ret = new BuildsMetaMakefileGenerator(proj, name, op);
     ret->init();
     return ret;

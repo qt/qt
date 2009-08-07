@@ -41,7 +41,7 @@ static const HashTableValue JSSVGNumberTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGNumberTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGNumberTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGNumberTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSSVGNumberPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGNumberPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGNumberPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGNumberPrototypeTableValues, 0 };
 #else
@@ -71,9 +71,8 @@ JSObject* JSSVGNumberPrototype::self(ExecState* exec, JSGlobalObject* globalObje
 
 const ClassInfo JSSVGNumber::s_info = { "SVGNumber", 0, &JSSVGNumberTable, 0 };
 
-JSSVGNumber::JSSVGNumber(PassRefPtr<Structure> structure, PassRefPtr<JSSVGPODTypeWrapper<float> > impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGNumber::JSSVGNumber(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<float> > impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -95,8 +94,9 @@ bool JSSVGNumber::getOwnPropertySlot(ExecState* exec, const Identifier& property
 
 JSValue jsSVGNumberValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGNumber* castedThis = static_cast<JSSVGNumber*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    float imp(*static_cast<JSSVGNumber*>(asObject(slot.slotBase()))->impl());
+    float imp(*castedThis->impl());
     return jsNumber(exec, imp);
 }
 
@@ -112,9 +112,9 @@ void setJSSVGNumberValue(ExecState* exec, JSObject* thisObject, JSValue value)
         static_cast<JSSVGNumber*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGNumber*>(thisObject)->context());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<float>* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPODTypeWrapper<float>* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGNumber, JSSVGPODTypeWrapper<float> >(exec, object, context);
+    return getDOMObjectWrapper<JSSVGNumber, JSSVGPODTypeWrapper<float> >(exec, globalObject, object, context);
 }
 float toSVGNumber(JSC::JSValue value)
 {

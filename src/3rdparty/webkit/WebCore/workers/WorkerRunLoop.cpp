@@ -125,8 +125,7 @@ String WorkerRunLoop::defaultMode()
     return String();
 }
 
-class RunLoopSetup : Noncopyable
-{
+class RunLoopSetup : public Noncopyable {
 public:
     RunLoopSetup(WorkerRunLoop& runLoop)
         : m_runLoop(runLoop)

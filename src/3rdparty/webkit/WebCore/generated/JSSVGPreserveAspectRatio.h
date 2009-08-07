@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGPreserveAspectRatio;
 
-class JSSVGPreserveAspectRatio : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGPreserveAspectRatio : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGPreserveAspectRatio(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPreserveAspectRatio>, SVGElement* context);
+    JSSVGPreserveAspectRatio(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPreserveAspectRatio>, SVGElement* context);
     virtual ~JSSVGPreserveAspectRatio();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,16 +49,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     SVGPreserveAspectRatio* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGPreserveAspectRatio > m_impl;
+    RefPtr<SVGPreserveAspectRatio> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGPreserveAspectRatio*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGPreserveAspectRatio*, SVGElement* context);
 SVGPreserveAspectRatio* toSVGPreserveAspectRatio(JSC::JSValue);
 
 class JSSVGPreserveAspectRatioPrototype : public JSC::JSObject {

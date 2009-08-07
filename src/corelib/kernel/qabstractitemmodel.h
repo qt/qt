@@ -220,6 +220,8 @@ public:
                                   Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap)) const;
     virtual QSize span(const QModelIndex &index) const;
 
+    const QHash<int,QByteArray> &roleNames() const;
+
 #ifdef Q_NO_USING_KEYWORD
     inline QObject *parent() const { return QObject::parent(); }
 #else
@@ -282,8 +284,10 @@ protected:
     void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     QModelIndexList persistentIndexList() const;
 
+    void setRoleNames(const QHash<int,QByteArray> &roleNames);
+
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QAbstractItemModel)
+    Q_DECLARE_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)
 };
 

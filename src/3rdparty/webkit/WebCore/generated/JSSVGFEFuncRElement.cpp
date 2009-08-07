@@ -40,7 +40,7 @@ static const HashTableValue JSSVGFEFuncRElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFuncRElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFuncRElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEFuncRElementPrototypeTableValues, 0 };
 #else
@@ -56,8 +56,8 @@ JSObject* JSSVGFEFuncRElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSSVGFEFuncRElement::s_info = { "SVGFEFuncRElement", &JSSVGComponentTransferFunctionElement::s_info, 0, 0 };
 
-JSSVGFEFuncRElement::JSSVGFEFuncRElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFEFuncRElement> impl)
-    : JSSVGComponentTransferFunctionElement(structure, impl)
+JSSVGFEFuncRElement::JSSVGFEFuncRElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEFuncRElement> impl)
+    : JSSVGComponentTransferFunctionElement(structure, globalObject, impl)
 {
 }
 

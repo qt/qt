@@ -103,6 +103,7 @@ public:
     uint fontSet : 1;
     QAction::MenuRole menuRole;
     QAction::SoftKeyRole softKeyRole;
+    QAction::Priority priority;
     int iconVisibleInMenu : 3;  // Only has values -1, 0, and 1
     QList<QWidget *> widgets;
 #ifndef QT_NO_GRAPHICSVIEW

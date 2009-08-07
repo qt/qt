@@ -284,7 +284,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
             }
             else {
                 for (int i = 0; i < documentedItems.size(); ++i) {
-		    if (i < MaxEnumValues - 2 || i == documentedItems.size() - 1) {
+		    if (i < MaxEnumValues-2 || i == documentedItems.size()-1) {
 	                if (i != 0)
 		            synopsis += ", ";
 		        synopsis += documentedItems.at(i);
@@ -344,6 +344,43 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
     }
     return synopsis + extra;
 }
+
+#ifdef QDOC_QML
+/*!
+ */
+QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
+{
+    QString name = taggedQmlNode(node);
+    if (summary) {
+	name = linkTag(node,name);
+    }
+    name = "<@name>" + name + "</@name>";
+    QString synopsis = name;
+    if (node->type() == Node::QmlProperty) {
+        const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
+        synopsis += " : " + typified(pn->dataType());
+    }
+
+    QString extra;
+    if (summary) {
+	if (node->status() == Node::Preliminary) {
+	    extra += " (preliminary)";
+	}
+        else if (node->status() == Node::Deprecated) {
+	    extra += " (deprecated)";
+	}
+        else if (node->status() == Node::Obsolete) {
+	    extra += " (obsolete)";
+	}
+    }
+
+    if (!extra.isEmpty()) {
+	extra.prepend("<@extra>");
+	extra.append("</@extra>");
+    }
+    return synopsis + extra;
+}
+#endif
 
 QString CppCodeMarker::markedUpName(const Node *node)
 {
@@ -537,7 +574,7 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                         else if (isStatic) {
                             if ((*c)->type() != Node::Variable
                                     || !(*c)->doc().isEmpty())
-		                insert(staticPublicMembers, *c, style, status);
+		                insert(staticPublicMembers,*c,style,status);
 		        }
                         else if ((*c)->type() == Node::Property) {
                             insert(properties, *c, style, status);
@@ -561,11 +598,11 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                         else if (isStatic) {
                             if ((*c)->type() != Node::Variable
                                     || !(*c)->doc().isEmpty())
-		                insert(staticProtectedMembers, *c, style, status);
+		                insert(staticProtectedMembers,*c,style,status);
 		        }
                         else if ((*c)->type() == Node::Variable) {
                             if (!(*c)->doc().isEmpty())
-                                insert(protectedVariables, *c, style, status);
+                                insert(protectedVariables,*c,style,status);
 		        }
                         else if ((*c)->type() == Node::Function) {
                             if (!insertReimpFunc(protectedFunctions,*c,status))
@@ -582,14 +619,14 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                         else if (isStatic) {
                             if ((*c)->type() != Node::Variable
                                     || !(*c)->doc().isEmpty())
-		                insert(staticPrivateMembers, *c, style, status);
+		                insert(staticPrivateMembers,*c,style,status);
 		        }
                         else if ((*c)->type() == Node::Function) {
                             if (!insertReimpFunc(privateFunctions,*c,status))
                                 insert(privateFunctions, *c, style, status);
 		        }
                         else {
-		            insert(privateTypes, *c, style, status);
+		            insert(privateTypes,*c,style,status);
 		        }
 	            }
 	            ++c;
@@ -706,17 +743,23 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                    "Namespaces",
                                    "namespace",
                                    "namespaces");
-            FastSection classes(inner, "Classes", "class", "classes");
+            FastSection classes(inner,
+                                "Classes",
+                                "class",
+                                "classes");
             FastSection types(inner,
-                              style == Summary ? "Types" : "Type Documentation",
+                              style == Summary ?
+                              "Types" : "Type Documentation",
                               "type",
 			      "types");
             FastSection functions(inner,
-                                  style == Summary ? "Functions" : "Function Documentation",
+                                  style == Summary ?
+                                  "Functions" : "Function Documentation",
 			          "function",
                                   "functions");
             FastSection macros(inner,
-                               style == Summary ? "Macros" : "Macro Documentation",
+                               style == Summary ?
+                               "Macros" : "Macro Documentation",
                                "macro",
                                "macros");
 
@@ -1050,5 +1093,83 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
 
     return result;
 }
+
+#ifdef QDOC_QML
+/*!
+  This function is for documenting QML properties. It returns
+  the list of documentation sections for the children of the
+  \a qmlClassNode.
+
+  Currently, it only handles QML property groups.
+ */
+QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
+                                          SynopsisStyle style)
+{
+    QList<Section> sections;
+    if (qmlClassNode) {
+        if (style == Summary) {
+	    FastSection qmlproperties(qmlClassNode,
+                                      "QML Properties",
+                                      "property",
+                                      "properties");
+	    FastSection qmlsignals(qmlClassNode,
+                                "QML Signals",
+                                "signal",
+                                "signals");
+	    FastSection qmlmethods(qmlClassNode,
+                                   "QML Methods",
+                                   "method",
+                                   "methods");
+
+            NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
+            while (c != qmlClassNode->childNodes().end()) {
+                if ((*c)->subType() == Node::QmlPropertyGroup) {
+                    const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(*c);
+                    NodeList::ConstIterator p = qpgn->childNodes().begin();
+                    while (p != qpgn->childNodes().end()) {
+                        if ((*p)->type() == Node::QmlProperty) {
+                            insert(qmlproperties,*p,style,Okay);
+                        }
+                        ++p;
+                    }
+                }
+                else if ((*c)->type() == Node::QmlSignal) {
+                    insert(qmlsignals,*c,style,Okay);
+                }
+                else if ((*c)->type() == Node::QmlMethod) {
+                    insert(qmlmethods,*c,style,Okay);
+                }
+                ++c;
+            }
+	    append(sections,qmlproperties);
+	    append(sections,qmlsignals);
+	    append(sections,qmlmethods);
+        }
+        else if (style == Detailed) {
+	    FastSection qmlproperties(qmlClassNode,"QML Property Documentation");
+	    FastSection qmlsignals(qmlClassNode,"QML Signal Documentation");
+	    FastSection qmlmethods(qmlClassNode,"QML Method Documentation");
+	    NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
+	    while (c != qmlClassNode->childNodes().end()) {
+                if ((*c)->subType() == Node::QmlPropertyGroup) {
+		    insert(qmlproperties,*c,style,Okay);
+	        }
+                else if ((*c)->type() == Node::QmlSignal) {
+                    insert(qmlsignals,*c,style,Okay);
+                }
+                else if ((*c)->type() == Node::QmlMethod) {
+                    insert(qmlmethods,*c,style,Okay);
+                }
+	        ++c;
+	    }
+	    append(sections,qmlproperties);
+	    append(sections,qmlsignals);
+	    append(sections,qmlmethods);
+        }
+    }
+
+    return sections;
+}
+#endif
 
 QT_END_NAMESPACE

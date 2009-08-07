@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2854,8 +2854,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 
 extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);
 
-bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset,
-            const QBrush &brush)
+bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
     if (backgroundTexture.cacheKey() != brush.texture().cacheKey())
@@ -2864,8 +2863,7 @@ bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {
         const QWidget *widget = static_cast<const QWidget *>(target);
-        const QRegion translated = rgn.translated(offset);
-        const QVector<QRect> &rects = translated.rects();
+        const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i) {
             const QRect rect(rects.at(i));
             painter->drawPixmap(rect.topLeft(), backgroundTexture,

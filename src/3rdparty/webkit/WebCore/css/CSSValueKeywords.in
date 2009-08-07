@@ -341,6 +341,7 @@ invert
 landscape
 level
 line-through
+local
 loud
 lower
 -webkit-marquee
@@ -504,9 +505,11 @@ media-mute-button
 media-play-button
 media-seek-back-button
 media-seek-forward-button
+media-rewind-button
+media-return-to-realtime-button
 media-slider
 media-sliderthumb
-media-timeline-container
+media-controls-background
 media-current-time-display
 media-time-remaining-display
 menulist
@@ -541,15 +544,11 @@ round
 # border-box/content-box/padding-box should be used instead.
 #
 border
+border-box
 content
+content-box
 padding
 padding-box
-
-#
-# CSS_PROP_BOX_SIZING
-#
-border-box
-content-box
 
 #
 # CSS_PROP__KHTML_RTL_ORDERING

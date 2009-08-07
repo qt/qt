@@ -205,7 +205,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
                 editQuery.addBindValue(rec.value(i));
         }
         for (i = 0; i < whereValues.count(); ++i) {
-            if (whereValues.isGenerated(i))
+            if (whereValues.isGenerated(i) && !whereValues.isNull(i))
                 editQuery.addBindValue(whereValues.value(i));
         }
 
@@ -538,6 +538,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
         isOk = updateRowInTable(index.row(), d->editBuffer);
         if (isOk)
             select();
+        emit dataChanged(index, index);
         break; }
     case OnRowChange:
         if (index.row() == d->insertIndex) {

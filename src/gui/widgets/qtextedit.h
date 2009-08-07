@@ -70,7 +70,7 @@ class QMimeData;
 class Q_GUI_EXPORT QTextEdit : public QAbstractScrollArea
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QTextEdit)
+    Q_DECLARE_PRIVATE(QTextEdit)
     Q_FLAGS(AutoFormatting)
     Q_ENUMS(LineWrapMode)
     Q_PROPERTY(AutoFormatting autoFormatting READ autoFormatting WRITE setAutoFormatting)
@@ -414,6 +414,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_currentCharFormatChanged(const QTextCharFormat &))
     Q_PRIVATE_SLOT(d_func(), void _q_adjustScrollbars())
     Q_PRIVATE_SLOT(d_func(), void _q_ensureVisible(const QRectF &))
+    Q_PRIVATE_SLOT(d_func(), void _q_gestureTriggered())
     friend class QTextEditControl;
     friend class QTextDocument;
     friend class QTextControl;

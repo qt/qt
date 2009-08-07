@@ -90,7 +90,6 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QShowEvent;
 class QHideEvent;
-class QGestureEvent;
 class QInputContext;
 class QIcon;
 class QWindowSurface;
@@ -143,7 +142,7 @@ class QWidgetPrivate;
 class Q_GUI_EXPORT QWidget : public QObject, public QPaintDevice
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QWidget)
+    Q_DECLARE_PRIVATE(QWidget)
 
     Q_PROPERTY(bool modal READ isModal)
     Q_PROPERTY(Qt::WindowModality windowModality READ windowModality WRITE setWindowModality)
@@ -616,11 +615,6 @@ public:
     void setWindowSurface(QWindowSurface *surface);
     QWindowSurface *windowSurface() const;
 
-    int grabGesture(const QString &gesture);
-    int grabGesture(Qt::GestureType gesture);
-    void releaseGesture(int gestureId);
-    void setGestureEnabled(int gestureId, bool enable = true);
-
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);
 
@@ -765,7 +759,6 @@ private:
     friend class QSymbianControl;
     friend class QS60WindowSurface;
 #endif
-    friend class QGestureManager;
 #ifdef Q_WS_X11
     friend void qt_net_update_user_time(QWidget *tlw, unsigned long timestamp);
     friend void qt_net_remove_user_time(QWidget *tlw);

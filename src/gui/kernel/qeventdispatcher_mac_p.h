@@ -108,7 +108,7 @@ class QEventDispatcherMacPrivate;
 class QEventDispatcherMac : public QAbstractEventDispatcher
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherMac)
+    Q_DECLARE_PRIVATE(QEventDispatcherMac)
 
 public:
     explicit QEventDispatcherMac(QObject *parent = 0);

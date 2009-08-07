@@ -127,6 +127,8 @@ static inline IntPoint topLevelOffsetFor(PlatformWidget widget)
 
 void PluginView::init()
 {
+    LOG(Plugins, "PluginView::init(): Initializing plug-in '%s'", m_plugin->name().utf8().data());
+
     if (m_haveInitialized)
         return;
     m_haveInitialized = true;
@@ -144,23 +146,54 @@ void PluginView::init()
 
     if (!start()) {
         m_status = PluginStatusCanNotLoadPlugin;
+        stop(); // Make sure we unregister the plugin
+        return;
+    }
+
+    if (m_drawingModel == NPDrawingModel(-1)) {
+        // We default to QuickDraw, even though we don't support it,
+        // since that's what Safari does, and some plugins expect this
+        // behavior and never set the drawing model explicitly.
+#ifndef NP_NO_QUICKDRAW
+        m_drawingModel = NPDrawingModelQuickDraw;
+#else
+        // QuickDraw not available, so we have to default to CoreGraphics
+        m_drawingModel = NPDrawingModelCoreGraphics;
+#endif
+    }
+
+    if (m_eventModel == NPEventModel(-1)) {
+        // If the plug-in did not specify an event model
+        // we default to Carbon, when it is available.
+#ifndef NP_NO_CARBON
+        m_eventModel = NPEventModelCarbon;
+#else
+        m_eventModel = NPEventModelCocoa;
+#endif
+    }
+
+    // Gracefully handle unsupported drawing or event models. We can do this
+    // now since the drawing and event model can only be set during NPP_New.
+    NPBool eventModelSupported, drawingModelSupported;
+    if (getValueStatic(NPNVariable(NPNVsupportsCarbonBool + m_eventModel), &eventModelSupported) != NPERR_NO_ERROR
+            || !eventModelSupported) {
+        m_status = PluginStatusCanNotLoadPlugin;
+        LOG(Plugins, "Plug-in '%s' uses unsupported event model %s",
+                m_plugin->name().utf8().data(), prettyNameForEventModel(m_eventModel));
+        stop();
+        return;
+    }
+
+    if (getValueStatic(NPNVariable(NPNVsupportsQuickDrawBool + m_drawingModel), &drawingModelSupported) != NPERR_NO_ERROR
+            || !drawingModelSupported) {
+        m_status = PluginStatusCanNotLoadPlugin;
+        LOG(Plugins, "Plug-in '%s' uses unsupported drawing model %s",
+                m_plugin->name().utf8().data(), prettyNameForDrawingModel(m_drawingModel));
+        stop();
         return;
     }
 
     setPlatformPluginWidget(m_parentFrame->view()->hostWindow()->platformWindow());
-
-    m_npCgContext.window = 0;
-    m_npCgContext.context = 0;
-    m_npWindow.window = (void*)&m_npCgContext;
-    m_npWindow.type = NPWindowTypeWindow;
-    m_npWindow.x = 0;
-    m_npWindow.y = 0;
-    m_npWindow.width = 0;
-    m_npWindow.height = 0;
-    m_npWindow.clipRect.left = 0;
-    m_npWindow.clipRect.top = 0;
-    m_npWindow.clipRect.right = 0;
-    m_npWindow.clipRect.bottom = 0;
 
     show();
 
@@ -173,6 +206,8 @@ void PluginView::init()
 
 PluginView::~PluginView()
 {
+    LOG(Plugins, "PluginView::~PluginView()");
+
     stop();
 
     deleteAllValues(m_requests);
@@ -193,6 +228,8 @@ void PluginView::stop()
     if (!m_isStarted)
         return;
 
+    LOG(Plugins, "PluginView::stop(): Stopping plug-in '%s'", m_plugin->name().utf8().data());
+
     HashSet<RefPtr<PluginStream> > streams = m_streams;
     HashSet<RefPtr<PluginStream> >::iterator end = streams.end();
     for (HashSet<RefPtr<PluginStream> >::iterator it = streams.begin(); it != end; ++it) {
@@ -204,7 +241,7 @@ void PluginView::stop()
 
     m_isStarted = false;
 
-    JSC::JSLock::DropAllLocks dropAllLocks(false);
+    JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
 
     PluginMainThreadScheduler::scheduler().unregisterPlugin(m_instance);
 
@@ -218,9 +255,11 @@ void PluginView::stop()
     m_instance->pdata = 0;
 }
 
+// Used before the plugin view has been initialized properly, and as a
+// fallback for variables that do not require a view to resolve.
 NPError PluginView::getValueStatic(NPNVariable variable, void* value)
 {
-    LOG(Plugins, "PluginView::getValueStatic(%d)", variable);
+    LOG(Plugins, "PluginView::getValueStatic(%s)", prettyNameForNPNVariable(variable).data());
 
     switch (variable) {
     case NPNVToolkit:
@@ -231,14 +270,39 @@ NPError PluginView::getValueStatic(NPNVariable variable, void* value)
         *static_cast<NPBool*>(value) = true;
         return NPERR_NO_ERROR;
 
+#ifndef NP_NO_CARBON
+    case NPNVsupportsCarbonBool:
+        *static_cast<NPBool*>(value) = true;
+        return NPERR_NO_ERROR;
+
+#endif
+    case NPNVsupportsCocoaBool:
+        *static_cast<NPBool*>(value) = false;
+        return NPERR_NO_ERROR;
+
+    // CoreGraphics is the only drawing model we support
+    case NPNVsupportsCoreGraphicsBool:
+        *static_cast<NPBool*>(value) = true;
+        return NPERR_NO_ERROR;
+
+#ifndef NP_NO_QUICKDRAW
+    // QuickDraw is deprecated in 10.5 and not supported on 64-bit
+    case NPNVsupportsQuickDrawBool:
+#endif
+    case NPNVsupportsOpenGLBool:
+    case NPNVsupportsCoreAnimationBool:
+        *static_cast<NPBool*>(value) = false;
+        return NPERR_NO_ERROR;
+
     default:
         return NPERR_GENERIC_ERROR;
     }
 }
 
+// Used only for variables that need a view to resolve
 NPError PluginView::getValue(NPNVariable variable, void* value)
 {
-    LOG(Plugins, "PluginView::getValue(%d)", variable);
+    LOG(Plugins, "PluginView::getValue(%s)", prettyNameForNPNVariable(variable).data());
 
     switch (variable) {
     case NPNVWindowNPObject: {
@@ -278,10 +342,6 @@ NPError PluginView::getValue(NPNVariable variable, void* value)
         return NPERR_NO_ERROR;
     }
 
-    case NPNVsupportsCoreGraphicsBool:
-        *static_cast<NPBool*>(value) = true;
-        return NPERR_NO_ERROR;
-
     default:
         return getValueStatic(variable, value);
     }
@@ -289,6 +349,8 @@ NPError PluginView::getValue(NPNVariable variable, void* value)
 }
 void PluginView::setParent(ScrollView* parent)
 {
+    LOG(Plugins, "PluginView::setParent(%p)", parent);
+
     Widget::setParent(parent);
 
     if (parent)
@@ -363,6 +425,7 @@ void PluginView::setNPWindowIfNeeded()
     if (!newWindowRef)
         return;
 
+    m_npWindow.type = NPWindowTypeWindow;
     m_npWindow.window = (void*)&m_npCgContext;
     m_npCgContext.window = newWindowRef;
     m_npCgContext.context = newContextRef;
@@ -373,13 +436,18 @@ void PluginView::setNPWindowIfNeeded()
     m_npWindow.height = m_windowRect.height();
 
     // TODO: (also clip against scrollbars, etc.)
-    m_npWindow.clipRect.left = 0;
-    m_npWindow.clipRect.top = 0;
-    m_npWindow.clipRect.right = m_windowRect.width();
-    m_npWindow.clipRect.bottom = m_windowRect.height();
+    m_npWindow.clipRect.left = max(0, m_windowRect.x());
+    m_npWindow.clipRect.top = max(0, m_windowRect.y());
+    m_npWindow.clipRect.right = m_windowRect.x() + m_windowRect.width();
+    m_npWindow.clipRect.bottom = m_windowRect.y() + m_windowRect.height();
+
+    LOG(Plugins, "PluginView::setNPWindowIfNeeded(): window=%p, context=%p,"
+            " window.x:%d window.y:%d window.width:%d window.height:%d window.clipRect size:%dx%d",
+            newWindowRef, newContextRef, m_npWindow.x, m_npWindow.y, m_npWindow.width, m_npWindow.height,
+            m_npWindow.clipRect.right - m_npWindow.clipRect.left, m_npWindow.clipRect.bottom - m_npWindow.clipRect.top);
 
     PluginView::setCurrentPluginView(this);
-    JSC::JSLock::DropAllLocks dropAllLocks(false);
+    JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
     setCallingPlugin(true);
     m_plugin->pluginFuncs()->setwindow(m_instance, &m_npWindow);
     setCallingPlugin(false);
@@ -410,7 +478,7 @@ void PluginView::updatePluginWidget()
 
 void PluginView::paint(GraphicsContext* context, const IntRect& rect)
 {
-    if (!m_isStarted) {
+    if (!m_isStarted || m_status != PluginStatusLoadedSuccessfully) {
         paintMissingPluginIcon(context, rect);
         return;
     }
@@ -467,6 +535,9 @@ void PluginView::forceRedraw()
 
 void PluginView::handleMouseEvent(MouseEvent* event)
 {
+    if (!m_isStarted)
+        return;
+
     EventRecord record;
 
     if (event->type() == eventNames().mousemoveEvent) {
@@ -510,6 +581,9 @@ void PluginView::handleMouseEvent(MouseEvent* event)
 
 void PluginView::handleKeyboardEvent(KeyboardEvent* event)
 {
+    if (!m_isStarted)
+        return;
+
     LOG(Plugins, "PluginView::handleKeyboardEvent() ----------------- ");
 
     LOG(Plugins, "PV::hKE(): KE.keyCode: 0x%02X, KE.charCode: %d",
@@ -638,7 +712,7 @@ Point PluginView::globalMousePosForPlugin() const
 bool PluginView::dispatchNPEvent(NPEvent& event)
 {
     PluginView::setCurrentPluginView(this);
-    JSC::JSLock::DropAllLocks dropAllLocks(false);
+    JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
     setCallingPlugin(true);
 
     bool accepted = m_plugin->pluginFuncs()->event(m_instance, &event);

@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \since 4.3
 
     On saving the form, the extension is queried for a script snippet
-    to be associated with the widget while saving the \c .ui file.
+    to be associated with the widget while saving the UI file.
     This script is then run after creating the widget by \l uic or
     QUiLoader.
 
@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
     for which an editor is provided by the QDesignerTaskMenuExtension.
 
     While saving the form, the state is serialized as a QVariantMap of
-    \QD-supported properties, which is stored in the \c .ui file. This is
+    \QD-supported properties, which is stored in the UI file. This is
     handled by data() and setData().
 
     For item view contents, there might be for example a key that determines
@@ -97,7 +97,7 @@ QDesignerScriptExtension::~QDesignerScriptExtension()
     \fn virtual QVariantMap QDesignerScriptExtension::data() const
 
     Returns a map of variants describing the internal state to be
-    stored in the  \c .ui file.
+    stored in the UI file.
 */
 
 /*!

@@ -123,8 +123,11 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
     }
 }
 
+QObjectData::~QObjectData() {}
+QDeclarativeData::~QDeclarativeData() {}
+
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), currentSender(0), currentChildBeingDeleted(0), connectionLists(0), senders(0)
+    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0), declarativeData(0), objectGuards(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -140,15 +143,18 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    connectedSignals = 0;
+    for (uint i = 0; i < (sizeof connectedSignals / sizeof connectedSignals[0]); ++i)
+        connectedSignals[i] = 0;
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
+    metaObject = 0;
     hasGuards = false;
 }
 
 QObjectPrivate::~QObjectPrivate()
 {
+    delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
     if (deleteWatch)
         *deleteWatch = 1;
 #ifndef QT_NO_USERDATA
@@ -428,8 +434,24 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
  */
 void QObjectPrivate::clearGuards(QObject *object)
 {
-    if (!QObjectPrivate::get(object)->hasGuards)
+    QObjectPrivate *priv = QObjectPrivate::get(object);
+    QGuard<QObject> *guard = priv->objectGuards;
+    while (guard) {
+        guard->o = 0;
+        guard = guard->next;
+    }
+    while (priv->objectGuards) {
+        guard = priv->objectGuards;
+        guard->prev = 0;
+        if (guard->next) guard->next->prev = &priv->objectGuards;
+        priv->objectGuards = guard->next;
+        guard->next = 0;
+        guard->objectDestroyed(object);
+    }
+
+    if (!priv->hasGuards)
         return;
+
     GuardHash *hash = 0;
     QMutex *mutex = 0;
     QT_TRY {
@@ -480,7 +502,7 @@ QMetaCallEvent::~QMetaCallEvent()
  */
 int QMetaCallEvent::placeMetaCall(QObject *object)
 {
-    return object->qt_metacall(QMetaObject::InvokeMetaMethod, id_, args_);
+    return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, id_, args_);
 }
 
 /*!
@@ -578,7 +600,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \l uic generates code that invokes this function to enable
     auto-connection to be performed between widgets on forms created
     with \QD. More information about using auto-connection with \QD is
-    given in the \l{Using a Designer .ui File in Your Application} section of
+    given in the \l{Using a Designer UI File in Your Application} section of
     the \QD manual.
 
     \section2 Dynamic Properties
@@ -774,6 +796,8 @@ QObject::~QObject()
 
     QT_TRY {
         emit destroyed(this);
+        if (d->declarativeData)
+            d->declarativeData->destroyed(this);  // ### TODO: Can this throw?
     } QT_CATCH(...) {
         // all the signal/slots connections are still in place - if we don't
         // quit now, we will crash pretty soon.
@@ -898,7 +922,7 @@ QObject::~QObject()
 QObjectPrivate::Connection::~Connection()
 {
     if (argumentTypes != &DIRECT_CONNECTION_ONLY)
-        delete [] argumentTypes;
+        delete [] static_cast<int *>(argumentTypes);
 }
 
 
@@ -2132,6 +2156,34 @@ void QObject::deleteLater()
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 17
 
+    \section1 Meta Data
+
+    Additional data can be attached to each translatable message.
+    The syntax:
+
+    \tt{//= <id>}
+
+    can be used to give the message a unique identifier to support tools
+    which need it.
+    The syntax:
+
+    \tt{//~ <field name> <field contents>}
+
+    can be used to attach meta data to the message. The field name should consist
+    of a domain prefix (possibly the conventional file extension of the file format
+    the field is inspired by), a hyphen and the actual field name in
+    underscore-delimited notation. For storage in TS files, the field name together
+    with the prefix "extra-" will form an XML element name. The field contents will
+    be XML-escaped, but otherwise appear verbatim as the element's contents.
+    Any number of unique fields can be added to each message.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp meta data
+
+    Meta data appearing right in front of a magic TRANSLATOR comment applies to the
+    whole TS file.
+
     \section1 Character Encodings
 
     You can set the encoding for \a sourceText by calling QTextCodec::setCodecForTr().
@@ -2886,10 +2938,16 @@ bool QMetaObject::connect(const QObject *sender, int signal_index,
     if (c->next)
         c->next->prev = &c->next;
 
-    if (signal_index < 0)
-        sender->d_func()->connectedSignals = ~0u;
-    else if (signal_index < 32)
-        sender->d_func()->connectedSignals |= (1 << signal_index);
+    if (signal_index < 0) {
+        for (uint i = 0; i < (sizeof sender->d_func()->connectedSignals
+                              / sizeof sender->d_func()->connectedSignals[0] ); ++i)
+            sender->d_func()->connectedSignals[i] = ~0u;
+    } else if (signal_index < (int)sizeof sender->d_func()->connectedSignals * 8) {
+        uint n = (signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
+        sender->d_func()->connectedSignals[n] |= (1 << (signal_index - n * 8
+                                                        * sizeof sender->d_func()->connectedSignals[0]));
+    }
+
 
     return true;
 }
@@ -3179,10 +3237,10 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
             }
 
 #if defined(QT_NO_EXCEPTIONS)
-            receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
+            metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
 #else
             QT_TRY {
-                receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
+                metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
             } QT_CATCH(...) {
                 locker.relock();
 
@@ -3231,11 +3289,12 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
  */
 void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
 {
-    if (signal_index < 32
+    if (signal_index < (int)sizeof(sender->d_func()->connectedSignals) * 8
         && !qt_signal_spy_callback_set.signal_begin_callback
         && !qt_signal_spy_callback_set.signal_end_callback) {
-        uint signal_mask = 1 << signal_index;
-        if ((sender->d_func()->connectedSignals & signal_mask) == 0)
+        uint n = (signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
+        uint m = 1 << (signal_index - n * 8 * sizeof sender->d_func()->connectedSignals[0]);
+        if ((sender->d_func()->connectedSignals[n] & m) == 0)
             // nothing connected to these signals, and no spy
             return;
     }
@@ -3248,11 +3307,12 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                            void **argv)
 {
     int signal_index = m->methodOffset() + local_signal_index;
-    if (signal_index < 32
+    if (signal_index < (int)sizeof(sender->d_func()->connectedSignals) * 8
         && !qt_signal_spy_callback_set.signal_begin_callback
         && !qt_signal_spy_callback_set.signal_end_callback) {
-        uint signal_mask = 1 << signal_index;
-        if ((sender->d_func()->connectedSignals & signal_mask) == 0)
+        uint n = (signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
+        uint m = 1 << (signal_index - n * 8 * sizeof sender->d_func()->connectedSignals[0]);
+        if ((sender->d_func()->connectedSignals[n] & m) == 0)
             // nothing connected to these signals, and no spy
             return;
     }
@@ -3264,21 +3324,59 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 void QMetaObject::activate(QObject *sender, const QMetaObject *m,
                            int from_local_signal_index, int to_local_signal_index, void **argv)
 {
+    Q_ASSERT(from_local_signal_index <= to_local_signal_index);
     int offset = m->methodOffset();
     int from_signal_index = offset + from_local_signal_index;
     int to_signal_index = offset + to_local_signal_index;
-    if (to_signal_index < 32
+
+    if (to_signal_index < (int)sizeof(sender->d_func()->connectedSignals) * 8
         && !qt_signal_spy_callback_set.signal_begin_callback
         && !qt_signal_spy_callback_set.signal_end_callback) {
-        uint signal_mask = (1 << (to_signal_index + 1)) - 1;
-        signal_mask ^= (1 << from_signal_index) - 1;
-        if ((sender->d_func()->connectedSignals & signal_mask) == 0)
+
+        uint n = (from_signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
+        uint m = 1 << (from_signal_index - n * 8 * sizeof sender->d_func()->connectedSignals[0]);
+        uint nt = (to_signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
+        uint mt = 1 << (to_signal_index - n * 8 * sizeof sender->d_func()->connectedSignals[0]);
+        bool connected = false;
+        quint32 *connectedSignals = sender->d_func()->connectedSignals;
+        for (uint i = 0; !connected && i < (sizeof sender->d_func()->connectedSignals
+                                            / sizeof sender->d_func()->connectedSignals[0]); ++i) {
+            uint mask = 0;
+            if (i > n)
+                mask = ~0u;
+            else if (i == n)
+                mask = ~(m -1);
+            if (i > nt)
+                mask = 0;
+            else if (i == nt)
+                mask &= (mt << 1) - 1;
+            connected = connectedSignals[i] & mask;
+        }
+        if (!connected)
             // nothing connected to these signals, and no spy
             return;
     }
     activate(sender, from_signal_index, to_signal_index, argv);
 }
 
+/*! \internal
+
+  Returns true if the signal with index \a signal_index from object \a sender is connected.
+  Signals with indices above a certain range are always considered connected (see connectedSignals
+  in QObjectPrivate). If a signal spy is installed, all signals are considered connected.
+*/
+bool QMetaObject::isConnected(QObject *sender, int signal_index) {
+    if (signal_index < (int)sizeof(sender->d_func()->connectedSignals) * 8
+        && !qt_signal_spy_callback_set.signal_begin_callback
+        && !qt_signal_spy_callback_set.signal_end_callback) {
+        uint n = (signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
+        uint m = 1 << (signal_index - n * 8 * sizeof sender->d_func()->connectedSignals[0]);
+        if ((sender->d_func()->connectedSignals[n] & m) == 0)
+            // nothing connected to these signals, and no spy
+            return false;
+    }
+    return true;
+}
 
 /*****************************************************************************
   Properties
@@ -3868,22 +3966,16 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     Synonym for QList<QObject *>.
 */
 
-#ifdef QT_JAMBI_BUILD
-class QDPtrAccessor : public QObject {
-public:
-    QObjectData *d() const { return d_ptr; }
-};
-#endif
-
 void qDeleteInEventHandler(QObject *o)
 {
 #ifdef QT_JAMBI_BUILD
     if (!o)
         return;
-    ((QDPtrAccessor *) o)->d()->inEventHandler = false;
+    QObjectPrivate::get(o)->inEventHandler = false;
 #endif
     delete o;
 }
+
 
 QT_END_NAMESPACE
 

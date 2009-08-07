@@ -115,6 +115,7 @@ static bool qt_resolve_pbuffer_extensions()
     if (!qt_glXChooseFBConfig)
 #endif
     {
+#if !defined(QT_NO_LIBRARY)
         extern const QString qt_gl_library_name();
         QLibrary gl(qt_gl_library_name());
         qt_glXChooseFBConfig = (_glXChooseFBConfig) gl.resolve("glXChooseFBConfig");
@@ -123,6 +124,7 @@ static bool qt_resolve_pbuffer_extensions()
         qt_glXDestroyPbuffer = (_glXDestroyPbuffer) gl.resolve("glXDestroyPbuffer");
         qt_glXGetFBConfigAttrib = (_glXGetFBConfigAttrib) gl.resolve("glXGetFBConfigAttrib");
         qt_glXMakeContextCurrent = (_glXMakeContextCurrent) gl.resolve("glXMakeContextCurrent");
+#endif
     }
 
     resolved = qt_glXMakeContextCurrent ? true : false;

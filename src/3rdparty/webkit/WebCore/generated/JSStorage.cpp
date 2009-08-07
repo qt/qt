@@ -48,7 +48,7 @@ static const HashTableValue JSStorageTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStorageTable =
+static JSC_CONST_HASHTABLE HashTable JSStorageTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSStorageTableValues, 0 };
 #else
@@ -62,19 +62,19 @@ static const HashTableValue JSStorageConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStorageConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSStorageConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSStorageConstructorTableValues, 0 };
 #else
     { 1, 0, JSStorageConstructorTableValues, 0 };
 #endif
 
-class JSStorageConstructor : public DOMObject {
+class JSStorageConstructor : public DOMConstructorObject {
 public:
-    JSStorageConstructor(ExecState* exec)
-        : DOMObject(JSStorageConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSStorageConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSStorageConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSStoragePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSStoragePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -105,7 +105,7 @@ static const HashTableValue JSStoragePrototypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStoragePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSStoragePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSStoragePrototypeTableValues, 0 };
 #else
@@ -126,8 +126,8 @@ bool JSStoragePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 const ClassInfo JSStorage::s_info = { "Storage", 0, &JSStorageTable, 0 };
 
-JSStorage::JSStorage(PassRefPtr<Structure> structure, PassRefPtr<Storage> impl)
-    : DOMObject(structure)
+JSStorage::JSStorage(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Storage> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -158,14 +158,16 @@ bool JSStorage::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsStorageLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSStorage* castedThis = static_cast<JSStorage*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Storage* imp = static_cast<Storage*>(static_cast<JSStorage*>(asObject(slot.slotBase()))->impl());
+    Storage* imp = static_cast<Storage*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsStorageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSStorage*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSStorage* domObject = static_cast<JSStorage*>(asObject(slot.slotBase()));
+    return JSStorage::getConstructor(exec, domObject->globalObject());
 }
 void JSStorage::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -174,9 +176,9 @@ void JSStorage::put(ExecState* exec, const Identifier& propertyName, JSValue val
     Base::put(exec, propertyName, value, slot);
 }
 
-JSValue JSStorage::getConstructor(ExecState* exec)
+JSValue JSStorage::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSStorageConstructor>(exec);
+    return getDOMConstructor<JSStorageConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsStoragePrototypeFunctionKey(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -250,9 +252,9 @@ JSValue JSC_HOST_CALL jsStoragePrototypeFunctionClear(ExecState* exec, JSObject*
     return jsUndefined();
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Storage* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Storage* object)
 {
-    return getDOMObjectWrapper<JSStorage>(exec, object);
+    return getDOMObjectWrapper<JSStorage>(exec, globalObject, object);
 }
 Storage* toStorage(JSC::JSValue value)
 {

@@ -48,7 +48,7 @@ static const HashTableValue JSSVGPathSegArcRelTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegArcRelTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcRelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGPathSegArcRelTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSSVGPathSegArcRelPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegArcRelPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcRelPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegArcRelPrototypeTableValues, 0 };
 #else
@@ -78,8 +78,8 @@ JSObject* JSSVGPathSegArcRelPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSSVGPathSegArcRel::s_info = { "SVGPathSegArcRel", &JSSVGPathSeg::s_info, &JSSVGPathSegArcRelTable, 0 };
 
-JSSVGPathSegArcRel::JSSVGPathSegArcRel(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegArcRel> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegArcRel::JSSVGPathSegArcRel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegArcRel> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -95,50 +95,57 @@ bool JSSVGPathSegArcRel::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsSVGPathSegArcRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegArcRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 
 JSValue jsSVGPathSegArcRelR1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(castedThis->impl());
     return jsNumber(exec, imp->r1());
 }
 
 JSValue jsSVGPathSegArcRelR2(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(castedThis->impl());
     return jsNumber(exec, imp->r2());
 }
 
 JSValue jsSVGPathSegArcRelAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(castedThis->impl());
     return jsNumber(exec, imp->angle());
 }
 
 JSValue jsSVGPathSegArcRelLargeArcFlag(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(castedThis->impl());
     return jsBoolean(imp->largeArcFlag());
 }
 
 JSValue jsSVGPathSegArcRelSweepFlag(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegArcRel* imp = static_cast<SVGPathSegArcRel*>(castedThis->impl());
     return jsBoolean(imp->sweepFlag());
 }
 

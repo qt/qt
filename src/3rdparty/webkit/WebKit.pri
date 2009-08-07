@@ -21,7 +21,11 @@ building-libs {
             LIBS += -framework QtWebKit
             QMAKE_FRAMEWORKPATH = $$OUTPUT_DIR/lib $$QMAKE_FRAMEWORKPATH
         } else {
-            LIBS += -lQtWebKit
+            win32-*|wince* {
+                LIBS += -lQtWebKit$${QT_MAJOR_VERSION}
+            } else {
+                LIBS += -lQtWebKit
+            }
         }
     }
     DEPENDPATH += $$PWD/WebKit/qt/Api
@@ -34,6 +38,23 @@ CONFIG(release, debug|release) {
 
 BASE_DIR = $$PWD
 INCLUDEPATH += $$PWD/WebKit/qt/Api
+
+# Enable GNU compiler extensions to the ARM compiler for all Qt ports using RVCT
+*-armcc {
+    QMAKE_CFLAGS += --gnu
+    QMAKE_CXXFLAGS += --gnu --no_parse_templates
+} 
+
+symbian {
+    QMAKE_CXXFLAGS.ARMCC += --gnu --no_parse_templates
+    DEFINES *= QT_NO_UITOOLS
+}
+
+contains(DEFINES, QT_NO_UITOOLS): CONFIG -= uitools
+
+# Disable a few warnings on Windows. The warnings are also
+# disabled in WebKitLibraries/win/tools/vsprops/common.vsprops
+win32-msvc*: QMAKE_CXXFLAGS += -wd4291 -wd4344 -wd4503 -wd4800 -wd4819 -wd4996
 
 #
 # For builds inside Qt we interpret the output rule and the input of each extra compiler manually

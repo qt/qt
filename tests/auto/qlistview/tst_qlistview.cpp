@@ -112,6 +112,7 @@ private slots:
     void task196118_visualRegionForSelection();
     void task254449_draggingItemToNegativeCoordinates();
     void keyboardSearch();
+    void shiftSelectionWithNonUniformItemSizes();
 };
 
 // Testing get/set functions
@@ -1656,6 +1657,72 @@ void tst_QListView::keyboardSearch()
     QTest::keyClick(&view, Qt::Key_N);
     QTest::qWait(10);
     QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+}
+
+void tst_QListView::shiftSelectionWithNonUniformItemSizes()
+{
+    // This checks that no items are selected unexpectedly by Shift-Arrow
+    // when items with non-uniform sizes are laid out in a grid
+    {   // First test: QListView::LeftToRight flow
+        QStringList items;
+        items << "Long\nText" << "Text" << "Text" << "Text";
+        QStringListModel model(items);
+
+        QListView view;
+        view.setFixedSize(250, 250);
+        view.setFlow(QListView::LeftToRight);
+        view.setGridSize(QSize(100, 100));
+        view.setSelectionMode(QListView::ExtendedSelection);
+        view.setViewMode(QListView::IconMode);
+        view.setModel(&model);
+        view.show();
+        QTest::qWait(30);
+
+        // Verfify that item sizes are non-uniform
+        QVERIFY(view.sizeHintForIndex(model.index(0, 0)).height() > view.sizeHintForIndex(model.index(1, 0)).height());
+
+        QModelIndex index = model.index(3, 0);
+        view.setCurrentIndex(index);
+        QCOMPARE(view.currentIndex(), index);
+
+        QTest::keyClick(&view, Qt::Key_Up, Qt::ShiftModifier);
+        QTest::qWait(10);
+        QCOMPARE(view.currentIndex(), model.index(1, 0));
+
+        QModelIndexList selected = view.selectionModel()->selectedIndexes();
+        QCOMPARE(selected.count(), 3);
+        QVERIFY(!selected.contains(model.index(0, 0)));
+    }
+    {   // Second test: QListView::TopToBottom flow
+        QStringList items;
+        items << "ab" << "a" << "a" << "a";
+        QStringListModel model(items);
+
+        QListView view;
+        view.setFixedSize(250, 250);
+        view.setFlow(QListView::TopToBottom);
+        view.setGridSize(QSize(100, 100));
+        view.setSelectionMode(QListView::ExtendedSelection);
+        view.setViewMode(QListView::IconMode);
+        view.setModel(&model);
+        view.show();
+        QTest::qWait(30);
+
+        // Verfify that item sizes are non-uniform
+        QVERIFY(view.sizeHintForIndex(model.index(0, 0)).width() > view.sizeHintForIndex(model.index(1, 0)).width());
+
+        QModelIndex index = model.index(3, 0);
+        view.setCurrentIndex(index);
+        QCOMPARE(view.currentIndex(), index);
+
+        QTest::keyClick(&view, Qt::Key_Left, Qt::ShiftModifier);
+        QTest::qWait(10);
+        QCOMPARE(view.currentIndex(), model.index(1, 0));
+
+        QModelIndexList selected = view.selectionModel()->selectedIndexes();
+        QCOMPARE(selected.count(), 3);
+        QVERIFY(!selected.contains(model.index(0, 0)));
+    }
 }
 
 QTEST_MAIN(tst_QListView)

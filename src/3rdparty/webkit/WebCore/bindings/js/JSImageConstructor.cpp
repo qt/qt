@@ -35,18 +35,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSImageConstructor);
 const ClassInfo JSImageConstructor::s_info = { "ImageConstructor", 0, 0, 0 };
 
 JSImageConstructor::JSImageConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-    : DOMObject(JSImageConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
-    , m_globalObject(globalObject)
+    : DOMConstructorWithDocument(JSImageConstructor::createStructure(globalObject->objectPrototype()), globalObject)
 {
-    ASSERT(globalObject->scriptExecutionContext());
-    ASSERT(globalObject->scriptExecutionContext()->isDocument());
-
-    putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
-}
-
-Document* JSImageConstructor::document() const
-{
-    return static_cast<Document*>(m_globalObject->scriptExecutionContext());
+    putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec, globalObject), None);
 }
 
 static JSObject* constructImage(ExecState* exec, JSObject* constructor, const ArgList& args)
@@ -64,34 +55,28 @@ static JSObject* constructImage(ExecState* exec, JSObject* constructor, const Ar
         height = args.at(1).toInt32(exec);
     }
 
-    Document* document = static_cast<JSImageConstructor*>(constructor)->document();
+    JSImageConstructor* jsConstructor = static_cast<JSImageConstructor*>(constructor);
+    Document* document = jsConstructor->document();
     if (!document)
         return throwError(exec, ReferenceError, "Image constructor associated document is unavailable");
 
     // Calling toJS on the document causes the JS document wrapper to be
     // added to the window object. This is done to ensure that JSDocument::mark
     // will be called (which will cause the image element to be marked if necessary).
-    toJS(exec, document);
+    toJS(exec, jsConstructor->globalObject(), document);
 
     RefPtr<HTMLImageElement> image = new HTMLImageElement(HTMLNames::imgTag, document);
     if (widthSet)
         image->setWidth(width);
     if (heightSet)
         image->setHeight(height);
-    return asObject(toJS(exec, image.release()));
+    return asObject(toJS(exec, jsConstructor->globalObject(), image.release()));
 }
 
 ConstructType JSImageConstructor::getConstructData(ConstructData& constructData)
 {
     constructData.native.function = constructImage;
     return ConstructTypeHost;
-}
-
-void JSImageConstructor::mark()
-{
-    DOMObject::mark();
-    if (!m_globalObject->marked())
-        m_globalObject->mark();
 }
 
 } // namespace WebCore

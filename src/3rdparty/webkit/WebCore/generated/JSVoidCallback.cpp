@@ -39,7 +39,7 @@ static const HashTableValue JSVoidCallbackPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSVoidCallbackPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSVoidCallbackPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSVoidCallbackPrototypeTableValues, 0 };
 #else
@@ -60,8 +60,8 @@ bool JSVoidCallbackPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
 
 const ClassInfo JSVoidCallback::s_info = { "VoidCallback", 0, 0, 0 };
 
-JSVoidCallback::JSVoidCallback(PassRefPtr<Structure> structure, PassRefPtr<VoidCallback> impl)
-    : DOMObject(structure)
+JSVoidCallback::JSVoidCallback(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<VoidCallback> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -88,9 +88,9 @@ JSValue JSC_HOST_CALL jsVoidCallbackPrototypeFunctionHandleEvent(ExecState* exec
     return jsUndefined();
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, VoidCallback* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, VoidCallback* object)
 {
-    return getDOMObjectWrapper<JSVoidCallback>(exec, object);
+    return getDOMObjectWrapper<JSVoidCallback>(exec, globalObject, object);
 }
 
 }

@@ -38,9 +38,8 @@
 		</keywords>	
 		<files>
 			<file>classic.css</file>
-			<file>test.html</file>
-			<file>people.html</file>
-			<file>./sub/about.html</file>			
+			<file>[pt]*.html</file>
+			<file>./sub/abou?.html</file>			
 		</files>
 	</filterSection>
 	<filterSection>

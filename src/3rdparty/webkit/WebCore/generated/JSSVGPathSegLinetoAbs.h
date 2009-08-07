@@ -33,7 +33,7 @@ class SVGPathSegLinetoAbs;
 class JSSVGPathSegLinetoAbs : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegLinetoAbs(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegLinetoAbs>, SVGElement* context);
+    JSSVGPathSegLinetoAbs(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegLinetoAbs>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

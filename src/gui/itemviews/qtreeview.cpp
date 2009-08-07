@@ -262,10 +262,6 @@ void QTreeView::setSelectionModel(QItemSelectionModel *selectionModel)
     Q_D(QTreeView);
     Q_ASSERT(selectionModel);
     if (d->selectionModel) {
-        if (d->allColumnsShowFocus) {
-            QObject::disconnect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                                this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        }
         // support row editing
         disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                    d->model, SLOT(submit()));
@@ -275,10 +271,6 @@ void QTreeView::setSelectionModel(QItemSelectionModel *selectionModel)
     QAbstractItemView::setSelectionModel(selectionModel);
 
     if (d->selectionModel) {
-        if (d->allColumnsShowFocus) {
-            QObject::connect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                             this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        }
         // support row editing
         connect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                 d->model, SLOT(submit()));
@@ -901,15 +893,6 @@ void QTreeView::setAllColumnsShowFocus(bool enable)
     Q_D(QTreeView);
     if (d->allColumnsShowFocus == enable)
         return;
-    if (d->selectionModel) {
-        if (enable) {
-            QObject::connect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                             this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        } else {
-            QObject::disconnect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                                this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        }
-    }
     d->allColumnsShowFocus = enable;
     d->viewport->update();
 }
@@ -1112,18 +1095,22 @@ void QTreeView::scrollTo(const QModelIndex &index, ScrollHint hint)
         } else if (hint == PositionAtTop || (hint == EnsureVisible && item < top)) {
             verticalScrollBar()->setValue(item);
         } else { // PositionAtBottom or PositionAtCenter
-            int itemLocation = item;
+            const int currentItemHeight = d->itemHeight(item);
             int y = (hint == PositionAtCenter
-                     ? area.height() / 2
+                 //we center on the current item with a preference to the top item (ie. -1)
+                     ? area.height() / 2 + currentItemHeight - 1
+                 //otherwise we simply take the whole space
                      : area.height());
-            while (y > 0 && item > 0)
-                y -= d->itemHeight(item--);
-            // end up half over the top of the area
-            if (y < 0 && item < itemLocation)
-                ++item;
-            // end up half over the bottom of the area
-            if (item >= 0 && item < itemLocation)
-                ++item;
+            if (y > currentItemHeight) {
+                while (item >= 0) {
+                    y -= d->itemHeight(item);
+                    if (y < 0) { //there is no more space left
+                        item++;
+                        break;
+                    }
+                    item--;
+                }
+            }
             verticalScrollBar()->setValue(item);
         }
     } else { // ScrollPerPixel
@@ -1267,10 +1254,13 @@ void QTreeView::paintEvent(QPaintEvent *event)
     Q_D(QTreeView);
     d->executePostedLayout();
     QPainter painter(viewport());
+#ifndef QT_NO_ANIMATION
     if (d->isAnimating()) {
-        drawTree(&painter, event->region() - d->animationRect());
+        drawTree(&painter, event->region() - d->animatedOperation.rect());
         d->drawAnimatedOperation(&painter);
-    } else {
+    } else
+#endif //QT_NO_ANIMATION
+    {
         drawTree(&painter, event->region());
 #ifndef QT_NO_DRAGANDDROP
         d->paintDropIndicator(&painter);
@@ -1306,13 +1296,13 @@ bool QTreeViewPrivate::expandOrCollapseItemAtPos(const QPoint &pos)
 {
     Q_Q(QTreeView);
     // we want to handle mousePress in EditingState (persistent editors)
-    if ((q->state() != QAbstractItemView::NoState
-		&& q->state() != QAbstractItemView::EditingState)
+    if ((state != QAbstractItemView::NoState
+		&& state != QAbstractItemView::EditingState)
 		|| !viewport->rect().contains(pos))
         return true;
 
     int i = itemDecorationAt(pos);
-    if ((i != -1) && q->itemsExpandable() && hasVisibleChildren(viewItems.at(i).index)) {
+    if ((i != -1) && itemsExpandable && hasVisibleChildren(viewItems.at(i).index)) {
         if (viewItems.at(i).expanded)
             collapse(i, true);
         else
@@ -1333,6 +1323,50 @@ void QTreeViewPrivate::_q_modelDestroyed()
     viewItems.clear();
     QAbstractItemViewPrivate::_q_modelDestroyed();
 }
+
+/*!
+  \reimp
+
+  We have a QTreeView way of knowing what elements are on the viewport
+*/
+QItemViewPaintPairs QTreeViewPrivate::draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const
+{
+    Q_ASSERT(r);
+    return QAbstractItemViewPrivate::draggablePaintPairs(indexes, r);
+    Q_Q(const QTreeView);
+    QRect &rect = *r;
+    const QRect viewportRect = viewport->rect();
+    int itemOffset = 0;
+    int row = firstVisibleItem(&itemOffset);
+    QPair<int, int> startEnd = startAndEndColumns(viewportRect);
+    QVector<int> columns;
+    for (int i = startEnd.first; i <= startEnd.second; ++i) {
+        int logical = header->logicalIndex(i);
+        if (!header->isSectionHidden(logical))
+            columns += logical;
+    }
+    QSet<QModelIndex> visibleIndexes;
+    for (; itemOffset < viewportRect.bottom() && row < viewItems.count(); ++row) {
+        const QModelIndex &index = viewItems.at(row).index;
+        for (int colIndex = 0; colIndex < columns.count(); ++colIndex)
+            visibleIndexes += index.sibling(index.row(), columns.at(colIndex));
+        itemOffset += itemHeight(row);
+    }
+
+    //now that we have the visible indexes, we can try to find those which are selected
+    QItemViewPaintPairs ret;
+    for (int i = 0; i < indexes.count(); ++i) {
+        const QModelIndex &index = indexes.at(i);
+        if (visibleIndexes.contains(index)) {
+            const QRect current = q->visualRect(index);
+            ret += qMakePair(current, index);
+            rect |= current;
+        }
+    }
+    rect &= viewportRect;
+    return ret;
+}
+
 
 /*!
   \since 4.2
@@ -2819,7 +2853,7 @@ int QTreeView::rowHeight(const QModelIndex &index) const
 }
 
 /*!
-  \reimp
+  \internal
 */
 void QTreeView::horizontalScrollbarAction(int action)
 {
@@ -2851,10 +2885,9 @@ void QTreeViewPrivate::initialize()
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     q->setHeader(header);
-
-    // animation
-    QObject::connect(&timeline, SIGNAL(frameChanged(int)), q, SLOT(_q_animate()));
-    QObject::connect(&timeline, SIGNAL(finished()), q, SLOT(_q_endAnimatedOperation()), Qt::QueuedConnection);
+#ifndef QT_NO_ANIMATION
+    QObject::connect(&animatedOperation, SIGNAL(finished()), q, SLOT(_q_endAnimatedOperation()));
+#endif //QT_NO_ANIMATION
 }
 
 void QTreeViewPrivate::expand(int item, bool emitSignal)
@@ -2864,10 +2897,11 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (item == -1 || viewItems.at(item).expanded)
         return;
 
+#ifndef QT_NO_ANIMATION
     if (emitSignal && animationsEnabled)
-        prepareAnimatedOperation(item, AnimatedOperation::Expand);
-
-    QAbstractItemView::State oldState = q->state();
+        prepareAnimatedOperation(item, QVariantAnimation::Forward);
+#endif //QT_NO_ANIMATION
+    QAbstractItemView::State oldState = state;
     q->setState(QAbstractItemView::ExpandingState);
     const QModelIndex index = viewItems.at(item).index;
     storeExpanded(index);
@@ -2877,8 +2911,10 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
 
     if (emitSignal) {
         emit q->expanded(index);
+#ifndef QT_NO_ANIMATION
         if (animationsEnabled)
             beginAnimatedOperation();
+#endif //QT_NO_ANIMATION
     }
     if (model->canFetchMore(index))
         model->fetchMore(index);
@@ -2902,10 +2938,12 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
     if (it == expandedIndexes.end() || viewItems.at(item).expanded == false)
         return; // nothing to do
 
+#ifndef QT_NO_ANIMATION
     if (emitSignal && animationsEnabled)
-        prepareAnimatedOperation(item, AnimatedOperation::Collapse);
+        prepareAnimatedOperation(item, QVariantAnimation::Backward);
+#endif //QT_NO_ANIMATION
 
-    QAbstractItemView::State oldState = q->state();
+    QAbstractItemView::State oldState = state;
     q->setState(QAbstractItemView::CollapsingState);
     expandedIndexes.erase(it);
     viewItems[item].expanded = false;
@@ -2922,29 +2960,33 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
 
     if (emitSignal) {
         emit q->collapsed(modelIndex);
+#ifndef QT_NO_ANIMATION
         if (animationsEnabled)
             beginAnimatedOperation();
+#endif //QT_NO_ANIMATION
     }
 }
 
-void QTreeViewPrivate::prepareAnimatedOperation(int item, AnimatedOperation::Type type)
+#ifndef QT_NO_ANIMATION
+void QTreeViewPrivate::prepareAnimatedOperation(int item, QVariantAnimation::Direction direction)
 {
     animatedOperation.item = item;
-    animatedOperation.type = type;
+    animatedOperation.viewport = viewport;
+    animatedOperation.setDirection(direction);
 
     int top = coordinateForItem(item) + itemHeight(item);
     QRect rect = viewport->rect();
     rect.setTop(top);
-    if (type == AnimatedOperation::Collapse) {
+    if (direction == QVariantAnimation::Backward) {
         const int limit = rect.height() * 2;
         int h = 0;
         int c = item + viewItems.at(item).total + 1;
         for (int i = item + 1; i < c && h < limit; ++i)
             h += itemHeight(i);
         rect.setHeight(h);
-        animatedOperation.duration = h;
+        animatedOperation.setEndValue(top + h);
     }
-    animatedOperation.top = top;
+    animatedOperation.setStartValue(top);
     animatedOperation.before = renderTreeToPixmapForAnimation(rect);
 }
 
@@ -2953,50 +2995,29 @@ void QTreeViewPrivate::beginAnimatedOperation()
     Q_Q(QTreeView);
 
     QRect rect = viewport->rect();
-    rect.setTop(animatedOperation.top);
-    if (animatedOperation.type == AnimatedOperation::Expand) {
+    rect.setTop(animatedOperation.top());
+    if (animatedOperation.direction() == QVariantAnimation::Forward) {
         const int limit = rect.height() * 2;
         int h = 0;
         int c = animatedOperation.item + viewItems.at(animatedOperation.item).total + 1;
         for (int i = animatedOperation.item + 1; i < c && h < limit; ++i)
             h += itemHeight(i);
         rect.setHeight(h);
-        animatedOperation.duration = h;
+        animatedOperation.setEndValue(animatedOperation.top() + h);
     }
 
     animatedOperation.after = renderTreeToPixmapForAnimation(rect);
 
     q->setState(QAbstractItemView::AnimatingState);
-
-    timeline.stop();
-    timeline.setDuration(250);
-    timeline.setFrameRange(animatedOperation.top, animatedOperation.top + animatedOperation.duration);
-    timeline.start();
-}
-
-void QTreeViewPrivate::_q_endAnimatedOperation()
-{
-    Q_Q(QTreeView);
-    animatedOperation.before = QPixmap();
-    animatedOperation.after = QPixmap();
-    q->setState(QAbstractItemView::NoState);
-    q->updateGeometries();
-    viewport->update();
-}
-
-void QTreeViewPrivate::_q_animate()
-{
-    QRect rect = viewport->rect();
-    rect.moveTop(animatedOperation.top);
-    viewport->repaint(rect);
+    animatedOperation.start(); //let's start the animation
 }
 
 void QTreeViewPrivate::drawAnimatedOperation(QPainter *painter) const
 {
-    int start = timeline.startFrame();
-    int end = timeline.endFrame();
-    bool collapsing = animatedOperation.type == AnimatedOperation::Collapse;
-    int current = collapsing ? end - timeline.currentFrame() + start : timeline.currentFrame();
+    const int start = animatedOperation.startValue().toInt(),
+        end = animatedOperation.endValue().toInt(),
+        current = animatedOperation.currentValue().toInt();
+    bool collapsing = animatedOperation.direction() == QVariantAnimation::Backward;
     const QPixmap top = collapsing ? animatedOperation.before : animatedOperation.after;
     painter->drawPixmap(0, start, top, 0, end - current - 1, top.width(), top.height());
     const QPixmap bottom = collapsing ? animatedOperation.after : animatedOperation.before;
@@ -3039,26 +3060,14 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
     return pixmap;
 }
 
-void QTreeViewPrivate::_q_currentChanged(const QModelIndex &current, const QModelIndex &previous)
+void QTreeViewPrivate::_q_endAnimatedOperation()
 {
     Q_Q(QTreeView);
-    if (previous.isValid()) {
-        QRect previousRect = q->visualRect(previous);
-        if (allColumnsShowFocus) {
-            previousRect.setX(0);
-            previousRect.setWidth(viewport->width());
-        }
-        viewport->update(previousRect);
-    }
-    if (current.isValid()) {
-        QRect currentRect = q->visualRect(current);
-        if (allColumnsShowFocus) {
-            currentRect.setX(0);
-            currentRect.setWidth(viewport->width());
-        }
-        viewport->update(currentRect);
-    }
+    q->setState(QAbstractItemView::NoState);
+    q->updateGeometries();
+    viewport->update();
 }
+#endif //QT_NO_ANIMATION
 
 void QTreeViewPrivate::_q_modelAboutToBeReset()
 {
@@ -3787,6 +3796,21 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     }
 #endif
     QAbstractItemView::currentChanged(current, previous);
+
+    if (allColumnsShowFocus()) {
+        if (previous.isValid()) {
+            QRect previousRect = visualRect(previous);
+            previousRect.setX(0);
+            previousRect.setWidth(viewport()->width());
+            viewport()->update(previousRect);
+        }
+        if (current.isValid()) {
+            QRect currentRect = visualRect(current);
+            currentRect.setX(0);
+            currentRect.setWidth(viewport()->width());
+            viewport()->update(currentRect);
+        }
+    }
 }
 
 /*!

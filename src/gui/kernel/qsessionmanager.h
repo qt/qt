@@ -60,7 +60,7 @@ class QSessionManagerPrivate;
 class Q_GUI_EXPORT  QSessionManager : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QSessionManager)
+    Q_DECLARE_PRIVATE(QSessionManager)
     QSessionManager(QApplication *app, QString &id, QString &key);
     ~QSessionManager();
 public:

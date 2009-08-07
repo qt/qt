@@ -44,7 +44,7 @@ static const HashTableValue JSSVGPreserveAspectRatioTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPreserveAspectRatioTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPreserveAspectRatioTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGPreserveAspectRatioTableValues, 0 };
 #else
@@ -72,19 +72,19 @@ static const HashTableValue JSSVGPreserveAspectRatioConstructorTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPreserveAspectRatioConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPreserveAspectRatioConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGPreserveAspectRatioConstructorTableValues, 0 };
 #else
     { 35, 31, JSSVGPreserveAspectRatioConstructorTableValues, 0 };
 #endif
 
-class JSSVGPreserveAspectRatioConstructor : public DOMObject {
+class JSSVGPreserveAspectRatioConstructor : public DOMConstructorObject {
 public:
-    JSSVGPreserveAspectRatioConstructor(ExecState* exec)
-        : DOMObject(JSSVGPreserveAspectRatioConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGPreserveAspectRatioConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGPreserveAspectRatioConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGPreserveAspectRatioPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGPreserveAspectRatioPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -124,7 +124,7 @@ static const HashTableValue JSSVGPreserveAspectRatioPrototypeTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPreserveAspectRatioPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPreserveAspectRatioPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGPreserveAspectRatioPrototypeTableValues, 0 };
 #else
@@ -145,9 +145,8 @@ bool JSSVGPreserveAspectRatioPrototype::getOwnPropertySlot(ExecState* exec, cons
 
 const ClassInfo JSSVGPreserveAspectRatio::s_info = { "SVGPreserveAspectRatio", 0, &JSSVGPreserveAspectRatioTable, 0 };
 
-JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(PassRefPtr<Structure> structure, PassRefPtr<SVGPreserveAspectRatio> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPreserveAspectRatio> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -169,21 +168,24 @@ bool JSSVGPreserveAspectRatio::getOwnPropertySlot(ExecState* exec, const Identif
 
 JSValue jsSVGPreserveAspectRatioAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPreserveAspectRatio* castedThis = static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()))->impl());
+    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(castedThis->impl());
     return jsNumber(exec, imp->align());
 }
 
 JSValue jsSVGPreserveAspectRatioMeetOrSlice(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPreserveAspectRatio* castedThis = static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()))->impl());
+    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(castedThis->impl());
     return jsNumber(exec, imp->meetOrSlice());
 }
 
 JSValue jsSVGPreserveAspectRatioConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()))->getConstructor(exec);
+    UNUSED_PARAM(slot);
+    return JSSVGPreserveAspectRatio::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
 }
 void JSSVGPreserveAspectRatio::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -206,9 +208,9 @@ void setJSSVGPreserveAspectRatioMeetOrSlice(ExecState* exec, JSObject* thisObjec
         static_cast<JSSVGPreserveAspectRatio*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPreserveAspectRatio*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSValue JSSVGPreserveAspectRatio::getConstructor(ExecState* exec)
+JSValue JSSVGPreserveAspectRatio::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGPreserveAspectRatioConstructor>(exec);
+    return getDOMConstructor<JSSVGPreserveAspectRatioConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters
@@ -283,9 +285,9 @@ JSValue jsSVGPreserveAspectRatioSVG_MEETORSLICE_SLICE(ExecState* exec, const Ide
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGPreserveAspectRatio* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGPreserveAspectRatio* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGPreserveAspectRatio>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGPreserveAspectRatio>(exec, globalObject, object, context);
 }
 SVGPreserveAspectRatio* toSVGPreserveAspectRatio(JSC::JSValue value)
 {

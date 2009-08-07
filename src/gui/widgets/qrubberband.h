@@ -87,7 +87,7 @@ protected:
     void initStyleOption(QStyleOptionRubberBand *option) const;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QRubberBand)
+    Q_DECLARE_PRIVATE(QRubberBand)
 };
 
 inline void QRubberBand::setGeometry(int ax, int ay, int aw, int ah)

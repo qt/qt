@@ -191,7 +191,7 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QProcess)
+    Q_DECLARE_PRIVATE(QProcess)
     Q_DISABLE_COPY(QProcess)
 
     Q_PRIVATE_SLOT(d_func(), bool _q_canReadStandardOutput())

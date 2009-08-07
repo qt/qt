@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 bool qAxIsServer = false;
 HANDLE qAxInstance = 0;
 ITypeLib *qAxTypeLibrary = 0;
-char qAxModuleFilename[MAX_PATH];
+wchar_t qAxModuleFilename[MAX_PATH];
 bool qAxOutProcServer = false;
 
 // The QAxFactory instance
@@ -116,19 +116,19 @@ QString qAxInit()
     
     InitializeCriticalSection(&qAxModuleSection);
     
-    libFile = QString::fromLocal8Bit(qAxModuleFilename);
+    libFile = QString::fromWCharArray(qAxModuleFilename);
     libFile = libFile.toLower();
-    if (LoadTypeLibEx((TCHAR*)libFile.utf16(), REGKIND_NONE, &qAxTypeLibrary) == S_OK)
+    if (LoadTypeLibEx((wchar_t*)libFile.utf16(), REGKIND_NONE, &qAxTypeLibrary) == S_OK)
         return libFile;
 
     int lastDot = libFile.lastIndexOf(QLatin1Char('.'));
     libFile = libFile.left(lastDot) + QLatin1String(".tlb");
-    if (LoadTypeLibEx((TCHAR*)libFile.utf16(), REGKIND_NONE, &qAxTypeLibrary) == S_OK)
+    if (LoadTypeLibEx((wchar_t*)libFile.utf16(), REGKIND_NONE, &qAxTypeLibrary) == S_OK)
         return libFile;
 
     lastDot = libFile.lastIndexOf(QLatin1Char('.'));
     libFile = libFile.left(lastDot) + QLatin1String(".olb");
-    if (LoadTypeLibEx((TCHAR*)libFile.utf16(), REGKIND_NONE, &qAxTypeLibrary) == S_OK)
+    if (LoadTypeLibEx((wchar_t*)libFile.utf16(), REGKIND_NONE, &qAxTypeLibrary) == S_OK)
         return libFile;
 
     libFile = QString();
@@ -207,7 +207,7 @@ QString qax_clean_type(const QString &type, const QMetaObject *mo)
 HRESULT UpdateRegistry(BOOL bRegister)
 {
     qAxIsServer = false;
-    QString file = QString::fromLocal8Bit(qAxModuleFilename);
+    QString file = QString::fromWCharArray(qAxModuleFilename);
     QString path = file.left(file.lastIndexOf(QLatin1Char('\\'))+1);
     QString module = file.right(file.length() - path.length());
     module = module.left(module.lastIndexOf(QLatin1Char('.')));
@@ -229,7 +229,7 @@ HRESULT UpdateRegistry(BOOL bRegister)
     typeLibVersion = QString::number((uint)major) + QLatin1Char('.') + QString::number((uint)minor);
 
     if (bRegister)
-        RegisterTypeLib(qAxTypeLibrary, (TCHAR*)libFile.utf16(), 0);
+        RegisterTypeLib(qAxTypeLibrary, (wchar_t*)libFile.utf16(), 0);
     else
         UnRegisterTypeLib(libAttr->guid, libAttr->wMajorVerNum, libAttr->wMinorVerNum, libAttr->lcid, libAttr->syskind);
 
@@ -1071,7 +1071,7 @@ extern "C" HRESULT __stdcall DumpIDL(const QString &outfile, const QString &ver)
     QFile file(outfile);
     file.remove();
     
-    QString filebase = QString::fromLocal8Bit(qAxModuleFilename);
+    QString filebase = QString::fromWCharArray(qAxModuleFilename);
     filebase = filebase.left(filebase.lastIndexOf(QLatin1Char('.')));
     
     QString appID = qAxFactory()->appID().toString().toUpper();
@@ -1107,7 +1107,7 @@ extern "C" HRESULT __stdcall DumpIDL(const QString &outfile, const QString &ver)
     out << "/****************************************************************************" << endl;
     out << "** Interface definition generated for ActiveQt project" << endl;
     out << "**" << endl;
-    out << "**     '" << qAxModuleFilename << '\'' << endl;
+    out << "**     '" << QString::fromWCharArray(qAxModuleFilename) << '\'' << endl;
     out << "**" << endl;
     out << "** Created:  " << QDateTime::currentDateTime().toString() << endl;
     out << "**" << endl;

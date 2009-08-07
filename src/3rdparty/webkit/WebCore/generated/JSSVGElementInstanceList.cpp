@@ -45,7 +45,7 @@ static const HashTableValue JSSVGElementInstanceListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGElementInstanceListTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGElementInstanceListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGElementInstanceListTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSSVGElementInstanceListPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGElementInstanceListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGElementInstanceListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGElementInstanceListPrototypeTableValues, 0 };
 #else
@@ -81,8 +81,8 @@ bool JSSVGElementInstanceListPrototype::getOwnPropertySlot(ExecState* exec, cons
 
 const ClassInfo JSSVGElementInstanceList::s_info = { "SVGElementInstanceList", 0, &JSSVGElementInstanceListTable, 0 };
 
-JSSVGElementInstanceList::JSSVGElementInstanceList(PassRefPtr<Structure> structure, PassRefPtr<SVGElementInstanceList> impl)
-    : DOMObject(structure)
+JSSVGElementInstanceList::JSSVGElementInstanceList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElementInstanceList> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -104,8 +104,9 @@ bool JSSVGElementInstanceList::getOwnPropertySlot(ExecState* exec, const Identif
 
 JSValue jsSVGElementInstanceListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGElementInstanceList* castedThis = static_cast<JSSVGElementInstanceList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGElementInstanceList* imp = static_cast<SVGElementInstanceList*>(static_cast<JSSVGElementInstanceList*>(asObject(slot.slotBase()))->impl());
+    SVGElementInstanceList* imp = static_cast<SVGElementInstanceList*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
@@ -119,13 +120,13 @@ JSValue JSC_HOST_CALL jsSVGElementInstanceListPrototypeFunctionItem(ExecState* e
     unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->item(index)));
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGElementInstanceList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGElementInstanceList* object)
 {
-    return getDOMObjectWrapper<JSSVGElementInstanceList>(exec, object);
+    return getDOMObjectWrapper<JSSVGElementInstanceList>(exec, globalObject, object);
 }
 SVGElementInstanceList* toSVGElementInstanceList(JSC::JSValue value)
 {

@@ -127,7 +127,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QToolButton)
-    Q_DECLARE_SCOPED_PRIVATE(QToolButton)
+    Q_DECLARE_PRIVATE(QToolButton)
 #ifndef QT_NO_MENU
     Q_PRIVATE_SLOT(d_func(), void _q_buttonPressed())
     Q_PRIVATE_SLOT(d_func(), void _q_updateButtonDown())

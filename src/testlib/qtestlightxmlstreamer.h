@@ -59,9 +59,9 @@ class QTestLightXmlStreamer: public QTestBasicStreamer
         QTestLightXmlStreamer();
         ~QTestLightXmlStreamer();
 
-        void formatStart(const QTestElement *element = 0, char *formatted = 0) const;
-        void formatEnd(const QTestElement *element = 0, char *formatted = 0) const;
-        void formatBeforeAttributes(const QTestElement *element = 0, char *formatted = 0) const;
+        void formatStart(const QTestElement *element, char **formatted) const;
+        void formatEnd(const QTestElement *element, char **formatted) const;
+        void formatBeforeAttributes(const QTestElement *element, char **formatted) const;
         void output(QTestElement *element) const;
 };
 

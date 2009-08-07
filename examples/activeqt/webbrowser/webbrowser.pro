@@ -7,7 +7,7 @@ QTDIR_build:REQUIRES = shared
 HEADERS  = webaxwidget.h
 SOURCES	 = main.cpp
 FORMS	 = mainwindow.ui
-wince*: FORMS = wincemainwindow.ui
+wincewm*: FORMS = mainwindow_windowsmobile.ui
 
 
 # install

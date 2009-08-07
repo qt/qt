@@ -48,7 +48,7 @@ static const HashTableValue JSSVGZoomEventTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGZoomEventTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGZoomEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGZoomEventTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSSVGZoomEventPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGZoomEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGZoomEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGZoomEventPrototypeTableValues, 0 };
 #else
@@ -78,8 +78,8 @@ JSObject* JSSVGZoomEventPrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSSVGZoomEvent::s_info = { "SVGZoomEvent", &JSUIEvent::s_info, &JSSVGZoomEventTable, 0 };
 
-JSSVGZoomEvent::JSSVGZoomEvent(PassRefPtr<Structure> structure, PassRefPtr<SVGZoomEvent> impl, SVGElement*)
-    : JSUIEvent(structure, impl)
+JSSVGZoomEvent::JSSVGZoomEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGZoomEvent> impl)
+    : JSUIEvent(structure, globalObject, impl)
 {
 }
 
@@ -95,37 +95,42 @@ bool JSSVGZoomEvent::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsSVGZoomEventZoomRectScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGZoomEvent* castedThis = static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->zoomRectScreen()).get(), 0);
+    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->zoomRectScreen()).get(), 0);
 }
 
 JSValue jsSVGZoomEventPreviousScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGZoomEvent* castedThis = static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
+    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(castedThis->impl());
     return jsNumber(exec, imp->previousScale());
 }
 
 JSValue jsSVGZoomEventPreviousTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGZoomEvent* castedThis = static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->previousTranslate()).get(), 0);
+    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->previousTranslate()).get(), 0);
 }
 
 JSValue jsSVGZoomEventNewScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGZoomEvent* castedThis = static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
+    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(castedThis->impl());
     return jsNumber(exec, imp->newScale());
 }
 
 JSValue jsSVGZoomEventNewTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGZoomEvent* castedThis = static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->newTranslate()).get(), 0);
+    SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->newTranslate()).get(), 0);
 }
 
 

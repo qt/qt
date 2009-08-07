@@ -9,24 +9,26 @@ CONFIG(debug, debug|release) {
     OBJECTS_DIR = obj/release
 }
 
-INCLUDEPATH += $$GENERATED_SOURCES_DIR \
-               $$PWD \
-               $$PWD/parser \
-               $$PWD/bytecompiler \
-               $$PWD/debugger \
-               $$PWD/runtime \
-               $$PWD/wtf \
-               $$PWD/wtf/unicode \
-               $$PWD/interpreter \
-               $$PWD/jit \
-               $$PWD/profiler \
-               $$PWD/wrec \
-               $$PWD/yarr \
-               $$PWD/API \
-               $$PWD/.. \
-               $$PWD/ForwardingHeaders \
-               $$PWD/bytecode \
-               $$PWD/assembler \
+INCLUDEPATH = \
+    $$PWD \
+    $$PWD/.. \
+    $$PWD/assembler \
+    $$PWD/bytecode \
+    $$PWD/bytecompiler \
+    $$PWD/debugger \
+    $$PWD/interpreter \
+    $$PWD/jit \
+    $$PWD/parser \
+    $$PWD/profiler \
+    $$PWD/runtime \
+    $$PWD/wrec \
+    $$PWD/wtf \
+    $$PWD/wtf/unicode \
+    $$PWD/yarr \
+    $$PWD/API \
+    $$PWD/ForwardingHeaders \
+    $$GENERATED_SOURCES_DIR \
+    $$INCLUDEPATH
 
 DEFINES += BUILDING_QT__ BUILDING_JavaScriptCore BUILDING_WTF
 
@@ -35,33 +37,16 @@ win32-* {
     LIBS += -lwinmm
 }
 
-# Default rules to turn JIT on/off
-!contains(DEFINES, ENABLE_JIT=.) {
-    isEqual(QT_ARCH,i386)|isEqual(QT_ARCH,windows) {
-        # Require gcc >= 4.1
-        CONFIG(release):linux-g++*:greaterThan(QT_GCC_MAJOR_VERSION,3):greaterThan(QT_GCC_MINOR_VERSION,0) {
-            DEFINES += ENABLE_JIT=1
-        }
-        win32-msvc* {
-            DEFINES += ENABLE_JIT=1
-        }
-    }
+# In debug mode JIT disabled until crash fixed
+win32-* {
+    CONFIG(debug):!contains(DEFINES, ENABLE_JIT=1): DEFINES+=ENABLE_JIT=0
 }
 
-# Rules when JIT enabled
-contains(DEFINES, ENABLE_JIT=1) {
-    !contains(DEFINES, ENABLE_YARR=.): DEFINES += ENABLE_YARR=1
-    !contains(DEFINES, ENABLE_YARR_JIT=.): DEFINES += ENABLE_YARR_JIT=1
-    !contains(DEFINES, ENABLE_JIT_OPTIMIZE_CALL=.): DEFINES += ENABLE_JIT_OPTIMIZE_CALL=1
-    !contains(DEFINES, ENABLE_JIT_OPTIMIZE_PROPERTY_ACCESS=.): DEFINES += ENABLE_JIT_OPTIMIZE_PROPERTY_ACCESS=1
-    !contains(DEFINES, ENABLE_JIT_OPTIMIZE_ARITHMETIC=.): DEFINES += ENABLE_JIT_OPTIMIZE_ARITHMETIC=1
-    linux-g++* {
-        !contains(DEFINES, WTF_USE_JIT_STUB_ARGUMENT_VA_LIST=.): DEFINES += WTF_USE_JIT_STUB_ARGUMENT_VA_LIST=1
+# Rules when JIT enabled (not disabled)
+!contains(DEFINES, ENABLE_JIT=0) {
+    linux-g++*:greaterThan(QT_GCC_MAJOR_VERSION,3):greaterThan(QT_GCC_MINOR_VERSION,0) {
         QMAKE_CXXFLAGS += -fno-stack-protector
         QMAKE_CFLAGS += -fno-stack-protector
-    }
-    win32-msvc* {
-        !contains(DEFINES, WTF_USE_JIT_STUB_ARGUMENT_REGISTER=.): DEFINES += WTF_USE_JIT_STUB_ARGUMENT_REGISTER=1
     }
 }
 
@@ -124,6 +109,7 @@ SOURCES += \
     bytecode/CodeBlock.cpp \
     bytecode/StructureStubInfo.cpp \
     bytecode/JumpTable.cpp \
+    assembler/ARMAssembler.cpp \
     jit/JIT.cpp \
     jit/JITCall.cpp \
     jit/JITArithmetic.cpp \

@@ -41,12 +41,13 @@ namespace WebCore {
         virtual const char* renderName() const { return "RenderSlider"; }
         virtual bool isSlider() const { return true; }
 
-        virtual int baselinePosition( bool, bool ) const;
+        virtual int baselinePosition(bool, bool) const;
         virtual void calcPrefWidths();
         virtual void layout();
         virtual void updateFromElement();
 
         bool mouseEventIsInThumb(MouseEvent*);
+        FloatPoint mouseEventOffsetToThumb(MouseEvent*);
 
         void setValueForPosition(int position);
         void setPositionFromValue();

@@ -43,7 +43,7 @@ static const HashTableValue JSPositionErrorTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPositionErrorTable =
+static JSC_CONST_HASHTABLE HashTable JSPositionErrorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSPositionErrorTableValues, 0 };
 #else
@@ -61,19 +61,19 @@ static const HashTableValue JSPositionErrorConstructorTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPositionErrorConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSPositionErrorConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPositionErrorConstructorTableValues, 0 };
 #else
     { 10, 7, JSPositionErrorConstructorTableValues, 0 };
 #endif
 
-class JSPositionErrorConstructor : public DOMObject {
+class JSPositionErrorConstructor : public DOMConstructorObject {
 public:
-    JSPositionErrorConstructor(ExecState* exec)
-        : DOMObject(JSPositionErrorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSPositionErrorConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSPositionErrorConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSPositionErrorPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSPositionErrorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -103,7 +103,7 @@ static const HashTableValue JSPositionErrorPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPositionErrorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSPositionErrorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPositionErrorPrototypeTableValues, 0 };
 #else
@@ -124,8 +124,8 @@ bool JSPositionErrorPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSPositionError::s_info = { "PositionError", 0, &JSPositionErrorTable, 0 };
 
-JSPositionError::JSPositionError(PassRefPtr<Structure> structure, PassRefPtr<PositionError> impl)
-    : DOMObject(structure)
+JSPositionError::JSPositionError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<PositionError> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -147,25 +147,28 @@ bool JSPositionError::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsPositionErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSPositionError* castedThis = static_cast<JSPositionError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    PositionError* imp = static_cast<PositionError*>(static_cast<JSPositionError*>(asObject(slot.slotBase()))->impl());
+    PositionError* imp = static_cast<PositionError*>(castedThis->impl());
     return jsNumber(exec, imp->code());
 }
 
 JSValue jsPositionErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSPositionError* castedThis = static_cast<JSPositionError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    PositionError* imp = static_cast<PositionError*>(static_cast<JSPositionError*>(asObject(slot.slotBase()))->impl());
+    PositionError* imp = static_cast<PositionError*>(castedThis->impl());
     return jsString(exec, imp->message());
 }
 
 JSValue jsPositionErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSPositionError*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSPositionError* domObject = static_cast<JSPositionError*>(asObject(slot.slotBase()));
+    return JSPositionError::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSPositionError::getConstructor(ExecState* exec)
+JSValue JSPositionError::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSPositionErrorConstructor>(exec);
+    return getDOMConstructor<JSPositionErrorConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters
@@ -190,9 +193,9 @@ JSValue jsPositionErrorTIMEOUT(ExecState* exec, const Identifier&, const Propert
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, PositionError* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, PositionError* object)
 {
-    return getDOMObjectWrapper<JSPositionError>(exec, object);
+    return getDOMObjectWrapper<JSPositionError>(exec, globalObject, object);
 }
 PositionError* toPositionError(JSC::JSValue value)
 {

@@ -87,6 +87,7 @@ public:
     Qt::CaseSensitivity cs;
     int role;
     int column;
+    int maxVisibleItems;
     QCompleter::ModelSorting sorting;
     bool wrap;
 
@@ -238,7 +239,7 @@ public:
     QScopedPointer<QCompletionEngine> engine;
     bool showAll;
 
-    Q_DECLARE_SCOPED_PRIVATE(QCompletionModel)
+    Q_DECLARE_PRIVATE(QCompletionModel)
 
 signals:
     void rowsAdded();

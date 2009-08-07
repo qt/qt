@@ -33,7 +33,7 @@ class SVGHKernElement;
 class JSSVGHKernElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGHKernElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGHKernElement>);
+    JSSVGHKernElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGHKernElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

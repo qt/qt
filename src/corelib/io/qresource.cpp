@@ -56,7 +56,20 @@
 #include <qplatformdefs.h>
 #include "private/qabstractfileengine_p.h"
 
+#ifdef Q_OS_UNIX
+# include "private/qcore_unix_p.h"
+#endif
+
 //#define DEBUG_RESOURCE_MATCH
+
+#if defined(Q_OS_VXWORKS)
+#  if defined(m_data)
+#    undef m_data
+#  endif
+#  if defined(m_len)
+#    undef m_len
+#  endif
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -568,7 +581,7 @@ QResource::addSearchPath(const QString &path)
   Returns the current search path list. This list is consulted when
   creating a relative resource.
 
-  \sa addSearchPath()
+  \sa QDir::addSearchPath() QDir::setSearchPaths()
 */
 
 QStringList

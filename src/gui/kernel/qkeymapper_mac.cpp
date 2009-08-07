@@ -735,8 +735,10 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
     QString text(ourChar);
     /* This is actually wrong - but unfortunatly it is the best that can be
        done for now because of the Control/Meta mapping problems */
-    if (modifiers & (Qt::ControlModifier | Qt::MetaModifier))
+    if (modifiers & (Qt::ControlModifier | Qt::MetaModifier)
+        && !qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
         text = QString();
+    }
 
 
     if (widget) {

@@ -104,7 +104,7 @@ protected:
     QWindowsMobileStyle(QWindowsMobileStylePrivate &dd);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QWindowsMobileStyle)
+    Q_DECLARE_PRIVATE(QWindowsMobileStyle)
 };
 
 #endif // QT_NO_STYLE_WINDOWSMOBILE

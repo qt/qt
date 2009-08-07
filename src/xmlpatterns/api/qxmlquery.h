@@ -71,6 +71,8 @@ namespace QPatternistSDK
 
 namespace QPatternist
 {
+    class XsdSchemaParser;
+    class XsdValidatingInstanceReader;
     class VariableLoader;
 };
 
@@ -79,8 +81,11 @@ class Q_XMLPATTERNS_EXPORT QXmlQuery
 public:
     enum QueryLanguage
     {
-        XQuery10    = 1,
-        XSLT20      = 2
+        XQuery10                                = 1,
+        XSLT20                                  = 2,
+        XmlSchema11IdentityConstraintSelector   = 1024,
+        XmlSchema11IdentityConstraintField      = 2048,
+        XPath20                                 = 4096
     };
 
     QXmlQuery();
@@ -136,6 +141,8 @@ private:
     friend class QXmlName;
     friend class QXmlSerializer;
     friend class QPatternistSDK::TestCase;
+    friend class QPatternist::XsdSchemaParser;
+    friend class QPatternist::XsdValidatingInstanceReader;
     friend class QPatternist::VariableLoader;
     template<typename TInputType> friend bool setFocusHelper(QXmlQuery *const queryInstance,
                                                              const TInputType &focusValue);

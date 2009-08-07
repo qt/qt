@@ -194,8 +194,8 @@ void StyledElement::attributeChanged(Attribute* attr, bool preserveDecls)
     if (needToParse)
         parseMappedAttribute(mappedAttr);
 
-    if (entry == eNone && ownerDocument()->attached() && ownerDocument()->styleSelector()->hasSelectorForAttribute(attr->name().localName()))
-        setNeedsStyleRecalc();
+    if (entry == eNone)
+        recalcStyleIfNeededAfterAttributeChanged(attr);
 
     if (checkDecl && mappedAttr->decl()) {
         // Add the decl to the table in the appropriate spot.
@@ -206,7 +206,7 @@ void StyledElement::attributeChanged(Attribute* attr, bool preserveDecls)
         if (namedAttrMap)
             mappedAttributes()->declAdded();
     }
-    Element::attributeChanged(attr, preserveDecls);
+    updateAfterAttributeChanged(attr);
 }
 
 bool StyledElement::mapToEntry(const QualifiedName& attrName, MappedAttributeEntry& result) const
@@ -280,10 +280,11 @@ CSSStyleDeclaration* StyledElement::style()
     return getInlineStyleDecl();
 }
 
-static inline int toHex(UChar c) {
+static inline int toHex(UChar c)
+{
     return ((c >= '0' && c <= '9') ? (c - '0')
         : ((c >= 'a' && c <= 'f') ? (c - 'a' + 10)
-        : (( c >= 'A' && c <= 'F') ? (c - 'A' + 10)
+        : ((c >= 'A' && c <= 'F') ? (c - 'A' + 10)
         : -1)));
 }
 

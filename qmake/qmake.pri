@@ -68,6 +68,8 @@ bootstrap { #Qt code
         qmap.cpp \
         qmetatype.cpp \
         qregexp.cpp \
+        qtextcodec.cpp \
+        qutfcodec.cpp \
         qstring.cpp \
         qstringlist.cpp \
         qtemporaryfile.cpp \
@@ -107,6 +109,8 @@ bootstrap { #Qt code
         qmap.h \
         qmetatype.h \
         qregexp.h \
+        qtextcodec.h \
+        qutfcodec.h \
         qstring.h \
         qstringlist.h \
         qstringmatcher.h \

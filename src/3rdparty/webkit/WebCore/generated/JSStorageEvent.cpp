@@ -54,7 +54,7 @@ static const HashTableValue JSStorageEventTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStorageEventTable =
+static JSC_CONST_HASHTABLE HashTable JSStorageEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSStorageEventTableValues, 0 };
 #else
@@ -68,19 +68,19 @@ static const HashTableValue JSStorageEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStorageEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSStorageEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSStorageEventConstructorTableValues, 0 };
 #else
     { 1, 0, JSStorageEventConstructorTableValues, 0 };
 #endif
 
-class JSStorageEventConstructor : public DOMObject {
+class JSStorageEventConstructor : public DOMConstructorObject {
 public:
-    JSStorageEventConstructor(ExecState* exec)
-        : DOMObject(JSStorageEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSStorageEventConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSStorageEventConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSStorageEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSStorageEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,7 +107,7 @@ static const HashTableValue JSStorageEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStorageEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSStorageEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSStorageEventPrototypeTableValues, 0 };
 #else
@@ -128,8 +128,8 @@ bool JSStorageEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
 
 const ClassInfo JSStorageEvent::s_info = { "StorageEvent", &JSEvent::s_info, &JSStorageEventTable, 0 };
 
-JSStorageEvent::JSStorageEvent(PassRefPtr<Structure> structure, PassRefPtr<StorageEvent> impl)
-    : JSEvent(structure, impl)
+JSStorageEvent::JSStorageEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StorageEvent> impl)
+    : JSEvent(structure, globalObject, impl)
 {
 }
 
@@ -145,53 +145,60 @@ bool JSStorageEvent::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsStorageEventKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    StorageEvent* imp = static_cast<StorageEvent*>(static_cast<JSStorageEvent*>(asObject(slot.slotBase()))->impl());
+    StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
     return jsString(exec, imp->key());
 }
 
 JSValue jsStorageEventOldValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    StorageEvent* imp = static_cast<StorageEvent*>(static_cast<JSStorageEvent*>(asObject(slot.slotBase()))->impl());
+    StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
     return jsStringOrNull(exec, imp->oldValue());
 }
 
 JSValue jsStorageEventNewValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    StorageEvent* imp = static_cast<StorageEvent*>(static_cast<JSStorageEvent*>(asObject(slot.slotBase()))->impl());
+    StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
     return jsStringOrNull(exec, imp->newValue());
 }
 
 JSValue jsStorageEventUri(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    StorageEvent* imp = static_cast<StorageEvent*>(static_cast<JSStorageEvent*>(asObject(slot.slotBase()))->impl());
+    StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
     return jsString(exec, imp->uri());
 }
 
 JSValue jsStorageEventSource(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    StorageEvent* imp = static_cast<StorageEvent*>(static_cast<JSStorageEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->source()));
+    StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->source()));
 }
 
 JSValue jsStorageEventStorageArea(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    StorageEvent* imp = static_cast<StorageEvent*>(static_cast<JSStorageEvent*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->storageArea()));
+    StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->storageArea()));
 }
 
 JSValue jsStorageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSStorageEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSStorageEvent* domObject = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
+    return JSStorageEvent::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSStorageEvent::getConstructor(ExecState* exec)
+JSValue JSStorageEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSStorageEventConstructor>(exec);
+    return getDOMConstructor<JSStorageEventConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsStorageEventPrototypeFunctionInitStorageEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

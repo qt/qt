@@ -117,6 +117,26 @@ var WebInspector = {
                 }
             }
         }
+        
+        for (var panelName in WebInspector.panels) {
+            if (WebInspector.panels[panelName] == x)
+                InspectorController.storeLastActivePanel(panelName);
+        }
+    },
+  
+    _createPanels: function()
+    {
+        var hiddenPanels = (InspectorController.hiddenPanels() || "").split(',');
+        if (hiddenPanels.indexOf("elements") === -1)
+            this.panels.elements = new WebInspector.ElementsPanel();
+        if (hiddenPanels.indexOf("resources") === -1)
+            this.panels.resources = new WebInspector.ResourcesPanel();
+        if (hiddenPanels.indexOf("scripts") === -1)
+            this.panels.scripts = new WebInspector.ScriptsPanel();
+        if (hiddenPanels.indexOf("profiles") === -1)
+            this.panels.profiles = new WebInspector.ProfilesPanel();
+        if (hiddenPanels.indexOf("databases") === -1)
+            this.panels.databases = new WebInspector.DatabasesPanel();      
     },
 
     get attached()
@@ -281,24 +301,16 @@ WebInspector.loaded = function()
     this.console = new WebInspector.Console();
 
     this.panels = {};
-    var hiddenPanels = (InspectorController.hiddenPanels() || "").split(',');
-    if (hiddenPanels.indexOf("elements") === -1)
-        this.panels.elements = new WebInspector.ElementsPanel();
-    if (hiddenPanels.indexOf("resources") === -1)
-        this.panels.resources = new WebInspector.ResourcesPanel();
-    if (hiddenPanels.indexOf("scripts") === -1)
-        this.panels.scripts = new WebInspector.ScriptsPanel();
-    if (hiddenPanels.indexOf("profiles") === -1)
-        this.panels.profiles = new WebInspector.ProfilesPanel();
-    if (hiddenPanels.indexOf("databases") === -1)
-        this.panels.databases = new WebInspector.DatabasesPanel();
+    this._createPanels();
 
     var toolbarElement = document.getElementById("toolbar");
     var previousToolbarItem = toolbarElement.children[0];
 
+    this.panelOrder = [];
     for (var panelName in this.panels) {
         var panel = this.panels[panelName];
         var panelToolbarItem = panel.toolbarItem;
+        this.panelOrder.push(panel);
         panelToolbarItem.addEventListener("click", this._toolbarItemClicked.bind(this));
         if (previousToolbarItem)
             toolbarElement.insertBefore(panelToolbarItem, previousToolbarItem.nextSibling);
@@ -306,8 +318,6 @@ WebInspector.loaded = function()
             toolbarElement.insertBefore(panelToolbarItem, toolbarElement.firstChild);
         previousToolbarItem = panelToolbarItem;
     }
-
-    this.currentPanel = this.panels.elements;
 
     this.resourceCategories = {
         documents: new WebInspector.ResourceCategory(WebInspector.UIString("Documents"), "documents"),
@@ -523,6 +533,36 @@ WebInspector.documentKeyDown = function(event)
                 }
 
                 break;
+
+            case "U+005B": // [ key
+                if (isMac)
+                    var isRotateLeft = event.metaKey && !event.shiftKey && !event.ctrlKey && !event.altKey;
+                else
+                    var isRotateLeft = event.ctrlKey && !event.shiftKey && !event.metaKey && !event.altKey;
+
+                if (isRotateLeft) {
+                    var index = this.panelOrder.indexOf(this.currentPanel);
+                    index = (index === 0) ? this.panelOrder.length - 1 : index - 1;
+                    this.panelOrder[index].toolbarItem.click();
+                    event.preventDefault();
+                }
+
+                break;
+
+            case "U+005D": // ] key
+                if (isMac)
+                    var isRotateRight = event.metaKey && !event.shiftKey && !event.ctrlKey && !event.altKey;
+                else
+                    var isRotateRight = event.ctrlKey && !event.shiftKey && !event.metaKey && !event.altKey;
+
+                if (isRotateRight) {
+                    var index = this.panelOrder.indexOf(this.currentPanel);
+                    index = (index + 1) % this.panelOrder.length;
+                    this.panelOrder[index].toolbarItem.click();
+                    event.preventDefault();
+                }
+
+                break;
         }
     }
 }
@@ -588,6 +628,7 @@ WebInspector.animateStyle = function(animations, duration, callback, complete)
         var start = null;
         var current = null;
         var end = null;
+        var key = null;
         for (key in animation) {
             if (key === "element")
                 element = animation[key];
@@ -979,6 +1020,7 @@ WebInspector.addMessageToConsole = function(payload)
 {
     var consoleMessage = new WebInspector.ConsoleMessage(
         payload.source,
+        payload.type,
         payload.level,
         payload.line,
         payload.url,
@@ -1277,6 +1319,7 @@ WebInspector.startEditing = function(element, committedCallback, cancelledCallba
 
     var oldText = element.textContent;
     var oldHandleKeyEvent = element.handleKeyEvent;
+    var moveDirection = "";
 
     element.addStyleClass("editing");
 
@@ -1314,7 +1357,7 @@ WebInspector.startEditing = function(element, committedCallback, cancelledCallba
     function editingCommitted() {
         cleanUpAfterEditing.call(this);
 
-        committedCallback(this, this.textContent, oldText, context);
+        committedCallback(this, this.textContent, oldText, context, moveDirection);
     }
 
     element.handleKeyEvent = function(event) {
@@ -1330,7 +1373,8 @@ WebInspector.startEditing = function(element, committedCallback, cancelledCallba
             editingCancelled.call(element);
             event.preventDefault();
             event.handled = true;
-        }
+        } else if (event.keyIdentifier === "U+0009") // Tab key
+            moveDirection = (event.shiftKey ? "backward" : "forward");
     }
 
     element.addEventListener("blur", blurEventListener, false);

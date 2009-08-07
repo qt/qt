@@ -98,7 +98,9 @@ QT_USE_NAMESPACE
     while (QWidget *popup
                 = QApplication::activePopupWidget())
         popup->close();
-    qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QCocoaMenu) *)menu)->qmenu, true);
+    QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QCocoaMenu) *>(menu)->qmenu;
+    qt_mac_emit_menuSignals(qtmenu, true);
+    qt_mac_menu_collapseSeparators(menu, qtmenu->separatorsCollapsible());
 }
 
 - (void)menuWillClose:(NSMenu*)menu;

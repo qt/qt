@@ -60,6 +60,8 @@ WebInspector.ElementsPanel = function()
             InspectorController.toggleNodeSearch();
             this.panel.nodeSearchButton.removeStyleClass("toggled-on");
         }
+
+        WebInspector.console.addInspectedNode(this._focusedDOMNode);
     };
 
     this.contentElement.appendChild(this.treeOutline.element);

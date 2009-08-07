@@ -135,9 +135,9 @@ static inline QStringList qWinCmdArgs(QString cmdLine) // not const-ref: this mi
     QStringList args;
 
     int argc = 0;
-    QVector<ushort*> argv = qWinCmdLine<ushort>((ushort*)cmdLine.utf16(), cmdLine.length(), argc);
+    QVector<wchar_t*> argv = qWinCmdLine<wchar_t>((wchar_t *)cmdLine.utf16(), cmdLine.length(), argc);
     for (int a = 0; a < argc; ++a) {
-        args << QString::fromUtf16(argv[a]);
+        args << QString::fromWCharArray(argv[a]);
     }
 
     return args;
@@ -147,10 +147,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
 {
     Q_UNUSED(argc)
     Q_UNUSED(argv)
-    QString cmdLine = QT_WA_INLINE(
-        QString::fromUtf16((unsigned short*)GetCommandLineW()),
-        QString::fromLocal8Bit(GetCommandLineA())
-    );
+    QString cmdLine = QString::fromWCharArray(GetCommandLine());
     return qWinCmdArgs(cmdLine);
 }
 

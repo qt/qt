@@ -127,8 +127,7 @@ void RenderReplaced::paint(PaintInfo& paintInfo, int tx, int ty)
         drawSelectionTint = false;
     }
 
-    bool clipToBorderRadius = style()->overflowX() != OVISIBLE && style()->hasBorderRadius(); 
-    if (clipToBorderRadius) {
+    if (style()->hasBorderRadius()) {
         // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
         paintInfo.context->save();
         
@@ -141,7 +140,7 @@ void RenderReplaced::paint(PaintInfo& paintInfo, int tx, int ty)
 
     paintReplaced(paintInfo, tx, ty);
 
-    if (clipToBorderRadius)
+    if (style()->hasBorderRadius())
         paintInfo.context->restore();
         
     // The selection tint never gets clipped by border-radius rounding, since we want it to run right up to the edges of
@@ -334,7 +333,7 @@ void RenderReplaced::adjustOverflowForBoxShadowAndReflect()
     for (ShadowData* boxShadow = style()->boxShadow(); boxShadow; boxShadow = boxShadow->next) {
         IntRect shadow = borderBoxRect();
         shadow.move(boxShadow->x, boxShadow->y);
-        shadow.inflate(boxShadow->blur);
+        shadow.inflate(boxShadow->blur + boxShadow->spread);
         overflow.unite(shadow);
     }
 

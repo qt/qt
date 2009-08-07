@@ -188,6 +188,9 @@ private slots:
     void task_205701_data() { generic_data("QMYSQL"); }
     void task_205701();
 
+    void task_233829_data() { generic_data("QPSQL"); }
+    void task_233829();
+
 
 private:
     // returns all database connections
@@ -293,6 +296,9 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "oraRowId" )
                << qTableName( "qtest_batch" );
 
+    if ( db.driverName().startsWith("QPSQL") )
+        tablenames << qTableName("task_233829");
+
     if ( db.driverName().startsWith("QSQLITE") )
         tablenames << qTableName( "record_sqlite" );
 
@@ -318,7 +324,10 @@ void tst_QSqlQuery::createTestTables( QSqlDatabase db )
         // in the MySQL server startup script
         q.exec( "set table_type=innodb" );
 
-    QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest" ) + " (id int "+tst_Databases::autoFieldName(db) +" NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id))" ) );
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest" ) + " (id serial NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id)) WITH OIDS" ) );
+    else
+        QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest" ) + " (id int "+tst_Databases::autoFieldName(db) +" NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id))" ) );
 
     if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QTDS" ) )
         QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_null" ) + " (id int null, t_varchar varchar(20) null)" ) );
@@ -486,7 +495,9 @@ void tst_QSqlQuery::mysqlOutValues()
     QVERIFY_SQL( q, exec( "create procedure " + qTableName( "qtestproc" ) + " () "
                             "BEGIN select * from " + qTableName( "qtest" ) + " order by id; END" ) );
     QVERIFY_SQL( q, exec( "call " + qTableName( "qtestproc" ) + "()" ) );
+    QEXPECT_FAIL("", "There's a mysql bug that means only selects think they return data when running in prepared mode", Continue);
     QVERIFY_SQL( q, next() );
+    QEXPECT_FAIL("", "There's a mysql bug that means only selects think they return data when running in prepared mode", Continue);
     QCOMPARE( q.value( 1 ).toString(), QString( "VarChar1" ) );
 
     QVERIFY_SQL( q, exec( "drop procedure " + qTableName( "qtestproc" ) ) );
@@ -1870,7 +1881,7 @@ void tst_QSqlQuery::invalidQuery()
     QVERIFY( !q.next() );
     QVERIFY( !q.isActive() );
 
-    if ( !db.driverName().startsWith( "QOCI" ) && !db.driverName().startsWith( "QDB2" ) ) {
+    if ( !db.driverName().startsWith( "QOCI" ) && !db.driverName().startsWith( "QDB2" ) && !db.driverName().startsWith( "QODBC" ) ) {
         // oracle and db2 just prepares everything without complaining
         if ( db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
             QVERIFY( !q.prepare( "blahfasel" ) );
@@ -2007,7 +2018,7 @@ void tst_QSqlQuery::oraArrayBind()
 
     q.bindValue( 0, list, QSql::In );
 
-    QVERIFY_SQL( q, execBatch( QSqlQuery::ValuesAsRows ) );
+    QVERIFY_SQL( q, execBatch( QSqlQuery::ValuesAsColumns ) );
 
     QVERIFY_SQL( q, prepare( "BEGIN "
                                "ora_array_test.get_table(?); "
@@ -2019,7 +2030,7 @@ void tst_QSqlQuery::oraArrayBind()
 
     q.bindValue( 0, list, QSql::Out );
 
-    QVERIFY_SQL( q, execBatch( QSqlQuery::ValuesAsRows ) );
+    QVERIFY_SQL( q, execBatch( QSqlQuery::ValuesAsColumns ) );
 
     QVariantList out_list = q.boundValue( 0 ).toList();
 
@@ -2565,7 +2576,7 @@ void tst_QSqlQuery::blobsPreparedQuery()
     QString typeName( "BLOB" );
     if ( db.driverName().startsWith( "QPSQL" ) )
         typeName = "BYTEA";
-    else if ( db.driverName().startsWith( "QODBC" ) )
+    else if ( db.driverName().startsWith( "QODBC" ) && tst_Databases::isSqlServer( db ))
         typeName = "IMAGE";
 
     QVERIFY_SQL( q, exec( QString( "CREATE TABLE %1(id INTEGER, data %2)" ).arg( tableName ).arg( typeName ) ) );
@@ -2770,6 +2781,25 @@ void tst_QSqlQuery::task_234422()
 }
 
 #endif
+
+void tst_QSqlQuery::task_233829()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    QSqlQuery q( db );
+    QString tableName = qTableName("task_233829");
+    QVERIFY_SQL(q,exec("CREATE TABLE " + tableName  + "(dbl1 double precision,dbl2 double precision) without oids;"));
+
+    QString queryString("INSERT INTO " + tableName +"(dbl1, dbl2) VALUES(?,?)");
+
+    double k = 0.0;
+    QVERIFY_SQL(q,prepare(queryString));
+    q.bindValue(0,0.0 / k); // nan
+    q.bindValue(1,0.0 / k); // nan
+    QVERIFY_SQL(q,exec());
+}
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"

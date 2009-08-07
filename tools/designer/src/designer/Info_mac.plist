@@ -22,7 +22,7 @@
                                 <string>ui</string>
                         </array>
 			<key>CFBundleTypeIconFile</key>
-			<string>@ICON@</string>
+			<string>uifile.icns</string>
                         <key>CFBundleTypeRole</key>
                         <string>Editor</string>
                         <key>LSIsAppleDefaultForType</key>

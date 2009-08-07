@@ -159,17 +159,19 @@ inline QPointF QTabletDeviceData::scaleCoord(int coordX, int coordY,
                                             int outOriginY, int outExtentY) const
 {
     QPointF ret;
+
     if (sign(outExtentX) == sign(maxX))
-        ret.setX(((coordX - minX) * qAbs(outExtentX) / qAbs(qreal(maxX))) + outOriginX);
+        ret.setX(((coordX - minX) * qAbs(outExtentX) / qAbs(qreal(maxX - minX))) + outOriginX);
     else
-        ret.setX(((qAbs(maxX) - (coordX - minX)) * qAbs(outExtentX) / qAbs(qreal(maxX)))
+        ret.setX(((qAbs(maxX) - (coordX - minX)) * qAbs(outExtentX) / qAbs(qreal(maxX - minX)))
                  + outOriginX);
 
     if (sign(outExtentY) == sign(maxY))
-        ret.setY(((coordY - minY) * qAbs(outExtentY) / qAbs(qreal(maxY))) + outOriginY);
+        ret.setY(((coordY - minY) * qAbs(outExtentY) / qAbs(qreal(maxY - minY))) + outOriginY);
     else
-        ret.setY(((qAbs(maxY) - (coordY - minY)) * qAbs(outExtentY) / qAbs(qreal(maxY)))
+        ret.setY(((qAbs(maxY) - (coordY - minY)) * qAbs(outExtentY) / qAbs(qreal(maxY - minY)))
                  + outOriginY);
+
     return ret;
 }
 #endif
@@ -191,10 +193,68 @@ extern "C" {
 #endif
 
 #if defined(Q_WS_WIN)
-typedef BOOL (WINAPI *qt_RegisterTouchWindowPtr)(HWND, ULONG);
-typedef BOOL (WINAPI *qt_GetTouchInputInfoPtr)(HANDLE, UINT, PVOID, int);
-typedef BOOL (WINAPI *qt_CloseTouchInputHandlePtr)(HANDLE);
-#endif
+typedef BOOL (WINAPI *PtrRegisterTouchWindow)(HWND, ULONG);
+typedef BOOL (WINAPI *PtrGetTouchInputInfo)(HANDLE, UINT, PVOID, int);
+typedef BOOL (WINAPI *PtrCloseTouchInputHandle)(HANDLE);
+
+typedef BOOL (WINAPI *PtrGetGestureInfo)(HANDLE, PVOID);
+typedef BOOL (WINAPI *PtrGetGestureExtraArgs)(HANDLE, UINT, PBYTE);
+typedef BOOL (WINAPI *PtrCloseGestureInfoHandle)(HANDLE);
+typedef BOOL (WINAPI *PtrSetGestureConfig)(HWND, DWORD, UINT, PVOID, UINT);
+typedef BOOL (WINAPI *PtrGetGestureConfig)(HWND, DWORD, DWORD, PUINT, PVOID, UINT);
+
+typedef BOOL (WINAPI *PtrBeginPanningFeedback)(HWND);
+typedef BOOL (WINAPI *PtrUpdatePanningFeedback)(HWND, LONG, LONG, BOOL);
+typedef BOOL (WINAPI *PtrEndPanningFeedback)(HWND, BOOL);
+
+#ifndef WM_GESTURE
+#  define WM_GESTURE 0x0119
+
+#  define GID_BEGIN                       1
+#  define GID_END                         2
+#  define GID_ZOOM                        3
+#  define GID_PAN                         4
+#  define GID_ROTATE                      5
+#  define GID_TWOFINGERTAP                6
+#  define GID_ROLLOVER                    7
+
+typedef struct tagGESTUREINFO
+{
+    UINT cbSize;
+    DWORD dwFlags;
+    DWORD dwID;
+    HWND hwndTarget;
+    POINTS ptsLocation;
+    DWORD dwInstanceID;
+    DWORD dwSequenceID;
+    ULONGLONG ullArguments;
+    UINT cbExtraArgs;
+} GESTUREINFO;
+
+#  define GC_PAN                                      0x00000001
+#  define GC_PAN_WITH_SINGLE_FINGER_VERTICALLY        0x00000002
+#  define GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY      0x00000004
+
+typedef struct tagGESTURECONFIG
+{
+    DWORD dwID;
+    DWORD dwWant;
+    DWORD dwBlock;
+} GESTURECONFIG;
+
+#endif // WM_GESTURE
+
+#endif // Q_WS_WIN
+
+class QPanGesture;
+class QPinchGesture;
+struct StandardGestures
+{
+    QPanGesture *pan;
+    QPinchGesture *pinch;
+    StandardGestures() : pan(0), pinch(0) { }
+};
+
 
 class QScopedLoopLevelCounter
 {
@@ -445,10 +505,6 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
-    QGestureManager *gestureManager;
-    // map<gesture name -> number of widget subscribed to it>
-    QMap<QString, int> grabbedGestures;
-
     QMap<int, QWidget *> widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
@@ -464,13 +520,26 @@ public:
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 #if defined(Q_WS_WIN)
-    static qt_RegisterTouchWindowPtr RegisterTouchWindow;
-    static qt_GetTouchInputInfoPtr GetTouchInputInfo;
-    static qt_CloseTouchInputHandlePtr CloseTouchInputHandle;
+    static PtrRegisterTouchWindow RegisterTouchWindow;
+    static PtrGetTouchInputInfo GetTouchInputInfo;
+    static PtrCloseTouchInputHandle CloseTouchInputHandle;
 
     QHash<DWORD, int> touchInputIDToTouchPointID;
     QList<QTouchEvent::TouchPoint> appAllTouchPoints;
     bool translateTouchEvent(const MSG &msg);
+
+    typedef QMap<QWidget*, StandardGestures> WidgetStandardGesturesMap;
+    WidgetStandardGesturesMap widgetGestures;
+    ulong lastGestureId;
+
+    PtrGetGestureInfo GetGestureInfo;
+    PtrGetGestureExtraArgs GetGestureExtraArgs;
+    PtrCloseGestureInfoHandle CloseGestureInfoHandle;
+    PtrSetGestureConfig SetGestureConfig;
+    PtrGetGestureConfig GetGestureConfig;
+    PtrBeginPanningFeedback BeginPanningFeedback;
+    PtrUpdatePanningFeedback UpdatePanningFeedback;
+    PtrEndPanningFeedback EndPanningFeedback;
 #endif
 
 #ifdef QT_RX71_MULTITOUCH

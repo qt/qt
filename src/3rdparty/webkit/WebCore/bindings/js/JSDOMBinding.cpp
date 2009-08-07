@@ -32,6 +32,7 @@
 #include "EventException.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
+#include "HTMLAudioElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLScriptElement.h"
 #include "HTMLNames.h"
@@ -288,6 +289,10 @@ static inline bool isObservableThroughDOM(JSNode* jsNode)
             return true;
         if (node->hasTagName(scriptTag) && !static_cast<HTMLScriptElement*>(node)->haveFiredLoadEvent())
             return true;
+#if ENABLE(VIDEO)
+        if (node->hasTagName(audioTag) && !static_cast<HTMLAudioElement*>(node)->paused())
+            return true;
+#endif
     }
 
     return false;
@@ -450,31 +455,36 @@ void setDOMException(ExecState* exec, ExceptionCode ec)
     if (!ec || exec->hadException())
         return;
 
+    // FIXME: All callers to setDOMException need to pass in the right global object
+    // for now, we're going to assume the lexicalGlobalObject.  Which is wrong in cases like this:
+    // frames[0].document.createElement(null, null); // throws an exception which should have the subframes prototypes.
+    JSDOMGlobalObject* globalObject = deprecatedGlobalObjectForPrototype(exec);
+
     ExceptionCodeDescription description;
     getExceptionCodeDescription(ec, description);
 
     JSValue errorObject;
     switch (description.type) {
         case DOMExceptionType:
-            errorObject = toJS(exec, DOMCoreException::create(description));
+            errorObject = toJS(exec, globalObject, DOMCoreException::create(description));
             break;
         case RangeExceptionType:
-            errorObject = toJS(exec, RangeException::create(description));
+            errorObject = toJS(exec, globalObject, RangeException::create(description));
             break;
         case EventExceptionType:
-            errorObject = toJS(exec, EventException::create(description));
+            errorObject = toJS(exec, globalObject, EventException::create(description));
             break;
         case XMLHttpRequestExceptionType:
-            errorObject = toJS(exec, XMLHttpRequestException::create(description));
+            errorObject = toJS(exec, globalObject, XMLHttpRequestException::create(description));
             break;
 #if ENABLE(SVG)
         case SVGExceptionType:
-            errorObject = toJS(exec, SVGException::create(description).get(), 0);
+            errorObject = toJS(exec, globalObject, SVGException::create(description).get(), 0);
             break;
 #endif
 #if ENABLE(XPATH)
         case XPathExceptionType:
-            errorObject = toJS(exec, XPathException::create(description));
+            errorObject = toJS(exec, globalObject, XPathException::create(description));
             break;
 #endif
     }

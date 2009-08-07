@@ -50,6 +50,7 @@ class CSSStyleSheet;
 class CSSValue;
 class CSSVariableDependentValue;
 class CSSVariablesRule;
+class DataGridColumn;
 class Document;
 class Element;
 class Frame;
@@ -77,7 +78,7 @@ public:
 };
 
     // This class selects a RenderStyle for a given element based on a collection of stylesheets.
-    class CSSStyleSelector : Noncopyable {
+    class CSSStyleSelector : public Noncopyable {
     public:
         CSSStyleSelector(Document*, const String& userStyleSheet, StyleSheetList*, CSSStyleSheet*, bool strictParsing, bool matchAuthorAndUserStyles);
         ~CSSStyleSelector();
@@ -88,6 +89,12 @@ public:
         void keyframeStylesForAnimation(Element*, const RenderStyle*, KeyframeList& list);
 
         PassRefPtr<RenderStyle> pseudoStyleForElement(PseudoId, Element*, RenderStyle* parentStyle = 0);
+
+#if ENABLE(DATAGRID)
+        // Datagrid style computation (uses unique pseudo elements and structures)
+        PassRefPtr<RenderStyle> pseudoStyleForDataGridColumn(DataGridColumn*, RenderStyle* parentStyle);
+        PassRefPtr<RenderStyle> pseudoStyleForDataGridColumnHeader(DataGridColumn*, RenderStyle* parentStyle);
+#endif
 
     private:
         RenderStyle* locateSharedStyle();
@@ -145,7 +152,7 @@ public:
 
         void addKeyframeStyle(PassRefPtr<WebKitCSSKeyframesRule> rule);
 
-        static bool createTransformOperations(CSSValue* inValue, RenderStyle* inStyle, TransformOperations& outOperations);
+        static bool createTransformOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, TransformOperations& outOperations);
 
     private:
         enum SelectorMatch { SelectorMatches, SelectorFailsLocally, SelectorFailsCompletely };
@@ -259,6 +266,7 @@ public:
 
         RefPtr<RenderStyle> m_style;
         RenderStyle* m_parentStyle;
+        RenderStyle* m_rootElementStyle;
         Element* m_element;
         StyledElement* m_styledElement;
         Node* m_parentNode;

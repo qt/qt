@@ -66,7 +66,7 @@ class QFactoryLoaderPrivate;
 class Q_CORE_EXPORT QFactoryLoader : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QFactoryLoader)
+    Q_DECLARE_PRIVATE(QFactoryLoader)
 
 public:
     QFactoryLoader(const char *iid,

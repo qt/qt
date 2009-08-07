@@ -58,8 +58,8 @@ class ConnectionTransaction
 PathPrivate::~PathPrivate()
 {
 #ifndef QT_NO_PHONON_EFFECT
-    foreach (Effect *e, effects) {
-        e->k_ptr->removeDestructionHandler(this);
+    for (int i = 0; i < effects.count(); ++i) {
+        effects.at(i)->k_ptr->removeDestructionHandler(this);
     }
     delete effectsParent;
 #endif
@@ -233,8 +233,8 @@ bool Path::disconnect()
     if (d->sourceNode)
         list << d->sourceNode->k_ptr->backendObject();
 #ifndef QT_NO_PHONON_EFFECT
-    foreach(Effect *e, d->effects) {
-        list << e->k_ptr->backendObject();
+    for (int i = 0; i < d->effects.count(); ++i) {
+        list << d->effects.at(i)->k_ptr->backendObject();
     }
 #endif
     if (d->sinkNode) {
@@ -260,8 +260,8 @@ bool Path::disconnect()
         d->sourceNode = 0;
 
 #ifndef QT_NO_PHONON_EFFECT
-        foreach(Effect *e, d->effects) {
-            e->k_ptr->removeDestructionHandler(d.data());
+        for (int i = 0; i < d->effects.count(); ++i) {
+            d->effects.at(i)->k_ptr->removeDestructionHandler(d.data());
         }
         d->effects.clear();
 #endif 
@@ -292,11 +292,13 @@ MediaNode *Path::sink() const
 bool PathPrivate::executeTransaction( const QList<QObjectPair> &disconnections, const QList<QObjectPair> &connections)
 {
     QSet<QObject*> nodesForTransaction;
-    foreach(const QObjectPair &pair, disconnections) {
+    for (int i = 0; i < disconnections.count(); ++i) {
+        const QObjectPair &pair = disconnections.at(i);
         nodesForTransaction << pair.first;
         nodesForTransaction << pair.second;
     }
-    foreach(const QObjectPair &pair, connections) {
+    for (int i = 0; i < connections.count(); ++i) {
+        const QObjectPair &pair = connections.at(i);
         nodesForTransaction << pair.first;
         nodesForTransaction << pair.second;
     }
@@ -338,7 +340,8 @@ bool PathPrivate::executeTransaction( const QList<QObjectPair> &disconnections, 
             }
 
             //and now let's reconnect the nodes that were disconnected: rollback
-            foreach(const QObjectPair &pair, disconnections) {
+            for (int i = 0; i < disconnections.count(); ++i) {
+                const QObjectPair &pair = disconnections.at(i);
                 bool success = backend->connectNodes(pair.first, pair.second);
                 Q_ASSERT(success); //a failure here means it is impossible to reestablish the connection
                 Q_UNUSED(success);
@@ -417,7 +420,8 @@ void PathPrivate::phononObjectDestroyed(MediaNodePrivate *mediaNodePrivate)
         sinkNode = 0;
     } else {
 #ifndef QT_NO_PHONON_EFFECT
-        foreach (Effect *e, effects) {
+        for (int i = 0; i < effects.count(); ++i) {
+            Effect *e = effects.at(i);
             if (e->k_ptr == mediaNodePrivate) {
                 removeEffect(e);
             }

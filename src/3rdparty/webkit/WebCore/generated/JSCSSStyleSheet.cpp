@@ -47,7 +47,7 @@ static const HashTableValue JSCSSStyleSheetTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSStyleSheetTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSStyleSheetTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSCSSStyleSheetTableValues, 0 };
 #else
@@ -61,19 +61,19 @@ static const HashTableValue JSCSSStyleSheetConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSStyleSheetConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSStyleSheetConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSStyleSheetConstructorTableValues, 0 };
 #else
     { 1, 0, JSCSSStyleSheetConstructorTableValues, 0 };
 #endif
 
-class JSCSSStyleSheetConstructor : public DOMObject {
+class JSCSSStyleSheetConstructor : public DOMConstructorObject {
 public:
-    JSCSSStyleSheetConstructor(ExecState* exec)
-        : DOMObject(JSCSSStyleSheetConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSStyleSheetConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSStyleSheetConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSStyleSheetPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSStyleSheetPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -103,7 +103,7 @@ static const HashTableValue JSCSSStyleSheetPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSStyleSheetPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSStyleSheetPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSStyleSheetPrototypeTableValues, 0 };
 #else
@@ -124,8 +124,8 @@ bool JSCSSStyleSheetPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSCSSStyleSheet::s_info = { "CSSStyleSheet", &JSStyleSheet::s_info, &JSCSSStyleSheetTable, 0 };
 
-JSCSSStyleSheet::JSCSSStyleSheet(PassRefPtr<Structure> structure, PassRefPtr<CSSStyleSheet> impl)
-    : JSStyleSheet(structure, impl)
+JSCSSStyleSheet::JSCSSStyleSheet(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleSheet> impl)
+    : JSStyleSheet(structure, globalObject, impl)
 {
 }
 
@@ -141,32 +141,36 @@ bool JSCSSStyleSheet::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsCSSStyleSheetOwnerRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSStyleSheet* castedThis = static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->ownerRule()));
+    CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerRule()));
 }
 
 JSValue jsCSSStyleSheetCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSStyleSheet* castedThis = static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->cssRules()));
+    CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
 }
 
 JSValue jsCSSStyleSheetRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSStyleSheet* castedThis = static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->rules()));
+    CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rules()));
 }
 
 JSValue jsCSSStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSStyleSheet* domObject = static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()));
+    return JSCSSStyleSheet::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSCSSStyleSheet::getConstructor(ExecState* exec)
+JSValue JSCSSStyleSheet::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSStyleSheetConstructor>(exec);
+    return getDOMConstructor<JSCSSStyleSheetConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

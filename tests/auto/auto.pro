@@ -151,6 +151,7 @@ SUBDIRS += _networkselftest \
 	   qgraphicspolygonitem \
 	   qgraphicsproxywidget \
            qgraphicsscene \
+           qgraphicssceneindex \
            qgraphicsview \
            qgraphicswidget \
 	   qgridlayout \
@@ -285,6 +286,10 @@ SUBDIRS += _networkselftest \
            qsocks5socketengine \
            qsortfilterproxymodel \
            qsound \
+           qaudiodeviceid \
+           qaudioformat \
+           qaudiooutput \
+           qaudioinput \
            qspinbox \
            qsplitter \
            qsql \
@@ -394,7 +399,8 @@ SUBDIRS += _networkselftest \
            symbols \
            qrand \
            uic \
-           uic3
+           uic3 \
+           utf8
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 
@@ -423,9 +429,14 @@ SUBDIRS += checkxmlfiles                \
            qxmlnodemodelindex           \
            qxmlquery                    \
            qxmlresultitems              \
+           qxmlschema                   \
+           qxmlschemavalidator          \
            qxmlserializer               \
            xmlpatterns                  \
            xmlpatternsdiagnosticsts     \
+           xmlpatternsschema            \
+           xmlpatternsschemats          \
+           xmlpatternsvalidator         \
            xmlpatternsview              \
            xmlpatternsxqts              \
            xmlpatternsxslts
@@ -437,6 +448,7 @@ xmlpatternsxslts.depends = xmlpatternsxqts
 
 unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusabstractadaptor \
+           qdbusabstractinterface \
            qdbusconnection \
            qdbusinterface \
            qdbuslocalcalls \

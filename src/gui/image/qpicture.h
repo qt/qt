@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QPicturePrivate;
 class Q_GUI_EXPORT QPicture : public QPaintDevice
 {
-    Q_DECLARE_SCOPED_PRIVATE(QPicture)
+    Q_DECLARE_PRIVATE(QPicture)
 public:
     explicit QPicture(int formatVersion = -1);
     QPicture(const QPicture &);

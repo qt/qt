@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,6 +68,7 @@
 
 QT_BEGIN_NAMESPACE
 
+_LIT(KCacheSubDir, "Cache\\");
 _LIT(KSysBin, "\\Sys\\Bin\\");
 _LIT(KTempDir, "\\System\\Temp\\");
 _LIT(KBrowserPrefix, "4 " );
@@ -125,7 +126,7 @@ static void handleMailtoSchemeLX(const QUrl &url)
     CleanupStack::PopAndDestroy(accounts);
 
     if(!count) {
-        // TODO: we should try to create account if count == 0
+        // TODO: Task 259192: We should try to create account if count == 0
         // CSendUi would provide account creation service for us, but it requires ridicilous
         // capabilities: LocalServices NetworkServices ReadDeviceData ReadUserData WriteDeviceData WriteUserData
         User::Leave(KErrNotSupported);
@@ -143,18 +144,18 @@ static void handleMailtoSchemeLX(const QUrl &url)
 
         // To
         foreach(QString item, recipients)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo);
 
         foreach(QString item, tos)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo);
 
         // Cc
         foreach(QString item, ccs)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc );
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc);
 
         // Bcc
         foreach(QString item, bccs)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc );
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc);
 
         // send the message
         sendAsMessage.LaunchEditorAndCloseL();
@@ -172,32 +173,29 @@ static bool handleMailtoScheme(const QUrl &url)
 static void handleOtherSchemesL(const TDesC& aUrl)
 {
     // Other schemes are at the moment passed to WEB browser
-    HBufC* buf16 = HBufC::NewLC( aUrl.Length() + KBrowserPrefix.iTypeLength );
-    buf16->Des().Copy( KBrowserPrefix ); // Prefix used to launch correct browser view
-    buf16->Des().Append( aUrl );
+    HBufC* buf16 = HBufC::NewLC(aUrl.Length() + KBrowserPrefix.iTypeLength);
+    buf16->Des().Copy(KBrowserPrefix); // Prefix used to launch correct browser view
+    buf16->Des().Append(aUrl);
 
-    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
-    TApaTask task = taskList.FindApp( KUidBrowser );
-    if ( task.Exists() )
-        {
+    TApaTaskList taskList(CEikonEnv::Static()->WsSession());
+    TApaTask task = taskList.FindApp(KUidBrowser);
+    if (task.Exists()){
         // Switch to existing browser instance
-        HBufC8* param8 = HBufC8::NewLC( buf16->Length() );
-        param8->Des().Append( buf16->Des() );
-        task.SendMessage( TUid::Uid( 0 ), *param8 ); // Uid is not used
-        CleanupStack::PopAndDestroy( param8 );
-        }
-    else
-        {
+        HBufC8* param8 = HBufC8::NewLC(buf16->Length());
+        param8->Des().Append(buf16->Des());
+        task.SendMessage(TUid::Uid( 0 ), *param8); // Uid is not used
+        CleanupStack::PopAndDestroy(param8);
+    } else {
         // Start a new browser instance
         RApaLsSession appArcSession;
-        User::LeaveIfError( appArcSession.Connect() );
-        CleanupClosePushL<RApaLsSession>( appArcSession );
+        User::LeaveIfError(appArcSession.Connect());
+        CleanupClosePushL<RApaLsSession>(appArcSession);
         TThreadId id;
-        appArcSession.StartDocument( *buf16, KUidBrowser , id );
+        appArcSession.StartDocument(*buf16, KUidBrowser, id);
         CleanupStack::PopAndDestroy(); // appArcSession
-        }
+    }
 
-    CleanupStack::PopAndDestroy( buf16 );
+    CleanupStack::PopAndDestroy(buf16);
 }
 
 static bool handleOtherSchemes(const QUrl &url)
@@ -219,8 +217,8 @@ static TDriveUnit exeDrive()
 static TDriveUnit writableExeDrive()
 {
     TDriveUnit drive = exeDrive();
-    if( drive.operator TInt() == EDriveZ )
-        return TDriveUnit( EDriveC );
+    if(drive.operator TInt() == EDriveZ)
+        return TDriveUnit(EDriveC);
     return drive;
 }
 
@@ -228,7 +226,7 @@ static TPtrC writableDataRoot()
 {
     TDriveUnit drive = exeDrive();
 #ifdef Q_WS_S60
-    switch( drive.operator TInt() ){
+    switch(drive.operator TInt()){
         case EDriveC:
             return PathInfo::PhoneMemoryRootPath();
             break;
@@ -241,7 +239,6 @@ static TPtrC writableDataRoot()
             return PathInfo::PhoneMemoryRootPath();
             break;
         default:
-            // TODO: Should we return drive root similar to MemoryCardRootPath
             return PathInfo::PhoneMemoryRootPath();
             break;
     }
@@ -258,13 +255,13 @@ static void openDocumentL(const TDesC& aUrl)
     // Apparc base method cannot be used to open app in embedded mode,
     // but seems to be most stable way at the moment
     RApaLsSession appArcSession;
-    User::LeaveIfError( appArcSession.Connect() );
-    CleanupClosePushL<RApaLsSession>( appArcSession );
+    User::LeaveIfError(appArcSession.Connect());
+    CleanupClosePushL<RApaLsSession>(appArcSession);
     TThreadId id;
     // ESwitchFiles means do not start another instance
     // Leaves if file does not exist, leave is trapped in openDocument and false returned to user.
-    User::LeaveIfError( appArcSession.StartDocument( aUrl, id,
-            RApaLsSession::ESwitchFiles ) ); // ELaunchNewApp
+    User::LeaveIfError(appArcSession.StartDocument(aUrl, id,
+            RApaLsSession::ESwitchFiles)); // ELaunchNewApp
     CleanupStack::PopAndDestroy(); // appArcSession
 #else
     // This is an alternative way to launch app associated to MIME type
@@ -306,8 +303,8 @@ static bool handleUrl(const QUrl &url)
 
 static void handleUrlL(const TDesC& aUrl)
 {
-    CSchemeHandler* schemeHandler = CSchemeHandler::NewL( aUrl );
-    CleanupStack::PushL( schemeHandler );
+    CSchemeHandler* schemeHandler = CSchemeHandler::NewL(aUrl);
+    CleanupStack::PushL(schemeHandler);
     schemeHandler->HandleUrlStandaloneL(); // Process the Url in standalone mode
     CleanupStack::PopAndDestroy();
 }
@@ -351,7 +348,9 @@ QString QDesktopServices::storageLocation(StandardLocation type)
 
     switch (type) {
     case DesktopLocation:
-        qWarning("QDesktopServices::storageLocation %d not implemented", type);
+        qWarning("No desktop concept in Symbian OS");
+        // But lets still use some feasible default
+        path.Append(writableDataRoot());           
         break;
     case DocumentsLocation:
         path.Append(writableDataRoot());
@@ -391,11 +390,17 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         //return QDir::homePath(); break;
         break;
     case DataLocation:
-        CEikonEnv::Static()->FsSession().PrivatePath( path );
-        // TODO: Should we actually return phone mem if data is on ROM?
-        path.Insert( 0, exeDrive().Name() );
+        CEikonEnv::Static()->FsSession().PrivatePath(path);
+        path.Insert(0, writableExeDrive().Name());
         break;
+    case CacheLocation:
+        CEikonEnv::Static()->FsSession().PrivatePath(path);
+        path.Insert(0, writableExeDrive().Name());
+        path.Append(KCacheSubDir);
+        break;        
     default:
+        // Lets use feasible default
+        path.Append(writableDataRoot());    
         break;
     }
 

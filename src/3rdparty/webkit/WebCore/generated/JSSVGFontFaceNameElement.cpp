@@ -40,7 +40,7 @@ static const HashTableValue JSSVGFontFaceNameElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFontFaceNameElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFontFaceNameElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFontFaceNameElementPrototypeTableValues, 0 };
 #else
@@ -56,8 +56,8 @@ JSObject* JSSVGFontFaceNameElementPrototype::self(ExecState* exec, JSGlobalObjec
 
 const ClassInfo JSSVGFontFaceNameElement::s_info = { "SVGFontFaceNameElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGFontFaceNameElement::JSSVGFontFaceNameElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFontFaceNameElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFontFaceNameElement::JSSVGFontFaceNameElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFontFaceNameElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 

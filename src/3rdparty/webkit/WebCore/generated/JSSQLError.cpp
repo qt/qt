@@ -45,7 +45,7 @@ static const HashTableValue JSSQLErrorTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLErrorTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLErrorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSQLErrorTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSSQLErrorPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLErrorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLErrorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSQLErrorPrototypeTableValues, 0 };
 #else
@@ -75,8 +75,8 @@ JSObject* JSSQLErrorPrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 
 const ClassInfo JSSQLError::s_info = { "SQLError", 0, &JSSQLErrorTable, 0 };
 
-JSSQLError::JSSQLError(PassRefPtr<Structure> structure, PassRefPtr<SQLError> impl)
-    : DOMObject(structure)
+JSSQLError::JSSQLError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLError> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -98,21 +98,23 @@ bool JSSQLError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
 
 JSValue jsSQLErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SQLError* imp = static_cast<SQLError*>(static_cast<JSSQLError*>(asObject(slot.slotBase()))->impl());
+    SQLError* imp = static_cast<SQLError*>(castedThis->impl());
     return jsNumber(exec, imp->code());
 }
 
 JSValue jsSQLErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SQLError* imp = static_cast<SQLError*>(static_cast<JSSQLError*>(asObject(slot.slotBase()))->impl());
+    SQLError* imp = static_cast<SQLError*>(castedThis->impl());
     return jsString(exec, imp->message());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SQLError* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLError* object)
 {
-    return getDOMObjectWrapper<JSSQLError>(exec, object);
+    return getDOMObjectWrapper<JSSQLError>(exec, globalObject, object);
 }
 SQLError* toSQLError(JSC::JSValue value)
 {

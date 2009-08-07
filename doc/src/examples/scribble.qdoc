@@ -354,7 +354,7 @@
     To retrieve a new pen width in the \c penWidth() slot, we use
     QInputDialog. The QInputDialog class provides a simple
     convenience dialog to get a single value from the user. We use
-    the static QInputDialog::getInteger() function, which combines a
+    the static QInputDialog::getInt() function, which combines a
     QLabel and a QSpinBox. The QSpinBox is initialized with the
     scribble area's pen width, allows a range from 1 to 50, a step of
     1 (meaning that the up and down arrow increment or decrement the

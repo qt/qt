@@ -1038,7 +1038,7 @@ QString Q3TabDialog::tabLabel(QWidget * w)
 }
 
 
-/*!  \reimp
+/*!  \internal
 */
 void Q3TabDialog::styleChange(QStyle& s)
 {

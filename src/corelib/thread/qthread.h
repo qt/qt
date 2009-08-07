@@ -127,7 +127,7 @@ protected:
 
 private:
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QThread)
+    Q_DECLARE_PRIVATE(QThread)
 
     static void initialize();
     static void cleanup();
@@ -154,7 +154,7 @@ private:
     friend class QCoreApplication;
     friend class QThreadData;
     friend class QAdoptedThread;
-    Q_DECLARE_SCOPED_PRIVATE(QThread)
+    Q_DECLARE_PRIVATE(QThread)
 };
 
 #endif // QT_NO_THREAD

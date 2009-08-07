@@ -67,7 +67,7 @@ public:
     virtual QString type(const QFileInfo &info) const;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QFileIconProvider)
+    Q_DECLARE_PRIVATE(QFileIconProvider)
     QScopedPointer<QFileIconProviderPrivate> d_ptr;
     Q_DISABLE_COPY(QFileIconProvider)
 };

@@ -67,7 +67,7 @@ static const HashTableValue JSSVGFilterElementTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFilterElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFilterElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSSVGFilterElementTableValues, 0 };
 #else
@@ -83,7 +83,7 @@ static const HashTableValue JSSVGFilterElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFilterElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFilterElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFilterElementPrototypeTableValues, 0 };
 #else
@@ -104,8 +104,8 @@ bool JSSVGFilterElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
 
 const ClassInfo JSSVGFilterElement::s_info = { "SVGFilterElement", &JSSVGElement::s_info, &JSSVGFilterElementTable, 0 };
 
-JSSVGFilterElement::JSSVGFilterElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFilterElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFilterElement::JSSVGFilterElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFilterElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -121,111 +121,125 @@ bool JSSVGFilterElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsSVGFilterElementFilterUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->filterUnitsAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementPrimitiveUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->primitiveUnitsAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementFilterResX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedInteger> obj = imp->filterResXAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementFilterResY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedInteger> obj = imp->filterResYAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     return jsString(exec, imp->xmllang());
 }
 
 JSValue jsSVGFilterElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     return jsString(exec, imp->xmlspace());
 }
 
 JSValue jsSVGFilterElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFilterElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFilterElement* castedThis = static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFilterElement* imp = static_cast<SVGFilterElement*>(static_cast<JSSVGFilterElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 void JSSVGFilterElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -269,7 +283,7 @@ JSValue JSC_HOST_CALL jsSVGFilterElementPrototypeFunctionGetPresentationAttribut
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

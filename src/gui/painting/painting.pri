@@ -101,8 +101,8 @@ win32 {
                 painting/qcolormap_win.cpp \
                 painting/qpaintdevice_win.cpp \
                 painting/qprintengine_win.cpp \
-                painting/qprinterinfo_win.cpp \
-                painting/qregion_win.cpp
+                painting/qprinterinfo_win.cpp
+
         !win32-borland:!wince*:LIBS += -lmsimg32
 }
 
@@ -125,10 +125,6 @@ embedded {
         painting/qgraphicssystemfactory.cpp \
         painting/qgraphicssystemplugin.cpp \
         painting/qwindowsurface_raster.cpp \
-}
-
-wince* {
-        SOURCES -= painting/qregion_win.cpp
 }
 
 unix:x11 {

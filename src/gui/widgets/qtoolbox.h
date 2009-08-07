@@ -124,7 +124,7 @@ public:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QToolBox)
+    Q_DECLARE_PRIVATE(QToolBox)
     Q_DISABLE_COPY(QToolBox)
     Q_PRIVATE_SLOT(d_func(), void _q_buttonClicked())
     Q_PRIVATE_SLOT(d_func(), void _q_widgetDestroyed(QObject*))

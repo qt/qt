@@ -45,7 +45,7 @@ static const HashTableValue JSDOMCoreExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMCoreExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMCoreExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSDOMCoreExceptionTableValues, 0 };
 #else
@@ -81,19 +81,19 @@ static const HashTableValue JSDOMCoreExceptionConstructorTableValues[23] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMCoreExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMCoreExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSDOMCoreExceptionConstructorTableValues, 0 };
 #else
     { 67, 63, JSDOMCoreExceptionConstructorTableValues, 0 };
 #endif
 
-class JSDOMCoreExceptionConstructor : public DOMObject {
+class JSDOMCoreExceptionConstructor : public DOMConstructorObject {
 public:
-    JSDOMCoreExceptionConstructor(ExecState* exec)
-        : DOMObject(JSDOMCoreExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSDOMCoreExceptionConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSDOMCoreExceptionConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSDOMCoreExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSDOMCoreExceptionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -142,7 +142,7 @@ static const HashTableValue JSDOMCoreExceptionPrototypeTableValues[24] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMCoreExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMCoreExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSDOMCoreExceptionPrototypeTableValues, 0 };
 #else
@@ -163,8 +163,8 @@ bool JSDOMCoreExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Iden
 
 const ClassInfo JSDOMCoreException::s_info = { "DOMException", 0, &JSDOMCoreExceptionTable, 0 };
 
-JSDOMCoreException::JSDOMCoreException(PassRefPtr<Structure> structure, PassRefPtr<DOMCoreException> impl)
-    : DOMObject(structure)
+JSDOMCoreException::JSDOMCoreException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMCoreException> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -186,32 +186,36 @@ bool JSDOMCoreException::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsDOMCoreExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMCoreException* imp = static_cast<DOMCoreException*>(static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->impl());
+    DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
     return jsNumber(exec, imp->code());
 }
 
 JSValue jsDOMCoreExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMCoreException* imp = static_cast<DOMCoreException*>(static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->impl());
+    DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsDOMCoreExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMCoreException* imp = static_cast<DOMCoreException*>(static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->impl());
+    DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
     return jsString(exec, imp->message());
 }
 
 JSValue jsDOMCoreExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSDOMCoreException* domObject = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
+    return JSDOMCoreException::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSDOMCoreException::getConstructor(ExecState* exec)
+JSValue JSDOMCoreException::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSDOMCoreExceptionConstructor>(exec);
+    return getDOMConstructor<JSDOMCoreExceptionConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsDOMCoreExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -339,9 +343,9 @@ JSValue jsDOMCoreExceptionQUOTA_EXCEEDED_ERR(ExecState* exec, const Identifier&,
     return jsNumber(exec, static_cast<int>(22));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, DOMCoreException* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DOMCoreException* object)
 {
-    return getDOMObjectWrapper<JSDOMCoreException>(exec, object);
+    return getDOMObjectWrapper<JSDOMCoreException>(exec, globalObject, object);
 }
 DOMCoreException* toDOMCoreException(JSC::JSValue value)
 {

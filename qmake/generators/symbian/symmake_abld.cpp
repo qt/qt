@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,14 +62,14 @@
 SymbianAbldMakefileGenerator::SymbianAbldMakefileGenerator() : SymbianMakefileGenerator() { }
 SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 
-bool SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
+void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
     QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
     removeSpecialCharacters(gnuMakefileName);
     gnuMakefileName.append(".mk");
 
     QFile ft(gnuMakefileName);
-    if(ft.open(QIODevice::WriteOnly)) {
+    if (ft.open(QIODevice::WriteOnly)) {
         generatedFiles << ft.fileName();
         QTextStream t(&ft);
 
@@ -103,7 +103,7 @@ bool SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         if (deploymentOnly) {
             buildDeps.append(DO_NOTHING_TARGET);
             cleanDeps.append(DO_NOTHING_TARGET);
-            cleanDepsWinscw.append( WINSCW_DEPLOYMENT_CLEAN_TARGET);
+            cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET);
             finalDeps.append(DO_NOTHING_TARGET);
             finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET);
             wrapperTargets << WINSCW_DEPLOYMENT_TARGET << WINSCW_DEPLOYMENT_CLEAN_TARGET;
@@ -148,8 +148,6 @@ bool SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
 
         t << endl;
     } // if(ft.open(QIODevice::WriteOnly))
-
-    return true;
 }
 
 void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile)
@@ -162,8 +160,6 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     QStringList debugPlatforms = allPlatforms;
     QStringList releasePlatforms = allPlatforms;
     releasePlatforms.removeAll("winscw"); // No release for emulator
-
-    bool isSubdirs = getTargetExtension() == "subdirs";
 
     QString testClause;
     if (project->values("CONFIG").contains("symbian_test", Qt::CaseInsensitive))
@@ -184,12 +180,13 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
     QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-    if(ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
+    if (ofile.lastIndexOf(Option::dir_sep) != -1)
+        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) - 1);
     t << "MAKEFILE          = " << ofile << endl;
     t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
+    t << "MOVE              = " << var("QMAKE_MOVE") << endl;
     t << "XCOPY             = xcopy /d /f /h /r /y /i" << endl;
     t << "ABLD              = ABLD.BAT" << endl;
     t << "DEBUG_PLATFORMS   = " << debugPlatforms.join(" ") << endl;
@@ -209,7 +206,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
     t << "INCPATH" << '\t' << " = ";
 
-    for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+    for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
             t << " -I\"" << values.at(i) << "\"";
@@ -285,7 +282,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     // Unfortunately, Symbian build chain doesn't support linking generated objects to target,
     // so supporting generating sources is the best we can do. This is enough for mocs.
 
-    if (!isSubdirs) {
+    if (targetType != TypeSubdirs) {
         writeExtraTargets(t);
         writeExtraCompilerTargets(t);
 
@@ -293,7 +290,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // generate command lines like this ...
         // -@ if NOT EXIST  ".\somedir"         mkdir ".\somedir"
         QStringList dirsToClean;
-        for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+        for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
             QStringList values = it.value();
             for (int i = 0; i < values.size(); ++i) {
                 if (values.at(i).endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
@@ -325,7 +322,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << ALL_SOURCE_DEPS_TARGET ":";
 
         QStringList allDeps;
-        for(QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
+        for (QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
             QString currentSourcePath = it.key();
             QStringList values = it.value();
             for (int i = 0; i < values.size(); ++i) {
@@ -343,15 +340,14 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
         // Post link operations
         t << FINALIZE_TARGET ":" << endl;
-        if(!project->isEmpty("QMAKE_POST_LINK")) {
+        if (!project->isEmpty("QMAKE_POST_LINK")) {
             t << '\t' << var("QMAKE_POST_LINK");
             t << endl;
         }
         t << endl;
-    }
-    else {
+    } else {
         QList<MakefileGenerator::SubTarget*> subtargets = findSubDirsSubTargets();
-        writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables|SubTargetSkipDefaultTargets);
+        writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables | SubTargetSkipDefaultTargets);
         qDeleteAll(subtargets);
     }
 
@@ -365,17 +361,16 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << endl;
 
     // Create execution target
-    if (debugPlatforms.contains("winscw") && getTargetExtension() == "exe") {
+    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
         t << "run:" << endl;
         t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
     }
 }
 
-bool SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
+void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
 {
     // We don't use extensions for anything in abld
     Q_UNUSED(t);
-    return true;
 }
 
 bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
@@ -384,23 +379,23 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
 
     QString remoteTestPath = epocRoot() + QLatin1String("epoc32\\winscw\\c\\private\\") + privateDirUid;   // default 4 OpenC; 4 all Symbian too
     DeploymentList depList;
-    initProjectDeploySymbian( project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles );
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
 
     if (depList.size())
         t << "\t-echo Deploying changed files..." << endl;
 
-    for (int i=0; i<depList.size(); ++i) {
+    for (int i = 0; i < depList.size(); ++i) {
         // Xcopy prompts for selecting file or directory if target doesn't exist,
         // and doesn't provide switch to force file selection. It does provide dir forcing, though,
         // so strip the last part of the destination.
-        t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \"" << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\")+1) << "\"" << endl;
+        t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \"" << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\") + 1) << "\"" << endl;
     }
 
     t << endl;
 
     t << WINSCW_DEPLOYMENT_CLEAN_TARGET ":" << endl;
     QStringList cleanList;
-    for (int i=0; i<depList.size(); ++i) {
+    for (int i = 0; i < depList.size(); ++i) {
         cleanList.append(depList.at(i).to);
     }
     generateCleanCommands(t, cleanList, "$(DEL_FILE)", "", "", "");
@@ -417,7 +412,7 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
 {
     // Normally emulator deployment gets done via regular makefile, but since subdirs
     // do not get that, special deployment only makefile is generated for them if needed.
-    if(getTargetExtension() != "subdirs" || addDeploymentExtension) {
+    if (targetType != TypeSubdirs || addDeploymentExtension) {
         QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
         removeSpecialCharacters(gnuMakefileName);
         gnuMakefileName.append(".mk");

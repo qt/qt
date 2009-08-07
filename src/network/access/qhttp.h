@@ -112,7 +112,7 @@ protected:
     QScopedPointer<QHttpHeaderPrivate> d_ptr;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QHttpHeader)
+    Q_DECLARE_PRIVATE(QHttpHeader)
 };
 
 class QHttpResponseHeaderPrivate;
@@ -139,7 +139,7 @@ protected:
     bool parseLine(const QString &line, int number);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QHttpResponseHeader)
+    Q_DECLARE_PRIVATE(QHttpResponseHeader)
     friend class QHttpPrivate;
 };
 
@@ -167,7 +167,7 @@ protected:
     bool parseLine(const QString &line, int number);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QHttpRequestHeader)
+    Q_DECLARE_PRIVATE(QHttpRequestHeader)
 };
 
 class Q_NETWORK_EXPORT QHttp : public QObject
@@ -282,7 +282,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QHttp)
-    Q_DECLARE_SCOPED_PRIVATE(QHttp)
+    Q_DECLARE_PRIVATE(QHttp)
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_slotReadyRead())

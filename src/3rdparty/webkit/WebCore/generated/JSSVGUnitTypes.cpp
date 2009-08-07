@@ -41,7 +41,7 @@ static const HashTableValue JSSVGUnitTypesTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUnitTypesTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUnitTypesTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGUnitTypesTableValues, 0 };
 #else
@@ -58,19 +58,19 @@ static const HashTableValue JSSVGUnitTypesConstructorTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUnitTypesConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUnitTypesConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGUnitTypesConstructorTableValues, 0 };
 #else
     { 8, 7, JSSVGUnitTypesConstructorTableValues, 0 };
 #endif
 
-class JSSVGUnitTypesConstructor : public DOMObject {
+class JSSVGUnitTypesConstructor : public DOMConstructorObject {
 public:
-    JSSVGUnitTypesConstructor(ExecState* exec)
-        : DOMObject(JSSVGUnitTypesConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGUnitTypesConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGUnitTypesConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGUnitTypesPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGUnitTypesPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -99,7 +99,7 @@ static const HashTableValue JSSVGUnitTypesPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUnitTypesPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUnitTypesPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGUnitTypesPrototypeTableValues, 0 };
 #else
@@ -120,9 +120,8 @@ bool JSSVGUnitTypesPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
 
 const ClassInfo JSSVGUnitTypes::s_info = { "SVGUnitTypes", 0, &JSSVGUnitTypesTable, 0 };
 
-JSSVGUnitTypes::JSSVGUnitTypes(PassRefPtr<Structure> structure, PassRefPtr<SVGUnitTypes> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGUnitTypes::JSSVGUnitTypes(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -144,11 +143,12 @@ bool JSSVGUnitTypes::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGUnitTypes*>(asObject(slot.slotBase()))->getConstructor(exec);
+    UNUSED_PARAM(slot);
+    return JSSVGUnitTypes::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
 }
-JSValue JSSVGUnitTypes::getConstructor(ExecState* exec)
+JSValue JSSVGUnitTypes::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGUnitTypesConstructor>(exec);
+    return getDOMConstructor<JSSVGUnitTypesConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters
@@ -168,9 +168,9 @@ JSValue jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX(ExecState* exec, const Ide
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGUnitTypes* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGUnitTypes* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGUnitTypes>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGUnitTypes>(exec, globalObject, object, context);
 }
 SVGUnitTypes* toSVGUnitTypes(JSC::JSValue value)
 {

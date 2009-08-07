@@ -336,7 +336,7 @@ private:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QMenuBar)
+    Q_DECLARE_PRIVATE(QMenuBar)
     Q_DISABLE_COPY(QMenuBar)
     Q_PRIVATE_SLOT(d_func(), void _q_actionTriggered())
     Q_PRIVATE_SLOT(d_func(), void _q_actionHovered())

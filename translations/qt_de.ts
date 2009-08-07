@@ -7232,7 +7232,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+29"/>
         <source>The value of attribute %1 must of type %2, which %3 isn&apos;t.</source>
-        <translation>Der Wert des Attributs mit %1 muss vom Typ %2 sein. %3 ist kein gültiger Wert.</translation>
+        <translation>Der Wert des Attributs %1 muss vom Typ %2 sein. %3 ist kein gültiger Wert.</translation>
     </message>
     <message>
         <location line="+387"/>
@@ -7302,7 +7302,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+267"/>
         <source>Each name of a template parameter must be unique; %1 is duplicated.</source>
-        <translation>Die Namen von Vorlagenparameter müssen eindeutig sein, %1 existiert bereits.</translation>
+        <translation>Die Namen von Vorlagenparametern müssen eindeutig sein, %1 existiert bereits.</translation>
     </message>
     <message>
         <location line="-5750"/>
@@ -7454,7 +7454,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="-3576"/>
         <source>A construct was encountered which only is allowed in XQuery.</source>
-        <translation>Dieses Konstrukt ist zur in XQuery zulässig.</translation>
+        <translation>Dieses Konstrukt ist nur in XQuery zulässig.</translation>
     </message>
     <message>
         <location line="+118"/>
@@ -7563,17 +7563,17 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+62"/>
         <source>The value of the XSL-T version attribute must be a value of type %1, which %2 isn&apos;t.</source>
-        <translation>Der Wert eines XSL-T Versionsattributes muss vom Typ %1 sein, was bei %2 nicht der Fall ist.</translation>
+        <translation>Der Wert eines XSL-T-Versionsattributes muss vom Typ %1 sein, was bei %2 nicht der Fall ist.</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Running an XSL-T 1.0 stylesheet with a 2.0 processor.</source>
-        <translation>Es wird ein XSL-T 1.0-Stylesheet mit einem Prozessor der Version 2.0 verarbeitet.</translation>
+        <translation>Es wird ein XSL-T-1.0-Stylesheet mit einem Prozessor der Version 2.0 verarbeitet.</translation>
     </message>
     <message>
         <location line="+108"/>
         <source>Unknown XSL-T attribute %1.</source>
-        <translation>Unbekanntes XSL-T Attribut: %1.</translation>
+        <translation>Unbekanntes XSL-T-Attribut: %1.</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -7588,7 +7588,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+72"/>
         <source>If element %1 has no attribute %2, it cannot have attribute %3 or %4.</source>
-        <translation>Das Element %1 darf keines der Attribute %3 order %4 haben, solange es nicht das Attribut %2 hat.</translation>
+        <translation>Das Element %1 darf keines der Attribute %3 oder %4 haben, solange es nicht das Attribut %2 hat.</translation>
     </message>
     <message>
         <location line="+9"/>

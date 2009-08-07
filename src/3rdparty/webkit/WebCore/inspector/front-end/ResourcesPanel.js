@@ -126,7 +126,7 @@ WebInspector.ResourcesPanel = function()
 
     this.resourcesTreeElement.expand();
 
-    var panelEnablerHeading = WebInspector.UIString("You need to enable resource tracking to use the this panel.");
+    var panelEnablerHeading = WebInspector.UIString("You need to enable resource tracking to use this panel.");
     var panelEnablerDisclaimer = WebInspector.UIString("Enabling resource tracking will reload the page and make page loading slower.");
     var panelEnablerButton = WebInspector.UIString("Enable resource tracking");
 
@@ -1453,12 +1453,23 @@ WebInspector.ResourceSidebarTreeElement.prototype = {
     {
         WebInspector.SidebarTreeElement.prototype.onattach.call(this);
 
+        var link = document.createElement("a");
+        link.href = this.resource.url;
+        link.className = "invisible";
+        while (this._listItemNode.firstChild)
+            link.appendChild(this._listItemNode.firstChild);
+        this._listItemNode.appendChild(link);
         this._listItemNode.addStyleClass("resources-category-" + this.resource.category.name);
     },
 
     onselect: function()
     {
         WebInspector.panels.resources.showResource(this.resource);
+    },
+    
+    ondblclick: function(treeElement, event)
+    {
+        InspectorController.inspectedWindow().open(this.resource.url);
     },
 
     get mainTitle()

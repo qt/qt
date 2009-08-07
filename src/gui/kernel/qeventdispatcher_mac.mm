@@ -264,12 +264,16 @@ void qt_mac_socket_callback(CFSocketRef s, CFSocketCallBackType callbackType, CF
     int nativeSocket = CFSocketGetNative(s);
     MacSocketInfo *socketInfo = eventDispatcher->macSockets.value(nativeSocket);
     QEvent notifierEvent(QEvent::SockAct);
+
+    // There is a race condition that happen where we disable the notifier and
+    // the kernel still has a notification to pass on. We then get this
+    // notification after we've successfully disabled the CFSocket, but our Qt
+    // notifier is now gone. The upshot is we have to check the notifier
+    // everytime.
     if (callbackType == kCFSocketReadCallBack) {
-        Q_ASSERT(socketInfo->readNotifier);
-        QApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
+        if (socketInfo->readNotifier)
+            QApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
     } else if (callbackType == kCFSocketWriteCallBack) {
-        // ### Bug in Apple socket notifiers seems to send write even
-        // ### after the notifier has been disabled, need to investigate further.
         if (socketInfo->writeNotifier)
             QApplication::sendEvent(socketInfo->writeNotifier, &notifierEvent);
     }
@@ -501,16 +505,6 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
     // that we send remaining posted Qt events before this call returns:
     wakeUp();
     emit awake();
-
-#ifndef QT_MAC_NO_QUICKDRAW
-    if(!qt_mac_safe_pdev) { //create an empty widget and this can be used for a port anytime
-        QWidget *tlw = new QWidget;
-        tlw->setAttribute(Qt::WA_DeleteOnClose);
-        tlw->setObjectName(QLatin1String("empty_widget"));
-        tlw->hide();
-        qt_mac_safe_pdev = tlw;
-    }
-#endif
 
     bool retVal = false;
     forever {

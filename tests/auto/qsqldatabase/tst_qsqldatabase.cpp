@@ -256,6 +256,8 @@ static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
     QString autoName = tst_Databases::autoFieldName(db);
     if (tst_Databases::isMSAccess(db))
         qs.append(" (id int not null");
+    else if (tst_Databases::isPostgreSQL(db))
+        qs.append(" (id serial not null");
     else
         qs.append(QString("(id integer not null %1 primary key").arg(autoName));
 
@@ -351,14 +353,15 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
             << qTableName("bug_249059");
 
     QSqlQuery q(0, db);
-    if (db.driverName().startsWith("QPSQL"))
+    if (db.driverName().startsWith("QPSQL")) {
         q.exec("drop schema " + qTableName("qtestschema") + " cascade");
+        q.exec("drop schema " + qTableName("qtestScHeMa") + " cascade");
+    }
 
     if (testWhiteSpaceNames(db.driverName()))
-        tableNames <<  (qTableName("qtest") + " test");
+        tableNames <<  db.driver()->escapeIdentifier(qTableName("qtest") + " test", QSqlDriver::TableName);
 
     tst_Databases::safeDropTables(db, tableNames);
-    tst_Databases::safeDropView(db, qTableName("qtest_view"));
 }
 
 void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
@@ -557,19 +560,19 @@ void tst_QSqlDatabase::whitespaceInIdentifiers()
         QString tableName = qTableName("qtest") + " test";
         QVERIFY(db.tables().contains(tableName, Qt::CaseInsensitive));
 
-        QSqlRecord rec = db.record(tableName);
+        QSqlRecord rec = db.record(db.driver()->escapeIdentifier(tableName, QSqlDriver::TableName));
         QCOMPARE(rec.count(), 1);
         QCOMPARE(rec.fieldName(0), QString("test test"));
         if(db.driverName().startsWith("QOCI"))
-            QCOMPARE(rec.field(0).type(), QVariant::String);
+            QCOMPARE(rec.field(0).type(), QVariant::Double);
         else
             QCOMPARE(rec.field(0).type(), QVariant::Int);
 
-        QSqlIndex idx = db.primaryIndex(tableName);
+        QSqlIndex idx = db.primaryIndex(db.driver()->escapeIdentifier(tableName, QSqlDriver::TableName));
         QCOMPARE(idx.count(), 1);
         QCOMPARE(idx.fieldName(0), QString("test test"));
         if(db.driverName().startsWith("QOCI"))
-            QCOMPARE(idx.field(0).type(), QVariant::String);
+            QCOMPARE(idx.field(0).type(), QVariant::Double);
         else
             QCOMPARE(idx.field(0).type(), QVariant::Int);
     } else {
@@ -917,7 +920,7 @@ void tst_QSqlDatabase::recordOCI()
         FieldDef("varchar(20)", QVariant::String,       QString("blah2")),
         FieldDef("nchar(20)", QVariant::String,         QString("blah3")),
         FieldDef("nvarchar2(20)", QVariant::String,     QString("blah4")),
-        FieldDef("number(10,5)", QVariant::String,      1.1234567),
+        FieldDef("number(10,5)", QVariant::Double,      1.1234567),
         FieldDef("date", QVariant::DateTime,            dt),
 #ifdef QT3_SUPPORT
 //X?    FieldDef("long raw", QVariant::ByteArray,       QByteArray(Q3CString("blah5"))),
@@ -1051,6 +1054,7 @@ void tst_QSqlDatabase::recordMySQL()
     int major = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt();
     int minor = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 1, 1 ).toInt();
     int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
+    int vernum = (major << 16) + (minor << 8) + revision;
 
 #ifdef QT3_SUPPORT
     /* The below is broken in mysql below 5.0.15
@@ -1058,7 +1062,7 @@ void tst_QSqlDatabase::recordMySQL()
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
         with space on insert, and trailing spaces are removed on select.
     */
-    if ( major >5 || ( major == 5 && minor > 0) || ( major == 5 && minor == 0 && revision >= 15) ) {
+    if( vernum >= ((5 << 16) + 15) ) {
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
     }
@@ -1346,6 +1350,8 @@ void tst_QSqlDatabase::transaction()
     }
 
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtest") + " where id = 41"));
+    if(db.driverName().startsWith("QODBC") && dbName.contains("MySQL"))
+        QEXPECT_FAIL("", "Some odbc drivers don't actually roll back despite telling us they do, especially the mysql driver", Continue);
     QVERIFY(!q.next());
 
     populateTestTables(db);
@@ -1423,7 +1429,8 @@ void tst_QSqlDatabase::caseSensivity()
     bool cs = false;
     if (db.driverName().startsWith("QMYSQL")
      || db.driverName().startsWith("QSQLITE")
-     || db.driverName().startsWith("QTDS"))
+     || db.driverName().startsWith("QTDS")
+     || db.driverName().startsWith("QODBC"))
     cs = true;
 
     QSqlRecord rec = db.record(qTableName("qtest"));
@@ -1518,7 +1525,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     QSqlQuery q(db);
 
     QString schemaName = qTableName("qtestScHeMa");
-    QString tableName = qTableName("qtestTaBlE");
+    QString tableName = qTableName("qtest");
     QString field1Name = QString("fIeLdNaMe");
     QString field2Name = QString("ZuLu");
 
@@ -1536,7 +1543,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     rec.append(fld1);
     rec.append(fld2);
 
-    QVERIFY_SQL(q, exec(drv->sqlStatement(QSqlDriver::SelectStatement, schemaName + '.' + tableName, rec, false)));
+    QVERIFY_SQL(q, exec(drv->sqlStatement(QSqlDriver::SelectStatement, db.driver()->escapeIdentifier(schemaName, QSqlDriver::TableName) + '.' + db.driver()->escapeIdentifier(tableName, QSqlDriver::TableName), rec, false)));
 
     rec = q.record();
     QCOMPARE(rec.count(), 2);
@@ -1584,6 +1591,11 @@ void tst_QSqlDatabase::bug_249059()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+
+    QString version=tst_Databases::getPSQLVersion( db );
+    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
+    if (ver < 7.3)
+        QSKIP("Test requires PostgreSQL >= 7.3", SkipSingle);
 
     QSqlQuery q(db);
     QString tableName = qTableName("bug_249059");
@@ -1654,6 +1666,8 @@ void tst_QSqlDatabase::precisionPolicy()
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
     QVERIFY_SQL(q, exec(query));
+    if(db.driverName().startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle fails to move to next when data columns are oversize", Abort);
     QVERIFY_SQL(q, next());
     if(db.driverName().startsWith("QSQLITE"))
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
@@ -2017,11 +2031,9 @@ void tst_QSqlDatabase::mysql_multiselect()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec("select version()"));
-    QVERIFY_SQL(q, next());
     QString version=tst_Databases::getMySqlVersion( db );
-    int ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
-    if (ver >= 4.1)
+    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
+    if (ver < 4.1)
         QSKIP("Test requires MySQL >= 4.1", SkipSingle);
 
     QVERIFY_SQL(q, exec("SELECT * FROM " + qTableName("qtest") + "; SELECT * FROM " + qTableName("qtest")));
@@ -2265,15 +2277,15 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     QSqlQuery query(db);
     QString procedureName = qTableName("posteventProc");
 
-    QSqlDriver *driver=db.driver();
-    QVERIFY_SQL(*driver, subscribeToNotification(procedureName));
+    QSqlDriver &driver=*(db.driver());
+    QVERIFY_SQL(driver, subscribeToNotification(procedureName));
     QSignalSpy spy(db.driver(), SIGNAL(notification(const QString&)));
     query.exec(QString("NOTIFY \"%1\"").arg(procedureName));
     QCoreApplication::processEvents();
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QVERIFY(arguments.at(0).toString() == procedureName);
-    QVERIFY_SQL(*driver, unsubscribeFromNotification(procedureName));
+    QVERIFY_SQL(driver, unsubscribeFromNotification(procedureName));
 }
 
 void tst_QSqlDatabase::sqlite_bindAndFetchUInt()

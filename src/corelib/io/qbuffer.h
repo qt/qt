@@ -96,7 +96,7 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QBuffer)
+    Q_DECLARE_PRIVATE(QBuffer)
     Q_DISABLE_COPY(QBuffer)
 
     Q_PRIVATE_SLOT(d_func(), void _q_emitSignals())

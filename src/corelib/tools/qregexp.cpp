@@ -70,6 +70,8 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 #define RXERR_LEFTDELIM  QT_TRANSLATE_NOOP("QRegExp", "missing left delim")
 #define RXERR_END        QT_TRANSLATE_NOOP("QRegExp", "unexpected end")
 #define RXERR_LIMIT      QT_TRANSLATE_NOOP("QRegExp", "met internal limit")
+#define RXERR_INTERVAL   QT_TRANSLATE_NOOP("QRegExp", "invalid interval")
+#define RXERR_CATEGORY   QT_TRANSLATE_NOOP("QRegExp", "invalid category")
 
 /*
   WARNING! Be sure to read qregexp.tex before modifying this file.
@@ -686,6 +688,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
         {tools/regexp}{Regular Expression Example}
 */
 
+#if defined(Q_OS_VXWORKS) && defined(EOS)
+#  undef EOS
+#endif
+
 const int NumBadChars = 64;
 #define BadChar(ch) ((ch).unicode() % NumBadChars)
 
@@ -1116,6 +1122,7 @@ private:
     bool valid; // is the regular expression valid?
     Qt::CaseSensitivity cs; // case sensitive?
     bool greedyQuantifiers; // RegExp2?
+    bool xmlSchemaExtensions;
 #ifndef QT_NO_REGEXP_BACKREF
     int nbrefs; // number of back-references
 #endif
@@ -1193,6 +1200,8 @@ private:
 
     friend class Box;
 
+    void setupCategoriesRangeMap();
+
     /*
       This is the lexical analyzer for regular expressions.
     */
@@ -1232,6 +1241,7 @@ private:
 
     int yyTok; // the last token read
     bool yyMayCapture; // set this to false to disable capturing
+    QHash<QByteArray, QPair<int, int> > categoriesRangeMap; // fast lookup hash for xml schema extensions
 
     friend struct QRegExpMatchState;
 };
@@ -1253,7 +1263,8 @@ struct QRegExpLookahead
 #endif
 
 QRegExpEngine::QRegExpEngine(const QRegExpEngineKey &key)
-    : cs(key.cs), greedyQuantifiers(key.patternSyntax == QRegExp::RegExp2)
+    : cs(key.cs), greedyQuantifiers(key.patternSyntax == QRegExp::RegExp2),
+      xmlSchemaExtensions(false)
 {
     setup();
 
@@ -1268,6 +1279,8 @@ QRegExpEngine::QRegExpEngine(const QRegExpEngineKey &key)
     case QRegExp::FixedString:
         rx = QRegExp::escape(key.pattern);
         break;
+    case QRegExp::W3CXmlSchema11:
+        xmlSchemaExtensions = true;
     default:
         rx = key.pattern;
     }
@@ -1484,9 +1497,8 @@ int QRegExpEngine::anchorAlternation(int a, int b)
         return Anchor_Alternation | (n - 1);
 #endif
 
-    aa.resize(n + 1);
-    aa[n].a = a;
-    aa[n].b = b;
+    QRegExpAnchorAlternation element = {a, b};
+    aa.append(element);
     return Anchor_Alternation | n;
 }
 
@@ -2626,6 +2638,152 @@ void QRegExpEngine::Box::addAnchorsToEngine(const Box &to) const
     }
 }
 
+void QRegExpEngine::setupCategoriesRangeMap()
+{
+   categoriesRangeMap.insert("IsBasicLatin",                           qMakePair(0x0000, 0x007F));
+   categoriesRangeMap.insert("IsLatin-1Supplement",                    qMakePair(0x0080, 0x00FF));
+   categoriesRangeMap.insert("IsLatinExtended-A",                      qMakePair(0x0100, 0x017F));
+   categoriesRangeMap.insert("IsLatinExtended-B",                      qMakePair(0x0180, 0x024F));
+   categoriesRangeMap.insert("IsIPAExtensions",                        qMakePair(0x0250, 0x02AF));
+   categoriesRangeMap.insert("IsSpacingModifierLetters",               qMakePair(0x02B0, 0x02FF));
+   categoriesRangeMap.insert("IsCombiningDiacriticalMarks",            qMakePair(0x0300, 0x036F));
+   categoriesRangeMap.insert("IsGreek",                                qMakePair(0x0370, 0x03FF));
+   categoriesRangeMap.insert("IsCyrillic",                             qMakePair(0x0400, 0x04FF));
+   categoriesRangeMap.insert("IsCyrillicSupplement",                   qMakePair(0x0500, 0x052F));
+   categoriesRangeMap.insert("IsArmenian",                             qMakePair(0x0530, 0x058F));
+   categoriesRangeMap.insert("IsHebrew",                               qMakePair(0x0590, 0x05FF));
+   categoriesRangeMap.insert("IsArabic",                               qMakePair(0x0600, 0x06FF));
+   categoriesRangeMap.insert("IsSyriac",                               qMakePair(0x0700, 0x074F));
+   categoriesRangeMap.insert("IsArabicSupplement",                     qMakePair(0x0750, 0x077F));
+   categoriesRangeMap.insert("IsThaana",                               qMakePair(0x0780, 0x07BF));
+   categoriesRangeMap.insert("IsDevanagari",                           qMakePair(0x0900, 0x097F));
+   categoriesRangeMap.insert("IsBengali",                              qMakePair(0x0980, 0x09FF));
+   categoriesRangeMap.insert("IsGurmukhi",                             qMakePair(0x0A00, 0x0A7F));
+   categoriesRangeMap.insert("IsGujarati",                             qMakePair(0x0A80, 0x0AFF));
+   categoriesRangeMap.insert("IsOriya",                                qMakePair(0x0B00, 0x0B7F));
+   categoriesRangeMap.insert("IsTamil",                                qMakePair(0x0B80, 0x0BFF));
+   categoriesRangeMap.insert("IsTelugu",                               qMakePair(0x0C00, 0x0C7F));
+   categoriesRangeMap.insert("IsKannada",                              qMakePair(0x0C80, 0x0CFF));
+   categoriesRangeMap.insert("IsMalayalam",                            qMakePair(0x0D00, 0x0D7F));
+   categoriesRangeMap.insert("IsSinhala",                              qMakePair(0x0D80, 0x0DFF));
+   categoriesRangeMap.insert("IsThai",                                 qMakePair(0x0E00, 0x0E7F));
+   categoriesRangeMap.insert("IsLao",                                  qMakePair(0x0E80, 0x0EFF));
+   categoriesRangeMap.insert("IsTibetan",                              qMakePair(0x0F00, 0x0FFF));
+   categoriesRangeMap.insert("IsMyanmar",                              qMakePair(0x1000, 0x109F));
+   categoriesRangeMap.insert("IsGeorgian",                             qMakePair(0x10A0, 0x10FF));
+   categoriesRangeMap.insert("IsHangulJamo",                           qMakePair(0x1100, 0x11FF));
+   categoriesRangeMap.insert("IsEthiopic",                             qMakePair(0x1200, 0x137F));
+   categoriesRangeMap.insert("IsEthiopicSupplement",                   qMakePair(0x1380, 0x139F));
+   categoriesRangeMap.insert("IsCherokee",                             qMakePair(0x13A0, 0x13FF));
+   categoriesRangeMap.insert("IsUnifiedCanadianAboriginalSyllabics",   qMakePair(0x1400, 0x167F));
+   categoriesRangeMap.insert("IsOgham",                                qMakePair(0x1680, 0x169F));
+   categoriesRangeMap.insert("IsRunic",                                qMakePair(0x16A0, 0x16FF));
+   categoriesRangeMap.insert("IsTagalog",                              qMakePair(0x1700, 0x171F));
+   categoriesRangeMap.insert("IsHanunoo",                              qMakePair(0x1720, 0x173F));
+   categoriesRangeMap.insert("IsBuhid",                                qMakePair(0x1740, 0x175F));
+   categoriesRangeMap.insert("IsTagbanwa",                             qMakePair(0x1760, 0x177F));
+   categoriesRangeMap.insert("IsKhmer",                                qMakePair(0x1780, 0x17FF));
+   categoriesRangeMap.insert("IsMongolian",                            qMakePair(0x1800, 0x18AF));
+   categoriesRangeMap.insert("IsLimbu",                                qMakePair(0x1900, 0x194F));
+   categoriesRangeMap.insert("IsTaiLe",                                qMakePair(0x1950, 0x197F));
+   categoriesRangeMap.insert("IsNewTaiLue",                            qMakePair(0x1980, 0x19DF));
+   categoriesRangeMap.insert("IsKhmerSymbols",                         qMakePair(0x19E0, 0x19FF));
+   categoriesRangeMap.insert("IsBuginese",                             qMakePair(0x1A00, 0x1A1F));
+   categoriesRangeMap.insert("IsPhoneticExtensions",                   qMakePair(0x1D00, 0x1D7F));
+   categoriesRangeMap.insert("IsPhoneticExtensionsSupplement",         qMakePair(0x1D80, 0x1DBF));
+   categoriesRangeMap.insert("IsCombiningDiacriticalMarksSupplement",  qMakePair(0x1DC0, 0x1DFF));
+   categoriesRangeMap.insert("IsLatinExtendedAdditional",              qMakePair(0x1E00, 0x1EFF));
+   categoriesRangeMap.insert("IsGreekExtended",                        qMakePair(0x1F00, 0x1FFF));
+   categoriesRangeMap.insert("IsGeneralPunctuation",                   qMakePair(0x2000, 0x206F));
+   categoriesRangeMap.insert("IsSuperscriptsandSubscripts",            qMakePair(0x2070, 0x209F));
+   categoriesRangeMap.insert("IsCurrencySymbols",                      qMakePair(0x20A0, 0x20CF));
+   categoriesRangeMap.insert("IsCombiningMarksforSymbols",             qMakePair(0x20D0, 0x20FF));
+   categoriesRangeMap.insert("IsLetterlikeSymbols",                    qMakePair(0x2100, 0x214F));
+   categoriesRangeMap.insert("IsNumberForms",                          qMakePair(0x2150, 0x218F));
+   categoriesRangeMap.insert("IsArrows",                               qMakePair(0x2190, 0x21FF));
+   categoriesRangeMap.insert("IsMathematicalOperators",                qMakePair(0x2200, 0x22FF));
+   categoriesRangeMap.insert("IsMiscellaneousTechnical",               qMakePair(0x2300, 0x23FF));
+   categoriesRangeMap.insert("IsControlPictures",                      qMakePair(0x2400, 0x243F));
+   categoriesRangeMap.insert("IsOpticalCharacterRecognition",          qMakePair(0x2440, 0x245F));
+   categoriesRangeMap.insert("IsEnclosedAlphanumerics",                qMakePair(0x2460, 0x24FF));
+   categoriesRangeMap.insert("IsBoxDrawing",                           qMakePair(0x2500, 0x257F));
+   categoriesRangeMap.insert("IsBlockElements",                        qMakePair(0x2580, 0x259F));
+   categoriesRangeMap.insert("IsGeometricShapes",                      qMakePair(0x25A0, 0x25FF));
+   categoriesRangeMap.insert("IsMiscellaneousSymbols",                 qMakePair(0x2600, 0x26FF));
+   categoriesRangeMap.insert("IsDingbats",                             qMakePair(0x2700, 0x27BF));
+   categoriesRangeMap.insert("IsMiscellaneousMathematicalSymbols-A",   qMakePair(0x27C0, 0x27EF));
+   categoriesRangeMap.insert("IsSupplementalArrows-A",                 qMakePair(0x27F0, 0x27FF));
+   categoriesRangeMap.insert("IsBraillePatterns",                      qMakePair(0x2800, 0x28FF));
+   categoriesRangeMap.insert("IsSupplementalArrows-B",                 qMakePair(0x2900, 0x297F));
+   categoriesRangeMap.insert("IsMiscellaneousMathematicalSymbols-B",   qMakePair(0x2980, 0x29FF));
+   categoriesRangeMap.insert("IsSupplementalMathematicalOperators",    qMakePair(0x2A00, 0x2AFF));
+   categoriesRangeMap.insert("IsMiscellaneousSymbolsandArrows",        qMakePair(0x2B00, 0x2BFF));
+   categoriesRangeMap.insert("IsGlagolitic",                           qMakePair(0x2C00, 0x2C5F));
+   categoriesRangeMap.insert("IsCoptic",                               qMakePair(0x2C80, 0x2CFF));
+   categoriesRangeMap.insert("IsGeorgianSupplement",                   qMakePair(0x2D00, 0x2D2F));
+   categoriesRangeMap.insert("IsTifinagh",                             qMakePair(0x2D30, 0x2D7F));
+   categoriesRangeMap.insert("IsEthiopicExtended",                     qMakePair(0x2D80, 0x2DDF));
+   categoriesRangeMap.insert("IsSupplementalPunctuation",              qMakePair(0x2E00, 0x2E7F));
+   categoriesRangeMap.insert("IsCJKRadicalsSupplement",                qMakePair(0x2E80, 0x2EFF));
+   categoriesRangeMap.insert("IsKangxiRadicals",                       qMakePair(0x2F00, 0x2FDF));
+   categoriesRangeMap.insert("IsIdeographicDescriptionCharacters",     qMakePair(0x2FF0, 0x2FFF));
+   categoriesRangeMap.insert("IsCJKSymbolsandPunctuation",             qMakePair(0x3000, 0x303F));
+   categoriesRangeMap.insert("IsHiragana",                             qMakePair(0x3040, 0x309F));
+   categoriesRangeMap.insert("IsKatakana",                             qMakePair(0x30A0, 0x30FF));
+   categoriesRangeMap.insert("IsBopomofo",                             qMakePair(0x3100, 0x312F));
+   categoriesRangeMap.insert("IsHangulCompatibilityJamo",              qMakePair(0x3130, 0x318F));
+   categoriesRangeMap.insert("IsKanbun",                               qMakePair(0x3190, 0x319F));
+   categoriesRangeMap.insert("IsBopomofoExtended",                     qMakePair(0x31A0, 0x31BF));
+   categoriesRangeMap.insert("IsCJKStrokes",                           qMakePair(0x31C0, 0x31EF));
+   categoriesRangeMap.insert("IsKatakanaPhoneticExtensions",           qMakePair(0x31F0, 0x31FF));
+   categoriesRangeMap.insert("IsEnclosedCJKLettersandMonths",          qMakePair(0x3200, 0x32FF));
+   categoriesRangeMap.insert("IsCJKCompatibility",                     qMakePair(0x3300, 0x33FF));
+   categoriesRangeMap.insert("IsCJKUnifiedIdeographsExtensionA",       qMakePair(0x3400, 0x4DB5));
+   categoriesRangeMap.insert("IsYijingHexagramSymbols",                qMakePair(0x4DC0, 0x4DFF));
+   categoriesRangeMap.insert("IsCJKUnifiedIdeographs",                 qMakePair(0x4E00, 0x9FFF));
+   categoriesRangeMap.insert("IsYiSyllables",                          qMakePair(0xA000, 0xA48F));
+   categoriesRangeMap.insert("IsYiRadicals",                           qMakePair(0xA490, 0xA4CF));
+   categoriesRangeMap.insert("IsModifierToneLetters",                  qMakePair(0xA700, 0xA71F));
+   categoriesRangeMap.insert("IsSylotiNagri",                          qMakePair(0xA800, 0xA82F));
+   categoriesRangeMap.insert("IsHangulSyllables",                      qMakePair(0xAC00, 0xD7A3));
+   categoriesRangeMap.insert("IsPrivateUse",                           qMakePair(0xE000, 0xF8FF));
+   categoriesRangeMap.insert("IsCJKCompatibilityIdeographs",           qMakePair(0xF900, 0xFAFF));
+   categoriesRangeMap.insert("IsAlphabeticPresentationForms",          qMakePair(0xFB00, 0xFB4F));
+   categoriesRangeMap.insert("IsArabicPresentationForms-A",            qMakePair(0xFB50, 0xFDFF));
+   categoriesRangeMap.insert("IsVariationSelectors",                   qMakePair(0xFE00, 0xFE0F));
+   categoriesRangeMap.insert("IsVerticalForms",                        qMakePair(0xFE10, 0xFE1F));
+   categoriesRangeMap.insert("IsCombiningHalfMarks",                   qMakePair(0xFE20, 0xFE2F));
+   categoriesRangeMap.insert("IsCJKCompatibilityForms",                qMakePair(0xFE30, 0xFE4F));
+   categoriesRangeMap.insert("IsSmallFormVariants",                    qMakePair(0xFE50, 0xFE6F));
+   categoriesRangeMap.insert("IsArabicPresentationForms-B",            qMakePair(0xFE70, 0xFEFF));
+   categoriesRangeMap.insert("IsHalfwidthandFullwidthForms",           qMakePair(0xFF00, 0xFFEF));
+   categoriesRangeMap.insert("IsSpecials",                             qMakePair(0xFFF0, 0xFFFF));
+   categoriesRangeMap.insert("IsLinearBSyllabary",                     qMakePair(0x10000, 0x1007F));
+   categoriesRangeMap.insert("IsLinearBIdeograms",                     qMakePair(0x10080, 0x100FF));
+   categoriesRangeMap.insert("IsAegeanNumbers",                        qMakePair(0x10100, 0x1013F));
+   categoriesRangeMap.insert("IsAncientGreekNumbers",                  qMakePair(0x10140, 0x1018F));
+   categoriesRangeMap.insert("IsOldItalic",                            qMakePair(0x10300, 0x1032F));
+   categoriesRangeMap.insert("IsGothic",                               qMakePair(0x10330, 0x1034F));
+   categoriesRangeMap.insert("IsUgaritic",                             qMakePair(0x10380, 0x1039F));
+   categoriesRangeMap.insert("IsOldPersian",                           qMakePair(0x103A0, 0x103DF));
+   categoriesRangeMap.insert("IsDeseret",                              qMakePair(0x10400, 0x1044F));
+   categoriesRangeMap.insert("IsShavian",                              qMakePair(0x10450, 0x1047F));
+   categoriesRangeMap.insert("IsOsmanya",                              qMakePair(0x10480, 0x104AF));
+   categoriesRangeMap.insert("IsCypriotSyllabary",                     qMakePair(0x10800, 0x1083F));
+   categoriesRangeMap.insert("IsKharoshthi",                           qMakePair(0x10A00, 0x10A5F));
+   categoriesRangeMap.insert("IsByzantineMusicalSymbols",              qMakePair(0x1D000, 0x1D0FF));
+   categoriesRangeMap.insert("IsMusicalSymbols",                       qMakePair(0x1D100, 0x1D1FF));
+   categoriesRangeMap.insert("IsAncientGreekMusicalNotation",          qMakePair(0x1D200, 0x1D24F));
+   categoriesRangeMap.insert("IsTaiXuanJingSymbols",                   qMakePair(0x1D300, 0x1D35F));
+   categoriesRangeMap.insert("IsMathematicalAlphanumericSymbols",      qMakePair(0x1D400, 0x1D7FF));
+   categoriesRangeMap.insert("IsCJKUnifiedIdeographsExtensionB",       qMakePair(0x20000, 0x2A6DF));
+   categoriesRangeMap.insert("IsCJKCompatibilityIdeographsSupplement", qMakePair(0x2F800, 0x2FA1F));
+   categoriesRangeMap.insert("IsTags",                                 qMakePair(0xE0000, 0xE007F));
+   categoriesRangeMap.insert("IsVariationSelectorsSupplement",         qMakePair(0xE0100, 0xE01EF));
+   categoriesRangeMap.insert("IsSupplementaryPrivateUseArea-A",        qMakePair(0xF0000, 0xFFFFF));
+   categoriesRangeMap.insert("IsSupplementaryPrivateUseArea-B",        qMakePair(0x100000, 0x10FFFF));
+}
+
 int QRegExpEngine::getChar()
 {
     return (yyPos == yyLen) ? EOS : yyIn[yyPos++].unicode();
@@ -2717,6 +2875,177 @@ int QRegExpEngine::getEscape()
         // see QChar::isLetterOrNumber() and QChar::isMark()
         yyCharClass->addCategories(0x000f807e);
         yyCharClass->addSingleton(0x005f); // '_'
+        return Tok_CharClass;
+    case 'I':
+        if (xmlSchemaExtensions) {
+            yyCharClass->setNegative(!yyCharClass->negative());
+            // fall through
+        }
+    case 'i':
+        if (xmlSchemaExtensions) {
+            yyCharClass->addCategories(0x000f807e);
+            yyCharClass->addSingleton(0x003a); // ':'
+            yyCharClass->addSingleton(0x005f); // '_'
+            yyCharClass->addRange(0x0041, 0x005a); // [A-Z]
+            yyCharClass->addRange(0x0061, 0x007a); // [a-z]
+            yyCharClass->addRange(0xc0, 0xd6);
+            yyCharClass->addRange(0xd8, 0xf6);
+            yyCharClass->addRange(0xf8, 0x2ff);
+            yyCharClass->addRange(0x370, 0x37d);
+            yyCharClass->addRange(0x37f, 0x1fff);
+            yyCharClass->addRange(0x200c, 0x200d);
+            yyCharClass->addRange(0x2070, 0x218f);
+            yyCharClass->addRange(0x2c00, 0x2fef);
+            yyCharClass->addRange(0x3001, 0xd7ff);
+            yyCharClass->addRange(0xf900, 0xfdcf);
+            yyCharClass->addRange(0xfdf0, 0xfffd);
+            yyCharClass->addRange((ushort)0x10000, (ushort)0xeffff);
+        }
+        return Tok_CharClass;
+    case 'C':
+        if (xmlSchemaExtensions) {
+            yyCharClass->setNegative(!yyCharClass->negative());
+            // fall through
+        }
+    case 'c':
+        if (xmlSchemaExtensions) {
+            yyCharClass->addCategories(0x000f807e);
+            yyCharClass->addSingleton(0x002d); // '-'
+            yyCharClass->addSingleton(0x002e); // '.'
+            yyCharClass->addSingleton(0x003a); // ':'
+            yyCharClass->addSingleton(0x005f); // '_'
+            yyCharClass->addSingleton(0xb7);
+            yyCharClass->addRange(0x0030, 0x0039); // [0-9]
+            yyCharClass->addRange(0x0041, 0x005a); // [A-Z]
+            yyCharClass->addRange(0x0061, 0x007a); // [a-z]
+            yyCharClass->addRange(0xc0, 0xd6);
+            yyCharClass->addRange(0xd8, 0xf6);
+            yyCharClass->addRange(0xf8, 0x2ff);
+            yyCharClass->addRange(0x370, 0x37d);
+            yyCharClass->addRange(0x37f, 0x1fff);
+            yyCharClass->addRange(0x200c, 0x200d);
+            yyCharClass->addRange(0x2070, 0x218f);
+            yyCharClass->addRange(0x2c00, 0x2fef);
+            yyCharClass->addRange(0x3001, 0xd7ff);
+            yyCharClass->addRange(0xf900, 0xfdcf);
+            yyCharClass->addRange(0xfdf0, 0xfffd);
+            yyCharClass->addRange((ushort)0x10000, (ushort)0xeffff);
+            yyCharClass->addRange(0x0300, 0x036f);
+            yyCharClass->addRange(0x203f, 0x2040);
+        }
+        return Tok_CharClass;
+    case 'P':
+        if (xmlSchemaExtensions) {
+            yyCharClass->setNegative(!yyCharClass->negative());
+            // fall through
+        }
+    case 'p':
+        if (xmlSchemaExtensions) {
+            if (yyCh != '{') {
+                error(RXERR_CHARCLASS);
+                return Tok_CharClass;
+            }
+
+            QByteArray category;
+            yyCh = getChar();
+            while (yyCh != '}') {
+                if (yyCh == EOS) {
+                    error(RXERR_END);
+                    return Tok_CharClass;
+                }
+                category.append(yyCh);
+                yyCh = getChar();
+            }
+            yyCh = getChar(); // skip closing '}'
+
+            if (category == "M") {
+                yyCharClass->addCategories(0x0000000e);
+            } else if (category == "Mn") {
+                yyCharClass->addCategories(0x00000002);
+            } else if (category == "Mc") {
+                yyCharClass->addCategories(0x00000004);
+            } else if (category == "Me") {
+                yyCharClass->addCategories(0x00000008);
+            } else if (category == "N") {
+                yyCharClass->addCategories(0x00000070);
+            } else if (category == "Nd") {
+                yyCharClass->addCategories(0x00000010);
+            } else if (category == "Nl") {
+                yyCharClass->addCategories(0x00000020);
+            } else if (category == "No") {
+                yyCharClass->addCategories(0x00000040);
+            } else if (category == "Z") {
+                yyCharClass->addCategories(0x00000380);
+            } else if (category == "Zs") {
+                yyCharClass->addCategories(0x00000080);
+            } else if (category == "Zl") {
+                yyCharClass->addCategories(0x00000100);
+            } else if (category == "Zp") {
+                yyCharClass->addCategories(0x00000200);
+            } else if (category == "C") {
+                yyCharClass->addCategories(0x00006c00);
+            } else if (category == "Cc") {
+                yyCharClass->addCategories(0x00000400);
+            } else if (category == "Cf") {
+                yyCharClass->addCategories(0x00000800);
+            } else if (category == "Cs") {
+                yyCharClass->addCategories(0x00001000);
+            } else if (category == "Co") {
+                yyCharClass->addCategories(0x00002000);
+            } else if (category == "Cn") {
+                yyCharClass->addCategories(0x00004000);
+            } else if (category == "L") {
+                yyCharClass->addCategories(0x000f8000);
+            } else if (category == "Lu") {
+                yyCharClass->addCategories(0x00008000);
+            } else if (category == "Ll") {
+                yyCharClass->addCategories(0x00010000);
+            } else if (category == "Lt") {
+                yyCharClass->addCategories(0x00020000);
+            } else if (category == "Lm") {
+                yyCharClass->addCategories(0x00040000);
+            } else if (category == "Lo") {
+                yyCharClass->addCategories(0x00080000);
+            } else if (category == "P") {
+                yyCharClass->addCategories(0x4f580780);
+            } else if (category == "Pc") {
+                yyCharClass->addCategories(0x00100000);
+            } else if (category == "Pd") {
+                yyCharClass->addCategories(0x00200000);
+            } else if (category == "Ps") {
+                yyCharClass->addCategories(0x00400000);
+            } else if (category == "Pe") {
+                yyCharClass->addCategories(0x00800000);
+            } else if (category == "Pi") {
+                yyCharClass->addCategories(0x01000000);
+            } else if (category == "Pf") {
+                yyCharClass->addCategories(0x02000000);
+            } else if (category == "Po") {
+                yyCharClass->addCategories(0x04000000);
+            } else if (category == "S") {
+                yyCharClass->addCategories(0x78000000);
+            } else if (category == "Sm") {
+                yyCharClass->addCategories(0x08000000);
+            } else if (category == "Sc") {
+                yyCharClass->addCategories(0x10000000);
+            } else if (category == "Sk") {
+                yyCharClass->addCategories(0x20000000);
+            } else if (category == "So") {
+                yyCharClass->addCategories(0x40000000);
+            } else if (category.startsWith("Is")) {
+                if (categoriesRangeMap.isEmpty())
+                    setupCategoriesRangeMap();
+
+                if (categoriesRangeMap.contains(category)) {
+                    const QPair<int, int> range = categoriesRangeMap.value(category);
+                    yyCharClass->addRange(range.first, range.second);
+                } else {
+                    error(RXERR_CATEGORY);
+                }
+            } else {
+                error(RXERR_CATEGORY);
+            }
+        }
         return Tok_CharClass;
 #endif
 #ifndef QT_NO_REGEXP_ESCAPE
@@ -2939,7 +3268,7 @@ int QRegExpEngine::getToken()
             yyMaxRep = getRep(InftyRep);
         }
         if (yyMaxRep < yyMinRep)
-            qSwap(yyMinRep, yyMaxRep);
+            error(RXERR_INTERVAL);
         if (yyCh != '}')
             error(RXERR_REPETITION);
         yyCh = getChar();
@@ -3305,7 +3634,7 @@ static void prepareEngine_helper(QRegExpPrivate *priv)
 {
     bool initMatchState = !priv->eng;
 #if !defined(QT_NO_REGEXP_OPTIM)
-    if (!priv->eng) {
+    if (!priv->eng && globalEngineCache()) {
         QMutexLocker locker(mutex());
         priv->eng = globalEngineCache()->take(priv->engineKey);
         if (priv->eng != 0)
@@ -3382,6 +3711,9 @@ static void invalidateEngine(QRegExpPrivate *priv)
     \value FixedString The pattern is a fixed string. This is
     equivalent to using the RegExp pattern on a string in
     which all metacharacters are escaped using escape().
+
+    \value W3CXmlSchema11 The pattern is a regular expression as
+    defined by the W3C XML Schema 1.1 specification.
 
     \sa setPatternSyntax()
 */

@@ -60,7 +60,7 @@ class QGridLayoutPrivate;
 class Q_GUI_EXPORT QGridLayout : public QLayout
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QGridLayout)
+    Q_DECLARE_PRIVATE(QGridLayout)
     QDOC_PROPERTY(int horizontalSpacing READ horizontalSpacing WRITE setHorizontalSpacing)
     QDOC_PROPERTY(int verticalSpacing READ verticalSpacing WRITE setVerticalSpacing)
 

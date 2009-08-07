@@ -66,7 +66,7 @@ class QWSManagerPrivate;
 class Q_GUI_EXPORT QWSManager : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QWSManager)
+    Q_DECLARE_PRIVATE(QWSManager)
 public:
     explicit QWSManager(QWidget *);
     ~QWSManager();

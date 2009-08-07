@@ -1008,8 +1008,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
                 ;
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
             } else {                                // color pixmap, no mask
-                QString k;
-                k.sprintf("$qt-drawitem-%llx", pm.cacheKey());
+                QString k = QString::fromLatin1("$qt-drawitem-%1").arg(pm.cacheKey());
                 if (!QPixmapCache::find(k, pm)) {
                     pm = pm.createHeuristicMask();
                     pm.setMask((QBitmap&)pm);

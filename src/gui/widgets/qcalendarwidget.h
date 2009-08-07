@@ -179,7 +179,7 @@ Q_SIGNALS:
     void currentPageChanged(int year, int month);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QCalendarWidget)
+    Q_DECLARE_PRIVATE(QCalendarWidget)
     Q_DISABLE_COPY(QCalendarWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_slotShowDate(const QDate &date))

@@ -155,7 +155,11 @@ void QNetworkAccessDebugPipeBackend::pushFromSocketToDownstream()
             // have read something
             buffer.resize(haveRead);
             bytesDownloaded += haveRead;
-            writeDownstreamData(buffer);
+
+            QByteDataBuffer list;
+            list.append(buffer);
+            buffer.clear(); // important because of implicit sharing!
+            writeDownstreamData(list);
         }
     }
 }
@@ -276,7 +280,7 @@ void QNetworkAccessDebugPipeBackend::socketConnected()
 
 bool QNetworkAccessDebugPipeBackend::waitForDownstreamReadyRead(int ms)
 {
-	Q_UNUSED(ms);
+    Q_UNUSED(ms);
     qCritical("QNetworkAccess: Debug pipe backend does not support waitForReadyRead()");
     return false;
 }

@@ -62,8 +62,6 @@ class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
 public:
     QEventTransition(QState *sourceState = 0);
     QEventTransition(QObject *object, QEvent::Type type, QState *sourceState = 0);
-    QEventTransition(QObject *object, QEvent::Type type,
-                     const QList<QAbstractState*> &targets, QState *sourceState = 0);
     ~QEventTransition();
 
     QObject *eventObject() const;
@@ -82,13 +80,10 @@ protected:
     QEventTransition(QEventTransitionPrivate &dd, QState *parent);
     QEventTransition(QEventTransitionPrivate &dd, QObject *object,
                      QEvent::Type type, QState *parent);
-    QEventTransition(QEventTransitionPrivate &dd, QObject *object,
-                     QEvent::Type type, const QList<QAbstractState*> &targets,
-                     QState *parent);
 
 private:
     Q_DISABLE_COPY(QEventTransition)
-    Q_DECLARE_SCOPED_PRIVATE(QEventTransition)
+    Q_DECLARE_PRIVATE(QEventTransition)
 };
 
 #endif //QT_NO_STATEMACHINE

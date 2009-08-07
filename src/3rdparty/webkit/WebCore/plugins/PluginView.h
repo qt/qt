@@ -108,7 +108,7 @@ namespace WebCore {
 
     class PluginView : public Widget, private PluginStreamClient, public PluginManualLoader {
     public:
-        static PluginView* create(Frame* parentFrame, const IntSize&, Element*, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually);
+        static PassRefPtr<PluginView> create(Frame* parentFrame, const IntSize&, Element*, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually);
         virtual ~PluginView();
 
         PluginPackage* plugin() const { return m_plugin.get(); }
@@ -293,6 +293,8 @@ private:
 #elif defined(XP_MACOSX)
         NP_CGContext m_npCgContext;
         OwnPtr<Timer<PluginView> > m_nullEventTimer;
+        NPDrawingModel m_drawingModel;
+        NPEventModel m_eventModel;
 
         void setNPWindowIfNeeded();
         void nullEventTimerFired(Timer<PluginView>*);

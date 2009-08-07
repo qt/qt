@@ -83,7 +83,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QSequentialAnimationGroup)
-    Q_DECLARE_SCOPED_PRIVATE(QSequentialAnimationGroup)
+    Q_DECLARE_PRIVATE(QSequentialAnimationGroup)
     Q_PRIVATE_SLOT(d_func(), void _q_uncontrolledAnimationFinished())
 };
 

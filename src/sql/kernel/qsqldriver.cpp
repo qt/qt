@@ -865,6 +865,8 @@ QStringList QSqlDriver::subscribedToNotificationsImplementation() const
 }
 
 /*!
+    \since 4.6
+
     This slot returns whether \a identifier is escaped according to the database rules.
     \a identifier can either be a table name or field name, dependent
     on \a type.
@@ -876,7 +878,6 @@ QStringList QSqlDriver::subscribedToNotificationsImplementation() const
     slot in your own QSqlDriver if your database engine uses a different
     delimiter character.
 
-    \since 4.5
     \sa isIdentifierEscaped()
  */
 bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
@@ -888,6 +889,8 @@ bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, Id
 }
 
 /*!
+    \since 4.6
+
     This slot returns \a identifier with the leading and trailing delimiters removed,
     \a identifier can either be a tablename or field name, dependent on \a type.
     If \a identifier does not have leading and trailing delimiter characters, \a
@@ -898,7 +901,6 @@ bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, Id
     dynamically detect and call \e this slot.  It generally unnecessary
     to reimplement this slot.
 
-    \since 4.5
     \sa stripDelimiters()
  */
 QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, IdentifierType type) const
@@ -914,13 +916,16 @@ QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, Ide
 }
 
 /*!
-  Sets the default numerical precision policy used by queries created
-  by this driver to \a precisionPolicy.
+    \since 4.6
 
-  Note: Setting the default precision policy to \a precisionPolicy
-  doesn't affect any currently active queries.
+    Sets the default numerical precision policy used by queries created
+    by this driver to \a precisionPolicy.
 
-  \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+    Note: Setting the default precision policy to \a precisionPolicy
+    doesn't affect any currently active queries.
+
+    \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), 
+    QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
 */
 void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
@@ -928,9 +933,12 @@ void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy prec
 }
 
 /*!
-  Returns the current default precision policy for the database connection.
+    \since 4.6
 
-  \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+    Returns the current default precision policy for the database connection.
+
+    \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), 
+    QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
 */
 QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
 {

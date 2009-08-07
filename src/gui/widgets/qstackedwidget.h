@@ -88,7 +88,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QStackedWidget)
-    Q_DECLARE_SCOPED_PRIVATE(QStackedWidget)
+    Q_DECLARE_PRIVATE(QStackedWidget)
 };
 
 #endif // QT_NO_STACKEDWIDGET

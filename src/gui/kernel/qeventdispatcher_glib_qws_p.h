@@ -62,7 +62,7 @@ class QWSEventDispatcherGlibPrivate;
 class QWSEventDispatcherGlib : public QEventDispatcherGlib
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QWSEventDispatcherGlib)
+    Q_DECLARE_PRIVATE(QWSEventDispatcherGlib)
 
 public:
     explicit QWSEventDispatcherGlib(QObject *parent = 0);

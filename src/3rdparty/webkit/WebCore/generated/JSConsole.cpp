@@ -40,7 +40,7 @@ static const HashTableValue JSConsoleTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSConsoleTable =
+static JSC_CONST_HASHTABLE HashTable JSConsoleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSConsoleTableValues, 0 };
 #else
@@ -70,7 +70,7 @@ static const HashTableValue JSConsolePrototypeTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSConsolePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSConsolePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSConsolePrototypeTableValues, 0 };
 #else
@@ -91,8 +91,8 @@ bool JSConsolePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 const ClassInfo JSConsole::s_info = { "Console", 0, &JSConsoleTable, 0 };
 
-JSConsole::JSConsole(PassRefPtr<Structure> structure, PassRefPtr<Console> impl)
-    : DOMObject(structure)
+JSConsole::JSConsole(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Console> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -114,7 +114,8 @@ bool JSConsole::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsConsoleProfiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSConsole*>(asObject(slot.slotBase()))->profiles(exec);
+    JSConsole* castedThis = static_cast<JSConsole*>(asObject(slot.slotBase()));
+    return castedThis->profiles(exec);
 }
 
 JSValue JSC_HOST_CALL jsConsolePrototypeFunctionDebug(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -328,9 +329,9 @@ JSValue JSC_HOST_CALL jsConsolePrototypeFunctionGroupEnd(ExecState* exec, JSObje
     return jsUndefined();
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Console* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Console* object)
 {
-    return getDOMObjectWrapper<JSConsole>(exec, object);
+    return getDOMObjectWrapper<JSConsole>(exec, globalObject, object);
 }
 Console* toConsole(JSC::JSValue value)
 {

@@ -38,7 +38,7 @@ static const HashTableValue JSBarInfoTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSBarInfoTable =
+static JSC_CONST_HASHTABLE HashTable JSBarInfoTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSBarInfoTableValues, 0 };
 #else
@@ -52,7 +52,7 @@ static const HashTableValue JSBarInfoPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSBarInfoPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSBarInfoPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSBarInfoPrototypeTableValues, 0 };
 #else
@@ -68,8 +68,8 @@ JSObject* JSBarInfoPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSBarInfo::s_info = { "BarInfo", 0, &JSBarInfoTable, 0 };
 
-JSBarInfo::JSBarInfo(PassRefPtr<Structure> structure, PassRefPtr<BarInfo> impl)
-    : DOMObject(structure)
+JSBarInfo::JSBarInfo(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<BarInfo> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -91,14 +91,15 @@ bool JSBarInfo::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsBarInfoVisible(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSBarInfo* castedThis = static_cast<JSBarInfo*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    BarInfo* imp = static_cast<BarInfo*>(static_cast<JSBarInfo*>(asObject(slot.slotBase()))->impl());
+    BarInfo* imp = static_cast<BarInfo*>(castedThis->impl());
     return jsBoolean(imp->visible());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, BarInfo* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, BarInfo* object)
 {
-    return getDOMObjectWrapper<JSBarInfo>(exec, object);
+    return getDOMObjectWrapper<JSBarInfo>(exec, globalObject, object);
 }
 BarInfo* toBarInfo(JSC::JSValue value)
 {

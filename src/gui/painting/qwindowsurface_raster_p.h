@@ -64,13 +64,6 @@ QT_BEGIN_NAMESPACE
 #define Q_ULW_ALPHA               0x00000002 // copied from ULW_ALPHA in winuser.h
 #define Q_AC_SRC_ALPHA            0x00000001 // copied from AC_SRC_ALPHA in winuser.h
 
-struct Q_BLENDFUNCTION {
-  BYTE     BlendOp;
-  BYTE     BlendFlags;
-  BYTE     SourceConstantAlpha;
-  BYTE     AlphaFormat;
-};
-
 struct Q_UPDATELAYEREDWINDOWINFO {
     DWORD cbSize;
     HDC hdcDst;
@@ -79,12 +72,16 @@ struct Q_UPDATELAYEREDWINDOWINFO {
     HDC hdcSrc;
     const POINT *pptSrc;
     COLORREF crKey;
-    const Q_BLENDFUNCTION *pblend;
+    const BLENDFUNCTION *pblend;
     DWORD dwFlags;
     const RECT *prcDirty;
 };
 
+typedef BOOL (WINAPI *PtrUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, const POINT *pptDst,
+             const SIZE *psize, HDC hdcSrc, const POINT *pptSrc, COLORREF crKey,
+             const BLENDFUNCTION *pblend, DWORD dwflags);
 typedef BOOL (WINAPI *PtrUpdateLayeredWindowIndirect)(HWND hwnd, const Q_UPDATELAYEREDWINDOWINFO *pULWInfo);
+extern PtrUpdateLayeredWindow ptrUpdateLayeredWindow;
 extern PtrUpdateLayeredWindowIndirect ptrUpdateLayeredWindowIndirect;
 #endif
 
@@ -111,7 +108,7 @@ public:
 
 private:
     void prepareBuffer(QImage::Format format, QWidget *widget);
-    Q_DECLARE_SCOPED_PRIVATE(QRasterWindowSurface)
+    Q_DECLARE_PRIVATE(QRasterWindowSurface)
     QScopedPointer<QRasterWindowSurfacePrivate> d_ptr;
 };
 

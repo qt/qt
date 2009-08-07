@@ -85,7 +85,7 @@ protected:
         QWidget *parent);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebuggerConsoleWidget)
+    Q_DECLARE_PRIVATE(QScriptDebuggerConsoleWidget)
     Q_DISABLE_COPY(QScriptDebuggerConsoleWidget)
 
     Q_PRIVATE_SLOT(d_func(), void _q_onLineEntered(const QString &))

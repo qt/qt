@@ -69,7 +69,7 @@ static const HashTableValue JSHTMLObjectElementTableValues[20] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLObjectElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLObjectElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLObjectElementTableValues, 0 };
 #else
@@ -83,19 +83,19 @@ static const HashTableValue JSHTMLObjectElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLObjectElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLObjectElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLObjectElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLObjectElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLObjectElementConstructor : public DOMObject {
+class JSHTMLObjectElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLObjectElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLObjectElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLObjectElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLObjectElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLObjectElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLObjectElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -122,7 +122,7 @@ static const HashTableValue JSHTMLObjectElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLObjectElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLObjectElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLObjectElementPrototypeTableValues, 0 };
 #else
@@ -143,8 +143,8 @@ bool JSHTMLObjectElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSHTMLObjectElement::s_info = { "HTMLObjectElement", &JSHTMLElement::s_info, &JSHTMLObjectElementTable, 0 };
 
-JSHTMLObjectElement::JSHTMLObjectElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLObjectElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLObjectElement::JSHTMLObjectElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLObjectElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -166,132 +166,151 @@ bool JSHTMLObjectElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsHTMLObjectElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->form()));
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLObjectElementCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->code());
 }
 
 JSValue jsHTMLObjectElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLObjectElementArchive(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->archive());
 }
 
 JSValue jsHTMLObjectElementBorder(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->border());
 }
 
 JSValue jsHTMLObjectElementCodeBase(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->codeBase());
 }
 
 JSValue jsHTMLObjectElementCodeType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->codeType());
 }
 
 JSValue jsHTMLObjectElementData(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->data());
 }
 
 JSValue jsHTMLObjectElementDeclare(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsBoolean(imp->declare());
 }
 
 JSValue jsHTMLObjectElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->height());
 }
 
 JSValue jsHTMLObjectElementHspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsNumber(exec, imp->hspace());
 }
 
 JSValue jsHTMLObjectElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->name());
 }
 
 JSValue jsHTMLObjectElementStandby(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->standby());
 }
 
 JSValue jsHTMLObjectElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLObjectElementUseMap(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->useMap());
 }
 
 JSValue jsHTMLObjectElementVspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsNumber(exec, imp->vspace());
 }
 
 JSValue jsHTMLObjectElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
     return jsString(exec, imp->width());
 }
 
 JSValue jsHTMLObjectElementContentDocument(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->impl());
-    return checkNodeSecurity(exec, imp->contentDocument()) ? toJS(exec, WTF::getPtr(imp->contentDocument())) : jsUndefined();
+    JSHTMLObjectElement* castedThis = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
+    HTMLObjectElement* imp = static_cast<HTMLObjectElement*>(castedThis->impl());
+    return checkNodeSecurity(exec, imp->contentDocument()) ? toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->contentDocument())) : jsUndefined();
 }
 
 JSValue jsHTMLObjectElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLObjectElement* domObject = static_cast<JSHTMLObjectElement*>(asObject(slot.slotBase()));
+    return JSHTMLObjectElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLObjectElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -396,9 +415,9 @@ void setJSHTMLObjectElementWidth(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLObjectElement::getConstructor(ExecState* exec)
+JSValue JSHTMLObjectElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLObjectElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLObjectElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLObjectElementPrototypeFunctionGetSVGDocument(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -413,7 +432,7 @@ JSValue JSC_HOST_CALL jsHTMLObjectElementPrototypeFunctionGetSVGDocument(ExecSta
         return jsUndefined();
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getSVGDocument(ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getSVGDocument(ec)));
     setDOMException(exec, ec);
     return result;
 }

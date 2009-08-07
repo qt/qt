@@ -48,11 +48,15 @@
 #include "qvariant.h"
 #include <qmath.h>
 
+#include <private/qbezier_p.h>
+
 QT_BEGIN_NAMESPACE
 
 #define Q_NEAR_CLIP 0.000001
 
-
+#ifdef MAP
+#  undef MAP
+#endif
 #define MAP(x, y, nx, ny) \
     do { \
         qreal FX_ = x; \
@@ -99,7 +103,7 @@ QT_BEGIN_NAMESPACE
     allowing perspective transformations. QTransform's toAffine()
     method allows casting QTransform to QMatrix. If a perspective
     transformation has been specified on the matrix, then the
-    conversion to an affine QMatrix will cause loss of data.
+    conversion will cause loss of data.
 
     QTransform is the recommended transformation class in Qt.
 
@@ -123,11 +127,13 @@ QT_BEGIN_NAMESPACE
     which returns true if the matrix is non-singular (i.e. AB = BA =
     I). The inverted() function returns an inverted copy of \e this
     matrix if it is invertible (otherwise it returns the identity
-    matrix). In addition, QTransform provides the det() function
-    returning the matrix's determinant.
+    matrix), and adjoint() returns the matrix's classical adjoint.
+    In addition, QTransform provides the determinant() function which
+    returns the matrix's determinant.
 
-    Finally, the QTransform class supports matrix multiplication, and
-    objects of the class can be streamed as well as compared.
+    Finally, the QTransform class supports matrix multiplication, addition
+    and subtraction, and objects of the class can be streamed as well
+    as compared.
 
     \tableofcontents
 
@@ -189,7 +195,7 @@ QT_BEGIN_NAMESPACE
     The various matrix elements can be set when constructing the
     matrix, or by using the setMatrix() function later on. They can also
     be manipulated using the translate(), rotate(), scale() and
-    shear() convenience functions, The currently set values can be
+    shear() convenience functions. The currently set values can be
     retrieved using the m11(), m12(), m13(), m21(), m22(), m23(),
     m31(), m32(), m33(), dx() and dy() functions.
 
@@ -202,9 +208,9 @@ QT_BEGIN_NAMESPACE
     to 0) mapping a point to itself. Shearing is controlled by \c m12
     and \c m21. Setting these elements to values different from zero
     will twist the coordinate system. Rotation is achieved by
-    carefully setting both the shearing factors and the scaling
-    factors. Perspective transformation is achieved by carefully setting
-    both the projection factors and the scaling factors.
+    setting both the shearing factors and the scaling factors. Perspective
+    transformation is achieved by setting both the projection factors and
+    the scaling factors.
 
     Here's the combined transformations example using basic matrix
     operations:
@@ -956,8 +962,8 @@ QTransform & QTransform::operator=(const QTransform &matrix)
 
 /*!
     Resets the matrix to an identity matrix, i.e. all elements are set
-    to zero, except \c m11 and \c m22 (specifying the scale) which are
-    set to 1.
+    to zero, except \c m11 and \c m22 (specifying the scale) and \c m33
+    which are set to 1.
 
     \sa QTransform(), isIdentity(), {QTransform#Basic Matrix
     Operations}{Basic Matrix Operations}
@@ -1488,27 +1494,12 @@ static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transfor
 
 static inline bool cubicTo_clipped(QPainterPath &path, const QTransform &transform, const QPointF &a, const QPointF &b, const QPointF &c, const QPointF &d, bool needsMoveTo)
 {
-    const QHomogeneousCoordinate ha = mapHomogeneous(transform, a);
-    const QHomogeneousCoordinate hb = mapHomogeneous(transform, b);
-    const QHomogeneousCoordinate hc = mapHomogeneous(transform, c);
-    const QHomogeneousCoordinate hd = mapHomogeneous(transform, d);
+    // Convert projective xformed curves to line
+    // segments so they can be transformed more accurately
+    QPolygonF segment = QBezier::fromPoints(a, b, c, d).toPolygon();
 
-    if (ha.w < Q_NEAR_CLIP && hb.w < Q_NEAR_CLIP && hc.w < Q_NEAR_CLIP && hd.w < Q_NEAR_CLIP)
-        return false;
-
-    if (ha.w >= Q_NEAR_CLIP && hb.w >= Q_NEAR_CLIP && hc.w >= Q_NEAR_CLIP && hd.w >= Q_NEAR_CLIP) {
-        if (needsMoveTo)
-            path.moveTo(ha.toPoint());
-
-        path.cubicTo(hb.toPoint(), hc.toPoint(), hd.toPoint());
-        return true;
-    }
-
-    if (lineTo_clipped(path, transform, a, b, needsMoveTo))
-            needsMoveTo = false;
-    if (lineTo_clipped(path, transform, b, c, needsMoveTo))
-            needsMoveTo = false;
-    if (lineTo_clipped(path, transform, c, d, needsMoveTo))
+    for (int i = 0; i < segment.size() - 1; ++i)
+        if (lineTo_clipped(path, transform, segment.at(i), segment.at(i+1), needsMoveTo))
             needsMoveTo = false;
 
     return !needsMoveTo;
@@ -1550,6 +1541,7 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
     if (path.elementCount() > 0 && lastMoveTo != last)
         lineTo_clipped(result, transform, last, lastMoveTo, needsMoveTo, false);
 
+    result.setFillRule(path.fillRule());
     return result;
 }
 
@@ -1771,7 +1763,7 @@ bool QTransform::quadToQuad(const QPolygonF &one,
     Sets the matrix elements to the specified values, \a m11,
     \a m12, \a m13 \a m21, \a m22, \a m23 \a m31, \a m32 and
     \a m33. Note that this function replaces the previous values.
-    QMatrix provides the translate(), rotate(), scale() and shear()
+    QTransform provides the translate(), rotate(), scale() and shear()
     convenience functions to manipulate the various matrix elements
     based on the currently defined coordinate system.
 
@@ -1787,6 +1779,14 @@ void QTransform::setMatrix(qreal m11, qreal m12, qreal m13,
     affine._dx = m31; affine._dy = m32; m_33 = m33;
     m_type = TxNone;
     m_dirty = TxProject;
+}
+
+static inline bool needsPerspectiveClipping(const QRectF &rect, const QTransform &transform)
+{
+    const qreal wx = qMin(transform.m13() * rect.left(), transform.m13() * rect.right());
+    const qreal wy = qMin(transform.m23() * rect.top(), transform.m23() * rect.bottom());
+
+    return wx + wy + transform.m33() < Q_NEAR_CLIP;
 }
 
 QRect QTransform::mapRect(const QRect &rect) const
@@ -1809,7 +1809,7 @@ QRect QTransform::mapRect(const QRect &rect) const
             y -= h;
         }
         return QRect(x, y, w, h);
-    } else {
+    } else if (t < TxProject || !needsPerspectiveClipping(rect, *this)) {
         // see mapToPolygon for explanations of the algorithm.
         qreal x = 0, y = 0;
         MAP(rect.left(), rect.top(), x, y);
@@ -1833,6 +1833,10 @@ QRect QTransform::mapRect(const QRect &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRect(qRound(xmin), qRound(ymin), qRound(xmax)-qRound(xmin), qRound(ymax)-qRound(ymin));
+    } else {
+        QPainterPath path;
+        path.addRect(rect);
+        return map(path).boundingRect().toRect();
     }
 }
 
@@ -1875,7 +1879,7 @@ QRectF QTransform::mapRect(const QRectF &rect) const
             y -= h;
         }
         return QRectF(x, y, w, h);
-    } else {
+    } else if (t < TxProject || !needsPerspectiveClipping(rect, *this)) {
         qreal x = 0, y = 0;
         MAP(rect.x(), rect.y(), x, y);
         qreal xmin = x;
@@ -1898,6 +1902,10 @@ QRectF QTransform::mapRect(const QRectF &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRectF(xmin, ymin, xmax-xmin, ymax - ymin);
+    } else {
+        QPainterPath path;
+        path.addRect(rect);
+        return map(path).boundingRect();
     }
 }
 
@@ -1949,8 +1957,11 @@ void QTransform::map(int x, int y, int *tx, int *ty) const
 }
 
 /*!
-  Returns the QTransform cast to a QMatrix.
- */
+  Returns the QTransform as an affine matrix.
+
+  \warning If a perspective transformation has been specified,
+  then the conversion will cause loss of data.
+*/
 const QMatrix &QTransform::toAffine() const
 {
     return affine;
@@ -2028,8 +2039,9 @@ QTransform::operator QVariant() const
 
 /*!
     \fn qreal QTransform::det() const
+    \obsolete
 
-    Returns the matrix's determinant.
+    Returns the matrix's determinant. Use determinant() instead.
 */
 
 

@@ -76,6 +76,8 @@ private slots:
     void loopCount();
     void nextImageDelay_data();
     void nextImageDelay();
+    void pngCompression_data();
+    void pngCompression();
 
 private:
     QString m_IconPath;
@@ -136,6 +138,7 @@ void tst_QtIcoImageFormat::canRead_data()
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
     QTest::newRow("103x16px, 24BPP") << "valid/trolltechlogo_tiny.ico" << 1;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 1;
+    QTest::newRow("PNG compression") << "valid/Qt.ico" << 1;
 }
 
 void tst_QtIcoImageFormat::canRead()
@@ -205,6 +208,7 @@ void tst_QtIcoImageFormat::imageCount_data()
     QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3;
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
+    QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
 
 }
 
@@ -232,6 +236,7 @@ void tst_QtIcoImageFormat::jumpToNextImage_data()
     QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLD.ico" << 3;
     QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
+    QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
 }
 
 void tst_QtIcoImageFormat::jumpToNextImage()
@@ -281,6 +286,7 @@ void tst_QtIcoImageFormat::nextImageDelay_data()
     QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3;
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << -1;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
+    QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
 }
 
 void tst_QtIcoImageFormat::nextImageDelay()
@@ -298,6 +304,33 @@ void tst_QtIcoImageFormat::nextImageDelay()
             QCOMPARE(reader.nextImageDelay(), 0);
         }
     }
+}
+
+void tst_QtIcoImageFormat::pngCompression_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<int>("index");
+    QTest::addColumn<int>("width");
+    QTest::addColumn<int>("height");
+
+    QTest::newRow("PNG compression") << "valid/Qt.ico" << 4 << 256 << 256;
+}
+
+void tst_QtIcoImageFormat::pngCompression()
+{
+    QFETCH(QString, fileName);
+    QFETCH(int, index);
+    QFETCH(int, width);
+    QFETCH(int, height);
+
+    QImageReader reader(m_IconPath + "/" + fileName);
+
+    QImage image;
+    reader.jumpToImage(index);
+    reader.read(&image);
+
+    QCOMPARE(image.width(), width);
+    QCOMPARE(image.height(), height);
 }
 
 QTEST_MAIN(tst_QtIcoImageFormat)

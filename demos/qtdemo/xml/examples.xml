@@ -18,6 +18,7 @@
     <example filename="browser" name="Browser" />
     <example filename="mediaplayer" name="Media Player" />
     <example filename="boxes" name="Boxes" />
+    <example filename="sub-attaq" name="Sub-attaq" />
   </demos>
   <category dirname="animation" name="Animation Framework">
     <example filename="animatedtiles" name="Animated Tiles" />
@@ -26,7 +27,6 @@
     <example filename="moveblocks" name="Moving Blocks" />
     <example filename="states" name="UI States" />
     <example filename="stickman" name="Stickman" />
-    <example filename="sub-attaq" name="Sub-attaq" />
   </category>
   <category dirname="qtconcurrent" name="Concurrent Programming">
     <example filename="map" name="Map" executable="false" />
@@ -154,6 +154,11 @@
   <category dirname="phonon" name="Phonon">
     <example filename="musicplayer" name="Music Player" />
   </category>
+  <category dirname="multimedia/audio" name="Multimedia">
+    <example filename="audiodevices" name="Audio Devices" />
+    <example filename="audiooutput" name="Audio Output" />
+    <example filename="audioinput" name="Audio Input" />
+  </category>
   <category dirname="richtext" name="Rich Text">
     <example filename="calendar" name="Calendar" />
     <example filename="orderform" name="Order Form" />
@@ -246,5 +251,6 @@
     <example filename="qobjectxmlmodel" name="QObjectXmlModel" />
     <example filename="filetree" name="File Tree" />
     <example filename="trafficinfo" name="Traffic Info" />
+    <example filename="schema" name="XML Schema Validation" />
   </category>  
 </categories>

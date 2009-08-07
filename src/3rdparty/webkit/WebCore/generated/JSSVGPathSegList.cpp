@@ -44,7 +44,7 @@ static const HashTableValue JSSVGPathSegListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegListTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegListTableValues, 0 };
 #else
@@ -65,7 +65,7 @@ static const HashTableValue JSSVGPathSegListPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGPathSegListPrototypeTableValues, 0 };
 #else
@@ -86,9 +86,8 @@ bool JSSVGPathSegListPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSSVGPathSegList::s_info = { "SVGPathSegList", 0, &JSSVGPathSegListTable, 0 };
 
-JSSVGPathSegList::JSSVGPathSegList(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegList> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGPathSegList::JSSVGPathSegList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegList> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -110,8 +109,9 @@ bool JSSVGPathSegList::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsSVGPathSegListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegList* castedThis = static_cast<JSSVGPathSegList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegList* imp = static_cast<SVGPathSegList*>(static_cast<JSSVGPathSegList*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegList* imp = static_cast<SVGPathSegList*>(castedThis->impl());
     return jsNumber(exec, imp->numberOfItems());
 }
 
@@ -178,9 +178,9 @@ JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionAppendItem(ExecState* exe
     return castedThisObj->appendItem(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGPathSegList* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGPathSegList* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGPathSegList>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGPathSegList>(exec, globalObject, object, context);
 }
 SVGPathSegList* toSVGPathSegList(JSC::JSValue value)
 {

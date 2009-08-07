@@ -52,7 +52,7 @@
 
 // unistd.h is needed for the _XOPEN_UNIX macro
 #include <unistd.h>
-#if defined(_XOPEN_UNIX) && !defined(Q_OS_QNX6) && !defined(Q_OS_OSF)
+#if defined(_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF)
 #  include <langinfo.h>
 #endif
 
@@ -225,10 +225,11 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
     char *inBytes = const_cast<char *>(chars);
 #endif
 
+    QByteArray in;
     if (remainingCount) {
         // we have to prepend the remaining bytes from the previous conversion
         inBytesLeft += remainingCount;
-        QByteArray in(inBytesLeft, Qt::Uninitialized);
+        in.resize(inBytesLeft);
         inBytes = in.data();
 
         memcpy(in.data(), remainingBuffer, remainingCount);
@@ -362,9 +363,10 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     inBytes = const_cast<char *>(reinterpret_cast<const char *>(uc));
     inBytesLeft = len * sizeof(QChar);
 
+    QByteArray in;
     if (convState && convState->remainingChars) {
         // we have one surrogate char to be prepended
-        QByteArray in(sizeof(QChar) + len, Qt::Uninitialized);
+        in.resize(sizeof(QChar) + len);
         inBytes = in.data();
 
         QChar remaining = convState->state_data[0];
@@ -453,7 +455,7 @@ iconv_t QIconvCodec::createIconv_t(const char *to, const char *from)
     char *codeset = 0;
 #endif
 
-#if defined(_XOPEN_UNIX) && !defined(Q_OS_QNX6) && !defined(Q_OS_OSF)
+#if defined(_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF)
     if (cd == (iconv_t) -1) {
         codeset = nl_langinfo(CODESET);
         if (codeset)

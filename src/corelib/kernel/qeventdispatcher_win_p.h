@@ -67,7 +67,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
 class Q_CORE_EXPORT QEventDispatcherWin32 : public QAbstractEventDispatcher
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QEventDispatcherWin32)
+    Q_DECLARE_PRIVATE(QEventDispatcherWin32)
 
     void createInternalHwnd();
     friend class QGuiEventDispatcherWin32;

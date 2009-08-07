@@ -223,6 +223,11 @@ private Q_SLOTS:
     void bindVariableQXmlNameQXmlQuerySignature() const;
     void bindVariableQXmlNameQXmlQuery() const;
     void bindVariableQXmlQueryInvalidate() const;
+    void unknownSourceLocation() const;
+
+    void identityConstraintSuccess() const;
+    void identityConstraintFailure() const;
+    void identityConstraintFailure_data() const;
 
     // TODO call all URI resolving functions where 1) the URI resolver return a null QUrl(); 2) resolves into valid, existing URI, 3) invalid, non-existing URI.
     // TODO bind stringlists, variant lists, both ways.
@@ -2973,6 +2978,9 @@ void tst_QXmlQuery::enumQueryLanguage() const
     /* These enum values should be possible to OR for future plans. */
     QCOMPARE(int(QXmlQuery::XQuery10), 1);
     QCOMPARE(int(QXmlQuery::XSLT20), 2);
+    QCOMPARE(int(QXmlQuery::XmlSchema11IdentityConstraintSelector), 1024);
+    QCOMPARE(int(QXmlQuery::XmlSchema11IdentityConstraintField), 2048);
+    QCOMPARE(int(QXmlQuery::XPath20), 4096);
 }
 
 void tst_QXmlQuery::setInitialTemplateNameQXmlName() const
@@ -3273,6 +3281,174 @@ void tst_QXmlQuery::bindVariableQXmlQueryInvalidate() const
 
     query.bindVariable(QLatin1String("name"), query);
     QVERIFY(!query.isValid());
+}
+
+void tst_QXmlQuery::unknownSourceLocation() const
+{
+    QBuffer b;
+    b.setData("<a><b/><b/></a>");
+    b.open(QIODevice::ReadOnly);
+
+    MessageSilencer silencer;
+    QXmlQuery query;
+    query.bindVariable(QLatin1String("inputDocument"), &b);
+    query.setMessageHandler(&silencer);
+
+    query.setQuery(QLatin1String("doc($inputDocument)/a/(let $v := b/string() return if ($v) then $v else ())"));
+
+    QString output;
+    query.evaluateTo(&output);
+}
+
+void tst_QXmlQuery::identityConstraintSuccess() const
+{
+    QXmlQuery::QueryLanguage queryLanguage = QXmlQuery::XmlSchema11IdentityConstraintSelector;
+
+    /* We run this code for Selector and Field. */
+    for(int i = 0; i < 3; ++i)
+    {
+        QXmlNamePool namePool;
+        QXmlResultItems result;
+        QXmlItem node;
+
+        {
+            QXmlQuery nodeSource(namePool);
+            nodeSource.setQuery(QLatin1String("<e/>"));
+
+            nodeSource.evaluateTo(&result);
+            node = result.next();
+        }
+
+        /* Basic use:
+         * 1. The focus is undefined, but it's still valid.
+         * 2. We never evaluate. */
+        {
+            QXmlQuery query(queryLanguage);
+            query.setQuery(QLatin1String("a"));
+            QVERIFY(query.isValid());
+        }
+
+        /* Basic use:
+         * 1. The focus is undefined, but it's still valid.
+         * 2. We afterwards set the focus. */
+        {
+            QXmlQuery query(queryLanguage, namePool);
+            query.setQuery(QLatin1String("a"));
+            query.setFocus(node);
+            QVERIFY(query.isValid());
+        }
+
+        /* Basic use:
+         * 1. The focus is undefined, but it's still valid.
+         * 2. We afterwards set the focus.
+         * 3. We evaluate. */
+        {
+            QXmlQuery query(queryLanguage, namePool);
+            query.setQuery(QString(QLatin1Char('.')));
+            query.setFocus(node);
+            QVERIFY(query.isValid());
+
+            QString result;
+            QVERIFY(query.evaluateTo(&result));
+            QCOMPARE(result, QString::fromLatin1("<e/>\n"));
+        }
+
+        /* A slightly more complex Field. */
+        {
+            QXmlQuery query(queryLanguage);
+            query.setQuery(QLatin1String("* | .//xml:*/."));
+            QVERIFY(query.isValid());
+        }
+
+        /* @ is only allowed in Field. */
+        if(queryLanguage == QXmlQuery::XmlSchema11IdentityConstraintField)
+        {
+            QXmlQuery query(QXmlQuery::XmlSchema11IdentityConstraintField);
+            query.setQuery(QLatin1String("@abc"));
+            QVERIFY(query.isValid());
+        }
+
+        /* Field allows attribute:: and child:: .*/
+        if(queryLanguage == QXmlQuery::XmlSchema11IdentityConstraintField)
+        {
+            QXmlQuery query(QXmlQuery::XmlSchema11IdentityConstraintField);
+            query.setQuery(QLatin1String("attribute::name | child::name"));
+            QVERIFY(query.isValid());
+        }
+
+        /* Selector allows only child:: .*/
+        {
+            QXmlQuery query(QXmlQuery::XmlSchema11IdentityConstraintSelector);
+            query.setQuery(QLatin1String("child::name"));
+            QVERIFY(query.isValid());
+        }
+
+        if(i == 0)
+            queryLanguage = QXmlQuery::XmlSchema11IdentityConstraintField;
+        else if(i == 1)
+            queryLanguage = QXmlQuery::XPath20;
+    }
+}
+
+Q_DECLARE_METATYPE(QXmlQuery::QueryLanguage);
+
+/*!
+ We just do some basic tests for boot strapping and sanity checking. The actual regression
+ testing is in the Schema suite.
+ */
+void tst_QXmlQuery::identityConstraintFailure() const
+{
+    QFETCH(QXmlQuery::QueryLanguage, queryLanguage);
+    QFETCH(QString, inputQuery);
+
+    QXmlQuery query(queryLanguage);
+    MessageSilencer silencer;
+    query.setMessageHandler(&silencer);
+
+    query.setQuery(inputQuery);
+    QVERIFY(!query.isValid());
+}
+
+void tst_QXmlQuery::identityConstraintFailure_data() const
+{
+    QTest::addColumn<QXmlQuery::QueryLanguage>("queryLanguage");
+    QTest::addColumn<QString>("inputQuery");
+
+    QTest::newRow("We don't have element constructors in identity constraint pattern, "
+                  "it's an XQuery feature(Selector).")
+        << QXmlQuery::XmlSchema11IdentityConstraintSelector
+        << QString::fromLatin1("<e/>");
+
+    QTest::newRow("We don't have functions in identity constraint pattern, "
+                  "it's an XPath feature(Selector).")
+        << QXmlQuery::XmlSchema11IdentityConstraintSelector
+        << QString::fromLatin1("current-time()");
+
+    QTest::newRow("We don't have element constructors in identity constraint pattern, "
+                  "it's an XQuery feature(Field).")
+        << QXmlQuery::XmlSchema11IdentityConstraintSelector
+        << QString::fromLatin1("<e/>");
+
+    QTest::newRow("We don't have functions in identity constraint pattern, "
+                  "it's an XPath feature(Field).")
+        << QXmlQuery::XmlSchema11IdentityConstraintSelector
+        << QString::fromLatin1("current-time()");
+
+    QTest::newRow("@attributeName is disallowed for the selector.")
+        << QXmlQuery::XmlSchema11IdentityConstraintSelector
+        << QString::fromLatin1("@abc");
+
+    QTest::newRow("attribute:: is disallowed for the selector.")
+        << QXmlQuery::XmlSchema11IdentityConstraintSelector
+        << QString::fromLatin1("attribute::name");
+
+    QTest::newRow("ancestor::name is disallowed for the selector.")
+        << QXmlQuery::XmlSchema11IdentityConstraintSelector
+        << QString::fromLatin1("ancestor::name");
+
+    QTest::newRow("ancestor::name is disallowed for the field.")
+        << QXmlQuery::XmlSchema11IdentityConstraintField
+        << QString::fromLatin1("ancestor::name");
 }
 
 QTEST_MAIN(tst_QXmlQuery)

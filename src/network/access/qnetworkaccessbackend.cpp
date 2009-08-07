@@ -165,6 +165,12 @@ void QNetworkAccessBackend::ignoreSslErrors()
     // do nothing
 }
 
+void QNetworkAccessBackend::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    Q_UNUSED(errors);
+    // do nothing
+}
+
 void QNetworkAccessBackend::fetchSslConfiguration(QSslConfiguration &) const
 {
     // do nothing
@@ -217,9 +223,9 @@ qint64 QNetworkAccessBackend::nextDownstreamBlockSize() const
     return reply->nextDownstreamBlockSize();
 }
 
-void QNetworkAccessBackend::writeDownstreamData(const QByteArray &data)
+void QNetworkAccessBackend::writeDownstreamData(QByteDataBuffer &list)
 {
-    reply->appendDownstreamData(data);
+    reply->appendDownstreamData(list);
 }
 
 void QNetworkAccessBackend::writeDownstreamData(QIODevice *data)

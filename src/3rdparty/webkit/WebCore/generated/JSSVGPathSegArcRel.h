@@ -33,7 +33,7 @@ class SVGPathSegArcRel;
 class JSSVGPathSegArcRel : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
-    JSSVGPathSegArcRel(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegArcRel>, SVGElement* context);
+    JSSVGPathSegArcRel(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSegArcRel>, SVGElement* context);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

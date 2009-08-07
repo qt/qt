@@ -124,15 +124,18 @@ bool FactoryPrivate::createBackend()
         // could not load a backend through the platform plugin. Falling back to the default
         // (finding the first loadable backend).
         const QLatin1String suffix("/phonon_backend/");
-        foreach (QString libPath, QCoreApplication::libraryPaths()) {
-            libPath += suffix;
+        const QStringList paths = QCoreApplication::libraryPaths();
+        for (int i = 0; i < paths.count(); ++i) {
+            const QString libPath = paths.at(i) + suffix;
             const QDir dir(libPath);
             if (!dir.exists()) {
                 pDebug() << Q_FUNC_INFO << dir.absolutePath() << "does not exist";
                 continue;
             }
-            foreach (const QString &pluginName, dir.entryList(QDir::Files)) {
-                QPluginLoader pluginLoader(libPath + pluginName);
+
+            const QStringList files = dir.entryList(QDir::Files);
+            for (int i = 0; i < files.count(); ++i) {
+                QPluginLoader pluginLoader(libPath + files.at(i));
                 if (!pluginLoader.load()) {
                     pDebug() << Q_FUNC_INFO << "  load failed:"
                              << pluginLoader.errorString();
@@ -183,14 +186,8 @@ FactoryPrivate::FactoryPrivate()
 
 FactoryPrivate::~FactoryPrivate()
 {
-    foreach (QObject *o, objects) {
-        MediaObject *m = qobject_cast<MediaObject *>(o);
-        if (m) {
-            m->stop();
-        }
-    }
-    foreach (MediaNodePrivate *bp, mediaNodePrivateList) {
-        bp->deleteBackendObject();
+    for (int i = 0; i < mediaNodePrivateList.count(); ++i) {
+        mediaNodePrivateList.at(i)->deleteBackendObject();
     }
     if (objects.size() > 0) {
         pError() << "The backend objects are not deleted as was requested.";
@@ -258,8 +255,8 @@ void Factory::deregisterFrontendObject(MediaNodePrivate *bp)
 void FactoryPrivate::phononBackendChanged()
 {
     if (m_backendObject) {
-        foreach (MediaNodePrivate *bp, mediaNodePrivateList) {
-            bp->deleteBackendObject();
+        for (int i = 0; i < mediaNodePrivateList.count(); ++i) {
+            mediaNodePrivateList.at(i)->deleteBackendObject();
         }
         if (objects.size() > 0) {
             pDebug() << "WARNING: we were asked to change the backend but the application did\n"
@@ -268,8 +265,8 @@ void FactoryPrivate::phononBackendChanged()
                 "backendswitching possible.";
             // in case there were objects deleted give 'em a chance to recreate
             // them now
-            foreach (MediaNodePrivate *bp, mediaNodePrivateList) {
-                bp->createBackendObject();
+            for (int i = 0; i < mediaNodePrivateList.count(); ++i) {
+                mediaNodePrivateList.at(i)->createBackendObject();
             }
             return;
         }
@@ -277,8 +274,8 @@ void FactoryPrivate::phononBackendChanged()
         m_backendObject = 0;
     }
     createBackend();
-    foreach (MediaNodePrivate *bp, mediaNodePrivateList) {
-        bp->createBackendObject();
+    for (int i = 0; i < mediaNodePrivateList.count(); ++i) {
+        mediaNodePrivateList.at(i)->createBackendObject();
     }
     emit backendChanged();
 }
@@ -362,15 +359,17 @@ PlatformPlugin *FactoryPrivate::platformPlugin()
              QStringList())
             );
     dir.setFilter(QDir::Files);
+    const QStringList libPaths = QCoreApplication::libraryPaths();
     forever {
-        foreach (QString libPath, QCoreApplication::libraryPaths()) {
-            libPath += suffix;
+        for (int i = 0; i < libPaths.count(); ++i) {
+            const QString libPath = libPaths.at(i) + suffix;
             dir.setPath(libPath);
             if (!dir.exists()) {
                 continue;
             }
-            foreach (const QString &pluginName, dir.entryList()) {
-                QPluginLoader pluginLoader(libPath + pluginName);
+            const QStringList files = dir.entryList(QDir::Files);
+            for (int i = 0; i < files.count(); ++i) {
+                QPluginLoader pluginLoader(libPath + files.at(i));
                 if (!pluginLoader.load()) {
                     pDebug() << Q_FUNC_INFO << "  platform plugin load failed:"
                         << pluginLoader.errorString();

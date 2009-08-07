@@ -30,7 +30,7 @@ class HTMLButtonElement;
 class JSHTMLButtonElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLButtonElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLButtonElement>);
+    JSHTMLButtonElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLButtonElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -42,7 +42,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 };
 
 
@@ -66,6 +66,7 @@ JSC::JSValue JSC_HOST_CALL jsHTMLButtonElementPrototypeFunctionClick(JSC::ExecSt
 // Attributes
 
 JSC::JSValue jsHTMLButtonElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLButtonElementValidity(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLButtonElementAccessKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLButtonElementAccessKey(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLButtonElementDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

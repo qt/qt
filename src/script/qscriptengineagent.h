@@ -100,7 +100,7 @@ protected:
     QScopedPointer<QScriptEngineAgentPrivate> d_ptr;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptEngineAgent)
+    Q_DECLARE_PRIVATE(QScriptEngineAgent)
     Q_DISABLE_COPY(QScriptEngineAgent)
 };
 

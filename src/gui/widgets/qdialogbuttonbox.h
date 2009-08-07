@@ -154,7 +154,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QDialogButtonBox)
-    Q_DECLARE_SCOPED_PRIVATE(QDialogButtonBox)
+    Q_DECLARE_PRIVATE(QDialogButtonBox)
     Q_PRIVATE_SLOT(d_func(), void _q_handleButtonClicked())
     Q_PRIVATE_SLOT(d_func(), void _q_handleButtonDestroyed())
 };

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qx11embed_x11.h"
 #include <qapplication.h>
 #include <qevent.h>
@@ -269,7 +270,7 @@ const int XButtonRelease = ButtonRelease;
 // need to to inspect window()'s embedded state.
 class QHackWidget : public QWidget
 {
-    Q_DECLARE_SCOPED_PRIVATE(QWidget)
+    Q_DECLARE_PRIVATE(QWidget)
 public:
     QTLWExtra* topData() { return d_func()->topData(); }
 };
@@ -826,7 +827,7 @@ bool QX11EmbedWidget::x11Event(XEvent *event)
                                    &actual_format_return, &nitems_return,
                                    &bytes_after_return, &prop_return) == Success) {
                 if (nitems_return > 1) {
-                    if (((int * )prop_return)[1] & XEMBED_MAPPED) {
+                    if (((long * )prop_return)[1] & XEMBED_MAPPED) {
                         XMapWindow(x11Info().display(), internalWinId());
                     } else {
                         XUnmapWindow(x11Info().display(), internalWinId());
@@ -1670,9 +1671,9 @@ void QX11EmbedContainerPrivate::acceptClient(WId window)
 	    // Clients with the _XEMBED_INFO property are XEMBED clients.
 	    clientIsXEmbed = true;
 
-	    unsigned int *p = (unsigned int *)prop_return;
+	    long *p = (long *)prop_return;
 	    if (nitems_return >= 2)
-		clientversion = p[0];
+		clientversion = (unsigned int)p[0];
 	}
 
 	XFree(prop_return);

@@ -115,13 +115,10 @@ QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(QAbstractTransition 
 
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
-    QObject *par = parent;
-    while (par != 0) {
-        if (QStateMachine *mach = qobject_cast<QStateMachine*>(par))
-            return mach;
-        par = par->parent();
-    }
-    return 0;
+    QState *source = sourceState();
+    if (!source)
+        return 0;
+    return source->machine();
 }
 
 bool QAbstractTransitionPrivate::callEventTest(QEvent *e)
@@ -156,34 +153,12 @@ QAbstractTransition::QAbstractTransition(QState *sourceState)
 }
 
 /*!
-  Constructs a new QAbstractTransition object with the given \a targets and \a
-  sourceState.
-*/
-QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
-                                         QState *sourceState)
-    : QObject(*new QAbstractTransitionPrivate, sourceState)
-{
-    setTargetStates(targets);
-}
-
-/*!
   \internal
 */
 QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
                                          QState *parent)
     : QObject(dd, parent)
 {
-}
-
-/*!
-  \internal
-*/
-QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
-                                         const QList<QAbstractState*> &targets,
-                                         QState *parent)
-    : QObject(dd, parent)
-{
-    setTargetStates(targets);
 }
 
 /*!
@@ -254,10 +229,6 @@ void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
         QAbstractState *target = targets.at(i);
         if (!target) {
             qWarning("QAbstractTransition::setTargetStates: target state(s) cannot be null");
-            return;
-        }
-        if (target->machine() != 0 && target->machine()->rootState() == target) {
-            qWarning("QAbstractTransition::setTargetStates: root state cannot be target of transition");
             return;
         }
     }

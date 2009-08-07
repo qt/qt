@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLOptionsCollectionTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLOptionsCollectionTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLOptionsCollectionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLOptionsCollectionTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSHTMLOptionsCollectionPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLOptionsCollectionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLOptionsCollectionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSHTMLOptionsCollectionPrototypeTableValues, 0 };
 #else
@@ -78,8 +78,8 @@ bool JSHTMLOptionsCollectionPrototype::getOwnPropertySlot(ExecState* exec, const
 
 const ClassInfo JSHTMLOptionsCollection::s_info = { "HTMLOptionsCollection", &JSHTMLCollection::s_info, &JSHTMLOptionsCollectionTable, 0 };
 
-JSHTMLOptionsCollection::JSHTMLOptionsCollection(PassRefPtr<Structure> structure, PassRefPtr<HTMLOptionsCollection> impl)
-    : JSHTMLCollection(structure, impl)
+JSHTMLOptionsCollection::JSHTMLOptionsCollection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptionsCollection> impl)
+    : JSHTMLCollection(structure, globalObject, impl)
 {
 }
 
@@ -95,14 +95,16 @@ bool JSHTMLOptionsCollection::getOwnPropertySlot(ExecState* exec, const Identifi
 
 JSValue jsHTMLOptionsCollectionSelectedIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLOptionsCollection* imp = static_cast<HTMLOptionsCollection*>(static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()))->impl());
+    HTMLOptionsCollection* imp = static_cast<HTMLOptionsCollection*>(castedThis->impl());
     return jsNumber(exec, imp->selectedIndex());
 }
 
 JSValue jsHTMLOptionsCollectionLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()))->length(exec);
+    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()));
+    return castedThis->length(exec);
 }
 
 void JSHTMLOptionsCollection::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)

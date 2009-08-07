@@ -44,7 +44,7 @@ static const HashTableValue JSMediaListTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaListTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSMediaListTableValues, 0 };
 #else
@@ -58,19 +58,19 @@ static const HashTableValue JSMediaListConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaListConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaListConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMediaListConstructorTableValues, 0 };
 #else
     { 1, 0, JSMediaListConstructorTableValues, 0 };
 #endif
 
-class JSMediaListConstructor : public DOMObject {
+class JSMediaListConstructor : public DOMConstructorObject {
 public:
-    JSMediaListConstructor(ExecState* exec)
-        : DOMObject(JSMediaListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSMediaListConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSMediaListConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSMediaListPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSMediaListPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -99,7 +99,7 @@ static const HashTableValue JSMediaListPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSMediaListPrototypeTableValues, 0 };
 #else
@@ -120,8 +120,8 @@ bool JSMediaListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 const ClassInfo JSMediaList::s_info = { "MediaList", 0, &JSMediaListTable, 0 };
 
-JSMediaList::JSMediaList(PassRefPtr<Structure> structure, PassRefPtr<MediaList> impl)
-    : DOMObject(structure)
+JSMediaList::JSMediaList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MediaList> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -163,21 +163,24 @@ bool JSMediaList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, Pro
 
 JSValue jsMediaListMediaText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MediaList* imp = static_cast<MediaList*>(static_cast<JSMediaList*>(asObject(slot.slotBase()))->impl());
+    MediaList* imp = static_cast<MediaList*>(castedThis->impl());
     return jsStringOrNull(exec, imp->mediaText());
 }
 
 JSValue jsMediaListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MediaList* imp = static_cast<MediaList*>(static_cast<JSMediaList*>(asObject(slot.slotBase()))->impl());
+    MediaList* imp = static_cast<MediaList*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsMediaListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSMediaList*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSMediaList* domObject = static_cast<JSMediaList*>(asObject(slot.slotBase()));
+    return JSMediaList::getConstructor(exec, domObject->globalObject());
 }
 void JSMediaList::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -199,9 +202,9 @@ void JSMediaList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyN
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSMediaList::getConstructor(ExecState* exec)
+JSValue JSMediaList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSMediaListConstructor>(exec);
+    return getDOMConstructor<JSMediaListConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsMediaListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -254,9 +257,9 @@ JSValue JSMediaList::indexGetter(ExecState* exec, const Identifier&, const Prope
     JSMediaList* thisObj = static_cast<JSMediaList*>(asObject(slot.slotBase()));
     return jsStringOrNull(exec, thisObj->impl()->item(slot.index()));
 }
-JSC::JSValue toJS(JSC::ExecState* exec, MediaList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MediaList* object)
 {
-    return getDOMObjectWrapper<JSMediaList>(exec, object);
+    return getDOMObjectWrapper<JSMediaList>(exec, globalObject, object);
 }
 MediaList* toMediaList(JSC::JSValue value)
 {

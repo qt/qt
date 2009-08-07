@@ -54,6 +54,10 @@
 #endif
 #include <stdlib.h>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -160,7 +164,7 @@ protected slots:
     void restartProcess();
     void waitForReadyReadInAReadyReadSlotSlot();
     void waitForBytesWrittenInABytesWrittenSlotSlot();
-
+    
 private:
     QProcess *process;
     qint64 bytesAvailable;
@@ -2349,3 +2353,4 @@ void tst_QProcess::invalidProgramString()
 
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"
+#endif

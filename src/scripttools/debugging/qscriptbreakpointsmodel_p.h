@@ -98,7 +98,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptBreakpointsModel)
+    Q_DECLARE_PRIVATE(QScriptBreakpointsModel)
     Q_DISABLE_COPY(QScriptBreakpointsModel)
 };
 

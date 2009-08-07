@@ -74,11 +74,19 @@
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #ifdef index
-# undef index
+#  undef index
 #endif
 #ifdef rindex
-# undef rindex
+#  undef rindex
 #endif
+#ifdef Q_OS_VXWORS
+#  ifdef open
+#    undef open
+#  endif
+#  ifdef getpid
+#    undef getpid
+#  endif
+#endif // Q_OS_VXWORKS
 #include <X11/Xatom.h>
 
 //#define QT_NO_SHAPE

@@ -92,6 +92,7 @@ private slots:
     void cleanupTestCase();
 
     void acceptNavigationRequest();
+    void infiniteLoopJS();
     void loadFinished();
     void acceptNavigationRequestWithNewWindow();
     void userStyleSheet();
@@ -106,8 +107,9 @@ private slots:
     void textSelection();
     void textEditing();
     void backActionUpdate();
-
+    void frameAt();
     void requestCache();
+    void protectBindingsRuntimeObjectsFromCollector();
 
 private:
 
@@ -192,6 +194,26 @@ void tst_QWebPage::acceptNavigationRequest()
     m_view->setPage(0);
 }
 
+class JSTestPage : public QWebPage
+{
+Q_OBJECT
+public:
+    JSTestPage(QObject* parent = 0)
+    : QWebPage(parent) {}
+
+public slots:
+    bool shouldInterruptJavaScript() {
+        return true; 
+    }
+};
+
+void tst_QWebPage::infiniteLoopJS()
+{
+    JSTestPage* newPage = new JSTestPage(m_view);
+    m_view->setPage(newPage);
+    m_view->setHtml(QString("<html><bodytest</body></html>"), QUrl());
+    m_view->page()->mainFrame()->evaluateJavaScript("var run = true;var a = 1;while(run){a++;}");
+}
 
 void tst_QWebPage::loadFinished()
 {
@@ -1114,6 +1136,58 @@ void tst_QWebPage::backActionUpdate()
     QTRY_COMPARE(loadSpy.count(), 2);
 
     QVERIFY(action->isEnabled());
+}
+
+void frameAtHelper(QWebPage* webPage, QWebFrame* webFrame, QPoint framePosition)
+{
+    if (!webFrame)
+        return;
+
+    framePosition += QPoint(webFrame->pos());
+    QList<QWebFrame*> children = webFrame->childFrames();
+    for (int i = 0; i < children.size(); ++i) {
+        if (children.at(i)->childFrames().size() > 0)
+            frameAtHelper(webPage, children.at(i), framePosition);
+
+        QRect frameRect(children.at(i)->pos() + framePosition, children.at(i)->geometry().size());
+        QVERIFY(children.at(i) == webPage->frameAt(frameRect.topLeft()));
+    }
+}
+
+void tst_QWebPage::frameAt()
+{
+    QWebView webView;
+    QWebPage* webPage = webView.page();
+    QSignalSpy loadSpy(webPage, SIGNAL(loadFinished(bool)));
+    QUrl url = QUrl("qrc:///frametest/iframe.html");
+    webPage->mainFrame()->load(url);
+    QTRY_COMPARE(loadSpy.count(), 1);
+    frameAtHelper(webPage, webPage->mainFrame(), webPage->mainFrame()->pos());
+}
+
+// import a little DRT helper function to trigger the garbage collector
+void QWEBKIT_EXPORT qt_drt_garbageCollector_collect();
+
+void tst_QWebPage::protectBindingsRuntimeObjectsFromCollector()
+{
+    QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
+
+    PluginPage* newPage = new PluginPage(m_view);
+    m_view->setPage(newPage);
+
+    m_view->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
+
+    m_view->setHtml(QString("<html><body><object type='application/x-qt-plugin' classid='lineedit' id='mylineedit'/></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    newPage->mainFrame()->evaluateJavaScript("function testme(text) { var lineedit = document.getElementById('mylineedit'); lineedit.setText(text); lineedit.selectAll(); }");
+
+    newPage->mainFrame()->evaluateJavaScript("testme('foo')");
+
+    qt_drt_garbageCollector_collect();
+
+    // don't crash!
+    newPage->mainFrame()->evaluateJavaScript("testme('bar')");
 }
 
 QTEST_MAIN(tst_QWebPage)

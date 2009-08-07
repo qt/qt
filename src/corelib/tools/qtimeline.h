@@ -136,7 +136,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QTimeLine)
-    Q_DECLARE_SCOPED_PRIVATE(QTimeLine)
+    Q_DECLARE_PRIVATE(QTimeLine)
 };
 
 QT_END_NAMESPACE

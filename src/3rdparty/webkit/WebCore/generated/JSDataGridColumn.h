@@ -21,6 +21,9 @@
 #ifndef JSDataGridColumn_h
 #define JSDataGridColumn_h
 
+#if ENABLE(DATAGRID)
+
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +32,10 @@ namespace WebCore {
 
 class DataGridColumn;
 
-class JSDataGridColumn : public DOMObject {
-    typedef DOMObject Base;
+class JSDataGridColumn : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDataGridColumn(PassRefPtr<JSC::Structure>, PassRefPtr<DataGridColumn>);
+    JSDataGridColumn(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DataGridColumn>);
     virtual ~JSDataGridColumn();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -45,14 +48,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     DataGridColumn* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<DataGridColumn> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, DataGridColumn*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, DataGridColumn*);
 DataGridColumn* toDataGridColumn(JSC::JSValue);
 
 class JSDataGridColumnPrototype : public JSC::JSObject {
@@ -94,5 +97,7 @@ JSC::JSValue jsDataGridColumnSORT_ASCENDING(JSC::ExecState*, const JSC::Identifi
 JSC::JSValue jsDataGridColumnSORC_DESCENDING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATAGRID)
 
 #endif

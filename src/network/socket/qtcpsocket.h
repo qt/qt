@@ -43,6 +43,7 @@
 #define QTCPSOCKET_H
 
 #include <QtNetwork/qabstractsocket.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 
@@ -64,7 +65,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QTcpSocket)
-    Q_DECLARE_SCOPED_PRIVATE(QTcpSocket)
+    Q_DECLARE_PRIVATE(QTcpSocket)
 };
 
 QT_END_NAMESPACE

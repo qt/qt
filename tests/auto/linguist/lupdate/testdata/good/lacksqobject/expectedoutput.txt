@@ -1,4 +1,8 @@
 .*/lupdate/testdata/good/lacksqobject/main.cpp:17: Class 'B' lacks Q_OBJECT macro
-.*/lupdate/testdata/good/lacksqobject/main.cpp:26: Class 'C' lacks Q_OBJECT macro
+
+.*/lupdate/testdata/good/lacksqobject/main.cpp:24: Class 'C' lacks Q_OBJECT macro
+
 .*/lupdate/testdata/good/lacksqobject/main.cpp:37: Class 'nsB::B' lacks Q_OBJECT macro
-.*/lupdate/testdata/good/lacksqobject/main.cpp:45: Class 'nsB::C' lacks Q_OBJECT macro
+
+.*/lupdate/testdata/good/lacksqobject/main.cpp:43: Class 'nsB::C' lacks Q_OBJECT macro
+

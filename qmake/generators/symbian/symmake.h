@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,12 +54,19 @@ QT_BEGIN_NAMESPACE
 class SymbianMakefileGenerator : public MakefileGenerator
 {
 protected:
+    enum TargetType {
+        TypeExe,
+        TypeDll,
+        TypeLib,
+        TypePlugin,
+        TypeSubdirs
+    };
 
     QString platform;
     QString uid2;
     QString uid3;
     QString privateDirUid;
-    QString targetType;
+    TargetType targetType;
     QMap<QString, QStringList> sources;
     QMap<QString, QStringList> systeminclude;
     QMap<QString, QStringList> library;
@@ -70,46 +77,50 @@ protected:
     QStringList generatedDirs;
     QHash<QString, QString> qt2S60LangMapTable;
 
+    QString fixedTarget;
+
     void removeSpecialCharacters(QString& str);
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
     QString canonizePath(const QString& origPath);
 
     virtual bool writeMakefile(QTextStream &t);
-    bool generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile);
+    void generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile);
     bool containsStartWithItem(const QChar &c, const QStringList& src);
 
     virtual void init();
 
     QString getTargetExtension();
-    bool isConfigSetToSymbian();
 
     QString generateUID3();
 
-    bool initMmpVariables();
+    void initMmpVariables();
 
     void writeHeader(QTextStream &t);
-    bool writeBldInfContent(QTextStream& t, bool addDeploymentExtension);
+    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 
-    bool writeMmpFileHeader(QTextStream &t);
-    bool writeMmpFile(QString &filename, QStringList &symbianLangCodes);
-    bool writeMmpFileMacrosPart(QTextStream& t);
-    bool addMacro(QTextStream& t, const QString& value);
-    bool writeMmpFileTargetPart(QTextStream& t);
-    bool writeMmpFileResourcePart(QTextStream& t, QStringList &symbianLangCodes);
-    bool writeMmpFileSystemIncludePart(QTextStream& t);
-    bool writeMmpFileIncludePart(QTextStream& t);
-    bool writeMmpFileLibraryPart(QTextStream& t);
-    bool writeMmpFileCapabilityPart(QTextStream& t);
-    bool writeMmpFileCompilerOptionPart(QTextStream& t);
-    bool writeMmpFileBinaryVersionPart(QTextStream& t);
-    bool writeMmpFileRulesPart(QTextStream& t);
+    void writeMmpFileHeader(QTextStream &t);
+    void writeMmpFile(QString &filename, QStringList &symbianLangCodes);
+    void writeMmpFileMacrosPart(QTextStream& t);
+    void addMacro(QTextStream& t, const QString& value);
+    void writeMmpFileTargetPart(QTextStream& t);
+    void writeMmpFileResourcePart(QTextStream& t, QStringList &symbianLangCodes);
+    void writeMmpFileSystemIncludePart(QTextStream& t);
+    void writeMmpFileIncludePart(QTextStream& t);
+    void writeMmpFileLibraryPart(QTextStream& t);
+    void writeMmpFileCapabilityPart(QTextStream& t);
+    void writeMmpFileCompilerOptionPart(QTextStream& t);
+    void writeMmpFileBinaryVersionPart(QTextStream& t);
+    void writeMmpFileRulesPart(QTextStream& t);
 
-    bool writeRegRssFile(QString &appname, QStringList &useritems);
-    bool writeRssFile(QString &appName, QString &numberOfIcons, QString &iconfile);
-    bool writeLocFile(QString &appName, QStringList &symbianLangCodes);
+    void writeCustomDefFile();
+
+    void writeRegRssFile(QString &appname, QStringList &useritems);
+    void writeRssFile(QString &appName, QString &numberOfIcons, QString &iconfile);
+    void writeLocFile(QString &appName, QStringList &symbianLangCodes);
     void readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules);
+
     QStringList symbianLangCodesFromTsFiles();
     void fillQt2S60LangMapTable();
 
@@ -127,12 +138,10 @@ protected:
 
     void generateDistcleanTargets(QTextStream& t);
 
-    bool writeCustomDefFile();
-
     // Subclass implements
-    virtual bool writeBldInfExtensionRulesPart(QTextStream& t) = 0;
+    virtual void writeBldInfExtensionRulesPart(QTextStream& t) = 0;
     virtual void writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension) = 0;
-    virtual bool writeMkFile(const QString& wrapperFileName, bool deploymentOnly) = 0;
+    virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly) = 0;
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile) = 0;
 
 public:

@@ -148,7 +148,7 @@ private:
      */
     inline void write(const QString &content);
 
-    Q_DECLARE_SCOPED_PRIVATE(QXmlSerializer)
+    Q_DECLARE_PRIVATE(QXmlSerializer)
 };
 
 QT_END_NAMESPACE

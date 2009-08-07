@@ -22,6 +22,7 @@
 #include "JSHTMLBlockquoteElement.h"
 
 #include "HTMLBlockquoteElement.h"
+#include "HTMLNames.h"
 #include "KURL.h"
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
@@ -41,7 +42,7 @@ static const HashTableValue JSHTMLBlockquoteElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBlockquoteElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBlockquoteElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLBlockquoteElementTableValues, 0 };
 #else
@@ -55,19 +56,19 @@ static const HashTableValue JSHTMLBlockquoteElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBlockquoteElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBlockquoteElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBlockquoteElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLBlockquoteElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLBlockquoteElementConstructor : public DOMObject {
+class JSHTMLBlockquoteElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLBlockquoteElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLBlockquoteElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLBlockquoteElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLBlockquoteElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBlockquoteElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBlockquoteElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -93,7 +94,7 @@ static const HashTableValue JSHTMLBlockquoteElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBlockquoteElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBlockquoteElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBlockquoteElementPrototypeTableValues, 0 };
 #else
@@ -109,8 +110,8 @@ JSObject* JSHTMLBlockquoteElementPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSHTMLBlockquoteElement::s_info = { "HTMLBlockquoteElement", &JSHTMLElement::s_info, &JSHTMLBlockquoteElementTable, 0 };
 
-JSHTMLBlockquoteElement::JSHTMLBlockquoteElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLBlockquoteElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLBlockquoteElement::JSHTMLBlockquoteElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBlockquoteElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +127,16 @@ bool JSHTMLBlockquoteElement::getOwnPropertySlot(ExecState* exec, const Identifi
 
 JSValue jsHTMLBlockquoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBlockquoteElement* castedThis = static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->cite());
+    HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::citeAttr));
 }
 
 JSValue jsHTMLBlockquoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLBlockquoteElement* domObject = static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()));
+    return JSHTMLBlockquoteElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLBlockquoteElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -143,12 +146,12 @@ void JSHTMLBlockquoteElement::put(ExecState* exec, const Identifier& propertyNam
 void setJSHTMLBlockquoteElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(static_cast<JSHTMLBlockquoteElement*>(thisObject)->impl());
-    imp->setCite(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::citeAttr, valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLBlockquoteElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBlockquoteElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLBlockquoteElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLBlockquoteElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

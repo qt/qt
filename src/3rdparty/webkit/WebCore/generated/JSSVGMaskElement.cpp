@@ -68,7 +68,7 @@ static const HashTableValue JSSVGMaskElementTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMaskElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMaskElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGMaskElementTableValues, 0 };
 #else
@@ -84,7 +84,7 @@ static const HashTableValue JSSVGMaskElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMaskElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMaskElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGMaskElementPrototypeTableValues, 0 };
 #else
@@ -105,8 +105,8 @@ bool JSSVGMaskElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSSVGMaskElement::s_info = { "SVGMaskElement", &JSSVGElement::s_info, &JSSVGMaskElementTable, 0 };
 
-JSSVGMaskElement::JSSVGMaskElement(PassRefPtr<Structure> structure, PassRefPtr<SVGMaskElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGMaskElement::JSSVGMaskElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMaskElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -122,108 +122,122 @@ bool JSSVGMaskElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsSVGMaskElementMaskUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->maskUnitsAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementMaskContentUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->maskContentUnitsAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
 JSValue jsSVGMaskElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
 JSValue jsSVGMaskElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
 }
 
 JSValue jsSVGMaskElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     return jsString(exec, imp->xmllang());
 }
 
 JSValue jsSVGMaskElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     return jsString(exec, imp->xmlspace());
 }
 
 JSValue jsSVGMaskElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGMaskElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGMaskElement* castedThis = static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGMaskElement* imp = static_cast<SVGMaskElement*>(static_cast<JSSVGMaskElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 void JSSVGMaskElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -267,7 +281,7 @@ JSValue JSC_HOST_CALL jsSVGMaskElementPrototypeFunctionGetPresentationAttribute(
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

@@ -162,12 +162,11 @@ public:
 #endif
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QToolBar)
+    Q_DECLARE_PRIVATE(QToolBar)
     Q_DISABLE_COPY(QToolBar)
     Q_PRIVATE_SLOT(d_func(), void _q_toggleView(bool))
     Q_PRIVATE_SLOT(d_func(), void _q_updateIconSize(const QSize &))
     Q_PRIVATE_SLOT(d_func(), void _q_updateToolButtonStyle(Qt::ToolButtonStyle))
-    Q_PRIVATE_SLOT(d_func(), void _q_waitForPopup())
 
     friend class QMainWindow;
     friend class QMainWindowLayout;

@@ -93,10 +93,13 @@ private slots:
 
     void nlerp_data();
     void nlerp();
+
+    void properties();
+    void metaTypes();
 };
 
-// qFuzzyCompare isn't quite "fuzzy" enough to handle conversion
-// to fixed-point and back again.  So create "fuzzier" compares.
+// qFuzzyCompare isn't always "fuzzy" enough to handle conversion
+// between float, double, and qreal.  So create "fuzzier" compares.
 static bool fuzzyCompare(float x, float y)
 {
     float diff = x - y;
@@ -823,6 +826,55 @@ void tst_QQuaternion::nlerp()
     QVERIFY(fuzzyCompare(result.y(), q3.y()));
     QVERIFY(fuzzyCompare(result.z(), q3.z()));
     QVERIFY(fuzzyCompare(result.scalar(), q3.scalar()));
+}
+
+class tst_QQuaternionProperties : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QQuaternion quaternion READ quaternion WRITE setQuaternion)
+public:
+    tst_QQuaternionProperties(QObject *parent = 0) : QObject(parent) {}
+
+    QQuaternion quaternion() const { return q; }
+    void setQuaternion(const QQuaternion& value) { q = value; }
+
+private:
+    QQuaternion q;
+};
+
+// Test getting and setting quaternion properties via the metaobject system.
+void tst_QQuaternion::properties()
+{
+    tst_QQuaternionProperties obj;
+
+    obj.setQuaternion(QQuaternion(6.0f, 7.0f, 8.0f, 9.0f));
+
+    QQuaternion q = qVariantValue<QQuaternion>(obj.property("quaternion"));
+    QCOMPARE(q.scalar(), (qreal)6.0f);
+    QCOMPARE(q.x(), (qreal)7.0f);
+    QCOMPARE(q.y(), (qreal)8.0f);
+    QCOMPARE(q.z(), (qreal)9.0f);
+
+    obj.setProperty("quaternion",
+                    qVariantFromValue(QQuaternion(-6.0f, -7.0f, -8.0f, -9.0f)));
+
+    q = qVariantValue<QQuaternion>(obj.property("quaternion"));
+    QCOMPARE(q.scalar(), (qreal)-6.0f);
+    QCOMPARE(q.x(), (qreal)-7.0f);
+    QCOMPARE(q.y(), (qreal)-8.0f);
+    QCOMPARE(q.z(), (qreal)-9.0f);
+}
+
+void tst_QQuaternion::metaTypes()
+{
+    QVERIFY(QMetaType::type("QQuaternion") == QMetaType::QQuaternion);
+
+    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QQuaternion)),
+             QByteArray("QQuaternion"));
+
+    QVERIFY(QMetaType::isRegistered(QMetaType::QQuaternion));
+
+    QVERIFY(qMetaTypeId<QQuaternion>() == QMetaType::QQuaternion);
 }
 
 QTEST_APPLESS_MAIN(tst_QQuaternion)

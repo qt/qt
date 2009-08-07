@@ -22,6 +22,7 @@
 #include "config.h"
 #include "XMLHttpRequest.h"
 
+#include "Cache.h"
 #include "CString.h"
 #include "CrossOriginAccessControl.h"
 #include "CrossOriginPreflightResultCache.h"
@@ -145,6 +146,7 @@ XMLHttpRequest::XMLHttpRequest(ScriptExecutionContext* context)
     , m_uploadComplete(false)
     , m_sameOriginRequest(true)
     , m_inPreflight(false)
+    , m_didTellLoaderAboutRequest(false)
     , m_receivedLength(0)
     , m_lastSendLineNumber(0)
     , m_exceptionCode(0)
@@ -154,6 +156,10 @@ XMLHttpRequest::XMLHttpRequest(ScriptExecutionContext* context)
 
 XMLHttpRequest::~XMLHttpRequest()
 {
+    if (m_didTellLoaderAboutRequest) {
+        cache()->loader()->nonCacheRequestComplete(m_url);
+        m_didTellLoaderAboutRequest = false;
+    }
     if (m_upload)
         m_upload->disconnectXMLHttpRequest();
 }
@@ -681,6 +687,16 @@ void XMLHttpRequest::loadRequestAsynchronously(ResourceRequest& request)
         // a request is in progress because we need to keep the listeners alive,
         // and they are referenced by the JavaScript wrapper.
         setPendingActivity(this);
+        
+        // For now we should only balance the nonCached request count for main-thread XHRs and not
+        // Worker XHRs, as the Cache is not thread-safe.
+        // This will become irrelevant after https://bugs.webkit.org/show_bug.cgi?id=27165 is resolved.
+        if (!scriptExecutionContext()->isWorkerContext()) {
+            ASSERT(isMainThread());
+            ASSERT(!m_didTellLoaderAboutRequest);
+            cache()->loader()->nonCacheRequestInFlight(m_url);
+            m_didTellLoaderAboutRequest = true;
+        }
     }
 }
 
@@ -788,9 +804,9 @@ void XMLHttpRequest::dropProtection()
     // can't be recouped until the load is done, so only
     // report the extra cost at that point.
 
-   if (JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(scriptExecutionContext()))
-       if (DOMObject* wrapper = getCachedDOMObjectWrapper(*globalObject->globalData(), this))
-           JSC::Heap::heap(wrapper)->reportExtraMemoryCost(m_responseText.size() * 2);
+    if (JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(scriptExecutionContext()))
+        if (DOMObject* wrapper = getCachedDOMObjectWrapper(*globalObject->globalData(), this))
+            JSC::Heap::heap(wrapper)->reportExtraMemoryCost(m_responseText.size() * 2);
 #endif
 
     unsetPendingActivity(this);
@@ -807,7 +823,7 @@ static void reportUnsafeUsage(ScriptExecutionContext* context, const String& mes
         return;
     // FIXME: It's not good to report the bad usage without indicating what source line it came from.
     // We should pass additional parameters so we can tell the console where the mistake occurred.
-    context->addMessage(ConsoleDestination, JSMessageSource, ErrorMessageLevel, message, 1, String());
+    context->addMessage(ConsoleDestination, JSMessageSource, LogMessageType, ErrorMessageLevel, message, 1, String());
 }
 
 void XMLHttpRequest::setRequestHeader(const AtomicString& name, const String& value, ExceptionCode& ec)
@@ -961,6 +977,11 @@ String XMLHttpRequest::statusText(ExceptionCode& ec) const
 
 void XMLHttpRequest::didFail(const ResourceError& error)
 {
+    if (m_didTellLoaderAboutRequest) {
+        cache()->loader()->nonCacheRequestComplete(m_url);
+        m_didTellLoaderAboutRequest = false;
+    }
+    
     // If we are already in an error state, for instance we called abort(), bail out early.
     if (m_error)
         return;
@@ -982,6 +1003,11 @@ void XMLHttpRequest::didFailRedirectCheck()
 
 void XMLHttpRequest::didFinishLoading(unsigned long identifier)
 {
+    if (m_didTellLoaderAboutRequest) {
+        cache()->loader()->nonCacheRequestComplete(m_url);
+        m_didTellLoaderAboutRequest = false;
+    }
+
     if (m_error)
         return;
 
@@ -997,7 +1023,7 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier)
         m_responseText += m_decoder->flush();
 
     scriptExecutionContext()->resourceRetrievedByXMLHttpRequest(identifier, m_responseText);
-    scriptExecutionContext()->addMessage(InspectorControllerDestination, JSMessageSource, LogMessageLevel, "XHR finished loading: \"" + m_url + "\".", m_lastSendLineNumber, m_lastSendURL);
+    scriptExecutionContext()->addMessage(InspectorControllerDestination, JSMessageSource, LogMessageType, LogMessageLevel, "XHR finished loading: \"" + m_url + "\".", m_lastSendLineNumber, m_lastSendURL);
 
     bool hadLoader = m_loader;
     m_loader = 0;

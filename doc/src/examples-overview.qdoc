@@ -238,6 +238,17 @@
   These examples demonstrate the basic techniques used to take advantage of
   OpenGL in Qt applications.
 
+  \section1 \l{Qt Examples#Multimedia}{Multimedia}
+
+  \l{Qt Examples#Multimedia}
+
+  Qt provides low-level audio support on linux,windows and mac platforms by default and
+  an audio plugin API to allow developers to implement there own audio support for
+  custom devices and platforms.
+
+  These examples demonstrate the basic techniques used to take advantage of
+  Audio API in Qt applications.
+
   \section1 \l{Qt Examples#SQL}{SQL}
 
   \l{Qt Examples#SQL}{\inlineimage sql-examples.png

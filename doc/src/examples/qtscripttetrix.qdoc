@@ -57,7 +57,7 @@
 
     \section1 Setting up the GUI
 
-    The graphical user interface is defined in a \c{.ui} file, creating
+    The graphical user interface is defined in a UI file, created
     using Qt Designer, and is set up in the example's C++ \c{main.cpp} file.
 
     \snippet examples/script/qstetrix/main.cpp 0

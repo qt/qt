@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "JSDataGridColumn.h"
 
 #include "DataGridColumn.h"
@@ -47,7 +50,7 @@ static const HashTableValue JSDataGridColumnTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSDataGridColumnTableValues, 0 };
 #else
@@ -67,19 +70,19 @@ static const HashTableValue JSDataGridColumnConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSDataGridColumnConstructorTableValues, 0 };
 #else
     { 17, 15, JSDataGridColumnConstructorTableValues, 0 };
 #endif
 
-class JSDataGridColumnConstructor : public DOMObject {
+class JSDataGridColumnConstructor : public DOMConstructorObject {
 public:
-    JSDataGridColumnConstructor(ExecState* exec)
-        : DOMObject(JSDataGridColumnConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSDataGridColumnConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSDataGridColumnConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSDataGridColumnPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSDataGridColumnPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,7 +114,7 @@ static const HashTableValue JSDataGridColumnPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSDataGridColumnPrototypeTableValues, 0 };
 #else
@@ -132,8 +135,8 @@ bool JSDataGridColumnPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSDataGridColumn::s_info = { "DataGridColumn", 0, &JSDataGridColumnTable, 0 };
 
-JSDataGridColumn::JSDataGridColumn(PassRefPtr<Structure> structure, PassRefPtr<DataGridColumn> impl)
-    : DOMObject(structure)
+JSDataGridColumn::JSDataGridColumn(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DataGridColumn> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -155,49 +158,56 @@ bool JSDataGridColumn::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsDataGridColumnId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(asObject(slot.slotBase()))->impl());
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
     return jsString(exec, imp->id());
 }
 
 JSValue jsDataGridColumnLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(asObject(slot.slotBase()))->impl());
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
     return jsString(exec, imp->label());
 }
 
 JSValue jsDataGridColumnType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(asObject(slot.slotBase()))->impl());
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsDataGridColumnSortable(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(asObject(slot.slotBase()))->impl());
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
     return jsNumber(exec, imp->sortable());
 }
 
 JSValue jsDataGridColumnSortDirection(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(asObject(slot.slotBase()))->impl());
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
     return jsNumber(exec, imp->sortDirection());
 }
 
 JSValue jsDataGridColumnPrimary(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(asObject(slot.slotBase()))->impl());
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
     return jsBoolean(imp->primary());
 }
 
 JSValue jsDataGridColumnConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDataGridColumn*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSDataGridColumn* domObject = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
+    return JSDataGridColumn::getConstructor(exec, domObject->globalObject());
 }
 void JSDataGridColumn::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -240,9 +250,9 @@ void setJSDataGridColumnPrimary(ExecState* exec, JSObject* thisObject, JSValue v
     imp->setPrimary(value.toBoolean(exec));
 }
 
-JSValue JSDataGridColumn::getConstructor(ExecState* exec)
+JSValue JSDataGridColumn::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSDataGridColumnConstructor>(exec);
+    return getDOMConstructor<JSDataGridColumnConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters
@@ -277,9 +287,9 @@ JSValue jsDataGridColumnSORC_DESCENDING(ExecState* exec, const Identifier&, cons
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, DataGridColumn* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DataGridColumn* object)
 {
-    return getDOMObjectWrapper<JSDataGridColumn>(exec, object);
+    return getDOMObjectWrapper<JSDataGridColumn>(exec, globalObject, object);
 }
 DataGridColumn* toDataGridColumn(JSC::JSValue value)
 {
@@ -287,3 +297,5 @@ DataGridColumn* toDataGridColumn(JSC::JSValue value)
 }
 
 }
+
+#endif // ENABLE(DATAGRID)

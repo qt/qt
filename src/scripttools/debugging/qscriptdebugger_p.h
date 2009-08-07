@@ -185,7 +185,7 @@ protected:
     QScriptDebugger(QScriptDebuggerPrivate &dd, QObject *parent);
 
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QScriptDebugger)
+    Q_DECLARE_PRIVATE(QScriptDebugger)
     Q_DISABLE_COPY(QScriptDebugger)
 
     Q_PRIVATE_SLOT(d_func(), void _q_onLineEntered(const QString &))

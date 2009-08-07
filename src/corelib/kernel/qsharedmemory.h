@@ -57,7 +57,7 @@ class QSharedMemoryPrivate;
 class Q_CORE_EXPORT QSharedMemory : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(QSharedMemory)
+    Q_DECLARE_PRIVATE(QSharedMemory)
 
 public:
     enum AccessMode

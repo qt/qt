@@ -69,6 +69,7 @@ class Q_GUI_EXPORT QCompleter : public QObject
     Q_PROPERTY(CompletionMode completionMode READ completionMode WRITE setCompletionMode)
     Q_PROPERTY(int completionColumn READ completionColumn WRITE setCompletionColumn)
     Q_PROPERTY(int completionRole READ completionRole WRITE setCompletionRole)
+    Q_PROPERTY(int maxVisibleItems READ maxVisibleItems WRITE setMaxVisibleItems)
     Q_PROPERTY(Qt::CaseSensitivity caseSensitivity READ caseSensitivity WRITE setCaseSensitivity)
     Q_PROPERTY(bool wrapAround READ wrapAround WRITE setWrapAround)
 
@@ -118,6 +119,9 @@ public:
 
     bool wrapAround() const;
 
+    int maxVisibleItems() const;
+    void setMaxVisibleItems(int maxItems);
+
     int completionCount() const;
     bool setCurrentRow(int row);
     int currentRow() const;
@@ -150,7 +154,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QCompleter)
-    Q_DECLARE_SCOPED_PRIVATE(QCompleter)
+    Q_DECLARE_PRIVATE(QCompleter)
 
     Q_PRIVATE_SLOT(d_func(), void _q_complete(QModelIndex))
     Q_PRIVATE_SLOT(d_func(), void _q_completionSelected(const QItemSelection&))

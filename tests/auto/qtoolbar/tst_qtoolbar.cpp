@@ -796,6 +796,10 @@ void tst_QToolBar::toolButtonStyle()
         tb.setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonTextUnderIcon);
         QCOMPARE(spy.count(), 0);
+
+        tb.setToolButtonStyle(Qt::ToolButtonFollowStyle);
+        QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonFollowStyle);
+        QCOMPARE(spy.count(), 1);
     }
 
     {

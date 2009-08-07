@@ -87,7 +87,7 @@ public:
 private:
     Q_DISABLE_COPY(QGraphicsSvgItem)
 
-    // Q_DECLARE_SCOPED_PRIVATE_WITH_BASE(QGraphicsSvgItem, QObject)
+    // Q_DECLARE_PRIVATE_WITH_BASE(QGraphicsSvgItem, QObject)
     inline QGraphicsSvgItemPrivate *d_func()
     { return reinterpret_cast<QGraphicsSvgItemPrivate *>(QObject::d_ptr.data()); }
     inline const QGraphicsSvgItemPrivate *d_func() const

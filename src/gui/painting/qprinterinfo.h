@@ -56,7 +56,7 @@ class QPrinterInfoPrivate;
 class QPrinterInfoPrivateDeleter;
 class Q_GUI_EXPORT QPrinterInfo
 {
-Q_DECLARE_SCOPED_PRIVATE(QPrinterInfo)
+Q_DECLARE_PRIVATE(QPrinterInfo)
 
 public:
     QPrinterInfo();

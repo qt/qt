@@ -64,7 +64,7 @@ Mouse::Mouse()
     : angle(0), speed(0), mouseEyeDirection(0),
       color(qrand() % 256, qrand() % 256, qrand() % 256)
 {
-    rotate(qrand() % (360 * 16));
+    setRotation(qrand() % (360 * 16));
 }
 //! [0]
 
@@ -195,7 +195,7 @@ void Mouse::advance(int step)
     qreal dx = ::sin(angle) * 10;
     mouseEyeDirection = (qAbs(dx / 5) < 1) ? 0 : dx / 5;
 
-    rotate(dx);
+    setRotation(rotation() + dx);
     setPos(mapToParent(0, -(3 + sin(speed) * 3)));
 }
 //! [11]

@@ -47,7 +47,7 @@ static const HashTableValue JSSVGScriptElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGScriptElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGScriptElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGScriptElementTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSSVGScriptElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGScriptElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGScriptElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGScriptElementPrototypeTableValues, 0 };
 #else
@@ -77,8 +77,8 @@ JSObject* JSSVGScriptElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSSVGScriptElement::s_info = { "SVGScriptElement", &JSSVGElement::s_info, &JSSVGScriptElementTable, 0 };
 
-JSSVGScriptElement::JSSVGScriptElement(PassRefPtr<Structure> structure, PassRefPtr<SVGScriptElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGScriptElement::JSSVGScriptElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGScriptElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -94,25 +94,28 @@ bool JSSVGScriptElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsSVGScriptElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGScriptElement* castedThis = static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGScriptElement* imp = static_cast<SVGScriptElement*>(static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()))->impl());
+    SVGScriptElement* imp = static_cast<SVGScriptElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsSVGScriptElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGScriptElement* castedThis = static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGScriptElement* imp = static_cast<SVGScriptElement*>(static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()))->impl());
+    SVGScriptElement* imp = static_cast<SVGScriptElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGScriptElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGScriptElement* castedThis = static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGScriptElement* imp = static_cast<SVGScriptElement*>(static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()))->impl());
+    SVGScriptElement* imp = static_cast<SVGScriptElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 void JSSVGScriptElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)

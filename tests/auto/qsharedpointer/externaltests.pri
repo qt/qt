@@ -1,4 +1,5 @@
 SOURCES += $$PWD/externaltests.cpp
+HEADERS += $$PWD/externaltests.h
 cleanedQMAKESPEC = $$replace(QMAKESPEC, \\\\, /)
 !symbian:DEFINES += DEFAULT_MAKESPEC=\\\"$$cleanedQMAKESPEC\\\"
 

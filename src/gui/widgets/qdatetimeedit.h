@@ -197,7 +197,7 @@ protected:
 
     QDateTimeEdit(const QVariant &val, QVariant::Type parserType, QWidget *parent = 0);
 private:
-    Q_DECLARE_SCOPED_PRIVATE(QDateTimeEdit)
+    Q_DECLARE_PRIVATE(QDateTimeEdit)
     Q_DISABLE_COPY(QDateTimeEdit)
 
     Q_PRIVATE_SLOT(d_func(), void _q_resetButton())

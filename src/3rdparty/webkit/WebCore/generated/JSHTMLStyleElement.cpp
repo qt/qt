@@ -46,7 +46,7 @@ static const HashTableValue JSHTMLStyleElementTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLStyleElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLStyleElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLStyleElementTableValues, 0 };
 #else
@@ -60,19 +60,19 @@ static const HashTableValue JSHTMLStyleElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLStyleElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLStyleElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLStyleElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLStyleElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLStyleElementConstructor : public DOMObject {
+class JSHTMLStyleElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLStyleElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLStyleElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLStyleElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLStyleElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLStyleElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLStyleElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -98,7 +98,7 @@ static const HashTableValue JSHTMLStyleElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLStyleElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLStyleElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLStyleElementPrototypeTableValues, 0 };
 #else
@@ -114,8 +114,8 @@ JSObject* JSHTMLStyleElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLStyleElement::s_info = { "HTMLStyleElement", &JSHTMLElement::s_info, &JSHTMLStyleElementTable, 0 };
 
-JSHTMLStyleElement::JSHTMLStyleElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLStyleElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLStyleElement::JSHTMLStyleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLStyleElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -131,35 +131,40 @@ bool JSHTMLStyleElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 JSValue jsHTMLStyleElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
     return jsBoolean(imp->disabled());
 }
 
 JSValue jsHTMLStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
     return jsString(exec, imp->media());
 }
 
 JSValue jsHTMLStyleElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
     return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLStyleElementSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->sheet()));
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
 }
 
 JSValue jsHTMLStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLStyleElement* domObject = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
+    return JSHTMLStyleElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLStyleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -184,9 +189,9 @@ void setJSHTMLStyleElementType(ExecState* exec, JSObject* thisObject, JSValue va
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLStyleElement::getConstructor(ExecState* exec)
+JSValue JSHTMLStyleElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLStyleElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLStyleElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

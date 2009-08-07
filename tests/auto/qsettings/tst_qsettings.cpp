@@ -343,7 +343,7 @@ void tst_QSettings::init()
 #if defined(Q_OS_WINCE)
         removePath(settingsPath());
 #else
-	if (qWinVersion() & Qt::WV_NT_based)
+        if (QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
 	    system(QString("rmdir /Q /S %1").arg(settingsPath()).toLatin1());
 	else
 	    system(QString("deltree /Y %1").arg(settingsPath()).toLatin1());
@@ -717,10 +717,14 @@ void tst_QSettings::testErrorHandling_data()
 
 void tst_QSettings::testErrorHandling()
 {
-#if defined(Q_OS_WIN)
+#ifdef QT_BUILD_INTERNAL
+#ifdef Q_OS_WIN
     QSKIP("Windows doesn't support most file modes, including read-only directories, so this test is moot.", SkipAll);
 #elif defined(Q_OS_SYMBIAN)
     QSKIP("Symbian/Open C doesn't support execute or write only file modes, or directory permissions, so this test is mostly moot.", SkipAll);
+#elif defined(Q_OS_UNIX)
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't work, since file perms do not bother him", SkipAll);
 #else
     QFETCH(int, filePerms);
     QFETCH(int, dirPerms);
@@ -729,8 +733,7 @@ void tst_QSettings::testErrorHandling()
     QFETCH(int, statusAfterGet);
     QFETCH(int, statusAfterSetAndSync);
 
-
-	system(QString("chmod 700 %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
+    system(QString("chmod 700 %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
     system(QString("chmod -R u+rwx %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
     system(QString("rm -fr %1").arg(settingsPath("someDir")).toLatin1());
 
@@ -782,6 +785,7 @@ void tst_QSettings::testErrorHandling()
         QCOMPARE((int)settings.status(), statusAfterSetAndSync);
     }
 #endif // !Q_OS_WIN
+#endif
 }
 
 Q_DECLARE_METATYPE(QVariant)
@@ -827,6 +831,7 @@ void tst_QSettings::testIniParsing_data()
 
 void tst_QSettings::testIniParsing()
 {
+#ifdef QT_BUILD_INTERNAL
     qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QSettings::Status>("QSettings::Status");
 
@@ -860,6 +865,7 @@ void tst_QSettings::testIniParsing()
     }
 
     QCOMPARE(settings.status(), status);
+#endif
 }
 
 /*
@@ -1064,6 +1070,7 @@ void tst_QSettings::testVariantTypes_data()
 
 void tst_QSettings::testVariantTypes()
 {
+#ifdef QT_BUILD_INTERNAL
 #define testVal(key, val, tp, rtype) \
     { \
         QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP"); \
@@ -1147,6 +1154,7 @@ void tst_QSettings::testVariantTypes()
     }
 
 #undef testVal
+#endif
 }
 
 void tst_QSettings::remove()
@@ -1807,9 +1815,7 @@ void tst_QSettings::testNormalizedKey_data()
 
 void tst_QSettings::testNormalizedKey()
 {
-#ifdef QTEST_REDUCED_EXPORTS
-    QSKIP("We can't test QSettingsPrivate on Windows", SkipAll);
-#else
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, inKey);
     QFETCH(QString, outKey);
 
@@ -1987,6 +1993,7 @@ void tst_QSettings::fromFile()
 
 void tst_QSettings::setIniCodec()
 {
+#ifdef QT_BUILD_INTERNAL
     QByteArray expeContents4, expeContents5;
     QByteArray actualContents4, actualContents5;
 
@@ -2046,6 +2053,7 @@ void tst_QSettings::setIniCodec()
     QCOMPARE(settings4.allKeys().first(), settings5.allKeys().first());
     QCOMPARE(settings4.value(settings4.allKeys().first()).toString(),
              settings5.value(settings5.allKeys().first()).toString());
+#endif
 }
 
 static bool containsSubList(QStringList mom, QStringList son)
@@ -2322,6 +2330,7 @@ void tst_QSettings::testArrays()
     settings1.endArray();
 }
 
+#ifdef QT_BUILD_INTERNAL
 static QByteArray iniEscapedKey(const QString &str)
 {
     QByteArray result;
@@ -2366,6 +2375,7 @@ static QStringList iniUnescapedStringList(const QByteArray &ba)
 #endif
     return result;
 }
+#endif
 
 QString escapeWeirdChars(const QString &s)
 {
@@ -2389,6 +2399,7 @@ QString escapeWeirdChars(const QString &s)
 
 void tst_QSettings::testEscapes()
 {
+#ifdef QT_BUILD_INTERNAL
     QSettings settings(QSettings::UserScope, "software.org", "KillerAPP");
 
 #define testEscapedKey(plainKey, escKey) \
@@ -2511,6 +2522,7 @@ void tst_QSettings::testEscapes()
     testBadEscape("@Rect)", "@Rect)");
     testBadEscape("@Rect(1 2 3)", "@Rect(1 2 3)");
     testBadEscape("@@Rect(1 2 3)", "@Rect(1 2 3)");
+#endif
 }
 
 void tst_QSettings::testCompatFunctions()
@@ -3016,12 +3028,6 @@ void tst_QSettings::oldWriteEntry_QString_QString()
 	QSettings readSettings("software.org", "KillerAPP");
 	QFETCH( QString, s );
 	bool ok = FALSE;
-#ifdef Q_OS_WIN
-	if (qWinVersion() & Qt::WV_DOS_based) {
-	    QEXPECT_FAIL("data2", "Windows 9x does not support unicode characters in the registry", Abort);
-	    QEXPECT_FAIL("data5", "Windows 9x does not support unicode characters in the registry", Abort);
-	}
-#endif
 	QCOMPARE( readSettings.readEntry( "/Trolltech/QSettingsTesting/String", QString::null, &ok ), s );
 	QVERIFY( ok );
     }
@@ -3367,6 +3373,7 @@ void tst_QSettings::childGroups_data()
 
 void tst_QSettings::childGroups()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QSettings::Format, format);
 
     {
@@ -3420,6 +3427,7 @@ void tst_QSettings::childGroups()
 
         QCOMPARE(settings.childGroups(), QStringList() << "alpha" << "gamma" << "omicron" << "zeta");
     }
+#endif
 }
 
 void tst_QSettings::childKeys_data()
@@ -3429,6 +3437,7 @@ void tst_QSettings::childKeys_data()
 
 void tst_QSettings::childKeys()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QSettings::Format, format);
 
     {
@@ -3482,6 +3491,7 @@ void tst_QSettings::childKeys()
 
         QCOMPARE(settings.childKeys(), QStringList() << "alpha" << "beta" << "gamma");
     }
+#endif
 }
 
 void tst_QSettings::allKeys_data()
@@ -3491,6 +3501,7 @@ void tst_QSettings::allKeys_data()
 
 void tst_QSettings::allKeys()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QSettings::Format, format);
 
     QStringList allKeys;
@@ -3539,6 +3550,7 @@ void tst_QSettings::allKeys()
 
         QCOMPARE(settings.allKeys(), allKeys);
     }
+#endif
 }
 
 void tst_QSettings::registerFormat()

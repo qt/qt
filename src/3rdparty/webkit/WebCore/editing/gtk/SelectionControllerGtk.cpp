@@ -30,11 +30,11 @@ namespace WebCore {
 void SelectionController::notifyAccessibilityForSelectionChange()
 {
     if (AXObjectCache::accessibilityEnabled() && m_sel.start().isNotNull() && m_sel.end().isNotNull()) {
-        RenderObject* focusedNode = m_sel.start().node()->renderer();
+        RenderObject* focusedNode = m_sel.end().node()->renderer();
         AccessibilityObject* accessibilityObject = m_frame->document()->axObjectCache()->getOrCreate(focusedNode);
         AtkObject* wrapper = accessibilityObject->wrapper();
         if (ATK_IS_TEXT(wrapper)) {
-            g_signal_emit_by_name(wrapper, "text-caret-moved", m_sel.start().computeOffsetInContainerNode());
+            g_signal_emit_by_name(wrapper, "text-caret-moved", m_sel.end().computeOffsetInContainerNode());
 
             if (m_sel.isRange())
                 g_signal_emit_by_name(wrapper, "text-selection-changed");

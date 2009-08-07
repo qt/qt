@@ -68,7 +68,7 @@ class QPixmap;
 
 class Q_COMPAT_EXPORT Q3DragObject : public QObject, public QMimeSource {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(Q3DragObject)
+    Q_DECLARE_PRIVATE(Q3DragObject)
 public:
     Q3DragObject(QWidget * dragSource = 0, const char *name = 0);
     virtual ~Q3DragObject();
@@ -99,7 +99,7 @@ private:
 
 class Q_COMPAT_EXPORT Q3StoredDrag: public Q3DragObject {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(Q3StoredDrag)
+    Q_DECLARE_PRIVATE(Q3StoredDrag)
 public:
     Q3StoredDrag(const char *mimeType, QWidget *dragSource = 0, const char *name = 0);
     ~Q3StoredDrag();
@@ -118,7 +118,7 @@ private:
 
 class Q_COMPAT_EXPORT Q3TextDrag: public Q3DragObject {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(Q3TextDrag)
+    Q_DECLARE_PRIVATE(Q3TextDrag)
 public:
     Q3TextDrag(const QString &, QWidget *dragSource = 0, const char *name = 0);
     Q3TextDrag(QWidget * dragSource = 0, const char * name = 0);
@@ -143,7 +143,7 @@ private:
 
 class Q_COMPAT_EXPORT Q3ImageDrag: public Q3DragObject {
     Q_OBJECT
-    Q_DECLARE_SCOPED_PRIVATE(Q3ImageDrag)
+    Q_DECLARE_PRIVATE(Q3ImageDrag)
 public:
     Q3ImageDrag(QImage image, QWidget * dragSource = 0, const char * name = 0);
     Q3ImageDrag(QWidget * dragSource = 0, const char * name = 0);

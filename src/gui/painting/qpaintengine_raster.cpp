@@ -112,10 +112,6 @@ extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // 
 #define qt_swap_int(x, y) { int tmp = (x); (x) = (y); (y) = tmp; }
 #define qt_swap_qreal(x, y) { qreal tmp = (x); (x) = (y); (y) = tmp; }
 
-#ifdef Q_WS_WIN
-static bool qt_enable_16bit_colors = false;
-#endif
-
 // #define QT_DEBUG_DRAW
 #ifdef QT_DEBUG_DRAW
 void dumpClip(int width, int height, QClipData *clip);
@@ -1102,6 +1098,9 @@ void QRasterPaintEnginePrivate::systemStateChanged()
 #ifdef QT_DEBUG_DRAW
     qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
 #endif
+
+    exDeviceRect = deviceRect;
+
     Q_Q(QRasterPaintEngine);
     q->state()->strokeFlags |= QPaintEngine::DirtyClipRegion;
     q->state()->fillFlags |= QPaintEngine::DirtyClipRegion;
@@ -1670,34 +1669,6 @@ void QRasterPaintEngine::drawRects(const QRectF *rects, int rectCount)
     QPaintEngineEx::drawRects(rects, rectCount);
 }
 
-void QRasterPaintEnginePrivate::strokeProjective(const QPainterPath &path)
-{
-    Q_Q(QRasterPaintEngine);
-    QRasterPaintEngineState *s = q->state();
-
-    const QPen &pen = s->lastPen;
-    QPainterPathStroker pathStroker;
-    pathStroker.setWidth(pen.width() == 0 ? qreal(1) : pen.width());
-    pathStroker.setCapStyle(pen.capStyle());
-    pathStroker.setJoinStyle(pen.joinStyle());
-    pathStroker.setMiterLimit(pen.miterLimit());
-    pathStroker.setDashOffset(pen.dashOffset());
-
-    if (qpen_style(pen) == Qt::CustomDashLine)
-        pathStroker.setDashPattern(pen.dashPattern());
-    else
-        pathStroker.setDashPattern(qpen_style(pen));
-
-    outlineMapper->setMatrix(QTransform());
-    const QPainterPath stroke = pen.isCosmetic()
-        ? pathStroker.createStroke(s->matrix.map(path))
-        : s->matrix.map(pathStroker.createStroke(path));
-
-    rasterize(outlineMapper->convertPath(stroke), s->penData.blend, &s->penData, rasterBuffer.data());
-    outlinemapper_xform_dirty = true;
-}
-
-
 
 /*!
     \internal
@@ -1709,11 +1680,30 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint && s->lastPen.brush().isOpaque()) {
-        strokePolygonCosmetic((QPointF *) path.points(), path.elementCount(),
-                              path.hasImplicitClose()
-                              ? WindingMode
-                              : PolylineMode);
+    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+        && s->lastPen.brush().isOpaque()) {
+        int count = path.elementCount();
+        QPointF *points = (QPointF *) path.points();
+        const QPainterPath::ElementType *types = path.elements();
+        if (types) {
+            int first = 0;
+            int last;
+            while (first < count) {
+                while (first < count && types[first] != QPainterPath::MoveToElement) ++first;
+                last = first + 1;
+                while (last < count && types[last] == QPainterPath::LineToElement) ++last;
+                strokePolygonCosmetic(points + first, last - first,
+                                      path.hasImplicitClose() && last == count // only close last one..
+                                      ? WindingMode
+                                      : PolylineMode);
+                first = last;
+            }
+        } else {
+            strokePolygonCosmetic(points, count,
+                                  path.hasImplicitClose()
+                                  ? WindingMode
+                                  : PolylineMode);
+        }
 
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
         qreal width = s->lastPen.isCosmetic()
@@ -1743,6 +1733,8 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
+            if (path.shape() == QVectorPath::LinesHint)
+                dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -1946,67 +1938,6 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QColor &color)
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
     fillRect(r, &d->solid_color_filler);
-}
-
-/*!
-    \reimp
-*/
-void QRasterPaintEngine::drawPath(const QPainterPath &path)
-{
-#ifdef QT_DEBUG_DRAW
-    QRectF bounds = path.boundingRect();
-    qDebug(" - QRasterPaintEngine::drawPath(), [%.2f, %.2f, %.2f, %.2f]",
-           bounds.x(), bounds.y(), bounds.width(), bounds.height());
-#endif
-
-    if (path.isEmpty())
-        return;
-
-    // Filling..,
-    Q_D(QRasterPaintEngine);
-    QRasterPaintEngineState *s = state();
-
-    ensureBrush();
-    if (s->brushData.blend) {
-        ensureOutlineMapper();
-        fillPath(path, &s->brushData);
-    }
-
-    // Stroking...
-    ensurePen();
-    if (!s->penData.blend)
-        return;
-    {
-        if (s->matrix.type() >= QTransform::TxProject) {
-            d->strokeProjective(path);
-        } else {
-            Q_ASSERT(s->stroker);
-            d->outlineMapper->beginOutline(Qt::WindingFill);
-            qreal txscale = 1;
-            if (s->pen.isCosmetic() || (qt_scaleForTransform(s->matrix, &txscale) && txscale != 1)) {
-                const qreal strokeWidth = d->basicStroker.strokeWidth();
-                const QRectF clipRect = d->dashStroker ? d->dashStroker->clipRect() : QRectF();
-                if (d->dashStroker)
-                    d->dashStroker->setClipRect(d->deviceRect);
-                d->basicStroker.setStrokeWidth(strokeWidth * txscale);
-                d->outlineMapper->setMatrix(QTransform());
-                s->stroker->strokePath(path, d->outlineMapper.data(), s->matrix);
-                d->outlinemapper_xform_dirty = true;
-                d->basicStroker.setStrokeWidth(strokeWidth);
-                if (d->dashStroker.data())
-                    d->dashStroker->setClipRect(clipRect);
-            } else {
-                ensureOutlineMapper();
-                s->stroker->strokePath(path, d->outlineMapper.data(), QTransform());
-            }
-            d->outlineMapper->endOutline();
-
-            ProcessSpans blend = d->getPenFunc(d->outlineMapper->controlPointRect,
-                    &s->penData);
-            d->rasterize(d->outlineMapper->outline(), blend, &s->penData, d->rasterBuffer.data());
-        }
-    }
-
 }
 
 static inline bool isAbove(const QPointF *a, const QPointF *b)
@@ -3522,8 +3453,8 @@ void QRasterPaintEngine::drawLines(const QLine *lines, int lineCount)
         int m22 = int(s->matrix.m22());
         int dx = qFloor(s->matrix.dx() + aliasedCoordinateDelta);
         int dy = qFloor(s->matrix.dy() + aliasedCoordinateDelta);
-        int dashOffset = int(s->lastPen.dashOffset());
         for (int i=0; i<lineCount; ++i) {
+            int dashOffset = int(s->lastPen.dashOffset());
             if (s->flags.int_xform) {
                 const QLine &l = lines[i];
                 int x1 = l.x1() * m11 + dx;
@@ -3622,8 +3553,8 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
                             ? LineDrawNormal
                             : LineDrawIncludeLastPixel;
 
-        int dashOffset = int(s->lastPen.dashOffset());
         for (int i=0; i<lineCount; ++i) {
+            int dashOffset = int(s->lastPen.dashOffset());
             QLineF line = (lines[i] * s->matrix).translated(aliasedCoordinateDelta, aliasedCoordinateDelta);
             const QRectF brect(QPointF(line.x1(), line.y1()),
                                QPointF(line.x2(), line.y2()));
@@ -4681,104 +4612,6 @@ static int qt_intersect_spans(QT_FT_Span *spans, int numSpans,
     return n;
 }
 
-/*
-    \internal
-    Clip spans to \a{clip}-region.
-    Returns number of unclipped spans
-*/
-static int qt_intersect_spans(QT_FT_Span *spans, int numSpans,
-                              int *currSpan,
-                              QT_FT_Span *outSpans, int maxOut,
-                              const QRegion &clip)
-{
-    const QVector<QRect> rects = clip.rects();
-    const int numRects = rects.size();
-
-    int r = 0;
-    short miny, minx, maxx, maxy;
-    {
-        const QRect &rect = rects[0];
-        miny = rect.top();
-        minx = rect.left();
-        maxx = rect.right();
-        maxy = rect.bottom();
-    }
-
-    // TODO: better mapping of currY and startRect
-
-    int n = 0;
-    int i = *currSpan;
-    int currY = spans[i].y;
-    while (i < numSpans) {
-
-        if (spans[i].y != currY && r != 0) {
-            currY = spans[i].y;
-            r = 0;
-            const QRect &rect = rects[r];
-            miny = rect.top();
-            minx = rect.left();
-            maxx = rect.right();
-            maxy = rect.bottom();
-        }
-
-        if (spans[i].y < miny) {
-            ++i;
-            continue;
-        }
-
-        if (spans[i].y > maxy || spans[i].x > maxx) {
-            if (++r >= numRects) {
-                ++i;
-                continue;
-            }
-
-            const QRect &rect = rects[r];
-            miny = rect.top();
-            minx = rect.left();
-            maxx = rect.right();
-            maxy = rect.bottom();
-            continue;
-        }
-
-        if (spans[i].x + spans[i].len <= minx) {
-            ++i;
-            continue;
-        }
-
-        outSpans[n].y = spans[i].y;
-        outSpans[n].coverage = spans[i].coverage;
-
-        if (spans[i].x < minx) {
-            const ushort cutaway = minx - spans[i].x;
-            outSpans[n].len = qMin(spans[i].len - cutaway, maxx - minx + 1);
-            outSpans[n].x = minx;
-            if (outSpans[n].len == spans[i].len - cutaway) {
-                ++i;
-            } else {
-                // span wider than current rect
-                spans[i].len -= outSpans[n].len + cutaway;
-                spans[i].x = maxx + 1;
-            }
-        } else { // span starts inside current rect
-            outSpans[n].x = spans[i].x;
-            outSpans[n].len = qMin(spans[i].len,
-                                   ushort(maxx - spans[i].x + 1));
-            if (outSpans[n].len == spans[i].len) {
-                ++i;
-            } else {
-                // span wider than current rect
-                spans[i].len -= outSpans[n].len;
-                spans[i].x = maxx + 1;
-            }
-        }
-
-        if (++n >= maxOut)
-            break;
-    }
-
-    *currSpan = i;
-    return n;
-}
 
 static void qt_span_fill_clipRect(int count, const QSpan *spans,
                                   void *userData)

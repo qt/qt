@@ -40,7 +40,7 @@ static const HashTableValue JSWebKitPointTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitPointTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitPointTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSWebKitPointTableValues, 0 };
 #else
@@ -54,7 +54,7 @@ static const HashTableValue JSWebKitPointPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitPointPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitPointPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitPointPrototypeTableValues, 0 };
 #else
@@ -70,8 +70,8 @@ JSObject* JSWebKitPointPrototype::self(ExecState* exec, JSGlobalObject* globalOb
 
 const ClassInfo JSWebKitPoint::s_info = { "WebKitPoint", 0, &JSWebKitPointTable, 0 };
 
-JSWebKitPoint::JSWebKitPoint(PassRefPtr<Structure> structure, PassRefPtr<WebKitPoint> impl)
-    : DOMObject(structure)
+JSWebKitPoint::JSWebKitPoint(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitPoint> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -93,15 +93,17 @@ bool JSWebKitPoint::getOwnPropertySlot(ExecState* exec, const Identifier& proper
 
 JSValue jsWebKitPointX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WebKitPoint* imp = static_cast<WebKitPoint*>(static_cast<JSWebKitPoint*>(asObject(slot.slotBase()))->impl());
+    WebKitPoint* imp = static_cast<WebKitPoint*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsWebKitPointY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WebKitPoint* imp = static_cast<WebKitPoint*>(static_cast<JSWebKitPoint*>(asObject(slot.slotBase()))->impl());
+    WebKitPoint* imp = static_cast<WebKitPoint*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 
@@ -122,9 +124,9 @@ void setJSWebKitPointY(ExecState* exec, JSObject* thisObject, JSValue value)
     imp->setY(value.toFloat(exec));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, WebKitPoint* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WebKitPoint* object)
 {
-    return getDOMObjectWrapper<JSWebKitPoint>(exec, object);
+    return getDOMObjectWrapper<JSWebKitPoint>(exec, globalObject, object);
 }
 WebKitPoint* toWebKitPoint(JSC::JSValue value)
 {

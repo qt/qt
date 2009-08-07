@@ -145,8 +145,17 @@ void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
 
 void tst_QSqlRelationalTableModel::initTestCase()
 {
-    foreach (const QString &dbname, dbs.dbNames)
-        recreateTestTables(QSqlDatabase::database(dbname));
+    foreach (const QString &dbname, dbs.dbNames) {
+        QSqlDatabase db=QSqlDatabase::database(dbname);
+        if (db.driverName().startsWith("QIBASE"))
+            db.exec("SET DIALECT 3");
+        else if (tst_Databases::isSqlServer(db)) {
+            QSqlQuery q(db);
+            QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+            QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
+        }
+        recreateTestTables(db);
+    }
 }
 
 void tst_QSqlRelationalTableModel::cleanupTestCase()
@@ -167,10 +176,10 @@ void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
             << qTableName( "reltest3" )
             << qTableName( "reltest4" )
             << qTableName( "reltest5" )
-            << qTableName( "rel test6", db.driver() )
-            << qTableName( "rel test7", db.driver() )
-            << qTableName("CASETEST1", db.driver() )
-            << qTableName("casetest1", db.driver() );
+            << qTableName( "rel test6" )
+            << qTableName( "rel test7" )
+            << qTableName("CASETEST1" )
+            << qTableName("casetest1" );
     tst_Databases::safeDropTables( db, tableNames );
 }
 
@@ -490,6 +499,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
 
     model.setTable(qTableName("reltest1"));
     model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setSort(0, Qt::AscendingOrder);
 
     if (!db.driverName().startsWith("QTDS"))
         model.setRelation(3, QSqlRelation(qTableName("reltest2"), "tid", "title"));
@@ -914,19 +924,21 @@ void tst_QSqlRelationalTableModel::casing()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (db.driverName().startsWith("QSQLITE"))
-        QSKIP("The casing test for SQLITE is irrelevant since SQLITE is case insensitive", SkipAll);
+    if (db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QIBASE") || tst_Databases::isSqlServer(db))
+        QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities", SkipAll);
 
     QSqlQuery q(db);
     QVERIFY_SQL( q, exec("create table " + qTableName("CASETEST1", db.driver()).toUpper()  +
                 " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
+
+    if( !q.exec("create table " + qTableName("casetest1", db.driver())  +
+                " (ident int not null primary key, name varchar(20), title_key int)"))
+        QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities", SkipAll);
+
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(1, 'harry', 1, 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(2, 'trond', 2, 1)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(3, 'vohi', 1, 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(4, 'boris', 2, 2)"));
-
-    QVERIFY_SQL( q, exec("create table " + qTableName("casetest1", db.driver())  +
-                " (ident int not null primary key, name varchar(20), title_key int)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db.driver()) + " values(1, 'jerry', 1)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db.driver()) + " values(2, 'george', 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db.driver()) + " values(4, 'kramer', 2)"));

@@ -58,6 +58,7 @@ class Atom
     enum Type { 
         AbstractLeft, 
         AbstractRight, 
+        AnnotatedList,
         AutoLink,
         BaseName, 
         BriefLeft,

@@ -69,7 +69,7 @@ class QPainterState;
 
 class QWin32PrintEngine : public QAlphaPaintEngine, public QPrintEngine
 {
-    Q_DECLARE_SCOPED_PRIVATE(QWin32PrintEngine)
+    Q_DECLARE_PRIVATE(QWin32PrintEngine)
 public:
     QWin32PrintEngine(QPrinter::PrinterMode mode);
 
@@ -169,18 +169,8 @@ public:
     void readDevmode(HGLOBAL globalDevmode);
     void readDevnames(HGLOBAL globalDevnames);
 
-    inline DEVMODEW *devModeW() const { return (DEVMODEW*) devMode; }
-    inline DEVMODEA *devModeA() const { return (DEVMODEA*) devMode; }
-
-    inline PRINTER_INFO_2W *pInfoW() { return (PRINTER_INFO_2W*) pInfo; };
-    inline PRINTER_INFO_2A *pInfoA() { return (PRINTER_INFO_2A*) pInfo; };
-
     inline bool resetDC() {
-        QT_WA( {
-            hdc = ResetDCW(hdc, devModeW());
-        }, {
-            hdc = ResetDCA(hdc, devModeA());
-        } );
+        hdc = ResetDC(hdc, devMode);
         return hdc != 0;
     }
 
@@ -202,8 +192,8 @@ public:
     HANDLE hPrinter;
 
     HGLOBAL globalDevMode;
-    void *devMode;
-    void *pInfo;
+    DEVMODE *devMode;
+    PRINTER_INFO_2 *pInfo;
     HGLOBAL hMem;
 
     HDC hdc;
