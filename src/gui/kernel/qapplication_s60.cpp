@@ -352,8 +352,13 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
-    //### refactor me, getting too complex
     m_longTapDetector->PointerEventL(pEvent);
+    QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));  
+}
+
+void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
+{
+    //### refactor me, getting too complex
     QMouseEvent::Type type;
     Qt::MouseButton button;
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
