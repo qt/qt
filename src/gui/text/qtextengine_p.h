@@ -332,7 +332,7 @@ public:
     RenderFlags flags;
     bool justified;
     QTextCharFormat::UnderlineStyle underlineStyle;
-    const QTextCharFormat charFormat;
+    QTextCharFormat charFormat;
     int num_chars;
     const QChar *chars;
     const unsigned short *logClusters;
