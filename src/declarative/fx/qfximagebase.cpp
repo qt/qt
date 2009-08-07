@@ -41,17 +41,263 @@
 
 #include "qfximagebase.h"
 #include "qfximagebase_p.h"
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QFile>
+#include <QtDeclarative/qmlengine.h>
 
 QT_BEGIN_NAMESPACE
 
 QFxImageBase::QFxImageBase(QFxItem *parent)
   : QFxItem(*(new QFxImageBasePrivate), parent)
 {
+    setFlag(QGraphicsItem::ItemHasNoContents, true);
 }
 
 QFxImageBase::QFxImageBase(QFxImageBasePrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
 {
+    setFlag(QGraphicsItem::ItemHasNoContents, true);
+}
+
+QFxImageBase::~QFxImageBase()
+{
+    Q_D(QFxImageBase);
+    if (d->sciReply)
+        d->sciReply->deleteLater();
+    if (!d->url.isEmpty())
+        QFxPixmap::cancelGet(d->url, this);
+    if (!d->sciurl.isEmpty())
+        QFxPixmap::cancelGet(d->sciurl, this);
+}
+
+/*!
+    \qmlproperty int Image::scaleGrid.left
+    \qmlproperty int Image::scaleGrid.right
+    \qmlproperty int Image::scaleGrid.top
+    \qmlproperty int Image::scaleGrid.bottom
+
+    \target ImagexmlpropertiesscaleGrid
+
+    A scale grid uses 4 grid lines (2 horizontal and 2 vertical) to break an image into 9 sections, as shown below:
+
+    \image declarative-scalegrid.png
+
+    When the image is scaled:
+    \list
+    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
+    \i the middle (section 5) is scaled both horizontally and vertically
+    \i sections 2 and 8 are scaled horizontally
+    \i sections 4 and 6 are scaled vertically
+    \endlist
+
+    Each scale grid property (left, right, top, and bottom) specifies an offset from the respective side. For example, \c scaleGrid.bottom="10" sets the bottom scale grid line 10 pixels up from the bottom of the image.
+
+    A scale grid can also be specified using a
+    \l {Image::source}{.sci file}.
+*/
+QFxScaleGrid *QFxImageBase::scaleGrid()
+{
+    Q_D(QFxImageBase);
+    return d->getScaleGrid();
+}
+
+void QFxImageBase::componentComplete()
+{
+    QFxItem::componentComplete();
+}
+
+
+QFxImageBase::Status QFxImageBase::status() const
+{
+    Q_D(const QFxImageBase);
+    return d->status;
+}
+
+
+qreal QFxImageBase::progress() const
+{
+    Q_D(const QFxImageBase);
+    return d->progress;
+}
+
+
+/*!
+    \property QFxImage::source
+    \brief the url of the image to be displayed in this item.
+
+    The content specified can be of any image type loadable by QImage. Alternatively,
+    you can specify an sci format file, which specifies both an image and it's scale grid.
+*/
+QUrl QFxImageBase::source() const
+{
+    Q_D(const QFxImageBase);
+    return d->url;
+}
+
+void QFxImageBase::setSource(const QUrl &url)
+{
+    Q_D(QFxImageBase);
+    //equality is fairly expensive, so we bypass for simple, common case
+    if ((d->url.isEmpty() == url.isEmpty()) && url == d->url)
+        return;
+
+    if (d->sciReply) {
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
+    }
+
+    if (!d->url.isEmpty())
+        QFxPixmap::cancelGet(d->url, this);
+    if (!d->sciurl.isEmpty())
+        QFxPixmap::cancelGet(d->sciurl, this);
+
+    d->url = url;
+    d->sciurl = QUrl();
+    if (d->progress != 0.0) {
+        d->progress = 0.0;
+        emit progressChanged(d->progress);
+    }
+
+    if (url.isEmpty()) {
+        d->pix = QPixmap();
+        d->status = Null;
+        d->progress = 1.0;
+        setImplicitWidth(0);
+        setImplicitHeight(0);
+        emit statusChanged(d->status);
+        emit sourceChanged(d->url);
+        emit progressChanged(1.0);
+        update();
+    } else {
+        d->status = Loading;
+        if (d->url.path().endsWith(QLatin1String(".sci"))) {
+#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
+            if (d->url.scheme() == QLatin1String("file")) {
+                QFile file(d->url.toLocalFile());
+                file.open(QIODevice::ReadOnly);
+                setGridScaledImage(QFxGridScaledImage(&file));
+            } else
+#endif
+            {
+                QNetworkRequest req(d->url);
+                req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+                d->sciReply = qmlEngine(this)->networkAccessManager()->get(req);
+                QObject::connect(d->sciReply, SIGNAL(finished()),
+                                 this, SLOT(sciRequestFinished()));
+            }
+        } else {
+            d->reply = QFxPixmap::get(qmlEngine(this), d->url, &d->pix);
+            if (d->reply) {
+                connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+                connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                        this, SLOT(requestProgress(qint64,qint64)));
+            } else {
+                //### should be unified with requestFinished
+                setImplicitWidth(d->pix.width());
+                setImplicitHeight(d->pix.height());
+
+                if (d->status == Loading)
+                    d->status = Ready;
+                d->progress = 1.0;
+                emit statusChanged(d->status);
+                emit sourceChanged(d->url);
+                emit progressChanged(1.0);
+                update();
+            }
+        }
+    }
+
+    emit statusChanged(d->status);
+}
+
+void QFxImageBase::requestFinished()
+{
+    Q_D(QFxImageBase);
+    if (d->url.path().endsWith(QLatin1String(".sci"))) {
+        QFxPixmap::find(d->sciurl, &d->pix);
+    } else {
+        if (d->reply) {
+            //###disconnect really needed?
+            disconnect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                       this, SLOT(requestProgress(qint64,qint64)));
+            if (d->reply->error() != QNetworkReply::NoError)
+                d->status = Error;
+        }
+        QFxPixmap::find(d->url, &d->pix);
+    }
+    setImplicitWidth(d->pix.width());
+    setImplicitHeight(d->pix.height());
+
+    if (d->status == Loading)
+        d->status = Ready;
+    d->progress = 1.0;
+    emit statusChanged(d->status);
+    emit sourceChanged(d->url);
+    emit progressChanged(1.0);
+    update();
+}
+
+void QFxImageBase::sciRequestFinished()
+{
+    Q_D(QFxImageBase);
+    if (d->sciReply->error() != QNetworkReply::NoError) {
+        d->status = Error;
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
+        emit statusChanged(d->status);
+    } else {
+        QFxGridScaledImage sci(d->sciReply);
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
+        setGridScaledImage(sci);
+    }
+}
+
+void QFxImageBase::requestProgress(qint64 received, qint64 total)
+{
+    Q_D(QFxImageBase);
+    if (d->status == Loading && total > 0) {
+        d->progress = qreal(received)/total;
+        emit progressChanged(d->progress);
+    }
+}
+
+void QFxImageBase::setGridScaledImage(const QFxGridScaledImage& sci)
+{
+    Q_D(QFxImageBase);
+    if (!sci.isValid()) {
+        d->status = Error;
+        emit statusChanged(d->status);
+    } else {
+        QFxScaleGrid *sg = scaleGrid();
+        sg->setTop(sci.gridTop());
+        sg->setBottom(sci.gridBottom());
+        sg->setLeft(sci.gridLeft());
+        sg->setRight(sci.gridRight());
+        sg->setHorizontalTileRule(sci.horizontalTileRule());
+        sg->setVerticalTileRule(sci.verticalTileRule());
+
+        d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
+        d->reply = QFxPixmap::get(qmlEngine(this), d->sciurl, &d->pix);
+        if (d->reply) {
+            connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+            connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                    this, SLOT(requestProgress(qint64,qint64)));
+        } else {
+            //### should be unified with requestFinished
+            setImplicitWidth(d->pix.width());
+            setImplicitHeight(d->pix.height());
+
+            if (d->status == Loading)
+                d->status = Ready;
+            d->progress = 1.0;
+            emit statusChanged(d->status);
+            emit sourceChanged(d->url);
+            emit progressChanged(1.0);
+            update();
+        }
+    }
 }
 
 QT_END_NAMESPACE

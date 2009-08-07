@@ -41,11 +41,6 @@
 
 #include "qfximage.h"
 #include "qfximage_p.h"
-//#include <private/qfxperf_p.h>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QFile>
-#include <QtDeclarative/qmlengine.h>
 
 #include <QKeyEvent>
 #include <QPainter>
@@ -157,13 +152,6 @@ QFxImage::QFxImage(QFxImagePrivate &dd, QFxItem *parent)
 
 QFxImage::~QFxImage()
 {
-    Q_D(QFxImage);
-    if (d->sciReply)
-        d->sciReply->deleteLater();
-    if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this);
-    if (!d->sciurl.isEmpty())
-        QFxPixmap::cancelGet(d->sciurl, this);
 }
 
 /*!
@@ -191,37 +179,6 @@ void QFxImage::setPixmap(const QPixmap &pix)
     setImplicitHeight(d->pix.height());
 
     update();
-}
-
-/*!
-    \qmlproperty int Image::scaleGrid.left
-    \qmlproperty int Image::scaleGrid.right
-    \qmlproperty int Image::scaleGrid.top
-    \qmlproperty int Image::scaleGrid.bottom
-
-    \target ImagexmlpropertiesscaleGrid
-
-    A scale grid uses 4 grid lines (2 horizontal and 2 vertical) to break an image into 9 sections, as shown below:
-
-    \image declarative-scalegrid.png
-
-    When the image is scaled:
-    \list
-    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i the middle (section 5) is scaled both horizontally and vertically
-    \i sections 2 and 8 are scaled horizontally
-    \i sections 4 and 6 are scaled vertically
-    \endlist
-
-    Each scale grid property (left, right, top, and bottom) specifies an offset from the respective side. For example, \c scaleGrid.bottom="10" sets the bottom scale grid line 10 pixels up from the bottom of the image.
-
-    A scale grid can also be specified using a
-    \l {Image::source}{.sci file}.
-*/
-QFxScaleGrid *QFxImage::scaleGrid()
-{
-    Q_D(QFxImage);
-    return d->getScaleGrid();
 }
 
 /*!
@@ -261,14 +218,50 @@ void QFxImage::setFillMode(FillMode mode)
     emit fillModeChanged();
 }
 
-void QFxImage::componentComplete()
-{
-    QFxItem::componentComplete();
-}
+/*!
+    \qmlproperty enum Image::status
+
+    This property holds the status of image loading.  It can be one of:
+    \list
+    \o Null - no image has been set
+    \o Ready - the image has been loaded
+    \o Loading - the image is currently being loaded
+    \o Error - an error occurred while loading the image
+    \endlist
+
+    \sa progress
+*/
 
 /*!
-    \property QFxImage::scaleGrid
-    \brief the 3x3 grid used to scale an image, excluding the corners.
+    \qmlproperty real Image::progress
+
+    This property holds the progress of image loading, from 0.0 (nothing loaded)
+    to 1.0 (finished).
+
+    \sa status
+*/
+
+/*!
+    \qmlproperty url Image::source
+
+    Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
+
+    It can also handle .sci files, which are a Qml-specific format. A .sci file uses a simple text-based format that specifies
+    \list
+    \i the grid lines describing a \l {Image::scaleGrid.left}{scale grid}.
+    \i an image file.
+    \endlist
+
+    The following .sci file sets grid line offsets of 10 on each side for the image \c picture.png:
+    \code
+    gridLeft: 10
+    gridTop: 10
+    gridBottom: 10
+    gridRight: 10
+    imageFile: picture.png
+    \endcode
+
+    The URL may be absolute, or relative to the URL of the component.
 */
 
 void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
@@ -359,245 +352,5 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
 }
-
-/*!
-    \qmlproperty enum Image::status
-
-    This property holds the status of image loading.  It can be one of:
-    \list
-    \o Null - no image has been set
-    \o Ready - the image has been loaded
-    \o Loading - the image is currently being loaded
-    \o Error - an error occurred while loading the image
-    \endlist
-
-    \sa progress
-*/
-
-QFxImage::Status QFxImage::status() const
-{
-    Q_D(const QFxImage);
-    return d->status;
-}
-
-/*!
-    \qmlproperty real Image::progress
-
-    This property holds the progress of image loading, from 0.0 (nothing loaded)
-    to 1.0 (finished).
-
-    \sa status
-*/
-
-qreal QFxImage::progress() const
-{
-    Q_D(const QFxImage);
-    return d->progress;
-}
-
-/*!
-    \qmlproperty url Image::source
-
-    Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
-
-    It can also handle .sci files, which are a Qml-specific format. A .sci file uses a simple text-based format that specifies
-    \list
-    \i the grid lines describing a \l {Image::scaleGrid.left}{scale grid}.
-    \i an image file.
-    \endlist
-
-    The following .sci file sets grid line offsets of 10 on each side for the image \c picture.png:
-    \code
-    gridLeft: 10
-    gridTop: 10
-    gridBottom: 10
-    gridRight: 10
-    imageFile: picture.png
-    \endcode
-
-    The URL may be absolute, or relative to the URL of the component.
-*/
-
-/*!
-    \property QFxImage::source
-    \brief the url of the image to be displayed in this item.
-
-    The content specified can be of any image type loadable by QImage. Alternatively,
-    you can specify an sci format file, which specifies both an image and it's scale grid.
-*/
-QUrl QFxImage::source() const
-{
-    Q_D(const QFxImage);
-    return d->url;
-}
-
-void QFxImage::setSource(const QUrl &url)
-{
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::PixmapLoad> perf;
-#endif
-    Q_D(QFxImage);
-    //equality is fairly expensive, so we bypass for simple, common case
-    if ((d->url.isEmpty() == url.isEmpty()) && url == d->url)
-        return;
-
-    if (d->sciReply) {
-        d->sciReply->deleteLater();
-        d->sciReply = 0;
-    }
-
-    if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this);
-    if (!d->sciurl.isEmpty())
-        QFxPixmap::cancelGet(d->sciurl, this);
-
-    d->url = url;
-    d->sciurl = QUrl();
-    if (d->progress != 0.0) {
-        d->progress = 0.0;
-        emit progressChanged(d->progress);
-    }
-
-    if (url.isEmpty()) {
-        d->pix = QPixmap();
-        d->status = Null;
-        d->progress = 1.0;
-        setImplicitWidth(0);
-        setImplicitHeight(0);
-        emit statusChanged(d->status);
-        emit sourceChanged(d->url);
-        emit progressChanged(1.0);
-        update();
-    } else {
-        d->status = Loading;
-        if (d->url.path().endsWith(QLatin1String(".sci"))) {
-#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-            if (d->url.scheme() == QLatin1String("file")) {
-                QFile file(d->url.toLocalFile());
-                file.open(QIODevice::ReadOnly);
-                setGridScaledImage(QFxGridScaledImage(&file));
-            } else
-#endif
-            {
-                QNetworkRequest req(d->url);
-                req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-                d->sciReply = qmlEngine(this)->networkAccessManager()->get(req);
-                QObject::connect(d->sciReply, SIGNAL(finished()),
-                                 this, SLOT(sciRequestFinished()));
-            }
-        } else {
-            d->reply = QFxPixmap::get(qmlEngine(this), d->url, &d->pix);
-            if (d->reply) {
-                connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-                connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
-                        this, SLOT(requestProgress(qint64,qint64)));
-            } else {
-                //### should be unified with requestFinished
-                setImplicitWidth(d->pix.width());
-                setImplicitHeight(d->pix.height());
-
-                if (d->status == Loading)
-                    d->status = Ready;
-                d->progress = 1.0;
-                emit statusChanged(d->status);
-                emit sourceChanged(d->url);
-                emit progressChanged(1.0);
-                update();
-            }
-        }
-    }
-
-    emit statusChanged(d->status);
-}
-
-void QFxImage::requestFinished()
-{
-    Q_D(QFxImage);
-    if (d->url.path().endsWith(QLatin1String(".sci"))) {
-        QFxPixmap::find(d->sciurl, &d->pix);
-    } else {
-        if (d->reply) {
-            //###disconnect really needed?
-            disconnect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
-                       this, SLOT(requestProgress(qint64,qint64)));
-            if (d->reply->error() != QNetworkReply::NoError)
-                d->status = Error;
-        }
-        QFxPixmap::find(d->url, &d->pix);
-    }
-    setImplicitWidth(d->pix.width());
-    setImplicitHeight(d->pix.height());
-
-    if (d->status == Loading)
-        d->status = Ready;
-    d->progress = 1.0;
-    emit statusChanged(d->status);
-    emit sourceChanged(d->url);
-    emit progressChanged(1.0);
-    update();
-}
-
-void QFxImage::sciRequestFinished()
-{
-    Q_D(QFxImage);
-    if (d->sciReply->error() != QNetworkReply::NoError) {
-        d->status = Error;
-        d->sciReply->deleteLater();
-        d->sciReply = 0;
-        emit statusChanged(d->status);
-    } else {
-        QFxGridScaledImage sci(d->sciReply);
-        d->sciReply->deleteLater();
-        d->sciReply = 0;
-        setGridScaledImage(sci);
-    }
-}
-
-void QFxImage::requestProgress(qint64 received, qint64 total)
-{
-    Q_D(QFxImage);
-    if (d->status == Loading && total > 0) {
-        d->progress = qreal(received)/total;
-        emit progressChanged(d->progress);
-    }
-}
-
-void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
-{
-    Q_D(QFxImage);
-    if (!sci.isValid()) {
-        d->status = Error;
-        emit statusChanged(d->status);
-    } else {
-        QFxScaleGrid *sg = scaleGrid();
-        sg->setTop(sci.gridTop());
-        sg->setBottom(sci.gridBottom());
-        sg->setLeft(sci.gridLeft());
-        sg->setRight(sci.gridRight());
-        sg->setHorizontalTileRule(sci.horizontalTileRule());
-        sg->setVerticalTileRule(sci.verticalTileRule());
-
-        d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        d->reply = QFxPixmap::get(qmlEngine(this), d->sciurl, &d->pix);
-        if (d->reply) {
-            connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-            connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
-                    this, SLOT(requestProgress(qint64,qint64)));
-        } else {
-            //### should be unified with requestFinished
-            setImplicitWidth(d->pix.width());
-            setImplicitHeight(d->pix.height());
-
-            if (d->status == Loading)
-                d->status = Ready;
-            d->progress = 1.0;
-            emit statusChanged(d->status);
-            emit sourceChanged(d->url);
-            emit progressChanged(1.0);
-            update();
-        }
-    }
-}
-
 
 QT_END_NAMESPACE
