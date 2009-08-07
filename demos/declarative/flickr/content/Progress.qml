@@ -6,7 +6,7 @@ Item {
     property var progress: 0
 
     Rect {
-        id: Container; anchors.fill: parent
+        id: Container; anchors.fill: parent; smooth: true
         border.color: "white"; border.width: 0; radius: height/2 - 2
         gradient: Gradient {
             GradientStop { position: 0; color: "#66343434" }
@@ -18,7 +18,7 @@ Item {
         id: Fill
         y: 2; height: parent.height-4;
         x: 2; width: Math.max(parent.width * progress - 4, 0);
-        opacity: width < 1 ? 0 : 1
+        opacity: width < 1 ? 0 : 1; smooth: true
         gradient: Gradient {
             GradientStop { position: 0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "steelblue" }
