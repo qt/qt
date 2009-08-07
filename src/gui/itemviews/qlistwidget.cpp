@@ -561,7 +561,7 @@ Qt::DropActions QListModel::supportedDropActions() const
     Constructs an empty list widget item of the specified \a type with the
     given \a parent. If \a parent is not specified, the item will need to be
     inserted into a list widget with QListWidget::insertItem().
-    
+
     This constructor inserts the item into the model of the parent that is
     passed to the constructor. If the model is sorted then the behavior of the
     insert is undetermined since the model will call the \c '<' operator method
@@ -588,7 +588,7 @@ QListWidgetItem::QListWidgetItem(QListWidget *view, int type)
     Constructs an empty list widget item of the specified \a type with the
     given \a text and \a parent. If the parent is not specified, the item will
     need to be inserted into a list widget with QListWidget::insertItem().
-    
+
     This constructor inserts the item into the model of the parent that is
     passed to the constructor. If the model is sorted then the behavior of the
     insert is undetermined since the model will call the \c '<' operator method
@@ -618,14 +618,14 @@ QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *view, int typ
     given \a icon, \a text and \a parent. If the parent is not specified, the
     item will need to be inserted into a list widget with
     QListWidget::insertItem().
-    
+
     This constructor inserts the item into the model of the parent that is
     passed to the constructor. If the model is sorted then the behavior of the
     insert is undetermined since the model will call the \c '<' operator method
     on the item which, at this point, is not yet constructed. To avoid the
     undetermined behavior, we recommend not to specify the parent and use
     QListWidget::insertItem() instead.
-    
+
     \sa type()
 */
 QListWidgetItem::QListWidgetItem(const QIcon &icon,const QString &text,
@@ -1267,7 +1267,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \fn void QListWidget::currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 
     This signal is emitted whenever the current item changes.
- 
+
     \a previous is the item that previously had the focus; \a current is the
     new current item.
 */
@@ -1276,7 +1276,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \fn void QListWidget::currentTextChanged(const QString &currentText)
 
     This signal is emitted whenever the current item changes.
-    
+
     \a currentText is the text data in the current item. If there is no current
     item, the \a currentText is invalid.
 */
@@ -1285,7 +1285,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \fn void QListWidget::currentRowChanged(int currentRow)
 
     This signal is emitted whenever the current item changes.
-    
+
     \a currentRow is the row of the current item. If there is no current item,
     the \a currentRow is -1.
 */
