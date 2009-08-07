@@ -207,14 +207,13 @@ QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s)
 {
     if (s == QLatin1String("Stretch"))
         return QFxScaleGrid::Stretch;
-    else if (s == QLatin1String("Repeat"))
+    if (s == QLatin1String("Repeat"))
         return QFxScaleGrid::Repeat;
-    else if (s == QLatin1String("Round"))
+    if (s == QLatin1String("Round"))
         return QFxScaleGrid::Round;
-    else {
-        qWarning() << "TileRule not supported:" << s;
-        return QFxScaleGrid::Stretch;
-    }
+
+    qWarning() << "Unknown tile rule specified. Using Stretch";
+    return QFxScaleGrid::Stretch;
 }
 
 bool QFxGridScaledImage::isValid() const
