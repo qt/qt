@@ -17,6 +17,7 @@ Item {
             if (!mouseGrabbed) {
                 fieldText.startEdit();
                 fieldText.state='editing';
+                textEdit.selectAll();
                 mouseGrabbed=true;
             }
         }
