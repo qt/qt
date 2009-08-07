@@ -51,7 +51,7 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 QT_BEGIN_NAMESPACE
 
 QmlExpressionPrivate::QmlExpressionPrivate()
-: nextExpression(0), prevExpression(0), ctxt(0), expressionFunctionValid(false), expressionRewritten(false), sseData(0), me(0), trackChange(true), line(-1), guardList(0), guardListLength(0)
+: nextExpression(0), prevExpression(0), ctxt(0), expressionFunctionValid(false), expressionRewritten(false), me(0), trackChange(true), line(-1), guardList(0), guardListLength(0)
 {
 }
 
@@ -101,8 +101,6 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 
 QmlExpressionPrivate::~QmlExpressionPrivate()
 {
-    sse.deleteScriptState(sseData);
-    sseData = 0;
     if (guardList) { delete [] guardList; guardList = 0; }
 }
 
@@ -215,10 +213,6 @@ void QmlExpression::clearExpression()
 void QmlExpression::setExpression(const QString &expression)
 {
     Q_D(QmlExpression);
-    if (d->sseData) {
-        d->sse.deleteScriptState(d->sseData);
-        d->sseData = 0;
-    }
 
     d->clearGuards();
 
@@ -230,7 +224,7 @@ void QmlExpression::setExpression(const QString &expression)
     d->sse.clear();
 }
 
-QVariant QmlExpressionPrivate::evalSSE(QmlBasicScript::CacheState &cacheState)
+QVariant QmlExpressionPrivate::evalSSE()
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindValueSSE> perfsse;
@@ -240,9 +234,7 @@ QVariant QmlExpressionPrivate::evalSSE(QmlBasicScript::CacheState &cacheState)
     if (me)
         ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount , me);
 
-    if (!sseData)
-        sseData = sse.newScriptState();
-    QVariant rv = sse.run(ctxt, sseData, &cacheState);
+    QVariant rv = sse.run(ctxt);
 
     if (me)
         ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
@@ -367,8 +359,6 @@ QVariant QmlExpression::value()
     QFxPerfTimer<QFxPerf::BindValue> perf;
 #endif
 
-    QmlBasicScript::CacheState cacheState = QmlBasicScript::Reset;
-
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine());
 
     QmlExpression *lastCurrentExpression = ep->currentExpression;
@@ -378,7 +368,7 @@ QVariant QmlExpression::value()
     ep->currentExpression = this;
 
     if (d->sse.isValid()) {
-        rv = d->evalSSE(cacheState);
+        rv = d->evalSSE();
     } else {
         rv = d->evalQtScript();
     }

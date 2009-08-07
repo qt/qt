@@ -89,14 +89,13 @@ public:
     QScriptValue expressionFunction;
 
     QmlBasicScript sse;
-    void *sseData;
     QObject *me;
     bool trackChange;
 
     QString fileName;
     int line;
 
-    QVariant evalSSE(QmlBasicScript::CacheState &cacheState);
+    QVariant evalSSE();
     QVariant evalQtScript();
 
     struct SignalGuard : public QGuard<QObject> {
