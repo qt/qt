@@ -654,7 +654,8 @@ QmlPauseAnimation::~QmlPauseAnimation()
 void QmlPauseAnimationPrivate::init()
 {
     Q_Q(QmlPauseAnimation);
-    pa = new QPauseAnimation(q);
+    pa = new QPauseAnimation;
+    QFx_setParent_noEvent(pa, q);
 }
 
 /*!
@@ -799,7 +800,8 @@ QmlRunScriptAction::~QmlRunScriptAction()
 void QmlRunScriptActionPrivate::init()
 {
     Q_Q(QmlRunScriptAction);
-    rsa = new QActionAnimation(&proxy, q);
+    rsa = new QActionAnimation(&proxy);
+    QFx_setParent_noEvent(rsa, q);
 }
 
 /*!
@@ -906,7 +908,8 @@ QmlSetPropertyAction::~QmlSetPropertyAction()
 void QmlSetPropertyActionPrivate::init()
 {
     Q_Q(QmlSetPropertyAction);
-    spa = new QActionAnimation(q);
+    spa = new QActionAnimation;
+    QFx_setParent_noEvent(spa, q);
 }
 
 /*!
@@ -1096,7 +1099,8 @@ QmlParentChangeAction::~QmlParentChangeAction()
 void QmlParentChangeActionPrivate::init()
 {
     Q_Q(QmlParentChangeAction);
-    cpa = new QActionAnimation(q);
+    cpa = new QActionAnimation;
+    QFx_setParent_noEvent(cpa, q);
 }
 
 void QmlParentChangeActionPrivate::doAction()
@@ -1494,7 +1498,9 @@ QmlPropertyAnimation::~QmlPropertyAnimation()
 void QmlPropertyAnimationPrivate::init()
 {
     Q_Q(QmlPropertyAnimation);
-    va = new QmlTimeLineValueAnimator(q);
+    va = new QmlTimeLineValueAnimator;
+    QFx_setParent_noEvent(va, q);
+
     va->setStartValue(QVariant(0.0f));
     va->setEndValue(QVariant(1.0f));
 }

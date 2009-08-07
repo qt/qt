@@ -39,32 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef QFXPIXMAP_H
-#define QFXPIXMAP_H
-
-#include <QtCore/QString>
-#include <QtGui/QPixmap>
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/qurl.h>
-
-QT_BEGIN_HEADER
+#include "qfxlayoutitem.h"
+#include <QDebug>
+#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-class QmlEngine;
-class QNetworkReply;
-class Q_DECLARATIVE_EXPORT QFxPixmap    //### rename QFxPixmapCache
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LayoutItem,QFxLayoutItem)
+
+/*!
+    \qmlclass LayoutItem QFxLayoutItem
+    \brief The LayoutItem element allows you to place your Fluid UI elements inside a classical Qt layout.
+*/
+
+/*!
+    \internal
+    \class QFxLayoutItem
+    \brief The QFxLayoutItem class allows you to place your Fluid UI elements inside a classical Qt layout.
+*/
+
+
+/*!
+    \qmlproperty QSizeF LayoutItem::maximumSize
+
+    The maximumSize property can be set to specify the maximum desired size of this LayoutItem
+*/
+
+/*!
+    \qmlproperty QSizeF LayoutItem::minimumSize
+
+    The minimumSize property can be set to specify the minimum desired size of this LayoutItem
+*/
+
+/*!
+    \qmlproperty QSizeF LayoutItem::preferredSize
+
+    The preferredSize property can be set to specify the preferred size of this LayoutItem
+*/
+
+QFxLayoutItem::QFxLayoutItem(QFxItem* parent)
+    : QFxItem(parent), m_maximumSize(INT_MAX,INT_MAX), m_minimumSize(0,0), m_preferredSize(100,100)
 {
-public:
-    static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
-    static void cancelGet(const QUrl& url, QObject* obj);
+    setGraphicsItem(this);
+}
 
-    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmap::get, and finished. Or must be a local file.
-};
+void QFxLayoutItem::setGeometry(const QRectF & rect)
+{
+    setX(rect.x());
+    setY(rect.y());
+    setWidth(rect.width());
+    setHeight(rect.height());
+}
 
+QSizeF QFxLayoutItem::sizeHint(Qt::SizeHint w, const QSizeF &constraint) const
+{
+    Q_UNUSED(constraint);
+    if(w == Qt::MinimumSize){
+        return m_minimumSize;
+    }else if(w == Qt::MaximumSize){
+        return m_maximumSize;
+    }else{
+        return m_preferredSize;
+    }
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-#endif // QFXPIXMAP_H

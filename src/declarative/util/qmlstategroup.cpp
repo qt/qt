@@ -274,7 +274,7 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     }
 
     if (oldState == 0 || newState == 0) {
-        if (!nullState) { nullState = new QmlState(q); }
+        if (!nullState) { nullState = new QmlState; QFx_setParent_noEvent(nullState, q); }
         if (!oldState) oldState = nullState;
         if (!newState) newState = nullState;
     }

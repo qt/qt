@@ -41,6 +41,7 @@
 
 #include <QBuffer>
 #include <qml.h>
+#include <QDebug>
 #include "qfxscalegrid_p.h"
 
 
@@ -73,7 +74,8 @@ QT_BEGIN_NAMESPACE
 */
 QML_DEFINE_NOCREATE_TYPE(QFxScaleGrid)
 
-QFxScaleGrid::QFxScaleGrid() : QObject(), _left(0), _top(0), _right(0), _bottom(0)
+QFxScaleGrid::QFxScaleGrid() : QObject(), _left(0), _top(0), _right(0), _bottom(0),
+    _horizontalTileRule(Stretch), _verticalTileRule(Stretch)
 {
 }
 
@@ -122,13 +124,25 @@ void QFxScaleGrid::setBottom(int pos)
     _bottom = pos;
 }
 
+void QFxScaleGrid::setHorizontalTileRule(TileRule r)
+{
+    _horizontalTileRule = r;
+}
+
+void QFxScaleGrid::setVerticalTileRule(TileRule r)
+{
+    _verticalTileRule = r;
+}
+
+
 QFxGridScaledImage::QFxGridScaledImage()
-: _l(-1), _r(-1), _t(-1), _b(-1)
+: _l(-1), _r(-1), _t(-1), _b(-1),
+  _h(QFxScaleGrid::Stretch), _v(QFxScaleGrid::Stretch)
 {
 }
 
 QFxGridScaledImage::QFxGridScaledImage(const QFxGridScaledImage &o)
-: _l(o._l), _r(o._r), _t(o._t), _b(o._b), _pix(o._pix)
+: _l(o._l), _r(o._r), _t(o._t), _b(o._b), _h(o._h), _v(o._v), _pix(o._pix)
 {
 }
 
@@ -138,22 +152,24 @@ QFxGridScaledImage &QFxGridScaledImage::operator=(const QFxGridScaledImage &o)
     _r = o._r;
     _t = o._t;
     _b = o._b;
+    _h = o._h;
+    _v = o._v;
     _pix = o._pix;
     return *this;
 }
 
 QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
-: _l(-1), _r(-1), _t(-1), _b(-1)
+: _l(-1), _r(-1), _t(-1), _b(-1), _h(QFxScaleGrid::Stretch), _v(QFxScaleGrid::Stretch)
 {
     int l = -1;
-    int r = -1; 
-    int t = -1; 
+    int r = -1;
+    int t = -1;
     int b = -1;
     QString imgFile;
 
     while(!data->atEnd()) {
         QString line = QString::fromUtf8(data->readLine().trimmed());
-        if (line.isEmpty() || line.startsWith(QLatin1String("#"))) 
+        if (line.isEmpty() || line.startsWith(QLatin1String("#")))
             continue;
 
         QStringList list = line.split(QLatin1Char(':'));
@@ -173,6 +189,10 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
             b = list[1].toInt();
         else if (list[0] == QLatin1String("imageFile"))
             imgFile = list[1];
+        else if (list[0] == QLatin1String("horizontalTileRule"))
+            _h = stringToRule(list[1]);
+        else if (list[0] == QLatin1String("verticalTileRule"))
+            _v = stringToRule(list[1]);
     }
 
     if (l < 0 || r < 0 || t < 0 || b < 0 || imgFile.isEmpty())
@@ -181,6 +201,19 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
     _l = l; _r = r; _t = t; _b = b;
 
     _pix = imgFile;
+}
+
+QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s)
+{
+    if (s == QLatin1String("Stretch"))
+        return QFxScaleGrid::Stretch;
+    if (s == QLatin1String("Repeat"))
+        return QFxScaleGrid::Repeat;
+    if (s == QLatin1String("Round"))
+        return QFxScaleGrid::Round;
+
+    qWarning() << "Unknown tile rule specified. Using Stretch";
+    return QFxScaleGrid::Stretch;
 }
 
 bool QFxGridScaledImage::isValid() const

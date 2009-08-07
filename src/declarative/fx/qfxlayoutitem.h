@@ -39,32 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QFXPIXMAP_H
-#define QFXPIXMAP_H
-
-#include <QtCore/QString>
-#include <QtGui/QPixmap>
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/qurl.h>
+#ifndef QFXGRAPHICSLAYOUTITEM_H
+#define QFXGRAPHICSLAYOUTITEM_H
+#include <QGraphicsLayoutItem>
+#include <QFxItem>
+#include <QSizeF>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QmlEngine;
-class QNetworkReply;
-class Q_DECLARATIVE_EXPORT QFxPixmap    //### rename QFxPixmapCache
+
+class QFxLayoutItem : public QFxItem, public QGraphicsLayoutItem
 {
+    Q_OBJECT
+    Q_INTERFACES(QGraphicsLayoutItem)
+    Q_PROPERTY(QSizeF maximumSize READ maximumSize WRITE setMaximumSize NOTIFY maximumSizeChanged)
+    Q_PROPERTY(QSizeF minimumSize READ minimumSize WRITE setMinimumSize NOTIFY minimumSizeChanged)
+    Q_PROPERTY(QSizeF preferredSize READ preferredSize WRITE setPreferredSize NOTIFY preferredSizeChanged)
 public:
-    static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
-    static void cancelGet(const QUrl& url, QObject* obj);
+    QFxLayoutItem(QFxItem* parent=0);
 
-    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmap::get, and finished. Or must be a local file.
+    QSizeF maximumSize() const { return m_maximumSize; }
+    void setMaximumSize(const QSizeF &s) { if(s==m_maximumSize) return; m_maximumSize = s; emit maximumSizeChanged(); }
+
+    QSizeF minimumSize() const { return m_minimumSize; }
+    void setMinimumSize(const QSizeF &s) { if(s==m_minimumSize) return; m_minimumSize = s; emit minimumSizeChanged(); }
+
+    QSizeF preferredSize() const { return m_preferredSize; }
+    void setPreferredSize(const QSizeF &s) { if(s==m_preferredSize) return; m_preferredSize = s; emit preferredSizeChanged(); }
+
+    virtual void setGeometry(const QRectF & rect);
+protected:
+    virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
+
+Q_SIGNALS:
+    void maximumSizeChanged();
+    void minimumSizeChanged();
+    void preferredSizeChanged();
+
+private:
+    QSizeF m_maximumSize;
+    QSizeF m_minimumSize;
+    QSizeF m_preferredSize;
 };
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxLayoutItem)
+
 QT_END_HEADER
-#endif // QFXPIXMAP_H
+#endif
