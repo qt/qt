@@ -763,19 +763,19 @@ void SymbianMakefileGenerator::addMacro(QTextStream& t, const QString& value)
 void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 {
     if (targetType == TypeExe) {
-        t << MMP_TARGET << "\t\t" << fixedTarget.append(".exe") << "\n";
+        t << MMP_TARGET << "\t\t" << fixedTarget << ".exe" << endl;
         if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
             t << MMP_TARGETTYPE << "\t\t" << "STDEXE" << endl;
         else
             t << MMP_TARGETTYPE << "\t\t" << "EXE" << endl;
     } else if (targetType == TypeDll || targetType == TypePlugin) {
-        t << MMP_TARGET << "\t\t" << fixedTarget.append(".dll") << "\n";
+        t << MMP_TARGET << "\t\t" << fixedTarget << ".dll" << endl;
         if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
             t << MMP_TARGETTYPE << "\t\t" << "STDDLL" << endl;
         else
             t << MMP_TARGETTYPE << "\t\t" << "DLL" << endl;
     } else if (targetType == TypeLib) {
-        t << MMP_TARGET << "\t\t" << fixedTarget.append(".lib") << "\n";
+        t << MMP_TARGET << "\t\t" << fixedTarget << ".lib" << endl;
         if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
             t << MMP_TARGETTYPE << "\t\t" << "STDLIB" << endl;
         else
