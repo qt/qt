@@ -85,8 +85,8 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
 
 QS60WindowSurface::~QS60WindowSurface()
 {
-    // Ensure that locking and unlocking of this surface were symmetrical
-    Q_ASSERT(QS60WindowSurfacePrivate::lockedSurface != this);
+    if (QS60WindowSurfacePrivate::lockedSurface == this)
+        unlockBitmapHeap();
 
     delete d_ptr->bitmap;
     delete d_ptr;
@@ -97,7 +97,9 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
     if(!d_ptr->bitmap)
         return;
 
-    Q_ASSERT(!QS60WindowSurfacePrivate::lockedSurface);
+    if (QS60WindowSurfacePrivate::lockedSurface)
+        unlockBitmapHeap();
+    
     QS60WindowSurfacePrivate::lockedSurface = this;
     lockBitmapHeap();
 
