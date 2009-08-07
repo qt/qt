@@ -73,7 +73,7 @@ namespace WebCore {
 
     enum FindDirection { FindDirectionForward, FindDirectionBackward };
 
-    class Page : Noncopyable {
+    class Page : public Noncopyable {
     public:
         static void setNeedsReapplyStyles();
 
@@ -209,7 +209,7 @@ namespace WebCore {
         OwnPtr<DragController> m_dragController;
         OwnPtr<FocusController> m_focusController;
         OwnPtr<ContextMenuController> m_contextMenuController;
-        RefPtr<InspectorController> m_inspectorController;
+        OwnPtr<InspectorController> m_inspectorController;
         OwnPtr<Settings> m_settings;
         OwnPtr<ProgressTracker> m_progress;
         

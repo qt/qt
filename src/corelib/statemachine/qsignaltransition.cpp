@@ -159,21 +159,6 @@ QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
 }
 
 /*!
-  Constructs a new signal transition associated with the given \a signal of
-  the given \a sender. The transition has the given \a targets and \a
-  sourceState.
-*/
-QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
-                                     const QList<QAbstractState*> &targets,
-                                     QState *sourceState)
-    : QAbstractTransition(*new QSignalTransitionPrivate, targets, sourceState)
-{
-    Q_D(QSignalTransition);
-    d->sender = sender;
-    d->signal = signal;
-}
-
-/*!
   Destroys this signal transition.
 */
 QSignalTransition::~QSignalTransition()

@@ -41,12 +41,12 @@
 */
 
 /********************************************************************************
-** Form generated from reading ui file 'paletteeditor.ui'
+** Form generated from reading UI file 'paletteeditor.ui'
 **
 ** Created: Thu Jul 10 09:47:35 2008
 **      by: Qt User Interface Compiler version 4.5.0
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef PALETTEEDITOR_H

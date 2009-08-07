@@ -45,8 +45,14 @@
 #include <qabstractscrollarea.h>
 #include <qscrollbar.h>
 #include <private/qapplication_p.h>
+#include <private/qevent_p.h>
+#include <private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
+
+#ifdef Q_WS_WIN
+QWidgetPrivate *qt_widget_private(QWidget *widget);
+#endif
 
 /*!
     \class QPanGesture
@@ -66,34 +72,101 @@ QT_BEGIN_NAMESPACE
 QPanGesture::QPanGesture(QWidget *parent)
     : QGesture(*new QPanGesturePrivate, parent)
 {
-#ifdef Q_WS_WIN
     if (parent) {
-        QApplicationPrivate* getQApplicationPrivateInternal();
-        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         qAppPriv->widgetGestures[parent].pan = this;
-    }
+#ifdef Q_WS_WIN
+        qt_widget_private(parent)->winSetupGestures();
 #endif
+    }
 }
 
 /*! \internal */
 bool QPanGesture::event(QEvent *event)
 {
-#ifdef Q_WS_WIN
-    QApplicationPrivate* getQApplicationPrivateInternal();
     switch (event->type()) {
     case QEvent::ParentAboutToChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent()))
-            getQApplicationPrivateInternal()->widgetGestures[w].pan = 0;
+        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
+            QApplicationPrivate::instance()->widgetGestures[w].pan = 0;
+#ifdef Q_WS_WIN
+            qt_widget_private(w)->winSetupGestures();
+#endif
+        }
         break;
     case QEvent::ParentChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent()))
-            getQApplicationPrivateInternal()->widgetGestures[w].pan = this;
+        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
+            QApplicationPrivate::instance()->widgetGestures[w].pan = this;
+#ifdef Q_WS_WIN
+            qt_widget_private(w)->winSetupGestures();
+#endif
+        }
         break;
     default:
         break;
     }
+
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    Q_D(QPanGesture);
+    if (event->type() == QEvent::Timer) {
+        const QTimerEvent *te = static_cast<QTimerEvent *>(event);
+        if (te->timerId() == d->panFinishedTimer) {
+            killTimer(d->panFinishedTimer);
+            d->panFinishedTimer = 0;
+            d->lastOffset = QSize(0, 0);
+            updateState(Qt::GestureFinished);
+        }
+    }
 #endif
+
     return QObject::event(event);
+}
+
+bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
+{
+#ifdef Q_WS_WIN
+    Q_D(QPanGesture);
+    if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
+        QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+        QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
+        it = qAppPriv->widgetGestures.find(static_cast<QWidget*>(receiver));
+        if (it == qAppPriv->widgetGestures.end())
+            return false;
+        QPanGesture *gesture = it.value().pan;
+        if (this != gesture)
+            return false;
+        Qt::GestureState nextState = Qt::NoGesture;
+        switch(ev->gestureType) {
+        case QNativeGestureEvent::GestureBegin:
+            // next we might receive the first gesture update event, so we
+            // prepare for it.
+            d->state = Qt::NoGesture;
+            return false;
+        case QNativeGestureEvent::Pan:
+            nextState = Qt::GestureUpdated;
+            event->accept();
+            break;
+        case QNativeGestureEvent::GestureEnd:
+            if (state() == Qt::NoGesture)
+                return false; // some other gesture has ended
+            nextState = Qt::GestureFinished;
+            break;
+        default:
+            return false;
+        }
+        if (state() == Qt::NoGesture) {
+            d->lastOffset = d->totalOffset = QSize();
+        } else {
+            d->lastOffset = QSize(ev->position.x() - d->lastPosition.x(),
+                                  ev->position.y() - d->lastPosition.y());
+            d->totalOffset += d->lastOffset;
+        }
+        d->lastPosition = ev->position;
+        gesture->updateState(nextState);
+        return true;
+    }
+#endif
+    return QGesture::eventFilter(receiver, event);
 }
 
 /*! \internal */
@@ -104,35 +177,62 @@ bool QPanGesture::filterEvent(QEvent *event)
         return false;
     const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
     if (event->type() == QEvent::TouchBegin) {
-        d->touchPoints = ev->touchPoints();
-        const QPoint p = ev->touchPoints().at(0).pos().toPoint();
-        setStartPos(p);
-        setLastPos(p);
-        setPos(p);
-        return false;
+        QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+        d->lastPosition = p.pos().toPoint();
+        d->lastOffset = d->totalOffset = QSize();
     } else if (event->type() == QEvent::TouchEnd) {
         if (state() != Qt::NoGesture) {
-            setState(Qt::GestureFinished);
-            setLastPos(pos());
-            setPos(ev->touchPoints().at(0).pos().toPoint());
-            emit triggered();
-            emit finished();
+            if (!ev->touchPoints().isEmpty()) {
+                QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+                const QPoint pos = p.pos().toPoint();
+                const QPoint lastPos = p.lastPos().toPoint();
+                const QPoint startPos = p.startPos().toPoint();
+                d->lastOffset = QSize(pos.x() - lastPos.x(), pos.y() - lastPos.y());
+                d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
+            }
+            updateState(Qt::GestureFinished);
         }
-        setState(Qt::NoGesture);
         reset();
     } else if (event->type() == QEvent::TouchUpdate) {
-        d->touchPoints = ev->touchPoints();
-        QPointF pt = d->touchPoints.at(0).pos() - d->touchPoints.at(0).startPos();
-        setLastPos(pos());
-        setPos(ev->touchPoints().at(0).pos().toPoint());
-        if (pt.x() > 10 || pt.y() > 10 || pt.x() < -10 || pt.y() < -10) {
-            if (state() == Qt::NoGesture)
-                setState(Qt::GestureStarted);
-            else
-                setState(Qt::GestureUpdated);
-            emit triggered();
+        QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+        const QPoint pos = p.pos().toPoint();
+        const QPoint lastPos = p.lastPos().toPoint();
+        const QPoint startPos = p.startPos().toPoint();
+        d->lastOffset = QSize(pos.x() - lastPos.x(), pos.y() - lastPos.y());
+        d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
+        if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
+            d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
+            updateState(Qt::GestureUpdated);
         }
     }
+#ifdef Q_OS_MAC
+    else if (event->type() == QEvent::Wheel) {
+        // On Mac, there is really no native panning gesture. Instead, a two 
+        // finger pan is delivered as mouse wheel events. Otoh, on Windows, you
+        // either get mouse wheel events or pan events. We have decided to make this
+        // the Qt behaviour as well, meaning that on Mac, wheel
+        // events will be masked away when listening for pan events.
+#ifndef QT_MAC_USE_COCOA
+        // In Carbon we receive neither touch-, nor pan gesture events.
+        // So we create pan gestures by converting wheel events. After all, this
+        // is how things are supposed to work on mac in the first place.
+        const QWheelEvent *wev = static_cast<const QWheelEvent*>(event);
+        int offset = wev->delta() / -120;
+        d->lastOffset = wev->orientation() == Qt::Horizontal ? QSize(offset, 0) : QSize(0, offset);
+
+        if (state() == Qt::NoGesture) {
+            d->totalOffset = d->lastOffset;
+        } else {
+            d->totalOffset += d->lastOffset;
+        }
+
+        killTimer(d->panFinishedTimer);
+        d->panFinishedTimer = startTimer(200);
+        updateState(Qt::GestureUpdated);
+#endif
+        return true;
+    }
+#endif
     return false;
 }
 
@@ -140,7 +240,14 @@ bool QPanGesture::filterEvent(QEvent *event)
 void QPanGesture::reset()
 {
     Q_D(QPanGesture);
-    d->touchPoints.clear();
+    d->lastOffset = d->totalOffset = QSize();
+    d->lastPosition = QPoint();
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    if (d->panFinishedTimer) {
+        killTimer(d->panFinishedTimer);
+        d->panFinishedTimer = 0;
+    }
+#endif
 }
 
 /*!
@@ -150,8 +257,8 @@ void QPanGesture::reset()
 */
 QSize QPanGesture::totalOffset() const
 {
-    QPoint pt = pos() - startPos();
-    return QSize(pt.x(), pt.y());
+    Q_D(const QPanGesture);
+    return d->totalOffset;
 }
 
 /*!
@@ -162,93 +269,11 @@ QSize QPanGesture::totalOffset() const
 */
 QSize QPanGesture::lastOffset() const
 {
-    QPoint pt = pos() - lastPos();
-    return QSize(pt.x(), pt.y());
-}
-
-/*!
-    \class QTapAndHoldGesture
-    \since 4.6
-
-    \brief The QTapAndHoldGesture class represents a Tap-and-Hold gesture,
-    providing additional information.
-*/
-
-const int QTapAndHoldGesturePrivate::iterationCount = 40;
-const int QTapAndHoldGesturePrivate::iterationTimeout = 50;
-
-/*!
-    Creates a new Tap and Hold gesture handler object and marks it as a child
-    of \a parent.
-
-    On some platforms like Windows there is a system-wide tap and hold gesture
-    that cannot be overriden, hence the gesture might never trigger and default
-    context menu will be shown instead.
-*/
-QTapAndHoldGesture::QTapAndHoldGesture(QWidget *parent)
-    : QGesture(*new QTapAndHoldGesturePrivate, parent)
-{
-}
-
-/*! \internal */
-bool QTapAndHoldGesture::filterEvent(QEvent *event)
-{
-    Q_D(QTapAndHoldGesture);
-    if (!event->spontaneous())
-        return false;
-    const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
-    switch (event->type()) {
-    case QEvent::TouchBegin: {
-        if (d->timer.isActive())
-            d->timer.stop();
-        d->timer.start(QTapAndHoldGesturePrivate::iterationTimeout, this);
-        const QPoint p = ev->touchPoints().at(0).pos().toPoint();
-        setStartPos(p);
-        setLastPos(p);
-        setPos(p);
-        break;
-    }
-    case QEvent::TouchUpdate:
-        if (ev->touchPoints().size() != 1)
-            reset();
-        else if ((startPos() - ev->touchPoints().at(0).pos().toPoint()).manhattanLength() > 15)
-            reset();
-        break;
-    case QEvent::TouchEnd:
-        reset();
-        break;
-    default:
-        break;
-    }
-    return false;
-}
-
-/*! \internal */
-void QTapAndHoldGesture::timerEvent(QTimerEvent *event)
-{
-    Q_D(QTapAndHoldGesture);
-    if (event->timerId() != d->timer.timerId())
-        return;
-    if (d->iteration == QTapAndHoldGesturePrivate::iterationCount) {
-        d->timer.stop();
-        setState(Qt::GestureFinished);
-        emit triggered();
-    } else {
-        setState(Qt::GestureStarted);
-        emit triggered();
-    }
-    ++d->iteration;
-}
-
-/*! \internal */
-void QTapAndHoldGesture::reset()
-{
-    Q_D(QTapAndHoldGesture);
-    if (state() != Qt::NoGesture)
-        emit cancelled();
-    setState(Qt::NoGesture);
-    d->timer.stop();
-    d->iteration = 0;
+    Q_D(const QPanGesture);
+    return d->lastOffset;
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qstandardgestures.cpp"
+

@@ -21,6 +21,7 @@
 #ifndef JSCSSVariablesDeclaration_h
 #define JSCSSVariablesDeclaration_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class CSSVariablesDeclaration;
 
-class JSCSSVariablesDeclaration : public DOMObject {
-    typedef DOMObject Base;
+class JSCSSVariablesDeclaration : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCSSVariablesDeclaration(PassRefPtr<JSC::Structure>, PassRefPtr<CSSVariablesDeclaration>);
+    JSCSSVariablesDeclaration(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSVariablesDeclaration>);
     virtual ~JSCSSVariablesDeclaration();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,7 +48,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     CSSVariablesDeclaration* impl() const { return m_impl.get(); }
 
 private:
@@ -55,7 +56,7 @@ private:
     static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, CSSVariablesDeclaration*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CSSVariablesDeclaration*);
 CSSVariablesDeclaration* toCSSVariablesDeclaration(JSC::JSValue);
 
 class JSCSSVariablesDeclarationPrototype : public JSC::JSObject {

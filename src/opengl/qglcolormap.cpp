@@ -174,13 +174,14 @@ void QGLColormap::setEntry(int idx, QRgb color)
     detach();
     if (!d->cells)
         d->cells = new QVector<QRgb>(256);
-    d->cells->insert(idx, color);
+    d->cells->replace(idx, color);
 }
 
 /*!
     Set an array of cells in this colormap. \a count is the number of
     colors that should be set, \a colors is the array of colors, and
-    \a base is the starting index.
+    \a base is the starting index.  The first element in \a colors
+    is set at \a base in the colormap.
 */
 void QGLColormap::setEntries(int count, const QRgb *colors, int base)
 {
@@ -188,10 +189,10 @@ void QGLColormap::setEntries(int count, const QRgb *colors, int base)
     if (!d->cells)
         d->cells = new QVector<QRgb>(256);
 
-    Q_ASSERT_X(!colors || base >= 0 || base + count < d->cells->size(), "QGLColormap::setEntries",
+    Q_ASSERT_X(colors && base >= 0 && (base + count) <= d->cells->size(), "QGLColormap::setEntries",
                "preconditions not met");
-    for (int i = base; i < base + count; ++i)
-        setEntry(i, colors[i]);
+    for (int i = 0; i < count; ++i)
+        setEntry(base + i, colors[i]);
 }
 
 /*!
@@ -227,8 +228,17 @@ QColor QGLColormap::entryColor(int idx) const
 }
 
 /*!
-    Returns true if the colormap is empty; otherwise returns false. A
-    colormap with no color values set is considered to be empty.
+    Returns true if the colormap is empty or it is not in use
+    by a QGLWidget; otherwise returns false.
+
+    A colormap with no color values set is considered to be empty.
+    For historical reasons, a colormap that has color values set
+    but which is not in use by a QGLWidget is also considered empty.
+
+    Compare size() with zero to determine if the colormap is empty
+    regardless of whether it is in use by a QGLWidget or not.
+
+    \sa size()
 */
 bool QGLColormap::isEmpty() const
 {

@@ -3212,11 +3212,13 @@ void tst_QUrl::std3violations()
 {
     QFETCH(QString, source);
 
+#ifdef QT_BUILD_INTERNAL
     {
         QString prepped = source;
         qt_nameprep(&prepped, 0);
         QVERIFY(!qt_check_std3rules(prepped.constData(), prepped.length()));
     }
+#endif
 
     if (source.contains('.'))
         return; // this test ends here

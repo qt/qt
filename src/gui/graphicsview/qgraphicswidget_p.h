@@ -83,7 +83,6 @@ public:
           focusPolicy(Qt::NoFocus),
           focusNext(0),
           focusPrev(0),
-          focusChild(0),
           windowFlags(0),
           windowData(0),
           setWindowFrameMargins(false),
@@ -178,9 +177,6 @@ public:
     Qt::FocusPolicy focusPolicy;
     QGraphicsWidget *focusNext;
     QGraphicsWidget *focusPrev;
-    QGraphicsWidget *focusChild;
-    void setFocusWidget();
-    void clearFocusWidget();
 
     // Windows
     Qt::WindowFlags windowFlags;

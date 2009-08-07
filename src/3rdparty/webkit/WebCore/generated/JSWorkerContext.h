@@ -78,7 +78,6 @@ public:
 
 JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClose(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionImportScripts(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionPostMessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionSetTimeout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClearTimeout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionSetInterval(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -92,10 +91,10 @@ JSC::JSValue jsWorkerContextSelf(JSC::ExecState*, const JSC::Identifier&, const 
 void setJSWorkerContextSelf(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsWorkerContextLocation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSWorkerContextLocation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsWorkerContextNavigator(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSWorkerContextNavigator(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerContextOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsWorkerContextMessageEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSWorkerContextMessageEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsWorkerContextWorkerLocationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

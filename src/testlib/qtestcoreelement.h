@@ -74,7 +74,7 @@ class QTestCoreElement: public QTestCoreList<ElementType>
 
 template<class ElementType>
 QTestCoreElement<ElementType>::QTestCoreElement(int t)
-:listOfAttributes(0), type((QTest::LogElementType)t)
+    :listOfAttributes(0), type(QTest::LogElementType(t))
 {
 }
 

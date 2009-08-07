@@ -99,8 +99,6 @@ QStringList Option::shellPath;
 Option::TARG_MODE Option::target_mode = Option::TARG_WIN_MODE;
 #elif defined(Q_OS_MAC)
 Option::TARG_MODE Option::target_mode = Option::TARG_MACX_MODE;
-#elif defined(Q_OS_QNX6)
-Option::TARG_MODE Option::target_mode = Option::TARG_QNX6_MODE;
 #else
 Option::TARG_MODE Option::target_mode = Option::TARG_UNIX_MODE;
 #endif
@@ -152,6 +150,9 @@ bool usage(const char *a0)
             "                 In this mode qmake interprets files as files to\n"
             "                 be built,\n"
             "                 defaults to %s\n"
+            "                 Note: The created .pro file probably will \n"
+            "                 need to be edited. For example add the QT variable to \n"
+            "                 specify what modules are required.\n"
             "  -makefile      Put qmake into makefile generation mode%s\n"
             "                 In this mode qmake interprets files as project files to\n"
             "                 be processed, if skipped qmake will try to find a project\n"

@@ -93,6 +93,7 @@ QString Atom::UPPERROMAN_    ("upperroman");
 
   \value AbstractLeft
   \value AbstractRight
+  \value AnnotatedList
   \value AutoLink
   \value BaseName
   \value BriefLeft
@@ -163,6 +164,7 @@ static const struct {
 } atms[] = {
     { "AbstractLeft", Atom::AbstractLeft },
     { "AbstractRight", Atom::AbstractRight },
+    { "AnnotatedList", Atom::AnnotatedList },
     { "AutoLink", Atom::AutoLink },
     { "BaseName", Atom::BaseName },
     { "BriefLeft", Atom::BriefLeft },

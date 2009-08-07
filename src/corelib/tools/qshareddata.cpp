@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
   QSharedData is designed to be used with QSharedDataPointer or
   QExplicitlySharedDataPointer to implement custom \l{implicitly
-  shared} or \l {explicitly shared} classes. QSharedData provides
+  shared} or explicitly shared classes. QSharedData provides
   \l{thread-safe} reference counting.
 
  See QSharedDataPointer and QExplicitlySharedDataPointer for details.

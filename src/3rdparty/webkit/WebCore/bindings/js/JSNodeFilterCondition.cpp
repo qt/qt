@@ -44,7 +44,7 @@ void JSNodeFilterCondition::mark()
 
 short JSNodeFilterCondition::acceptNode(JSC::ExecState* exec, Node* filterNode) const
 {
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     CallData callData;
     CallType callType = m_filter.getCallData(callData);
@@ -61,7 +61,9 @@ short JSNodeFilterCondition::acceptNode(JSC::ExecState* exec, Node* filterNode) 
         return NodeFilter::FILTER_REJECT;
 
     MarkedArgumentBuffer args;
-    args.append(toJS(exec, filterNode));
+    // FIXME: The node should have the prototype chain that came from its document, not
+    // whatever prototype chain might be on the window this filter came from. Bug 27662
+    args.append(toJS(exec, deprecatedGlobalObjectForPrototype(exec), filterNode));
     if (exec->hadException())
         return NodeFilter::FILTER_REJECT;
 

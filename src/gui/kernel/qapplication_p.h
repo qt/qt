@@ -234,6 +234,8 @@ typedef struct tagGESTUREINFO
 #  define GC_PAN_WITH_SINGLE_FINGER_VERTICALLY        0x00000002
 #  define GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY      0x00000004
 
+#  define GC_ZOOM                                     0x00000001
+
 typedef struct tagGESTURECONFIG
 {
     DWORD dwID;
@@ -247,11 +249,12 @@ typedef struct tagGESTURECONFIG
 
 class QPanGesture;
 class QPinchGesture;
-struct StandardGestures
+struct QStandardGestures
 {
     QPanGesture *pan;
     QPinchGesture *pinch;
-    StandardGestures() : pan(0), pinch(0) { }
+
+    QStandardGestures() : pan(0), pinch(0) { }
 };
 
 
@@ -513,6 +516,9 @@ public:
                                        QTouchEvent::DeviceType deviceType,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
 
+    typedef QMap<QWidget*, QStandardGestures> WidgetStandardGesturesMap;
+    WidgetStandardGesturesMap widgetGestures;
+
 #if defined(Q_WS_WIN)
     static PtrRegisterTouchWindow RegisterTouchWindow;
     static PtrGetTouchInputInfo GetTouchInputInfo;
@@ -521,10 +527,6 @@ public:
     QHash<DWORD, int> touchInputIDToTouchPointID;
     QList<QTouchEvent::TouchPoint> appAllTouchPoints;
     bool translateTouchEvent(const MSG &msg);
-
-    typedef QMap<QWidget*, StandardGestures> WidgetStandardGesturesMap;
-    WidgetStandardGesturesMap widgetGestures;
-    ulong lastGestureId;
 
     PtrGetGestureInfo GetGestureInfo;
     PtrGetGestureExtraArgs GetGestureExtraArgs;

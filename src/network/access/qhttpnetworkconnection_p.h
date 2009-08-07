@@ -65,6 +65,7 @@
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qhttpnetworkreply_p.h>
 
+#include "qhttpnetworkconnectionchannel_p.h"
 
 #ifndef QT_NO_HTTP
 
@@ -137,26 +138,11 @@ private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY(QHttpNetworkConnection)
     friend class QHttpNetworkReply;
+    friend class QHttpNetworkConnectionChannel;
 
-    Q_PRIVATE_SLOT(d_func(), void _q_bytesWritten(qint64))
-    Q_PRIVATE_SLOT(d_func(), void _q_readyRead())
-    Q_PRIVATE_SLOT(d_func(), void _q_disconnected())
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_restartAuthPendingRequests())
-    Q_PRIVATE_SLOT(d_func(), void _q_connected())
-    Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))
-#ifndef QT_NO_NETWORKPROXY
-    Q_PRIVATE_SLOT(d_func(), void _q_proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*))
-#endif
-    Q_PRIVATE_SLOT(d_func(), void _q_uploadDataReadyRead())
-
-#ifndef QT_NO_OPENSSL
-    Q_PRIVATE_SLOT(d_func(), void _q_encrypted())
-    Q_PRIVATE_SLOT(d_func(), void _q_sslErrors(const QList<QSslError>&))
-#endif
 };
-
-
 
 
 // private classes
@@ -170,17 +156,6 @@ public:
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
     ~QHttpNetworkConnectionPrivate();
     void init();
-    void connectSignals(QAbstractSocket *socket);
-
-    enum SocketState {
-        IdleState = 0,          // ready to send request
-        ConnectingState = 1,    // connecting to host
-        WritingState = 2,       // writing the data
-        WaitingState = 4,       // waiting for reply
-        ReadingState = 8,       // reading the reply
-        Wait4AuthState = 0x10,  // blocked for send till the current authentication slot is done
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|Wait4AuthState)
-    };
 
     enum { ChunkSize = 4096 };
 
@@ -200,18 +175,8 @@ public:
     void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
 
     // private slots
-    void _q_bytesWritten(qint64 bytes); // proceed sending
-    void _q_readyRead(); // pending data to read
-    void _q_disconnected(); // disconnected from host
     void _q_startNextRequest(); // send the next request from the queue
     void _q_restartAuthPendingRequests(); // send the currently blocked request
-    void _q_connected(); // start sending request
-    void _q_error(QAbstractSocket::SocketError); // error from socket
-#ifndef QT_NO_NETWORKPROXY
-    void _q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth); // from transparent proxy
-#endif
-
-    void _q_uploadDataReadyRead();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
     bool ensureConnection(QAbstractSocket *socket);
@@ -226,41 +191,11 @@ public:
     quint16 port;
     bool encrypt;
 
-    struct Channel {
-        QAbstractSocket *socket;
-        SocketState state;
-        QHttpNetworkRequest request; // current request
-        QHttpNetworkReply *reply; // current reply for this request
-        qint64 written;
-        qint64 bytesTotal;
-        bool resendCurrent;
-        int lastStatus; // last status received on this channel
-        bool pendingEncrypt; // for https (send after encrypted)
-        int reconnectAttempts; // maximum 2 reconnection attempts
-        QAuthenticatorPrivate::Method authMehtod;
-        QAuthenticatorPrivate::Method proxyAuthMehtod;
-        QAuthenticator authenticator;
-        QAuthenticator proxyAuthenticator;
-#ifndef QT_NO_OPENSSL
-        bool ignoreAllSslErrors;
-        QList<QSslError> ignoreSslErrorsList;
-#endif
-        Channel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
-            lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
-            authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
-#ifndef QT_NO_OPENSSL
-            , ignoreAllSslErrors(false)
-#endif
-        {}
-    };
     static const int channelCount;
-    Channel *channels; // parallel connections to the server
+    QHttpNetworkConnectionChannel *channels; // parallel connections to the server
+
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
-
-    void appendUncompressedData(QHttpNetworkReply &reply, QByteArray &qba);
-    void appendUncompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
-    void appendCompressedData(QHttpNetworkReply &reply, QByteDataBuffer &data);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
@@ -274,8 +209,6 @@ public:
     inline bool expectContent(QHttpNetworkReply *reply);
 
 #ifndef QT_NO_OPENSSL
-    void _q_encrypted(); // start sending request (https)
-    void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
     QSslConfiguration sslConfiguration(const QHttpNetworkReply &reply) const;
 #endif
 
@@ -286,6 +219,8 @@ public:
     //The request queues
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;
+
+    friend class QHttpNetworkConnectionChannel;
 };
 
 

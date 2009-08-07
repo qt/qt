@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QApplication>
 #include <QStandardItemModel>
 #include <QFile>

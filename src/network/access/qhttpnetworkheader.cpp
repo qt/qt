@@ -41,6 +41,7 @@
 
 #include "qhttpnetworkheader_p.h"
 
+#ifndef QT_NO_HTTP
 
 QT_BEGIN_NAMESPACE
 
@@ -121,3 +122,5 @@ bool QHttpNetworkHeaderPrivate::operator==(const QHttpNetworkHeaderPrivate &othe
 
 
 QT_END_NAMESPACE
+
+#endif

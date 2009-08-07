@@ -135,11 +135,8 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *);
-    void updateTimer();
 
 private:
-    void updateRecentlyStartedAnimations();
-
     QBasicTimer animationTimer, startStopAnimationTimer;
     QTime time;
     int lastTick;

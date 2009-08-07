@@ -33,7 +33,7 @@ class SVGLineElement;
 class JSSVGLineElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGLineElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGLineElement>);
+    JSSVGLineElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGLineElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

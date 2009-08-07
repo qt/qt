@@ -97,7 +97,7 @@ private:
     This is a base class, to create a custom gesture type, you should subclass
     it and implement its pure virtual functions.
 
-    \sa QPanGesture, QTapAndHoldGesture
+    \sa QPanGesture
 */
 
 /*! \fn bool QGesture::filterEvent(QEvent *event)
@@ -153,7 +153,7 @@ QGesture::QGesture(QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
     if (parent)
-        installEventFilter(parent);
+        parent->installEventFilter(this);
 }
 
 /*! \internal
@@ -162,7 +162,7 @@ QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
     if (parent)
-        installEventFilter(parent);
+        parent->installEventFilter(this);
 }
 
 /*!
@@ -197,56 +197,44 @@ Qt::GestureState QGesture::state() const
 }
 
 /*!
-  Sets this gesture's recognition state to \a state.
+  Sets this gesture's recognition state to \a state and emits appropriate
+  signals.
+
+  This functions emits the signals according to the old state and the new
+  \a state, and it should be called after all the internal properties have been
+  initialized.
+
+  \sa started, triggered, finished, cancelled
  */
-void QGesture::setState(Qt::GestureState state)
+void QGesture::updateState(Qt::GestureState state)
 {
-    d_func()->state = state;
-}
+    Q_D(QGesture);
+    if (d->state == state) {
+        if (state == Qt::GestureUpdated)
+            emit triggered();
+        return;
+    }
+    const Qt::GestureState oldState = d->state;
+    d->state = state;
+    if (state != Qt::NoGesture && oldState > state) {
+        // comparing the state as ints: state should only be changed from
+        // started to (optionally) updated and to finished.
+        qWarning("QGesture::updateState: incorrect new state");
+        return;
+    }
+    if (oldState == Qt::NoGesture)
+        emit started();
+    if (state == Qt::GestureUpdated)
+        emit triggered();
+    else if (state == Qt::GestureFinished)
+        emit finished();
+    else if (state == Qt::NoGesture)
+        emit cancelled();
 
-/*!
-    \property QGesture::startPos
-
-    \brief The start position of the gesture (if relevant).
-*/
-QPoint QGesture::startPos() const
-{
-    return d_func()->startPos;
-}
-
-void QGesture::setStartPos(const QPoint &point)
-{
-    d_func()->startPos = point;
-}
-
-/*!
-    \property QGesture::lastPos
-
-    \brief The last recorded position of the gesture (if relevant).
-*/
-QPoint QGesture::lastPos() const
-{
-    return d_func()->lastPos;
-}
-
-void QGesture::setLastPos(const QPoint &point)
-{
-    d_func()->lastPos = point;
-}
-
-/*!
-    \property QGesture::pos
-
-    \brief The current position of the gesture (if relevant).
-*/
-QPoint QGesture::pos() const
-{
-    return d_func()->pos;
-}
-
-void QGesture::setPos(const QPoint &point)
-{
-    d_func()->pos = point;
+    if (state == Qt::GestureFinished) {
+        // gesture is finished, so we reset the internal state.
+        d->state = Qt::NoGesture;
+    }
 }
 
 /*!
@@ -283,14 +271,13 @@ QGraphicsItem* QGesture::graphicsItem() const
 
     Resets the internal state of the gesture. This function might be called by
     the filterEvent() implementation in a derived class, or by the user to
-    cancel a gesture.  The base class implementation emits the cancelled()
-    signal if the state() of the gesture wasn't empty.
+    cancel a gesture.  The base class implementation calls
+    updateState(Qt::NoGesture) which emits the cancelled()
+    signal if the state() of the gesture indicated it was active.
 */
 void QGesture::reset()
 {
-    if (state() != Qt::NoGesture)
-        emit cancelled();
-    setState(Qt::NoGesture);
+    updateState(Qt::NoGesture);
 }
 
 QT_END_NAMESPACE

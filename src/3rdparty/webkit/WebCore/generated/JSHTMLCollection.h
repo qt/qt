@@ -21,6 +21,7 @@
 #ifndef JSHTMLCollection_h
 #define JSHTMLCollection_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/CallData.h>
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@ namespace WebCore {
 
 class HTMLCollection;
 
-class JSHTMLCollection : public DOMObject {
-    typedef DOMObject Base;
+class JSHTMLCollection : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSHTMLCollection(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLCollection>);
+    JSHTMLCollection(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLCollection>);
     virtual ~JSHTMLCollection();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -49,7 +50,7 @@ public:
     virtual JSC::CallType getCallData(JSC::CallData&);
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue item(JSC::ExecState*, const JSC::ArgList&);
@@ -64,7 +65,7 @@ private:
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, HTMLCollection*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, HTMLCollection*);
 HTMLCollection* toHTMLCollection(JSC::JSValue);
 
 class JSHTMLCollectionPrototype : public JSC::JSObject {

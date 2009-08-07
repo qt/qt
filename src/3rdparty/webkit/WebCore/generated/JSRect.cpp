@@ -65,12 +65,12 @@ static JSC_CONST_HASHTABLE HashTable JSRectConstructorTable =
     { 1, 0, JSRectConstructorTableValues, 0 };
 #endif
 
-class JSRectConstructor : public DOMObject {
+class JSRectConstructor : public DOMConstructorObject {
 public:
-    JSRectConstructor(ExecState* exec)
-        : DOMObject(JSRectConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSRectConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSRectConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSRectPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSRectPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,8 +112,8 @@ JSObject* JSRectPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSRect::s_info = { "Rect", 0, &JSRectTable, 0 };
 
-JSRect::JSRect(PassRefPtr<Structure> structure, PassRefPtr<Rect> impl)
-    : DOMObject(structure)
+JSRect::JSRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Rect> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -135,44 +135,49 @@ bool JSRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
 
 JSValue jsRectTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->top()));
+    Rect* imp = static_cast<Rect*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->top()));
 }
 
 JSValue jsRectRight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->right()));
+    Rect* imp = static_cast<Rect*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->right()));
 }
 
 JSValue jsRectBottom(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->bottom()));
+    Rect* imp = static_cast<Rect*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->bottom()));
 }
 
 JSValue jsRectLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Rect* imp = static_cast<Rect*>(static_cast<JSRect*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->left()));
+    Rect* imp = static_cast<Rect*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->left()));
 }
 
 JSValue jsRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSRect*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSRect* domObject = static_cast<JSRect*>(asObject(slot.slotBase()));
+    return JSRect::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSRect::getConstructor(ExecState* exec)
+JSValue JSRect::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSRectConstructor>(exec);
+    return getDOMConstructor<JSRectConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Rect* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Rect* object)
 {
-    return getDOMObjectWrapper<JSRect>(exec, object);
+    return getDOMObjectWrapper<JSRect>(exec, globalObject, object);
 }
 Rect* toRect(JSC::JSValue value)
 {

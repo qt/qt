@@ -63,12 +63,12 @@ static JSC_CONST_HASHTABLE HashTable JSCSSFontFaceRuleConstructorTable =
     { 1, 0, JSCSSFontFaceRuleConstructorTableValues, 0 };
 #endif
 
-class JSCSSFontFaceRuleConstructor : public DOMObject {
+class JSCSSFontFaceRuleConstructor : public DOMConstructorObject {
 public:
-    JSCSSFontFaceRuleConstructor(ExecState* exec)
-        : DOMObject(JSCSSFontFaceRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSFontFaceRuleConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSFontFaceRuleConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSFontFaceRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSFontFaceRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -110,8 +110,8 @@ JSObject* JSCSSFontFaceRulePrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSCSSFontFaceRule::s_info = { "CSSFontFaceRule", &JSCSSRule::s_info, &JSCSSFontFaceRuleTable, 0 };
 
-JSCSSFontFaceRule::JSCSSFontFaceRule(PassRefPtr<Structure> structure, PassRefPtr<CSSFontFaceRule> impl)
-    : JSCSSRule(structure, impl)
+JSCSSFontFaceRule::JSCSSFontFaceRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSFontFaceRule> impl)
+    : JSCSSRule(structure, globalObject, impl)
 {
 }
 
@@ -127,18 +127,20 @@ bool JSCSSFontFaceRule::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsCSSFontFaceRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSFontFaceRule* castedThis = static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSFontFaceRule* imp = static_cast<CSSFontFaceRule*>(static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    CSSFontFaceRule* imp = static_cast<CSSFontFaceRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsCSSFontFaceRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSFontFaceRule* domObject = static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()));
+    return JSCSSFontFaceRule::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSCSSFontFaceRule::getConstructor(ExecState* exec)
+JSValue JSCSSFontFaceRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSFontFaceRuleConstructor>(exec);
+    return getDOMConstructor<JSCSSFontFaceRuleConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

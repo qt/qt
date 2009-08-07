@@ -224,12 +224,12 @@
     Transformations} demo for a visualization of a sheared coordinate
     system. All the transformation operations operate on QPainter's
     transformation matrix that you can retrieve using the
-    QPainter::worldMatrix() function. A matrix transforms a point in the
-    plane to another point.
+    QPainter::worldTransform() function. A matrix transforms a point
+    in the plane to another point.
 
     If you need the same transformations over and over, you can also
-    use QMatrix objects and the QPainter::worldMatrix() and
-    QPainter::setWorldMatrix() functions. You can at any time save the
+    use QTransform objects and the QPainter::worldTransform() and
+    QPainter::setWorldTransform() functions. You can at any time save the
     QPainter's transformation matrix by calling the QPainter::save()
     function which saves the matrix on an internal stack. The
     QPainter::restore() function pops it back.
@@ -318,7 +318,7 @@
     transformations affects the result.
 
     For more information about the transformation matrix, see the
-    QMatrix documentation.
+    QTransform documentation.
 
     \section1 Window-Viewport Conversion
 
@@ -328,7 +328,7 @@
 
     The mapping of the logical coordinates to the physical coordinates
     are handled by QPainter's world transformation \l
-    {QPainter::worldMatrix()}{worldMatrix()} (described in the \l
+    {QPainter::worldTransform()}{worldTransform()} (described in the \l
     Transformations section), and QPainter's \l
     {QPainter::viewport()}{viewport()} and \l
     {QPainter::window()}{window()}.  The viewport represents the
@@ -419,14 +419,14 @@
     \endtable
 
     The 2D transformations of the coordinate system are specified
-    using the QMatrix class:
+    using the QTransform class:
 
     \table
     \header \o Class \o Description
     \row
-    \o QMatrix
+    \o QTransform
     \o
-    A 3 x 3 transformation matrix. Use QMatrix to rotate, shear,
+    A 3 x 3 transformation matrix. Use QTransform to rotate, shear,
     scale, or translate the coordinate system.
     \endtable
 

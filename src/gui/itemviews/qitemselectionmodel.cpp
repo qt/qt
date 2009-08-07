@@ -303,45 +303,44 @@ QModelIndexList QItemSelectionRange::indexes() const
 }
 
 /*!
-  \class QItemSelection
+    \class QItemSelection
 
-  \brief The QItemSelection class manages information about selected items in a model.
+    \brief The QItemSelection class manages information about selected items in a model.
 
-  \ingroup model-view
+    \ingroup model-view
 
-  A QItemSelection describes the items in a model that have been
-  selected by the user. A QItemSelection is basically a list of
-  selection ranges, see QItemSelectionRange. It provides functions for
-  creating and manipulating selections, and selecting a range of items
-  from a model.
+    A QItemSelection describes the items in a model that have been
+    selected by the user. A QItemSelection is basically a list of
+    selection ranges, see QItemSelectionRange. It provides functions for
+    creating and manipulating selections, and selecting a range of items
+    from a model.
 
-  The QItemSelection class is one of the \l{Model/View Classes}
-  and is part of Qt's \l{Model/View Programming}{model/view framework}.
+    The QItemSelection class is one of the \l{Model/View Classes}
+    and is part of Qt's \l{Model/View Programming}{model/view framework}.
 
-  An item selection can be constructed and initialized to contain a
-  range of items from an existing model. The following example constructs
-  a selection that contains a range of items from the given \c model,
-  beginning at the \c topLeft, and ending at the \c bottomRight.
+    An item selection can be constructed and initialized to contain a
+    range of items from an existing model. The following example constructs
+    a selection that contains a range of items from the given \c model,
+    beginning at the \c topLeft, and ending at the \c bottomRight.
 
-  \snippet doc/src/snippets/code/src_gui_itemviews_qitemselectionmodel.cpp 0
+    \snippet doc/src/snippets/code/src_gui_itemviews_qitemselectionmodel.cpp 0
 
-  An empty item selection can be constructed, and later populated as
-  required. So, if the model is going to be unavailable when we construct
-  the item selection, we can rewrite the above code in the following way:
+    An empty item selection can be constructed, and later populated as
+    required. So, if the model is going to be unavailable when we construct
+    the item selection, we can rewrite the above code in the following way:
 
-  \snippet doc/src/snippets/code/src_gui_itemviews_qitemselectionmodel.cpp 1
+    \snippet doc/src/snippets/code/src_gui_itemviews_qitemselectionmodel.cpp 1
 
-  QItemSelection saves memory, and avoids unnecessary work, by working with
-  selection ranges rather than recording the model item index for each
-  item in the selection. Generally, an instance of this class will contain
-  a list of non-overlapping selection ranges.
+    QItemSelection saves memory, and avoids unnecessary work, by working with
+    selection ranges rather than recording the model item index for each
+    item in the selection. Generally, an instance of this class will contain
+    a list of non-overlapping selection ranges.
 
-  Use merge() to merge one item selection into another without making
-  overlapping ranges. Use split() to split one selection range into
-  smaller ranges based on a another selection range.
+    Use merge() to merge one item selection into another without making
+    overlapping ranges. Use split() to split one selection range into
+    smaller ranges based on a another selection range.
 
-  \sa {Model/View Programming}, QItemSelectionModel
-
+    \sa {Model/View Programming}, QItemSelectionModel
 */
 
 /*!
@@ -420,14 +419,14 @@ QModelIndexList QItemSelection::indexes() const
 }
 
 /*!
-  Merges the \a other selection with this QItemSelection using the
-  \a command given. This method guarantees that no ranges are overlapping.
+    Merges the \a other selection with this QItemSelection using the
+    \a command given. This method guarantees that no ranges are overlapping.
 
-  Note that only QItemSelectionModel::Select,
-  QItemSelectionModel::Deselect, and QItemSelectionModel::Toggle are
-  supported.
+    Note that only QItemSelectionModel::Select,
+    QItemSelectionModel::Deselect, and QItemSelectionModel::Toggle are
+    supported.
 
-  \sa split()
+    \sa split()
 */
 void QItemSelection::merge(const QItemSelection &other, QItemSelectionModel::SelectionFlags command)
 {
@@ -479,10 +478,10 @@ void QItemSelection::merge(const QItemSelection &other, QItemSelectionModel::Sel
 }
 
 /*!
-  Splits the selection \a range using the selection \a other range.
-  Removes all items in \a other from \a range and puts the result in \a result.
-  This can be compared with the semantics of the \e subtract operation of a set.
-  \sa merge()
+    Splits the selection \a range using the selection \a other range.
+    Removes all items in \a other from \a range and puts the result in \a result.
+    This can be compared with the semantics of the \e subtract operation of a set.
+    \sa merge()
 */
 
 void QItemSelection::split(const QItemSelectionRange &range,
@@ -529,11 +528,11 @@ void QItemSelection::split(const QItemSelectionRange &range,
 }
 
 /*!
-  \internal
+    \internal
 
-  returns a QItemSelection where all ranges have been expanded to:
-  Rows: left: 0 and right: columnCount()-1
-  Columns: top: 0 and bottom: rowCount()-1
+    returns a QItemSelection where all ranges have been expanded to:
+    Rows: left: 0 and right: columnCount()-1
+    Columns: top: 0 and bottom: rowCount()-1
 */
 
 QItemSelection QItemSelectionModelPrivate::expandSelection(const QItemSelection &selection,
@@ -568,7 +567,7 @@ QItemSelection QItemSelectionModelPrivate::expandSelection(const QItemSelection 
 }
 
 /*!
-  \internal
+    \internal
 */
 void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &parent,
                                                          int start, int end)
@@ -599,7 +598,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
 }
 
 /*!
-  \internal
+    \internal
 */
 void QItemSelectionModelPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &parent,
                                                             int start, int end)
@@ -630,9 +629,9 @@ void QItemSelectionModelPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &p
 }
 
 /*!
-  \internal
+    \internal
 
-  Split selection ranges if columns are about to be inserted in the middle.
+    Split selection ranges if columns are about to be inserted in the middle.
 */
 void QItemSelectionModelPrivate::_q_columnsAboutToBeInserted(const QModelIndex &parent,
                                                              int start, int end)
@@ -659,9 +658,9 @@ void QItemSelectionModelPrivate::_q_columnsAboutToBeInserted(const QModelIndex &
 }
 
 /*!
-  \internal
+    \internal
 
-  Split selection ranges if rows are about to be inserted in the middle.
+    Split selection ranges if rows are about to be inserted in the middle.
 */
 void QItemSelectionModelPrivate::_q_rowsAboutToBeInserted(const QModelIndex &parent,
                                                           int start, int end)
@@ -688,11 +687,11 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeInserted(const QModelIndex &par
 }
 
 /*!
-  \internal
+    \internal
 
-  Split selection into individual (persistent) indexes. This is done in
-  preparation for the layoutChanged() signal, where the indexes can be
-  merged again.
+    Split selection into individual (persistent) indexes. This is done in
+    preparation for the layoutChanged() signal, where the indexes can be
+    merged again.
 */
 void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
 {
@@ -726,10 +725,10 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
 }
 
 /*!
-  \internal
+    \internal
 
-  Merges \a indexes into an item selection made up of ranges.
-  Assumes that the indexes are sorted.
+    Merges \a indexes into an item selection made up of ranges.
+    Assumes that the indexes are sorted.
 */
 static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
 {
@@ -774,9 +773,9 @@ static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
 }
 
 /*!
-  \internal
+    \internal
 
-  Merge the selected indexes into selection ranges again.
+    Merge the selected indexes into selection ranges again.
 */
 void QItemSelectionModelPrivate::_q_layoutChanged()
 {
@@ -818,41 +817,41 @@ void QItemSelectionModelPrivate::_q_layoutChanged()
 }
 
 /*!
-  \class QItemSelectionModel
+    \class QItemSelectionModel
 
-  \brief The QItemSelectionModel class keeps track of a view's selected items.
+    \brief The QItemSelectionModel class keeps track of a view's selected items.
 
-  \ingroup model-view
+    \ingroup model-view
 
-  A QItemSelectionModel keeps track of the selected items in a view, or
-  in several views onto the same model. It also keeps track of the
-  currently selected item in a view.
+    A QItemSelectionModel keeps track of the selected items in a view, or
+    in several views onto the same model. It also keeps track of the
+    currently selected item in a view.
 
-  The QItemSelectionModel class is one of the \l{Model/View Classes}
-  and is part of Qt's \l{Model/View Programming}{model/view framework}.
+    The QItemSelectionModel class is one of the \l{Model/View Classes}
+    and is part of Qt's \l{Model/View Programming}{model/view framework}.
 
-  The selected items are stored using ranges. Whenever you want to
-  modify the selected items use select() and provide either a
-  QItemSelection, or a QModelIndex and a QItemSelectionModel::SelectionFlag.
+    The selected items are stored using ranges. Whenever you want to
+    modify the selected items use select() and provide either a
+    QItemSelection, or a QModelIndex and a QItemSelectionModel::SelectionFlag.
 
-  The QItemSelectionModel takes a two layer approach to selection
-  management, dealing with both selected items that have been committed
-  and items that are part of the current selection. The current
-  selected items are part of the current interactive selection (for
-  example with rubber-band selection or keyboard-shift selections).
+    The QItemSelectionModel takes a two layer approach to selection
+    management, dealing with both selected items that have been committed
+    and items that are part of the current selection. The current
+    selected items are part of the current interactive selection (for
+    example with rubber-band selection or keyboard-shift selections).
 
-  To update the currently selected items, use the bitwise OR of
-  QItemSelectionModel::Current and any of the other SelectionFlags.
-  If you omit the QItemSelectionModel::Current command, a new current
-  selection will be created, and the previous one added to the whole
-  selection. All functions operate on both layers; for example,
-  selectedItems() will return items from both layers.
+    To update the currently selected items, use the bitwise OR of
+    QItemSelectionModel::Current and any of the other SelectionFlags.
+    If you omit the QItemSelectionModel::Current command, a new current
+    selection will be created, and the previous one added to the whole
+    selection. All functions operate on both layers; for example,
+    selectedItems() will return items from both layers.
 
-  \sa {Model/View Programming}, QAbstractItemModel, {Chart Example}
+    \sa {Model/View Programming}, QAbstractItemModel, {Chart Example}
 */
 
 /*!
-  Constructs a selection model that operates on the specified item \a model.
+    Constructs a selection model that operates on the specified item \a model.
 */
 QItemSelectionModel::QItemSelectionModel(QAbstractItemModel *model)
     : QObject(*new QItemSelectionModelPrivate, model)
@@ -875,7 +874,7 @@ QItemSelectionModel::QItemSelectionModel(QAbstractItemModel *model)
 }
 
 /*!
-  Constructs a selection model that operates on the specified item \a model with \a parent.
+    Constructs a selection model that operates on the specified item \a model with \a parent.
 */
 QItemSelectionModel::QItemSelectionModel(QAbstractItemModel *model, QObject *parent)
     : QObject(*new QItemSelectionModelPrivate, parent)
@@ -898,7 +897,7 @@ QItemSelectionModel::QItemSelectionModel(QAbstractItemModel *model, QObject *par
 }
 
 /*!
-  \internal
+    \internal
 */
 QItemSelectionModel::QItemSelectionModel(QItemSelectionModelPrivate &dd, QAbstractItemModel *model)
     : QObject(dd, model)
@@ -921,7 +920,7 @@ QItemSelectionModel::QItemSelectionModel(QItemSelectionModelPrivate &dd, QAbstra
 }
 
 /*!
-  Destroys the selection model.
+    Destroys the selection model.
 */
 QItemSelectionModel::~QItemSelectionModel()
 {
@@ -943,10 +942,10 @@ QItemSelectionModel::~QItemSelectionModel()
 }
 
 /*!
-  Selects the model item \a index using the specified \a command, and emits
-  selectionChanged().
+    Selects the model item \a index using the specified \a command, and emits
+    selectionChanged().
 
-  \sa QItemSelectionModel::SelectionFlags
+    \sa QItemSelectionModel::SelectionFlags
 */
 void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
 {
@@ -955,37 +954,37 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 }
 
 /*!
-   \fn void QItemSelectionModel::currentChanged(const QModelIndex &current, const QModelIndex &previous)
+    \fn void QItemSelectionModel::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 
-   This signal is emitted whenever the current item changes. The \a previous
-   model item index is replaced by the \a current index as the selection's
-   current item.
+    This signal is emitted whenever the current item changes. The \a previous
+    model item index is replaced by the \a current index as the selection's
+    current item.
 
-   Note that this signal will not be emitted when the item model is reset.
+    Note that this signal will not be emitted when the item model is reset.
 
-   \sa currentIndex() setCurrentIndex() selectionChanged()
+    \sa currentIndex() setCurrentIndex() selectionChanged()
 */
 
 /*!
-   \fn void QItemSelectionModel::currentColumnChanged(const QModelIndex &current, const QModelIndex &previous)
+    \fn void QItemSelectionModel::currentColumnChanged(const QModelIndex &current, const QModelIndex &previous)
 
-   This signal is emitted if the \a current item changes and its column is
-   different to the column of the \a previous current item.
+    This signal is emitted if the \a current item changes and its column is
+    different to the column of the \a previous current item.
 
-   Note that this signal will not be emitted when the item model is reset.
+    Note that this signal will not be emitted when the item model is reset.
 
-   \sa currentChanged() currentRowChanged() currentIndex() setCurrentIndex()
+    \sa currentChanged() currentRowChanged() currentIndex() setCurrentIndex()
 */
 
 /*!
-   \fn void QItemSelectionModel::currentRowChanged(const QModelIndex &current, const QModelIndex &previous)
+    \fn void QItemSelectionModel::currentRowChanged(const QModelIndex &current, const QModelIndex &previous)
 
-   This signal is emitted if the \a current item changes and its row is
-   different to the row of the \a previous current item.
+    This signal is emitted if the \a current item changes and its row is
+    different to the row of the \a previous current item.
 
-   Note that this signal will not be emitted when the item model is reset.
+    Note that this signal will not be emitted when the item model is reset.
 
-   \sa currentChanged() currentColumnChanged() currentIndex() setCurrentIndex()
+    \sa currentChanged() currentColumnChanged() currentIndex() setCurrentIndex()
 */
 
 /*!
@@ -1002,32 +1001,32 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 */
 
 /*!
-  \enum QItemSelectionModel::SelectionFlag
+    \enum QItemSelectionModel::SelectionFlag
 
-  This enum describes the way the selection model will be updated.
+    This enum describes the way the selection model will be updated.
 
-  \value NoUpdate       No selection will be made.
-  \value Clear          The complete selection will be cleared.
-  \value Select         All specified indexes will be selected.
-  \value Deselect       All specified indexes will be deselected.
-  \value Toggle         All specified indexes will be selected or
-                        deselected depending on their current state.
-  \value Current        The current selection will be updated.
-  \value Rows           All indexes will be expanded to span rows.
-  \value Columns        All indexes will be expanded to span columns.
-  \value SelectCurrent  A combination of Select and Current, provided for
-                        convenience.
-  \value ToggleCurrent  A combination of Toggle and Current, provided for
-                        convenience.
-  \value ClearAndSelect A combination of Clear and Select, provided for
-                        convenience.
+    \value NoUpdate       No selection will be made.
+    \value Clear          The complete selection will be cleared.
+    \value Select         All specified indexes will be selected.
+    \value Deselect       All specified indexes will be deselected.
+    \value Toggle         All specified indexes will be selected or
+                          deselected depending on their current state.
+    \value Current        The current selection will be updated.
+    \value Rows           All indexes will be expanded to span rows.
+    \value Columns        All indexes will be expanded to span columns.
+    \value SelectCurrent  A combination of Select and Current, provided for
+                          convenience.
+    \value ToggleCurrent  A combination of Toggle and Current, provided for
+                          convenience.
+    \value ClearAndSelect A combination of Clear and Select, provided for
+                          convenience.
 */
 
 /*!
-  Selects the item \a selection using the specified \a command, and emits
-  selectionChanged().
+    Selects the item \a selection using the specified \a command, and emits
+    selectionChanged().
 
-  \sa QItemSelectionModel::SelectionFlag
+    \sa QItemSelectionModel::SelectionFlag
 */
 void QItemSelectionModel::select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
 {
@@ -1067,7 +1066,7 @@ void QItemSelectionModel::select(const QItemSelection &selection, QItemSelection
 }
 
 /*!
-  Clears the selection model. Emits selectionChanged() and currentChanged().
+    Clears the selection model. Emits selectionChanged() and currentChanged().
 */
 void QItemSelectionModel::clear()
 {
@@ -1083,7 +1082,7 @@ void QItemSelectionModel::clear()
 }
 
 /*!
-  Clears the selection model. Does not emit any signals.
+    Clears the selection model. Does not emit any signals.
 */
 void QItemSelectionModel::reset()
 {
@@ -1093,8 +1092,8 @@ void QItemSelectionModel::reset()
 }
 
 /*!
-  \since 4.2
-  Clears the selection in the selection model. Emits selectionChanged().
+    \since 4.2
+    Clears the selection in the selection model. Emits selectionChanged().
 */
 void QItemSelectionModel::clearSelection()
 {
@@ -1110,14 +1109,14 @@ void QItemSelectionModel::clearSelection()
 
 
 /*!
-  Sets the model item \a index to be the current item, and emits
-  currentChanged(). The current item is used for keyboard navigation and
-  focus indication; it is independent of any selected items, although a
-  selected item can also be the current item.
+    Sets the model item \a index to be the current item, and emits
+    currentChanged(). The current item is used for keyboard navigation and
+    focus indication; it is independent of any selected items, although a
+    selected item can also be the current item.
 
-  Depending on the specified \a command, the \a index can also become part
-  of the current selection.
-  \sa select()
+    Depending on the specified \a command, the \a index can also become part
+    of the current selection.
+    \sa select()
 */
 void QItemSelectionModel::setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
 {
@@ -1141,8 +1140,8 @@ void QItemSelectionModel::setCurrentIndex(const QModelIndex &index, QItemSelecti
 }
 
 /*!
-  Returns the model item index for the current item, or an invalid index
-  if there is no current item.
+    Returns the model item index for the current item, or an invalid index
+    if there is no current item.
 */
 QModelIndex QItemSelectionModel::currentIndex() const
 {
@@ -1150,7 +1149,7 @@ QModelIndex QItemSelectionModel::currentIndex() const
 }
 
 /*!
-  Returns true if the given model item \a index is selected.
+    Returns true if the given model item \a index is selected.
 */
 bool QItemSelectionModel::isSelected(const QModelIndex &index) const
 {
@@ -1187,12 +1186,12 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
 }
 
 /*!
-  Returns true if all items are selected in the \a row with the given
-  \a parent.
+    Returns true if all items are selected in the \a row with the given
+    \a parent.
 
-  Note that this function is usually faster than calling isSelected()
-  on all items in the same row and that unselectable items are
-  ignored.
+    Note that this function is usually faster than calling isSelected()
+    on all items in the same row and that unselectable items are
+    ignored.
 */
 bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) const
 {
@@ -1247,12 +1246,12 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
 }
 
 /*!
-  Returns true if all items are selected in the \a column with the given
-  \a parent.
+    Returns true if all items are selected in the \a column with the given
+    \a parent.
 
-  Note that this function is usually faster than calling isSelected()
-  on all items in the same column and that unselectable items are
-  ignored.
+    Note that this function is usually faster than calling isSelected()
+    on all items in the same column and that unselectable items are
+    ignored.
 */
 bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent) const
 {
@@ -1307,8 +1306,8 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
 }
 
 /*!
-  Returns true if there are any  items selected in the \a row with the given
-  \a parent.
+    Returns true if there are any items selected in the \a row with the given
+    \a parent.
 */
 bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &parent) const
 {
@@ -1336,8 +1335,8 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 }
 
 /*!
-  Returns true if there are any  items selected in the \a column with the given
-  \a parent.
+    Returns true if there are any items selected in the \a column with the given
+    \a parent.
 */
 bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelIndex &parent) const
 {
@@ -1377,15 +1376,14 @@ bool QItemSelectionModel::hasSelection() const
         QItemSelection sel = d->ranges;
         sel.merge(d->currentSelection, d->currentCommand);
         return !sel.isEmpty();
-    }
-    else {
+    } else {
         return !(d->ranges.isEmpty() && d->currentSelection.isEmpty());
     }
 }
 
 /*!
-  Returns a list of all selected model item indexes. The list contains no
-  duplicates, and is not sorted.
+    Returns a list of all selected model item indexes. The list contains no
+    duplicates, and is not sorted.
 */
 QModelIndexList QItemSelectionModel::selectedIndexes() const
 {
@@ -1396,10 +1394,10 @@ QModelIndexList QItemSelectionModel::selectedIndexes() const
 }
 
 /*!
-  \since 4.2
-  Returns the indexes in the given \a column for the rows where all columns are selected.
+    \since 4.2
+    Returns the indexes in the given \a column for the rows where all columns are selected.
 
-  \sa selectedIndexes(), selectedColumns()
+    \sa selectedIndexes(), selectedColumns()
 */
 
 QModelIndexList QItemSelectionModel::selectedRows(int column) const
@@ -1460,7 +1458,7 @@ QModelIndexList QItemSelectionModel::selectedColumns(int row) const
 }
 
 /*!
-  Returns the selection ranges stored in the selection model.
+    Returns the selection ranges stored in the selection model.
 */
 const QItemSelection QItemSelectionModel::selection() const
 {
@@ -1480,7 +1478,7 @@ const QItemSelection QItemSelectionModel::selection() const
 }
 
 /*!
-  Returns the item model operated on by the selection model.
+    Returns the item model operated on by the selection model.
 */
 const QAbstractItemModel *QItemSelectionModel::model() const
 {
@@ -1488,8 +1486,8 @@ const QAbstractItemModel *QItemSelectionModel::model() const
 }
 
 /*!
-  Compares the two selections \a newSelection and \a oldSelection
-  and emits selectionChanged() with the deselected and selected items.
+    Compares the two selections \a newSelection and \a oldSelection
+    and emits selectionChanged() with the deselected and selected items.
 */
 void QItemSelectionModel::emitSelectionChanged(const QItemSelection &newSelection,
                                                const QItemSelection &oldSelection)

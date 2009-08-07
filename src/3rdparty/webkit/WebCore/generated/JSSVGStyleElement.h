@@ -33,7 +33,7 @@ class SVGStyleElement;
 class JSSVGStyleElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGStyleElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGStyleElement>);
+    JSSVGStyleElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGStyleElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);

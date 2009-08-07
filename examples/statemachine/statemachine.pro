@@ -3,10 +3,9 @@ SUBDIRS       = \
                 eventtransitions \
                 factorial \
                 pingpong \
+                rogue \
                 trafficlight \
-                twowaybutton \
-                tankgame \
-                tankgameplugins
+                twowaybutton
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/statemachine

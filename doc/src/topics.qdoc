@@ -150,18 +150,6 @@ These guides provide specific help about specific Qt-related topics.
 */
 
 /*!
-\group licensing
-\title Licensing Information
-\ingroup topics
-\brief Information about licenses and licensing issues.
-
-These documents include information about Qt's licenses and the licenses
-of third party components used in Qt.
-
-\generatelist{related}
-*/
-
-/*!
 \group platform-notes
 \title Platform-Specific Notes
 \ingroup topics

@@ -234,8 +234,9 @@ void JambiApiParser::doneParsingSourceFiles(Tree * /* tree */)
     foreach (Node *cppNode, cppTre->root()->childNodes()) {
         if (cppNode->type() == Node::Fake) {
             FakeNode *cppFake = static_cast<FakeNode *>(cppNode);
-            if (cppFake->subType() == FakeNode::Page) {
-                FakeNode *javaFake = new FakeNode(javaTre->root(), cppFake->name(),
+            if (cppFake->subType() == Node::Page) {
+                FakeNode *javaFake = new FakeNode(javaTre->root(),
+                                                  cppFake->name(),
                                                   cppFake->subType());
                 javaFake->setModuleName("com.trolltech.qt");    // ### hard-coded
                 javaFake->setTitle(cppFake->title());

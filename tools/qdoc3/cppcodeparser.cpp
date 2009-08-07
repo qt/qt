@@ -87,6 +87,10 @@ QT_BEGIN_NAMESPACE
 #ifdef QDOC_QML
 #define COMMAND_QMLCLASS                Doc::alias("qmlclass")
 #define COMMAND_QMLPROPERTY             Doc::alias("qmlproperty")
+#define COMMAND_QMLINHERITS             Doc::alias("inherits")
+#define COMMAND_QMLSIGNAL               Doc::alias("qmlsignal")
+#define COMMAND_QMLMETHOD               Doc::alias("qmlmethod")
+#define COMMAND_QMLDEFAULT              Doc::alias("default")
 #endif
 
 QStringList CppCodeParser::exampleFiles;
@@ -109,7 +113,8 @@ static void extractPageLinkAndDesc(const QString &arg,
         if (arg.contains(".html") && spaceAt != -1) {
             *link = arg.left(spaceAt).trimmed();
             *desc = arg.mid(spaceAt).trimmed();
-        } else {
+        }
+        else {
             *link = arg;
             *desc = arg;
         }
@@ -202,11 +207,6 @@ void CppCodeParser::initializeParser(const Config &config)
     nodeTypeMap.insert(COMMAND_PROPERTY, Node::Property);
     nodeTypeMap.insert(COMMAND_VARIABLE, Node::Variable);
 
-#ifdef QDOC_QML
-    //    nodeTypeMap.insert(COMMAND_QMLCLASS, Node::Class);
-    nodeTypeMap.insert(COMMAND_QMLPROPERTY, Node::Property);
-#endif    
-    
     exampleFiles = config.getStringList(CONFIG_EXAMPLES);
     exampleDirs = config.getStringList(CONFIG_EXAMPLEDIRS);
     QStringList exampleFilePatterns = config.getStringList(
@@ -477,13 +477,15 @@ QSet<QString> CppCodeParser::topicCommands()
                            << COMMAND_PROPERTY
                            << COMMAND_SERVICE
                            << COMMAND_TYPEDEF
-#ifdef QDOC_QML        
+#ifdef QDOC_QML
                            << COMMAND_VARIABLE
                            << COMMAND_QMLCLASS
-                           << COMMAND_QMLPROPERTY;
-#else    
+                           << COMMAND_QMLPROPERTY
+                           << COMMAND_QMLSIGNAL
+                           << COMMAND_QMLMETHOD;
+#else
                            << COMMAND_VARIABLE;
-#endif    
+#endif
 }
 
 /*!
@@ -587,7 +589,7 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
           The command was neither "fn" nor "macro" .
          */
         // ### split(" ") hack is there to support header file syntax
-        QStringList paths = arg.split(" "); 
+        QStringList paths = arg.split(" ");
         QStringList path = paths[0].split("::");
         Node *node = 0;
         if (!usedNamespaces.isEmpty()) {
@@ -627,48 +629,168 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             }
         }
 
+        if (command == COMMAND_CLASS) {
+            if (paths.size() > 1) {
+                if (!paths[1].endsWith(".h")) {
+                    ClassNode*cnode = static_cast<ClassNode*>(node);
+                    cnode->setQmlElement(paths[1]);
+                }
+            }
+        }
         return node;
     }
     else if (command == COMMAND_EXAMPLE) {
-        FakeNode *fake = new FakeNode(tre->root(), arg, FakeNode::Example);
+        FakeNode *fake = new FakeNode(tre->root(), arg, Node::Example);
         createExampleFileNodes(fake);
         return fake;
     }
     else if (command == COMMAND_EXTERNALPAGE) {
-        return new FakeNode(tre->root(), arg, FakeNode::ExternalPage);
+        return new FakeNode(tre->root(), arg, Node::ExternalPage);
     }
     else if (command == COMMAND_FILE) {
-        return new FakeNode(tre->root(), arg, FakeNode::File);
+        return new FakeNode(tre->root(), arg, Node::File);
     }
     else if (command == COMMAND_GROUP) {
-        return new FakeNode(tre->root(), arg, FakeNode::Group);
+        return new FakeNode(tre->root(), arg, Node::Group);
     }
     else if (command == COMMAND_HEADERFILE) {
-        return new FakeNode(tre->root(), arg, FakeNode::HeaderFile);
+        return new FakeNode(tre->root(), arg, Node::HeaderFile);
     }
     else if (command == COMMAND_MODULE) {
-        return new FakeNode(tre->root(), arg, FakeNode::Module);
+        return new FakeNode(tre->root(), arg, Node::Module);
     }
     else if (command == COMMAND_PAGE) {
-        return new FakeNode(tre->root(), arg, FakeNode::Page);
+        return new FakeNode(tre->root(), arg, Node::Page);
     }
-#ifdef QDOC_QML    
+#ifdef QDOC_QML
     else if (command == COMMAND_QMLCLASS) {
         const ClassNode* classNode = 0;
-        QStringList names = arg.split(" "); 
-        //qDebug() << "QMLCLASS" << names;
+        QStringList names = arg.split(" ");
         if (names.size() > 1) {
             Node* n = tre->findNode(names[1].split("::"),Node::Class);
-            if (n) {
+            if (n)
                 classNode = static_cast<const ClassNode*>(n);
-                //qDebug() << "FOUND IT!" << classNode->name();
+        }
+        return new QmlClassNode(tre->root(), names[0], classNode);
+    }
+    else if ((command == COMMAND_QMLSIGNAL) ||
+             (command == COMMAND_QMLMETHOD)) {
+        QString element;
+        QString name;
+        QmlClassNode* qmlClass = 0;
+        if (splitQmlArg(doc,arg,element,name)) {
+            Node* n = tre->findNode(QStringList(element),Node::Fake);
+            if (n && n->subType() == Node::QmlClass) {
+                qmlClass = static_cast<QmlClassNode*>(n);
+                if (command == COMMAND_QMLSIGNAL)
+                    return new QmlSignalNode(qmlClass,name);
+                else
+                    return new QmlMethodNode(qmlClass,name);
             }
         }
-        return new QmlNode(tre->root(), names[0], classNode);
     }
-#endif    
+#endif
     return 0;
 }
+
+#ifdef QDOC_QML
+
+/*!
+  A QML property argument has the form...
+
+  <type> <element>::<name>
+
+  This function splits the argument into those three
+  parts, sets \a type, \a element, and \a property,
+  and returns true. If any of the parts isn't found,
+  a debug message is output and false is returned.
+ */
+bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
+                                        const QString& arg,
+                                        QString& type,
+                                        QString& element,
+                                        QString& property)
+{
+    QStringList blankSplit = arg.split(" ");
+    if (blankSplit.size() > 1) {
+        type = blankSplit[0];
+        QStringList colonSplit(blankSplit[1].split("::"));
+        if (colonSplit.size() > 1) {
+            element = colonSplit[0];
+            property = colonSplit[1];
+            return true;
+        }
+        else
+            doc.location().warning(tr("Missing QML element name or property name"));
+    }
+    else
+        doc.location().warning(tr("Missing QML property type or property path"));
+    return false;
+}
+
+/*!
+  A QML signal or method argument has the form...
+
+  <element>::<name>
+
+  This function splits the argument into those two
+  parts, sets \a element, and \a name, and returns
+  true. If either of the parts isn't found, a debug
+  message is output and false is returned.
+ */
+bool CppCodeParser::splitQmlArg(const Doc& doc,
+                                const QString& arg,
+                                QString& element,
+                                QString& name)
+{
+    QStringList colonSplit(arg.split("::"));
+    if (colonSplit.size() > 1) {
+        element = colonSplit[0];
+        name = colonSplit[1];
+        return true;
+    }
+    else
+        doc.location().warning(tr("Missing QML element name or signal/method name"));
+    return false;
+}
+
+/*!
+  Process the topic \a command group with arguments \a args.
+
+  Currently, this function is called only for \e{qmlproperty}.
+ */
+Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
+                                              const QString& command,
+                                              const QStringList& args)
+{
+    QmlPropGroupNode* qmlPropGroup = 0;
+    if (command == COMMAND_QMLPROPERTY) {
+        QString type;
+        QString element;
+        QString property;
+        QStringList::ConstIterator arg = args.begin();
+        if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
+            Node* n = tre->findNode(QStringList(element),Node::Fake);
+            if (n && n->subType() == Node::QmlClass) {
+                QmlClassNode* qmlClass = static_cast<QmlClassNode*>(n);
+                if (qmlClass)
+                    qmlPropGroup = new QmlPropGroupNode(qmlClass,property);
+            }
+        }
+        if (qmlPropGroup) {
+            new QmlPropertyNode(qmlPropGroup,property,type);
+            ++arg;
+            while (arg != args.end()) {
+                if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
+                    new QmlPropertyNode(qmlPropGroup,property,type);
+                }
+                ++arg;
+            }
+        }
+    }
+    return qmlPropGroup;
+}
+#endif
 
 /*!
   Returns the set of strings representing the common metacommands
@@ -684,7 +806,13 @@ QSet<QString> CppCodeParser::otherMetaCommands()
                                 << COMMAND_NEXTPAGE
                                 << COMMAND_PREVIOUSPAGE
                                 << COMMAND_INDEXPAGE
+#ifdef QDOC_QML        
+                                << COMMAND_STARTPAGE
+                                << COMMAND_QMLINHERITS
+                                << COMMAND_QMLDEFAULT;
+#else    
                                 << COMMAND_STARTPAGE;
+#endif    
 }
 
 /*!
@@ -759,14 +887,19 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_RELATES) {
         InnerNode *pseudoParent;
         if (arg.startsWith("<") || arg.startsWith("\"")) {
-            pseudoParent = static_cast<InnerNode *>(tre->findNode(QStringList(arg), Node::Fake));
+            pseudoParent =
+                static_cast<InnerNode *>(tre->findNode(QStringList(arg),
+                                                       Node::Fake));
         }
         else {
             QStringList newPath = arg.split("::");
-            pseudoParent = static_cast<InnerNode *>(tre->findNode(QStringList(newPath), Node::Class));
+            pseudoParent =
+                static_cast<InnerNode*>(tre->findNode(QStringList(newPath),
+                                                      Node::Class));
             if (!pseudoParent)
-                pseudoParent = static_cast<InnerNode *>(tre->findNode(QStringList(newPath),
-                                                        Node::Namespace));
+                pseudoParent =
+                    static_cast<InnerNode*>(tre->findNode(QStringList(newPath),
+                                                          Node::Namespace));
         }
         if (!pseudoParent) {
             doc.location().warning(tr("Cannot find '%1' in '\\%2'")
@@ -791,6 +924,15 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_STARTPAGE) {
         setLink(node, Node::StartLink, arg);
     }
+#ifdef QDOC_QML
+    else if (command == COMMAND_QMLINHERITS) {
+        setLink(node, Node::InheritsLink, arg);
+    }
+    else if (command == COMMAND_QMLDEFAULT) {
+        QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
+        qpgn->setDefault();
+    }
+#endif
     else {
         processCommonMetaCommand(doc.location(),command,arg,node,tre);
     }
@@ -870,9 +1012,8 @@ bool CppCodeParser::match(int target)
         readToken();
         return true;
     }
-    else {
+    else
         return false;
-    }
 }
 
 /*!
@@ -907,11 +1048,14 @@ bool CppCodeParser::matchTemplateAngles(CodeChunk *dataType)
         do {
             if (tok == Tok_LeftAngle) {
                 leftAngleDepth++;
-            } else if (tok == Tok_RightAngle) {
+            }
+            else if (tok == Tok_RightAngle) {
                 leftAngleDepth--;
-            } else if (tok == Tok_LeftParen || tok == Tok_LeftBrace) {
+            }
+            else if (tok == Tok_LeftParen || tok == Tok_LeftBrace) {
                 ++parenAndBraceDepth;
-            } else if (tok == Tok_RightParen || tok == Tok_RightBrace) {
+            }
+            else if (tok == Tok_RightParen || tok == Tok_RightBrace) {
                 if (--parenAndBraceDepth < 0)
                     return false;
             }
@@ -974,7 +1118,8 @@ bool CppCodeParser::matchDataType(CodeChunk *dataType, QString *var)
                 dataType->append(previousLexeme());
             else
                 return false;
-        } else if (match(Tok_int) || match(Tok_char) || match(Tok_double)) {
+        }
+        else if (match(Tok_int) || match(Tok_char) || match(Tok_double)) {
             dataType->append(previousLexeme());
         }
 
@@ -1074,8 +1219,10 @@ bool CppCodeParser::matchParameter(FunctionNode *func)
             readToken();
         }
     }
-    func->addParameter(Parameter(dataType.toString(), "", name,
-                                  defaultValue.toString())); // ###
+    func->addParameter(Parameter(dataType.toString(),
+                                 "",
+                                 name,
+                                 defaultValue.toString())); // ###
     return true;
 }
 
@@ -1123,7 +1270,8 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
         compat = true;
 
     if (tok == Tok_operator &&
-         (returnType.toString().isEmpty() || returnType.toString().endsWith("::"))) {
+         (returnType.toString().isEmpty() ||
+          returnType.toString().endsWith("::"))) {
         // 'QString::operator const char *()'
         parentPath = returnType.toString().split(sep);
         parentPath.removeAll(QString());
@@ -1159,11 +1307,10 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
             name = previousLexeme();
             matchTemplateAngles();
 
-            if (match(Tok_Gulbrandsen)) {
+            if (match(Tok_Gulbrandsen))
                 parentPath.append(name);
-            } else {
+            else
                 break;
-            }
         }
 
         if (tok == Tok_operator) {
@@ -1176,7 +1323,9 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
                     break;
             }
         }
-        if (parent && (tok == Tok_Semicolon || tok == Tok_LeftBracket || tok == Tok_Colon)
+        if (parent && (tok == Tok_Semicolon ||
+                       tok == Tok_LeftBracket ||
+                       tok == Tok_Colon)
                 && access != Node::Private) {
             if (tok == Tok_LeftBracket) {
                 returnType.appendHotspot();
@@ -1190,7 +1339,8 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
                 }
                 if (tok != Tok_Semicolon)
                     return false;
-            } else if (tok == Tok_Colon) {
+            }
+            else if (tok == Tok_Colon) {
                 returnType.appendHotspot();
 
                 while (tok != Tok_Semicolon && tok != Tok_Eoi) {
@@ -1382,7 +1532,7 @@ bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
     QString namespaceName = previousLexeme();
     NamespaceNode *namespasse = 0;
     if (parent)
-        namespasse = static_cast<NamespaceNode *>(parent->findNode(namespaceName, Node::Namespace));
+        namespasse = static_cast<NamespaceNode*>(parent->findNode(namespaceName, Node::Namespace));
     if (!namespasse) {
         namespasse = new NamespaceNode(parent, namespaceName);
         namespasse->setAccess(access);
@@ -1448,7 +1598,8 @@ bool CppCodeParser::matchEnumItem(InnerNode *parent, EnumNode *enume)
         if (strVal.isEmpty()) {
             if (enume->items().isEmpty()) {
                 strVal = "0";
-            } else {
+            }
+            else {
                 QString last = enume->items().last().value();
                 bool ok;
                 int n = last.toInt(&ok);
@@ -1458,15 +1609,16 @@ bool CppCodeParser::matchEnumItem(InnerNode *parent, EnumNode *enume)
                             strVal = last.left(2) + QString::number(n + 1, 16);
                         else
                             strVal = "0" + QString::number(n + 1, 8);
-                    } else {
-                        strVal = QString::number(n + 1);
                     }
+                    else
+                        strVal = QString::number(n + 1);
                 }
             }
         }
 
         enume->addItem(EnumItem(name, strVal));
-    } else {
+    }
+    else {
         VariableNode *var = new VariableNode(parent, name);
         var->setAccess(access);
         var->setLocation(location());
@@ -1554,7 +1706,8 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
 
         if (match(Tok_Ident)) {
             value = previousLexeme();
-        } else if (match(Tok_LeftParen)) {
+        }
+        else if (match(Tok_LeftParen)) {
             int depth = 1;
             while (tok != Tok_Eoi) {
                 if (tok == Tok_LeftParen) {
@@ -1571,6 +1724,9 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
             value = "?";
         }
 
+        /*
+          Task 259071 requires work here. See gui/widgets/qdatetime.h, for example.
+         */
         if (key == "READ")
             tre->addPropertyFunction(property, value, PropertyNode::Getter);
         else if (key == "WRITE")
@@ -1807,6 +1963,28 @@ bool CppCodeParser::matchDocsAndStuff()
                 /*
                   There is a topic command. Process it.
                  */
+#ifdef QDOC_QML
+                if (topic == COMMAND_QMLPROPERTY) {
+                    Doc nodeDoc = doc;
+                    Node *node = processTopicCommandGroup(nodeDoc,topic,args);
+                    if (node != 0) {
+                        nodes.append(node);
+                        docs.append(nodeDoc);
+                    }
+                }
+                else {
+                    QStringList::ConstIterator a = args.begin();
+                    while (a != args.end()) {
+                        Doc nodeDoc = doc;
+                        Node *node = processTopicCommand(nodeDoc,topic,*a);
+                        if (node != 0) {
+                            nodes.append(node);
+                            docs.append(nodeDoc);
+                        }
+                        ++a;
+                    }
+                }
+#else
                 QStringList::ConstIterator a = args.begin();
                 while (a != args.end()) {
                     Doc nodeDoc = doc;
@@ -1817,6 +1995,7 @@ bool CppCodeParser::matchDocsAndStuff()
                     }
                     ++a;
                 }
+#endif                
             }
 
             NodeList::Iterator n = nodes.begin();
@@ -1824,7 +2003,8 @@ bool CppCodeParser::matchDocsAndStuff()
             while (n != nodes.end()) {
                 processOtherMetaCommands(*d, *n);
                 (*n)->setDoc(*d);
-                if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
+                if ((*n)->isInnerNode() &&
+                    ((InnerNode *)*n)->includes().isEmpty()) {
                     InnerNode *m = static_cast<InnerNode *>(*n);
                     while (m->parent() != tre->root())
                         m = m->parent();
@@ -1912,7 +2092,8 @@ void CppCodeParser::parseQiteratorDotH(const Location &location,
         mutableSequentialIteratorDefinition = lines[1];
         associativeIteratorDefinition = lines[2];
         mutableAssociativeIteratorDefinition = lines[3];
-    } else {
+    }
+    else {
         location.warning(tr("The qiterator.h hack failed"));
     }
 }
@@ -1994,7 +2175,7 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     foreach (const QString &exampleFile, exampleFiles)
         (void) new FakeNode(fake,
                             exampleFile.mid(sizeOfBoringPartOfName),
-                            FakeNode::File);
+                            Node::File);
 }
 
 QT_END_NAMESPACE

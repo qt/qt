@@ -32,12 +32,12 @@
 #include "Collector.h"
 #include "ExecutableAllocator.h"
 #include "Register.h"
+#include <stdio.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/VMTags.h>
 
 #if HAVE(MMAP)
 #include <errno.h>
-#include <stdio.h>
 #include <sys/mman.h>
 #endif
 
@@ -92,7 +92,7 @@ namespace JSC {
 
     class JSGlobalObject;
 
-    class RegisterFile : Noncopyable {
+    class RegisterFile : public Noncopyable {
         friend class JIT;
     public:
         enum CallFrameHeaderEntry {

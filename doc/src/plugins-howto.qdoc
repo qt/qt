@@ -92,7 +92,6 @@
     \row    \o QInputContextPlugin     \o \c inputmethods     \o Case Sensitive
     \row    \o QKbdDriverPlugin        \o \c kbddrivers       \o Case Insensitive
     \row    \o QMouseDriverPlugin      \o \c mousedrivers     \o Case Insensitive
-    \row    \o QPictureFormatPlugin    \o \c pictureformats   \o Case Sensitive
     \row    \o QScreenDriverPlugin     \o \c gfxdrivers       \o Case Insensitive
     \row    \o QScriptExtensionPlugin  \o \c script           \o Case Sensitive
     \row    \o QSqlDriverPlugin        \o \c sqldrivers       \o Case Sensitive

@@ -96,6 +96,7 @@ static const struct {
 
 static bool slow = false;
 static bool showInternal = false;
+static bool obsoleteLinks = false;
 static QStringList defines;
 static QHash<QString, Tree *> trees;
 
@@ -130,7 +131,9 @@ static void printHelp()
                               "    -slow         "
                               "Turn on features that slow down qdoc\n"
                               "    -showinternal "
-                              "Include stuff marked internal") );
+                              "Include stuff marked internal\n"
+                              "    -obsoletelinks "
+                              "Report links from obsolete items to non-obsolete items") );
 }
 
 /*!
@@ -165,6 +168,8 @@ static void processQdocconfFile(const QString &fileName)
     config.setStringList(CONFIG_SLOW, QStringList(slow ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL,
                          QStringList(showInternal ? "true" : "false"));
+    config.setStringList(CONFIG_OBSOLETELINKS,
+                         QStringList(obsoleteLinks ? "true" : "false"));
 
     /*
       With the default configuration values in place, load
@@ -433,6 +438,9 @@ int main(int argc, char **argv)
 	}
         else if (opt == "-showinternal") {
             showInternal = true;
+        }
+        else if (opt == "-obsoletelinks") {
+            obsoleteLinks = true;
         }
         else {
 	    qdocFiles.append(opt);

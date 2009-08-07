@@ -815,8 +815,6 @@ void qt_init(QApplicationPrivate *priv, int)
         ptrSetProcessDPIAware();
 #endif
 
-    priv->lastGestureId = 0;
-
     priv->GetGestureInfo =
         (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
                                              "GetGestureInfo");
@@ -3718,13 +3716,8 @@ bool QETWidget::translateCloseEvent(const MSG &)
 bool QETWidget::translateGestureEvent(const MSG &msg)
 {
     GESTUREINFO gi;
+    memset(&gi, 0, sizeof(GESTUREINFO));
     gi.cbSize = sizeof(GESTUREINFO);
-    gi.dwFlags       = 0;
-    gi.ptsLocation.x = 0;
-    gi.ptsLocation.y = 0;
-    gi.dwID          = 0;
-    gi.dwInstanceID  = 0;
-    gi.dwSequenceID  = 0;
 
     QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
     BOOL bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
@@ -3735,22 +3728,22 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
         alienWidget = 0;
     QWidget *widget = alienWidget ? alienWidget : this;
 
-    QWinGestureEvent event;
+    QNativeGestureEvent event;
     event.sequenceId = gi.dwSequenceID;
     event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
     if (bResult) {
         switch (gi.dwID) {
         case GID_BEGIN:
-            // we are not interested in this type of event.
+            event.gestureType = QNativeGestureEvent::GestureBegin;
             break;
         case GID_END:
-            event.gestureType = QWinGestureEvent::GestureEnd;
+            event.gestureType = QNativeGestureEvent::GestureEnd;
             break;
         case GID_ZOOM:
-            event.gestureType = QWinGestureEvent::Pinch;
+            event.gestureType = QNativeGestureEvent::Zoom;
             break;
         case GID_PAN:
-            event.gestureType = QWinGestureEvent::Pan;
+            event.gestureType = QNativeGestureEvent::Pan;
             break;
         case GID_ROTATE:
         case GID_TWOFINGERTAP:
@@ -3758,14 +3751,14 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
         default:
             break;
         }
-        if (event.gestureType != QWinGestureEvent::None)
+        qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
+        if (event.gestureType != QNativeGestureEvent::None)
             qt_sendSpontaneousEvent(widget, &event);
     } else {
         DWORD dwErr = GetLastError();
         if (dwErr > 0)
             qWarning() << "translateGestureEvent: error = " << dwErr;
     }
-    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
     return true;
 }
 

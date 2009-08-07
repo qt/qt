@@ -52,7 +52,6 @@ QT_MODULE(Gui)
 
 #define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
 
-#include <QDebug>
 #define DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(F)                         \
     static inline F operator~(F f) { return F(~int(f)); } \
     static inline F operator&(F left, F right) { return F(int(left) & int(right)); } \
@@ -80,8 +79,7 @@ public:
         NoFlags = 0x00,
         VideoOnly = 0x01,
         SystemOnly = 0x02,
-        IgnoreSystemClip = 0x04,
-        BoundingRectFlip = 0x08
+        BoundingRectFlip = 0x04
     };
 
     Q_DECLARE_FLAGS(DirectFBFlags, DirectFBFlag);
@@ -94,7 +92,6 @@ public:
     void shutdownDevice();
 
     void exposeRegion(QRegion r, int changing);
-    void blit(const QImage &img, const QPoint &topLeft, const QRegion &region);
     void scroll(const QRegion &region, const QPoint &offset);
     void solidFill(const QColor &color, const QRegion &region);
 
@@ -131,9 +128,12 @@ public:
                                      QImage::Format format,
                                      SurfaceCreationOptions options);
     IDirectFBSurface *copyToDFBSurface(const QImage &image,
-                                     QImage::Format format,
-                                     SurfaceCreationOptions options);
+                                       QImage::Format format,
+                                       SurfaceCreationOptions options);
+    void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
+                     const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
+    void erase(const QRegion &region);
 
     using QScreen::depth;
     static int depth(DFBSurfacePixelFormat format);
@@ -155,14 +155,9 @@ public:
 #endif
 
     static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
-
 private:
     IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
                                        SurfaceCreationOptions options);
-    void compose(const QRegion &r);
-    void blit(IDirectFBSurface *src, const QPoint &topLeft,
-              const QRegion &region);
-
     QDirectFBScreenPrivate *d_ptr;
     friend class SurfaceCache;
 };

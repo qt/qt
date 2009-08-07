@@ -362,13 +362,12 @@
     \section2 QObject Reentrancy
 
     QObject is reentrant. Most of its non-GUI subclasses, such as
-    QTimer, QTcpSocket, QUdpSocket, QHttp, QFtp, and QProcess, are
-    also reentrant, making it possible to use these classes from
-    multiple threads simultaneously. Note that these classes are
-    designed to be created and used from within a single thread;
-    creating an object in one thread and calling its functions from
-    another thread is not guaranteed to work. There are three
-    constraints to be aware of:
+    QTimer, QTcpSocket, QUdpSocket, QFtp, and QProcess, are also
+    reentrant, making it possible to use these classes from multiple
+    threads simultaneously. Note that these classes are designed to be
+    created and used from within a single thread; creating an object
+    in one thread and calling its functions from another thread is not
+    guaranteed to work. There are three constraints to be aware of:
 
     \list
     \o \e{The child of a QObject must always be created in the thread

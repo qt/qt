@@ -58,6 +58,8 @@
 #include "qpixmapcache.h"
 #include "qgraphicsview_p.h"
 #include "qgraphicseffect_p.h"
+#include "qgraphicstransform.h"
+#include "qgraphicstransform_p.h"
 
 #include <QtCore/qpoint.h>
 
@@ -126,6 +128,8 @@ public:
         siblingIndex(-1),
         depth(0),
         focusProxy(0),
+        subFocusItem(0),
+        imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
         explicitlyHidden(0),
@@ -196,7 +200,7 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
-    void updateSceneTransformFromParent();
+    virtual void updateSceneTransformFromParent();
 
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
@@ -204,6 +208,7 @@ public:
 
     void setPosHelper(const QPointF &pos);
     void setTransformHelper(const QTransform &transform);
+    void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
@@ -396,6 +401,9 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
+    void setSubFocus();
+    void clearSubFocus();
+
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
 
@@ -417,8 +425,10 @@ public:
     int siblingIndex;
     int depth;
     QGraphicsItem *focusProxy;
+    QGraphicsItem *subFocusItem;
+    Qt::InputMethodHints imHints;
 
-    // Packed 32 bytes
+    // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;
@@ -446,7 +456,7 @@ public:
 
     // New 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 12;
+    quint32 flags : 14;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -461,54 +471,45 @@ public:
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
-    quint32 unused : 4; // feel free to use
+    quint32 unused : 3; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
     QGraphicsItem *q_ptr;
 };
 
-struct QGraphicsItemPrivate::TransformData {
+struct QGraphicsItemPrivate::TransformData
+{
     QTransform transform;
-    qreal xScale;
-    qreal yScale;
-    qreal xRotation;
-    qreal yRotation;
-    qreal zRotation;
-    qreal horizontalShear;
-    qreal verticalShear;
+    qreal scale;
+    qreal rotation;
     qreal xOrigin;
     qreal yOrigin;
+    QList<QGraphicsTransform *> graphicsTransforms;
     bool onlyTransform;
 
     TransformData() :
-        xScale(1.0), yScale(1.0), xRotation(0.0), yRotation(0.0), zRotation(0.0),
-        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0),
+        scale(1.0), rotation(0.0),
+        xOrigin(0.0), yOrigin(0.0),
         onlyTransform(true)
-    {}
+    { }
 
     QTransform computedFullTransform(QTransform *postmultiplyTransform = 0) const
     {
         if (onlyTransform) {
-            if (!postmultiplyTransform)
-                return transform;
-            if (postmultiplyTransform->isIdentity())
+            if (!postmultiplyTransform || postmultiplyTransform->isIdentity())
                 return transform;
             if (transform.isIdentity())
                 return *postmultiplyTransform;
-            QTransform x(transform);
-            x *= *postmultiplyTransform;
-            return x;
+            return transform * *postmultiplyTransform;
         }
 
         QTransform x(transform);
-        if (xOrigin != 0 || yOrigin != 0)
-            x *= QTransform::fromTranslate(xOrigin, yOrigin);
-        x.rotate(xRotation, Qt::XAxis);
-        x.rotate(yRotation, Qt::YAxis);
-        x.rotate(zRotation, Qt::ZAxis);
-        x.shear(horizontalShear, verticalShear);
-        x.scale(xScale, yScale);
+        for (int i = 0; i < graphicsTransforms.size(); ++i)
+            graphicsTransforms.at(i)->applyTo(&x);
+        x.translate(xOrigin, yOrigin);
+        x.rotate(rotation, Qt::ZAxis);
+        x.scale(scale, scale);
         x.translate(-xOrigin, -yOrigin);
         if (postmultiplyTransform)
             x *= *postmultiplyTransform;

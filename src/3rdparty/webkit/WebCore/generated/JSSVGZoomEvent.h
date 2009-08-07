@@ -33,7 +33,7 @@ class SVGZoomEvent;
 class JSSVGZoomEvent : public JSUIEvent {
     typedef JSUIEvent Base;
 public:
-    JSSVGZoomEvent(PassRefPtr<JSC::Structure>, PassRefPtr<SVGZoomEvent>, SVGElement* context);
+    JSSVGZoomEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGZoomEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

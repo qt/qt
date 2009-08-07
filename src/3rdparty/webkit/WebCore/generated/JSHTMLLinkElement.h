@@ -30,7 +30,7 @@ class HTMLLinkElement;
 class JSHTMLLinkElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLLinkElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLLinkElement>);
+    JSHTMLLinkElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLLinkElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -42,7 +42,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 };
 
 

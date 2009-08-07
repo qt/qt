@@ -467,6 +467,27 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
     return qEmptyModel();
 }
 
+namespace {
+    struct DefaultRoleNames : public QHash<int, QByteArray>
+    {
+        DefaultRoleNames() {
+            (*this)[Qt::DisplayRole] = "display";
+            (*this)[Qt::DecorationRole] = "decoration";
+            (*this)[Qt::EditRole] = "edit";
+            (*this)[Qt::ToolTipRole] = "toolTip";
+            (*this)[Qt::StatusTipRole] = "statusTip";
+            (*this)[Qt::WhatsThisRole] = "whatsThis";
+        }
+    };
+}
+
+Q_GLOBAL_STATIC(DefaultRoleNames, qDefaultRoleNames)
+
+const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
+{
+    return *qDefaultRoleNames();
+}
+
 /*!
     \internal
     return true if \a value contains a numerical type
@@ -1863,6 +1884,37 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 }
 
 /*!
+  \since 4.6
+  
+  Sets the model's role names to \a roleNames.
+
+  This function is provided to allow mapping of role identifiers to
+  role property names in Declarative UI.  This function must be called
+  before the model is used.  Modifying the role names after the model
+  has been set may result in undefined behaviour.
+
+  \sa roleNames()
+*/
+void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
+{
+    Q_D(QAbstractItemModel);
+    d->roleNames = roleNames;
+}
+
+/*!
+  \since 4.6
+
+  Returns the model's role names.
+
+  \sa setRoleNames()
+*/
+const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
+{
+    Q_D(const QAbstractItemModel);
+    return d->roleNames;
+}
+
+/*!
   Called to let the model know that it should submit whatever it has cached
   to the permanent storage. Typically used for row editing.
 
@@ -2278,7 +2330,8 @@ void QAbstractItemModel::endRemoveColumns()
     \note The view to which the model is attached to will be reset as well.
 
     When a model is reset it means that any previous data reported from the
-    model is now invalid and has to be queried for again.
+    model is now invalid and has to be queried for again. This also means 
+    that the current item and any selected items will become invalid.
 
     When a model radically changes its data it can sometimes be easier to just
     call this function rather than emit dataChanged() to inform other

@@ -205,6 +205,7 @@ This is
 QStateMachinePrivate::QStateMachinePrivate()
 {
     state = NotRunning;
+    _startState = 0;
     processing = false;
     processingScheduled = false;
     stop = false;
@@ -395,7 +396,9 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
 #endif
     executeTransitionContent(event, enabledTransitions);
     QList<QAbstractState*> enteredStates = enterStates(event, enabledTransitions);
+#ifndef QT_NO_PROPERTIES
     applyProperties(enabledTransitions, exitedStates, enteredStates);
+#endif
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after entering states:" << configuration;
     qDebug() << q_func() << ": end microstep";
@@ -666,6 +669,8 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 	}
 }
 
+#ifndef QT_NO_PROPERTIES
+
 void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &transitionList,
                                            const QList<QAbstractState*> &exitedStates,
                                            const QList<QAbstractState*> &enteredStates)
@@ -853,6 +858,8 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     }
 }
 
+#endif // QT_NO_PROPERTIES
+
 bool QStateMachinePrivate::isFinal(const QAbstractState *s)
 {
     return qobject_cast<const QFinalState*>(s) != 0;
@@ -932,6 +939,8 @@ bool QStateMachinePrivate::isInFinalState(QAbstractState* s) const
         return false;
 }
 
+#ifndef QT_NO_PROPERTIES
+
 void QStateMachinePrivate::registerRestorable(QObject *object, const QByteArray &propertyName)
 {
     RestorableId id(object, propertyName);
@@ -975,6 +984,8 @@ void QStateMachinePrivate::unregisterRestorable(QObject *object, const QByteArra
     RestorableId id(object, propertyName);
     registeredRestorables.remove(id);
 }
+
+#endif // QT_NO_PROPERTIES
 
 QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
 {
@@ -1088,12 +1099,14 @@ void QStateMachinePrivate::_q_animationFinished()
         resetAnimationEndValues.remove(anim);
     }
 
+#ifndef QT_NO_PROPERTIES
     // Set the final property value.
     QPropertyAssignment assn = propertyForAnimation.take(anim);
     Q_ASSERT(assn.object != 0);
     assn.object->setProperty(assn.propertyName, assn.value);
     if (!assn.explicitlySet)
         unregisterRestorable(assn.object, assn.propertyName);
+#endif
 
     QAbstractState *state = stateForAnimation.take(anim);
     Q_ASSERT(state != 0);
@@ -1126,13 +1139,28 @@ class InitialTransition : public QAbstractTransition
 {
 public:
     InitialTransition(QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target) {}
+        : QAbstractTransition()
+    { setTargetState(target); }
 protected:
     virtual bool eventTest(QEvent *) { return true; }
     virtual void onTransition(QEvent *) {}
 };
 
 } // namespace
+
+QState *QStateMachinePrivate::startState()
+{
+    Q_Q(QStateMachine);
+    if (_startState == 0)
+        _startState = new StartState(q);
+    return _startState;
+}
+
+void QStateMachinePrivate::removeStartState()
+{
+    delete _startState;
+    _startState = 0;
+}
 
 void QStateMachinePrivate::_q_start()
 {
@@ -1153,17 +1181,27 @@ void QStateMachinePrivate::_q_start()
     processingScheduled = true; // we call _q_process() below
     emit q->started();
 
-    StartState *start = new StartState(rootState());
-    QAbstractTransition *initialTransition = new InitialTransition(initial);
-    start->addTransition(initialTransition);
-    QList<QAbstractTransition*> transitions;
-    transitions.append(initialTransition);
+    QState *start = startState();
+    Q_ASSERT(start != 0);
+
+    QList<QAbstractTransition*> transitions = QStatePrivate::get(start)->transitions();
+
+    // If a transition has already been added, then we skip this step, as the
+    // initial transition in that case has been overridden.
+    if (transitions.isEmpty()) {
+        QAbstractTransition *initialTransition = new InitialTransition(initial);
+        start->addTransition(initialTransition);
+        transitions.append(initialTransition);
+    }
+
     QEvent nullEvent(QEvent::None);
     executeTransitionContent(&nullEvent, transitions);
     QList<QAbstractState*> enteredStates = enterStates(&nullEvent, transitions);
+#ifndef QT_NO_PROPERTIES
     applyProperties(transitions, QList<QAbstractState*>() << start,
                     enteredStates);
-    delete start;
+#endif
+    removeStartState();
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": initial configuration:" << configuration;
@@ -1261,6 +1299,68 @@ void QStateMachinePrivate::scheduleProcess()
         return;
     processingScheduled = true;
     QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+}
+
+namespace {
+
+class GoToStateTransition : public QAbstractTransition
+{
+public:
+    GoToStateTransition(QAbstractState *target)
+        : QAbstractTransition()
+    { setTargetState(target); }
+protected:
+    void onTransition(QEvent *) { deleteLater(); }
+    bool eventTest(QEvent *) { return true; }
+};
+
+} // namespace
+
+/*!
+  \internal
+
+  Causes this state machine to unconditionally transition to the given
+  \a targetState.
+
+  Provides a backdoor for using the state machine "imperatively"; i.e.  rather
+  than defining explicit transitions, you drive the machine's execution by
+  calling this function. It breaks the whole integrity of the
+  transition-driven model, but is provided for pragmatic reasons.
+*/
+void QStateMachinePrivate::goToState(QAbstractState *targetState)
+{
+    if (!targetState) {
+        qWarning("QStateMachine::goToState(): cannot go to null state");
+        return;
+    }
+
+    if (configuration.contains(targetState))
+        return;
+
+    QState *sourceState = 0;
+    if (state == Running) {
+        QSet<QAbstractState*>::const_iterator it;
+        for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
+            sourceState = qobject_cast<QState*>(*it);
+            if (sourceState != 0)
+                break;
+        }
+    } else {
+        sourceState = startState();
+    }    
+
+    Q_ASSERT(sourceState != 0);
+    // Reuse previous GoToStateTransition in case of several calls to
+    // goToState() in a row.
+    GoToStateTransition *trans = qFindChild<GoToStateTransition*>(sourceState);
+    if (!trans) {
+        trans = new GoToStateTransition(targetState);
+        sourceState->addTransition(trans);
+    } else {
+        trans->setTargetState(targetState);
+    }
+
+    scheduleProcess();
 }
 
 void QStateMachinePrivate::registerTransitions(QAbstractState *state)
@@ -1432,7 +1532,7 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 }
 #endif
 
-void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int signalIndex,
+void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalIndex,
                                                   void **argv)
 {
     Q_ASSERT(connections[sender].at(signalIndex) != 0);
@@ -2012,7 +2112,7 @@ QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
   Constructs a new QSignalEvent object with the given \a sender, \a
   signalIndex and \a arguments.
 */
-QSignalEvent::QSignalEvent(const QObject *sender, int signalIndex,
+QSignalEvent::QSignalEvent(QObject *sender, int signalIndex,
                            const QList<QVariant> &arguments)
     : QEvent(QEvent::Signal), m_sender(sender),
       m_signalIndex(signalIndex), m_arguments(arguments)

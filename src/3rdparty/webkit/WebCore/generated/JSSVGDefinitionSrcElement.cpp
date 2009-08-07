@@ -56,8 +56,8 @@ JSObject* JSSVGDefinitionSrcElementPrototype::self(ExecState* exec, JSGlobalObje
 
 const ClassInfo JSSVGDefinitionSrcElement::s_info = { "SVGDefinitionSrcElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGDefinitionSrcElement::JSSVGDefinitionSrcElement(PassRefPtr<Structure> structure, PassRefPtr<SVGDefinitionSrcElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGDefinitionSrcElement::JSSVGDefinitionSrcElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGDefinitionSrcElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 

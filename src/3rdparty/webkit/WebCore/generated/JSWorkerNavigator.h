@@ -23,6 +23,7 @@
 
 #if ENABLE(WORKERS)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class WorkerNavigator;
 
-class JSWorkerNavigator : public DOMObject {
-    typedef DOMObject Base;
+class JSWorkerNavigator : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSWorkerNavigator(PassRefPtr<JSC::Structure>, PassRefPtr<WorkerNavigator>);
+    JSWorkerNavigator(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WorkerNavigator>);
     virtual ~JSWorkerNavigator();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -52,7 +53,7 @@ private:
     RefPtr<WorkerNavigator> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, WorkerNavigator*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, WorkerNavigator*);
 WorkerNavigator* toWorkerNavigator(JSC::JSValue);
 
 class JSWorkerNavigatorPrototype : public JSC::JSObject {

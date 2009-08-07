@@ -44,6 +44,7 @@
 
 #include <private/qtextcontrol_p.h>
 #include <private/qgraphicsitem_p.h>
+#include <private/qgraphicsview_p.h>
 #include <QStyleOptionGraphicsItem>
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
@@ -169,6 +170,7 @@ private slots:
     void setParentItem();
     void children();
     void flags();
+    void inputMethodHints();
     void toolTip();
     void visible();
     void explicitlyVisible();
@@ -278,6 +280,9 @@ private slots:
     void hitTestUntransformableItem();
     void hitTestGraphicsEffectItem();
     void focusProxy();
+    void autoDetectFocusProxy();
+    void subFocus();
+    void reverseCreateAutoFocusProxy();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -759,6 +764,34 @@ void tst_QGraphicsItem::flags()
         QApplication::sendEvent(&scene, &event5);
         QCOMPARE(item->pos(), QPointF(10, 10));
     }
+    {
+        QGraphicsItem* clippingParent = new QGraphicsRectItem;
+        clippingParent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+
+        QGraphicsItem* nonClippingParent = new QGraphicsRectItem;
+        nonClippingParent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+
+        QGraphicsItem* child = new QGraphicsRectItem(nonClippingParent);
+        QVERIFY(!child->isClipped());
+
+        child->setParentItem(clippingParent);
+        QVERIFY(child->isClipped());
+
+        child->setParentItem(nonClippingParent);
+        QVERIFY(!child->isClipped());
+    }
+}
+
+class ImhTester : public QGraphicsItem
+{
+    QRectF boundingRect() const { return QRectF(); }
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
+};
+
+void tst_QGraphicsItem::inputMethodHints()
+{
+    ImhTester item;
+    QCOMPARE(item.inputMethodHints(), Qt::ImhNone);
 }
 
 void tst_QGraphicsItem::toolTip()
@@ -6917,44 +6950,21 @@ void tst_QGraphicsItem::update()
 void tst_QGraphicsItem::setTransformProperties_data()
 {
     QTest::addColumn<QPointF>("origin");
-    QTest::addColumn<qreal>("rotationX");
-    QTest::addColumn<qreal>("rotationY");
-    QTest::addColumn<qreal>("rotationZ");
-    QTest::addColumn<qreal>("scaleX");
-    QTest::addColumn<qreal>("scaleY");
-    QTest::addColumn<qreal>("shearX");
-    QTest::addColumn<qreal>("shearY");
+    QTest::addColumn<qreal>("rotation");
+    QTest::addColumn<qreal>("scale");
 
-    QTest::newRow("nothing") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
-                                          << qreal(1.0) << qreal(1.0) << qreal(0.0) << qreal(0.0);
+    QTest::newRow("nothing") << QPointF() << qreal(0.0) << qreal(1.0);
 
-    QTest::newRow("rotationZ") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(42.2)
-                                          << qreal(1.0) << qreal(1.0) << qreal(0.0) << qreal(0.0);
+    QTest::newRow("rotation") << QPointF() << qreal(42.2) << qreal(1.0);
 
-    QTest::newRow("rotationXY") << QPointF() << qreal(12.5) << qreal(53.6) << qreal(0.0)
-                                          << qreal(1.0) << qreal(1.0) << qreal(0.0) << qreal(0.0);
+    QTest::newRow("rotation dicentred") << QPointF(qreal(22.3), qreal(-56.2))
+                                << qreal(-2578.2)
+                                << qreal(1.0);
 
-    QTest::newRow("rotationXYZ") << QPointF() << qreal(-25) << qreal(12) << qreal(556)
-                                          << qreal(1.0) << qreal(1.0) << qreal(0.0) << qreal(0.0);
+    QTest::newRow("Scale")    << QPointF() << qreal(0.0)
+                                          << qreal(6);
 
-    QTest::newRow("rotationXYZ dicentred") << QPointF(-53, 25.2) 
-                                << qreal(-2578.2) << qreal(4565.2) << qreal(56)
-                                << qreal(1.0) << qreal(1.0) << qreal(0.0) << qreal(0.0);
-
-    QTest::newRow("Scale")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
-                                          << qreal(6) << qreal(0.5) << qreal(0.0) << qreal(0.0);
-
-    QTest::newRow("Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
-                                          << qreal(1.0) << qreal(1.0) << qreal(2.2) << qreal(0.5);
-
-    QTest::newRow("Scale and Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
-                                          << qreal(5.2) << qreal(2.1) << qreal(5.2) << qreal(5.5);
-
-    QTest::newRow("Everything")  << QPointF() << qreal(41) << qreal(-23) << qreal(0.56)
-                                        << qreal(8.2) << qreal(-0.2) << qreal(-12) << qreal(-0.8);
-
-    QTest::newRow("Everything dicentred")  << QPointF(qreal(22.3), qreal(-56.2)) << qreal(-175) << qreal(196) << qreal(-1260)
-                                        << qreal(4) << qreal(2) << qreal(2.56) << qreal(0.8);
+    QTest::newRow("Everything dicentred")  << QPointF(qreal(22.3), qreal(-56.2)) << qreal(-175) << qreal(196);
 }
 
 /**
@@ -6965,92 +6975,61 @@ void tst_QGraphicsItem::setTransformProperties_data()
 void tst_QGraphicsItem::setTransformProperties()
 {
     QFETCH(QPointF,origin);
-    QFETCH(qreal,rotationX);
-    QFETCH(qreal,rotationY);
-    QFETCH(qreal,rotationZ);
-    QFETCH(qreal,scaleX);
-    QFETCH(qreal,scaleY);
-    QFETCH(qreal,shearX);
-    QFETCH(qreal,shearY);
+    QFETCH(qreal,rotation);
+    QFETCH(qreal,scale);
 
     QTransform result;
     result.translate(origin.x(), origin.y());
-    result.rotate(rotationX, Qt::XAxis);
-    result.rotate(rotationY, Qt::YAxis);
-    result.rotate(rotationZ, Qt::ZAxis);
-    result.shear(shearX, shearY);
-    result.scale(scaleX, scaleY);
+    result.rotate(rotation, Qt::ZAxis);
+    result.scale(scale, scale);
     result.translate(-origin.x(), -origin.y());
 
     QGraphicsScene scene;
     QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0, 0, 100, 100));
     scene.addItem(item);
 
-    item->setRotation(rotationX, rotationY, rotationZ);
-    item->setScale(scaleX, scaleY);
-    item->setShear(shearX, shearY);
-    item->setTransformOrigin(origin);
+    item->setRotation(rotation);
+    item->setScale(scale);
+    item->setTransformOriginPoint(origin);
 
-    QCOMPARE(item->xRotation(), rotationX);
-    QCOMPARE(item->yRotation(), rotationY);
-    QCOMPARE(item->zRotation(), rotationZ);
-    QCOMPARE(item->xScale(), scaleX);
-    QCOMPARE(item->yScale(), scaleY);
-    QCOMPARE(item->horizontalShear(), shearX);
-    QCOMPARE(item->verticalShear(), shearY);
-    QCOMPARE(item->transformOrigin(), origin);
+    QCOMPARE(item->rotation(), rotation);
+    QCOMPARE(item->scale(), scale);
+    QCOMPARE(item->transformOriginPoint(), origin);
 
     QCOMPARE(QTransform(), item->transform());
     QCOMPARE(result, item->sceneTransform());
 
     //-----------------------------------------------------------------
     //Change the rotation Z
-    item->setZRotation(45);
+    item->setRotation(45);
     QTransform result2;
     result2.translate(origin.x(), origin.y());
-    result2.rotate(rotationX, Qt::XAxis);
-    result2.rotate(rotationY, Qt::YAxis);
-    result2.rotate(45, Qt::ZAxis);
-    result2.shear(shearX, shearY);
-    result2.scale(scaleX, scaleY);
+    result2.rotate(45);
+    result2.scale(scale, scale);
     result2.translate(-origin.x(), -origin.y());
 
-    QCOMPARE(item->xRotation(), rotationX);
-    QCOMPARE(item->yRotation(), rotationY);
-    QCOMPARE(item->zRotation(), 45.0);
-    QCOMPARE(item->xScale(), scaleX);
-    QCOMPARE(item->yScale(), scaleY);
-    QCOMPARE(item->horizontalShear(), shearX);
-    QCOMPARE(item->verticalShear(), shearY);
-    QCOMPARE(item->transformOrigin(), origin);
+    QCOMPARE(item->rotation(), 45.);
+    QCOMPARE(item->scale(), scale);
+    QCOMPARE(item->transformOriginPoint(), origin);
 
     QCOMPARE(QTransform(), item->transform());
     QCOMPARE(result2, item->sceneTransform());
 
     //-----------------------------------------------------------------
-    // calling setTransform() and setPos shoukld change the sceneTransform
+    // calling setTransform() and setPos should change the sceneTransform
     item->setTransform(result);
     item->setPos(100, -150.5);
 
-    QCOMPARE(item->xRotation(), rotationX);
-    QCOMPARE(item->yRotation(), rotationY);
-    QCOMPARE(item->zRotation(), 45.0);
-    QCOMPARE(item->xScale(), scaleX);
-    QCOMPARE(item->yScale(), scaleY);
-    QCOMPARE(item->horizontalShear(), shearX);
-    QCOMPARE(item->verticalShear(), shearY);
-    QCOMPARE(item->transformOrigin(), origin);
+    QCOMPARE(item->rotation(), 45.);
+    QCOMPARE(item->scale(), scale);
+    QCOMPARE(item->transformOriginPoint(), origin);
     QCOMPARE(result, item->transform());
 
-    QTransform result3;
+    QTransform result3(result);
 
     result3.translate(origin.x(), origin.y());
-    result3 = result * result3;
-    result3.rotate(rotationX, Qt::XAxis);
-    result3.rotate(rotationY, Qt::YAxis);
-    result3.rotate(45, Qt::ZAxis);
-    result3.shear(shearX, shearY);
-    result3.scale(scaleX, scaleY);
+    result3.rotate(45);
+    result3.scale(scale, scale);
     result3.translate(-origin.x(), -origin.y());
 
     result3 *= QTransform::fromTranslate(100, -150.5); //the pos;
@@ -7067,42 +7046,11 @@ void tst_QGraphicsItem::setTransformProperties()
 
         item1->setPos(12.3, -5);
         item2->setPos(12.3, -5);
-        item1->setRotation(rotationX, rotationY, rotationZ);
-        item1->setScale(scaleX, scaleY);
-        item1->setShear(shearX, shearY);
-        item1->setTransformOrigin(origin);
+        item1->setRotation(rotation);
+        item1->setScale(scale);
+        item1->setTransformOriginPoint(origin);
 
         item2->setTransform(result);
-
-        QCOMPARE_TRANSFORM(item1->sceneTransform(), item2->sceneTransform());
-
-        QCOMPARE_TRANSFORM(item1->itemTransform(item2), QTransform()); 
-        QCOMPARE_TRANSFORM(item2->itemTransform(item1), QTransform());
-    }
-
-    {//with center origin on the item
-        QGraphicsRectItem *item1 = new QGraphicsRectItem(QRectF(50.2, -150, 230.5, 119));
-        scene.addItem(item1);
-        QGraphicsRectItem *item2 = new QGraphicsRectItem(QRectF(50.2, -150, 230.5, 119));
-        scene.addItem(item2);
-
-        item1->setPos(12.3, -5);
-        item2->setPos(12.3, -5);
-        item1->setTransformOrigin(origin);
-        item2->setTransformOrigin(origin);
-
-        item1->setRotation(rotationX, rotationY, rotationZ);
-        item1->setScale(scaleX, scaleY);
-        item1->setShear(shearX, shearY);
-
-        QTransform tr;
-        tr.rotate(rotationX, Qt::XAxis);
-        tr.rotate(rotationY, Qt::YAxis);
-        tr.rotate(rotationZ, Qt::ZAxis);
-        tr.shear(shearX, shearY);
-        tr.scale(scaleX, scaleY);
-
-        item2->setTransform(tr);
 
         QCOMPARE_TRANSFORM(item1->sceneTransform(), item2->sceneTransform());
 
@@ -7586,6 +7534,110 @@ void tst_QGraphicsItem::focusProxy()
     delete item2;
     QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
     QCOMPARE(item3->focusProxy(), (QGraphicsItem *)0);
+}
+
+void tst_QGraphicsItem::autoDetectFocusProxy()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
+    item->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsItem *item2 = scene.addRect(0, 0, 10, 10);
+    item2->setParentItem(item);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsItem *item3 = scene.addRect(0, 0, 10, 10);
+    item3->setParentItem(item2);
+    item3->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    item->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
+
+    item2->setFocus();
+    QCOMPARE(item->focusProxy(), item2);
+    item3->setFocus();
+    QCOMPARE(item->focusProxy(), item3);
+    item3->clearFocus();
+    QCOMPARE(item->focusProxy(), item3);
+}
+
+void tst_QGraphicsItem::subFocus()
+{
+    // Construct a text item that's not part of a scene (yet)
+    // and has no parent. Setting focus on it will not make
+    // the item gain input focus; that requires a scene. But
+    // it does set subfocus, indicating that the item wishes
+    // to gain focus later.
+    QGraphicsTextItem *text = new QGraphicsTextItem("Hello");
+    text->setTextInteractionFlags(Qt::TextEditorInteraction);
+    QVERIFY(!text->hasFocus());
+    text->setFocus();
+    QVERIFY(!text->hasFocus());
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text);
+
+    // Add a sibling.
+    QGraphicsTextItem *text2 = new QGraphicsTextItem("Hi");
+    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text2->setPos(30, 30);
+
+    // Add both items to a scene and check that it's text that
+    // got input focus.
+    QGraphicsScene scene;
+    scene.addItem(text);
+    scene.addItem(text2);
+    QVERIFY(text->hasFocus());
+
+    text->setData(0, "text");
+    text2->setData(0, "text2");
+
+    // Remove text2 and set subfocus on it. Then readd. Reparent it onto the
+    // other item and see that although it becomes text's focus
+    // item, it does not immediately gain input focus.
+    scene.removeItem(text2);
+    text2->setFocus();
+    scene.addItem(text2);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
+    text2->setParentItem(text);
+    qDebug() << text->data(0).toString() << (void*)(QGraphicsItem *)text;
+    qDebug() << text2->data(0).toString() << (void*)(QGraphicsItem *)text2;
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    QVERIFY(text->hasFocus());
+    QVERIFY(!text2->hasFocus());
+
+    // Remove both items from the scene, restore subfocus and
+    // readd them. Now the subfocus should kick in and give
+    // text2 focus.
+    scene.removeItem(text);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)0);
+    text2->setFocus();
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
+    scene.addItem(text);
+
+    // Hiding and showing text should pass focus to text2.
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    QVERIFY(text2->hasFocus());
+}
+
+void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
+{
+    QGraphicsTextItem *text = new QGraphicsTextItem;
+    text->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+
+    QGraphicsTextItem *text2 = new QGraphicsTextItem;
+    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text2->setFocus();
+    QVERIFY(!text2->hasFocus());
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
+    text2->setParentItem(text);
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+
+    QGraphicsScene scene;
+    scene.addItem(text);
+    QVERIFY(text2->hasFocus());
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

@@ -63,8 +63,8 @@ bool JSSQLTransactionPrototype::getOwnPropertySlot(ExecState* exec, const Identi
 
 const ClassInfo JSSQLTransaction::s_info = { "SQLTransaction", 0, 0, 0 };
 
-JSSQLTransaction::JSSQLTransaction(PassRefPtr<Structure> structure, PassRefPtr<SQLTransaction> impl)
-    : DOMObject(structure)
+JSSQLTransaction::JSSQLTransaction(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLTransaction> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -88,9 +88,9 @@ JSValue JSC_HOST_CALL jsSQLTransactionPrototypeFunctionExecuteSql(ExecState* exe
     return castedThisObj->executeSql(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SQLTransaction* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLTransaction* object)
 {
-    return getDOMObjectWrapper<JSSQLTransaction>(exec, object);
+    return getDOMObjectWrapper<JSSQLTransaction>(exec, globalObject, object);
 }
 SQLTransaction* toSQLTransaction(JSC::JSValue value)
 {

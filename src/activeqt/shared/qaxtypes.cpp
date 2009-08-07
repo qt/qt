@@ -552,7 +552,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                 int maxColumns = col.count();
                 if (maxColumns) {
                     is2D = true;
-                    SAFEARRAYBOUND rgsabound[2] = {0};
+                    SAFEARRAYBOUND rgsabound[2] = { {0} };
                     rgsabound[0].cElements = count;
                     rgsabound[1].cElements = maxColumns;
                     array = SafeArrayCreate(VT_VARIANT, 2, rgsabound);

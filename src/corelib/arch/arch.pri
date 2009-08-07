@@ -4,6 +4,8 @@ win32:HEADERS += arch/qatomic_windows.h \
 mac:HEADERS += arch/qatomic_macosx.h \
                arch/qatomic_generic.h
 
+vxworks:HEADERS += arch/qatomic_vxworks.h
+
 !wince*:!win32:!mac:HEADERS += arch/qatomic_alpha.h \
                        arch/qatomic_avr32.h \
                        arch/qatomic_ia64.h \

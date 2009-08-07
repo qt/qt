@@ -714,8 +714,8 @@ Ideas for other sections:
     \previouspage Common Rich Text Editing Tasks
 
     Qt's text widgets are able to display rich text, specified using a subset of \l{HTML 4}
-    markup. Widgets that use QTextDocument, such as QLabel, QTextEdit, QTreeWidgetItem and
-    the other item widgets, are able to display rich text specified in this way.
+    markup. Widgets that use QTextDocument, such as QLabel and QTextEdit, are able to display
+    rich text specified in this way.
 
     \tableofcontents
 

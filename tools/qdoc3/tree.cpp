@@ -176,6 +176,8 @@ const Node *Tree::findNode(const QStringList &path,
 }
 
 /*!
+  Find the node with the specified \a path name of the
+  specified \a type.
  */
 Node *Tree::findNode(const QStringList &path,
                      Node::Type type,
@@ -189,6 +191,8 @@ Node *Tree::findNode(const QStringList &path,
 }
 
 /*!
+  Find the node with the specified \a path name of the
+  specified \a type.
  */
 const Node *Tree::findNode(const QStringList &path,
                            Node::Type type,
@@ -208,7 +212,9 @@ FunctionNode *Tree::findFunctionNode(const QStringList& path,
                                      int findFlags)
 {
     return const_cast<FunctionNode *>(
-                const_cast<const Tree *>(this)->findFunctionNode(path, relative, findFlags));
+                const_cast<const Tree *>(this)->findFunctionNode(path,
+                                                                 relative,
+                                                                 findFlags));
 }
 
 /*!
@@ -233,7 +239,8 @@ const FunctionNode *Tree::findFunctionNode(const QStringList &path,
             else
                 next = ((InnerNode *) node)->findNode(path.at(i));
 
-            if (!next && node->type() == Node::Class && (findFlags & SearchBaseClasses)) {
+            if (!next && node->type() == Node::Class &&
+                (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode *>(node));
                 foreach (const Node *baseClass, baseClasses) {
                     if (i == path.size() - 1)
@@ -412,6 +419,8 @@ void Tree::addPropertyFunction(PropertyNode *property,
 }
 
 /*!
+  This function adds the \a node to the \a group. The group
+  can be listed anywhere using the \e{annotated list} command.
  */
 void Tree::addToGroup(Node *node, const QString &group)
 {
@@ -563,13 +572,15 @@ void Tree::resolveGroups()
 
         FakeNode *fake =
             static_cast<FakeNode*>(findNode(QStringList(i.key()),Node::Fake));
-        if (fake && fake->subType() == FakeNode::Group) {
+        if (fake && fake->subType() == Node::Group) {
             fake->addGroupMember(i.value());
         }
+#if 0        
         else {
             if (prevGroup != i.key())
                 i.value()->doc().location().warning(tr("No such group '%1'").arg(i.key()));
         }
+#endif        
 
         prevGroup = i.key();
     }
@@ -770,21 +781,21 @@ void Tree::readIndexSection(const QDomElement &element,
 
     }
     else if (element.nodeName() == "page") {
-        FakeNode::SubType subtype;
+        Node::SubType subtype;
         if (element.attribute("subtype") == "example")
-            subtype = FakeNode::Example;
+            subtype = Node::Example;
         else if (element.attribute("subtype") == "header")
-            subtype = FakeNode::HeaderFile;
+            subtype = Node::HeaderFile;
         else if (element.attribute("subtype") == "file")
-            subtype = FakeNode::File;
+            subtype = Node::File;
         else if (element.attribute("subtype") == "group")
-            subtype = FakeNode::Group;
+            subtype = Node::Group;
         else if (element.attribute("subtype") == "module")
-            subtype = FakeNode::Module;
+            subtype = Node::Module;
         else if (element.attribute("subtype") == "page")
-            subtype = FakeNode::Page;
+            subtype = Node::Page;
         else if (element.attribute("subtype") == "externalpage")
-            subtype = FakeNode::ExternalPage;
+            subtype = Node::ExternalPage;
         else
             return;
 
@@ -1226,25 +1237,25 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
 
             const FakeNode *fakeNode = static_cast<const FakeNode*>(node);
             switch (fakeNode->subType()) {
-                case FakeNode::Example:
+                case Node::Example:
                     writer.writeAttribute("subtype", "example");
                     break;
-                case FakeNode::HeaderFile:
+                case Node::HeaderFile:
                     writer.writeAttribute("subtype", "header");
                     break;
-                case FakeNode::File:
+                case Node::File:
                     writer.writeAttribute("subtype", "file");
                     break;
-                case FakeNode::Group:
+                case Node::Group:
                     writer.writeAttribute("subtype", "group");
                     break;
-                case FakeNode::Module:
+                case Node::Module:
                     writer.writeAttribute("subtype", "module");
                     break;
-                case FakeNode::Page:
+                case Node::Page:
                     writer.writeAttribute("subtype", "page");
                     break;
-                case FakeNode::ExternalPage:
+                case Node::ExternalPage:
                     writer.writeAttribute("subtype", "externalpage");
                     break;
                 default:
@@ -1383,7 +1394,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
             bool external = false;
             if (inner->type() == Node::Fake) {
                 const FakeNode *fakeNode = static_cast<const FakeNode *>(inner);
-                if (fakeNode->subType() == FakeNode::ExternalPage)
+                if (fakeNode->subType() == Node::ExternalPage)
                     external = true;
             }
 
@@ -1863,7 +1874,7 @@ void Tree::generateTagFile(const QString &fileName) const
  */
 void Tree::addExternalLink(const QString &url, const Node *relative)
 {
-    FakeNode *fakeNode = new FakeNode(root(), url, FakeNode::ExternalPage);
+    FakeNode *fakeNode = new FakeNode(root(), url, Node::ExternalPage);
     fakeNode->setAccess(Node::Public);
 
     // Create some content for the node.
@@ -1898,6 +1909,11 @@ QString Tree::fullDocumentLocation(const Node *node) const
             return "";
     }
     else if (node->type() == Node::Fake) {
+#ifdef QDOC_QML
+        if (node->subType() == Node::QmlClass)
+            return "qml-" + node->fileBase() + ".html";
+        else
+#endif
         parentName = node->fileBase() + ".html";
     }
     else if (node->fileBase().isEmpty())

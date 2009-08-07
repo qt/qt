@@ -32,7 +32,8 @@ HEADERS += \
         kernel/qsharedmemory_p.h \
         kernel/qsystemsemaphore.h \
         kernel/qsystemsemaphore_p.h \
-        kernel/qfunctions_p.h
+        kernel/qfunctions_p.h \
+        kernel/qguard_p.h
 
 SOURCES += \
 	kernel/qabstracteventdispatcher.cpp \
@@ -54,7 +55,7 @@ SOURCES += \
         kernel/qcoreglobaldata.cpp \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
-        kernel/qpointer.cpp
+        kernel/qpointer.cpp 
 
 win32 {
 	SOURCES += \
@@ -110,5 +111,12 @@ unix {
                 kernel/qeventdispatcher_unix_p.h
 
    contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
+}
+
+vxworks {
+	SOURCES += \
+		kernel/qfunctions_vxworks.cpp
+	HEADERS += \
+		kernel/qfunctions_vxworks.h
 }
 

@@ -345,7 +345,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     // the optimization that items send updates directly to the views, but it
     // needs to happen in order to keep compatibility with the behavior from
     // Qt 4.4 and backward.
-    if (connectedSignals & changedSignalMask) {
+    if (connectedSignals[0] & changedSignalMask) {
         for (int i = 0; i < views.size(); ++i) {
             QGraphicsView *view = views.at(i);
             if (!view->d_func()->connectedToScene) {
@@ -485,6 +485,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         index->removeItem(item);
     }
 
+    item->d_ptr->clearSubFocus();
+
     if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
         widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
@@ -573,15 +575,32 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     Q_Q(QGraphicsScene);
     if (item == focusItem)
         return;
+
+    // Clear focus if asked to set focus on something that can't
+    // accept input focus.
     if (item && (!(item->flags() & QGraphicsItem::ItemIsFocusable)
                  || !item->isVisible() || !item->isEnabled())) {
         item = 0;
     }
 
+    // Set focus on the scene if an item requests focus.
     if (item) {
         q->setFocus(focusReason);
         if (item == focusItem)
             return;
+    }
+
+    // Auto-update focus proxy. The closest parent that detects
+    // focus proxies is updated as the proxy gains or loses focus.
+    if (item) {
+        QGraphicsItem *p = item->d_ptr->parent;
+        while (p) {
+            if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
+                p->setFocusProxy(item);
+                break;
+            }
+            p = p->d_ptr->parent;
+        }
     }
 
     if (focusItem) {
@@ -603,11 +622,6 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     }
 
     if (item) {
-        if (item->isWidget()) {
-            // Update focus child chain.
-            static_cast<QGraphicsWidget *>(item)->d_func()->setFocusWidget();
-        }
-
         focusItem = item;
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
@@ -2343,6 +2357,15 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
+    // Auto-activate the first inactive window if the scene is active.
+    if (d->activationRefCount > 0 && !d->activeWindow && item->isWindow())
+        setActiveWindow(static_cast<QGraphicsWidget *>(item));
+
+    // Ensure that newly added items that have subfocus set, gain
+    // focus automatically if there isn't a focus item already.
+    if (!d->focusItem && item->focusItem())
+        item->focusItem()->setFocus();
+
     d->updateInputMethodSensitivityInViews();
 }
 
@@ -2877,7 +2900,7 @@ void QGraphicsScene::update(const QRectF &rect)
 
     // Check if anyone's connected; if not, we can send updates directly to
     // the views. Otherwise or if there are no views, use old behavior.
-    bool directUpdates = !(d->connectedSignals & d->changedSignalMask) && !d->views.isEmpty();
+    bool directUpdates = !(d->connectedSignals[0] & d->changedSignalMask) && !d->views.isEmpty();
     if (rect.isNull()) {
         d->updateAll = true;
         d->updatedRects.clear();
@@ -3458,7 +3481,7 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
         text = toolTipItem->toolTip();
         point = helpEvent->screenPos();
     }
-    QToolTip::showText(point, text);
+    QToolTip::showText(point, text, helpEvent->widget());
     helpEvent->setAccepted(!text.isEmpty());
 #endif
 }
@@ -3557,8 +3580,7 @@ void QGraphicsScenePrivate::leaveScene()
 {
     Q_Q(QGraphicsScene);
 #ifndef QT_NO_TOOLTIP
-    // Remove any tooltips
-    QToolTip::showText(QPoint(), QString());
+    QToolTip::hideText();
 #endif
     // Send HoverLeave events to all existing hover items, topmost first.
     QGraphicsView *senderWidget = qobject_cast<QGraphicsView *>(q->sender());
@@ -3661,6 +3683,13 @@ void QGraphicsScene::keyReleaseEvent(QKeyEvent *keyEvent)
 void QGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     Q_D(QGraphicsScene);
+    if (d->mouseGrabberItems.isEmpty()) {
+        // Dispatch hover events
+        QGraphicsSceneHoverEvent hover;
+        _q_hoverFromMouseEvent(&hover, mouseEvent);
+        d->dispatchHoverEvent(&hover);
+    }
+
     d->mousePressEventHandler(mouseEvent);
 }
 
@@ -4491,7 +4520,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (removingItemFromScene) {
         // Note that this function can be called from the item's destructor, so
         // do NOT call any virtual functions on it within this block.
-        if ((connectedSignals & changedSignalMask) || views.isEmpty()) {
+        if ((connectedSignals[0] & changedSignalMask) || views.isEmpty()) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
@@ -4641,7 +4670,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process item.
     if (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
-        const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
+        const bool useCompatUpdate = views.isEmpty() || (connectedSignals[0] & changedSignalMask);
         const QRectF itemBoundingRect = adjustedItemEffectiveBoundingRect(item);
 
         if (useCompatUpdate && !itemIsUntransformable && qFuzzyIsNull(item->boundingRegionGranularity())) {
@@ -4745,7 +4774,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     background has been drawn, and before the foreground has been
     drawn.  All painting is done in \e scene coordinates. Before
     drawing each item, the painter must be transformed using
-    QGraphicsItem::sceneMatrix().
+    QGraphicsItem::sceneTransform().
 
     The \a options parameter is the list of style option objects for
     each item in \a items. The \a numItems parameter is the number of

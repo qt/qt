@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "FloatPoint.h"
 #include "JSDOMBinding.h"
 #include "JSSVGPODTypeWrapper.h"
@@ -32,10 +33,10 @@
 
 namespace WebCore {
 
-class JSSVGPoint : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGPoint : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGPoint(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<FloatPoint> >, SVGElement* context);
+    JSSVGPoint(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<FloatPoint> >, SVGElement* context);
     virtual ~JSSVGPoint();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,15 +49,13 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    JSSVGPODTypeWrapper<FloatPoint>* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
+    JSSVGPODTypeWrapper<FloatPoint> * impl() const { return m_impl.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
     RefPtr<JSSVGPODTypeWrapper<FloatPoint> > m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<FloatPoint>*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<FloatPoint>*, SVGElement* context);
 FloatPoint toSVGPoint(JSC::JSValue);
 
 class JSSVGPointPrototype : public JSC::JSObject {

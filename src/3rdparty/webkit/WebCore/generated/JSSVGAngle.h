@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGAngle;
 
-class JSSVGAngle : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAngle : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAngle(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAngle>, SVGElement* context);
+    JSSVGAngle(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAngle>, SVGElement* context);
     virtual ~JSSVGAngle();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,16 +49,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     SVGAngle* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAngle > m_impl;
+    RefPtr<SVGAngle> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAngle*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAngle*, SVGElement* context);
 SVGAngle* toSVGAngle(JSC::JSValue);
 
 class JSSVGAnglePrototype : public JSC::JSObject {

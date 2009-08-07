@@ -232,7 +232,7 @@ WebCore::Scrollbar* QWebFramePrivate::verticalScrollBar() const
     return frame->view()->verticalScrollbar();
 }
 
-void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip, bool contents)
+void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip)
 {
     if (!frame->view() || !frame->contentRenderer())
         return;
@@ -246,7 +246,7 @@ void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip, boo
 
     GraphicsContext context(painter);
 
-    if (!contents)
+    if (clipRenderToViewport)
         view->paint(&context, vector.first());
     else
         view->paintContents(&context, vector.first());
@@ -255,7 +255,7 @@ void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip, boo
         const QRect& clipRect = vector.at(i);
         painter->save();
         painter->setClipRect(clipRect, Qt::IntersectClip);
-        if (!contents)
+        if (clipRenderToViewport)
             view->paint(&context, clipRect);
         else
             view->paintContents(&context, clipRect);
@@ -279,6 +279,13 @@ void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip, boo
     The page() function returns a pointer to the web page object. See
     \l{Elements of QWebView} for an explanation of how web
     frames are related to a web page and web view.
+
+    The QWebFrame class also offers methods to retrieve both the URL currently
+    loaded by the frame (see url()) as well as the URL originally requested
+    to be loaded (see requestedUrl()). These methods make possible the retrieval
+    of the URL before and after a DNS resolution or a redirection occurs during
+    the load process. The requestedUrl() also matches to the URL added to the
+    frame history (\l{QWebHistory}) if load is successful.
 
     The title of an HTML frame can be accessed with the title() property.
     Additionally, a frame may also specify an icon, which can be accessed
@@ -376,7 +383,7 @@ void QWebFrame::addToJavaScriptWindowObject(const QString &name, QObject *object
     if (!page()->settings()->testAttribute(QWebSettings::JavascriptEnabled))
         return;
 
-    JSC::JSLock lock(false);
+    JSC::JSLock lock(JSC::SilenceAssertionsOnly);
     JSDOMWindow* window = toJSDOMWindow(d->frame);
     JSC::Bindings::RootObject* root = d->frame->script()->bindingRootObject();
     if (!window) {
@@ -443,7 +450,7 @@ QString QWebFrame::title() const
 {
     if (d->frame->document())
         return d->frame->loader()->documentLoader()->title();
-    else return QString();
+    return QString();
 }
 
 /*!
@@ -479,10 +486,10 @@ QString QWebFrame::title() const
 */
 QMultiMap<QString, QString> QWebFrame::metaData() const
 {
-    if(!d->frame->document())
-       return QMap<QString,QString>();
+    if (!d->frame->document())
+       return QMap<QString, QString>();
 
-    QMultiMap<QString,QString> map;
+    QMultiMap<QString, QString> map;
     Document* doc = d->frame->document();
     RefPtr<NodeList> list = doc->getElementsByTagName("meta");
     unsigned len = list->length();
@@ -521,6 +528,24 @@ QUrl QWebFrame::url() const
 }
 
 /*!
+    \since 4.6
+    \property QWebFrame::requestedUrl
+
+    The URL requested to loaded by the frame currently viewed. The URL may differ from
+    the one returned by url() if a DNS resolution or a redirection occurs.
+
+    \sa url(), setUrl()
+*/
+QUrl QWebFrame::requestedUrl() const
+{
+    if (!d->frame->loader()->activeDocumentLoader()
+        || !d->frameLoaderClient->m_loadSucceeded)
+        return QUrl(d->frame->loader()->outgoingReferrer());
+
+    return d->frame->loader()->originalRequest().url();
+}
+/*!
+    \since 4.6
     \property QWebFrame::baseUrl
     \brief the base URL of the frame, can be used to resolve relative URLs
     \since 4.6
@@ -815,9 +840,8 @@ int QWebFrame::scrollBarValue(Qt::Orientation orientation) const
 {
     Scrollbar *sb;
     sb = (orientation == Qt::Horizontal) ? d->horizontalScrollBar() : d->verticalScrollBar();
-    if (sb) {
+    if (sb)
         return sb->value();
-    }
     return 0;
 }
 
@@ -867,7 +891,7 @@ QRect QWebFrame::scrollBarGeometry(Qt::Orientation orientation) const
   \since 4.5
   Scrolls the frame \a dx pixels to the right and \a dy pixels downward. Both
   \a dx and \a dy may be negative.
-  
+
   \sa QWebFrame::scrollPosition
 */
 
@@ -875,7 +899,7 @@ void QWebFrame::scroll(int dx, int dy)
 {
     if (!d->frame->view())
         return;
-    
+
     d->frame->view()->scrollBy(IntSize(dx, dy));
 }
 
@@ -888,7 +912,7 @@ void QWebFrame::scroll(int dx, int dy)
 QPoint QWebFrame::scrollPosition() const
 {
     if (!d->frame->view())
-        return QPoint(0,0);
+        return QPoint(0, 0);
 
     IntSize ofs = d->frame->view()->scrollOffset();
     return QPoint(ofs.width(), ofs.height());
@@ -924,12 +948,23 @@ void QWebFrame::render(QPainter *painter)
 }
 
 /*!
-  \since 4.6
-  Render the frame's \a contents into \a painter while clipping to \a contents.
+    \since 4.6
+    \property QWebFrame::clipRenderToViewport
+
+    Returns true if render will clip content to viewport; otherwise returns false.
 */
-void QWebFrame::renderContents(QPainter *painter, const QRegion &contents)
+bool QWebFrame::clipRenderToViewport() const
 {
-    d->renderPrivate(painter, contents, true);
+    return d->clipRenderToViewport;
+}
+
+/*!
+    \since 4.6
+    Sets whether the content of a frame will be clipped to viewport when rendered.
+*/
+void QWebFrame::setClipRenderToViewport(bool clipRenderToViewport)
+{
+    d->clipRenderToViewport = clipRenderToViewport;
 }
 
 /*!
@@ -1051,8 +1086,11 @@ QWebElement QWebFrame::documentElement() const
 
 /*!
     \since 4.6
-    Returns a new collection of elements that are children of the frame's
-    document element and that match the given CSS selector \a selectorQuery.
+    Returns a new list of elements matching the given CSS selector \a selectorQuery.
+    If there are no matching elements, an empty list is returned.
+
+    \l{http://www.w3.org/TR/REC-CSS2/selector.html#q1}{Standard CSS2 selector} syntax is
+    used for the query.
 
     \sa QWebElement::findAll()
 */
@@ -1064,8 +1102,11 @@ QList<QWebElement> QWebFrame::findAllElements(const QString &selectorQuery) cons
 /*!
     \since 4.6
     Returns the first element in the frame's document that matches the
-    given CSS selector \a selectorQuery. Returns a null element if there is no
-    match.
+    given CSS selector \a selectorQuery. If there is no matching element, a
+    null element is returned.
+
+    \l{http://www.w3.org/TR/REC-CSS2/selector.html#q1}{Standard CSS2 selector} syntax is
+    used for the query.
 
     \sa QWebElement::findFirst()
 */
@@ -1123,11 +1164,11 @@ void QWebFrame::print(QPrinter *printer) const
 
     printContext.begin(pageRect.width());
 
-    printContext.computePageRects(pageRect, /*headerHeight*/0, /*footerHeight*/0, /*userScaleFactor*/1.0, pageHeight);
+    printContext.computePageRects(pageRect, /* headerHeight */ 0, /* footerHeight */ 0, /* userScaleFactor */ 1.0, pageHeight);
 
     int docCopies;
     int pageCopies;
-    if (printer->collateCopies() == true){
+    if (printer->collateCopies()) {
         docCopies = 1;
         pageCopies = printer->numCopies();
     } else {
@@ -1340,7 +1381,8 @@ QWebHitTestResultPrivate::QWebHitTestResultPrivate(const WebCore::HitTestResult 
         return;
     pos = hitTest.point();
     boundingRect = hitTest.boundingBox();
-    title = hitTest.title();
+    WebCore::TextDirection dir;
+    title = hitTest.title(dir);
     linkText = hitTest.textContent();
     linkUrl = hitTest.absoluteLinkURL();
     linkTitle = hitTest.titleDisplayString();

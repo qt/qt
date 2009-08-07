@@ -16,13 +16,15 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicssceneevent.h \
     graphicsview/qgraphicssceneindex_p.h \
     graphicsview/qgraphicsscenelinearindex_p.h \
+    graphicsview/qgraphicstransform.h \
+    graphicsview/qgraphicstransform_p.h \
     graphicsview/qgraphicsview.h \
     graphicsview/qgraphicsview_p.h \
     graphicsview/qgraphicswidget.h \
     graphicsview/qgraphicswidget_p.h \
-    graphicsview/qgridlayoutengine_p.h \
     graphicsview/qgraphicseffect.h \
     graphicsview/qgraphicseffect_p.h \
+    graphicsview/qgridlayoutengine_p.h
 
 SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qgraphicsitem.cpp \
@@ -38,6 +40,7 @@ SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qgraphicssceneevent.cpp \
     graphicsview/qgraphicssceneindex.cpp \
     graphicsview/qgraphicsscenelinearindex.cpp \
+    graphicsview/qgraphicstransform.cpp \
     graphicsview/qgraphicsview.cpp \
     graphicsview/qgraphicswidget.cpp \
     graphicsview/qgraphicswidget_p.cpp \

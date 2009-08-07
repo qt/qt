@@ -3,7 +3,7 @@ HEADERS       = renderarea.h \
 SOURCES       = main.cpp \
                 renderarea.cpp \
                 window.cpp
-unix:!mac:LIBS += -lm
+unix:!mac:!vxworks:LIBS += -lm
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/painting/painterpaths

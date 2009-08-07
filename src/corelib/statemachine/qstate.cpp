@@ -215,6 +215,8 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
     return result;
 }
 
+#ifndef QT_NO_PROPERTIES
+
 /*!
   Instructs this state to set the property with the given \a name of the given
   \a object to the given \a value when the state is entered.
@@ -238,6 +240,8 @@ void QState::assignProperty(QObject *object, const char *name,
     }
     d->propertyAssignments.append(QPropertyAssignment(object, name, value));
 }
+
+#endif // QT_NO_PROPERTIES
 
 /*!
   Returns this state's error state. 
@@ -335,7 +339,8 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
             return 0;
         }
     }
-    QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);
+    QSignalTransition *trans = new QSignalTransition(sender, signal);
+    trans->setTargetState(target);
     addTransition(trans);
     return trans;
 }
@@ -347,7 +352,8 @@ class UnconditionalTransition : public QAbstractTransition
 {
 public:
     UnconditionalTransition(QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target) {}
+        : QAbstractTransition()
+    { setTargetState(target); }
 protected:
     void onTransition(QEvent *) {}
     bool eventTest(QEvent *) { return true; }

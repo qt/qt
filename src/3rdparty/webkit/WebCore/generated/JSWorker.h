@@ -23,19 +23,17 @@
 
 #if ENABLE(WORKERS)
 
-#include "JSDOMBinding.h"
-#include <runtime/JSGlobalObject.h>
-#include <runtime/ObjectPrototype.h>
+#include "JSAbstractWorker.h"
+#include "Worker.h"
 
 namespace WebCore {
 
 class Worker;
 
-class JSWorker : public DOMObject {
-    typedef DOMObject Base;
+class JSWorker : public JSAbstractWorker {
+    typedef JSAbstractWorker Base;
 public:
-    JSWorker(PassRefPtr<JSC::Structure>, PassRefPtr<Worker>);
-    virtual ~JSWorker();
+    JSWorker(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Worker>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -49,17 +47,13 @@ public:
 
     virtual void mark();
 
-
-    // Custom functions
-    JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValue removeEventListener(JSC::ExecState*, const JSC::ArgList&);
-    Worker* impl() const { return m_impl.get(); }
-
-private:
-    RefPtr<Worker> m_impl;
+    Worker* impl() const
+    {
+        return static_cast<Worker*>(Base::impl());
+    }
 };
 
-JSC::JSValue toJS(JSC::ExecState*, Worker*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Worker*);
 Worker* toWorker(JSC::JSValue);
 
 class JSWorkerPrototype : public JSC::JSObject {
@@ -80,13 +74,8 @@ public:
 
 JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionPostMessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionTerminate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsWorkerOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsWorkerOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSWorkerOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 

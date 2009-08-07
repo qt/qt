@@ -86,6 +86,8 @@ public:
     qreal maxDepth;
 
     bool canRestoreClip;
+    QRect rectangleClip;
+    bool hasRectangleClip;
 };
 
 class Q_OPENGL_EXPORT QGL2PaintEngineEx : public QPaintEngineEx
@@ -222,6 +224,7 @@ public:
 
     void writeClip(const QVectorPath &path, float depth);
     void updateDepthScissorTest();
+    void setScissor(const QRect &rect);
     void regenerateDepthClip();
     void systemStateChanged();
     uint use_system_clip : 1;

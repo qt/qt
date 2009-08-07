@@ -24,6 +24,7 @@
 #include "EventListener.h"
 #include "Frame.h"
 #include "HTMLBodyElement.h"
+#include "HTMLNames.h"
 #include "JSDOMGlobalObject.h"
 #include "JSEventListener.h"
 #include "KURL.h"
@@ -78,12 +79,12 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLBodyElementConstructorTable =
     { 1, 0, JSHTMLBodyElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLBodyElementConstructor : public DOMObject {
+class JSHTMLBodyElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLBodyElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLBodyElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLBodyElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLBodyElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBodyElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBodyElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -125,8 +126,8 @@ JSObject* JSHTMLBodyElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLBodyElement::s_info = { "HTMLBodyElement", &JSHTMLElement::s_info, &JSHTMLBodyElementTable, 0 };
 
-JSHTMLBodyElement::JSHTMLBodyElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLBodyElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLBodyElement::JSHTMLBodyElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBodyElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -142,50 +143,57 @@ bool JSHTMLBodyElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
 
 JSValue jsHTMLBodyElementALink(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->aLink());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::alinkAttr));
 }
 
 JSValue jsHTMLBodyElementBackground(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->background());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::backgroundAttr));
 }
 
 JSValue jsHTMLBodyElementBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->bgColor());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::bgcolorAttr));
 }
 
 JSValue jsHTMLBodyElementLink(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->link());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::linkAttr));
 }
 
 JSValue jsHTMLBodyElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->text());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::textAttr));
 }
 
 JSValue jsHTMLBodyElementVLink(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->vLink());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::vlinkAttr));
 }
 
 JSValue jsHTMLBodyElementOnbeforeunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforeunload()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -195,8 +203,9 @@ JSValue jsHTMLBodyElementOnbeforeunload(ExecState* exec, const Identifier&, cons
 
 JSValue jsHTMLBodyElementOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -206,8 +215,9 @@ JSValue jsHTMLBodyElementOnmessage(ExecState* exec, const Identifier&, const Pro
 
 JSValue jsHTMLBodyElementOnoffline(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onoffline()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -217,8 +227,9 @@ JSValue jsHTMLBodyElementOnoffline(ExecState* exec, const Identifier&, const Pro
 
 JSValue jsHTMLBodyElementOnonline(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->ononline()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -228,8 +239,9 @@ JSValue jsHTMLBodyElementOnonline(ExecState* exec, const Identifier&, const Prop
 
 JSValue jsHTMLBodyElementOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onresize()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -239,8 +251,9 @@ JSValue jsHTMLBodyElementOnresize(ExecState* exec, const Identifier&, const Prop
 
 JSValue jsHTMLBodyElementOnstorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onstorage()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -250,8 +263,9 @@ JSValue jsHTMLBodyElementOnstorage(ExecState* exec, const Identifier&, const Pro
 
 JSValue jsHTMLBodyElementOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onunload()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -261,7 +275,8 @@ JSValue jsHTMLBodyElementOnunload(ExecState* exec, const Identifier&, const Prop
 
 JSValue jsHTMLBodyElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLBodyElement* domObject = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
+    return JSHTMLBodyElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLBodyElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -271,37 +286,37 @@ void JSHTMLBodyElement::put(ExecState* exec, const Identifier& propertyName, JSV
 void setJSHTMLBodyElementALink(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setALink(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::alinkAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBodyElementBackground(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setBackground(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::backgroundAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBodyElementBgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setBgColor(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::bgcolorAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBodyElementLink(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setLink(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::linkAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBodyElementText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setText(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::textAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBodyElementVLink(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setVLink(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::vlinkAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBodyElementOnbeforeunload(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -374,9 +389,9 @@ void setJSHTMLBodyElementOnunload(ExecState* exec, JSObject* thisObject, JSValue
     imp->setOnunload(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValue JSHTMLBodyElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBodyElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLBodyElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLBodyElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

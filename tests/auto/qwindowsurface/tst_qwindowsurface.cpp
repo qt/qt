@@ -48,6 +48,7 @@
 
 #include <private/qwindowsurface_p.h>
 #include <QDesktopWidget>
+#include <QX11Info>
 
 class tst_QWindowSurface : public QObject
 {
@@ -138,6 +139,11 @@ void tst_QWindowSurface::getSetWindowSurface()
 
 void tst_QWindowSurface::flushOutsidePaintEvent()
 {
+#ifdef Q_WS_X11
+    if (QX11Info::isCompositingManagerRunning())
+        QSKIP("Test is unreliable with composition manager", SkipAll);
+#endif
+
 #ifdef Q_WS_WIN
     if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
         QTest::qWait(1000);

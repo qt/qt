@@ -20,6 +20,7 @@ HEADERS += qgl.h \
 	   qgl_p.h \
 	   qglcolormap.h \
 	   qglpixelbuffer.h \
+           qglpixelbuffer_p.h \
 	   qglframebufferobject.h  \
         qglextensions_p.h
 

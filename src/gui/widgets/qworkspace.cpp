@@ -110,11 +110,11 @@ bool QMDIControl::event(QEvent *event)
         QStyle::SubControl ctrl = style()->hitTestComplexControl(QStyle::CC_MdiControls, &opt,
                                                                  helpEvent->pos(), this);
         if (ctrl == QStyle::SC_MdiCloseButton)
-            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Close"));
+            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Close"), this);
         else if (ctrl == QStyle::SC_MdiMinButton)
-            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Minimize"));
+            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Minimize"), this);
         else if (ctrl == QStyle::SC_MdiNormalButton)
-            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Restore Down"));
+            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Restore Down"), this);
         else
             QToolTip::hideText();
 #endif // QT_NO_TOOLTIP

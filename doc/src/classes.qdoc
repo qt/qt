@@ -40,6 +40,18 @@
 ****************************************************************************/
 
 /*!
+    \group groups
+    \title Grouped Classes
+    \ingroup classlists
+
+    This page provides a way of navigating Qt's classes by grouping
+    related classes together. Some classes may appear in more than one group.
+
+    \generatelist{related}
+
+*/
+
+/*!
     \page classes.html
     \title Qt's Classes
     \ingroup classlists
@@ -64,4 +76,78 @@
     Qt, see \l{Qt's Classes}.
 
     \generatelist{namespaces}
+*/
+
+/*!
+    \page obsoleteclasses.html
+    \title Obsolete Classes
+    \ingroup classlists
+
+
+    This is a list of Qt classes that are obsolete (deprecated). These
+    classes are provided to keep old source code working but they are
+    no longer maintained. We strongly advise against using these
+    classes in new code.
+
+    \generatelist obsoleteclasses
+
+    \sa {Qt's Classes}, {Qt's Modules}
+*/
+
+/*!
+    \page annotated.html
+    \title Annotated Class Index
+    \ingroup classlists
+
+    Qt's classes with brief descriptions:
+
+    \generatelist annotatedclasses
+*/
+
+/*!
+    \page functions.html
+    \title Member Function Index
+    \ingroup classlists
+
+    Here is the list of all the documented member functions in the Qt
+    API with links to the class documentation for each function.
+
+    \generatelist functionindex
+*/
+
+/*!
+    \page hierarchy.html
+
+    \title Class Inheritance Hierarchy
+    \ingroup classlists
+
+    This list shows the C++ class inheritance relations between the
+    classes in the Qt API.
+
+    \generatelist classhierarchy
+*/
+
+/*!
+    \page mainclasses.html
+    \title Qt's Main Classes
+    \ingroup classlists
+
+    These are the most frequently used Qt classes. For the complete
+    list see \link classes.html Qt's Classes \endlink.
+
+    \generatelist mainclasses
+*/
+
+/*!
+    \page compatclasses.html
+    \title Qt 3 Compatibility Classes
+    \ingroup classlists
+
+    This is a list of the classes that Qt provides for compatibility
+    with Qt 3. The vast majority of these are provided by the
+    Qt3Support module.
+
+    \generatelist compatclasses
+
+    \sa {Qt's Classes}, {Qt's Modules}
 */

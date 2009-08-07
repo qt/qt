@@ -358,6 +358,7 @@ class Q_CORE_EXPORT QVariant
             float f;
             qlonglong ll;
             qulonglong ull;
+            QObject *o;
             void *ptr;
             PrivateShared *shared;
         } data;

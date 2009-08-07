@@ -119,20 +119,34 @@ public:
     qreal pressure;
 };
 
-class QWinGestureEvent : public QEvent
+class QNativeGestureEvent : public QEvent
 {
 public:
     enum Type {
         None,
+        GestureBegin,
         GestureEnd,
         Pan,
-        Pinch
+        Zoom,
+        Rotate,
+        Swipe
     };
 
-    QWinGestureEvent() : QEvent(QEvent::WinGesture), gestureType(None), sequenceId(0) { }
+    QNativeGestureEvent()
+        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0), direction(0, 0)
+#ifdef Q_WS_WIN
+        , sequenceId(0)
+#endif
+    {
+    }
+
     Type gestureType;
+    float percentage;
     QPoint position;
+    QSize direction;
+#ifdef Q_WS_WIN
     ulong sequenceId;
+#endif
 };
 
 QT_END_NAMESPACE

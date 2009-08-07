@@ -73,6 +73,8 @@ private slots:
     void removePath();
     void addPaths();
     void removePaths();
+    void watchFileAndItsDirectory();
+    void watchFileAndItsDirectory_data() { basicTest_data(); }
 
 private:
     QStringList do_force_engines;
@@ -395,6 +397,102 @@ void tst_QFileSystemWatcher::removePaths()
     paths.clear();
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::removePaths: list is empty");
     watcher.removePaths(paths);
+}
+
+#if 0
+class SignalTest : public QObject {
+    Q_OBJECT;
+    public slots:
+        void fileSlot(const QString &file) { qDebug() << "file " << file;}
+        void dirSlot(const QString &dir) { qDebug() << "dir" << dir;}
+};
+#endif
+
+void tst_QFileSystemWatcher::watchFileAndItsDirectory()
+{
+    QFETCH(QString, backend);
+    QDir().mkdir("testDir");
+    QDir testDir("testDir");
+
+    QString testFileName = testDir.filePath("testFile.txt");
+    QString secondFileName = testDir.filePath("testFile2.txt");
+    QFile::remove(secondFileName);
+
+    QFile testFile(testFileName);
+    testFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+    testFile.remove();
+
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    testFile.write(QByteArray("hello"));
+    testFile.close();
+
+    QFileSystemWatcher watcher;
+    watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
+
+    watcher.addPath(testDir.dirName());
+    watcher.addPath(testFileName);
+
+    /*
+    SignalTest signalTest;
+    QObject::connect(&watcher, SIGNAL(fileChanged(const QString &)), &signalTest, SLOT(fileSlot(const QString &)));
+    QObject::connect(&watcher, SIGNAL(directoryChanged(const QString &)), &signalTest, SLOT(dirSlot(const QString &)));
+    */
+
+    QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
+    QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
+    QEventLoop eventLoop;
+    QTimer timer;
+    connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
+
+    // resolution of the modification time is system dependent, but it's at most 1 second when using
+    // the polling engine. From what I know, FAT32 has a 2 second resolution. So we have to
+    // wait before modifying the directory...
+    QTest::qWait(2000);
+
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    testFile.write(QByteArray("hello again"));
+    testFile.close();
+
+    timer.start(3000);
+    eventLoop.exec();
+    QVERIFY(fileChangedSpy.count() > 0);
+    QCOMPARE(dirChangedSpy.count(), 0);
+
+    if (backend == "dnotify")
+        QSKIP("dnotify is broken, skipping the rest of the test.", SkipSingle);
+
+    fileChangedSpy.clear();
+    QFile secondFile(secondFileName);
+    secondFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    secondFile.write("Foo");
+    secondFile.close();
+
+    timer.start(3000);
+    eventLoop.exec();
+    QCOMPARE(fileChangedSpy.count(), 0);
+    QCOMPARE(dirChangedSpy.count(), 1);
+
+    dirChangedSpy.clear();
+
+    QFile::remove(testFileName);
+
+    timer.start(3000);
+    eventLoop.exec();
+    QVERIFY(fileChangedSpy.count() > 0);
+    QCOMPARE(dirChangedSpy.count(), 1);
+
+    fileChangedSpy.clear();
+    dirChangedSpy.clear();
+
+    watcher.removePath(testFileName);
+    QFile::remove(secondFileName);
+
+    timer.start(3000);
+    eventLoop.exec();
+    QCOMPARE(fileChangedSpy.count(), 0);
+    QCOMPARE(dirChangedSpy.count(), 1);
+
+    QVERIFY(QDir().rmdir("testDir"));
 }
 
 QTEST_MAIN(tst_QFileSystemWatcher)

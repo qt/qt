@@ -6,7 +6,7 @@ load(qttest_p4)
 load(resources)
 
 # Input
-SOURCES += tst_resourceengine.cpp
+SOURCES += tst_qresourceengine.cpp
 RESOURCES += testqrc/test.qrc 
 
 runtime_resource.target = runtime_resource.rcc 
@@ -15,6 +15,7 @@ runtime_resource.commands = $$QMAKE_RCC -root /runtime_resource/ -binary $${runt
 QMAKE_EXTRA_TARGETS = runtime_resource
 ALL_DEPS += $${runtime_resource.target}
 
+QT = core
 wince*:{
     deploy.sources += runtime_resource.rcc parentdir.txt
     test.sources = testqrc/* 

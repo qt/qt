@@ -79,8 +79,8 @@ bool JSHistoryPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 const ClassInfo JSHistory::s_info = { "History", 0, &JSHistoryTable, 0 };
 
-JSHistory::JSHistory(PassRefPtr<Structure> structure, PassRefPtr<History> impl)
-    : DOMObject(structure)
+JSHistory::JSHistory(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<History> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -104,8 +104,9 @@ bool JSHistory::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsHistoryLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHistory* castedThis = static_cast<JSHistory*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    History* imp = static_cast<History*>(static_cast<JSHistory*>(asObject(slot.slotBase()))->impl());
+    History* imp = static_cast<History*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
@@ -153,9 +154,9 @@ JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionGo(ExecState* exec, JSObject*, J
     return jsUndefined();
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, History* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, History* object)
 {
-    return getDOMObjectWrapper<JSHistory>(exec, object);
+    return getDOMObjectWrapper<JSHistory>(exec, globalObject, object);
 }
 History* toHistory(JSC::JSValue value)
 {

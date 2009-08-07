@@ -1,3 +1,1290 @@
+2009-07-28  Xan Lopez  <xlopez@igalia.com>
+
+        Add new files, fixes distcheck.
+
+        * GNUmakefile.am:
+
+2009-07-28  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Determining whether to use JIT or interpreter
+        moved from JavaScriptCore.pri to Platform.h
+
+        * JavaScriptCore.pri:
+        * wtf/Platform.h:
+
+2009-07-27  Brian Weinstein  <bweinstein@apple.com>
+
+        Fix of misuse of sort command.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-07-27  Brian Weinstein  <bweinstein@apple.com>
+
+        Build fix for Windows.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-07-27  Gavin Barraclough  <barraclough@apple.com>
+
+        Rubber stamped by Oliver Hunt.
+
+        Fix tyop in JIT, renamed preverveReturnAddressAfterCall -> preserveReturnAddressAfterCall.
+
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompile):
+        (JSC::JIT::privateCompileCTIMachineTrampolines):
+        * jit/JIT.h:
+        * jit/JITInlineMethods.h:
+        (JSC::JIT::preserveReturnAddressAfterCall):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::privateCompilePutByIdTransition):
+
+2009-07-27  Alexey Proskuryakov  <ap@webkit.org>
+
+        Gtk build fix.
+
+        * runtime/JSLock.cpp: (JSC::JSLock::JSLock): Fix "no threading" case.
+
+2009-07-27  Alexey Proskuryakov  <ap@webkit.org>
+
+        Release build fix.
+
+        * runtime/JSLock.h: (JSC::JSLock::~JSLock):
+
+2009-07-27  Alexey Proskuryakov  <ap@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27735
+        Give a helpful name to JSLock constructor argument
+
+        * API/JSBase.cpp:
+        (JSGarbageCollect):
+        * API/JSContextRef.cpp:
+        * API/JSObjectRef.cpp:
+        (JSPropertyNameArrayRelease):
+        (JSPropertyNameAccumulatorAddName):
+        * JavaScriptCore.exp:
+        * jsc.cpp:
+        (functionGC):
+        (cleanupGlobalData):
+        (jscmain):
+        * runtime/Collector.cpp:
+        (JSC::Heap::destroy):
+        * runtime/JSLock.cpp:
+        (JSC::JSLock::JSLock):
+        (JSC::JSLock::lock):
+        (JSC::JSLock::unlock):
+        (JSC::JSLock::DropAllLocks::DropAllLocks):
+        (JSC::JSLock::DropAllLocks::~DropAllLocks):
+        * runtime/JSLock.h:
+        (JSC::):
+        (JSC::JSLock::JSLock):
+        (JSC::JSLock::~JSLock):
+
+2009-07-25  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Eric Seidel.
+
+        Allow custom memory allocation control for OpaqueJSPropertyNameArray struct
+        https://bugs.webkit.org/show_bug.cgi?id=27342
+
+        Inherits OpaqueJSPropertyNameArray struct from FastAllocBase because it has been
+        instantiated by 'new' JavaScriptCore/API/JSObjectRef.cpp:473.
+
+        * API/JSObjectRef.cpp:
+
+2009-07-24  Ada Chan  <adachan@apple.com>
+
+        In preparation for https://bugs.webkit.org/show_bug.cgi?id=27236:
+        Remove TCMALLOC_TRACK_DECOMMITED_SPANS.  We'll always track decommitted spans.
+        We have tested this and show it has little impact on performance.
+
+        Reviewed by Mark Rowe.
+
+        * wtf/FastMalloc.cpp:
+        (WTF::TCMalloc_PageHeap::New):
+        (WTF::TCMalloc_PageHeap::AllocLarge):
+        (WTF::propagateDecommittedState):
+        (WTF::mergeDecommittedStates):
+        (WTF::TCMalloc_PageHeap::Delete):
+        (WTF::TCMalloc_PageHeap::IncrementalScavenge):
+
+2009-07-24  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler and Adam Barth.
+
+        Build fix for x86 platforms.
+        https://bugs.webkit.org/show_bug.cgi?id=27602
+
+        * jit/JIT.cpp:
+
+2009-07-23  Kevin Ollivier  <kevino@theolliviers.com>
+
+        wx build fix, adding missing header.
+
+        * jit/JIT.cpp:
+
+2009-07-22  Yong Li  <yong.li@torchmobile.com>
+
+        Reviewed by George Staikos.
+
+        Add wince specific memory files into wtf/wince
+        https://bugs.webkit.org/show_bug.cgi?id=27550
+
+        * wtf/wince/FastMallocWince.h: Added.
+        * wtf/wince/MemoryManager.cpp: Added.
+        * wtf/wince/MemoryManager.h: Added.
+
+2009-07-23  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix for missing mmap features in Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=24540
+
+        Fix, conditionally for PLATFORM(SYMBIAN), as an alternative 
+        to missing support for the MAP_ANON property flag in mmap. 
+        It utilizes Symbian specific memory allocation features.
+
+        * runtime/Collector.cpp
+
+2009-07-22  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        With ENABLE(ASSEMBLER_WX_EXCLUSIVE), only change permissions once per repatch event.
+        ( https://bugs.webkit.org/show_bug.cgi?id=27564 )
+
+        Currently we change permissions forwards and backwards for each instruction modified,
+        instead we should only change permissions once per complete repatching event.
+
+        2.5% progression running with ENABLE(ASSEMBLER_WX_EXCLUSIVE) enabled,
+        which recoups 1/3 of the penalty of running with this mode enabled.
+
+        * assembler/ARMAssembler.cpp:
+        (JSC::ARMAssembler::linkBranch):
+            - Replace usage of MakeWritable with cacheFlush.
+        
+        * assembler/ARMAssembler.h:
+        (JSC::ARMAssembler::patchPointerInternal):
+        (JSC::ARMAssembler::repatchLoadPtrToLEA):
+            - Replace usage of MakeWritable with cacheFlush.
+
+        * assembler/ARMv7Assembler.h:
+        (JSC::ARMv7Assembler::relinkJump):
+        (JSC::ARMv7Assembler::relinkCall):
+        (JSC::ARMv7Assembler::repatchInt32):
+        (JSC::ARMv7Assembler::repatchPointer):
+        (JSC::ARMv7Assembler::repatchLoadPtrToLEA):
+        (JSC::ARMv7Assembler::setInt32):
+            - Replace usage of MakeWritable with cacheFlush.
+
+        * assembler/LinkBuffer.h:
+        (JSC::LinkBuffer::performFinalization):
+            - Make explicit call to cacheFlush.
+
+        * assembler/MacroAssemblerCodeRef.h:
+        (JSC::MacroAssemblerCodeRef::MacroAssemblerCodeRef):
+            - Make size always available.
+
+        * assembler/RepatchBuffer.h:
+        (JSC::RepatchBuffer::RepatchBuffer):
+        (JSC::RepatchBuffer::~RepatchBuffer):
+            - Add calls to MakeWritable & makeExecutable.
+
+        * assembler/X86Assembler.h:
+        (JSC::X86Assembler::relinkJump):
+        (JSC::X86Assembler::relinkCall):
+        (JSC::X86Assembler::repatchInt32):
+        (JSC::X86Assembler::repatchPointer):
+        (JSC::X86Assembler::repatchLoadPtrToLEA):
+            - Remove usage of MakeWritable.
+
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::getJITCode):
+            - Provide access to CodeBlock's JITCode.
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::makeExecutable):
+        (JSC::ExecutableAllocator::cacheFlush):
+            - Remove MakeWritable, make cacheFlush public.
+
+        * jit/JIT.cpp:
+        (JSC::ctiPatchNearCallByReturnAddress):
+        (JSC::ctiPatchCallByReturnAddress):
+        (JSC::JIT::privateCompile):
+        (JSC::JIT::unlinkCall):
+        (JSC::JIT::linkCall):
+            - Add CodeBlock argument to RepatchBuffer.
+
+        * jit/JIT.h:
+            - Pass CodeBlock argument for use by RepatchBuffer.
+
+        * jit/JITCode.h:
+        (JSC::JITCode::start):
+        (JSC::JITCode::size):
+            - Provide access to code start & size.
+
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::privateCompilePutByIdTransition):
+        (JSC::JIT::patchGetByIdSelf):
+        (JSC::JIT::patchMethodCallProto):
+        (JSC::JIT::patchPutByIdReplace):
+        (JSC::JIT::privateCompilePatchGetArrayLength):
+        (JSC::JIT::privateCompileGetByIdProto):
+        (JSC::JIT::privateCompileGetByIdSelfList):
+        (JSC::JIT::privateCompileGetByIdProtoList):
+        (JSC::JIT::privateCompileGetByIdChainList):
+        (JSC::JIT::privateCompileGetByIdChain):
+            - Add CodeBlock argument to RepatchBuffer.
+
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCachePutByID):
+        (JSC::JITThunks::tryCacheGetByID):
+        (JSC::JITStubs::DEFINE_STUB_FUNCTION):
+            - Pass CodeBlock argument for use by RepatchBuffer.
+
+2009-07-21  Zoltan Herczeg  <zherczeg@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Cache not only the structure of the method, but the
+        structure of its prototype as well.
+        https://bugs.webkit.org/show_bug.cgi?id=27077
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::~CodeBlock):
+        * bytecode/CodeBlock.h:
+        (JSC::MethodCallLinkInfo::MethodCallLinkInfo):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::patchMethodCallProto):
+
+2009-07-21  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Move call linking / repatching down from AbstractMacroAssembler into MacroAssemblerARCH classes.
+        ( https://bugs.webkit.org/show_bug.cgi?id=27527 )
+
+        This allows the implementation to be defined per architecture.  Specifically this addresses the
+        fact that x86-64 MacroAssembler implements far calls as a load to register, followed by a call
+        to register.  Patching the call actually requires the pointer load to be patched, rather than
+        the call to be patched.  This is implementation detail specific to MacroAssemblerX86_64, and as
+        such is best handled there.
+
+        * assembler/AbstractMacroAssembler.h:
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::linkCall):
+        (JSC::MacroAssemblerARM::repatchCall):
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::linkCall):
+        (JSC::MacroAssemblerARMv7::repatchCall):
+        * assembler/MacroAssemblerX86.h:
+        (JSC::MacroAssemblerX86::linkCall):
+        (JSC::MacroAssemblerX86::repatchCall):
+        * assembler/MacroAssemblerX86_64.h:
+        (JSC::MacroAssemblerX86_64::linkCall):
+        (JSC::MacroAssemblerX86_64::repatchCall):
+
+2009-07-21  Adam Treat  <adam.treat@torchmobile.com>
+
+        Reviewed by George Staikos.
+
+        Every wtf file includes other wtf files with <> style includes
+        except this one.  Fix the exception.
+
+        * wtf/ByteArray.h:
+
+2009-07-21  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Oliver Hunt.
+
+        Move LinkBuffer/RepatchBuffer out of AbstractMacroAssembler.
+        ( https://bugs.webkit.org/show_bug.cgi?id=27485 )
+
+        This change is the first step in a process to move code that should be in
+        the architecture-specific MacroAssembler classes up out of Assmbler and
+        AbstractMacroAssembler.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+            - added new files
+        
+        * assembler/ARMAssembler.h:
+        (JSC::ARMAssembler::linkPointer):
+            - rename patchPointer to bring it in line with the current link/repatch naming scheme
+        
+        * assembler/ARMv7Assembler.h:
+        (JSC::ARMv7Assembler::linkCall):
+        (JSC::ARMv7Assembler::linkPointer):
+        (JSC::ARMv7Assembler::relinkCall):
+        (JSC::ARMv7Assembler::repatchInt32):
+        (JSC::ARMv7Assembler::repatchPointer):
+        (JSC::ARMv7Assembler::setInt32):
+        (JSC::ARMv7Assembler::setPointer):
+            - rename patchPointer to bring it in line with the current link/repatch naming scheme
+
+        * assembler/AbstractMacroAssembler.h:
+        (JSC::AbstractMacroAssembler::linkJump):
+        (JSC::AbstractMacroAssembler::linkCall):
+        (JSC::AbstractMacroAssembler::linkPointer):
+        (JSC::AbstractMacroAssembler::getLinkerAddress):
+        (JSC::AbstractMacroAssembler::getLinkerCallReturnOffset):
+        (JSC::AbstractMacroAssembler::repatchJump):
+        (JSC::AbstractMacroAssembler::repatchCall):
+        (JSC::AbstractMacroAssembler::repatchNearCall):
+        (JSC::AbstractMacroAssembler::repatchInt32):
+        (JSC::AbstractMacroAssembler::repatchPointer):
+        (JSC::AbstractMacroAssembler::repatchLoadPtrToLEA):
+            - remove the LinkBuffer/RepatchBuffer classes, but leave a set of (private, friended) methods to interface to the Assembler
+
+        * assembler/LinkBuffer.h: Added.
+        (JSC::LinkBuffer::LinkBuffer):
+        (JSC::LinkBuffer::~LinkBuffer):
+        (JSC::LinkBuffer::link):
+        (JSC::LinkBuffer::patch):
+        (JSC::LinkBuffer::locationOf):
+        (JSC::LinkBuffer::locationOfNearCall):
+        (JSC::LinkBuffer::returnAddressOffset):
+        (JSC::LinkBuffer::finalizeCode):
+        (JSC::LinkBuffer::finalizeCodeAddendum):
+        (JSC::LinkBuffer::code):
+        (JSC::LinkBuffer::performFinalization):
+            - new file containing the LinkBuffer class, previously a member of AbstractMacroAssembler
+
+        * assembler/RepatchBuffer.h: Added.
+        (JSC::RepatchBuffer::RepatchBuffer):
+        (JSC::RepatchBuffer::relink):
+        (JSC::RepatchBuffer::repatch):
+        (JSC::RepatchBuffer::repatchLoadPtrToLEA):
+        (JSC::RepatchBuffer::relinkCallerToTrampoline):
+        (JSC::RepatchBuffer::relinkCallerToFunction):
+        (JSC::RepatchBuffer::relinkNearCallerToTrampoline):
+            - new file containing the RepatchBuffer class, previously a member of AbstractMacroAssembler
+
+        * assembler/X86Assembler.h:
+        (JSC::X86Assembler::linkJump):
+        (JSC::X86Assembler::linkCall):
+        (JSC::X86Assembler::linkPointerForCall):
+        (JSC::X86Assembler::linkPointer):
+        (JSC::X86Assembler::relinkJump):
+        (JSC::X86Assembler::relinkCall):
+        (JSC::X86Assembler::repatchInt32):
+        (JSC::X86Assembler::repatchPointer):
+        (JSC::X86Assembler::setPointer):
+        (JSC::X86Assembler::setInt32):
+        (JSC::X86Assembler::setRel32):
+            - rename patchPointer to bring it in line with the current link/repatch naming scheme
+
+        * jit/JIT.cpp:
+        (JSC::ctiPatchNearCallByReturnAddress):
+        (JSC::ctiPatchCallByReturnAddress):
+            - include new headers
+            - remove MacroAssembler:: specification from RepatchBuffer usage
+
+        * jit/JITPropertyAccess.cpp:
+        * yarr/RegexJIT.cpp:
+            - include new headers
+
+2009-07-21  Robert Agoston  <Agoston.Robert@stud.u-szeged.hu>
+
+        Reviewed by David Levin.
+
+        Fixed #undef typo.
+        https://bugs.webkit.org/show_bug.cgi?id=27506
+
+        * bytecode/Opcode.h:
+
+2009-07-21  Adam Roben  <aroben@apple.com>
+
+        Roll out r46153, r46154, and r46155
+
+        These changes were causing build failures and assertion failures on
+        Windows.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * runtime/JSArray.cpp:
+        * runtime/StringPrototype.cpp:
+        * runtime/UString.cpp:
+        * runtime/UString.h:
+        * wtf/FastMalloc.cpp:
+        * wtf/FastMalloc.h:
+        * wtf/Platform.h:
+        * wtf/PossiblyNull.h: Removed.
+
+2009-07-21  Roland Steiner  <rolandsteiner@google.com>
+
+        Reviewed by David Levin.
+
+        Add ENABLE_RUBY to list of build options
+        https://bugs.webkit.org/show_bug.cgi?id=27324
+
+        * Configurations/FeatureDefines.xcconfig: Added flag ENABLE_RUBY.
+
+2009-07-20  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by NOBODY (Build fix).
+
+        Build fix attempt #2
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-07-20  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by NOBODY (Build fix).
+
+        Build fix attempt #1
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-07-20  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Make it harder to misuse try* allocation routines
+        https://bugs.webkit.org/show_bug.cgi?id=27469
+
+        Jump through a few hoops to make it much harder to accidentally
+        miss null-checking of values returned by the try-* allocation
+        routines.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * runtime/JSArray.cpp:
+        (JSC::JSArray::putSlowCase):
+        (JSC::JSArray::increaseVectorLength):
+        * runtime/StringPrototype.cpp:
+        (JSC::stringProtoFuncFontsize):
+        (JSC::stringProtoFuncLink):
+        * runtime/UString.cpp:
+        (JSC::allocChars):
+        (JSC::reallocChars):
+        (JSC::expandCapacity):
+        (JSC::UString::Rep::reserveCapacity):
+        (JSC::UString::expandPreCapacity):
+        (JSC::createRep):
+        (JSC::concatenate):
+        (JSC::UString::spliceSubstringsWithSeparators):
+        (JSC::UString::replaceRange):
+        (JSC::UString::append):
+        (JSC::UString::operator=):
+        * runtime/UString.h:
+        (JSC::UString::Rep::createEmptyBuffer):
+        * wtf/FastMalloc.cpp:
+        (WTF::tryFastZeroedMalloc):
+        (WTF::tryFastMalloc):
+        (WTF::tryFastCalloc):
+        (WTF::tryFastRealloc):
+        (WTF::TCMallocStats::tryFastMalloc):
+        (WTF::TCMallocStats::tryFastCalloc):
+        (WTF::TCMallocStats::tryFastRealloc):
+        * wtf/FastMalloc.h:
+        (WTF::TryMallocReturnValue::TryMallocReturnValue):
+        (WTF::TryMallocReturnValue::~TryMallocReturnValue):
+        (WTF::TryMallocReturnValue::operator Maybe<T>):
+        (WTF::TryMallocReturnValue::getValue):
+        * wtf/PossiblyNull.h:
+        (WTF::PossiblyNull::PossiblyNull):
+        (WTF::PossiblyNull::~PossiblyNull):
+        (WTF::PossiblyNull::getValue):
+        * wtf/Platform.h:
+
+2009-07-20  Gavin Barraclough  <barraclough@apple.com>
+
+        RS Oliver Hunt.
+
+        Add ARM assembler files to xcodeproj, for convenience editing.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+
+2009-07-20  Jessie Berlin  <jberlin@apple.com>
+
+        Reviewed by David Levin.
+
+        Fix an incorrect assertion in Vector::remove.
+        
+        https://bugs.webkit.org/show_bug.cgi?id=27477
+
+        * wtf/Vector.h:
+        (WTF::::remove):
+        Assert that the position at which to start removing elements + the
+        length (the number of elements to remove) is less than or equal to the
+        size of the entire Vector.
+
+2009-07-20  Peter Kasting  <pkasting@google.com>
+
+        Reviewed by Mark Rowe.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27468
+        Back out r46060, which caused problems for some Apple developers.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreCommon.vsprops:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreGenerated.vcproj:
+        * JavaScriptCore.vcproj/WTF/WTFCommon.vsprops:
+        * JavaScriptCore.vcproj/jsc/jscCommon.vsprops:
+        * JavaScriptCore.vcproj/testapi/testapiCommon.vsprops:
+
+2009-07-20  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Oliver Hunt.
+
+        Allow custom memory allocation control in NewThreadContext
+        https://bugs.webkit.org/show_bug.cgi?id=27338
+
+        Inherits NewThreadContext struct from FastAllocBase because it
+        has been instantiated by 'new' JavaScriptCore/wtf/Threading.cpp:76.
+
+        * wtf/Threading.cpp:
+
+2009-07-20  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Oliver Hunt.
+
+        Allow custom memory allocation control in JavaScriptCore's JSClassRef.h
+        https://bugs.webkit.org/show_bug.cgi?id=27340
+
+        Inherit StaticValueEntry and StaticFunctionEntry struct from FastAllocBase because these
+        have been instantiated by 'new' in JavaScriptCore/API/JSClassRef.cpp:153
+        and in JavaScriptCore/API/JSClassRef.cpp:166.
+
+        * API/JSClassRef.h:
+
+2009-07-20  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Allow custom memory allocation control in JavaScriptCore's RegexPattern.h
+        https://bugs.webkit.org/show_bug.cgi?id=27343
+
+        Inherits RegexPattern.h's structs (which have been instantiated by operator new) from FastAllocBase:
+
+        CharacterClass (new call: JavaScriptCore/yarr/RegexCompiler.cpp:144)
+        PatternAlternative (new call: JavaScriptCore/yarr/RegexPattern.h:221) 
+        PatternDisjunction (new call: JavaScriptCore/yarr/RegexCompiler.cpp:446)
+
+        * yarr/RegexPattern.h:
+
+2009-07-20  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Allow custom memory allocation control for JavaScriptCore's MatchFrame struct
+        https://bugs.webkit.org/show_bug.cgi?id=27344
+
+        Inherits MatchFrame struct from FastAllocBase because it has
+        been instantiated by 'new' JavaScriptCore/pcre/pcre_exec.cpp:359.
+
+        * pcre/pcre_exec.cpp:
+
+2009-07-20  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        Remove some outdated S60 platform specific code
+        https://bugs.webkit.org/show_bug.cgi?id=27423
+
+        * wtf/Platform.h:
+
+2009-07-20  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        Qt build fix with MSVC and MinGW.
+
+        * jsc.pro: Make sure jsc is a console application, and turn off
+        exceptions and stl support to fix the build.
+
+2009-07-20  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Gustavo Noronha.
+
+        Do not use C++-style comments in preprocessor directives.
+
+        GCC does not like this in some configurations, using C-style
+        comments is safer.
+
+        * wtf/Platform.h:
+
+2009-07-17  Peter Kasting  <pkasting@google.com>
+
+        Reviewed by Steve Falkenburg.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27323
+        Only add Cygwin to the path when it isn't already there.  This avoids
+        causing problems for people who purposefully have non-Cygwin versions of
+        executables like svn in front of the Cygwin ones in their paths.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreCommon.vsprops:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreGenerated.vcproj:
+        * JavaScriptCore.vcproj/WTF/WTFCommon.vsprops:
+        * JavaScriptCore.vcproj/jsc/jscCommon.vsprops:
+        * JavaScriptCore.vcproj/testapi/testapiCommon.vsprops:
+
+2009-07-17  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Add YARR support for generic ARM platforms (disabled by default).
+        https://bugs.webkit.org/show_bug.cgi?id=24986
+
+        Add generic ARM port for MacroAssembler. It supports the whole
+        MacroAssembler functionality except floating point.
+
+        The class JmpSrc is extended with a flag which enables to patch
+        the jump destination offset during execution. This feature is
+        required for generic ARM port.
+
+        Signed off by Zoltan Herczeg <zherczeg@inf.u-szeged.hu>
+        Signed off by Gabor Loki <loki@inf.u-szeged.hu>
+
+        * JavaScriptCore.pri:
+        * assembler/ARMAssembler.cpp: Added.
+        (JSC::ARMAssembler::getLdrImmAddress):
+        (JSC::ARMAssembler::linkBranch):
+        (JSC::ARMAssembler::patchConstantPoolLoad):
+        (JSC::ARMAssembler::getOp2):
+        (JSC::ARMAssembler::genInt):
+        (JSC::ARMAssembler::getImm):
+        (JSC::ARMAssembler::moveImm):
+        (JSC::ARMAssembler::dataTransfer32):
+        (JSC::ARMAssembler::baseIndexTransfer32):
+        (JSC::ARMAssembler::executableCopy):
+        * assembler/ARMAssembler.h: Added.
+        (JSC::ARM::):
+        (JSC::ARMAssembler::ARMAssembler):
+        (JSC::ARMAssembler::):
+        (JSC::ARMAssembler::JmpSrc::JmpSrc):
+        (JSC::ARMAssembler::JmpSrc::enableLatePatch):
+        (JSC::ARMAssembler::JmpDst::JmpDst):
+        (JSC::ARMAssembler::JmpDst::isUsed):
+        (JSC::ARMAssembler::JmpDst::used):
+        (JSC::ARMAssembler::emitInst):
+        (JSC::ARMAssembler::and_r):
+        (JSC::ARMAssembler::ands_r):
+        (JSC::ARMAssembler::eor_r):
+        (JSC::ARMAssembler::eors_r):
+        (JSC::ARMAssembler::sub_r):
+        (JSC::ARMAssembler::subs_r):
+        (JSC::ARMAssembler::rsb_r):
+        (JSC::ARMAssembler::rsbs_r):
+        (JSC::ARMAssembler::add_r):
+        (JSC::ARMAssembler::adds_r):
+        (JSC::ARMAssembler::adc_r):
+        (JSC::ARMAssembler::adcs_r):
+        (JSC::ARMAssembler::sbc_r):
+        (JSC::ARMAssembler::sbcs_r):
+        (JSC::ARMAssembler::rsc_r):
+        (JSC::ARMAssembler::rscs_r):
+        (JSC::ARMAssembler::tst_r):
+        (JSC::ARMAssembler::teq_r):
+        (JSC::ARMAssembler::cmp_r):
+        (JSC::ARMAssembler::orr_r):
+        (JSC::ARMAssembler::orrs_r):
+        (JSC::ARMAssembler::mov_r):
+        (JSC::ARMAssembler::movs_r):
+        (JSC::ARMAssembler::bic_r):
+        (JSC::ARMAssembler::bics_r):
+        (JSC::ARMAssembler::mvn_r):
+        (JSC::ARMAssembler::mvns_r):
+        (JSC::ARMAssembler::mul_r):
+        (JSC::ARMAssembler::muls_r):
+        (JSC::ARMAssembler::mull_r):
+        (JSC::ARMAssembler::ldr_imm):
+        (JSC::ARMAssembler::ldr_un_imm):
+        (JSC::ARMAssembler::dtr_u):
+        (JSC::ARMAssembler::dtr_ur):
+        (JSC::ARMAssembler::dtr_d):
+        (JSC::ARMAssembler::dtr_dr):
+        (JSC::ARMAssembler::ldrh_r):
+        (JSC::ARMAssembler::ldrh_d):
+        (JSC::ARMAssembler::ldrh_u):
+        (JSC::ARMAssembler::strh_r):
+        (JSC::ARMAssembler::push_r):
+        (JSC::ARMAssembler::pop_r):
+        (JSC::ARMAssembler::poke_r):
+        (JSC::ARMAssembler::peek_r):
+        (JSC::ARMAssembler::clz_r):
+        (JSC::ARMAssembler::bkpt):
+        (JSC::ARMAssembler::lsl):
+        (JSC::ARMAssembler::lsr):
+        (JSC::ARMAssembler::asr):
+        (JSC::ARMAssembler::lsl_r):
+        (JSC::ARMAssembler::lsr_r):
+        (JSC::ARMAssembler::asr_r):
+        (JSC::ARMAssembler::size):
+        (JSC::ARMAssembler::ensureSpace):
+        (JSC::ARMAssembler::label):
+        (JSC::ARMAssembler::align):
+        (JSC::ARMAssembler::jmp):
+        (JSC::ARMAssembler::patchPointerInternal):
+        (JSC::ARMAssembler::patchConstantPoolLoad):
+        (JSC::ARMAssembler::patchPointer):
+        (JSC::ARMAssembler::repatchInt32):
+        (JSC::ARMAssembler::repatchPointer):
+        (JSC::ARMAssembler::repatchLoadPtrToLEA):
+        (JSC::ARMAssembler::linkJump):
+        (JSC::ARMAssembler::relinkJump):
+        (JSC::ARMAssembler::linkCall):
+        (JSC::ARMAssembler::relinkCall):
+        (JSC::ARMAssembler::getRelocatedAddress):
+        (JSC::ARMAssembler::getDifferenceBetweenLabels):
+        (JSC::ARMAssembler::getCallReturnOffset):
+        (JSC::ARMAssembler::getOp2Byte):
+        (JSC::ARMAssembler::placeConstantPoolBarrier):
+        (JSC::ARMAssembler::RM):
+        (JSC::ARMAssembler::RS):
+        (JSC::ARMAssembler::RD):
+        (JSC::ARMAssembler::RN):
+        (JSC::ARMAssembler::getConditionalField):
+        * assembler/ARMv7Assembler.h:
+        (JSC::ARMv7Assembler::JmpSrc::enableLatePatch):
+        * assembler/AbstractMacroAssembler.h:
+        (JSC::AbstractMacroAssembler::Call::enableLatePatch):
+        (JSC::AbstractMacroAssembler::Jump::enableLatePatch):
+        * assembler/MacroAssembler.h:
+        * assembler/MacroAssemblerARM.h: Added.
+        (JSC::MacroAssemblerARM::):
+        (JSC::MacroAssemblerARM::add32):
+        (JSC::MacroAssemblerARM::and32):
+        (JSC::MacroAssemblerARM::lshift32):
+        (JSC::MacroAssemblerARM::mul32):
+        (JSC::MacroAssemblerARM::not32):
+        (JSC::MacroAssemblerARM::or32):
+        (JSC::MacroAssemblerARM::rshift32):
+        (JSC::MacroAssemblerARM::sub32):
+        (JSC::MacroAssemblerARM::xor32):
+        (JSC::MacroAssemblerARM::load32):
+        (JSC::MacroAssemblerARM::load32WithAddressOffsetPatch):
+        (JSC::MacroAssemblerARM::loadPtrWithPatchToLEA):
+        (JSC::MacroAssemblerARM::load16):
+        (JSC::MacroAssemblerARM::store32WithAddressOffsetPatch):
+        (JSC::MacroAssemblerARM::store32):
+        (JSC::MacroAssemblerARM::pop):
+        (JSC::MacroAssemblerARM::push):
+        (JSC::MacroAssemblerARM::move):
+        (JSC::MacroAssemblerARM::swap):
+        (JSC::MacroAssemblerARM::signExtend32ToPtr):
+        (JSC::MacroAssemblerARM::zeroExtend32ToPtr):
+        (JSC::MacroAssemblerARM::branch32):
+        (JSC::MacroAssemblerARM::branch16):
+        (JSC::MacroAssemblerARM::branchTest32):
+        (JSC::MacroAssemblerARM::jump):
+        (JSC::MacroAssemblerARM::branchAdd32):
+        (JSC::MacroAssemblerARM::mull32):
+        (JSC::MacroAssemblerARM::branchMul32):
+        (JSC::MacroAssemblerARM::branchSub32):
+        (JSC::MacroAssemblerARM::breakpoint):
+        (JSC::MacroAssemblerARM::nearCall):
+        (JSC::MacroAssemblerARM::call):
+        (JSC::MacroAssemblerARM::ret):
+        (JSC::MacroAssemblerARM::set32):
+        (JSC::MacroAssemblerARM::setTest32):
+        (JSC::MacroAssemblerARM::tailRecursiveCall):
+        (JSC::MacroAssemblerARM::makeTailRecursiveCall):
+        (JSC::MacroAssemblerARM::moveWithPatch):
+        (JSC::MacroAssemblerARM::branchPtrWithPatch):
+        (JSC::MacroAssemblerARM::storePtrWithPatch):
+        (JSC::MacroAssemblerARM::supportsFloatingPoint):
+        (JSC::MacroAssemblerARM::supportsFloatingPointTruncate):
+        (JSC::MacroAssemblerARM::loadDouble):
+        (JSC::MacroAssemblerARM::storeDouble):
+        (JSC::MacroAssemblerARM::addDouble):
+        (JSC::MacroAssemblerARM::subDouble):
+        (JSC::MacroAssemblerARM::mulDouble):
+        (JSC::MacroAssemblerARM::convertInt32ToDouble):
+        (JSC::MacroAssemblerARM::branchDouble):
+        (JSC::MacroAssemblerARM::branchTruncateDoubleToInt32):
+        (JSC::MacroAssemblerARM::ARMCondition):
+        (JSC::MacroAssemblerARM::prepareCall):
+        (JSC::MacroAssemblerARM::call32):
+        * assembler/X86Assembler.h:
+        (JSC::X86Assembler::JmpSrc::enableLatePatch):
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+        * wtf/Platform.h:
+        * yarr/RegexJIT.cpp:
+        (JSC::Yarr::RegexGenerator::generateEnter):
+        (JSC::Yarr::RegexGenerator::generateReturn):
+
+2009-07-17  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Extend AssemblerBuffer with constant pool handling mechanism.
+        https://bugs.webkit.org/show_bug.cgi?id=24986
+
+        Add a platform independed constant pool framework.
+        This pool can store 32 or 64 bits values which is enough to hold
+        any integer, pointer or double constant.
+
+        * assembler/AssemblerBuffer.h:
+        (JSC::AssemblerBuffer::putIntUnchecked):
+        (JSC::AssemblerBuffer::putInt64Unchecked):
+        (JSC::AssemblerBuffer::append):
+        (JSC::AssemblerBuffer::grow):
+        * assembler/AssemblerBufferWithConstantPool.h: Added.
+        (JSC::):
+
+2009-07-17  Eric Roman  <eroman@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Build fix for non-Darwin.
+        Add a guard for inclusion of RetainPtr.h which includes CoreFoundation.h
+
+        https://bugs.webkit.org/show_bug.cgi?id=27382
+
+        * wtf/unicode/icu/CollatorICU.cpp:
+
+2009-07-17  Alexey Proskuryakov  <ap@webkit.org>
+
+        Reviewed by John Sullivan.
+
+        Get user default collation order via a CFLocale API when available.
+
+        * wtf/unicode/icu/CollatorICU.cpp: (WTF::Collator::userDefault):
+
+2009-07-17  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix the include path for the Symbian port
+        https://bugs.webkit.org/show_bug.cgi?id=27358
+
+        * JavaScriptCore.pri:
+
+2009-07-17  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by David Levin.
+
+        Build fix on platforms don't have MMAP.
+        https://bugs.webkit.org/show_bug.cgi?id=27365
+
+        * interpreter/RegisterFile.h: Including stdio.h irrespectively of HAVE(MMAP)
+
+2009-07-16  Fumitoshi Ukai  <ukai@chromium.org>
+
+        Reviewed by David Levin.
+
+        Add --web-sockets flag and ENABLE_WEB_SOCKETS define.
+        https://bugs.webkit.org/show_bug.cgi?id=27206
+        
+        Add ENABLE_WEB_SOCKETS
+
+        * Configurations/FeatureDefines.xcconfig: add ENABLE_WEB_SOCKETS
+
+2009-07-16  Maxime Simon  <simon.maxime@gmail.com>
+
+        Reviewed by Eric Seidel.
+
+        Added Haiku-specific files for JavaScriptCore.
+        https://bugs.webkit.org/show_bug.cgi?id=26620
+
+        * wtf/haiku/MainThreadHaiku.cpp: Added.
+        (WTF::initializeMainThreadPlatform):
+        (WTF::scheduleDispatchFunctionsOnMainThread):
+
+2009-07-16  Gavin Barraclough  <barraclough@apple.com>
+
+        RS by Oliver Hunt.
+
+        Revert r45969, this fix does not appear to be valid.
+        https://bugs.webkit.org/show_bug.cgi?id=27077
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::~CodeBlock):
+        (JSC::CodeBlock::unlinkCallers):
+        * jit/JIT.cpp:
+        * jit/JIT.h:
+
+2009-07-16  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Oliver Hunt.
+
+        Allow custom memory allocation control in ExceptionInfo and RareData struct
+        https://bugs.webkit.org/show_bug.cgi?id=27336
+
+        Inherits ExceptionInfo and RareData struct from FastAllocBase because these
+        have been instantiated by 'new' in JavaScriptCore/bytecode/CodeBlock.cpp:1289 and
+        in JavaScriptCore/bytecode/CodeBlock.h:453.
+
+        Remove unnecessary WTF:: namespace from CodeBlock inheritance.
+ 
+        * bytecode/CodeBlock.h:
+
+2009-07-16  Mark Rowe  <mrowe@apple.com>
+
+        Rubber-stamped by Geoff Garen.
+
+        Fix FeatureDefines.xcconfig to not be out of sync with the rest of the world.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2009-07-16  Yong Li  <yong.li@torchmobile.com>
+
+         Reviewed by George Staikos.
+
+         https://bugs.webkit.org/show_bug.cgi?id=27320
+         _countof is only included in CE6; for CE5 we need to define it ourself
+
+         * wtf/Platform.h:
+
+2009-07-16  Zoltan Herczeg  <zherczeg@inf.u-szeged.hu>
+
+        Reviewed by Oliver Hunt.
+
+        Workers + garbage collector: weird crashes
+        https://bugs.webkit.org/show_bug.cgi?id=27077
+
+        We need to unlink cached method call sites when a function is destroyed.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::~CodeBlock):
+        (JSC::CodeBlock::unlinkCallers):
+        * jit/JIT.cpp:
+        (JSC::JIT::unlinkMethodCall):
+        * jit/JIT.h:
+
+2009-07-15  Steve Falkenburg  <sfalken@apple.com>
+
+        Windows Build fix.
+
+        Visual Studio reset our intermediate directory on us.
+        This sets it back.
+        
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.vcproj/testapi/testapi.vcproj:
+
+2009-07-15  Kwang Yul Seo  <skyul@company100.net>
+
+        Reviewed by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26794
+        Make Yacc-generated parsers to use fastMalloc/fastFree.
+        
+        Define YYMALLOC and YYFREE to fastMalloc and fastFree
+        respectively.
+
+        * parser/Grammar.y:
+
+2009-07-15  Darin Adler  <darin@apple.com>
+
+        Fix a build for a particular Apple configuration.
+
+        * wtf/FastAllocBase.h: Change include to use "" style for
+        including another wtf header. This is the style we use for
+        including other public headers in the same directory.
+
+2009-07-15  George Staikos  <george.staikos@torchmobile.com>
+
+        Reviewed by Adam Treat.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27303
+        Implement createThreadInternal for WinCE.
+        Contains changes by George Staikos <george.staikos@torchmobile.com> and Joe Mason <joe.mason@torchmobile.com>
+
+        * wtf/ThreadingWin.cpp:
+        (WTF::createThreadInternal):
+
+2009-07-15  Joe Mason  <joe.mason@torchmobile.com>
+
+         Reviewed by George Staikos.
+
+         https://bugs.webkit.org/show_bug.cgi?id=27298
+         Platform defines for WINCE.
+         Contains changes by Yong Li <yong.li@torchmobile.com>,
+         George Staikos <george.staikos@torchmobile.com> and Joe Mason <joe.mason@torchmobile.com>
+
+         * wtf/Platform.h:
+
+2009-07-15  Yong Li  <yong.li@torchmobile.com>
+
+         Reviewed by Adam Treat.
+
+         https://bugs.webkit.org/show_bug.cgi?id=27306
+         Use RegisterClass instead of RegisterClassEx on WinCE.
+
+         * wtf/win/MainThreadWin.cpp:
+         (WTF::initializeMainThreadPlatform):
+
+2009-07-15  Yong Li  <yong.li@torchmobile.com>
+
+         Reviewed by George Staikos.
+
+         https://bugs.webkit.org/show_bug.cgi?id=27301
+         Use OutputDebugStringW on WinCE since OutputDebugStringA is not supported
+         Originally written by Yong Li <yong.li@torchmobile.com> and refactored by
+         Joe Mason <joe.mason@torchmobile.com>
+
+         * wtf/Assertions.cpp: vprintf_stderr_common
+
+2009-07-15  Yong Li  <yong.li@torchmobile.com>
+
+         Reviewed by George Staikos.
+
+         https://bugs.webkit.org/show_bug.cgi?id=27020
+         msToGregorianDateTime should set utcOffset to 0 when outputIsUTC is false
+
+         * wtf/DateMath.cpp:
+         (WTF::gregorianDateTimeToMS):
+
+2009-07-15  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Cleanup - Remove obsolete code from the make system
+        https://bugs.webkit.org/show_bug.cgi?id=27299
+
+        * JavaScriptCore.pro:
+        * jsc.pro:
+
+2009-07-07  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27056
+
+        Alternate bool operator for codewarrior compiler (WINSCW).
+        Compiler (latest b482) reports error for UnspecifiedBoolType construct:
+        "illegal explicit conversion from 'WTF::OwnArrayPtr<JSC::Register>' to 'bool'"
+
+        Same fix as in r38391.
+
+        * JavaScriptCore/wtf/OwnArrayPtr.h:
+
+2009-07-15  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Qualify include path with wtf to fix compilation
+        on Symbian.
+        https://bugs.webkit.org/show_bug.cgi?id=27055
+
+        * interpreter/Interpreter.h:
+
+2009-07-15  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Dave Kilzer.
+
+        Turn off non-portable date manipulations for SYMBIAN
+        https://bugs.webkit.org/show_bug.cgi?id=27064
+
+        Introduce HAVE(TM_GMTOFF), HAVE(TM_ZONE) and HAVE(TIMEGM) guards 
+        and place the rules for controlling the guards in Platform.h.
+        Turn off these newly introduced guards for SYMBIAN.
+
+        * wtf/DateMath.cpp:
+        (WTF::calculateUTCOffset):
+        * wtf/DateMath.h:
+        (WTF::GregorianDateTime::GregorianDateTime):
+        (WTF::GregorianDateTime::operator tm):
+        * wtf/Platform.h:
+
+2009-07-15  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Undef ASSERT on Symbian, to avoid excessive warnings
+        https://bugs.webkit.org/show_bug.cgi?id=27052
+
+        * wtf/Assertions.h:
+
+2009-07-15  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Simon Hausmann.
+
+        REGRESSION: fast/js/postfix-syntax.html fails with interpreter
+        https://bugs.webkit.org/show_bug.cgi?id=27294
+
+        When postfix operators operating on locals assign to the same local
+        the order of operations has to be to store the incremented value, then
+        store the unmodified number.  Rather than implementing this subtle
+        semantic in the interpreter I've just made the logic explicit in the
+        bytecode generator, so x=x++ effectively becomes x=ToNumber(x) (for a
+        local var x).
+
+        * parser/Nodes.cpp:
+        (JSC::emitPostIncOrDec):
+
+2009-07-15  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Simon Hausmann.
+
+        REGRESSION(43559): fast/js/kde/arguments-scope.html fails with interpreter
+        https://bugs.webkit.org/show_bug.cgi?id=27259
+
+        The interpreter was incorrectly basing its need to create the arguments object
+        based on the presence of the callframe's argument reference rather than the local
+        arguments reference.  Based on this it then overrode the local variable reference.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::privateExecute):
+
+2009-07-14  Steve Falkenburg  <sfalken@apple.com>
+
+        Reorganize JavaScriptCore headers into:
+        API: include/JavaScriptCore/
+        Private: include/private/JavaScriptCore/
+
+        Reviewed by Darin Adler.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreCommon.vsprops:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreGenerated.make:
+        * JavaScriptCore.vcproj/testapi/testapi.vcproj:
+        * JavaScriptCore.vcproj/testapi/testapiCommon.vsprops:
+
+2009-07-14  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Change JSCell's superclass to NoncopyableCustomAllocated
+        https://bugs.webkit.org/show_bug.cgi?id=27248
+
+        JSCell class customizes operator new, since Noncopyable will be 
+        inherited from FastAllocBase, NoncopyableCustomAllocated has 
+        to be used.
+
+        * runtime/JSCell.h:
+
+2009-07-14  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Change all Noncopyable inheriting visibility to public.
+        https://bugs.webkit.org/show_bug.cgi?id=27225
+
+        Change all Noncopyable inheriting visibility to public because
+        it is needed to the custom allocation framework (bug #20422).
+
+        * bytecode/SamplingTool.h:
+        * bytecompiler/RegisterID.h:
+        * interpreter/CachedCall.h:
+        * interpreter/RegisterFile.h:
+        * parser/Lexer.h:
+        * parser/Parser.h:
+        * runtime/ArgList.h:
+        * runtime/BatchedTransitionOptimizer.h:
+        * runtime/Collector.h:
+        * runtime/CommonIdentifiers.h:
+        * runtime/JSCell.h:
+        * runtime/JSGlobalObject.h:
+        * runtime/JSLock.h:
+        * runtime/JSONObject.cpp:
+        * runtime/SmallStrings.cpp:
+        * runtime/SmallStrings.h:
+        * wtf/CrossThreadRefCounted.h:
+        * wtf/GOwnPtr.h:
+        * wtf/Locker.h:
+        * wtf/MessageQueue.h:
+        * wtf/OwnArrayPtr.h:
+        * wtf/OwnFastMallocPtr.h:
+        * wtf/OwnPtr.h:
+        * wtf/RefCounted.h:
+        * wtf/ThreadSpecific.h:
+        * wtf/Threading.h:
+        * wtf/Vector.h:
+        * wtf/unicode/Collator.h:
+
+2009-07-14  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Change ParserArenaRefCounted's superclass to RefCountedCustomAllocated
+        https://bugs.webkit.org/show_bug.cgi?id=27249
+
+        ParserArenaDeletable customizes operator new, to avoid double inheritance
+        ParserArenaDeletable's superclass has been changed to RefCountedCustomAllocated.
+
+        * parser/Nodes.h:
+
+2009-07-14  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Add RefCountedCustomAllocated to RefCounted.h
+        https://bugs.webkit.org/show_bug.cgi?id=27232
+
+        Some class which are inherited from RefCounted customize
+        operator new, but RefCounted is inherited from Noncopyable
+        which will be inherited from FastAllocBase. To avoid
+        conflicts Noncopyable inheriting was moved down to RefCounted
+        and to avoid double inheritance this class has been added.
+
+        * wtf/RefCounted.h:
+        (WTF::RefCountedCustomAllocated::deref):
+        (WTF::RefCountedCustomAllocated::~RefCountedCustomAllocated):
+
+2009-07-14  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Add NoncopyableCustomAllocated to Noncopyable.h.
+        https://bugs.webkit.org/show_bug.cgi?id=27228
+        
+        Some classes which inherited from Noncopyable overrides operator new
+        since Noncopyable'll be inherited from FastAllocBase, Noncopyable.h 
+        needs to be extended with this new class to support the overriding. 
+
+        * wtf/Noncopyable.h:
+        (WTFNoncopyable::NoncopyableCustomAllocated::NoncopyableCustomAllocated):
+        (WTFNoncopyable::NoncopyableCustomAllocated::~NoncopyableCustomAllocated):
+
+2009-07-14  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Allow custom memory allocation control for JavaScriptCore's IdentifierTable class
+        https://bugs.webkit.org/show_bug.cgi?id=27260
+
+        Inherits IdentifierTable class from FastAllocBase because it has been
+        instantiated by 'new' in JavaScriptCore/runtime/Identifier.cpp:70.
+
+        * runtime/Identifier.cpp:
+
+2009-07-14  Zoltan Horvath  <hzoltan@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Allow custom memory allocation control for JavaScriptCore's Profiler class
+        https://bugs.webkit.org/show_bug.cgi?id=27253
+
+        Inherits Profiler class from FastAllocBase because it has been instantiated by
+        'new' in JavaScriptCore/profiler/Profiler.cpp:56.
+
+        * profiler/Profiler.h:
+
+2009-07-06  George Staikos  <george.staikos@torchmobile.com>
+
+        Reviewed by Adam Treat.
+
+        Authors: George Staikos <george.staikos@torchmobile.com>, Joe Mason <joe.mason@torchmobile.com>, Makoto Matsumoto <matumoto@math.keio.ac.jp>, Takuji Nishimura
+
+        https://bugs.webkit.org/show_bug.cgi?id=27030
+        Implement custom RNG for WinCE using Mersenne Twister
+
+        * wtf/RandomNumber.cpp:
+        (WTF::randomNumber):
+        * wtf/RandomNumberSeed.h:
+        (WTF::initializeRandomNumberGenerator):
+        * wtf/wince/mt19937ar.c: Added.
+        (init_genrand):
+        (init_by_array):
+        (genrand_int32):
+        (genrand_int31):
+        (genrand_real1):
+        (genrand_real2):
+        (genrand_real3):
+        (genrand_res53):
+
 2009-07-13  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
 
         Unreviewed make dist build fix.

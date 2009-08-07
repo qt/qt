@@ -86,6 +86,7 @@
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qwindowsurface_gl_p.h>
+#include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
 #include "qfile.h"
 #include "qlibrary.h"
@@ -526,7 +527,7 @@ void QGLFormat::setAccum(bool enable)
     \fn bool QGLFormat::stencil() const
 
     Returns true if the stencil buffer is enabled; otherwise returns
-    false. The stencil buffer is disabled by default.
+    false. The stencil buffer is enabled by default.
 
     \sa setStencil(), setStencilBufferSize()
 */
@@ -535,7 +536,7 @@ void QGLFormat::setAccum(bool enable)
     If \a enable is true enables the stencil buffer; otherwise
     disables the stencil buffer.
 
-    The stencil buffer is disabled by default.
+    The stencil buffer is enabled by default.
 
     The stencil buffer masks certain parts of the drawing area so that
     masked parts are not drawn on.
@@ -1407,15 +1408,17 @@ QGLTextureCache::QGLTextureCache()
 {
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
-    qt_pixmap_cleanup_hook_64 = cleanupHook;
-    qt_image_cleanup_hook_64 = cleanupHook;
+
+    QImagePixmapCleanupHooks::instance()->addPixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
 }
 
 QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
-    qt_pixmap_cleanup_hook_64 = 0;
-    qt_image_cleanup_hook_64 = 0;
+
+    QImagePixmapCleanupHooks::instance()->removePixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
 }
 
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
@@ -1471,7 +1474,7 @@ QGLTextureCache* QGLTextureCache::instance()
   a hook that removes textures from the cache when a pixmap/image
   is deref'ed
 */
-void QGLTextureCache::cleanupHook(qint64 cacheKey)
+void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
 {
     // ### remove when the GL texture cache becomes thread-safe
     if (qApp->thread() != QThread::currentThread())
@@ -1479,6 +1482,24 @@ void QGLTextureCache::cleanupHook(qint64 cacheKey)
     QGLTexture *texture = instance()->getTexture(cacheKey);
     if (texture && texture->clean)
         instance()->remove(cacheKey);
+}
+
+
+void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
+{
+    // ### remove when the GL texture cache becomes thread-safe
+    if (qApp->thread() == QThread::currentThread()) {
+        const qint64 cacheKey = pixmap->cacheKey();
+        QGLTexture *texture = instance()->getTexture(cacheKey);
+        if (texture && texture->clean)
+            instance()->remove(cacheKey);
+    }
+#if defined(Q_WS_X11)
+    QPixmapData *pd = pixmap->data_ptr();
+    // Only need to delete the gl surface if the pixmap is about to be deleted
+    if (pd->ref == 0)
+        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+#endif
 }
 
 void QGLTextureCache::deleteIfEmpty()
@@ -2021,11 +2042,11 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #if defined(Q_WS_X11)
     // Try to use texture_from_pixmap
     if (pd->classId() == QPixmapData::X11Class) {
-        QPixmap *thatPixmap = const_cast<QPixmap*>(&pixmap);
-        texture = bindTextureFromNativePixmap(thatPixmap, key, canInvert);
+        texture = bindTextureFromNativePixmap(pd, key, canInvert);
         if (texture) {
             texture->clean = clean;
-            boundPixmaps.insert(thatPixmap->data_ptr(), QPixmap(pixmap));
+            texture->boundPixmap = pd;
+            boundPixmaps.insert(pd, QPixmap(pixmap));
         }
     }
 #endif
@@ -4583,7 +4604,7 @@ QGLFormat QGLDrawable::format() const
 
 GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format)
 {
-    QGLTexture *texture;
+    QGLTexture *texture = 0;
     if (widget)
         texture = widget->d_func()->glcx->d_func()->bindTexture(image, target, format, true);
     else if (buffer)
@@ -4599,7 +4620,7 @@ GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format
 
 GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
-    QGLTexture *texture;
+    QGLTexture *texture = 0;
     if (widget)
         texture = widget->d_func()->glcx->d_func()->bindTexture(pixmap, target, format, true, true);
     else if (buffer)
@@ -4697,6 +4718,7 @@ void QGLShareRegister::removeShare(const QGLContext *context) {
 
     int count = it.value().removeAll(context);
     Q_ASSERT(count == 1);
+    Q_UNUSED(count);
 
     Q_ASSERT(it.value().size() != 0);
     if (it.value().size() == 1)

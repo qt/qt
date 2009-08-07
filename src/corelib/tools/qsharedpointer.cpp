@@ -128,7 +128,7 @@
 
     To access the pointer that QWeakPointer is tracking, you
     must first create a QSharedPointer object and verify if the pointer
-    is null or not.
+    is null or not. See QWeakPointer::toStrongRef() for more information.
 
     \sa QSharedPointer
 */
@@ -210,6 +210,8 @@
     If \tt T is a derived type of the template parameter of this
     class, QSharedPointer will perform an automatic cast. Otherwise,
     you will get a compiler error.
+
+    \sa QWeakPointer::toStrongRef()
 */
 
 /*!
@@ -362,6 +364,8 @@
 
     Returns a weak reference object that shares the pointer referenced
     by this object.
+
+    \sa QWeakPointer::QWeakPointer()
 */
 
 /*!
@@ -478,10 +482,78 @@
 */
 
 /*!
+    \fn T *QWeakPointer::data() const
+    \since 4.6
+
+    Returns the value of the pointer being tracked by this QWeakPointer,
+    \b without ensuring that it cannot get deleted. To have that guarantee,
+    use toStrongRef(), which returns a QSharedPointer object. If this
+    function can determine that the pointer has already been deleted, it
+    returns 0.
+
+    It is ok to obtain the value of the pointer and using that value itself,
+    like for example in debugging statements:
+
+    \code
+        qDebug("Tracking %p", weakref.data());
+    \endcode
+
+    However, dereferencing the pointer is only allowed if you can guarantee
+    by external means that the pointer does not get deleted. For example,
+    if you can be certain that no other thread can delete it, nor the
+    functions that you may call.
+
+    If that is the case, then the following code is valid:
+
+    \code
+        // this pointer cannot be used in another thread
+        // so other threads cannot delete it
+        QWeakPointer<int> weakref = obtainReference();
+
+        Object *obj = weakref.data();
+        if (obj) {
+            // if the pointer wasn't deleted yet, we know it can't get
+            // deleted by our own code here nor the functions we call
+            otherFunction(obj);
+        }
+    \endcode
+
+    Use this function with care.
+
+    \sa isNull(), toStrongRef()
+*/
+
+/*!
     \fn QSharedPointer<T> QWeakPointer::toStrongRef() const
 
     Promotes this weak reference to a strong one and returns a
-    QSharedPointer object holding that reference.
+    QSharedPointer object holding that reference. When promoting to
+    QSharedPointer, this function verifies if the object has been deleted
+    already or not. If it hasn't, this function increases the reference
+    count to the shared object, thus ensuring that it will not get
+    deleted.
+
+    Since this function can fail to obtain a valid strong reference to the
+    shared object, you should always verify if the conversion succeeded,
+    by calling QSharedPointer::isNull() on the returned object.
+
+    For example, the following code promotes a QWeakPointer that was held
+    to a strong reference and, if it succeeded, it prints the value of the
+    integer that was held:
+
+    \code
+        QWeakPointer<int> weakref;
+
+        // ...
+
+        QSharedPointer<int> strong = weakref.toStrongRef();
+        if (strong)
+            qDebug() << "The value is:" << *strong;
+        else
+            qDebug() << "The value has already been deleted";
+    \endcode
+
+    \sa QSharedPointer::QSharedPointer()
 */
 
 /*!
@@ -792,6 +864,56 @@
 #include <qset.h>
 #include <qmutex.h>
 
+#if !defined(QT_NO_QOBJECT)
+#include "../kernel/qobject_p.h"
+
+/*!
+    \internal
+    This function is called for a just-created QObject \a obj, to enable
+    the use of QSharedPointer and QWeakPointer.
+
+    When QSharedPointer is active in a QObject, the object must not be deleted
+    directly: the lifetime is managed by the QSharedPointer object. In that case,
+    the deleteLater() and parent-child relationship in QObject only decrease
+    the strong reference count, instead of deleting the object.
+*/
+void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *obj, bool)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+
+    if (d->sharedRefcount)
+        qFatal("QSharedPointer: pointer %p already has reference counting", obj);
+    d->sharedRefcount = this;
+
+    // QObject decreases the refcount too, so increase it up
+    weakref.ref();
+}
+
+QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+    ExternalRefCountData *that = d->sharedRefcount;
+    if (that) {
+        that->weakref.ref();
+        return that;
+    }
+
+    // we can create the refcount data because it doesn't exist
+    ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
+    x->strongref = -1;
+    x->weakref = 2;  // the QWeakPointer that called us plus the QObject itself
+    if (!d->sharedRefcount.testAndSetRelease(0, x)) {
+        delete x;
+        d->sharedRefcount->weakref.ref();
+    }
+    return d->sharedRefcount;
+}
+#endif
+
+
+
 #if !defined(QT_NO_MEMBER_TEMPLATES)
 
 //#  define QT_SHARED_POINTER_BACKTRACE_SUPPORT
@@ -803,29 +925,19 @@
 #    endif
 #  endif
 
-#  if !defined(BACKTRACE_SUPPORTED)
-// Dummy implementation of the functions.
-// Using QHashDummyValue also means that the QHash below is actually a QSet
-typedef QT_PREPEND_NAMESPACE(QHashDummyValue) Backtrace;
-
-static inline Backtrace saveBacktrace() { return Backtrace(); }
-static inline void printBacktrace(Backtrace) { }
-
-#  else
+#  if defined(BACKTRACE_SUPPORTED)
 #    include <sys/types.h>
 #    include <execinfo.h>
 #    include <stdio.h>
 #    include <unistd.h>
 #    include <sys/wait.h>
 
-typedef QT_PREPEND_NAMESPACE(QByteArray) Backtrace;
-
-static inline Backtrace saveBacktrace() __attribute__((always_inline));
-static inline Backtrace saveBacktrace()
+static inline QByteArray saveBacktrace() __attribute__((always_inline));
+static inline QByteArray saveBacktrace()
 {
     static const int maxFrames = 32;
 
-    Backtrace stacktrace;
+    QByteArray stacktrace;
     stacktrace.resize(sizeof(void*) * maxFrames);
     int stack_size = backtrace((void**)stacktrace.data(), maxFrames);
     stacktrace.resize(sizeof(void*) * stack_size);
@@ -833,7 +945,7 @@ static inline Backtrace saveBacktrace()
     return stacktrace;
 }
 
-static void printBacktrace(Backtrace stacktrace)
+static void printBacktrace(QByteArray stacktrace)
 {
     void *const *stack = (void *const *)stacktrace.constData();
     int stack_size = stacktrace.size() / sizeof(void*);
@@ -884,11 +996,19 @@ static void printBacktrace(Backtrace stacktrace)
 
 namespace {
     QT_USE_NAMESPACE
+    struct Data {
+        const volatile void *pointer;
+#  ifdef BACKTRACE_SUPPORTED
+        QByteArray backtrace;
+#  endif
+    };
+
     class KnownPointers
     {
     public:
         QMutex mutex;
-        QHash<void *, Backtrace> values;
+        QHash<const void *, Data> dPointers;
+        QHash<const volatile void *, const void *> dataPointers;
     };
 }
 
@@ -896,38 +1016,122 @@ Q_GLOBAL_STATIC(KnownPointers, knownPointers)
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \internal
-*/
-void QtSharedPointer::internalSafetyCheckAdd(const volatile void *ptr)
-{
-    KnownPointers *const kp = knownPointers();
-    if (!kp)
-        return;                 // end-game: the application is being destroyed already
-
-    QMutexLocker lock(&kp->mutex);
-    void *actual = const_cast<void*>(ptr);
-    if (kp->values.contains(actual)) {
-        printBacktrace(knownPointers()->values.value(actual));
-        qFatal("QSharedPointerData: internal self-check failed: pointer %p was already tracked "
-               "by another QSharedPointerData object", actual);
-    }
-
-    kp->values.insert(actual, saveBacktrace());
+namespace QtSharedPointer {
+    Q_CORE_EXPORT void internalSafetyCheckAdd(const volatile void *);
+    Q_CORE_EXPORT void internalSafetyCheckRemove(const volatile void *);
+    Q_AUTOTEST_EXPORT void internalSafetyCheckCleanCheck();
 }
 
 /*!
     \internal
 */
-void QtSharedPointer::internalSafetyCheckRemove(const volatile void *ptr)
+void QtSharedPointer::internalSafetyCheckAdd(const volatile void *)
+{
+    // Qt 4.5 compatibility
+    // this function is broken by design, so it was replaced with internalSafetyCheckAdd2
+    //
+    // it's broken because we tracked the pointers added and
+    // removed from QSharedPointer, converted to void*.
+    // That is, this is supposed to track the "top-of-object" pointer in
+    // case of multiple inheritance.
+    //
+    // However, it doesn't work well in some compilers:
+    // if you create an object with a class of type A and the last reference
+    // is dropped of type B, then the value passed to internalSafetyCheckRemove could
+    // be different than was added. That would leave dangling addresses.
+    //
+    // So instead, we track the pointer by the d-pointer instead.
+}
+
+/*!
+    \internal
+*/
+void QtSharedPointer::internalSafetyCheckRemove(const volatile void *)
+{
+    // Qt 4.5 compatibility
+    // see comments above
+}
+
+/*!
+    \internal
+*/
+void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile void *ptr)
+{
+    // see comments above for the rationale for this function
+    KnownPointers *const kp = knownPointers();
+    if (!kp)
+        return;                 // end-game: the application is being destroyed already
+
+    QMutexLocker lock(&kp->mutex);
+    Q_ASSERT(!kp->dPointers.contains(d_ptr));
+
+    //qDebug("Adding d=%p value=%p", d_ptr, ptr);
+    
+    const void *other_d_ptr = kp->dataPointers.value(ptr, 0);
+    if (other_d_ptr) {
+#  ifdef BACKTRACE_SUPPORTED
+        printBacktrace(knownPointers()->dPointers.value(other_d_ptr).backtrace);
+#  endif
+        qFatal("QSharedPointer: internal self-check failed: pointer %p was already tracked "
+               "by another QSharedPointer object %p", ptr, other_d_ptr);
+    }
+
+    Data data;
+    data.pointer = ptr;
+#  ifdef BACKTRACE_SUPPORTED
+    data.backtrace = saveBacktrace();
+#  endif
+
+    kp->dPointers.insert(d_ptr, data);
+    kp->dataPointers.insert(ptr, d_ptr);
+    Q_ASSERT(kp->dPointers.size() == kp->dataPointers.size());
+}
+
+/*!
+    \internal
+*/
+void QtSharedPointer::internalSafetyCheckRemove2(const void *d_ptr)
 {
     KnownPointers *const kp = knownPointers();
     if (!kp)
         return;                 // end-game: the application is being destroyed already
 
     QMutexLocker lock(&kp->mutex);
-    void *actual = const_cast<void*>(ptr);
-    kp->values.remove(actual);
+
+    QHash<const void *, Data>::iterator it = kp->dPointers.find(d_ptr);
+    if (it == kp->dPointers.end()) {
+        qFatal("QSharedPointer: internal self-check inconsistency: pointer %p was not tracked. "
+               "To use QT_SHAREDPOINTER_TRACK_POINTERS, you have to enable it throughout "
+               "in your code.", d_ptr);
+    }
+
+    QHash<const volatile void *, const void *>::iterator it2 = kp->dataPointers.find(it->pointer);
+    Q_ASSERT(it2 != kp->dataPointers.end());
+
+    //qDebug("Removing d=%p value=%p", d_ptr, it->pointer);
+
+    // remove entries
+    kp->dataPointers.erase(it2);
+    kp->dPointers.erase(it);
+    Q_ASSERT(kp->dPointers.size() == kp->dataPointers.size());
+}
+
+/*!
+    \internal
+    Called by the QSharedPointer autotest
+*/
+void QtSharedPointer::internalSafetyCheckCleanCheck()
+{
+#  ifdef QT_BUILD_INTERNAL
+    KnownPointers *const kp = knownPointers();
+    Q_ASSERT_X(kp, "internalSafetyCheckSelfCheck()", "Called after global statics deletion!");
+
+    if (kp->dPointers.size() != kp->dataPointers.size())
+        qFatal("Internal consistency error: the number of pointers is not equal!");
+
+    if (!kp->dPointers.isEmpty())
+        qFatal("Pointer cleaning failed: %d entries remaining", kp->dPointers.size());
+#  endif
 }
 
 QT_END_NAMESPACE

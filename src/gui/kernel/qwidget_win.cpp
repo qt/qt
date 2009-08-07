@@ -56,6 +56,10 @@
 #include "private/qbackingstore_p.h"
 #include "private/qwindowsurface_raster_p.h"
 
+#include "qscrollbar.h"
+#include "qabstractscrollarea.h"
+#include <private/qabstractscrollarea_p.h>
+
 #include <qdebug.h>
 
 #include <private/qapplication_p.h>
@@ -467,6 +471,17 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     }
 
+    if (topLevel) {
+        if (data.window_flags & Qt::CustomizeWindowHint
+            && data.window_flags & Qt::WindowTitleHint) {
+            HMENU systemMenu = GetSystemMenu((HWND)q->internalWinId(), FALSE);
+            if (data.window_flags & Qt::WindowCloseButtonHint)
+                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
+            else
+                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
+        }
+    }
+
     q->setAttribute(Qt::WA_WState_Created);                // accept move/resize events
     hd = 0;                                        // no display context
 
@@ -637,16 +652,6 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     if (q->testAttribute(Qt::WA_AcceptDrops) || dropSiteWasRegistered
         || (!q->isWindow() && q->parentWidget() && q->parentWidget()->testAttribute(Qt::WA_DropSiteRegistered)))
         q->setAttribute(Qt::WA_DropSiteRegistered, true);
-
-
-    if (data.window_flags & Qt::CustomizeWindowHint
-        && data.window_flags & Qt::WindowTitleHint) {
-        HMENU systemMenu = GetSystemMenu((HWND)q->internalWinId(), FALSE);
-        if (data.window_flags & Qt::WindowCloseButtonHint)
-            EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
-        else
-            EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
-    }
 
 #ifdef Q_WS_WINCE
     // Show borderless toplevel windows in tasklist & NavBar
@@ -1431,10 +1436,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     qt_wince_maximize(q);
                 } else {
 #endif
-                    if (!isTranslucentWindow)
-                        MoveWindow(q->internalWinId(), fs.x(), fs.y(), fs.width(), fs.height(), true);
-                    else if (isMove && !isResize)
-                        SetWindowPos(q->internalWinId(), 0, fs.x(), fs.y(), 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
+                    MoveWindow(q->internalWinId(), fs.x(), fs.y(), fs.width(), fs.height(), true);
                 }
                 if (!q->isVisible())
                     InvalidateRect(q->internalWinId(), 0, FALSE);
@@ -1524,6 +1526,11 @@ bool QWidgetPrivate::shouldShowMaximizeButton()
 {
     if (data.window_flags & Qt::MSWindowsFixedSizeDialogHint)
         return false;
+    // if the user explicitely asked for the maximize button, we try to add
+    // it even if the window has fixed size.
+    if (data.window_flags & Qt::CustomizeWindowHint &&
+        data.window_flags & Qt::WindowMaximizeButtonHint)
+        return true;
     if (extra) {
         if ((extra->maxw && extra->maxw != QWIDGETSIZE_MAX && extra->maxw != QLAYOUTSIZE_MAX)
             || (extra->maxh && extra->maxh != QWIDGETSIZE_MAX && extra->maxh != QLAYOUTSIZE_MAX))
@@ -2044,6 +2051,58 @@ void QWidgetPrivate::registerTouchWindow()
         && QApplicationPrivate::RegisterTouchWindow
         && q->windowType() != Qt::Desktop)
         QApplicationPrivate::RegisterTouchWindow(q->effectiveWinId(), 0);
+}
+
+void QWidgetPrivate::winSetupGestures()
+{
+    Q_Q(QWidget);
+    if (!q)
+        return;
+    extern QApplicationPrivate* getQApplicationPrivateInternal();
+    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+    bool needh = false;
+    bool needv = false;
+    bool singleFingerPanEnabled = false;
+    QStandardGestures gestures = qAppPriv->widgetGestures[q];
+    WId winid = 0;
+
+    if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q)) {
+        winid = asa->viewport()->winId();
+        QScrollBar *hbar = asa->horizontalScrollBar();
+        QScrollBar *vbar = asa->verticalScrollBar();
+        Qt::ScrollBarPolicy hbarpolicy = asa->horizontalScrollBarPolicy();
+        Qt::ScrollBarPolicy vbarpolicy = asa->verticalScrollBarPolicy();
+        needh = (hbarpolicy == Qt::ScrollBarAlwaysOn
+                 || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
+        needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
+                 || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
+        singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
+    } else {
+        winid = q->winId();
+    }
+    if (qAppPriv->SetGestureConfig) {
+        GESTURECONFIG gc[2];
+        gc[0].dwID = GID_PAN;
+        if (gestures.pan || needh || needv) {
+            gc[0].dwWant = GC_PAN;
+            gc[0].dwBlock = 0;
+            if (needv && singleFingerPanEnabled)
+                gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
+            if (needh && singleFingerPanEnabled)
+                gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+        } else {
+            gc[0].dwWant = 0;
+            gc[0].dwBlock = GC_PAN;
+        }
+
+        gc[1].dwID = GID_ZOOM;
+        if (gestures.pinch) {
+            gc[1].dwWant = GC_ZOOM;
+            gc[1].dwBlock = 0;
+        }
+        Q_ASSERT(winid);
+        qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
+    }
 }
 
 QT_END_NAMESPACE

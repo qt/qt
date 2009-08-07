@@ -61,13 +61,13 @@ QT_MODULE(Gui)
 class QDirectFBWindowSurface : public QWSWindowSurface, public QDirectFBPaintDevice
 {
 public:
-    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr);
-    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr, QWidget *widget);
+    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen *scr);
+    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen *scr, QWidget *widget);
     ~QDirectFBWindowSurface();
 
     bool isValid() const;
 
-    void setGeometry(const QRect &rect, const QRegion &mask);
+    void setGeometry(const QRect &rect);
 
     QString key() const { return QLatin1String("directfb"); }
     QByteArray permanentState() const;
@@ -76,11 +76,9 @@ public:
     bool scroll(const QRegion &area, int dx, int dy);
 
     bool move(const QPoint &offset);
-    QRegion move(const QPoint &offset, const QRegion &newClip);
 
     QImage image() const { return QImage(); }
     QPaintDevice *paintDevice() { return this; }
-    QPaintEngine *paintEngine() const;
 
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
 
@@ -88,15 +86,18 @@ public:
     void endPaint(const QRegion &);
 
     QImage *buffer(const QWidget *widget);
-
 private:
 #ifndef QT_NO_DIRECTFB_WM
     void createWindow();
     IDirectFBWindow *dfbWindow;
 #endif
-    QDirectFBPaintEngine *engine;
+    int engineHeight;
 
-    bool onscreen;
+    enum Mode {
+        Primary,
+        Offscreen,
+        Window
+    } mode;
 
     QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;

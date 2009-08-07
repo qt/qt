@@ -61,6 +61,7 @@
 #include <QAbstractItemDelegate>
 #include <QTextEdit>
 #include <QPlainTextEdit>
+#include <QDialog>
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
@@ -230,6 +231,8 @@ private slots:
     void editorEvent();
     void enterKey_data();
     void enterKey();
+
+    void task257859_finalizeEdit();
 };
 
 
@@ -1124,6 +1127,36 @@ void tst_QItemDelegate::enterKey()
     QCOMPARE(editor && editor->hasFocus(), expectedFocus);
 }
 
+void tst_QItemDelegate::task257859_finalizeEdit()
+{
+    QStandardItemModel model;
+    model.appendRow(new QStandardItem());
+
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    view.setFocus();
+    QTest::qWait(30);
+
+    QModelIndex index = model.index(0, 0);
+    view.edit(index);
+    QTest::qWait(30);
+
+    QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport());
+    QCOMPARE(lineEditors.count(), 1);
+
+    QPointer<QWidget> editor = lineEditors.at(0);
+    QCOMPARE(editor->hasFocus(), true);
+
+    QDialog dialog;
+    QTimer::singleShot(100, &dialog, SLOT(close()));
+    dialog.exec();
+
+    QTest::qWait(100);
+
+    QVERIFY(!editor);
+}
 
 
 // ### _not_ covered:

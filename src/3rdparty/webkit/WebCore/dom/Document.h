@@ -377,6 +377,8 @@ public:
     void setUsesFirstLetterRules(bool b) { m_usesFirstLetterRules = b; }
     bool usesBeforeAfterRules() const { return m_usesBeforeAfterRules; }
     void setUsesBeforeAfterRules(bool b) { m_usesBeforeAfterRules = b; }
+    bool usesRemUnits() const { return m_usesRemUnits; }
+    void setUsesRemUnits(bool b) { m_usesRemUnits = b; }
 
     // Machinery for saving and restoring state when you leave and then go back to a page.
     void registerFormElementWithState(Element* e) { m_formElementsWithState.add(e); }
@@ -404,6 +406,7 @@ public:
     PassRefPtr<EditingText> createEditingTextNode(const String&);
 
     virtual void recalcStyle(StyleChange = NoChange);
+    bool childNeedsAndNotInStyleRecalc();
     virtual void updateStyleIfNeeded();
     void updateLayout();
     void updateLayoutIgnorePendingStylesheets();
@@ -795,6 +798,8 @@ public:
 protected:
     Document(Frame*, bool isXHTML);
 
+    void setStyleSelector(CSSStyleSelector* styleSelector) {  m_styleSelector = styleSelector; }
+
 private:
     virtual void refScriptExecutionContext() { ref(); }
     virtual void derefScriptExecutionContext() { deref(); }
@@ -903,6 +908,7 @@ private:
     bool m_usesFirstLineRules;
     bool m_usesFirstLetterRules;
     bool m_usesBeforeAfterRules;
+    bool m_usesRemUnits;
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;
     bool m_haveExplicitlyDisabledDNSPrefetch;
@@ -1029,6 +1035,9 @@ public:
     bool usingGeolocation() const { return m_usingGeolocation; };
 
 #if ENABLE(WML)
+    void setContainsWMLContent(bool value) { m_containsWMLContent = value; }
+    bool containsWMLContent() const { return m_containsWMLContent; }
+
     void resetWMLPageState();
     void initializeWMLPageState();
 #endif
@@ -1111,6 +1120,10 @@ private:
 #endif
     
     bool m_usingGeolocation;
+
+#if ENABLE(WML)
+    bool m_containsWMLContent;
+#endif
 };
 
 inline bool Document::hasElementWithId(AtomicStringImpl* id) const

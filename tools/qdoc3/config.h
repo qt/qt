@@ -140,6 +140,7 @@ class Config
 #define CONFIG_INDEXES                  "indexes"
 #define CONFIG_LANGUAGE                 "language"
 #define CONFIG_MACRO                    "macro"
+#define CONFIG_OBSOLETELINKS            "obsoletelinks"
 #define CONFIG_OUTPUTDIR                "outputdir"
 #define CONFIG_OUTPUTLANGUAGE           "outputlanguage"
 #define CONFIG_OUTPUTFORMATS            "outputformats"

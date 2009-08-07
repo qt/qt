@@ -102,7 +102,7 @@ void tst_Q3ProgressBar::setProgress()
 {
     MyCustomProgressBar * m_progressBar = new MyCustomProgressBar();
     m_progressBar->show();
-    QTest::qWait(500);
+    QApplication::processEvents();
 
     //case with total steps = 0
     m_progressBar->setTotalSteps(0);
@@ -110,15 +110,16 @@ void tst_Q3ProgressBar::setProgress()
     m_progressBar->paintNumber = 0;
     m_progressBar->setProgress(m_progressBar->progress() + 1);
     QCOMPARE(oldValue + 1,m_progressBar->progress());
-    QCOMPARE(m_progressBar->paintNumber,1);
+    QApplication::processEvents();
+    QVERIFY(m_progressBar->paintNumber >= 1); //it might be more than 1 because it is animated
 
     //standard case
     m_progressBar->setTotalSteps(3);
     m_progressBar->setProgress(0);
     m_progressBar->paintNumber = 0;
     m_progressBar->setProgress(m_progressBar->progress() + 1);
+    QApplication::processEvents();
     QCOMPARE(m_progressBar->paintNumber,1);
-
 }
 
 QTEST_MAIN(tst_Q3ProgressBar)

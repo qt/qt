@@ -21,6 +21,7 @@
 #ifndef JSCSSStyleDeclaration_h
 #define JSCSSStyleDeclaration_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class CSSStyleDeclaration;
 
-class JSCSSStyleDeclaration : public DOMObject {
-    typedef DOMObject Base;
+class JSCSSStyleDeclaration : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCSSStyleDeclaration(PassRefPtr<JSC::Structure>, PassRefPtr<CSSStyleDeclaration>);
+    JSCSSStyleDeclaration(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSStyleDeclaration>);
     virtual ~JSCSSStyleDeclaration();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -48,7 +49,7 @@ public:
     }
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     CSSStyleDeclaration* impl() const { return m_impl.get(); }
 
 private:
@@ -59,7 +60,7 @@ private:
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, CSSStyleDeclaration*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CSSStyleDeclaration*);
 CSSStyleDeclaration* toCSSStyleDeclaration(JSC::JSValue);
 
 class JSCSSStyleDeclarationPrototype : public JSC::JSObject {

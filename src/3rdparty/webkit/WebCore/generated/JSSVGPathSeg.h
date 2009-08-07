@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGPathSeg;
 
-class JSSVGPathSeg : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGPathSeg : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGPathSeg(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSeg>, SVGElement* context);
+    JSSVGPathSeg(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPathSeg>, SVGElement* context);
     virtual ~JSSVGPathSeg();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,16 +48,14 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     SVGPathSeg* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGPathSeg > m_impl;
+    RefPtr<SVGPathSeg> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGPathSeg*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGPathSeg*, SVGElement* context);
 SVGPathSeg* toSVGPathSeg(JSC::JSValue);
 
 class JSSVGPathSegPrototype : public JSC::JSObject {

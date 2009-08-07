@@ -364,7 +364,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             w->setProperty("_q_stylestate", (int)option->state);
             w->setProperty("_q_stylerect", w->rect());
 
-            bool doTransition = ((state & State_Sunken)     != (oldState & State_Sunken) ||
+            bool doTransition = oldState && 
+                                ((state & State_Sunken)     != (oldState & State_Sunken) ||
                                  (state & State_On)         != (oldState & State_On)     ||
                                  (state & State_MouseOver)  != (oldState & State_MouseOver));
 
@@ -2229,7 +2230,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                 rect = cb->rect;
                 break;
             case SC_ComboBoxArrow:
-                rect.setRect(cb->editable ? xpos : 0, y , wi - xpos, he);
+                rect.setRect(xpos, y , wi - xpos, he);
                 break;
             case SC_ComboBoxEditField:
                 rect.setRect(x + margin, y + margin, wi - 2 * margin - 16, he - 2 * margin);
