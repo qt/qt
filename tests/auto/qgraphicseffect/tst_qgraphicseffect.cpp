@@ -99,9 +99,8 @@ class CustomEffect : public QGraphicsEffect
 {
 public:
     CustomEffect()
-        : QGraphicsEffect(), numRepaints(0), m_margin(10), m_sourceChanged(false),
-          m_sourceBoundingRectChanged(false), doNothingInDraw(false),
-          m_painter(0), m_styleOption(0), m_source(0)
+        : QGraphicsEffect(), numRepaints(0), m_margin(10),
+          doNothingInDraw(false), m_painter(0), m_styleOption(0), m_source(0)
     {}
 
     QRectF boundingRectFor(const QRectF &rect) const
@@ -110,8 +109,7 @@ public:
     void reset()
     {
         numRepaints = 0;
-        m_sourceChanged = false;
-        m_sourceBoundingRectChanged = false;
+        m_sourceChangedFlags = QGraphicsEffect::ChangeFlags();
         m_painter = 0;
         m_styleOption = 0;
         m_source = 0;
@@ -137,16 +135,12 @@ public:
         source->draw(painter);
     }
 
-    void sourceChanged()
-    { m_sourceChanged = true; }
-
-    void sourceBoundingRectChanged()
-    { m_sourceBoundingRectChanged = true; }
+    void sourceChanged(QGraphicsEffect::ChangeFlags flags)
+    { m_sourceChangedFlags |= flags; }
 
     int numRepaints;
     int m_margin;
-    bool m_sourceChanged;
-    bool m_sourceBoundingRectChanged;
+    QGraphicsEffect::ChangeFlags m_sourceChangedFlags;
     bool doNothingInDraw;
     QPainter *m_painter;
     const QStyleOption *m_styleOption;
@@ -166,34 +160,34 @@ void tst_QGraphicsEffect::source()
 {
     QPointer<CustomEffect> effect = new CustomEffect;
     QVERIFY(!effect->source());
-    QVERIFY(!effect->m_sourceChanged);
+    QVERIFY(!effect->m_sourceChangedFlags);
 
     // Install effect on QGraphicsItem.
     QGraphicsItem *item = new QGraphicsRectItem(0, 0, 10, 10);
     item->setGraphicsEffect(effect);
     QVERIFY(effect->source());
     QCOMPARE(effect->source()->graphicsItem(), item);
-    QVERIFY(effect->m_sourceChanged);
+    QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceAttached);
     effect->reset();
 
     // Make sure disabling/enabling the effect doesn't change the source.
     effect->setEnabled(false);
     QVERIFY(effect->source());
     QCOMPARE(effect->source()->graphicsItem(), item);
-    QVERIFY(!effect->m_sourceChanged);
+    QVERIFY(!effect->m_sourceChangedFlags);
     effect->reset();
 
     effect->setEnabled(true);
     QVERIFY(effect->source());
     QCOMPARE(effect->source()->graphicsItem(), item);
-    QVERIFY(!effect->m_sourceChanged);
+    QVERIFY(!effect->m_sourceChangedFlags);
     effect->reset();
 
     // Uninstall effect on QGraphicsItem.
     effect->reset();
     item->setGraphicsEffect(0);
     QVERIFY(!effect->source());
-    QVERIFY(effect->m_sourceChanged);
+    QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceDetached);
 
     // The item takes ownership and should delete the effect when destroyed.
     item->setGraphicsEffect(effect);
@@ -304,7 +298,7 @@ void tst_QGraphicsEffect::draw()
     QTest::qWait(50);
     QCOMPARE(effect->numRepaints, 1);
     QCOMPARE(item->numRepaints, 1);
-    QVERIFY(effect->m_sourceBoundingRectChanged);
+    QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceBoundingRectChanged);
     effect->reset();
     item->reset();
 

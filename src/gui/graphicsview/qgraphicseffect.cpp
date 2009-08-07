@@ -316,19 +316,12 @@ void QGraphicsEffect::updateBoundingRect()
     This virtual function is called by QGraphicsEffect to notify the effect
     that the source has changed. If the effect applies any cache, then this
     cache must be purged in order to reflect the new appearance of the source.
-*/
-void QGraphicsEffect::sourceChanged()
-{
-}
 
-/*!
-    This virtual function is called by QGraphicsEffect to notify the effect
-    that the source's bounding rectangle has changed. If the effect applies any
-    cache, then this cache must be purged in order to reflect the new
-    appearance of the source.
+    The \a flags describes what has changed.
 */
-void QGraphicsEffect::sourceBoundingRectChanged()
+void QGraphicsEffect::sourceChanged(ChangeFlags flags)
 {
+    Q_UNUSED(flags);
 }
 
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()

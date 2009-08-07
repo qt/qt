@@ -94,8 +94,17 @@ class QGraphicsEffectPrivate;
 class Q_GUI_EXPORT QGraphicsEffect : public QObject
 {
     Q_OBJECT
+    Q_FLAGS(ChangeFlags)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
 public:
+    enum ChangeFlag {
+        SourceAttached = 0x1,
+        SourceDetached = 0x2,
+        SourceBoundingRectChanged = 0x4,
+        SourceInvalidated = 0x8
+    };
+    Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag);
+
     QGraphicsEffect();
     virtual ~QGraphicsEffect();
 
@@ -114,8 +123,7 @@ public Q_SLOTS:
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);
     virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
-    virtual void sourceChanged();
-    virtual void sourceBoundingRectChanged();
+    virtual void sourceChanged(ChangeFlags flags);
     void updateBoundingRect();
 
 private:

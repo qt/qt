@@ -94,12 +94,16 @@ public:
 
     inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)
     {
+        QGraphicsEffect::ChangeFlags flags;
         if (source) {
+            flags |= QGraphicsEffect::SourceDetached;
             source->d_func()->detach();
             delete source;
         }
         source = newSource;
-        q_func()->sourceChanged();
+        if (newSource)
+            flags |= QGraphicsEffect::SourceAttached;
+        q_func()->sourceChanged(flags);
     }
 
     QGraphicsEffectSource *source;
