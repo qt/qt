@@ -1972,8 +1972,8 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
     enabled = newEnabledVariant.toBool();
 
     // Schedule redraw.
-    if (update && scene)
-        scene->d_func()->markDirty(q_ptr);
+    if (update)
+        q_ptr->update();
 
     foreach (QGraphicsItem *child, children) {
         if (!newEnabled || !child->d_ptr->explicitlyDisabled)
@@ -2077,8 +2077,8 @@ void QGraphicsItem::setSelected(bool selected)
         return;
     d_ptr->selected = newSelected;
 
+    update();
     if (d_ptr->scene) {
-        d_ptr->scene->d_func()->markDirty(this);
         QGraphicsScenePrivate *sceneD = d_ptr->scene->d_func();
         if (selected) {
             sceneD->selectedItems << this;
@@ -6157,6 +6157,7 @@ void QGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsItem::focusInEvent(QFocusEvent *event)
 {
     Q_UNUSED(event);
+    update();
 }
 
 /*!
@@ -6168,6 +6169,7 @@ void QGraphicsItem::focusInEvent(QFocusEvent *event)
 void QGraphicsItem::focusOutEvent(QFocusEvent *event)
 {
     Q_UNUSED(event);
+    update();
 }
 
 /*!
@@ -6182,8 +6184,7 @@ void QGraphicsItem::focusOutEvent(QFocusEvent *event)
 void QGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    if (d_ptr->scene)
-        d_ptr->scene->d_func()->markDirty(this);
+    update();
 }
 
 /*!
@@ -6211,8 +6212,7 @@ void QGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 void QGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    if (d_ptr->scene)
-        d_ptr->scene->d_func()->markDirty(this);
+    update();
 }
 
 /*!
