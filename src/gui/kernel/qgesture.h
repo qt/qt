@@ -73,14 +73,13 @@ public:
     void setGraphicsItem(QGraphicsItem *);
     QGraphicsItem *graphicsItem() const;
 
-    virtual void reset();
-
     Qt::GestureState state() const;
 
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
     bool eventFilter(QObject*, QEvent*);
 
+    virtual void reset();
     void updateState(Qt::GestureState state);
 
 Q_SIGNALS:

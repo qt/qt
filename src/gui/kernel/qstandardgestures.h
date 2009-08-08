@@ -66,10 +66,12 @@ public:
     QPanGesture(QWidget *parent);
 
     bool filterEvent(QEvent *event);
-    void reset();
 
     QSize totalOffset() const;
     QSize lastOffset() const;
+
+protected:
+    void reset();
 
 private:
     bool event(QEvent *event);
