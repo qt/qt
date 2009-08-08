@@ -197,6 +197,13 @@ static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     sequence->minSize = min;
     sequence->prefSize = pref;
     sequence->maxSize = max;
+
+    // Unless these values are overhidden by the simplex solver later-on,
+    // anchors will keep their own preferred size.
+    sequence->sizeAtMinimum = pref;
+    sequence->sizeAtPreferred = pref;
+    sequence->sizeAtMaximum = pref;
+
     sequence->setVertices(vertices);
     sequence->origin = data->origin == vertices.last() ? before : after;
     AnchorData *newAnchor = sequence;
@@ -208,6 +215,11 @@ static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
         newAnchor->minSize = min;
         newAnchor->prefSize = pref;
         newAnchor->maxSize = max;
+
+        // Same as above, by default, keep preferred size.
+        newAnchor->sizeAtMinimum = pref;
+        newAnchor->sizeAtPreferred = pref;
+        newAnchor->sizeAtMaximum = pref;
     }
     graph->createEdge(before, after, newAnchor);
 }
@@ -1018,6 +1030,14 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     // Reset the nominal sizes of each anchor based on the current item sizes
     setAnchorSizeHintsFromDefaults(orientation);
 
+    // Simplify the graph
+    // ### Ideally we would like to do that if, and only if, anchors had
+    //     been added or removed since the last time this method was called.
+    //     However, as the two setAnchorSizeHints methods above are not
+    //     ready to be run on top of a simplified graph, we must simplify
+    //     and restore it every time we get here.
+    simplifyGraph(orientation);
+
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
 
@@ -1059,25 +1079,41 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     AnchorVertex *v = internalVertex(q, end);
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
-    // Solve min and max size hints for trunk
-    QPair<qreal, qreal> minMax = solveMinMax(trunkConstraints, trunkPath);
-    sizeHints[orientation][Qt::MinimumSize] = minMax.first;
-    sizeHints[orientation][Qt::MaximumSize] = minMax.second;
+    if (!trunkConstraints.isEmpty()) {
+        // Solve min and max size hints for trunk
+        QPair<qreal, qreal> minMax = solveMinMax(trunkConstraints, trunkPath);
+        sizeHints[orientation][Qt::MinimumSize] = minMax.first;
+        sizeHints[orientation][Qt::MaximumSize] = minMax.second;
 
-    // Solve for preferred. The objective function is calculated from the constraints
-    // and variables internally.
-    solvePreferred(trunkConstraints);
+        // Solve for preferred. The objective function is calculated from the constraints
+        // and variables internally.
+        solvePreferred(trunkConstraints);
 
-    // Calculate and set the preferred size for the layout from the edge sizes that
-    // were calculated above.
-    qreal pref(0.0);
-    foreach (const AnchorData *ad, trunkPath.positives) {
-        pref += ad->sizeAtPreferred;
+        // Calculate and set the preferred size for the layout from the edge sizes that
+        // were calculated above.
+        qreal pref(0.0);
+        foreach (const AnchorData *ad, trunkPath.positives) {
+            pref += ad->sizeAtPreferred;
+        }
+        foreach (const AnchorData *ad, trunkPath.negatives) {
+            pref -= ad->sizeAtPreferred;
+        }
+        sizeHints[orientation][Qt::PreferredSize] = pref;
+    } else {
+        // No Simplex is necessary because the path was simplified all the way to a single
+        // anchor.
+        Q_ASSERT(trunkPath.positives.count() == 1);
+        Q_ASSERT(trunkPath.negatives.count() == 0);
+
+        AnchorData *ad = trunkPath.positives.toList()[0];
+        ad->sizeAtMinimum = ad->minSize;
+        ad->sizeAtPreferred = ad->prefSize;
+        ad->sizeAtMaximum = ad->maxSize;
+
+        sizeHints[orientation][Qt::MinimumSize] = ad->sizeAtMinimum;
+        sizeHints[orientation][Qt::PreferredSize] = ad->sizeAtPreferred;
+        sizeHints[orientation][Qt::MaximumSize] = ad->sizeAtMaximum;
     }
-    foreach (const AnchorData *ad, trunkPath.negatives) {
-        pref -= ad->sizeAtPreferred;
-    }
-    sizeHints[orientation][Qt::PreferredSize] = pref;
 
     // Delete the constraints, we won't use them anymore.
     qDeleteAll(sizeHintConstraints);
@@ -1116,6 +1152,51 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
+
+    // Propagate the new sizes down the simplified graph, ie. tell the group anchors
+    // to set their children anchors sizes.
+
+    // ### Note that we can split the anchors into two categories:
+    //     1) Those that appeared in at least one constraint and so went through the
+    //        Simplex solver. Either as a Trunk or Non-Trunk variable.
+    //     2) Those that did not go through the Simplex solver at all.
+    //
+    //     Anchors of the type (1) had its effective sizes (ie. sizeAtMinimum/Pref/Max)
+    //     properly set by the "solveMinMax" and "solvePreferred" methods.
+    //
+    //     However, those of type (2), still need to have their effective sizes set,
+    //     in that case, to their own nominal values.
+    //
+    //     Due to the above reasons, we can't simply iterate on the variables that
+    //     belong to a graph part. We have to iterate through _all_ root anchors
+    //     in graph[orientation]. That's why we collect "allAnchors". We gotta make
+    //     this better somehow.
+
+    // ### Did I say that's ugly?
+    QSet<AnchorData *> allAnchors;
+    QQueue<AnchorVertex *> queue;
+    queue << graph[orientation].rootVertex();
+    while (!queue.isEmpty()) {
+        AnchorVertex *vertex = queue.dequeue();
+        QList<AnchorVertex *> adjacentVertices = graph[orientation].adjacentVertices(vertex);
+        for (int i = 0; i < adjacentVertices.count(); ++i) {
+            AnchorData *edge = graph[orientation].edgeData(vertex, adjacentVertices[i]);
+            if (allAnchors.contains(edge))
+                continue;
+            allAnchors << edge;
+            queue << adjacentVertices[i];
+        }
+    }
+
+    // Ok, now that we have all anchors, actually propagate the sizes down its children.
+    // Note that for anchors that didn't have its effectiveSizes set yet, we use the
+    // nominal one instead.
+    QSet<AnchorData *>::const_iterator iter;
+    for (iter = allAnchors.constBegin(); iter != allAnchors.constEnd(); ++iter)
+        (*iter)->updateChildrenSizes();
+
+    // Restore the graph. See the ### note next to the simplifyGraph() call.
+    restoreSimplifiedGraph(orientation);
 }
 
 void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromDefaults(Orientation orientation)
