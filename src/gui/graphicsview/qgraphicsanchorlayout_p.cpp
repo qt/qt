@@ -45,6 +45,30 @@
 
 #include "qgraphicsanchorlayout_p.h"
 
+void ParallelAnchorData::updateChildrenSizes()
+{
+    firstEdge->sizeAtMinimum = secondEdge->sizeAtMinimum = sizeAtMinimum;
+    firstEdge->sizeAtPreferred = secondEdge->sizeAtPreferred = sizeAtPreferred;
+    firstEdge->sizeAtMaximum = secondEdge->sizeAtMaximum = sizeAtMaximum;
+
+    firstEdge->updateChildrenSizes();
+    secondEdge->updateChildrenSizes();
+}
+
+void SequentialAnchorData::updateChildrenSizes()
+{
+    qreal minFactor = sizeAtMinimum / minSize;
+    qreal prefFactor = sizeAtPreferred / prefSize;
+    qreal maxFactor = sizeAtMaximum / maxSize;
+
+    for (int i = 0; i < m_edges.count(); ++i) {
+        m_edges[i]->sizeAtMinimum = m_edges[i]->minSize * minFactor;
+        m_edges[i]->sizeAtPreferred = m_edges[i]->prefSize * prefFactor;
+        m_edges[i]->sizeAtMaximum = m_edges[i]->maxSize * maxFactor;
+        m_edges[i]->updateChildrenSizes();
+    }
+}
+
 QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
 {
     // Calculate
