@@ -984,6 +984,29 @@ QList<AnchorData *> getVariables(QList<QSimplexConstraint *> constraints)
     return variableSet.toList();
 }
 
+/*!
+  \internal
+
+  Calculate graphs is the method that puts together all the helper routines
+  so that the AnchorLayout can calculate the sizes of each item.
+
+  In a nutshell it should do:
+
+  1) Update anchor nominal sizes, that is, the size that each anchor would
+     have if no other restrictions applied. This is done by quering the
+     layout style and the sizeHints of the items belonging to the layout.
+
+  2) Simplify the graph by grouping together parallel and sequential anchors
+     into "group anchors". These have equivalent minimum, preferred and maximum
+     sizeHints as the anchors they replace.
+
+  3) Check if we got to a trivial case. In some cases, the whole graph can be
+     simplified into a single anchor. If so, use this information. If not,
+     then call the Simplex solver to calculate the anchors sizes.
+
+  4) Once the root anchors had its sizes calculated, propagate that to the
+     anchors they represent.
+*/
 void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     QGraphicsAnchorLayoutPrivate::Orientation orientation)
 {
@@ -991,13 +1014,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 
     // Reset the nominal sizes of each anchor based on the current item sizes
     setAnchorSizeHintsFromItems(orientation);
-
-//    ### currently crashes
-    //q->dumpGraph();
-//    simplifyGraph(orientation);
-    //q->dumpGraph();
-//    restoreSimplifiedGraph(orientation);    // should not be here
-    //q->dumpGraph();
 
     // Reset the nominal sizes of each anchor based on the current item sizes
     setAnchorSizeHintsFromDefaults(orientation);
