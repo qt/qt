@@ -47,6 +47,7 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qfxpixmap.h>
 #include <QtDeclarative/qml.h>
+#include "qfxborderimage.h"
 
 
 QT_BEGIN_HEADER
@@ -54,6 +55,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class Q_DECLARATIVE_EXPORT QFxScaleGrid : public QObject
 {
     Q_OBJECT
@@ -63,8 +65,6 @@ class Q_DECLARATIVE_EXPORT QFxScaleGrid : public QObject
     Q_PROPERTY(int top READ top WRITE setTop)
     Q_PROPERTY(int right READ right WRITE setRight)
     Q_PROPERTY(int bottom READ bottom WRITE setBottom)
-    Q_PROPERTY(TileRule horizontalTileRule READ horizontalTileRule WRITE setHorizontalTileRule)
-    Q_PROPERTY(TileRule verticalTileRule READ verticalTileRule WRITE setVerticalTileRule)
 
 public:
     QFxScaleGrid();
@@ -84,21 +84,11 @@ public:
     int  bottom() const { return _bottom; }
     void setBottom(int);
 
-    enum TileRule { Stretch = Qt::Stretch, Repeat = Qt::Repeat, Round = Qt::Round };
-
-    TileRule horizontalTileRule() const { return _horizontalTileRule; }
-    void setHorizontalTileRule(TileRule);
-
-    TileRule verticalTileRule() const { return _verticalTileRule; }
-    void setVerticalTileRule(TileRule);
-
 private:
     int _left;
     int _top;
     int _right;
     int _bottom;
-    TileRule _horizontalTileRule;
-    TileRule _verticalTileRule;
 };
 
 class Q_DECLARATIVE_EXPORT QFxGridScaledImage
@@ -113,21 +103,21 @@ public:
     int gridRight() const;
     int gridTop() const;
     int gridBottom() const;
-    QFxScaleGrid::TileRule horizontalTileRule() const { return _h; }
-    QFxScaleGrid::TileRule verticalTileRule() const { return _v; }
+    QFxBorderImage::TileMode horizontalTileRule() const { return _h; }
+    QFxBorderImage::TileMode verticalTileRule() const { return _v; }
 
     QString pixmapUrl() const;
 
 private:
-    static QFxScaleGrid::TileRule stringToRule(const QString &);
+    static QFxBorderImage::TileMode stringToRule(const QString &);
 
 private:
     int _l;
     int _r;
     int _t;
     int _b;
-    QFxScaleGrid::TileRule _h;
-    QFxScaleGrid::TileRule _v;
+    QFxBorderImage::TileMode _h;
+    QFxBorderImage::TileMode _v;
     QString _pix;
 };
 

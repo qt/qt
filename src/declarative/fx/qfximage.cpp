@@ -55,12 +55,9 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    The Image element supports untransformed, stretched, tiled, and grid-scaled images.
+    The Image element supports untransformed, stretched and tiled.
 
     For an explanation of stretching and tiling, see the fillMode property description.
-
-    For an explanation of grid-scaling see the scaleGrid property description
-    or the QFxScaleGrid class description.
 
     Examples:
     \table
@@ -78,16 +75,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
         width: 160
         height: 160
         source: "pics/qtlogo.png"
-    }
-    \endqml
-    \row
-    \o \image declarative-qtlogo4.png
-    \o Grid-scaled (only with fillMode: Stretch)
-    \qml
-    Image { scaleGrid.left: 20; scaleGrid.right: 10
-            scaleGrid.top: 14; scaleGrid.bottom: 14
-            width: 160; height: 160
-            source: "pics/qtlogo.png"
     }
     \endqml
     \row
@@ -155,10 +142,10 @@ QFxImage::~QFxImage()
 }
 
 /*!
-    \property QFxImage::image
+    \property QFxImage::pixmap
     \brief the image displayed in this item.
 
-    This property contains the image currently being displayed by this item,
+    This property contains the pixmap currently being displayed by this item,
     which may be empty if nothing is currently displayed. Setting the source
     property overrides any setting of this property.
 */
@@ -196,10 +183,6 @@ void QFxImage::setPixmap(const QPixmap &pix)
     \endlist
 
     \image declarative-image_fillMode.gif
-
-    Only fillMode: Stretch can be used with scaleGrid. Other settings
-    will cause a run-time warning.
-
     \sa examples/declarative/aspectratio
 */
 QFxImage::FillMode QFxImage::fillMode() const
@@ -246,21 +229,6 @@ void QFxImage::setFillMode(FillMode mode)
 
     Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 
-    It can also handle .sci files, which are a Qml-specific format. A .sci file uses a simple text-based format that specifies
-    \list
-    \i the grid lines describing a \l {Image::scaleGrid.left}{scale grid}.
-    \i an image file.
-    \endlist
-
-    The following .sci file sets grid line offsets of 10 on each side for the image \c picture.png:
-    \code
-    gridLeft: 10
-    gridTop: 10
-    gridBottom: 10
-    gridRight: 10
-    imageFile: picture.png
-    \endcode
-
     The URL may be absolute, or relative to the URL of the component.
 */
 
@@ -277,74 +245,67 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     QPixmap pix = d->pix;
 
-    if (!d->scaleGrid || d->scaleGrid->isNull()) {
-        if (width() != pix.width() || height() != pix.height()) {
-            if (d->fillMode >= Tile) {
-                p->save();
-                p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
+    if (width() != pix.width() || height() != pix.height()) {
+        if (d->fillMode >= Tile) {
+            p->save();
+            p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
 
-                if (d->fillMode == Tile) {
-                    const int pw = pix.width();
-                    const int ph = pix.height();
-                    int yy = 0;
+            if (d->fillMode == Tile) {
+                const int pw = pix.width();
+                const int ph = pix.height();
+                int yy = 0;
 
-                    while(yy < height()) {
-                        int xx = 0;
-                        while(xx < width()) {
-                            p->drawPixmap(xx, yy, pix);
-                            xx += pw;
-                        }
-                        yy += ph;
-                    }
-                } else if (d->fillMode == TileVertically) {
-                    const int ph = pix.height();
-                    int yy = 0;
-
-                    while(yy < height()) {
-                        p->drawPixmap(QRect(0, yy, width(), ph), pix);
-                        yy += ph;
-                    }
-                } else {
-                    const int pw = pix.width();
+                while(yy < height()) {
                     int xx = 0;
-
                     while(xx < width()) {
-                        p->drawPixmap(QRect(xx, 0, pw, height()), pix);
+                        p->drawPixmap(xx, yy, pix);
                         xx += pw;
                     }
+                    yy += ph;
                 }
+            } else if (d->fillMode == TileVertically) {
+                const int ph = pix.height();
+                int yy = 0;
 
-                p->restore();
+                while(yy < height()) {
+                    p->drawPixmap(QRect(0, yy, width(), ph), pix);
+                    yy += ph;
+                }
             } else {
-                qreal widthScale = width() / qreal(pix.width());
-                qreal heightScale = height() / qreal(pix.height());
+                const int pw = pix.width();
+                int xx = 0;
 
-                QTransform scale;
-
-                if (d->fillMode == PreserveAspect) {
-                    if (widthScale < heightScale) {
-                        heightScale = widthScale;
-                        scale.translate(0, (height() - heightScale * pix.height()) / 2);
-                    } else if(heightScale < widthScale) {
-                        widthScale = heightScale;
-                        scale.translate((width() - widthScale * pix.width()) / 2, 0);
-                    }
+                while(xx < width()) {
+                    p->drawPixmap(QRect(xx, 0, pw, height()), pix);
+                    xx += pw;
                 }
-
-                scale.scale(widthScale, heightScale);
-                QTransform old = p->transform();
-                p->setWorldTransform(scale * old);
-                p->drawPixmap(0, 0, pix);
-                p->setWorldTransform(old);
             }
+
+            p->restore();
         } else {
+            qreal widthScale = width() / qreal(pix.width());
+            qreal heightScale = height() / qreal(pix.height());
+
+            QTransform scale;
+
+            if (d->fillMode == PreserveAspect) {
+                if (widthScale < heightScale) {
+                    heightScale = widthScale;
+                    scale.translate(0, (height() - heightScale * pix.height()) / 2);
+                } else if(heightScale < widthScale) {
+                    widthScale = heightScale;
+                    scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                }
+            }
+
+            scale.scale(widthScale, heightScale);
+            QTransform old = p->transform();
+            p->setWorldTransform(scale * old);
             p->drawPixmap(0, 0, pix);
+            p->setWorldTransform(old);
         }
     } else {
-        QMargins margins(d->scaleGrid->top(), d->scaleGrid->left(), d->scaleGrid->bottom(), d->scaleGrid->right());
-        QTileRules rules((Qt::TileRule)d->scaleGrid->horizontalTileRule(),
-                         (Qt::TileRule)d->scaleGrid->verticalTileRule());
-        qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, pix, pix.rect(), margins, rules);
+        p->drawPixmap(0, 0, pix);
     }
 
     if (d->smooth) {

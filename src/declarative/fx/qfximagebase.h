@@ -44,10 +44,9 @@
 
 #include <QtDeclarative/qfxitem.h>
 
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QFxScaleGrid;
-class QFxGridScaledImage;
 class QFxImageBasePrivate;
 class QFxImageBase : public QFxItem
 {
@@ -57,7 +56,6 @@ class QFxImageBase : public QFxItem
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
-    Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
 
 public:
     QFxImageBase(QFxItem *parent = 0);
@@ -76,16 +74,10 @@ Q_SIGNALS:
 
 protected:
     QFxImageBase(QFxImageBasePrivate &dd, QFxItem *parent);
-    virtual void componentComplete();
 
 private Q_SLOTS:
-    void requestFinished();
-    void sciRequestFinished();
+    virtual void requestFinished();
     void requestProgress(qint64,qint64);
-
-private:
-    void setGridScaledImage(const QFxGridScaledImage& sci);
-    QFxScaleGrid *scaleGrid();
 
 private:
     Q_DISABLE_COPY(QFxImageBase)
@@ -93,5 +85,6 @@ private:
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // QFXIMAGEBASE_H

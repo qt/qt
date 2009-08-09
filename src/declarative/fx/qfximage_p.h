@@ -56,8 +56,6 @@
 #include "qfxitem_p.h"
 #include "qfximagebase_p.h"
 
-#include <QtCore/qpointer.h>
-
 QT_BEGIN_NAMESPACE
 
 class QFxImagePrivate : public QFxImageBasePrivate

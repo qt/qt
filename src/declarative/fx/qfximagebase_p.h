@@ -54,48 +54,25 @@
 //
 
 #include "qfxitem_p.h"
-#include "qfxscalegrid_p.h"
+#include <QtCore/QPointer>
 
 QT_BEGIN_NAMESPACE
 
-class QSvgRenderer;
-class QWebPage;
 class QNetworkReply;
-class QIODevice;
-
 class QFxImageBasePrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxImageBase)
 
 public:
     QFxImageBasePrivate()
-      : scaleGrid(0),
-        status(QFxImageBase::Null), sciReply(0),
+      : status(QFxImageBase::Null),
         progress(0.0)
     {
     }
 
-    ~QFxImageBasePrivate()
-    {
-        delete scaleGrid;
-    }
-
-    void setContent(QIODevice* dev, const QString &url);
-
-    QFxScaleGrid *getScaleGrid()
-    {
-        if (!scaleGrid)
-            scaleGrid = new QFxScaleGrid;
-        return scaleGrid;
-    }
-
-    QFxScaleGrid *scaleGrid;
     QPixmap pix;
-
     QFxImageBase::Status status;
     QUrl url;
-    QUrl sciurl;
-    QNetworkReply *sciReply;
     QPointer<QNetworkReply> reply;
     qreal progress;
 };

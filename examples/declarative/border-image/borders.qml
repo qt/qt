@@ -5,12 +5,12 @@ Rect {
     color: "white"
     width: 520; height: 280
 
-    Image {
+    BorderImage {
         x: 20; y: 20; width: 230; height: 240
         smooth: true
         source: "colors-stretch.sci"
     }
-    Image {
+    BorderImage {
         x: 270; y: 20; width: 230; height: 240
         smooth: true
         source: "colors-round.sci"

@@ -46,12 +46,11 @@
 #include "qfximagebase.h"
 
 QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxImagePrivate;
 
+class QFxImagePrivate;
 class Q_DECLARATIVE_EXPORT QFxImage : public QFxImageBase
 {
     Q_OBJECT
@@ -85,9 +84,7 @@ private:
 };
 
 QT_END_NAMESPACE
-
 QML_DECLARE_TYPE(QFxImage)
-
 QT_END_HEADER
 
 #endif // QFXIMAGE_H
