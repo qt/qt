@@ -1597,11 +1597,11 @@ QHttp::~QHttp()
 
     This enum is used to specify the mode of connection to use:
 
-    \value ConnectionModeHttp The connection is a regular Http connection to the server
-    \value ConnectionModeHttps The Https protocol is used and the connection is encrypted using SSL.
+    \value ConnectionModeHttp The connection is a regular HTTP connection to the server
+    \value ConnectionModeHttps The HTTPS protocol is used and the connection is encrypted using SSL.
 
-    When using the Https mode, care should be taken to connect to the sslErrors signal, and
-    handle possible Ssl errors.
+    When using the HTTPS mode, care should be taken to connect to the sslErrors signal, and
+    handle possible SSL errors.
 
     \sa QSslSocket
 */
@@ -2039,7 +2039,7 @@ int QHttp::setHost(const QString &hostName, quint16 port)
     port \a port using the connection mode \a mode.
 
     If port is 0, it will use the default port for the \a mode used
-    (80 for Http and 443 fopr Https).
+    (80 for HTTP and 443 for HTTPS).
 
     The function does not block; instead, it returns immediately. The request
     is scheduled, and its execution is performed asynchronously. The
