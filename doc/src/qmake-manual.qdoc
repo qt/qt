@@ -258,6 +258,8 @@
     on strings and lists of values. These are described in the chapter on
     \l{qmake Advanced Usage}.
 
+    \section3 Whitespace
+
     Normally, variables are used to contain whitespace-separated lists
     of values. However, it is sometimes necessary to specify values containing
     spaces. These must be quoted in the following way:
@@ -265,7 +267,10 @@
     \snippet doc/src/snippets/qmake/quoting.pro 0
 
     The quoted text is treated as a single item in the list of values held by
-    the variable.
+    the variable. This approach is used to deal with paths that contain spaces,
+    particularly on the Windows platform. See the documentation for the
+    \l{qmake Variable Reference#INCLUDEPATH}{INCLUDEPATH} and
+    \l{qmake Variable Reference#LIBS}{LIBS} variables for examples.
 
     \section2 Comments
 
@@ -380,7 +385,7 @@
             This is ignored if \c warn_off is specified.
     \row    \o warn_off \o The compiler should output as few warnings as possible.
     \row    \o copy_dir_files \o Enables the install rule to also copy directories, not just files.  
-   \endtable
+    \endtable
 
     The \c debug_and_release option is special in that it enables \e both debug and
     release versions of a project to be built. In such a case, the Makefile that
@@ -1369,6 +1374,13 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 35
 
+    To specify a path containing spaces, quote the path using the technique
+    mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
+    document. For example, paths with spaces can be specified on Windows
+    and Unix platforms in the following way:
+
+    \snippet doc/src/snippets/qmake/spaces.pro quoting include paths with spaces
+
     \target INSTALLS
     \section1 INSTALLS
 
@@ -1421,6 +1433,13 @@
     For example:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 38
+
+    To specify a path containing spaces, quote the path using the technique
+    mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
+    document. For example, paths with spaces can be specified on Windows
+    and Unix platforms in the following way:
+
+    \snippet doc/src/snippets/qmake/spaces.pro quoting library paths with spaces
 
     \bold{Note:} On Windows, specifying libraries with the \c{-l} option,
     as in the above example, will cause the library with the highest version
