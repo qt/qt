@@ -423,6 +423,105 @@ MakefileGenerator::initCompiler(const MakefileGenerator::Compiler &comp)
     }
 }
 
+QStringList::Iterator
+MakefileGenerator::mergeCompilerOutputs(QStringList::Iterator start, QStringList::Iterator end,
+            QString stopAt)
+{
+    QStringList::Iterator it;
+    for(it = start; it != end; ++it) {
+        QString tmp_out = project->values((*it) + ".output").first();
+        if(tmp_out.isEmpty())
+            continue;
+        if(project->values((*it) + ".CONFIG").indexOf("combine") != -1) {
+            QStringList &compilerInputs = project->values((*it) + ".input");
+            // Don't generate compiler output if it doesn't have input.
+            if (compilerInputs.isEmpty() || project->values(compilerInputs.first()).isEmpty())
+                continue;
+            if (!stopAt.isEmpty() && compilerInputs.contains(stopAt))
+                break;
+            if(tmp_out.indexOf("$") == -1) {
+                if(!verifyExtraCompiler((*it), QString())) //verify
+                    continue;
+                QString out = fileFixify(tmp_out, Option::output_dir, Option::output_dir);
+                bool pre_dep = (project->values((*it) + ".CONFIG").indexOf("target_predeps") != -1);
+                if(project->variables().contains((*it) + ".variable_out")) {
+                    const QStringList &var_out = project->variables().value((*it) + ".variable_out");
+                    for(int i = 0; i < var_out.size(); ++i) {
+                        QString v = var_out.at(i);
+                        if(v == QLatin1String("SOURCES"))
+                            v = "GENERATED_SOURCES";
+                        else if(v == QLatin1String("OBJECTS"))
+                            pre_dep = false;
+                        QStringList &list = project->values(v);
+                        if(!list.contains(out))
+                            list.append(out);
+                    }
+                } else if(project->values((*it) + ".CONFIG").indexOf("no_link") == -1) {
+                    QStringList &list = project->values("OBJECTS");
+                    pre_dep = false;
+                    if(!list.contains(out))
+                        list.append(out);
+                } else {
+                        QStringList &list = project->values("UNUSED_SOURCES");
+                        if(!list.contains(out))
+                            list.append(out);
+                }
+                if(pre_dep) {
+                    QStringList &list = project->variables()["PRE_TARGETDEPS"];
+                    if(!list.contains(out))
+                        list.append(out);
+                }
+            }
+        } else {
+            QStringList &tmp = project->values((*it) + ".input");
+            if (!stopAt.isEmpty() && tmp.contains(stopAt))
+                break;
+            for(QStringList::Iterator it2 = tmp.begin(); it2 != tmp.end(); ++it2) {
+                const QStringList inputs = project->values((*it2));
+                for(QStringList::ConstIterator input = inputs.constBegin(); input != inputs.constEnd(); ++input) {
+                    if((*input).isEmpty())
+                        continue;
+                    QString in = Option::fixPathToTargetOS((*input), false);
+                    if(!verifyExtraCompiler((*it), in)) //verify
+                        continue;
+                    QString out = replaceExtraCompilerVariables(tmp_out, (*input), QString());
+                    out = fileFixify(out, Option::output_dir, Option::output_dir);
+                    bool pre_dep = (project->values((*it) + ".CONFIG").indexOf("target_predeps") != -1);
+                    if(project->variables().contains((*it) + ".variable_out")) {
+                        const QStringList &var_out = project->variables().value((*it) + ".variable_out");
+                        for(int i = 0; i < var_out.size(); ++i) {
+                            QString v = var_out.at(i);
+                            if(v == QLatin1String("SOURCES"))
+                                v = "GENERATED_SOURCES";
+                            else if(v == QLatin1String("OBJECTS"))
+                                pre_dep = false;
+                            QStringList &list = project->values(v);
+                            if(!list.contains(out))
+                                list.append(out);
+                        }
+                    } else if(project->values((*it) + ".CONFIG").indexOf("no_link") == -1) {
+                        pre_dep = false;
+                        QStringList &list = project->values("OBJECTS");
+                        if(!list.contains(out))
+                            list.append(out);
+                    } else {
+                        QStringList &list = project->values("UNUSED_SOURCES");
+                        if(!list.contains(out))
+                            list.append(out);
+                    }
+                    if(pre_dep) {
+                        QStringList &list = project->variables()["PRE_TARGETDEPS"];
+                        if(!list.contains(out))
+                            list.append(out);
+                    }
+                }
+            }
+        }
+    }
+
+    return it;
+}
+
 void
 MakefileGenerator::init()
 {
@@ -440,8 +539,11 @@ MakefileGenerator::init()
     continue_compiler_chain:
         if(jump_count > quc.size()) //just to avoid an infinite loop here
             break;
-        if(project->variables().contains(quc.at(comp_out) + ".variable_out")) {
-            const QStringList &outputs = project->variables().value(quc.at(comp_out) + ".variable_out");
+        QStringList outputs = project->variables().value(quc.at(comp_out) + ".variable_out");
+        if (outputs.isEmpty() && project->values(quc.at(comp_out) + ".CONFIG").indexOf("no_link") == -1) {
+            outputs << QString("OBJECTS");
+        }
+        if(!outputs.isEmpty()) {
             for(int out = 0; out < outputs.size(); ++out) {
                 for(int comp_in = 0; comp_in < quc.size(); ++comp_in) {
                     if(comp_in == comp_out)
@@ -449,7 +551,8 @@ MakefileGenerator::init()
                     if(project->variables().contains(quc.at(comp_in) + ".input")) {
                         const QStringList &inputs = project->variables().value(quc.at(comp_in) + ".input");
                         for(int in = 0; in < inputs.size(); ++in) {
-                            if(inputs.at(in) == outputs.at(out) && comp_out > comp_in) {
+                            if(comp_out > comp_in && (inputs.at(in) == outputs.at(out)
+                                        || inputs.at(in) == "OBJECTS" && outputs.at(out).endsWith("SOURCES"))) {
                                 ++jump_count;
                                 //move comp_out to comp_in and continue the compiler chain
                                 quc.move(comp_out, comp_in);
@@ -615,93 +718,9 @@ MakefileGenerator::init()
         initCompiler(compilers.at(x));
 
     //merge actual compiler outputs into their variable_out. This is done last so that
-    //files are already properly fixified.
-    for(QStringList::Iterator it = quc.begin(); it != quc.end(); ++it) {
-        QString tmp_out = project->values((*it) + ".output").first();
-        if(tmp_out.isEmpty())
-            continue;
-        if(project->values((*it) + ".CONFIG").indexOf("combine") != -1) {
-            QStringList &compilerInputs = project->values((*it) + ".input");
-            // Don't generate compiler output if it doesn't have input.
-            if (compilerInputs.isEmpty() || project->values(compilerInputs.first()).isEmpty())
-                continue;
-            if(tmp_out.indexOf("$") == -1) {
-                if(!verifyExtraCompiler((*it), QString())) //verify
-                    continue;
-                QString out = fileFixify(tmp_out, Option::output_dir, Option::output_dir);
-                bool pre_dep = (project->values((*it) + ".CONFIG").indexOf("target_predeps") != -1);
-                if(project->variables().contains((*it) + ".variable_out")) {
-                    const QStringList &var_out = project->variables().value((*it) + ".variable_out");
-                    for(int i = 0; i < var_out.size(); ++i) {
-                        QString v = var_out.at(i);
-                        if(v == QLatin1String("SOURCES"))
-                            v = "GENERATED_SOURCES";
-                        else if(v == QLatin1String("OBJECTS"))
-                            pre_dep = false;
-                        QStringList &list = project->values(v);
-                        if(!list.contains(out))
-                            list.append(out);
-                    }
-                } else if(project->values((*it) + ".CONFIG").indexOf("no_link") == -1) {
-                    QStringList &list = project->values("OBJECTS");
-                    pre_dep = false;
-                    if(!list.contains(out))
-                        list.append(out);
-                } else {
-                        QStringList &list = project->values("UNUSED_SOURCES");
-                        if(!list.contains(out))
-                            list.append(out);
-                }
-                if(pre_dep) {
-                    QStringList &list = project->variables()["PRE_TARGETDEPS"];
-                    if(!list.contains(out))
-                        list.append(out);
-                }
-            }
-        } else {
-            QStringList &tmp = project->values((*it) + ".input");
-            for(QStringList::Iterator it2 = tmp.begin(); it2 != tmp.end(); ++it2) {
-                const QStringList inputs = project->values((*it2));
-                for(QStringList::ConstIterator input = inputs.constBegin(); input != inputs.constEnd(); ++input) {
-                    if((*input).isEmpty())
-                        continue;
-                    QString in = Option::fixPathToTargetOS((*input), false);
-                    if(!verifyExtraCompiler((*it), in)) //verify
-                        continue;
-                    QString out = replaceExtraCompilerVariables(tmp_out, (*input), QString());
-                    out = fileFixify(out, Option::output_dir, Option::output_dir);
-                    bool pre_dep = (project->values((*it) + ".CONFIG").indexOf("target_predeps") != -1);
-                    if(project->variables().contains((*it) + ".variable_out")) {
-                        const QStringList &var_out = project->variables().value((*it) + ".variable_out");
-                        for(int i = 0; i < var_out.size(); ++i) {
-                            QString v = var_out.at(i);
-                            if(v == QLatin1String("SOURCES"))
-                                v = "GENERATED_SOURCES";
-                            else if(v == QLatin1String("OBJECTS"))
-                                pre_dep = false;
-                            QStringList &list = project->values(v);
-                            if(!list.contains(out))
-                                list.append(out);
-                        }
-                    } else if(project->values((*it) + ".CONFIG").indexOf("no_link") == -1) {
-                        pre_dep = false;
-                        QStringList &list = project->values("OBJECTS");
-                        if(!list.contains(out))
-                            list.append(out);
-                    } else {
-                        QStringList &list = project->values("UNUSED_SOURCES");
-                        if(!list.contains(out))
-                            list.append(out);
-                    }
-                    if(pre_dep) {
-                        QStringList &list = project->variables()["PRE_TARGETDEPS"];
-                        if(!list.contains(out))
-                            list.append(out);
-                    }
-                }
-            }
-        }
-    }
+    //files are already properly fixified. If an input variable reads "OBJECTS", then
+    //stop at that compiler and do the rest later after "OBJECTS" has been populated.
+    QStringList::Iterator mergedOutputs = mergeCompilerOutputs(quc.begin(), quc.end(), "OBJECTS");
 
     //handle dependencies
     depHeuristicsCache.clear();
@@ -763,6 +782,8 @@ MakefileGenerator::init()
                                                                   Option::output_dir,
                                                                   Option::output_dir));
     }
+
+    mergeCompilerOutputs(mergedOutputs, quc.end(), QString());
 
     //fix up the target deps
     QString fixpaths[] = { QString("PRE_TARGETDEPS"), QString("POST_TARGETDEPS"), QString() };

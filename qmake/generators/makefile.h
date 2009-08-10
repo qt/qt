@@ -146,6 +146,8 @@ protected:
 
     //initialization
     void verifyCompilers();
+    QStringList::Iterator mergeCompilerOutputs(QStringList::Iterator start, QStringList::Iterator end,
+            QString stopAt);
     virtual void init();
     void initOutPaths();
     struct Compiler
