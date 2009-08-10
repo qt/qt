@@ -44,6 +44,7 @@
 #include "qscriptcontext_p.h"
 #include "../bridge/qscriptqobject_p.h"
 #include <QtCore/qdatastream.h>
+#include <QtCore/qmetaobject.h>
 #include "CodeBlock.h"
 #include "JSFunction.h"
 
@@ -175,7 +176,15 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
         // lineNumber = codeBlock->expressionRangeForBytecodeOffset(...);
     } else if (callee && callee->isObject(&QScript::QtFunction::info)) {
         functionType = QScriptContextInfo::QtFunction;
+        // ### the slot can be overloaded -- need to get the particular overload from the context
         functionMetaIndex = static_cast<QScript::QtFunction*>(callee)->initialIndex();
+        const QMetaObject *meta = static_cast<QScript::QtFunction*>(callee)->metaObject();
+        if (meta != 0) {
+            QMetaMethod method = meta->method(functionMetaIndex);
+            QList<QByteArray> formals = method.parameterNames();
+            for (int i = 0; i < formals.count(); ++i)
+                parameterNames.append(QLatin1String(formals.at(i)));
+        }
     }
     else if (callee && callee->isObject(&QScript::QtPropertyFunction::info)) {
         functionType = QScriptContextInfo::QtPropertyFunction;
