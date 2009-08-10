@@ -106,6 +106,10 @@ public:
 
     void unpolish(QWidget *widget);
     void unpolish(QApplication *app);
+
+protected Q_SLOTS:
+    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
+                                     const QWidget *widget = 0) const;
 };
 
 

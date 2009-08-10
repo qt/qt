@@ -71,8 +71,6 @@ public:
 
     ~QCleanlooksStylePrivate() {
     }
-
-    void lookupIconTheme() const;
 };
 
 QT_END_NAMESPACE

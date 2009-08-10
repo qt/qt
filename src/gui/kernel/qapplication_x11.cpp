@@ -78,6 +78,7 @@
 #include <private/qcrashhandler_p.h>
 #include <private/qcolor_p.h>
 #include <private/qcursor_p.h>
+#include <private/qiconloader_p.h>
 #include "qstyle.h"
 #include "qmetaobject.h"
 #include "qtimer.h"
@@ -1087,7 +1088,6 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
     if (QApplication::desktopSettingsAware()) {
         // first, read from settings
         QApplicationPrivate::x11_apply_settings();
-
         // the call to QApplication::style() below creates the system
         // palette, which breaks the logic after the RESOURCE_MANAGER
         // loop... so I have to save this value to be able to use it later
@@ -1328,6 +1328,8 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         QApplication::setEffectEnabled(Qt::UI_AnimateToolBox,
                                        effects.contains(QLatin1String("animatetoolbox")));
     }
+
+    QIconLoader::instance()->updateSystemTheme();
 }
 
 
