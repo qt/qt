@@ -867,6 +867,8 @@
 #if !defined(QT_NO_QOBJECT)
 #include "../kernel/qobject_p.h"
 
+QT_BEGIN_NAMESPACE
+
 /*!
     \internal
     This function is called for a just-created QObject \a obj, to enable
@@ -910,6 +912,9 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     }
     return d->sharedRefcount;
 }
+
+QT_END_NAMESPACE
+
 #endif
 
 
@@ -931,6 +936,8 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
 #    include <stdio.h>
 #    include <unistd.h>
 #    include <sys/wait.h>
+
+QT_BEGIN_NAMESPACE
 
 static inline QByteArray saveBacktrace() __attribute__((always_inline));
 static inline QByteArray saveBacktrace()
@@ -992,6 +999,9 @@ static void printBacktrace(QByteArray stacktrace)
         waitpid(child, 0, 0);
     }
 }
+
+QT_END_NAMESPACE
+
 #  endif  // BACKTRACE_SUPPORTED
 
 namespace {

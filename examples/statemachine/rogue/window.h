@@ -44,9 +44,11 @@
 
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
 class QState;
 class QStateMachine;
 class QTransition;
+QT_END_NAMESPACE
 
 #define WIDTH 35
 #define HEIGHT 20
