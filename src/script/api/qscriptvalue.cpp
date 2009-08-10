@@ -371,9 +371,16 @@ QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolv
     JSC::JSValue result;
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
         result = slot.getValue(exec, id);
-    } else if ((resolveMode & QScriptValue::ResolvePrototype)
+    } else {
+        if ((resolveMode & QScriptValue::ResolvePrototype)
           && const_cast<JSC::JSObject*>(object)->getPropertySlot(exec, id, slot)) {
-        result = slot.getValue(exec, id);
+            result = slot.getValue(exec, id);
+        } else if (resolveMode & QScriptValue::ResolveScope) {
+            // ### check if it's a function object and look in the scope chain
+            QScriptValue scope = property(QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
+            if (scope.isObject())
+                result = eng_p->scriptValueToJSCValue(QScriptValuePrivate::get(scope)->property(id, resolveMode));
+        }
     }
     return eng_p->scriptValueFromJSCValue(result);
 }
