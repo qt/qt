@@ -77,8 +77,6 @@ public:
     void _q_layoutAboutToBeChanged();
     void _q_layoutChanged();
 
-    void recursiveDeselect(const QItemSelectionRange &range);
-
     inline void remove(QList<QItemSelectionRange> &r)
     {
         QList<QItemSelectionRange>::const_iterator it = r.constBegin();
