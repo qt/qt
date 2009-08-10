@@ -64,7 +64,8 @@ namespace QTest
 class Q_TESTLIB_EXPORT QBenchmarkIterationController
 {
 public:
-    QBenchmarkIterationController();
+    enum RunMode { RepeatUntilValidMeasurement, RunOnce };
+    QBenchmarkIterationController(RunMode runMode);
     ~QBenchmarkIterationController();
     bool isDone();
     void next();
@@ -74,7 +75,12 @@ public:
 }
 
 #define QBENCHMARK \
-    for (QTest::QBenchmarkIterationController __iteration_controller; __iteration_controller.isDone() == false; __iteration_controller.next())
+    for (QTest::QBenchmarkIterationController __iteration_controller(QTest::QBenchmarkIterationController::RepeatUntilValidMeasurement); \
+            __iteration_controller.isDone() == false; __iteration_controller.next())
+
+#define QBENCHMARK_ONCE \
+    for (QTest::QBenchmarkIterationController __iteration_controller(QTest::QBenchmarkIterationController::RunOnce); \
+            __iteration_controller.isDone() == false; __iteration_controller.next())
 
 QT_END_NAMESPACE
 

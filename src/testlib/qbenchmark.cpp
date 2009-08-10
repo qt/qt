@@ -116,7 +116,7 @@ int QBenchmarkGlobalData::adjustMedianIterationCount()
 QBenchmarkTestMethodData *QBenchmarkTestMethodData::current;
 
 QBenchmarkTestMethodData::QBenchmarkTestMethodData()
-:resultAccepted(false), iterationCount(-1)
+:resultAccepted(false), runOnce(false), iterationCount(-1)
 {
    
 }
@@ -157,6 +157,11 @@ void QBenchmarkTestMethodData::setResult(qint64 value)
     if (QBenchmarkGlobalData::current->iterationCount != -1)
         accepted = true;
 
+    if (QBenchmarkTestMethodData::current->runOnce) {
+        iterationCount = 1;
+        accepted = true;
+    }
+    
     // Test the result directly without calling the measurer if the minimum time 
     // has been specifed on the command line with -minimumvalue.
     else if (QBenchmarkGlobalData::current->walltimeMinimum != -1)
@@ -179,10 +184,12 @@ void QBenchmarkTestMethodData::setResult(qint64 value)
     drive the benchmarking loop. It is repsonsible for starting and stopping
     the timing measurements as well as calling the result reporting functions.
 */
-QTest::QBenchmarkIterationController::QBenchmarkIterationController()
+QTest::QBenchmarkIterationController::QBenchmarkIterationController(RunMode runMode)
 {
     QTest::beginBenchmarkMeasurement();
     i = 0;
+    if (runMode == RunOnce)
+        QBenchmarkTestMethodData::current->runOnce = true;    
 }
 /*! \internal
 */
@@ -195,6 +202,8 @@ QTest::QBenchmarkIterationController::~QBenchmarkIterationController()
 */
 bool QTest::QBenchmarkIterationController::isDone()
 {
+    if (QBenchmarkTestMethodData::current->runOnce)
+        return i > 0;
     return i >= QTest::iterationCount();
 }
 
