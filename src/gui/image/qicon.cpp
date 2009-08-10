@@ -870,7 +870,7 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
 /*!
     \since 4.6
 
-    Sets the search paths for icon themes.
+    Sets the search paths for icon themes to \a paths.
     \sa themeSearchPaths(), fromTheme()
 */
 void QIcon::setThemeSearchPaths(const QStringList &paths)
@@ -893,7 +893,7 @@ void QIcon::setThemeSearchPaths(const QStringList &paths)
     On Mac the default search path will search in the
     [Contents/Resources/icons] part of the application bundle.
 
-    \sa setThemeSearchPaths(), fromName()
+    \sa setThemeSearchPaths(), fromTheme()
 */
 QStringList QIcon::themeSearchPaths()
 {
@@ -923,7 +923,7 @@ void QIcon::setThemeName(const QString &path)
     On X11, the current icon theme depends on your desktop
     settings. On other platforms it is not set by default.
 
-    \sa themeSearchPaths(), themeIcon(), fromTheme(), hasThemeIcon()
+    \sa themeSearchPaths(), fromTheme(), hasThemeIcon()
 */
 QString QIcon::themeName()
 {
