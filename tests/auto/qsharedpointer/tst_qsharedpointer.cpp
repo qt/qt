@@ -1373,7 +1373,9 @@ void tst_QSharedPointer::threadStressTest_data()
     QTest::newRow("5+10") << 5 << 10;
     QTest::newRow("5+30") << 5 << 30;
 
+#ifndef Q_OS_WINCE
     QTest::newRow("100+100") << 100 << 100;
+#endif
 }
 
 void tst_QSharedPointer::threadStressTest()
