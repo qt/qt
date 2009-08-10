@@ -76,6 +76,7 @@ private slots:
     void toString();
     void calledAsConstructor();
     void argumentsObjectInNative();
+    void jsActivationObject();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -888,7 +889,31 @@ void tst_QScriptContext::argumentsObjectInNative()
         QVERIFY(!eng.hasUncaughtException());
         QCOMPARE(result.toString(), QString::fromLatin1("success"));
     }
+}
 
+static QScriptValue get_jsActivationObject(QScriptContext *ctx, QScriptEngine *)
+{
+    return ctx->parentContext()->parentContext()->activationObject();
+}
+
+void tst_QScriptContext::jsActivationObject()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("get_jsActivationObject", eng.newFunction(get_jsActivationObject));
+    eng.evaluate("function f1() { var w = get_jsActivationObject('arg1');  return w; }");
+    eng.evaluate("function f2(x,y,z) { var v1 = 42;\n"
+                        //   "function foo() {};\n" //this would avoid JSC to optimize
+                        "var v2 = f1(); return v2; }");
+    eng.evaluate("function f3() { var v1 = 'nothing'; return f2(1,2,3); }");
+    QScriptValue result1 = eng.evaluate("f2('hello', 'useless', 'world')");
+    QScriptValue result2 = eng.evaluate("f3()");
+    QVERIFY(result1.isObject());
+    QEXPECT_FAIL("", "JSC optimize away the activation object", Abort);
+    QCOMPARE(result1.property("v1").toInt32() , 42);
+    QCOMPARE(result1.property("arguments").property(1).toString() , QString::fromLatin1("useless"));
+    QVERIFY(result2.isObject());
+    QCOMPARE(result2.property("v1").toInt32() , 42);
+    QCOMPARE(result2.property("arguments").property(1).toString() , QString::fromLatin1("2"));
 }
 
 QTEST_MAIN(tst_QScriptContext)
