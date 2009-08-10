@@ -13,6 +13,9 @@ Image {
         SetPropertyAction { value: "PreserveAspect" }
         SetPropertyAction { target: Label; property: "text"; value: "PreserveAspect" }
         PauseAnimation { duration: 1000 }
+        SetPropertyAction { value: "PreserveAspectFill" }
+        SetPropertyAction { target: Label; property: "text"; value: "PreserveAspectFill" }
+        PauseAnimation { duration: 1000 }
         SetPropertyAction { value: "Tile" }
         SetPropertyAction { target: Label; property: "text"; value: "Tile" }
         PauseAnimation { duration: 1000 }
