@@ -47,6 +47,7 @@
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
+#include <private/qmlbindingoptimizations_p.h>
 
 // 6-bits
 #define MAXIMUM_DEFAULT_OBJECTS 63
@@ -81,6 +82,9 @@ void QmlContextPrivate::destroyed(ContextGuard *guard)
     QObject *parent = q->parent();
     if (parent && QObjectPrivate::get(parent)->wasDeleted) 
         return;
+
+    while(guard->bindings) 
+        guard->bindings->reset();
 
     for (int ii = 0; ii < idValueCount; ++ii) {
         if (&idValues[ii] == guard) {
@@ -276,13 +280,13 @@ QmlContext::~QmlContext()
         (*iter)->d_func()->parent = 0;
     }
 
-    QmlExpressionPrivate *expression = d->expressions;
+    QmlAbstractExpression *expression = d->expressions;
     while (expression) {
-        QmlExpressionPrivate *nextExpression = expression->nextExpression;
+        QmlAbstractExpression *nextExpression = expression->m_nextExpression;
 
-        expression->ctxt = 0;
-        expression->prevExpression = 0;
-        expression->nextExpression = 0;
+        expression->m_context = 0;
+        expression->m_prevExpression = 0;
+        expression->m_nextExpression = 0;
 
         expression = nextExpression;
     }

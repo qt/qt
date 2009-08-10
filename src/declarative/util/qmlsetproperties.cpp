@@ -334,9 +334,10 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->value();
             } else {
-                a.toBinding = new QmlBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                QmlBinding *newBinding = new QmlBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                newBinding->setTarget(prop);
+                a.toBinding = newBinding;
                 a.deletableToBinding = true;
-                a.toBinding->setTarget(prop);
             }
 
             list << a;

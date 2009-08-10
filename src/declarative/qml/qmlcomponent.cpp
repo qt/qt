@@ -533,11 +533,11 @@ void QmlComponent::completeCreate()
             QFxPerfTimer<QFxPerf::BindInit> bi;
 #endif
             for (int ii = 0; ii < d->bindValues.count(); ++ii) {
-                QmlEnginePrivate::SimpleList<QmlBinding> bv = 
+                QmlEnginePrivate::SimpleList<QmlAbstractBinding> bv = 
                     d->bindValues.at(ii);
                 for (int jj = 0; jj < bv.count; ++jj) {
                     if(bv.at(jj)) 
-                        bv.at(jj)->init();
+                        bv.at(jj)->setEnabled(true);
                 }
                 QmlEnginePrivate::clear(bv);
             }

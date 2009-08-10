@@ -97,7 +97,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
     rv.type = QmlObjectProperty::Unknown;
     rv.name = prop.name();
-    QmlBinding *binding = QmlMetaProperty(obj, rv.name).binding();
+    QmlAbstractBinding *binding = QmlMetaProperty(obj, rv.name).binding();
     if (binding)
         rv.binding = binding->expression();
 

@@ -39,65 +39,71 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPONENT_P_H
-#define QMLCOMPONENT_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QList>
-#include <private/qobject_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qml.h>
+#include "qmlbindingoptimizations_p.h"
+#include <private/qmlcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlComponent;
-class QmlEngine;
-class QmlCompiledData;
 
-class QmlComponentPrivate : public QObjectPrivate
+QmlBindingIdOptimization::QmlBindingIdOptimization(QObject *object, 
+                                                   int propertyIdx,
+                                                   QmlContext *context, 
+                                                   int id)
+: m_prev(0), m_next(0), m_object(object), m_propertyIdx(propertyIdx), m_id(id)
 {
-    Q_DECLARE_PUBLIC(QmlComponent)
-        
-public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QmlAbstractExpression::setContext(context);
+}
 
-    QmlCompositeTypeData *typeData;
-    void typeDataReady();
-    
-    void fromTypeData(QmlCompositeTypeData *data);
+void QmlBindingIdOptimization::setEnabled(bool e)
+{
+    if (e) {
+        addToObject(m_object);
+        update();
+    } else {
+        removeFromObject();
+    }
+}
 
-    QList<QmlError> errors;
-    QUrl url;
+int QmlBindingIdOptimization::propertyIndex()
+{
+    return m_propertyIdx;
+}
 
-    int start;
-    int count;
-    QmlCompiledData *cc;
+void QmlBindingIdOptimization::update()
+{
+    QmlContextPrivate *ctxtPriv = 
+        static_cast<QmlContextPrivate *>(QObjectPrivate::get(context()));
 
-    QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
-    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
+    if (ctxtPriv) {
 
-    bool completePending;
+        if (!m_prev) {
+            m_next = ctxtPriv->idValues[m_id].bindings;
+            if (m_next) m_next->m_prev = &m_next;
 
-    QmlEngine *engine;
+            m_prev = &ctxtPriv->idValues[m_id].bindings;
+            ctxtPriv->idValues[m_id].bindings = this;
+        }
 
-    void clear();
-};
+        QObject *o = ctxtPriv->idValues[m_id].data();
+        void *a[] = { &o, 0 };
+        QMetaObject::metacall(m_object, QMetaObject::WriteProperty, 
+                              m_propertyIdx, a);
+    } 
+}
+
+void QmlBindingIdOptimization::reset()
+{
+    if (m_prev) {
+        *m_prev = m_next;
+        if (m_next) m_next->m_prev = m_prev;
+        m_next = 0;
+        m_prev = 0;
+    }
+
+    QObject *o = 0;
+    void *a[] = { &o, 0 };
+    QMetaObject::metacall(m_object, QMetaObject::WriteProperty, 
+                          m_propertyIdx, a);
+}
 
 QT_END_NAMESPACE
-
-#endif // QMLCOMPONENT_P_H

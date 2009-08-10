@@ -65,6 +65,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <private/qmlbinding_p.h>
 #include <private/qmlcontext_p.h>
+#include <private/qmlbindingoptimizations_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -138,7 +139,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
     const QList<float> &floatData = comp->floatData;
 
 
-    QmlEnginePrivate::SimpleList<QmlBinding> bindValues;
+    QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
     QStack<ListInstance> qliststack;
@@ -154,7 +155,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
         case QmlInstruction::Init:
             {
                 if (instr.init.bindingsSize) 
-                    bindValues = QmlEnginePrivate::SimpleList<QmlBinding>(instr.init.bindingsSize);
+                    bindValues = QmlEnginePrivate::SimpleList<QmlAbstractBinding>(instr.init.bindingsSize);
                 if (instr.init.parserStatusSize)
                     parserStatus = QmlEnginePrivate::SimpleList<QmlParserStatus>(instr.init.parserStatusSize);
 
@@ -543,10 +544,22 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                 QmlBindingPrivate *p = 
                     static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bind));
                 p->mePtr = &bindValues.values[bindValues.count - 1];
-                QFx_setParent_noEvent(bind, target);
+                bind->addToObject(target);
 
                 bind->setTarget(mp);
             }
+            break;
+
+        case QmlInstruction::StoreIdOptBinding:
+            {
+                QObject *target = stack.top();
+
+                QmlBindingIdOptimization *bind = 
+                    new QmlBindingIdOptimization(target, instr.assignIdOptBinding.property, ctxt, instr.assignIdOptBinding.id);
+                bindValues.append(bind);
+                // ### Need a mePtr
+                bind->addToObject(target);
+            } 
             break;
 
         case QmlInstruction::StoreValueSource:

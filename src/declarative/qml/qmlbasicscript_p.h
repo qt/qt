@@ -98,6 +98,9 @@ public:
 
     QVariant run(QmlContext *, QObject *);
 
+    bool isSingleIdFetch() const;
+    int singleIdFetchIndex() const;
+
 private:
     int flags;
     QmlBasicScriptPrivate *d;

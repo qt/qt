@@ -83,7 +83,7 @@ public:
 
     QmlMetaProperty property;
     QVariant value;
-    QmlBinding *binding;
+    QmlAbstractBinding *binding;
     QObject *specifiedObject;
     QString specifiedProperty;
     ActionEvent *event;

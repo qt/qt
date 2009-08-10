@@ -70,8 +70,8 @@ public:
     QVariant fromValue;
     QVariant toValue;
 
-    QmlBinding *fromBinding;
-    QmlBinding *toBinding;
+    QmlAbstractBinding *fromBinding;
+    QmlAbstractBinding *toBinding;
     ActionEvent *event;
 
     //strictly for matching

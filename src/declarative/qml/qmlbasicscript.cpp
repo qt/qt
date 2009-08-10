@@ -697,6 +697,23 @@ QVariant QmlBasicScript::run(QmlContext *context, QObject *me)
         return stack.top();
 }
 
+bool QmlBasicScript::isSingleIdFetch() const
+{
+    if (!isValid())
+        return false;
+
+    return d->instructionCount == 1 && 
+           d->instructions()[0].type == ScriptInstruction::LoadIdObject;
+}
+
+int QmlBasicScript::singleIdFetchIndex() const
+{
+    if (!isSingleIdFetch())
+        return -1;
+
+    return d->instructions()[0].fetch.idx;
+}
+
 /*!
     Return a pointer to the script's compile data, or null if there is no data.
  */

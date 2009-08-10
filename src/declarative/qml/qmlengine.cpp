@@ -121,16 +121,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
         clear(parserStatus[ii]);
 }
 
-void QmlEnginePrivate::clear(SimpleList<QmlBinding> &bvs)
+void QmlEnginePrivate::clear(SimpleList<QmlAbstractBinding> &bvs)
 {
-    for (int ii = 0; ii < bvs.count; ++ii) {
-        QmlBinding *bv = bvs.at(ii);
-        if(bv) {
-            QmlBindingPrivate *p =
-                static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bv));
-            p->mePtr = 0;
-        }
-    }
     bvs.clear();
 }
 
@@ -521,6 +513,15 @@ void QmlDeclarativeData::destroyed(QObject *object)
         delete attachedProperties;
     if (context)
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context))->contextObjects.removeAll(object);
+
+    QmlAbstractBinding *binding = bindings;
+    while (binding) {
+        QmlAbstractBinding *next = binding->m_nextBinding;
+        binding->m_prevBinding = 0;
+        binding->m_nextBinding = 0;
+        delete binding;
+        binding = next;
+    }
 
     delete this;
 }

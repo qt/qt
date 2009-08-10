@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QmlCompiledData;
-class QmlBinding;
+class QmlAbstractBinding;
 class QmlDeclarativeData : public QDeclarativeData
 {
 public:
@@ -67,7 +67,7 @@ public:
     virtual void destroyed(QObject *);
 
     QmlContext *context;
-    QmlBinding *bindings;
+    QmlAbstractBinding *bindings;
 
     QmlCompiledData *deferredComponent; // Can't this be found from the context?
     unsigned int deferredIdx;

@@ -68,6 +68,8 @@ class QmlExpression;
 class QmlEngine;
 class QmlExpression;
 class QmlExpressionPrivate;
+class QmlAbstractExpression;
+class QmlBindingIdOptimization;
 
 class QmlContextPrivate : public QObjectPrivate
 {
@@ -104,13 +106,15 @@ public:
     void invalidateEngines();
     QSet<QmlContext *> childContexts;
 
-    QmlExpressionPrivate *expressions;
+    QmlAbstractExpression *expressions;
 
     QObjectList contextObjects;
 
     struct ContextGuard : public QGuard<QObject>
     {
+        ContextGuard() : priv(0), bindings(0) {}
         QmlContextPrivate *priv;
+        QmlBindingIdOptimization *bindings;
         ContextGuard &operator=(QObject *obj) {
             (QGuard<QObject>&)*this = obj; return *this;
         }

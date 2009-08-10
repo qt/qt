@@ -1394,6 +1394,7 @@ void QmlCompiler::addId(const QString &id, QmlParser::Object *obj)
     Q_ASSERT(obj->id == id);
     obj->idIndex = compileState.ids.count();
     compileState.ids.insert(id, obj);
+    compileState.idIndexes.insert(obj->idIndex, obj);
 }
 
 void QmlCompiler::addBindingReference(const BindingReference &ref)
@@ -2064,6 +2065,22 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     const BindingReference &ref = compileState.bindings.value(binding);
 
     QmlInstruction store;
+
+    QmlBasicScript bs;
+    if (ref.isBasicScript) 
+        bs.load(ref.compiledData.constData() + sizeof(quint32));
+    if (bs.isSingleIdFetch()) {
+        int idIndex = bs.singleIdFetchIndex();
+        QmlParser::Object *idObj = compileState.idIndexes.value(idIndex);
+        if (canCoerce(prop->type, idObj)) {
+            store.type = QmlInstruction::StoreIdOptBinding;
+            store.assignIdOptBinding.id = idIndex;
+            store.assignIdOptBinding.property = prop->index;
+            output->bytecode << store;
+            return;
+        }
+    }
+        
     store.type = QmlInstruction::StoreCompiledBinding;
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
     store.assignBinding.context = ref.bindingContext.stack;
@@ -2109,6 +2126,7 @@ bool QmlCompiler::completeComponentBuild()
             binding.compiledData =
                 QByteArray(bs.compileData(), bs.compileDataSize());
             type = QmlExpressionPrivate::BasicScriptEngineData;
+            binding.isBasicScript = true;
         } else {
             type = QmlExpressionPrivate::PreTransformedQtScriptData;
 
@@ -2122,6 +2140,7 @@ bool QmlCompiler::completeComponentBuild()
                 QByteArray((const char *)&length, sizeof(quint32)) +
                 QByteArray((const char *)expression.constData(), 
                            expression.length() * sizeof(QChar));
+            binding.isBasicScript = false;
         }
         binding.compiledData.prepend(QByteArray((const char *)&type, 
                                                 sizeof(quint32)));

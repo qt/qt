@@ -125,6 +125,7 @@ public:
         AssignCustomType,          /* assignCustomType */
 
         StoreCompiledBinding,     /* assignBinding */
+        StoreIdOptBinding,        /* assignIdOptBinding */
         StoreValueSource,         /* assignValueSource */
 
         BeginObject,              /* begin */
@@ -187,6 +188,10 @@ public:
             short context;
             short owner;
         } assignBinding;
+        struct {
+            int property;
+            int id;
+        } assignIdOptBinding;
         struct {
             int property;
         } fetch;

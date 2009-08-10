@@ -236,6 +236,7 @@ private:
         QmlParser::Variant expression;
         QmlParser::Property *property;
         QmlParser::Value *value;
+        bool isBasicScript;
         QByteArray compiledData;
         BindingContext bindingContext;
     };
@@ -247,6 +248,7 @@ private:
             : parserStatusCount(0), savedObjects(0), 
               pushedProperties(0), root(0) {}
         QHash<QString, QmlParser::Object *> ids;
+        QHash<int, QmlParser::Object *> idIndexes;
         int parserStatusCount;
         int savedObjects;
         int pushedProperties;
