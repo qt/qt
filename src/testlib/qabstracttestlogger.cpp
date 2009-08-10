@@ -114,7 +114,9 @@ namespace QTest
 
 extern void filter_unprintable(char *str);
 
-/*! \internal
+/*!
+    \fn int QTest::qt_asprintf(QTestCharBuffer *buf, const char *format, ...);
+    \internal
  */
 int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
 {

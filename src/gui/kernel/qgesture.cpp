@@ -204,7 +204,7 @@ Qt::GestureState QGesture::state() const
   \a state, and it should be called after all the internal properties have been
   initialized.
 
-  \sa started, triggered, finished, cancelled
+  \sa started(), triggered(), finished(), cancelled()
  */
 void QGesture::updateState(Qt::GestureState state)
 {

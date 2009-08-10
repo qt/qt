@@ -179,10 +179,16 @@ void QBenchmarkTestMethodData::setResult(qint64 value)
         QBenchmarkResult(QBenchmarkGlobalData::current->context, value, iterationCount);
 }
 
-/*! \internal
+/*!
+    \class QTest::QBenchmarkIterationController
+    \internal
+
     The QBenchmarkIterationController class is used by the QBENCHMARK macro to
     drive the benchmarking loop. It is repsonsible for starting and stopping
     the timing measurements as well as calling the result reporting functions.
+*/
+
+/*! \internal
 */
 QTest::QBenchmarkIterationController::QBenchmarkIterationController(RunMode runMode)
 {
