@@ -46,7 +46,7 @@ isEmpty( CONFIG ) {
 }
 
 #include
-include( infiletest.pro )
+include( infiletest.pro, "", true ) 
 !contains( DEFINES, QT_DLL ) {
    message( "FAILED: include function: $$DEFINES" )
 }

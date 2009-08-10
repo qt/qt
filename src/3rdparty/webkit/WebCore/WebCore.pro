@@ -3159,7 +3159,7 @@ xpathbison.dependency_type = TYPE_C
 xpathbison.variable_out = GENERATED_SOURCES
 addExtraCompilerWithHeader(xpathbison)
 
-include($$PWD/../WebKit/qt/Api/headers.pri)
+include($$PWD/../WebKit/qt/Api/headers.pri, "", true)
 HEADERS += $$WEBKIT_API_HEADERS
 !CONFIG(QTDIR_build) {
     target.path = $$[QT_INSTALL_LIBS]
