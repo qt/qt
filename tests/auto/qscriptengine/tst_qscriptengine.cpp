@@ -3934,6 +3934,38 @@ void tst_QScriptEngine::nativeFunctionScopes()
             QCOMPARE(ret.toInt32(), 123);
         }
     }
+
+    //from http://doc.trolltech.com/latest/qtscript.html#nested-functions-and-the-scope-chain
+    {
+        QScriptEngine eng;
+        eng.evaluate("function counter() { var count = 0; return function() { return count++; } }\n"
+                     "var c1 = counter();  var c2 = counter(); ");
+        QCOMPARE(eng.evaluate("c1()").toString(), QString::fromLatin1("0"));
+        QCOMPARE(eng.evaluate("c1()").toString(), QString::fromLatin1("1"));
+        QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("0"));
+        QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("1"));
+        QVERIFY(!eng.hasUncaughtException());
+    }
+    {
+        QScriptEngine eng;
+        eng.globalObject().setProperty("counter", eng.newFunction(counter));
+        eng.evaluate("var c1 = counter();  var c2 = counter(); ");
+        QCOMPARE(eng.evaluate("c1()").toString(), QString::fromLatin1("0"));
+        QCOMPARE(eng.evaluate("c1()").toString(), QString::fromLatin1("1"));
+        QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("0"));
+        QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("1"));
+        QVERIFY(!eng.hasUncaughtException());
+    }
+    {
+        QScriptEngine eng;
+        eng.globalObject().setProperty("counter", eng.newFunction(counter_hybrid));
+        eng.evaluate("var c1 = counter();  var c2 = counter(); ");
+        QCOMPARE(eng.evaluate("c1()").toString(), QString::fromLatin1("0"));
+        QCOMPARE(eng.evaluate("c1()").toString(), QString::fromLatin1("1"));
+        QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("0"));
+        QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("1"));
+        QVERIFY(!eng.hasUncaughtException());
+    }
 }
 
 static QRegExp minimal(QRegExp r) { r.setMinimal(true); return r; }
