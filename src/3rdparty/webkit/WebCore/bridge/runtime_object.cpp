@@ -187,7 +187,7 @@ void RuntimeObjectImp::put(ExecState* exec, const Identifier& propertyName, JSVa
     instance->end();
 }
 
-bool RuntimeObjectImp::deleteProperty(ExecState*, const Identifier&)
+bool RuntimeObjectImp::deleteProperty(ExecState*, const Identifier&, bool)
 {
     // Can never remove a property of a RuntimeObject.
     return false;

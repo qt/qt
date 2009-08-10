@@ -160,12 +160,12 @@ void JSQuarantinedObjectWrapper::put(ExecState* exec, unsigned identifier, JSVal
     transferExceptionToExecState(exec);
 }
 
-bool JSQuarantinedObjectWrapper::deleteProperty(ExecState* exec, const Identifier& identifier)
+bool JSQuarantinedObjectWrapper::deleteProperty(ExecState* exec, const Identifier& identifier, bool checkDontDelete)
 {
     if (!allowsDeleteProperty())
         return false;
 
-    bool result = m_unwrappedObject->deleteProperty(unwrappedExecState(), identifier);
+    bool result = m_unwrappedObject->deleteProperty(unwrappedExecState(), identifier, checkDontDelete);
 
     transferExceptionToExecState(exec);
 

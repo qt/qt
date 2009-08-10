@@ -47,7 +47,7 @@ JSValue JSStorage::nameGetter(ExecState* exec, const Identifier& propertyName, c
     return jsStringOrNull(exec, thisObj->impl()->getItem(propertyName));
 }
 
-bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName, bool /*checkDontDelete*/)
 {
     // Only perform the custom delete if the object doesn't have a native property by this name.
     // Since hasProperty() would end up calling canGetItemsForName() and be fooled, we need to check

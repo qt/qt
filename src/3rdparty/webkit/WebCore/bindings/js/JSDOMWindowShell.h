@@ -69,7 +69,7 @@ namespace WebCore {
         virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
         virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
         virtual void putWithAttributes(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, unsigned attributes);
-        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier& propertyName);
+        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier& propertyName, bool checkDontDelete = true);
         virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
         virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier& propertyName, unsigned& attributes) const;
         virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);

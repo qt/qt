@@ -513,7 +513,7 @@ sub GenerateHeader
     push(@headerContent, "    virtual JSC::CallType getCallData(JSC::CallData&);\n\n") if $dataNode->extendedAttributes->{"CustomCall"};
 
     # Custom deleteProperty function
-    push(@headerContent, "    virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);\n") if $dataNode->extendedAttributes->{"CustomDeleteProperty"};
+    push(@headerContent, "    virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&, bool checkDontDelete = true);\n") if $dataNode->extendedAttributes->{"CustomDeleteProperty"};
 
     # Custom getPropertyNames function
     push(@headerContent, "    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);\n") if ($dataNode->extendedAttributes->{"CustomGetPropertyNames"} || $dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"});

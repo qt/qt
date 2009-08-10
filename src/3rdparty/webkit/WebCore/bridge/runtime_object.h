@@ -39,7 +39,7 @@ public:
 
     virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
     virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
-    virtual bool deleteProperty(ExecState* , const Identifier& propertyName);
+    virtual bool deleteProperty(ExecState* , const Identifier& propertyName, bool checkDontDelete = true);
     virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const;
     virtual CallType getCallData(CallData&);
     virtual ConstructType getConstructData(ConstructData&);

@@ -120,12 +120,12 @@ bool JSLocation::putDelegate(ExecState* exec, const Identifier& propertyName, JS
     return false;
 }
 
-bool JSLocation::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSLocation::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     // Only allow deleting by frames in the same origin.
     if (!allowsAccessFromFrame(exec, impl()->frame()))
         return false;
-    return Base::deleteProperty(exec, propertyName);
+    return Base::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 void JSLocation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)

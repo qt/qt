@@ -98,9 +98,9 @@ void JSDOMWindowShell::putWithAttributes(ExecState* exec, const Identifier& prop
     m_window->putWithAttributes(exec, propertyName, value, attributes);
 }
 
-bool JSDOMWindowShell::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSDOMWindowShell::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
-    return m_window->deleteProperty(exec, propertyName);
+    return m_window->deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 void JSDOMWindowShell::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)

@@ -62,7 +62,7 @@ namespace WebCore {
         virtual void put(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
         virtual void put(JSC::ExecState*, unsigned, JSC::JSValue);
 
-        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
+        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&, bool checkDontDelete = true);
         virtual bool deleteProperty(JSC::ExecState*, unsigned);
 
         virtual JSC::CallType getCallData(JSC::CallData&);

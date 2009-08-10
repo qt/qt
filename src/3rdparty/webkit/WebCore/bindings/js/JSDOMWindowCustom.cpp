@@ -290,12 +290,12 @@ void JSDOMWindow::put(ExecState* exec, const Identifier& propertyName, JSValue v
         Base::put(exec, propertyName, value, slot);
 }
 
-bool JSDOMWindow::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSDOMWindow::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     // Only allow deleting properties by frames in the same origin.
     if (!allowsAccessFrom(exec))
         return false;
-    return Base::deleteProperty(exec, propertyName);
+    return Base::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 void JSDOMWindow::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
