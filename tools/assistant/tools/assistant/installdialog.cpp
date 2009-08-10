@@ -56,6 +56,7 @@
 #include <QtNetwork/QHttp>
 
 QT_BEGIN_NAMESPACE
+#ifndef QT_NO_HTTP
 
 #define QCH_FILENAME  92943
 #define QCH_NAMESPACE 92944
@@ -335,4 +336,5 @@ void InstallDialog::browseDirectories()
         m_ui.pathLineEdit->setText(dir);
 }
 
+#endif
 QT_END_NAMESPACE

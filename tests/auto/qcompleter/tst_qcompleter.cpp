@@ -1316,14 +1316,20 @@ void tst_QCompleter::task253125_lineEditCompletion()
     edit.show();
     edit.setFocus();
 
-    QTest::qWait(100);
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&edit);
+#endif
 
+    QTest::qWait(100);
     QTest::keyClick(&edit, 'i');
     QCOMPARE(edit.completer()->currentCompletion(), QString("iota"));
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
 
     QCOMPARE(edit.text(), QString("iota"));
+
+    delete completer;
+    delete model;
 }
 
 void tst_QCompleter::task247560_keyboardNavigation()
@@ -1344,6 +1350,10 @@ void tst_QCompleter::task247560_keyboardNavigation()
     edit.setCompleter(&completer);
     edit.show();
     edit.setFocus();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&edit);
+#endif
 
     QTest::qWait(100);
 

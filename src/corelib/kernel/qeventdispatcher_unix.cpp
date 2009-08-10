@@ -627,7 +627,7 @@ QEventDispatcherUNIX::~QEventDispatcherUNIX()
 int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                  timeval *timeout)
 {
-    return ::qt_safe_select(nfds, readfds, writefds, exceptfds, timeout);
+    return qt_safe_select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
 /*!

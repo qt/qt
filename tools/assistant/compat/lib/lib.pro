@@ -32,7 +32,7 @@ contains(CONFIG, static) {
 #load up the headers info
 CONFIG += qt_install_headers
 HEADERS_PRI = $$QT_BUILD_TREE/include/QtAssistant/headers.pri
-include($$HEADERS_PRI)|clear(HEADERS_PRI)
+include($$HEADERS_PRI, "", true)|clear(HEADERS_PRI)
 
 #mac frameworks
 mac:!static:contains(QT_CONFIG, qt_framework) {

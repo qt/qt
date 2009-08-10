@@ -234,6 +234,9 @@ typedef struct tagGESTUREINFO
 #  define GC_PAN_WITH_SINGLE_FINGER_VERTICALLY        0x00000002
 #  define GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY      0x00000004
 
+#  define GC_ZOOM                                     0x00000001
+#  define GC_ROTATE                                   0x00000001
+
 typedef struct tagGESTURECONFIG
 {
     DWORD dwID;
@@ -241,17 +244,20 @@ typedef struct tagGESTURECONFIG
     DWORD dwBlock;
 } GESTURECONFIG;
 
+#  define GID_ROTATE_ANGLE_FROM_ARGUMENT(arg) ((((double)(arg) / 65535.0) * 4.0 * 3.14159265) - 2.0*3.14159265)
+
 #endif // WM_GESTURE
 
 #endif // Q_WS_WIN
 
 class QPanGesture;
 class QPinchGesture;
-struct StandardGestures
+struct QStandardGestures
 {
     QPanGesture *pan;
     QPinchGesture *pinch;
-    StandardGestures() : pan(0), pinch(0) { }
+
+    QStandardGestures() : pan(0), pinch(0) { }
 };
 
 
@@ -281,7 +287,6 @@ public:
 
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
-    static QString kdeHome();
     static QString x11_desktop_style();
     static bool x11_apply_settings();
 #endif
@@ -513,18 +518,16 @@ public:
                                        QTouchEvent::DeviceType deviceType,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
 
+    typedef QMap<QWidget*, QStandardGestures> WidgetStandardGesturesMap;
+    WidgetStandardGesturesMap widgetGestures;
+
 #if defined(Q_WS_WIN)
     static PtrRegisterTouchWindow RegisterTouchWindow;
     static PtrGetTouchInputInfo GetTouchInputInfo;
     static PtrCloseTouchInputHandle CloseTouchInputHandle;
 
     QHash<DWORD, int> touchInputIDToTouchPointID;
-    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
     bool translateTouchEvent(const MSG &msg);
-
-    typedef QMap<QWidget*, StandardGestures> WidgetStandardGesturesMap;
-    WidgetStandardGesturesMap widgetGestures;
-    ulong lastGestureId;
 
     PtrGetGestureInfo GetGestureInfo;
     PtrGetGestureExtraArgs GetGestureExtraArgs;

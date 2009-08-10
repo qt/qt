@@ -70,7 +70,6 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_TEXTEDIT
 
 class QMimeData;
-class QPanGesture;
 class QTextEditPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QTextEdit)
@@ -128,9 +127,6 @@ public:
     Qt::TextFormat textFormat;
 
     QString anchorToScrollToWhenVisible;
-
-    void _q_gestureTriggered();
-    QPanGesture *panGesture;
 
 #ifdef QT_KEYPAD_NAVIGATION
     QBasicTimer deleteAllTimer;

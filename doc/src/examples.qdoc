@@ -255,6 +255,14 @@
     \o \l{phonon/musicplayer}{Music Player}\raisedaster
     \endlist
 
+    \section1 Multimedia
+
+    \list
+    \o \l{multimedia/audio/audiodevices}{Audio Devices}\raisedaster
+    \o \l{multimedia/audio/audiooutput}{Audio Output}\raisedaster
+    \o \l{multimedia/audio/audioinput}{Audio Input}\raisedaster
+    \endlist
+
     \section1 Qt Designer
 
     \list
@@ -322,6 +330,7 @@
     \o \l{statemachine/eventtransitions}{Event Transitions}\raisedaster
     \o \l{statemachine/factorial}{Factorial States}\raisedaster
     \o \l{statemachine/pingpong}{Ping Pong States}\raisedaster
+    \o \l{statemachine/rogue}{Rogue}\raisedaster
     \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
     \o \l{statemachine/twowaybutton}{Two-way Button}\raisedaster
     \endlist

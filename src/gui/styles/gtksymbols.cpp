@@ -60,6 +60,7 @@
 #include <QtCore/QHash>
 
 #include <private/qapplication_p.h>
+#include <private/qiconloader_p.h>
 
 #include <QtGui/QMenu>
 #include <QtGui/QStyle>
@@ -341,9 +342,9 @@ static bool resolveGConf()
 
 typedef int (*x11ErrorHandler)(Display*, XErrorEvent*);
 
-static QString getGConfString(const QString &value)
+QString QGtk::getGConfString(const QString &value, const QString &fallback)
 {
-    QString retVal;
+    QString retVal = fallback;
     if (resolveGConf()) {
         g_type_init();
         GConfClient* client = QGtk::gconf_client_get_default();
@@ -393,7 +394,7 @@ static QString getThemeName()
 
     // Fall back to gconf
     if (themeName.isEmpty() && resolveGConf())
-        themeName = getGConfString(QLS("/desktop/gnome/interface/gtk_theme"));
+        themeName = QGtk::getGConfString(QLS("/desktop/gnome/interface/gtk_theme"));
 
     return themeName;
 }
@@ -546,9 +547,13 @@ void QGtkStyleUpdateScheduler::updateTheme()
 {
     static QString oldTheme(QLS("qt_not_set"));
     QPixmapCache::clear();
+
+    QFont font = QGtk::getThemeFont();
+    if (QApplication::font() != font)
+        qApp->setFont(font);
+
     if (oldTheme != getThemeName()) {
         oldTheme = getThemeName();
-        qApp->setFont(QGtk::getThemeFont());
         QPalette newPalette = qApp->style()->standardPalette();
         QApplicationPrivate::setSystemPalette(newPalette);
         QApplication::setPalette(newPalette);
@@ -561,6 +566,7 @@ void QGtkStyleUpdateScheduler::updateTheme()
             QApplication::sendEvent(widget, &e);
         }
     }
+    QIconLoader::instance()->updateSystemTheme();
 }
 
 static void add_widget(GtkWidget *widget)
@@ -752,7 +758,24 @@ static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
             QGtk::gtk_file_filter_set_name(gtkFilter, qPrintable(name.isEmpty() ? extensions.join(QLS(", ")) : name));
 
             foreach (const QString &fileExtension, extensions) {
-                QGtk::gtk_file_filter_add_pattern (gtkFilter, qPrintable(fileExtension));
+                // Note Gtk file dialogs are by default case sensitive
+                // and only supports basic glob syntax so we
+                // rewrite .xyz to .[xX][yY][zZ]
+                QString caseInsensitive;
+                for (int i = 0 ; i < fileExtension.length() ; ++i) {
+                    QChar ch = fileExtension.at(i);
+                    if (ch.isLetter()) {
+                        caseInsensitive.append(
+                                QLatin1Char('[') +
+                                ch.toLower() +
+                                ch.toUpper() +
+                                QLatin1Char(']'));
+                    } else {
+                        caseInsensitive.append(ch);
+                    }
+                }
+                QGtk::gtk_file_filter_add_pattern (gtkFilter, qPrintable(caseInsensitive));
+
             }
             if (filterMap)
                 filterMap->insert(gtkFilter, rawfilter);

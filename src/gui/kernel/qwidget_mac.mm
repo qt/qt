@@ -3176,6 +3176,12 @@ void QWidgetPrivate::show_sys()
 #ifndef QT_MAC_USE_COCOA
         SizeWindow(window, q->width(), q->height(), true);
 #endif
+
+#ifdef QT_MAC_USE_COCOA
+        // Make sure that we end up sending a repaint event to
+        // the widget if the window has been visible one before:
+        [qt_mac_get_contentview_for(window) setNeedsDisplay:YES];
+#endif
         if(qt_mac_is_macsheet(q)) {
             qt_event_request_showsheet(q);
         } else if(qt_mac_is_macdrawer(q)) {

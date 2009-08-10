@@ -10,6 +10,12 @@ RESOURCES = input.qrc
 
 QT += network
 
+!wince* {
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
+} else {
+DEFINES += SRCDIR=\\\"./\\\"
+}
+
 include (../xmlpatterns.pri)
 
 wince*: {

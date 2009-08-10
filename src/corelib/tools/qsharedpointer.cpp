@@ -365,7 +365,7 @@
     Returns a weak reference object that shares the pointer referenced
     by this object.
 
-    \sa QWeakPointer::QWeakPointer(const QSharedPointer<T> &)
+    \sa QWeakPointer::QWeakPointer()
 */
 
 /*!
@@ -553,7 +553,7 @@
             qDebug() << "The value has already been deleted";
     \endcode
 
-    \sa QSharedPointer::QSharedPointer(const QWeakPointer<T> &)
+    \sa QSharedPointer::QSharedPointer()
 */
 
 /*!
@@ -864,6 +864,61 @@
 #include <qset.h>
 #include <qmutex.h>
 
+#if !defined(QT_NO_QOBJECT)
+#include "../kernel/qobject_p.h"
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \internal
+    This function is called for a just-created QObject \a obj, to enable
+    the use of QSharedPointer and QWeakPointer.
+
+    When QSharedPointer is active in a QObject, the object must not be deleted
+    directly: the lifetime is managed by the QSharedPointer object. In that case,
+    the deleteLater() and parent-child relationship in QObject only decrease
+    the strong reference count, instead of deleting the object.
+*/
+void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *obj, bool)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+
+    if (d->sharedRefcount)
+        qFatal("QSharedPointer: pointer %p already has reference counting", obj);
+    d->sharedRefcount = this;
+
+    // QObject decreases the refcount too, so increase it up
+    weakref.ref();
+}
+
+QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+    ExternalRefCountData *that = d->sharedRefcount;
+    if (that) {
+        that->weakref.ref();
+        return that;
+    }
+
+    // we can create the refcount data because it doesn't exist
+    ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
+    x->strongref = -1;
+    x->weakref = 2;  // the QWeakPointer that called us plus the QObject itself
+    if (!d->sharedRefcount.testAndSetRelease(0, x)) {
+        delete x;
+        d->sharedRefcount->weakref.ref();
+    }
+    return d->sharedRefcount;
+}
+
+QT_END_NAMESPACE
+
+#endif
+
+
+
 #if !defined(QT_NO_MEMBER_TEMPLATES)
 
 //#  define QT_SHARED_POINTER_BACKTRACE_SUPPORT
@@ -881,6 +936,8 @@
 #    include <stdio.h>
 #    include <unistd.h>
 #    include <sys/wait.h>
+
+QT_BEGIN_NAMESPACE
 
 static inline QByteArray saveBacktrace() __attribute__((always_inline));
 static inline QByteArray saveBacktrace()
@@ -942,6 +999,9 @@ static void printBacktrace(QByteArray stacktrace)
         waitpid(child, 0, 0);
     }
 }
+
+QT_END_NAMESPACE
+
 #  endif  // BACKTRACE_SUPPORTED
 
 namespace {

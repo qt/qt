@@ -675,19 +675,22 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             return;
         }
 
-        // Inherit the enabled-state from our parents.
-        if ((parent && ((parent->d_ptr->ancestorFlags & flag)
-                        || (int(parent->d_ptr->flags & childFlag) == childFlag)
+        if (parent) {
+            // Inherit the enabled-state from our parents.
+            if ((parent->d_ptr->ancestorFlags & flag)
+                    || (int(parent->d_ptr->flags & childFlag) == childFlag)
                         || (childFlag == -1 && parent->d_ptr->handlesChildEvents)
-                        || (childFlag == -2 && parent->d_ptr->filtersDescendantEvents)))) {
-            enabled = true;
-            ancestorFlags |= flag;
-        }
-
-        // Top-level root items don't have any ancestors, so there are no
-        // ancestor flags either.
-        if (!parent)
+                        || (childFlag == -2 && parent->d_ptr->filtersDescendantEvents)) {
+                enabled = true;
+                ancestorFlags |= flag;
+            } else {
+                ancestorFlags &= ~flag;
+            }
+        } else {
+            // Top-level root items don't have any ancestors, so there are no
+            // ancestor flags either.
             ancestorFlags = 0;
+        }
     } else {
         // Don't set or propagate the ancestor flag if it's already correct.
         if (((ancestorFlags & flag) && enabled) || (!(ancestorFlags & flag) && !enabled))
@@ -9834,20 +9837,25 @@ void QGraphicsItemGroup::addToGroup(QGraphicsItem *item)
     }
 
     // COMBINE
-    // ### Use itemTransform() instead.
-    QTransform oldSceneMatrix = item->sceneTransform();
+    bool ok;
+    QTransform itemTransform = item->itemTransform(this, &ok);
+
+    if (!ok) {
+        qWarning("QGraphicsItemGroup::addToGroup: could not find a valid transformation from item to group coordinates");
+        return;
+    }
+
+    QTransform newItemTransform(itemTransform);
     item->setPos(mapFromItem(item, 0, 0));
     item->setParentItem(this);
-    QTransform newItemTransform(oldSceneMatrix);
-    newItemTransform *= sceneTransform().inverted();
+
+    // removing position from translation component of the new transform
     if (!item->pos().isNull())
         newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+
     item->setTransform(newItemTransform);
     item->d_func()->setIsMemberOfGroup(true);
     prepareGeometryChange();
-    QTransform itemTransform(item->transform());
-    if (!item->pos().isNull())
-        itemTransform *= QTransform::fromTranslate(item->x(), item->y());
     d->itemsBoundingRect |= itemTransform.mapRect(item->boundingRect() | item->childrenBoundingRect());
     update();
 }

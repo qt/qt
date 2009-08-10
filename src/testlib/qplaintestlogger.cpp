@@ -148,11 +148,13 @@ namespace QTest {
     static void outputMessage(const char *str)
     {
 #if defined(Q_OS_WINCE)
-        int length = strlen(str);
-        for (int pos = 0; pos < length; pos +=255) {
-            QString uniText = QString::fromLatin1(str + pos, 255);
-            OutputDebugString((wchar_t*)uniText.utf16());
-        }
+        QString strUtf16 = QString::fromLatin1(str);
+        const int maxOutputLength = 255;
+        do {
+            QString tmp = strUtf16.left(maxOutputLength);
+            OutputDebugString((wchar_t*)tmp.utf16());
+            strUtf16.remove(0, maxOutputLength);
+        } while (!strUtf16.isEmpty());
         if (QTestLog::outputFileName())
 #elif defined(Q_OS_WIN)
         EnterCriticalSection(&outputCriticalSection);
@@ -178,7 +180,7 @@ namespace QTest {
                          : "";
         const char *filler = (tag[0] && gtag[0]) ? ":" : "";
         if (file) {
-            QTest::qt_asprintf(buf, "%s: %s::%s(%s%s%s)%s%s\n"
+            QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n"
 #ifdef Q_OS_WIN
                           "%s(%d) : failure location\n"
 #else
@@ -187,14 +189,14 @@ namespace QTest {
                           , type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
                           msg[0] ? " " : "", msg, file, line);
         } else {
-            QTest::qt_asprintf(buf, "%s: %s::%s(%s%s%s)%s%s\n",
+            QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n",
                     type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
                     msg[0] ? " " : "", msg);
         }
         // In colored mode, printf above stripped our nonprintable control characters.
         // Put them back.
-        memcpy(buf, type, strlen(type));
-        outputMessage(buf);
+        memcpy(buf.data(), type, strlen(type));
+        outputMessage(buf.data());
     }
 
     template <typename T>
@@ -205,7 +207,7 @@ namespace QTest {
 
         int digits = 0;
         qreal divisor = 1;
-        
+
         while (num / divisor >= 1) {
             divisor *= 10;
             ++digits;

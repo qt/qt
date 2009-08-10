@@ -86,7 +86,7 @@ template <class Widget>
     // actionGeometry() can be wrong sometimes; it returns a geometry that
     // stretches to the end of the toolbar/menu bar. So, check from the beginning
     // in the case of a horizontal right-to-left orientation.
-    const bool checkTopRight = orientation == Qt::Horizontal && QApplication::layoutDirection() == Qt::RightToLeft;
+    const bool checkTopRight = orientation == Qt::Horizontal && w->layoutDirection() == Qt::RightToLeft;
     const QPoint topRight = QPoint(w->rect().width(), 0);
     for (int index = 0; index < actionCount; ++index) {
         QRect g = w->actionGeometry(actions.at(index));

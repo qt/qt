@@ -95,7 +95,7 @@ bool QEglContext::chooseConfig
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
-        if (!eglChooseConfig(dpy, props.properties(), 0, 256, &matching) || !matching)
+        if (!eglChooseConfig(dpy, props.properties(), 0, 0, &matching) || !matching)
             continue;
 
         // If we want the best pixel format, then return the first

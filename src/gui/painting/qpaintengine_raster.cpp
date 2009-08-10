@@ -2542,6 +2542,9 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     qDebug() << " - QRasterPaintEngine::drawImage(), r=" << r << " sr=" << sr << " image=" << img.size() << "depth=" << img.depth();
 #endif
 
+    if (r.isEmpty())
+        return;
+
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
     const bool aa = s->flags.antialiased || s->flags.bilinear;

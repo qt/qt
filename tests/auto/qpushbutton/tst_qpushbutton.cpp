@@ -661,6 +661,7 @@ void tst_QPushButton::sizeHint()
         tabWidget->setCurrentWidget(tab2);
         tabWidget->setCurrentWidget(tab1);
         QTest::qWait(100);
+        QApplication::processEvents();
 
         QCOMPARE(button1_2->size(), button2_2->size());
     }

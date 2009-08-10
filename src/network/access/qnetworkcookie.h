@@ -106,15 +106,15 @@ private:
 };
 Q_DECLARE_TYPEINFO(QNetworkCookie, Q_MOVABLE_TYPE);
 
-// ### Qt5 remove this include
-#include "qnetworkcookiejar.h"
-
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QNetworkCookie &);
 #endif
 
 QT_END_NAMESPACE
+
+// ### Qt5 remove this include
+#include "qnetworkcookiejar.h"
 
 Q_DECLARE_METATYPE(QNetworkCookie)
 Q_DECLARE_METATYPE(QList<QNetworkCookie>)

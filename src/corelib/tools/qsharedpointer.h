@@ -115,6 +115,7 @@ public:
     QWeakPointer<T> operator=(const QWeakPointer<T> &other);
     QWeakPointer<T> operator=(const QSharedPointer<T> &other);
 
+    T *data() const;
     void clear();
 
     QSharedPointer<T> toStrongRef() const;

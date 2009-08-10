@@ -127,21 +127,26 @@ public:
         GestureBegin,
         GestureEnd,
         Pan,
-        Pinch
+        Zoom,
+        Rotate,
+        Swipe
     };
 
     QNativeGestureEvent()
-        : QEvent(QEvent::NativeGesture), gestureType(None)
+        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0)
 #ifdef Q_WS_WIN
-        , sequenceId(0)
+        , sequenceId(0), argument(0)
 #endif
     {
     }
 
     Type gestureType;
-#ifdef Q_WS_WIN
+    float percentage;
     QPoint position;
+    QSize direction;
+#ifdef Q_WS_WIN
     ulong sequenceId;
+    quint64 argument;
 #endif
 };
 

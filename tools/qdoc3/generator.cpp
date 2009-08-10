@@ -283,7 +283,7 @@ bool Generator::generateText(const Text& text,
 bool Generator::generateQmlText(const Text& text,
                                 const Node *relative,
                                 CodeMarker *marker,
-                                const QString& qmlName)
+                                const QString& /* qmlName */ )
 {
     const Atom* atom = text.firstAtom();
     if (atom == 0)

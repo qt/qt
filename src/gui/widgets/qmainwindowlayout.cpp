@@ -1988,6 +1988,9 @@ void QMainWindowLayout::timerEvent(QTimerEvent *e)
         if (movingSeparatorOrigin == movingSeparatorPos)
             return;
 
+        //when moving the separator, we need to update the previous position
+        parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
+
         layoutState = savedState;
         layoutState.dockAreaLayout.separatorMove(movingSeparator, movingSeparatorOrigin,
                                                     movingSeparatorPos);

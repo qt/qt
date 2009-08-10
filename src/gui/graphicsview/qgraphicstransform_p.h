@@ -55,6 +55,8 @@
 
 #include "private/qobject_p.h"
 
+QT_BEGIN_NAMESPACE
+
 class QGraphicsItem;
 
 class QGraphicsTransformPrivate : public QObjectPrivate {
@@ -69,5 +71,7 @@ public:
     void setItem(QGraphicsItem *item);
     static void updateItem(QGraphicsItem *item);
 };
+
+QT_END_NAMESPACE
 
 #endif // QGRAPHICSTRANSFORM_P_H

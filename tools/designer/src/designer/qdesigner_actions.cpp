@@ -200,6 +200,10 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
 #endif
       m_previewManager(0)
 {
+    m_newFormAction->setIcon(QIcon::fromTheme("document-new", m_newFormAction->icon()));
+    m_openFormAction->setIcon(QIcon::fromTheme("document-open", m_openFormAction->icon()));
+    m_saveFormAction->setIcon(QIcon::fromTheme("document-save", m_saveFormAction->icon()));
+
     Q_ASSERT(m_core != 0);
     qdesigner_internal::QDesignerFormWindowManager *ifwm = qobject_cast<qdesigner_internal::QDesignerFormWindowManager *>(m_core->formWindowManager());
     Q_ASSERT(ifwm);
@@ -323,7 +327,8 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
     shortcuts.append(QKeySequence(Qt::Key_Escape));
 #endif
     m_editWidgetsAction->setShortcuts(shortcuts);
-    m_editWidgetsAction->setIcon(QIcon(m_core->resourceLocation() + QLatin1String("/widgettool.png")));
+    QIcon fallback(m_core->resourceLocation() + QLatin1String("/widgettool.png"));
+    m_editWidgetsAction->setIcon(QIcon::fromTheme("designer-edit-widget", fallback));
     connect(m_editWidgetsAction, SIGNAL(triggered()), this, SLOT(editWidgetsSlot()));
     m_editWidgetsAction->setChecked(true);
     m_editWidgetsAction->setEnabled(false);

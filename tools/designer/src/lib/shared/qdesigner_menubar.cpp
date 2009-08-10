@@ -219,18 +219,12 @@ bool QDesignerMenuBar::handleKeyPressEvent(QWidget *, QKeyEvent *e)
 
         case Qt::Key_Left:
             e->accept();
-            if (QApplication::layoutDirection() == Qt::LeftToRight)
-                moveLeft(e->modifiers() & Qt::ControlModifier);
-            else
-                moveRight(e->modifiers() & Qt::ControlModifier);
+            moveLeft(e->modifiers() & Qt::ControlModifier);
             return true;
 
         case Qt::Key_Right:
             e->accept();
-            if (QApplication::layoutDirection() == Qt::LeftToRight)
-                moveRight(e->modifiers() & Qt::ControlModifier);
-            else
-                moveLeft(e->modifiers() & Qt::ControlModifier);
+            moveRight(e->modifiers() & Qt::ControlModifier);
             return true; // no update
 
         case Qt::Key_Up:
@@ -741,28 +735,48 @@ int QDesignerMenuBar::realActionCount() const
     return actions().count() - 1; // 1 fake actions
 }
 
-void QDesignerMenuBar::moveLeft(bool ctrl)
-{
-    if (ctrl)
-        (void) swap(m_currentIndex, m_currentIndex - 1);
-
-    m_currentIndex = qMax(0, --m_currentIndex);
-    // Always re-select, swapping destroys order
-    updateCurrentAction(true);
-}
-
 bool QDesignerMenuBar::dragging() const
 {
     return m_dragging;
 }
 
+void QDesignerMenuBar::moveLeft(bool ctrl)
+{
+    if (layoutDirection() == Qt::LeftToRight) {
+        movePrevious(ctrl);
+    } else {
+        moveNext(ctrl);
+    }
+}
+
 void QDesignerMenuBar::moveRight(bool ctrl)
 {
-    if (ctrl)
-        (void) swap(m_currentIndex + 1, m_currentIndex);
+    if (layoutDirection() == Qt::LeftToRight) {
+        moveNext(ctrl);
+    } else {
+        movePrevious(ctrl);
+    }
+}
 
-    m_currentIndex = qMin(actions().count() - 1, ++m_currentIndex);
-    updateCurrentAction(!ctrl);
+void QDesignerMenuBar::movePrevious(bool ctrl)
+{
+    const bool swapped = ctrl && swapActions(m_currentIndex, m_currentIndex - 1);
+    const int newIndex = qMax(0, m_currentIndex - 1);
+    // Always re-select, swapping destroys order
+    if (swapped || newIndex != m_currentIndex) {
+        m_currentIndex = newIndex;
+        updateCurrentAction(true);
+    }
+}
+
+void QDesignerMenuBar::moveNext(bool ctrl)
+{
+    const bool swapped = ctrl && swapActions(m_currentIndex + 1, m_currentIndex);
+    const int newIndex = qMin(actions().count() - 1, m_currentIndex + 1);
+    if (swapped || newIndex != m_currentIndex) {
+        m_currentIndex = newIndex;
+        updateCurrentAction(!ctrl);
+    }
 }
 
 void QDesignerMenuBar::moveUp()
@@ -869,7 +883,7 @@ QAction *QDesignerMenuBar::safeActionAt(int index) const
     return actions().at(index);
 }
 
-bool QDesignerMenuBar::swap(int a, int b)
+bool QDesignerMenuBar::swapActions(int a, int b)
 {
     const int left = qMin(a, b);
     int right = qMax(a, b);

@@ -485,6 +485,7 @@ void Tree::resolveProperties()
         QString getterName = (*propEntry)[PropertyNode::Getter];
         QString setterName = (*propEntry)[PropertyNode::Setter];
         QString resetterName = (*propEntry)[PropertyNode::Resetter];
+        QString notifierName = (*propEntry)[PropertyNode::Notifier];
 
         NodeList::ConstIterator c = parent->childNodes().begin();
         while (c != parent->childNodes().end()) {
@@ -499,6 +500,8 @@ void Tree::resolveProperties()
                         property->addFunction(function, PropertyNode::Setter);
                     } else if (function->name() == resetterName) {
                         property->addFunction(function, PropertyNode::Resetter);
+                    } else if (function->name() == notifierName) {
+                        property->addFunction(function, PropertyNode::Notifier);
                     }
                 }
             }
@@ -575,10 +578,12 @@ void Tree::resolveGroups()
         if (fake && fake->subType() == Node::Group) {
             fake->addGroupMember(i.value());
         }
+#if 0        
         else {
             if (prevGroup != i.key())
                 i.value()->doc().location().warning(tr("No such group '%1'").arg(i.key()));
         }
+#endif        
 
         prevGroup = i.key();
     }

@@ -39,7 +39,12 @@
 **
 ****************************************************************************/
 
-#include "activesyncconnection.h"
+#ifdef QT_CETEST_NO_ACTIVESYNC
+#   include "cetcpsyncconnection.h"
+#else
+#   include "activesyncconnection.h"
+#endif
+
 #include "deployment.h"
 #include <option.h>
 #include <project.h>
@@ -290,7 +295,11 @@ int main(int argc, char **argv)
     projectDeploymentList.append(CopyItem(TestConfiguration::localExecutable , TestConfiguration::remoteExecutable));
 
     // deploy
+#ifdef QT_CETEST_NO_ACTIVESYNC
+    CeTcpSyncConnection connection;
+#else
     ActiveSyncConnection connection;
+#endif
     if (!connection.connect()) {
         cout << "Error: Could not connect to device!" << endl;
         return -1;

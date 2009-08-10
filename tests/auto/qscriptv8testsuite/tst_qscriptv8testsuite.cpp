@@ -254,6 +254,8 @@ tst_Suite::tst_Suite()
     addTestExclusion("mul-exhaustive", "Demands too much memory on WinCE");
 #endif
 
+    static const char klass[] = "tst_QScriptV8TestSuite";
+
     QVector<uint> *data = qt_meta_data_tst_Suite();
     // content:
     *data << 1 // revision
@@ -265,7 +267,7 @@ tst_Suite::tst_Suite()
         ;
 
     QVector<char> *stringdata = qt_meta_stringdata_tst_Suite();
-    appendCString(stringdata, "tst_Suite");
+    appendCString(stringdata, klass);
     appendCString(stringdata, "");
 
     QFileInfoList testFileInfos;
@@ -275,7 +277,8 @@ tst_Suite::tst_Suite()
         QString name = tfi.baseName();
         // slot: signature, parameters, type, tag, flags
         QString slot = QString::fromLatin1("%0()").arg(name);
-        *data << stringdata->size() << 10 << 10 << 10 << 0x08;
+        static const int nullbyte = sizeof(klass);
+        *data << stringdata->size() << nullbyte << nullbyte << nullbyte << 0x08;
         appendCString(stringdata, slot.toLatin1());
         testNames.append(name);
     }

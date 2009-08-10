@@ -1669,7 +1669,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
             selectAll();
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason))
+    if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason)){
 #endif
     int cft = QApplication::cursorFlashTime();
     d->control->setCursorBlinkPeriod(cft/2);
@@ -1683,7 +1683,8 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
         qt_mac_secure_keyboard(true);
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-    d->control->setCancelText(d->text);
+        d->control->setCancelText(d->control->text());
+    }
 #endif
 #ifndef QT_NO_COMPLETER
     if (d->control->completer()) {

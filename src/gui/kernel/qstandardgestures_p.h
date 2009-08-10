@@ -85,6 +85,31 @@ public:
 #endif
 };
 
+class QPinchGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QPinchGesture)
+
+public:
+    QPinchGesturePrivate()
+        : scaleFactor(0), lastScaleFactor(0),
+          rotationAngle(0), lastRotationAngle(0)
+#ifdef Q_WS_WIN
+          ,initialDistance(0)
+#endif
+    {
+    }
+    qreal scaleFactor;
+    qreal lastScaleFactor;
+    qreal rotationAngle;
+    qreal lastRotationAngle;
+    QPoint startCenterPoint;
+    QPoint lastCenterPoint;
+    QPoint centerPoint;
+#ifdef Q_WS_WIN
+    int initialDistance;
+#endif
+};
+
 QT_END_NAMESPACE
 
 #endif // QSTANDARDGESTURES_P_H

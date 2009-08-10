@@ -40,9 +40,11 @@
 ****************************************************************************/
 
 #include "qicon.h"
+#include "qicon_p.h"
 #include "qiconengine.h"
 #include "qiconengineplugin.h"
 #include "private/qfactoryloader_p.h"
+#include "private/qiconloader_p.h"
 #include "qapplication.h"
 #include "qstyleoption.h"
 #include "qpainter.h"
@@ -50,11 +52,17 @@
 #include "qstyle.h"
 #include "qpixmapcache.h"
 #include "qvariant.h"
+#include "qcache.h"
 #include "qdebug.h"
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#endif
+
+#ifdef Q_WS_X11
+#include "private/qt_x11_p.h"
+#include "private/qkde_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -94,73 +102,14 @@ QT_BEGIN_NAMESPACE
 
 static QBasicAtomicInt serialNumCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
 
-class QIconPrivate
+QIconPrivate::QIconPrivate()
+    : engine(0), ref(1),
+    serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
+    detach_no(0),
+    engine_version(2),
+    v1RefCount(0)
 {
-public:
-    QIconPrivate(): engine(0), ref(1), serialNum(serialNumCounter.fetchAndAddRelaxed(1)), detach_no(0), engine_version(2), v1RefCount(0) {}
-
-    ~QIconPrivate() {
-        if (engine_version == 1) {
-            if (!v1RefCount->deref()) {
-                delete engine;
-                delete v1RefCount;
-            }
-        } else if (engine_version == 2) {
-            delete engine;
-        }
-    }
-
-    QIconEngine *engine;
-
-    QAtomicInt ref;
-    int serialNum;
-    int detach_no;
-    int engine_version;
-
-    QAtomicInt *v1RefCount;
-};
-
-
-struct QPixmapIconEngineEntry
-{
-    QPixmapIconEngineEntry():mode(QIcon::Normal), state(QIcon::Off){}
-    QPixmapIconEngineEntry(const QPixmap &pm, QIcon::Mode m = QIcon::Normal, QIcon::State s = QIcon::Off)
-        :pixmap(pm), size(pm.size()), mode(m), state(s){}
-    QPixmapIconEngineEntry(const QString &file, const QSize &sz = QSize(), QIcon::Mode m = QIcon::Normal, QIcon::State s = QIcon::Off)
-        :fileName(file), size(sz), mode(m), state(s){}
-    QPixmap pixmap;
-    QString fileName;
-    QSize size;
-    QIcon::Mode mode;
-    QIcon::State state;
-    bool isNull() const {return (fileName.isEmpty() && pixmap.isNull()); }
-};
-
-class QPixmapIconEngine : public QIconEngineV2 {
-public:
-    QPixmapIconEngine();
-    QPixmapIconEngine(const QPixmapIconEngine &);
-    ~QPixmapIconEngine();
-    void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state);
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
-    QPixmapIconEngineEntry *bestMatch(const QSize &size, QIcon::Mode mode, QIcon::State state, bool sizeOnly);
-    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state);
-    void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state);
-    void addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state);
-
-    // v2 functions
-    QString key() const;
-    QIconEngineV2 *clone() const;
-    bool read(QDataStream &in);
-    bool write(QDataStream &out) const;
-    void virtual_hook(int id, void *data);
-
-private:
-    QPixmapIconEngineEntry *tryMatch(const QSize &size, QIcon::Mode mode, QIcon::State state);
-    QVector<QPixmapIconEngineEntry> pixmaps;
-
-    friend QDataStream &operator<<(QDataStream &s, const QIcon &icon);
-};
+}
 
 QPixmapIconEngine::QPixmapIconEngine()
 {
@@ -918,6 +867,146 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
     return engine->availableSizes(mode, state);
 }
 
+/*!
+    \since 4.6
+
+    Sets the search paths for icon themes to \a paths.
+    \sa themeSearchPaths(), fromTheme()
+*/
+void QIcon::setThemeSearchPaths(const QStringList &paths)
+{
+    QIconLoader::instance()->setThemeSearchPath(paths);
+}
+
+/*!
+    \since 4.6
+
+    Returns the search paths for icon themes.
+
+    The default value will depend on the platform:
+
+    On X11, the search path will use the XDG_DATA_DIRS environment
+    variable if available.
+
+    On Windows the search path defaults to [Application Directory]/icons
+
+    On Mac the default search path will search in the
+    [Contents/Resources/icons] part of the application bundle.
+
+    \sa setThemeSearchPaths(), fromTheme()
+*/
+QStringList QIcon::themeSearchPaths()
+{
+    return QIconLoader::instance()->themeSearchPaths();
+}
+
+/*!
+    \since 4.6
+
+    Sets the current icon theme.
+
+    The name should correspond to a directory name in the
+    current \ themeSearchPath() containing an index.theme
+    file describing it's contents..
+
+*/
+void QIcon::setThemeName(const QString &path)
+{
+    QIconLoader::instance()->setThemeName(path);
+}
+
+/*!
+    \since 4.6
+
+    Returns the name of the current icon theme.
+
+    On X11, the current icon theme depends on your desktop
+    settings. On other platforms it is not set by default.
+
+    \sa themeSearchPaths(), fromTheme(), hasThemeIcon()
+*/
+QString QIcon::themeName()
+{
+    return QIconLoader::instance()->themeName();
+}
+
+/*!
+    \since 4.6
+
+    Returns the QIcon corresponding to \a name in the current
+    icon theme. If no such icon is found in the current theme
+    \a fallback is return instead.
+
+    To use an icon theme on Windows or Mac, you will need to
+    bundle a compliant theme with your application and make sure
+    it is located in your themeSarchPaths.
+
+    The lastest version of the freedesktop icon specification and naming
+    spesification can be obtained here:
+    http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+    http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+
+    To fetch an icon from the current icon theme:
+
+    \snippet doc/src/snippets/code/src_gui_image_qicon.cpp 3
+
+    Or if you want to provide a guaranteed fallback for platforms that
+    do not support theme icons, you can use the second argument:
+
+    \snippet doc/src/snippets/code/src_gui_image_qicon.cpp 4
+
+    \note By default, only X11 will support themed icons. In order to
+    use themed icons on Mac and Windows, you will have to bundle a
+    compliant theme in one of your themeSearchPaths() and set the
+    appropriate themeName().
+
+    \sa themeName(), themeSearchPaths()
+*/
+QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
+{
+
+    static QCache <QString, QIcon> iconCache;
+
+    QIcon icon;
+
+#ifdef Q_WS_X11
+    if (X11->desktopEnvironment == DE_KDE) {
+        icon = QKde::kdeIcon(name);
+        if (!icon.isNull())
+            return icon;
+    }
+#endif
+
+    if (iconCache.contains(name)) {
+        icon = *iconCache.object(name);
+    } else {
+        QIcon *cachedIcon  = new QIcon(new QIconLoaderEngine(name));
+        iconCache.insert(name, cachedIcon);
+        icon = *cachedIcon;
+    }
+
+    if (icon.availableSizes().isEmpty())
+        return fallback;
+
+    return icon;
+}
+
+/*!
+    \since 4.6
+
+    Returns true if there is an icon available for a \a name in the current
+    icon theme, otherwise returns false.
+
+    \sa themeSearchPaths(), fromTheme()
+*/
+bool QIcon::hasThemeIcon(const QString &name)
+{
+    QIcon icon = fromTheme(name);
+
+    return !icon.isNull();
+}
+
+
 /*****************************************************************************
   QIcon stream functions
  *****************************************************************************/
@@ -987,6 +1076,11 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
         if (key == QLatin1String("QPixmapIconEngine")) {
             icon.d = new QIconPrivate;
             QIconEngineV2 *engine = new QPixmapIconEngine;
+            icon.d->engine = engine;
+            engine->read(s);
+        } else if (key == QLatin1String("QIconLoaderEngine")) {
+            icon.d = new QIconPrivate;
+            QIconEngineV2 *engine = new QIconLoaderEngine();
             icon.d->engine = engine;
             engine->read(s);
 #if !defined (QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)

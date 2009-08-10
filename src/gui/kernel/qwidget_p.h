@@ -558,6 +558,7 @@ public:
 #endif
     void grabMouseWhileInWindow();
     void registerTouchWindow();
+    void winSetupGestures();
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;

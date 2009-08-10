@@ -122,20 +122,7 @@ public:
     }
 #endif
     mutable QIcon tabBarcloseButtonIcon;
-
-//icon detection on X11
-#ifdef Q_WS_X11
-    void lookupIconTheme() const;
     int lookupToolButtonStyle() const;
-    QIcon createIcon(const QString &) const;
-    QPixmap findIcon(int size, const QString &) const;
-    QPixmap findIconHelper(int size, const QString &, const QString &, QStringList &visited) const;
-    QIconTheme parseIndexFile(const QString &themeName) const;
-    mutable QString themeName;
-    mutable QStringList iconDirs;
-    mutable QHash <QString, QIconTheme> themeList;
-#endif
-
 };
 
 QT_END_NAMESPACE

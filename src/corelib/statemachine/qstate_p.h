@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 struct QPropertyAssignment
 {
     QPropertyAssignment()
-        : object(0) {}
+        : object(0), explicitlySet(true) {}
     QPropertyAssignment(QObject *o, const QByteArray &n,
                         const QVariant &v, bool es = true)
         : object(o), propertyName(n), value(v), explicitlySet(es)
