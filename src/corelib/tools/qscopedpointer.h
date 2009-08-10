@@ -123,6 +123,11 @@ public:
         return d != other.d;
     }
 
+    inline bool operator!() const
+    {
+        return !d;
+    }
+
 #if defined(Q_CC_NOKIAX86) || defined(Q_QDOC)
     inline operator bool() const
     {
