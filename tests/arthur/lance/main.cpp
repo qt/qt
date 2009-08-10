@@ -271,7 +271,7 @@ int main(int argc, char **argv)
                 QString format = QString(argv[++i]).toLower();
 
                 imageFormat = QImage::Format_Invalid;
-                static const unsigned int formatCount =
+                static const int formatCount =
                     sizeof(imageFormats) / sizeof(imageFormats[0]);
                 for (int ff = 0; ff < formatCount; ++ff) {
                     if (QLatin1String(imageFormats[ff].name) == format) {
