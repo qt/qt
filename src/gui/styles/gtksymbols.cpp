@@ -547,9 +547,13 @@ void QGtkStyleUpdateScheduler::updateTheme()
 {
     static QString oldTheme(QLS("qt_not_set"));
     QPixmapCache::clear();
+
+    QFont font = QGtk::getThemeFont();
+    if (QApplication::font() != font)
+        qApp->setFont(font);
+
     if (oldTheme != getThemeName()) {
         oldTheme = getThemeName();
-        qApp->setFont(QGtk::getThemeFont());
         QPalette newPalette = qApp->style()->standardPalette();
         QApplicationPrivate::setSystemPalette(newPalette);
         QApplication::setPalette(newPalette);
