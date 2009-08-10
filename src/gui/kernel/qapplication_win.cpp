@@ -3728,7 +3728,7 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
     memset(&gi, 0, sizeof(GESTUREINFO));
     gi.cbSize = sizeof(GESTUREINFO);
 
-    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
 #ifdef Q_WS_WINCE_WM
 #define GID_ZOOM 0xf000
 #define GID_ROTATE 0xf001
@@ -3739,8 +3739,6 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
     if (qAppPriv->GetGestureInfo)
         bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
 
-    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-    BOOL bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
     if (bResult) {
         const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
         QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
