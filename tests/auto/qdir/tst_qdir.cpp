@@ -638,7 +638,7 @@ void tst_QDir::entryList()
         return;
     }
     bool doContentCheck = true;
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     if (qstrcmp(QTest::currentDataTag(), "QDir::AllEntries | QDir::Writable") == 0) {
         // for root, everything is writeable
         if (::getuid() == 0)
