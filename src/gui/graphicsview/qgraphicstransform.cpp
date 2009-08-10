@@ -522,8 +522,11 @@ QVector3D QGraphicsRotation3D::axis()
 void QGraphicsRotation3D::setAxis(const QVector3D &axis)
 {
     Q_D(QGraphicsRotation3D);
+    if (d->axis == axis)
+        return;
     d->axis = axis;
     update();
+    emit axisChanged();
 }
 
 const qreal deg2rad = qreal(0.017453292519943295769);        // pi/180
