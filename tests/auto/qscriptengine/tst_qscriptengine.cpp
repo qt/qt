@@ -1054,6 +1054,8 @@ void tst_QScriptEngine::globalObjectProperties()
         << "gc"
         << "version"
         << "print"
+        // JavaScriptCore
+        << "JSON"
         ;
     QSet<QString> actualNames;
     {
@@ -1073,7 +1075,6 @@ void tst_QScriptEngine::globalObjectProperties()
             remainingNames.remove(name);
         }
     }
-    QEXPECT_FAIL("", "JSC global object has extra properties (JSON and jscprint)", Abort);
     QVERIFY(remainingNames.isEmpty());
 }
 
