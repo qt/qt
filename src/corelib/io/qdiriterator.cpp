@@ -124,6 +124,8 @@ public:
     void checkAndPushDirectory(const QFileInfo &);
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
+    QScopedPointer<QAbstractFileEngine> engine;
+
     const QString path;
     const QStringList nameFilters;
     const QDir::Filters filters;
@@ -133,7 +135,6 @@ public:
     QVector<QRegExp> nameRegExps;
 #endif
 
-    QScopedPointer<QAbstractFileEngine> engine;
     QDirIteratorPrivateIteratorStack fileEngineIterators;
     QFileInfo currentFileInfo;
     QFileInfo nextFileInfo;
