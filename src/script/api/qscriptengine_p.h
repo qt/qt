@@ -94,6 +94,7 @@ namespace QScript
 #ifndef QT_NO_QOBJECT
     class QObjectData;
 #endif
+    class TimeoutCheckerProxy;
 
     //some conversion helper functions
     JSC::UString qtStringToJSCUString(const QString &str);
@@ -159,6 +160,8 @@ public:
     void mark();
     bool isCollecting() const;
     void collectGarbage();
+
+    QScript::TimeoutCheckerProxy *timeoutChecker() const;
 
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,

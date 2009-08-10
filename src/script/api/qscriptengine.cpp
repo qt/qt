@@ -1186,6 +1186,11 @@ void QScriptEnginePrivate::collectGarbage()
     globalData->heap.collect();
 }
 
+QScript::TimeoutCheckerProxy *QScriptEnginePrivate::timeoutChecker() const
+{
+    return static_cast<QScript::TimeoutCheckerProxy*>(globalData->timeoutChecker);
+}
+
 #ifndef QT_NO_QOBJECT
 
 JSC::JSValue QScriptEnginePrivate::newQObject(
@@ -2173,10 +2178,10 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::JSValue thisValue = d->thisForContext(exec);
     JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
     JSC::JSValue exceptionValue;
-    dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->setShouldAbort(false);
+    d->timeoutChecker()->setShouldAbort(false);
     JSC::JSValue result = exec->interpreter()->execute(evalNode.get(), exec, thisObject, exec->scopeChain(), &exceptionValue);
 
-    if (dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->shouldAbort()) {
+    if (d->timeoutChecker()->shouldAbort()) {
         if (d->abortResult.isError())
             exec->setException(d->scriptValueToJSCValue(d->abortResult));
         return d->abortResult;
@@ -3384,7 +3389,7 @@ void QScriptEngine::setProcessEventsInterval(int interval)
     if (interval > 0)
         d->globalData->timeoutChecker->setCheckInterval(interval);
 
-    dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->setShouldProcessEvents(interval > 0);
+    d->timeoutChecker()->setShouldProcessEvents(interval > 0);
 }
 
 /*!
@@ -3434,7 +3439,7 @@ void QScriptEngine::abortEvaluation(const QScriptValue &result)
 {
     Q_D(QScriptEngine);
 
-    dynamic_cast<QScript::TimeoutCheckerProxy*>(d->globalData->timeoutChecker)->setShouldAbort(true);
+    d->timeoutChecker()->setShouldAbort(true);
     d->abortResult = result;
 }
 
