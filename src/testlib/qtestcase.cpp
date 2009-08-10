@@ -356,6 +356,25 @@ QT_BEGIN_NAMESPACE
         {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
 */
 
+/*!
+    \macro QBENCHMARK_ONCE
+
+    \relates QTest
+
+    This macro is used to measure the performance of code within a test.
+    The code to be benchmarked is contained within a code block following
+    this macro.
+
+    Unlike QBENCHMARK, the contents of the contained code block is only run
+    once. The elapsed time will be reported as "0" if it's to short to 
+    be measured by the selected backend. (Use)
+ 
+    \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
+    {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
+*/
+
+
+
 /*! \enum QTest::SkipMode
 
     This enum describes the modes for skipping tests during execution

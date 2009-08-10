@@ -81,6 +81,7 @@ private slots:
     void outOfRange();
     void stateInFinishedSignal();
     void resume();
+    void restart();
 
 protected slots:
     void finishedSlot();
@@ -177,7 +178,7 @@ void tst_QTimeLine::currentTime()
     QCOMPARE(spy.count(), 1);
     spy.clear();
     QCOMPARE(timeLine.currentTime(), timeLine.duration()/2);
-    timeLine.start();
+    timeLine.resume();
     // Let it update on its own
     QTest::qWait(timeLine.duration()/4);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
@@ -699,5 +700,43 @@ void tst_QTimeLine::resume()
     }
 }
 
+void tst_QTimeLine::restart()
+{
+    QTimeLine timeLine(100);
+    timeLine.setFrameRange(0,9);
+
+    timeLine.start();
+    QTest::qWait(timeLine.duration()*2);
+    QCOMPARE(timeLine.currentFrame(), timeLine.endFrame());
+    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+
+    // A restart with the same duration
+    timeLine.start();
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QCOMPARE(timeLine.currentFrame(), timeLine.startFrame());
+    QCOMPARE(timeLine.currentTime(), 0);
+    QTest::qWait(250);
+    QCOMPARE(timeLine.currentFrame(), timeLine.endFrame());
+    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+
+    // Set a smaller duration and restart
+    timeLine.setDuration(50);
+    timeLine.start();
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QCOMPARE(timeLine.currentFrame(), timeLine.startFrame());
+    QCOMPARE(timeLine.currentTime(), 0);
+    QTest::qWait(250);
+    QCOMPARE(timeLine.currentFrame(), timeLine.endFrame());
+    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+
+    // Set a longer duration and restart
+    timeLine.setDuration(150);
+    timeLine.start();
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QCOMPARE(timeLine.currentFrame(), timeLine.startFrame());
+    QCOMPARE(timeLine.currentTime(), 0);
+}
+
 QTEST_MAIN(tst_QTimeLine)
+
 #include "tst_qtimeline.moc"
