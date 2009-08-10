@@ -57,24 +57,6 @@ namespace Phonon
         {
         }
 
-        WorkerThread::Work WorkerThread::dequeueWork()
-        {
-            QMutexLocker locker(&m_mutex);
-            if (m_finished) {
-                return Work();
-            }
-            Work ret = m_queue.dequeue();
-
-            //we ensure to have the wait condition in the right state
-            if (m_queue.isEmpty()) {
-                m_waitCondition.reset();
-            } else {
-                m_waitCondition.set();
-            }
-
-            return ret;
-        }
-
         void WorkerThread::run()
         {
             while (m_finished == false) {
@@ -88,11 +70,6 @@ namespace Phonon
                 }
                 DWORD result = ::WaitForMultipleObjects(count, handles, FALSE, INFINITE);
                 if (result == WAIT_OBJECT_0) {
-                    if (m_finished) {
-                        //that's the end if the thread execution
-                        return;
-                    }
-
                     handleTask();
                 } else {
                     //this is the event management
@@ -199,10 +176,18 @@ namespace Phonon
 
         void WorkerThread::handleTask()
         {
-            const Work w = dequeueWork();
-
-            if (m_finished) {
+            QMutexLocker locker(&m_mutex);
+            if (m_finished || m_queue.isEmpty()) {
                 return;
+            }
+
+            const Work w = m_queue.dequeue();
+
+            //we ensure to have the wait condition in the right state
+            if (m_queue.isEmpty()) {
+                m_waitCondition.reset();
+            } else {
+                m_waitCondition.set();
             }
 
             HRESULT hr = S_OK;
@@ -210,7 +195,6 @@ namespace Phonon
             m_currentRender = w.graph;
 			m_currentRenderId = w.id;
             if (w.task == ReplaceGraph) {
-                QMutexLocker locker(&m_mutex);
                 HANDLE h;
 
                 int index = -1;
@@ -234,6 +218,9 @@ namespace Phonon
                     m_graphHandle[index].handle = h;
                 }
             } else if (w.task == Render) {
+                //we need to unlock here because the use might trigger a call to abort
+                //which uses the same mutex
+                locker.unlock();
                 if (w.filter) {
                     //let's render pins
                     w.graph->AddFilter(w.filter, 0);
@@ -252,6 +239,7 @@ namespace Phonon
                 if (hr != E_ABORT) {
 					emit asyncRenderFinished(w.id, hr, w.graph);
                 }
+                locker.relock();
             } else if (w.task == Seek) {
                 //that's a seekrequest
                 ComPointer<IMediaSeeking> mediaSeeking(w.graph, IID_IMediaSeeking);
