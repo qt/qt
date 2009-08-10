@@ -375,10 +375,6 @@ private:
     friend class QDirectPainterPrivate;
 #endif
 
-#if defined(Q_WS_WIN)
-    friend QApplicationPrivate* getQApplicationPrivateInternal();
-#endif
-
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
     Q_PRIVATE_SLOT(d_func(), void _q_alertTimeOut())
 #endif
