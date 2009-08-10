@@ -161,5 +161,5 @@ int main(int argc, char **argv)
         }
     }
     qWarning("Could not find specified SDK: %s" , qPrintable(sdkName));
-    return 0;
+    return -1;
 }
