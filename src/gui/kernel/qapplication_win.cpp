@@ -816,13 +816,13 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->GetGestureInfo = 0;
     priv->GetGestureExtraArgs = 0;
 
-#ifdef Q_WS_WINCE_WM
+#if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
     priv->GetGestureInfo = (PtrGetGestureInfo) &TKGetGestureInfo;
     priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
     priv->CloseGestureInfoHandle = (PtrCloseGestureInfoHandle) 0;
     priv->SetGestureConfig = (PtrSetGestureConfig) 0;
     priv->GetGestureConfig = (PtrGetGestureConfig) 0;
-#else
+#elif !defined(Q_WS_WINCE)
     priv->GetGestureInfo =
             (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
                                                  "GetGestureInfo");
@@ -1252,7 +1252,10 @@ void QApplication::beep()
 
 static void alert_widget(QWidget *widget, int duration)
 {
-#ifndef Q_OS_WINCE
+#ifdef Q_OS_WINCE
+    Q_UNUSED(widget);
+    Q_UNUSED(duration);
+#else
     bool stopFlash = duration < 0;
 
     if (widget && (!widget->isActiveWindow() || stopFlash)) {
@@ -3729,10 +3732,14 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
     gi.cbSize = sizeof(GESTUREINFO);
 
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-#ifdef Q_WS_WINCE_WM
+#if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
+#undef GID_ZOOM
 #define GID_ZOOM 0xf000
+#undef GID_ROTATE
 #define GID_ROTATE 0xf001
+#undef GID_TWOFINGERTAP
 #define GID_TWOFINGERTAP 0xf002
+#undef GID_ROLLOVER
 #define GID_ROLLOVER 0xf003
 #endif
     BOOL bResult = false;
