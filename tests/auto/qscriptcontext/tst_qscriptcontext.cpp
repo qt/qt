@@ -704,25 +704,29 @@ void tst_QScriptContext::getSetActivationObject()
     QCOMPARE(ctx->engine(), &eng);
 
     QScriptValue obj = eng.newObject();
+    QTest::ignoreMessage(QtWarningMsg, "QScriptContext::setActivationObject() failed: not an activation object");
     ctx->setActivationObject(obj);
-    QEXPECT_FAIL("", "", Abort);
+    QEXPECT_FAIL("", "Normal object cannot be set as activation object", Continue);
     QVERIFY(ctx->activationObject().equals(obj));
 
     {
         QScriptEngine eng2;
         QScriptValue obj2 = eng2.newObject();
         QTest::ignoreMessage(QtWarningMsg, "QScriptContext::setActivationObject() failed: cannot set an object created in a different engine");
+        QScriptValue was = ctx->activationObject();
         ctx->setActivationObject(obj2);
-        QVERIFY(ctx->activationObject().equals(obj));
+        QVERIFY(ctx->activationObject().equals(was));
     }
 
     ctx->setActivationObject(eng.globalObject());
+    QVERIFY(ctx->activationObject().equals(eng.globalObject()));
     QScriptValue fun = eng.newFunction(get_activationObject);
     eng.globalObject().setProperty("get_activationObject", fun);
     {
         QScriptValue ret = eng.evaluate("get_activationObject(1, 2, 3)");
         QVERIFY(ret.isObject());
         QScriptValue arguments = ret.property("arguments");
+        QEXPECT_FAIL("", "Getting arguments property of activation object doesn't work", Abort);
         QVERIFY(arguments.isObject());
         QCOMPARE(arguments.property("length").toInt32(), 3);
         QCOMPARE(arguments.property("0").toInt32(), 1);

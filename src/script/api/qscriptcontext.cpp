@@ -468,15 +468,31 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
 {
     if (!activation.isObject())
         return;
+    else if (activation.engine() != engine()) {
+        qWarning("QScriptContext::setActivationObject() failed: "
+                 "cannot set an object created in "
+                 "a different engine");
+        return;
+    }
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
     JSC::JSObject *object = JSC::asObject(engine->scriptValueToJSCValue(activation));
+    if (object == engine->originalGlobalObjectProxy)
+        object = engine->originalGlobalObject();
     if (!object->isVariableObject()) {
-        qWarning("QScriptContext::setActivationObject(): not an activation object");
+        qWarning("QScriptContext::setActivationObject() failed: not an activation object");
         return;
     }
-// ### look for variableObject in d->frame->scopeChain, replace by object
-    qWarning("QScriptContext::setActivationObject() not implemented");
+
+    // replace the first activation object in the scope chain
+    JSC::ScopeChainNode *node = frame->scopeChain();
+    while (node != 0) {
+        if (node->object->isVariableObject()) {
+            node->object = object;
+            break;
+        }
+        node = node->next;
+    }
 }
 
 /*!
