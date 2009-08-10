@@ -3904,7 +3904,7 @@ static QScriptValue counter_hybrid(QScriptContext *ctx, QScriptEngine *eng)
 {
      QScriptValue act = ctx->activationObject();
      act.setProperty("count", ctx->argument(0).toInt32());
-     return eng->evaluate("function() { return count++; }");
+     return eng->evaluate("(function() { return count++; })");
 }
 
 void tst_QScriptEngine::nativeFunctionScopes()
