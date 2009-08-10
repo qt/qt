@@ -1904,7 +1904,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
         dynamicData.append((char *)&propertyData, sizeof(propertyData));
 
         builder.addSignal(p.name + "Changed()");
-        builder.addProperty(p.name, type, ii);
+        builder.addProperty(p.name, type, ii).setScriptable(true);
     }
 
     if (mode == ResolveAliases) {
