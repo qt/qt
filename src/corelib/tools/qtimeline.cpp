@@ -69,7 +69,6 @@ public:
     int currentLoopCount;
 
     int currentTime;
-    int elapsedTime;
     int timerId;
     QTime timer;
 
