@@ -111,8 +111,9 @@
 <context>
     <name>QHelpDBReader</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpdbreader.cpp" line="+95"/>
+        <location filename="../tools/assistant/lib/qhelpdbreader.cpp" line="+98"/>
         <source>Cannot open database &apos;%1&apos; &apos;%2&apos;: %3</source>
+        <extracomment>The placeholders are: %1 - The name of the database which cannot be opened %2 - The unique id for the connection %3 - The actual error string</extracomment>
         <translation>Kann Datenbank nicht öffnen: &apos;%1&apos; &apos;%2&apos;: %3</translation>
     </message>
 </context>
@@ -200,17 +201,22 @@
         <translation>Dateien einfügen...</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+42"/>
+        <source>The referenced file %1 must be inside or within a subdirectory of (%2). Skipping it.</source>
+        <translation>Die referenzierte Datei %1 muss sich im Verzeichnis %2 oder in einem Unterverzeichnis davon befinden. Sie wird übersprungen.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>The file %1 does not exist! Skipping it.</source>
         <translation>Die Datei %1 existiert nicht. Wird übersprungen.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Cannot open file %1! Skipping it.</source>
         <translation>Die Datei %1 kann nicht geöffnet werden. Wird übersprungen.</translation>
     </message>
     <message>
-        <location line="+134"/>
+        <location line="+131"/>
         <source>The filter %1 is already registered!</source>
         <translation>Der Filter %1 ist bereits registriert.</translation>
     </message>
@@ -243,9 +249,19 @@
 <context>
     <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+200"/>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+411"/>
         <source>Search for:</source>
         <translation>Suche nach:</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Previous search</source>
+        <translation>Vorige Suche</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Next search</source>
+        <translation>Nächste Suche</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -253,7 +269,7 @@
         <translation>Suche</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+20"/>
         <source>Advanced search</source>
         <translation>Erweiterte Suche</translation>
     </message>
@@ -263,22 +279,22 @@
         <translation>Worte &lt;B&gt;ähnlich&lt;/B&gt; zu:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
         <translation>&lt;B&gt;ohne&lt;/B&gt; die Wörter:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
         <translation>mit der &lt;B&gt;genauen Wortgruppe&lt;/B&gt;:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
         <translation>mit &lt;B&gt;allen&lt;/B&gt; Wörtern:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
         <translation>mit &lt;B&gt;irgendeinem&lt;/B&gt; der Wörter:</translation>
     </message>
@@ -307,7 +323,7 @@
         <translation>Ohne Titel</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+80"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
         <source>Unknown token.</source>
         <translation>Unbekanntes Token.</translation>
     </message>
@@ -347,7 +363,7 @@
         <translation>Fehlendes Attribut in Schlagwort in Zeile %1.</translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+123"/>
         <source>The input file %1 could not be opened!</source>
         <translation>Die Eingabe-Datei %1 kann nicht geöffnet werden.</translation>
     </message>
