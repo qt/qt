@@ -301,12 +301,11 @@ void tst_QScriptContext::thisObject()
 
 void tst_QScriptContext::returnValue()
 {
+    QSKIP("Internal function not implemented in JSC-based back-end", SkipAll);
     QScriptEngine eng;
     eng.evaluate("123");
-    QEXPECT_FAIL("", "", Continue);
     QCOMPARE(eng.currentContext()->returnValue().toNumber(), 123.0);
     eng.evaluate("\"ciao\"");
-    QEXPECT_FAIL("", "", Continue);
     QCOMPARE(eng.currentContext()->returnValue().toString(), QString("ciao"));
 }
 
