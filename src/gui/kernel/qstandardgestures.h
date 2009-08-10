@@ -66,10 +66,51 @@ public:
     QPanGesture(QWidget *parent);
 
     bool filterEvent(QEvent *event);
-    void reset();
 
     QSize totalOffset() const;
     QSize lastOffset() const;
+
+protected:
+    void reset();
+
+private:
+    bool event(QEvent *event);
+    bool eventFilter(QObject *receiver, QEvent *event);
+
+    friend class QWidget;
+};
+
+class QPinchGesturePrivate;
+class Q_GUI_EXPORT QPinchGesture : public QGesture
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPinchGesture)
+
+    Q_PROPERTY(qreal scaleFactor READ scaleFactor)
+    Q_PROPERTY(qreal lastScaleFactor READ lastScaleFactor)
+
+    Q_PROPERTY(qreal rotationAngle READ rotationAngle)
+    Q_PROPERTY(qreal lastRotationAngle READ lastRotationAngle)
+
+    Q_PROPERTY(QPoint startCenterPoint READ startCenterPoint)
+    Q_PROPERTY(QPoint lastCenterPoint READ lastCenterPoint)
+    Q_PROPERTY(QPoint centerPoint READ centerPoint)
+
+public:
+    QPinchGesture(QWidget *parent);
+
+    bool filterEvent(QEvent *event);
+    void reset();
+
+    QPoint startCenterPoint() const;
+    QPoint lastCenterPoint() const;
+    QPoint centerPoint() const;
+
+    qreal scaleFactor() const;
+    qreal lastScaleFactor() const;
+
+    qreal rotationAngle() const;
+    qreal lastRotationAngle() const;
 
 private:
     bool event(QEvent *event);

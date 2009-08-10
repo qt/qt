@@ -431,11 +431,6 @@ extern QCursor *qt_grab_cursor();
 #define __export
 #endif
 
-QApplicationPrivate* getQApplicationPrivateInternal()
-{
-    return qApp->d_func();
-}
-
 extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 class QETWidget : public QWidget                // event translator widget
@@ -1475,7 +1470,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 
         // we receive the message for each toplevel window included internal hidden ones,
         // but the aboutToQuit signal should be emitted only once.
-        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         if (endsession && !qAppPriv->aboutToQuitEmitted) {
             qAppPriv->aboutToQuitEmitted = true;
             int index = QApplication::staticMetaObject.indexOfSignal("aboutToQuit()");
@@ -1662,7 +1657,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
     } else {
         switch (message) {
         case WM_TOUCH:
-            result = getQApplicationPrivateInternal()->translateTouchEvent(msg);
+            result = QApplicationPrivate::instance()->translateTouchEvent(msg);
             break;
         case WM_KEYDOWN:                        // keyboard event
         case WM_SYSKEYDOWN:
@@ -3744,17 +3739,20 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
     if (qAppPriv->GetGestureInfo)
         bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
 
-
-    const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
-    QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
-    if (alienWidget && alienWidget->internalWinId())
-        alienWidget = 0;
-    QWidget *widget = alienWidget ? alienWidget : this;
-
-    QNativeGestureEvent event;
-    event.sequenceId = gi.dwSequenceID;
-    event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+    BOOL bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
     if (bResult) {
+        const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+        QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
+        if (alienWidget && alienWidget->internalWinId())
+            alienWidget = 0;
+        QWidget *widget = alienWidget ? alienWidget : this;
+
+        QNativeGestureEvent event;
+        event.sequenceId = gi.dwSequenceID;
+        event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+        event.argument = gi.ullArguments;
+
         switch (gi.dwID) {
         case GID_BEGIN:
             event.gestureType = QNativeGestureEvent::GestureBegin;
@@ -3769,6 +3767,8 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
             event.gestureType = QNativeGestureEvent::Pan;
             break;
         case GID_ROTATE:
+            event.gestureType = QNativeGestureEvent::Rotate;
+            break;
         case GID_TWOFINGERTAP:
         case GID_ROLLOVER:
         default:

@@ -180,7 +180,7 @@ namespace QTest {
                          : "";
         const char *filler = (tag[0] && gtag[0]) ? ":" : "";
         if (file) {
-            QTest::qt_asprintf(buf, "%s: %s::%s(%s%s%s)%s%s\n"
+            QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n"
 #ifdef Q_OS_WIN
                           "%s(%d) : failure location\n"
 #else
@@ -189,14 +189,14 @@ namespace QTest {
                           , type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
                           msg[0] ? " " : "", msg, file, line);
         } else {
-            QTest::qt_asprintf(buf, "%s: %s::%s(%s%s%s)%s%s\n",
+            QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n",
                     type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
                     msg[0] ? " " : "", msg);
         }
         // In colored mode, printf above stripped our nonprintable control characters.
         // Put them back.
-        memcpy(buf, type, strlen(type));
-        outputMessage(buf);
+        memcpy(buf.data(), type, strlen(type));
+        outputMessage(buf.data());
     }
 
     template <typename T>
@@ -207,7 +207,7 @@ namespace QTest {
 
         int digits = 0;
         qreal divisor = 1;
-        
+
         while (num / divisor >= 1) {
             divisor *= 10;
             ++digits;

@@ -171,6 +171,7 @@ public:
 
     QBenchmarkResult result;
     bool resultAccepted;
+    bool runOnce;
     int iterationCount;
 };
 

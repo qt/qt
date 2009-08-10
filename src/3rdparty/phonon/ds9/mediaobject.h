@@ -135,7 +135,6 @@ namespace Phonon
                 };
                 QList<Filter> decoders; //for the state change requests
             };
-            Work dequeueWork();
             void handleTask();
 
             Graph m_currentRender;

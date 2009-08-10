@@ -133,9 +133,9 @@ public:
     };
 
     QNativeGestureEvent()
-        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0), direction(0, 0)
+        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0)
 #ifdef Q_WS_WIN
-        , sequenceId(0)
+        , sequenceId(0), argument(0)
 #endif
     {
     }
@@ -146,6 +146,7 @@ public:
     QSize direction;
 #ifdef Q_WS_WIN
     ulong sequenceId;
+    quint64 argument;
 #endif
 };
 

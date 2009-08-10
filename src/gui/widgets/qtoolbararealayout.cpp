@@ -1156,8 +1156,8 @@ QLayoutItem *QToolBarAreaLayout::unplug(const QList<int> &path, QToolBarAreaLayo
                     if (!next.skip()) {
                         newExtraSpace = next.pos - previous.pos - pick(line.o, previous.sizeHint());
                         previous.resize(line.o, next.pos - previous.pos);
+                        break;
                     }
-                    break;
                 }
                 break;
             }

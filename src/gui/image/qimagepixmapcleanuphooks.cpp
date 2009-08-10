@@ -43,6 +43,8 @@
 #include "qpixmapdata_p.h"
 
 
+QT_BEGIN_NAMESPACE
+
 // Legacy, single instance hooks: ### Qt 5: remove
 typedef void (*_qt_pixmap_cleanup_hook)(int);
 typedef void (*_qt_pixmap_cleanup_hook_64)(qint64);
@@ -108,3 +110,4 @@ void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
         qt_image_cleanup_hook_64(key);
 }
 
+QT_END_NAMESPACE

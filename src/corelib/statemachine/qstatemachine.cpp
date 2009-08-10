@@ -209,6 +209,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     processing = false;
     processingScheduled = false;
     stop = false;
+    stopProcessingReason = EventQueueEmpty;
     error = QStateMachine::NoError;
     globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
     signalEventGenerator = 0;

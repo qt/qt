@@ -11,7 +11,7 @@ requires(mac)
 # builds (where QTDIR points to the build directory).
 # autotest + shadow build is not supported :)
 exists($$(QTDIR)/tools/designer/src/lib/uilib/uilib.pri) {
-   include($$(QTDIR)/tools/designer/src/lib/uilib/uilib.pri)
+   include($$(QTDIR)/tools/designer/src/lib/uilib/uilib.pri, "", true)
    INCLUDEPATH += $$(QTDIR)/tools/designer/src/uitools
    SOURCES += $$(QTDIR)/tools/designer/src/uitools/quiloader.cpp
    HEADERS += $$(QTDIR)/tools/designer/src/uitools/quiloader.h

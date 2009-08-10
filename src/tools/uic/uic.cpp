@@ -184,7 +184,7 @@ DomUI *Uic::parseUiFile(QXmlStreamReader &reader)
     if (reader.hasError()) {
         delete ui;
         ui = 0;
-        fprintf(stderr, qPrintable(QString::fromLatin1("uic: Error in line %1, column %2 : %3\n")
+        fprintf(stderr, "%s\n", qPrintable(QString::fromLatin1("uic: Error in line %1, column %2 : %3")
                                     .arg(reader.lineNumber()).arg(reader.columnNumber())
                                     .arg(reader.errorString())));
     }

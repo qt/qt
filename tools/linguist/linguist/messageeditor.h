@@ -110,7 +110,7 @@ public slots:
     void beginFromSource();
     void setEditorFocus();
     void setTranslation(int latestModel, const QString &translation);
-    void setLenghtVariants(bool on);
+    void setLengthVariants(bool on);
 
 private slots:
     void editorCreated(QTextEdit *);
