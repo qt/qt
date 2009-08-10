@@ -53,7 +53,7 @@ QT_MODULE(Test)
 class QTestElement;
 class QTestElementAttribute;
 class QTestLogger;
-class QTestCharBuffer;
+struct QTestCharBuffer;
 
 class QTestBasicStreamer
 {
