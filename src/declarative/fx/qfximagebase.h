@@ -39,52 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QFXIMAGE_H
-#define QFXIMAGE_H
+#ifndef QFXIMAGEBASE_H
+#define QFXIMAGEBASE_H
 
-#include <QtNetwork/qnetworkreply.h>
-#include "qfximagebase.h"
+#include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QFxImagePrivate;
-class Q_DECLARATIVE_EXPORT QFxImage : public QFxImageBase
+class QFxImageBasePrivate;
+class QFxImageBase : public QFxItem
 {
     Q_OBJECT
-    Q_ENUMS(FillMode)
+    Q_ENUMS(Status)
 
-    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
-    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged);
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
 public:
-    QFxImage(QFxItem *parent=0);
-    ~QFxImage();
+    QFxImageBase(QFxItem *parent = 0);
+    ~QFxImageBase();
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+    qreal progress() const;
 
-    enum FillMode { Stretch, PreserveAspect, Tile, TileVertically, TileHorizontally };
-    FillMode fillMode() const;
-    void setFillMode(FillMode);
-
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &);
-
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+    QUrl source() const;
+    virtual void setSource(const QUrl &url);
 
 Q_SIGNALS:
-    void fillModeChanged();
+    void sourceChanged(const QUrl &);
+    void statusChanged(Status);
+    void progressChanged(qreal progress);
 
 protected:
-    QFxImage(QFxImagePrivate &dd, QFxItem *parent);
+    QFxImageBase(QFxImageBasePrivate &dd, QFxItem *parent);
+
+private Q_SLOTS:
+    virtual void requestFinished();
+    void requestProgress(qint64,qint64);
 
 private:
-    Q_DISABLE_COPY(QFxImage)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
+    Q_DISABLE_COPY(QFxImageBase)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImageBase)
 };
 
 QT_END_NAMESPACE
-QML_DECLARE_TYPE(QFxImage)
 QT_END_HEADER
 
-#endif // QFXIMAGE_H
+#endif // QFXIMAGEBASE_H

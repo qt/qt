@@ -9,9 +9,13 @@ HEADERS += \
            fx/qfxflipable.h \
            fx/qfxgridview.h \
            fx/qfximage.h \
+           fx/qfximagebase.h \
+           fx/qfxborderimage.h \
            fx/qfxpainteditem.h \
            fx/qfxpainteditem_p.h \
            fx/qfximage_p.h \
+           fx/qfxborderimage_p.h \
+           fx/qfximagebase_p.h \
            fx/qfxitem.h \
            fx/qfxitem_p.h \
            fx/qfxfocusscope.h \
@@ -52,6 +56,8 @@ SOURCES += \
            fx/qfxflipable.cpp \
            fx/qfxgridview.cpp \
            fx/qfximage.cpp \
+           fx/qfxborderimage.cpp \
+           fx/qfximagebase.cpp \
            fx/qfxpainteditem.cpp \
            fx/qfxitem.cpp \
            fx/qfxfocusscope.cpp \

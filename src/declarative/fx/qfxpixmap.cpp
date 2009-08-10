@@ -164,6 +164,7 @@ bool QFxPixmap::find(const QUrl& url, QPixmap *pixmap)
         }
         QPixmapCache::insert(key, *pixmap);
     }
+    return true;
 }
 
 /*!

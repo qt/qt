@@ -39,52 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QFXIMAGE_H
-#define QFXIMAGE_H
+#ifndef QFXIMAGEBASE_P_H
+#define QFXIMAGEBASE_P_H
 
-#include <QtNetwork/qnetworkreply.h>
-#include "qfximagebase.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qfxitem_p.h"
+#include <QtCore/QPointer>
+
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QFxImagePrivate;
-class Q_DECLARATIVE_EXPORT QFxImage : public QFxImageBase
+class QNetworkReply;
+class QFxImageBasePrivate : public QFxItemPrivate
 {
-    Q_OBJECT
-    Q_ENUMS(FillMode)
-
-    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
-    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged);
+    Q_DECLARE_PUBLIC(QFxImageBase)
 
 public:
-    QFxImage(QFxItem *parent=0);
-    ~QFxImage();
+    QFxImageBasePrivate()
+      : status(QFxImageBase::Null),
+        progress(0.0)
+    {
+    }
 
-    enum FillMode { Stretch, PreserveAspect, Tile, TileVertically, TileHorizontally };
-    FillMode fillMode() const;
-    void setFillMode(FillMode);
-
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &);
-
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
-
-Q_SIGNALS:
-    void fillModeChanged();
-
-protected:
-    QFxImage(QFxImagePrivate &dd, QFxItem *parent);
-
-private:
-    Q_DISABLE_COPY(QFxImage)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
+    QPixmap pix;
+    QFxImageBase::Status status;
+    QUrl url;
+    QPointer<QNetworkReply> reply;
+    qreal progress;
 };
 
 QT_END_NAMESPACE
-QML_DECLARE_TYPE(QFxImage)
-QT_END_HEADER
 
-#endif // QFXIMAGE_H
+#endif

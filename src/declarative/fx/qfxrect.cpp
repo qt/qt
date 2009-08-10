@@ -591,6 +591,19 @@ void QFxRect::drawRect(QPainter &p)
     }
 }
 
+/*!
+    \qmlproperty bool Rect::smooth
+
+    Set this property if you want the item to be smoothly scaled or
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the item is displayed at its natural size, this property has no visual or
+    performance effect.
+
+    \note Generally scaling artifacts are only visible if the item is stationary on
+    the screen.  A common pattern when animating an item is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+*/
+
 QRectF QFxRect::boundingRect() const
 {
     Q_D(const QFxRect);
