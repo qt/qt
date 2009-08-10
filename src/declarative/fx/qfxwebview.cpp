@@ -139,7 +139,7 @@ class QFxWebViewPrivate : public QFxPaintedItemPrivate
 public:
     QFxWebViewPrivate()
       : QFxPaintedItemPrivate(), page(0), idealwidth(0), idealheight(0), interactive(true), lastPress(0), lastRelease(0), mouseX(0), mouseY(0),
-            progress(1.0), pending(PendingNone)
+            progress(1.0), pending(PendingNone), windowObjects(this)
     {
     }
 
@@ -158,8 +158,21 @@ public:
     QString pending_string;
     QByteArray pending_data;
     mutable QFxWebSettings settings;
-};
 
+    void updateWindowObjects();
+    class WindowObjectList : public QmlConcreteList<QObject *>
+    {
+    public:
+        WindowObjectList(QFxWebViewPrivate *p)
+            : priv(p) {}
+        virtual void append(QObject *v) { 
+            QmlConcreteList<QObject *>::append(v); 
+            priv->updateWindowObjects();
+        }
+    private:
+        QFxWebViewPrivate *priv;
+    } windowObjects;
+};
 
 /*!
     \qmlclass WebView
@@ -258,6 +271,7 @@ void QFxWebView::componentComplete()
             break;
     }
     d->pending = QFxWebViewPrivate::PendingNone;
+    d->updateWindowObjects();
 }
 
 /*!
@@ -507,6 +521,56 @@ void QFxWebView::setCacheSize(int pixels)
         }
     }
     d->max_imagecache_size = pixels;
+}
+
+QmlList<QObject *> *QFxWebView::javaScriptWindowObjects()
+{
+    Q_D(QFxWebView);
+    return &d->windowObjects;
+}
+
+class QFxWebViewAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString windowObjectName READ windowObjectName WRITE setWindowObjectName)
+public:
+    QFxWebViewAttached(QObject *parent)
+        : QObject(parent)
+    {
+    }
+
+    QString windowObjectName() const
+    {
+        return m_windowObjectName;
+    }
+
+    void setWindowObjectName(const QString &n)
+    {
+        m_windowObjectName = n;
+    }
+
+private:
+    QString m_windowObjectName;
+};
+
+QFxWebViewAttached *QFxWebView::qmlAttachedProperties(QObject *o)
+{
+    return new QFxWebViewAttached(o);
+}
+
+void QFxWebViewPrivate::updateWindowObjects()
+{
+    Q_Q(QFxWebView);
+    if (!q->isComponentComplete() || !page)
+        return;
+
+    for (int ii = 0; ii < windowObjects.count(); ++ii) {
+        QObject *object = windowObjects.at(ii);
+        QFxWebViewAttached *attached = static_cast<QFxWebViewAttached *>(qmlAttachedPropertiesObject<QFxWebView>(object));
+        if (attached && !attached->windowObjectName().isEmpty()) {
+            page->mainFrame()->addToJavaScriptWindowObject(attached->windowObjectName(), object);
+        }
+    }
 }
 
 void QFxWebView::drawContents(QPainter *p, const QRect &r)
@@ -787,6 +851,12 @@ void QFxWebView::setStatusBarMessage(const QString& s)
     emit statusChanged();
 }
 
+void QFxWebView::windowObjectCleared()
+{
+    Q_D(QFxWebView);
+    d->updateWindowObjects();
+}
+
 QString QFxWebView::status() const
 {
     Q_D(const QFxWebView);
@@ -880,6 +950,8 @@ void QFxWebView::setPage(QWebPage *page)
     connect(d->page,SIGNAL(loadProgress(int)),this,SLOT(doLoadProgress(int)));
     connect(d->page,SIGNAL(loadFinished(bool)),this,SLOT(doLoadFinished(bool)));
     connect(d->page,SIGNAL(statusBarMessage(QString)),this,SLOT(setStatusBarMessage(QString)));
+
+    connect(d->page->mainFrame(),SIGNAL(javaScriptWindowObjectCleared()),this,SLOT(windowObjectCleared()));
 }
 
 void QFxWebView::load(const QNetworkRequest &request,

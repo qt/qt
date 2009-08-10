@@ -74,6 +74,7 @@ private:
 };
 
 
+class QFxWebViewAttached;
 class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 {
     Q_OBJECT
@@ -102,6 +103,8 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QObject* stop READ stopAction CONSTANT)
 
     Q_PROPERTY(QObject* settings READ settingsObject CONSTANT)
+
+    Q_PROPERTY(QmlList<QObject *>* javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
 public:
     QFxWebView(QFxItem *parent=0);
@@ -160,6 +163,10 @@ public:
     int cacheSize() const;
     void setCacheSize(int pixels);
 
+    QmlList<QObject *> *javaScriptWindowObjects();
+
+    static QFxWebViewAttached *qmlAttachedProperties(QObject *);
+
 Q_SIGNALS:
     void idealWidthChanged();
     void idealHeightChanged();
@@ -187,6 +194,7 @@ private Q_SLOTS:
     void doLoadProgress(int p);
     void doLoadFinished(bool ok);
     void setStatusBarMessage(const QString&);
+    void windowObjectCleared();
 
 protected:
     QFxWebView(QFxWebViewPrivate &dd, QFxItem *parent);
