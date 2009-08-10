@@ -2927,8 +2927,7 @@ void tst_QTreeView::styleOptionViewItem()
 
     delegate.count = 0;
     view.showMaximized();
-    QTest::qWait(30);
-    QVERIFY(delegate.count >= 13);
+    QTRY_VERIFY(delegate.count >= 13);
 }
 
 class task174627_TreeView : public QTreeView

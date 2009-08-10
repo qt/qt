@@ -582,14 +582,17 @@ void tst_QLocalSocket::readBufferOverflow()
     QVERIFY(server.hasPendingConnections());
 
     QLocalSocket* serverSocket = server.nextPendingConnection();
-    char* buffer = (char*)qMalloc(dataBufferSize);
+    char buffer[dataBufferSize];
     memset(buffer, 0, dataBufferSize);
     serverSocket->write(buffer, dataBufferSize);
     serverSocket->flush();
-    qFree(buffer);
 
     QVERIFY(client.waitForReadyRead());
-    QCOMPARE(client.readAll().size(), dataBufferSize);
+    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
+#ifdef QT_LOCALSOCKET_TCP
+    QTest::qWait(250);
+#endif
+    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
 }
 
 // QLocalSocket/Server can take a name or path, check that it works as expected
@@ -971,6 +974,7 @@ void tst_QLocalSocket::writeOnlySocket()
 
     QVERIFY(server.waitForNewConnection());
     QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
 
     QCOMPARE(client.bytesAvailable(), qint64(0));
     QCOMPARE(client.state(), QLocalSocket::ConnectedState);

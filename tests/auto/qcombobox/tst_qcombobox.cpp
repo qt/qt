@@ -139,6 +139,7 @@ private slots:
     void task190205_setModelAdjustToContents();
     void task248169_popupWithMinimalSize();
     void task247863_keyBoardSelection();
+    void task220195_keyBoardSelection2();
     void setModelColumn();
     void noScrollbar_data();
     void noScrollbar();
@@ -2095,7 +2096,7 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
 #endif
 
     // box should be resized to the same size as correctBox
-    QCOMPARE(box.size(), correctBox.size());
+    QTRY_COMPARE(box.size(), correctBox.size());
 }
 
 void tst_QComboBox::task248169_popupWithMinimalSize()
@@ -2140,6 +2141,40 @@ void tst_QComboBox::task247863_keyBoardSelection()
   QCOMPARE(combo.currentText(), QLatin1String("222"));
   QCOMPARE(spy.count(), 1);
 }
+
+void tst_QComboBox::task220195_keyBoardSelection2()
+{
+    QComboBox combo;
+    combo.setEditable(false);
+    combo.addItem( QLatin1String("foo1"));
+    combo.addItem( QLatin1String("foo2"));
+    combo.addItem( QLatin1String("foo3"));
+    combo.show();
+    QApplication::setActiveWindow(&combo);
+    QTest::qWait(100);
+
+    combo.setCurrentIndex(-1);
+    QVERIFY(combo.currentText().isNull());
+
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo1"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo2"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo3"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo1"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+
+    combo.setCurrentIndex(1);
+    QCOMPARE(combo.currentText(), QLatin1String("foo2"));
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo3"));
+}
+
 
 void tst_QComboBox::setModelColumn()
 {
@@ -2240,6 +2275,7 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
     QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
 }
+
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

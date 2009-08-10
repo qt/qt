@@ -59,7 +59,10 @@
 #endif
 
 #include <shlobj.h>
-
+//At some point we can hope that mingw will support that interface
+#if !defined(Q_WS_WINCE) && !defined(Q_CC_MINGW)
+#include <shobjidl.h>
+#endif
 #include <objbase.h>
 
 #if defined(__IFileDialog_INTERFACE_DEFINED__) \
@@ -173,15 +176,22 @@ static QStringList qt_win_make_filters_list(const QString &filter)
 }
 
 // Makes a NUL-oriented Windows filter from a Qt filter.
-static QString qt_win_filter(const QString &filter)
+static QString qt_win_filter(const QString &filter, bool hideFiltersDetails)
 {
     QStringList filterLst = qt_win_make_filters_list(filter);
     QStringList::Iterator it = filterLst.begin();
     QString winfilters;
+    QRegExp r(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
     for (; it != filterLst.end(); ++it) {
         QString subfilter = *it;
         if (!subfilter.isEmpty()) {
-            winfilters += subfilter;
+            if (hideFiltersDetails) {
+                int index = r.indexIn(subfilter);
+                if (index >= 0)
+                    winfilters += r.cap(1);
+            } else {
+                winfilters += subfilter;
+            }
             winfilters += QChar();
             winfilters += qt_win_extract_filter(subfilter);
             winfilters += QChar();
@@ -295,9 +305,10 @@ QString qt_win_get_open_file_name(const QFileDialogArgs &args,
     modal_widget.setParent(args.parent, Qt::Window);
     QApplicationPrivate::enterModal(&modal_widget);
 
+    bool hideFiltersDetails = args.options & QFileDialog::HideNameFilterDetails;
     OPENFILENAME* ofn = qt_win_make_OFN(args.parent, args.selection,
                                         args.directory, args.caption,
-                                        qt_win_filter(args.filter),
+                                        qt_win_filter(args.filter, hideFiltersDetails),
                                         QFileDialog::ExistingFile,
                                         args.options);
     if (idx)
@@ -354,7 +365,7 @@ QString qt_win_get_save_file_name(const QFileDialogArgs &args,
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(args.parent, Qt::Window);
     QApplicationPrivate::enterModal(&modal_widget);
-
+    bool hideFiltersDetails = args.options & QFileDialog::HideNameFilterDetails;
     // This block is used below for the lpstrDefExt member.
     // Note that the current MSDN docs document this member wrong.
     // It should rather be documented as "the default extension if no extension was given and if the
@@ -374,7 +385,7 @@ QString qt_win_get_save_file_name(const QFileDialogArgs &args,
 
     OPENFILENAME *ofn = qt_win_make_OFN(args.parent, args.selection,
                                         args.directory, args.caption,
-                                        qt_win_filter(args.filter),
+                                        qt_win_filter(args.filter, hideFiltersDetails),
                                         QFileDialog::AnyFile,
                                         args.options);
 
@@ -441,6 +452,8 @@ static bool qt_win_set_IFileDialogOptions(IFileDialog *pfd,
         QString subfilter = *it;
         if (!subfilter.isEmpty()) {
             offsets<<currentOffset;
+            //Here the COMMON_ITEM_DIALOG API always add the details for the filter (e.g. *.txt)
+            //so we don't need to handle the flag HideNameFilterDetails.
             winfilters += subfilter; // The name of the filter.
             winfilters += QChar();
             currentOffset += subfilter.size()+1;
@@ -638,9 +651,10 @@ QStringList qt_win_get_open_file_names(const QFileDialogArgs &args,
     modal_widget.setParent(args.parent, Qt::Window);
     QApplicationPrivate::enterModal(&modal_widget);
 
+    bool hideFiltersDetails = args.options & QFileDialog::HideNameFilterDetails;
     OPENFILENAME* ofn = qt_win_make_OFN(args.parent, args.selection,
                                         args.directory, args.caption,
-                                        qt_win_filter(args.filter),
+                                        qt_win_filter(args.filter, hideFiltersDetails),
                                         QFileDialog::ExistingFiles,
                                         args.options);
     if (idx)

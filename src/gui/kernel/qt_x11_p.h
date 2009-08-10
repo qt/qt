@@ -515,7 +515,8 @@ struct QX11Data
 
     char *startupId;
 
-    DesktopEnvironment desktopEnvironment;
+    DesktopEnvironment desktopEnvironment : 8;
+    uint desktopVersion : 8;  /* Used only for KDE */
 
     /* Warning: if you modify this list, modify the names of atoms in qapplication_x11.cpp as well! */
     enum X11Atom {

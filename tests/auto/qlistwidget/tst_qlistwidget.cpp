@@ -128,6 +128,8 @@ private slots:
     void setSortingEnabled();
     void task199503_crashWhenCleared();
     void task217070_scrollbarsAdjusted();
+    void task258949_keypressHangup();
+
 
 protected slots:
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last)
@@ -1009,7 +1011,7 @@ void tst_QListWidget::sortHiddenItems()
 
     for (int k = 0; k < tw->count(); ++k)
         QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
-        
+
     delete tw;
 }
 
@@ -1515,6 +1517,25 @@ void tst_QListWidget::task217070_scrollbarsAdjusted()
         //the vertical scrollbar must not be visible.
         QVERIFY(!v.horizontalScrollBar()->isVisible());
     }
+}
+
+void tst_QListWidget::task258949_keypressHangup()
+{
+    QListWidget lw;
+    for (int y = 0; y < 5; y++) {
+        QListWidgetItem *lwi = new QListWidgetItem(&lw);
+        lwi->setText(y ? "1" : "0");
+        if (y)
+            lwi->setFlags(Qt::ItemIsSelectable);
+    }
+
+    lw.show();
+    lw.setCurrentIndex(lw.model()->index(0,0));
+    QCOMPARE(lw.currentIndex(), lw.model()->index(0,0));
+    QTest::qWait(30);
+    QTest::keyPress(&lw, '1'); //this used to freeze
+    QTest::qWait(30);
+    QCOMPARE(lw.currentIndex(), lw.model()->index(0,0));
 }
 
 QTEST_MAIN(tst_QListWidget)

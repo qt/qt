@@ -272,6 +272,9 @@ QRect QMenuBarPrivate::actionRect(QAction *act) const
     //makes sure the geometries are up-to-date
     const_cast<QMenuBarPrivate*>(this)->updateGeometries();
 
+    if (index >= actionRects.count())
+        return QRect(); // that can happen in case of native menubar
+
     QRect ret = actionRects.at(index);
     return QStyle::visualRect(q->layoutDirection(), q->rect(), ret);
 }

@@ -360,7 +360,7 @@ void tst_QStyle::testAllFunctions(QStyle *style)
     testScrollBarSubControls(style);
 }
 
-void tst_QStyle::testScrollBarSubControls(QStyle *)
+void tst_QStyle::testScrollBarSubControls(QStyle* style)
 {
 #ifdef Q_OS_WINCE_WM
     if (qobject_cast<QWindowsMobileStyle*>(style) && qt_wince_is_smartphone())

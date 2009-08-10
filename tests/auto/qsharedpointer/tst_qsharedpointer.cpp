@@ -71,6 +71,9 @@ private slots:
     void memoryManagement();
     void downCast();
     void upCast();
+    void qobjectWeakManagement();
+    void noSharedPointerFromWeakQObject();
+    void weakQObjectFromSharedPointer();
     void objectCast();
     void differentPointers();
     void virtualBaseDifferentPointers();
@@ -83,6 +86,7 @@ private slots:
     void constCorrectness();
     void customDeleter();
     void creating();
+    void creatingQObject();
     void mixTrackingPointerCode();
     void threadStressTest_data();
     void threadStressTest();
@@ -506,6 +510,122 @@ class OtherObject: public QObject
 {
     Q_OBJECT
 };
+
+void tst_QSharedPointer::qobjectWeakManagement()
+{
+    {
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+        QVERIFY(!weak.isNull());
+        QVERIFY(weak.data() == obj);
+
+        // now delete
+        delete obj;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // same, bit with operator=
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak;
+        weak = obj;
+        QVERIFY(!weak.isNull());
+        QVERIFY(weak.data() == obj);
+
+        // now delete
+        delete obj;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // delete triggered by parent
+        QObject *obj, *parent;
+        parent = new QObject;
+        obj = new QObject(parent);
+        QWeakPointer<QObject> weak(obj);
+
+        // now delete the parent
+        delete parent;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // same as above, but set the parent after QWeakPointer is created
+        QObject *obj, *parent;
+        obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+
+        parent = new QObject;
+        obj->setParent(parent);
+
+        // now delete the parent
+        delete parent;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // with two QWeakPointers
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+
+        {
+            QWeakPointer<QObject> weak2(obj);
+            QVERIFY(!weak2.isNull());
+            QVERIFY(weak == weak2);
+        }
+        QVERIFY(!weak.isNull());
+
+        delete obj;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // same, but delete the pointer while two QWeakPointers exist
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+
+        {
+            QWeakPointer<QObject> weak2(obj);
+            QVERIFY(!weak2.isNull());
+
+            delete obj;
+            QVERIFY(weak.isNull());
+            QVERIFY(weak2.isNull());
+        }
+        QVERIFY(weak.isNull());
+    }
+    check();
+}
+
+void tst_QSharedPointer::noSharedPointerFromWeakQObject()
+{
+    // you're not allowed to create a QSharedPointer from an unmanaged QObject
+    QObject obj;
+    QWeakPointer<QObject> weak(&obj);
+
+    QSharedPointer<QObject> strong = weak.toStrongRef();
+    QVERIFY(strong.isNull());
+
+    // is something went wrong, we'll probably crash here
+}
+
+void tst_QSharedPointer::weakQObjectFromSharedPointer()
+{
+    // this is the inverse of the above: you're allowed to create a QWeakPointer
+    // from a managed QObject
+    QSharedPointer<QObject> shared(new QObject);
+    QWeakPointer<QObject> weak = shared.data();
+    QVERIFY(!weak.isNull());
+
+    // delete:
+    shared.clear();
+    QVERIFY(weak.isNull());
+}
 
 void tst_QSharedPointer::objectCast()
 {
@@ -1085,6 +1205,13 @@ void tst_QSharedPointer::customDeleter()
     QCOMPARE(dataDeleter.callCount, 0);
     QCOMPARE(derivedDataDeleter.callCount, 1);
     QCOMPARE(refcount, 2);
+    check();
+}
+
+void customQObjectDeleterFn(QObject *obj)
+{
+    ++customDeleterFnCallCount;
+    delete obj;
 }
 
 void tst_QSharedPointer::creating()
@@ -1151,7 +1278,10 @@ void tst_QSharedPointer::creating()
         QCOMPARE(baseptr->classLevel(), 4);
     }
     check();
+}
 
+void tst_QSharedPointer::creatingQObject()
+{
     {
         QSharedPointer<QObject> ptr = QSharedPointer<QObject>::create();
         QCOMPARE(ptr->metaObject(), &QObject::staticMetaObject);
@@ -1281,7 +1411,11 @@ void tst_QSharedPointer::threadStressTest()
 
         base.clear();
 
+#ifdef Q_OS_WINCE
+        srand(QDateTime::currentDateTime().toTime_t());
+#else
         srand(time(NULL));
+#endif
         // start threads
         for (int i = 0; i < allThreads.count(); ++i)
             if (allThreads[i]) allThreads[i]->start();
@@ -1450,6 +1584,17 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr1;\n"
            "QSharedPointer<int> ptr2 = qSharedPointerObjectCast<int>(ptr1);";
+
+    QTest::newRow("weak-pointer-from-regular-pointer")
+        << &QTest::QExternalTest::tryCompileFail
+        << "Data *ptr = 0;\n"
+           "QWeakPointer<Data> weakptr(ptr);\n";
+
+    QTest::newRow("shared-pointer-from-unmanaged-qobject")
+        << &QTest::QExternalTest::tryRunFail
+        << "QObject *ptr = new QObject;\n"
+           "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
+           "QSharedPointer<QObject> shared(ptr);\n";
 }
 
 void tst_QSharedPointer::invalidConstructs()

@@ -273,6 +273,9 @@ private:
 #ifndef QT_NO_COMPLETER
     Q_PRIVATE_SLOT(d_func(), void _q_completionHighlighted(QString))
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+    Q_PRIVATE_SLOT(d_func(), void _q_editFocusChange(bool))
+#endif
 };
 
 #endif // QT_NO_LINEEDIT

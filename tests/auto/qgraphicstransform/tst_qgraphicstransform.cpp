@@ -137,9 +137,29 @@ void tst_QGraphicsTransform::rotation()
 void tst_QGraphicsTransform::rotation3d()
 {
     QGraphicsRotation3D rotation;
-    rotation.setOrigin(QPointF(10, 10));
+    QCOMPARE(rotation.axis().x(), (qreal)0);
+    QCOMPARE(rotation.axis().y(), (qreal)0);
+    QCOMPARE(rotation.axis().z(), (qreal)1);
+    QCOMPARE(rotation.angle(), (qreal)0);
 
     QTransform t;
+    rotation.applyTo(&t);
+
+    QCOMPARE(t, QTransform());
+    QCOMPARE(rotation.transform(), QTransform());
+
+    rotation.setAngle(180);
+
+    QTransform t180;
+    t180.rotate(180.0f);
+
+    QCOMPARE(t, QTransform());
+    QVERIFY(qFuzzyCompare(rotation.transform(), t180));
+
+    rotation.setAxis(QVector3D(0, 0, 0));
+    rotation.setOrigin(QPointF(10, 10));
+
+    t = QTransform();
     rotation.applyTo(&t);
 
     QCOMPARE(t, QTransform());

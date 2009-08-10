@@ -67,6 +67,7 @@ QT_BEGIN_NAMESPACE
 class QVariant;
 class QThreadData;
 class QObjectConnectionListVector;
+namespace QtSharedPointer { struct ExternalRefCountData; }
 
 /* mirrored in QtTestLib, DON'T CHANGE without prior warning */
 struct QSignalSpyCallbackSet
@@ -187,6 +188,7 @@ public:
     // plus QPointer, which keeps a separate list
     QDeclarativeData *declarativeData;
     QGuard<QObject> *objectGuards;
+    QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
     int *deleteWatch;
 };
 

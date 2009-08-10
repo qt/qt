@@ -63,7 +63,7 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qrubberband.h>
-#include <private/qapplication_p.h>
+#include <../kernel/qkde_p.h>
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
 #include <private/qstylehelper_p.h>
@@ -842,12 +842,6 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 
 
 #ifdef Q_WS_X11 // These functions are used to parse the X11 freedesktop icon spec
-static int kdeVersion()
-{
-    static int kdeVersion = qgetenv("KDE_SESSION_VERSION").toInt();
-    return kdeVersion;
-}
-
 void QCommonStylePrivate::lookupIconTheme() const
 {
     if (!themeName.isEmpty())
@@ -856,7 +850,7 @@ void QCommonStylePrivate::lookupIconTheme() const
     QString dataDirs = QString::fromLocal8Bit(getenv("XDG_DATA_DIRS"));
     if (dataDirs.isEmpty())
         dataDirs = QLatin1String("/usr/local/share/:/usr/share/");
-    dataDirs += QLatin1Char(':') + QApplicationPrivate::kdeHome() + QLatin1String("/share");
+    dataDirs += QLatin1Char(':') + QKde::kdeHome() + QLatin1String("/share");
     dataDirs.prepend(QDir::homePath() + QLatin1String("/:"));
     QStringList kdeDirs = QString::fromLocal8Bit(getenv("KDEDIRS")).split(QLatin1Char(':'), QString::SkipEmptyParts);
     foreach (const QString &dirName, kdeDirs)
@@ -865,9 +859,10 @@ void QCommonStylePrivate::lookupIconTheme() const
 
     QFileInfo fileInfo(QLatin1String("/usr/share/icons/default.kde"));
     QDir dir(fileInfo.canonicalFilePath());
-    QString kdeDefault = kdeVersion() >= 4 ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
+    QString kdeDefault = (X11->desktopEnvironment != DE_KDE || X11->desktopVersion >= 4)
+                         ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
     QString defaultTheme = fileInfo.exists() ? dir.dirName() : kdeDefault;
-    QSettings settings(QApplicationPrivate::kdeHome() +
+    QSettings settings(QKde::kdeHome() +
                        QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
     settings.beginGroup(QLatin1String("Icons"));
     themeName = settings.value(QLatin1String("Theme"), defaultTheme).toString();
@@ -979,8 +974,15 @@ QPixmap QCommonStylePrivate::findIconHelper(int size,
     return pixmap;
 }
 
+/*! \internal
+    find a pixmap with the given size and name from the freedesktop theme.
+*/
 QPixmap QCommonStylePrivate::findIcon(int size, const QString &name) const
 {
+    QIcon icon = QKde::kdeIcon(name);
+    if (!icon.isNull())
+        return icon.pixmap(size);
+
     QPixmap pixmap;
     QString pixmapName = QLatin1String("$qt") + name + QString::number(size);
 
@@ -995,12 +997,17 @@ QPixmap QCommonStylePrivate::findIcon(int size, const QString &name) const
     return pixmap;
 }
 
+/*! \internal
+  create an Icon from the freedesktop theme.
+ */
 QIcon QCommonStylePrivate::createIcon(const QString &name) const
 {
-    QIcon icon;
-    icon.addPixmap(findIcon(16, name));
-    icon.addPixmap(findIcon(24, name));
-    icon.addPixmap(findIcon(32, name));
+    QIcon icon = QKde::kdeIcon(name);
+    if (icon.isNull()) {
+        icon.addPixmap(findIcon(16, name));
+        icon.addPixmap(findIcon(24, name));
+        icon.addPixmap(findIcon(32, name));
+    }
     return icon;
 }
 /*!internal
@@ -1012,8 +1019,8 @@ from the KDE configuration file
 int QCommonStylePrivate::lookupToolButtonStyle() const
 {
     int result = Qt::ToolButtonIconOnly;
-    if (kdeVersion() >= 4) {
-        QSettings settings(QApplicationPrivate::kdeHome() +
+    if (X11->desktopEnvironment == DE_KDE && X11->desktopVersion >= 4) {
+        QSettings settings(QKde::kdeHome() +
                            QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
         settings.beginGroup(QLatin1String("Toolbar style"));
         QString toolbarStyle = settings.value(QLatin1String("ToolButtonStyle"), QLatin1String("TextBesideIcon")).toString();

@@ -9963,20 +9963,25 @@ void QGraphicsItemGroup::addToGroup(QGraphicsItem *item)
     }
 
     // COMBINE
-    // ### Use itemTransform() instead.
-    QTransform oldSceneMatrix = item->sceneTransform();
+    bool ok;
+    QTransform itemTransform = item->itemTransform(this, &ok);
+
+    if (!ok) {
+        qWarning("QGraphicsItemGroup::addToGroup: could not find a valid transformation from item to group coordinates");
+        return;
+    }
+
+    QTransform newItemTransform(itemTransform);
     item->setPos(mapFromItem(item, 0, 0));
     item->setParentItem(this);
-    QTransform newItemTransform(oldSceneMatrix);
-    newItemTransform *= sceneTransform().inverted();
+
+    // removing position from translation component of the new transform
     if (!item->pos().isNull())
         newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+
     item->setTransform(newItemTransform);
     item->d_func()->setIsMemberOfGroup(true);
     prepareGeometryChange();
-    QTransform itemTransform(item->transform());
-    if (!item->pos().isNull())
-        itemTransform *= QTransform::fromTranslate(item->x(), item->y());
     d->itemsBoundingRect |= itemTransform.mapRect(item->boundingRect() | item->childrenBoundingRect());
     update();
 }

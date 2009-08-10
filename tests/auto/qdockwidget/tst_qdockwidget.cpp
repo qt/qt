@@ -91,6 +91,7 @@ private slots:
     void task169808_setFloating();
     void task237438_setFloatingCrash();
     void task248604_infiniteResize();
+    void task258459_visibilityChanged();
 };
 
 // Testing get/set functions
@@ -730,7 +731,7 @@ void tst_QDockWidget::task169808_setFloating()
             return QSize(20,20);
         }
 
-        void paintEvent(QPaintEvent *e)
+        void paintEvent(QPaintEvent *)
         {
             QPainter p(this);
             p.fillRect(rect(), Qt::red);
@@ -797,6 +798,22 @@ void tst_QDockWidget::task248604_infiniteResize()
     QCOMPARE(d.size(), QSize(320, 240));
 }
 
+
+void tst_QDockWidget::task258459_visibilityChanged()
+{
+    QMainWindow win;
+    QDockWidget dock1, dock2;
+    win.addDockWidget(Qt::RightDockWidgetArea, &dock1);
+    win.tabifyDockWidget(&dock1, &dock2);
+    QSignalSpy spy1(&dock1, SIGNAL(visibilityChanged(bool)));
+    QSignalSpy spy2(&dock2, SIGNAL(visibilityChanged(bool)));
+    win.show();
+    QTest::qWait(200);
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy1.first().first().toBool(), false); //dock1 is invisible
+    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy2.first().first().toBool(), true); //dock1 is visible
+}
 
 QTEST_MAIN(tst_QDockWidget)
 #include "tst_qdockwidget.moc"

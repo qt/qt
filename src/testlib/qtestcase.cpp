@@ -356,6 +356,25 @@ QT_BEGIN_NAMESPACE
         {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
 */
 
+/*!
+    \macro QBENCHMARK_ONCE
+
+    \relates QTest
+
+    This macro is used to measure the performance of code within a test.
+    The code to be benchmarked is contained within a code block following
+    this macro.
+
+    Unlike QBENCHMARK, the contents of the contained code block is only run
+    once. The elapsed time will be reported as "0" if it's to short to 
+    be measured by the selected backend. (Use)
+ 
+    \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
+    {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
+*/
+
+
+
 /*! \enum QTest::SkipMode
 
     This enum describes the modes for skipping tests during execution
@@ -821,43 +840,6 @@ void filter_unprintable(char *str)
             *idx = '?';
         ++idx;
     }
-}
-
-/*! \internal
- */
-int qt_asprintf(char **str, const char *format, ...)
-{
-    static const int MAXSIZE = 1024*1024*2;
-
-    int size = 32;
-    delete[] *str;
-    *str = new char[size];
-
-    va_list ap;
-    int res = 0;
-
-    for (;;) {
-        va_start(ap, format);
-        res = qvsnprintf(*str, size, format, ap);
-        va_end(ap);
-        (*str)[size - 1] = '\0';
-        if (res >= 0 && res < size) {
-            // We succeeded
-            break;
-        }
-        // buffer wasn't big enough, try again.
-        // Note, we're assuming that a result of -1 is always due to running out of space.
-        size *= 2;
-        if (size > MAXSIZE) {
-            break;
-        }
-        delete[] *str;
-        *str = new char[size];
-    }
-
-    filter_unprintable(*str);
-
-    return res;
 }
 
 /*! \internal

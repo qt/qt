@@ -128,8 +128,10 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_hslide(int))
     Q_PRIVATE_SLOT(d_func(), void _q_vslide(int))
     Q_PRIVATE_SLOT(d_func(), void _q_showOrHideScrollBars())
+    Q_PRIVATE_SLOT(d_func(), void _q_gestureTriggered())
 
     friend class QStyleSheetStyle;
+    friend class QWidgetPrivate;
 };
 
 #endif // QT_NO_SCROLLAREA

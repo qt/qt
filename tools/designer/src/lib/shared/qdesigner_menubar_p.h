@@ -155,10 +155,12 @@ protected:
 
     QAction *safeActionAt(int index) const;
 
-    bool swap(int a, int b);
+    bool swapActions(int a, int b);
 
 private:
     void updateCurrentAction(bool selectAction);
+    void movePrevious(bool ctrl);
+    void moveNext(bool ctrl);
 
     QAction *m_addMenu;
     QPointer<QMenu> m_activeMenu;
