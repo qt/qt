@@ -901,12 +901,11 @@ void QmlMetaProperty::write(const QVariant &value) const
     if (!d->object)
         return;
 
-    QMetaProperty prop = d->object->metaObject()->property(d->coreIdx);
     if (type() & SignalProperty) {
 
         d->writeSignalProperty(value);
 
-    } else if (prop.name()) {
+    } else if (d->coreIdx != -1) {
 
         d->writeValueProperty(value);
 
