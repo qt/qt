@@ -53,6 +53,7 @@ QT_MODULE(Test)
 class QTestElement;
 class QTestElementAttribute;
 class QTestLogger;
+class QTestCharBuffer;
 
 class QTestBasicStreamer
 {
@@ -71,11 +72,11 @@ class QTestBasicStreamer
         const QTestLogger *logger() const;
 
     protected:
-        virtual void formatStart(const QTestElement *element, char **formatted) const;
-        virtual void formatEnd(const QTestElement *element, char **formatted) const;
-        virtual void formatBeforeAttributes(const QTestElement *element, char **formatted) const;
-        virtual void formatAfterAttributes(const QTestElement *element, char **formatted) const;
-        virtual void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, char **formatted) const;
+        virtual void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
+        virtual void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
+        virtual void formatBeforeAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
+        virtual void formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
+        virtual void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
         virtual void outputElements(QTestElement *element, bool isChildElement = false) const;
         virtual void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
 

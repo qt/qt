@@ -1224,7 +1224,7 @@ private:
 //-----------------------------------------------------------------------------
 void tst_QProcess::processInAThread()
 {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 10; ++i) {
         TestThread thread;
         thread.start();
         QVERIFY(thread.wait(10000));

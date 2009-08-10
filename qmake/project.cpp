@@ -2576,10 +2576,15 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
     case T_LOAD: {
         QString parseInto;
         const bool include_statement = (func_t == T_INCLUDE);
-        bool ignore_error = include_statement;
-        if(args.count() == 2) {
+        bool ignore_error = false;
+        if(args.count() >= 2) {
             if(func_t == T_INCLUDE) {
                 parseInto = args[1];
+                if (args.count() == 3){
+                    QString sarg = args[2];
+                    if (sarg.toLower() == "true" || sarg.toInt())
+                        ignore_error = true;
+                }
             } else {
                 QString sarg = args[1];
                 ignore_error = (sarg.toLower() == "true" || sarg.toInt());
@@ -2621,8 +2626,8 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
         if(stat == IncludeFeatureAlreadyLoaded) {
             warn_msg(WarnParser, "%s:%d: Duplicate of loaded feature %s",
                      parser.file.toLatin1().constData(), parser.line_no, file.toLatin1().constData());
-        } else if(stat == IncludeNoExist && include_statement) {
-            warn_msg(WarnParser, "%s:%d: Unable to find file for inclusion %s",
+        } else if(stat == IncludeNoExist && !ignore_error) {
+            warn_msg(WarnAll, "%s:%d: Unable to find file for inclusion %s",
                      parser.file.toLatin1().constData(), parser.line_no, file.toLatin1().constData());
             return false;
         } else if(stat >= IncludeFailure) {

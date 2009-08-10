@@ -663,6 +663,7 @@ qreal QTimeLine::valueForTime(int msec) const
     second). You can change the update interval by calling
     setUpdateInterval().
 
+    The timeline will start from position 0, or the end if going backward.
     If you want to resume a stopped timeline without restarting, you can call
     resume() instead.
 
@@ -675,10 +676,8 @@ void QTimeLine::start()
         qWarning("QTimeLine::start: already running");
         return;
     }
-    int curTime = d->currentTime;
-    if (curTime == d->duration && d->direction == Forward)
-        curTime = 0;
-    else if (curTime == 0 && d->direction == Backward)
+    int curTime = 0;
+    if (d->direction == Backward)
         curTime = d->duration;
     d->timerId = startTimer(d->updateInterval);
     d->startTime = curTime;
@@ -694,7 +693,7 @@ void QTimeLine::start()
     frame and value at regular intervals.
 
     In contrast to start(), this function does not restart the timeline before
-    is resumes.
+    it resumes.
 
     \sa start(), updateInterval(), frameChanged(), valueChanged()
 */

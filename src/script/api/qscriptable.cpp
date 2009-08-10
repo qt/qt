@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_QOBJECT
-
 #include "qscriptable.h"
 #include "qscriptable_p.h"
 #include "qscriptengine.h"
@@ -182,7 +180,5 @@ QScriptValue QScriptable::argument(int index) const
 
     return QScriptValue();
 }
-
-#endif // QT_NO_QOBJECT
 
 QT_END_NAMESPACE

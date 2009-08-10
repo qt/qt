@@ -543,7 +543,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             QMap<QString, const Node*> nodeMap;
             for (int i = 0; i < values.size(); ++i) {
                 const Node* n = values.at(i);
-                nodeMap.insert(n->name(),n);
+                if ((n->status() != Node::Internal) && (n->access() != Node::Private))
+                    nodeMap.insert(n->name(),n);
             }
             generateAnnotatedList(relative, marker, nodeMap);
         }

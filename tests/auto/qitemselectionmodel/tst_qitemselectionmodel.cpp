@@ -90,6 +90,7 @@ private slots:
     void merge();
     void task119433_isRowSelected();
     void task252069_rowIntersectsSelection();
+    void task232634_childrenDeselectionSignal();
 
 private:
     QAbstractItemModel *model;
@@ -2185,6 +2186,29 @@ void tst_QItemSelectionModel::task252069_rowIntersectsSelection()
     QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
     QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
     QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+}
+
+void tst_QItemSelectionModel::task232634_childrenDeselectionSignal()
+{
+    QStandardItemModel model;
+
+    QStandardItem *parentItem = model.invisibleRootItem();
+    for (int i = 0; i < 4; ++i) {
+        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        parentItem->appendRow(item);
+        parentItem = item;
+    }
+
+    QModelIndex root = model.index(0,0);
+    QModelIndex par = root.child(0,0);
+    QModelIndex sel = par.child(0,0);
+
+    QItemSelectionModel selectionModel(&model);
+    selectionModel.select(sel, QItemSelectionModel::SelectCurrent);
+
+    QSignalSpy deselectSpy(&selectionModel, SIGNAL(selectionChanged(const QItemSelection& , const QItemSelection&)));
+    model.removeRows(0, 1, root);
+    QVERIFY(deselectSpy.count() == 1);
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)

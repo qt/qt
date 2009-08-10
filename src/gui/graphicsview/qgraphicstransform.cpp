@@ -80,11 +80,7 @@
 #include "qgraphicsitem_p.h"
 #include "qgraphicstransform_p.h"
 #include <QDebug>
-
-#include <math.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -355,7 +351,6 @@ public:
     QGraphicsRotationPrivate()
             : angle(0) {}
     QPointF origin;
-    qreal originY;
     qreal angle;
 };
 
@@ -475,13 +470,18 @@ void QGraphicsRotation::applyTo(QTransform *t) const
     By default the axis is (0, 0, 1), giving QGraphicsRotation3D the same
     default behavior as QGraphicsRotation (i.e., rotation around the Z axis).
 
+    Note: the final rotation is the combined effect of a rotation in
+    3D space followed by a projection back to 2D.  If several rotations
+    are performed in succession, they will not behave as expected unless
+    they were all around the Z axis.
+
     \sa QGraphicsTransform, QGraphicsItem::setRotation(), QTransform::rotate()
 */
 
 class QGraphicsRotation3DPrivate : public QGraphicsRotationPrivate
 {
 public:
-    QGraphicsRotation3DPrivate() {}
+    QGraphicsRotation3DPrivate() : axis(0, 0, 1) {}
 
     QVector3D axis;
 };
@@ -522,10 +522,14 @@ QVector3D QGraphicsRotation3D::axis()
 void QGraphicsRotation3D::setAxis(const QVector3D &axis)
 {
     Q_D(QGraphicsRotation3D);
+    if (d->axis == axis)
+        return;
     d->axis = axis;
     update();
+    emit axisChanged();
 }
 
+const qreal deg2rad = qreal(0.017453292519943295769);        // pi/180
 static const qreal inv_dist_to_plane = 1. / 1024.;
 
 /*!
@@ -535,13 +539,27 @@ void QGraphicsRotation3D::applyTo(QTransform *t) const
 {
     Q_D(const QGraphicsRotation3D);
 
-    if (d->angle == 0. ||
+    qreal a = d->angle;
+
+    if (a == 0. ||
         (d->axis.z() == 0. && d->axis.y() == 0 && d->axis.x() == 0))
         return;
 
-    qreal rad = d->angle * 2. * M_PI / 360.;
-    qreal c = ::cos(rad);
-    qreal s = ::sin(rad);
+    qreal c, s;
+    if (a == 90. || a == -270.) {
+        s = 1.;
+        c = 0.;
+    } else if (a == 270. || a == -90.) {
+        s = -1.;
+        c = 0.;
+    } else if (a == 180.) {
+        s = 0.;
+        c = -1.;
+    } else {
+        qreal b = deg2rad*a;
+        s = qSin(b);
+        c = qCos(b);
+    }
 
     qreal x = d->axis.x();
     qreal y = d->axis.y();

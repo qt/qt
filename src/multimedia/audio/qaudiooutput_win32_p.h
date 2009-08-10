@@ -67,8 +67,6 @@
 #include <QtMultimedia/qaudioengine.h>
 
 
-static CRITICAL_SECTION waveOutCriticalSection;
-
 class QAudioOutputPrivate : public QAbstractAudioOutput
 {
     Q_OBJECT

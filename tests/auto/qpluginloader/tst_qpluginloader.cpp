@@ -264,6 +264,7 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
         if (pass == 0)
             loader1.load(); // not recommended, instance() should do the job.
         PluginInterface *instance1 = qobject_cast<PluginInterface*>(loader1.instance());
+        QVERIFY(instance1);
         QCOMPARE(instance1->pluginName(), QLatin1String("Plugin ok"));
 
         QPluginLoader loader2;
