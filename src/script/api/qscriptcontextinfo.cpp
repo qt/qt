@@ -518,7 +518,36 @@ Q_SCRIPT_EXPORT QDataStream &operator>>(QDataStream &in, QScriptContextInfo &inf
         info.d_ptr->ref.ref();
     }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    in >> info.d_ptr->scriptId;
+
+    qint32 line;
+    in >> line;
+    info.d_ptr->lineNumber = line;
+
+    qint32 column;
+    in >> column;
+    info.d_ptr->columnNumber = column;
+
+    quint32 ftype;
+    in >> ftype;
+    info.d_ptr->functionType = QScriptContextInfo::FunctionType(ftype);
+
+    qint32 startLine;
+    in >> startLine;
+    info.d_ptr->functionStartLineNumber = startLine;
+
+    qint32 endLine;
+    in >> endLine;
+    info.d_ptr->functionEndLineNumber = endLine;
+
+    qint32 metaIndex;
+    in >> metaIndex;
+    info.d_ptr->functionMetaIndex = metaIndex;
+
+    in >> info.d_ptr->fileName;
+    in >> info.d_ptr->functionName;
+    in >> info.d_ptr->parameterNames;
+
     return in;
 }
 #endif

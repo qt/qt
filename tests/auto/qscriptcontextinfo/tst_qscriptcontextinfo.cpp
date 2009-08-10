@@ -203,7 +203,7 @@ void tst_QScriptContextInfo::scriptFunction()
         // evaluate()
         QScriptContextInfo info = lst.at(2);
         QCOMPARE(info.functionType(), QScriptContextInfo::NativeFunction);
-        QEXPECT_FAIL("", "doesn't works", Abort);
+        QEXPECT_FAIL("", "Script ID is invalid for evaluate() call", Abort);
         QVERIFY(info.scriptId() != -1);
         QCOMPARE(info.fileName(), fileName);
         QCOMPARE(info.lineNumber(), lineNumber + 3);
@@ -516,8 +516,6 @@ void tst_QScriptContextInfo::nullContext()
 
 void tst_QScriptContextInfo::streaming()
 {
-    QEXPECT_FAIL("", "Crashes", Abort);
-    QVERIFY(false);
     {
         QScriptContextInfo info((QScriptContext*)0);
         QByteArray ba;
@@ -547,6 +545,7 @@ void tst_QScriptContextInfo::streaming()
         QScriptValue ret = eng.evaluate("function bar(a, b, c) {\n return getContextInfoList();\n}\nbar()",
                                         fileName, lineNumber);
         QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
+        QEXPECT_FAIL("", "getContextInfoList() returns one item too many", Continue);
         QCOMPARE(lst.size(), 3);
         for (int i = 0; i < lst.size(); ++i) {
             const QScriptContextInfo &info = lst.at(i);
