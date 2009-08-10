@@ -561,7 +561,7 @@ void tst_QScriptContext::backtrace()
 
     QVERIFY(ret.isArray());
     QStringList slist = qscriptvalue_cast<QStringList>(ret);
-    QEXPECT_FAIL("", "", Continue);
+    QEXPECT_FAIL("", "Backtrace is not correct", Continue);
     QCOMPARE(slist, expected);
 }
 

@@ -548,43 +548,11 @@ QScriptContext::ExecutionState QScriptContext::state() const
 QStringList QScriptContext::backtrace() const
 {
     QStringList result;
-    qWarning("QScriptContext::backtrace() not implemented");
-#if 0
-    const QScriptContextPrivate *ctx = this;
+    const QScriptContext *ctx = this;
     while (ctx) {
-        QString s;
-        QString functionName = ctx->functionName();
-        if (!functionName.isEmpty())
-            s += functionName;
-        else {
-            if (ctx->parentContext()) {
-                if (ctx->callee().isFunction()
-                    && ctx->callee().toFunction()->type() != QScriptFunction::Script) {
-                    s += QLatin1String("<native>");
-                } else {
-                    s += QLatin1String("<anonymous>");
-                }
-            } else {
-                s += QLatin1String("<global>");
-            }
-        }
-        s += QLatin1Char('(');
-        for (int i = 0; i < ctx->argc; ++i) {
-            if (i > 0)
-                s += QLatin1Char(',');
-            QScriptValueImpl arg = ctx->args[i];
-            if (arg.isObject())
-                s += QLatin1String("[object Object]"); // don't do a function call
-            else
-                s += arg.toString();
-        }
-        s += QLatin1String(")@");
-        s += ctx->fileName();
-        s += QString::fromLatin1(":%0").arg(ctx->currentLine);
-        result.append(s);
+        result.append(ctx->toString());
         ctx = ctx->parentContext();
     }
-#endif
     return result;
 }
 
