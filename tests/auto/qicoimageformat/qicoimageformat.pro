@@ -1,5 +1,5 @@
 load(qttest_p4)
-SOURCES+= tst_qticoimageformat.cpp
+SOURCES+= tst_qicoimageformat.cpp
 
 wince*: {
    DEFINES += SRCDIR=\\\".\\\"

@@ -1836,8 +1836,8 @@ QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
 
 QColorDialog::~QColorDialog()
 {
-    Q_D(QColorDialog);
 #if defined(Q_WS_MAC)
+    Q_D(QColorDialog);
     if (d->delegate) {
         d->releaseCocoaColorPanelDelegate();
         QColorDialogPrivate::sharedColorPanelAvailable = true;

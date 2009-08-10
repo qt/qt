@@ -3573,27 +3573,27 @@ bool QWidgetPrivate::setMinimumSize_helper(int &minw, int &minh)
         }
     }
 #endif
-    if (minw > QWIDGETSIZE_MAX || minh > QWIDGETSIZE_MAX) {
-        qWarning("QWidget::setMinimumSize: (%s/%s) "
-                "The largest allowed size is (%d,%d)",
-                 q->objectName().toLocal8Bit().data(), q->metaObject()->className(), QWIDGETSIZE_MAX,
-                QWIDGETSIZE_MAX);
-        minw = qMin<int>(minw, QWIDGETSIZE_MAX);
-        minh = qMin<int>(minh, QWIDGETSIZE_MAX);
-    }
-    if (minw < 0 || minh < 0) {
-        qWarning("QWidget::setMinimumSize: (%s/%s) Negative sizes (%d,%d) "
-                "are not possible",
-                q->objectName().toLocal8Bit().data(), q->metaObject()->className(), minw, minh);
-        minw = qMax(minw, 0);
-        minh = qMax(minh, 0);
-    }
-    createExtra();
     int mw = minw, mh = minh;
     if (mw == QWIDGETSIZE_MAX)
         mw = 0;
     if (mh == QWIDGETSIZE_MAX)
         mh = 0;
+    if (minw > QWIDGETSIZE_MAX || minh > QWIDGETSIZE_MAX) {
+        qWarning("QWidget::setMinimumSize: (%s/%s) "
+                "The largest allowed size is (%d,%d)",
+                 q->objectName().toLocal8Bit().data(), q->metaObject()->className(), QWIDGETSIZE_MAX,
+                QWIDGETSIZE_MAX);
+        minw = mw = qMin<int>(minw, QWIDGETSIZE_MAX);
+        minh = mh = qMin<int>(minh, QWIDGETSIZE_MAX);
+    }
+    if (minw < 0 || minh < 0) {
+        qWarning("QWidget::setMinimumSize: (%s/%s) Negative sizes (%d,%d) "
+                "are not possible",
+                q->objectName().toLocal8Bit().data(), q->metaObject()->className(), minw, minh);
+        minw = mw = qMax(minw, 0);
+        minh = mh = qMax(minh, 0);
+    }
+    createExtra();
     if (extra->minw == mw && extra->minh == mh)
         return false;
     extra->minw = mw;
@@ -8120,10 +8120,12 @@ void QWidget::changeEvent(QEvent * event)
 
     case QEvent::FontChange:
     case QEvent::StyleChange: {
+        Q_D(QWidget);
         update();
         updateGeometry();
+        if (d->layout)
+            d->layout->invalidate();
 #ifdef Q_WS_QWS
-        Q_D(QWidget);
         if (isWindow())
             d->data.fstrut_dirty = true;
 #endif
@@ -11285,8 +11287,6 @@ Q_GUI_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
 {
     return widget->d_func();
 }
-
-
 
 
 #ifndef QT_NO_GRAPHICSVIEW

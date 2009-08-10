@@ -170,6 +170,9 @@ static void construct(QVariant::Private *x, const void *copy)
     case QMetaType::Float:
         x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
         break;
+    case QMetaType::QObjectStar:
+        x->data.o = copy ? *static_cast<QObject *const*>(copy) : 0;
+        break;
     case QVariant::LongLong:
 #if defined(Q_CC_RVCT)
         // Using trinary operator with 64bit constants crashes when ran on Symbian device
@@ -284,6 +287,7 @@ static void clear(QVariant::Private *d)
     case QVariant::ULongLong:
     case QVariant::Double:
     case QMetaType::Float:
+    case QMetaType::QObjectStar:
         break;
     case QVariant::Invalid:
     case QVariant::UserType:
@@ -353,6 +357,7 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::Bool:
     case QVariant::Double:
     case QMetaType::Float:
+    case QMetaType::QObjectStar:
         break;
     }
     return d->is_null;
@@ -446,6 +451,8 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
         return a->data.d == b->data.d;
     case QMetaType::Float:
         return a->data.f == b->data.f;
+    case QMetaType::QObjectStar:
+        return a->data.o == b->data.o;
     case QVariant::Date:
         return *v_cast<QDate>(a) == *v_cast<QDate>(b);
     case QVariant::Time:
@@ -1075,6 +1082,9 @@ static void streamDebug(QDebug dbg, const QVariant &v)
     case QMetaType::Float:
         dbg.nospace() << qVariantValue<float>(v);
         break;
+    case QMetaType::QObjectStar:
+        dbg.nospace() << qVariantValue<QObject *>(v);
+        break;
     case QVariant::Double:
         dbg.nospace() << v.toDouble();
         break;
@@ -1388,7 +1398,7 @@ void QVariant::create(int type, const void *copy)
 
 QVariant::~QVariant()
 {
-    if (d.type > Char && d.type != QMetaType::Float && (!d.is_shared || !d.data.shared->ref.deref()))
+    if (d.type > Char && d.type != QMetaType::Float && d.type != QMetaType::QObjectStar && (!d.is_shared || !d.data.shared->ref.deref()))
         handler->clear(&d);
 }
 
@@ -1404,7 +1414,7 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-    } else if (p.d.type > Char && p.d.type != QMetaType::Float) {
+    } else if (p.d.type > Char && p.d.type != QMetaType::Float && p.d.type != QMetaType::QObjectStar) {
         handler->construct(&d, p.constData());
         d.is_null = p.d.is_null;
     }
@@ -1760,7 +1770,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
     if (variant.d.is_shared) {
         variant.d.data.shared->ref.ref();
         d = variant.d;
-    } else if (variant.d.type > Char && variant.d.type != QMetaType::Float) {
+    } else if (variant.d.type > Char && variant.d.type != QMetaType::Float && variant.d.type != QMetaType::QObjectStar) {
         d.type = variant.d.type;
         handler->construct(&d, variant.constData());
         d.is_null = variant.d.is_null;

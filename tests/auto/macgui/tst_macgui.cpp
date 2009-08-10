@@ -52,7 +52,7 @@
 
 #ifdef Q_OS_MAC
 
-class tst_gui : public GuiTester
+class tst_MacGui : public GuiTester
 {
 Q_OBJECT
 private slots:
@@ -76,7 +76,7 @@ QPixmap grabWindowContents(QWidget * widget)
     Test that vertical and horizontal mac-style scrollbars paint their
     entire area.
 */
-void tst_gui::scrollbarPainting()
+void tst_MacGui::scrollbarPainting()
 {
     ColorWidget colorWidget;
     colorWidget.resize(400, 400);
@@ -108,7 +108,7 @@ void tst_gui::scrollbarPainting()
 
 // When running the auto-tests on scruffy, the first enter-the-event-loop-and-wait-for-a-click
 // test that runs always times out, so we have this dummy test.
-void tst_gui::dummy()
+void tst_MacGui::dummy()
 {
     QPixmap pix(100, 100);
     QSplashScreen splash(pix);
@@ -133,7 +133,7 @@ void tst_gui::dummy()
 /*
     Test that a message box pops up in front of a QSplashScreen.
 */
-void tst_gui::splashScreenModality()
+void tst_MacGui::splashScreenModality()
 {
     QPixmap pix(300, 300);
     QSplashScreen splash(pix);
@@ -162,7 +162,7 @@ void tst_gui::splashScreenModality()
     Test that a non-modal dialog created as a child of a modal dialog is
     shown in front.
 */
-void tst_gui::dialogModality()
+void tst_MacGui::dialogModality()
 { 
     QDialog d;
     d.setModal(true);
@@ -222,7 +222,7 @@ void PrimaryWindowDialog::test()
     of the dialog even if the dialog becomes modal after the child window
     is created.
 */
-void tst_gui::nonModalOrder()
+void tst_MacGui::nonModalOrder()
 {
     clearSequence();
     PrimaryWindowDialog primary;
@@ -235,7 +235,7 @@ void tst_gui::nonModalOrder()
 /*
     Test that the QSpinBox buttons are correctly positioned with the Mac style.
 */
-void tst_gui::spinBoxArrowButtons()
+void tst_MacGui::spinBoxArrowButtons()
 {
     ColorWidget colorWidget;
     colorWidget.resize(200, 200);
@@ -266,7 +266,7 @@ void tst_gui::spinBoxArrowButtons()
     QVERIFY(noFocus.copy(compareRect) == focus.copy(compareRect));
 }
 
-QTEST_MAIN(tst_gui)
+QTEST_MAIN(tst_MacGui)
 
 #else
 
@@ -274,4 +274,5 @@ QTEST_NOOP_MAIN
 
 #endif
 
-#include "tst_gui.moc"
+#include "tst_macgui.moc"
+

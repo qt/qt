@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,17 @@
 **
 ****************************************************************************/
 
+#include <QtGui>
 
-#include <QtTest/QtTest>
+#include "window.h"
 
-#include <qpolygon.h>
-#include <qpainterpath.h>
-#include <math.h>
-
-#include <qpainter.h>
-#include <qdialog.h>
-
-
-
-//TESTED_CLASS=
-//TESTED_FILES=gui/painting/qpolygon.h gui/painting/qpolygon.cpp
-
-class tst_QPolygon : public QObject
+int main(int argv, char **args)
 {
-    Q_OBJECT
+    QApplication app(argv, args);
 
-public:
-    tst_QPolygon();
+    Window window;
+    window.show();
 
-private slots:
-    void makeEllipse();
-};
-
-tst_QPolygon::tst_QPolygon()
-{
+    return app.exec();
 }
 
-void tst_QPolygon::makeEllipse()
-{
-    // create an ellipse with R1 = R2 = R, i.e. a circle
-    QPolygon pa;
-    const int R = 50; // radius
-    QPainterPath path;
-    path.addEllipse(0, 0, 2*R, 2*R);
-    pa = path.toSubpathPolygons().at(0).toPolygon();
-
-    int i;
-    // make sure that all points are R+-1 away from the center
-    bool err = FALSE;
-    for (i = 1; i < pa.size(); i++) {
-	QPoint p = pa.at( i );
-	double r = sqrt( pow( double(p.x() - R), 2.0 ) + pow( double(p.y() - R), 2.0 ) );
-	// ### too strict ? at least from visual inspection it looks
-	// quite odd around the main axes. 2.0 passes easily.
-	err |= ( qAbs( r - double(R) ) > 2.0 );
-    }
-    QVERIFY( !err );
-}
-
-QTEST_APPLESS_MAIN(tst_QPolygon)
-#include "tst_qpointarray.moc"

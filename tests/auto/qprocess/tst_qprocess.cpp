@@ -1321,7 +1321,7 @@ private:
 //-----------------------------------------------------------------------------
 void tst_QProcess::processInAThread()
 {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 10; ++i) {
         TestThread thread;
 #if defined(Q_OS_SYMBIAN)
         thread.setStackSize(0x14000);

@@ -1545,7 +1545,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
 
         QRect geo = w->geometry();
         widgetAnimator.animate(w, r, animate);
-        if (!w->isHidden()) {
+        if (!w->isHidden() && w->window()->isVisible()) {
             QDockWidget *dw = qobject_cast<QDockWidget*>(w);
             if (!r.isValid() && geo.right() >= 0 && geo.bottom() >= 0) {
                 dw->lower();

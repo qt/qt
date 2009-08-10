@@ -5,7 +5,7 @@ TEMPLATE = subdirs
 !wince*:SUBDIRS += \
            headers
 
-SUBDIRS += _networkselftest \
+SUBDIRS += \
            bic \
            collections \
            compile \
@@ -14,10 +14,11 @@ SUBDIRS += _networkselftest \
            linguist \
            macgui \
            macplist \
-	   mediaobject \
-#	   mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
+           mediaobject \
+#           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
            moc \
            modeltest \
+           networkselftest \
            q3accel \
            q3action \
            q3actiongroup \
@@ -106,8 +107,8 @@ SUBDIRS += _networkselftest \
            qdate \
            qdatetime \
            qdatetimeedit \
-	   qdbuspendingcall \
-	   qdbuspendingreply \
+           qdbuspendingcall \
+           qdbuspendingreply \
            qdebug \
            qdesktopservices \
            qdesktopwidget \
@@ -141,6 +142,7 @@ SUBDIRS += _networkselftest \
            qgetputenv \
            qgl \
            qglobal \
+           qgraphicsgridlayout \
            qgraphicsitem \
            qgraphicsitemanimation \
            qgraphicslayout \
@@ -148,13 +150,14 @@ SUBDIRS += _networkselftest \
            qgraphicslinearlayout \
            qgraphicsobject \
            qgraphicspixmapitem \
-	   qgraphicspolygonitem \
-	   qgraphicsproxywidget \
+           qgraphicspolygonitem \
+           qgraphicsproxywidget \
            qgraphicsscene \
            qgraphicssceneindex \
+           qgraphicstransform \
            qgraphicsview \
            qgraphicswidget \
-	   qgridlayout \
+           qgridlayout \
            qgroupbox \
            qguivariant \
            qhash \
@@ -167,8 +170,8 @@ SUBDIRS += _networkselftest \
            qhostaddress \
            qhostinfo \
            qhttp \
-	   qhttpnetworkreply \
-	   qhttpnetworkconnection \
+           qhttpnetworkreply \
+           qhttpnetworkconnection \
            qicon \
            qicoimageformat \
            qimage \
@@ -191,7 +194,7 @@ SUBDIRS += _networkselftest \
            qlibrary \
            qline \
            qlineedit \
-           qlist \           
+           qlist \
            q3listbox \
            qlistview \
            qlistwidget \
@@ -213,12 +216,12 @@ SUBDIRS += _networkselftest \
            qmutex \
            qmutexlocker \
            qnativesocketengine \
-	   qnetworkcookie \
-	   qnetworkcookiejar \
+           qnetworkcookie \
+           qnetworkcookiejar \
            qnetworkinterface \
            qnetworkproxy \
-	   qnetworkrequest \
-	   qnetworkreply \
+           qnetworkrequest \
+           qnetworkreply \
            qnetworkaccessmanager_and_qprogressdialog \
            qnumeric \
            qobject \
@@ -237,8 +240,8 @@ SUBDIRS += _networkselftest \
            qpixmapfilter \
            qplaintextedit \
            qpoint \
-           qpointarray \
            qpointer \
+           qpolygon \
            qprinter \
            qprinterinfo \
            qprocess \
@@ -263,16 +266,17 @@ SUBDIRS += _networkselftest \
            qscriptcontextinfo \
            qscriptengine \
            qscriptengineagent \
+           qscriptextqobject \
            qscriptjstestsuite \
            qscriptv8testsuite \
-           qscriptqobject \
            qscriptstring \
            qscriptvalue \
            qscriptvalueiterator \
            qscriptenginedebugger \
            qscrollarea \
            qsemaphore \
-	   qsharedpointer \
+           qsharedpointer \
+           qsharedpointer_and_qwidget \
            qsequentialanimationgroup \
            qset \
            qsettings \
@@ -353,7 +357,7 @@ SUBDIRS += _networkselftest \
            qtextstream \
            qtexttable \
            qthread \
-	   qthreadonce \
+           qthreadonce \
            qthreadstorage \
            qtime \
            qtimeline \
@@ -455,7 +459,7 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusmarshall \
            qdbusmetaobject \
            qdbusmetatype \
-	   qdbusperformance \
+           qdbusperformance \
            qdbusreply \
            qdbusthreading \
            qdbusxmlparser

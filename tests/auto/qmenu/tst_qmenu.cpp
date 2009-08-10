@@ -50,6 +50,7 @@
 #include <QStatusBar>
 #include <QListWidget>
 #include <QWidgetAction>
+#include <QDesktopWidget>
 
 #include <qmenu.h>
 #include <qstyle.h>
@@ -699,6 +700,12 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     };
 
     QMenu sub;
+	
+    if (sub.style()->styleHint(QStyle::SH_Menu_Scrollable, 0, &sub)) {
+        //the style prevents the menus from getting columns
+        QSKIP("the style doesn't support multiple columns, it makes the menu scrollable", SkipSingle);
+    }
+	
     sub.addAction("Sub-Item1");
     QAction *subAction = sub.addAction("Sub-Item2");
 
@@ -710,6 +717,7 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     uint i = 2;
     while (main.columnCount() < 2) {
         main.addAction(QString("Item %1").arg(i));
+        qDebug() << "adding action" << i;
         ++i;
         Q_ASSERT(i<1000);
     }
@@ -791,7 +799,7 @@ void tst_QMenu::task258920_mouseBorder()
     Menu258920 menu;
     QAction *action = menu.addAction("test");
 
-    menu.popup(QPoint());
+    menu.popup(QApplication::desktop()->availableGeometry().center());
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     QTest::mouseMove(&menu, actionRect.center());

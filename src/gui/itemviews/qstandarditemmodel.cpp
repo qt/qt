@@ -1742,15 +1742,17 @@ QList<QStandardItem*> QStandardItem::takeRow(int row)
     if (d->model)
         d->model->d_func()->rowsAboutToBeRemoved(this, row, row);
     QList<QStandardItem*> items;
-    int index = d->childIndex(row, 0);
-    int col_count = d->columnCount();
-    for (int column = 0; column < col_count; ++column) {
-        QStandardItem *ch = d->children.at(index + column);
-        if (ch)
-            ch->d_func()->setParentAndModel(0, 0);
-        items.append(ch);
+    int index = d->childIndex(row, 0);  // Will return -1 if there are no columns
+    if (index != -1) {
+        int col_count = d->columnCount();
+        for (int column = 0; column < col_count; ++column) {
+            QStandardItem *ch = d->children.at(index + column);
+            if (ch)
+                ch->d_func()->setParentAndModel(0, 0);
+            items.append(ch);
+        }
+        d->children.remove(index, col_count);
     }
-    d->children.remove(index, col_count);
     d->rows--;
     if (d->model)
         d->model->d_func()->rowsRemoved(this, row, 1);

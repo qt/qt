@@ -66,6 +66,7 @@ private:
     QBasicTimer timer;
     int iteration;
     QPoint position;
+    QPoint startPosition;
     static const int iterationCount;
     static const int iterationTimeout;
 };

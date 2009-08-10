@@ -181,6 +181,9 @@ protected:
     void selectCurrentAction();
 
 private:
+    bool hideSubMenuOnCursorKey();
+    bool showSubMenuOnCursorKey();
+
     QPoint m_startPosition;
     int m_currentIndex;
     QAction *m_addItem;

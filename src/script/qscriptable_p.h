@@ -55,7 +55,7 @@
 // We mean it.
 //
 
-#if !defined(QT_NO_QOBJECT) && !defined(QT_NO_SCRIPT)
+#ifndef QT_NO_SCRIPT
 
 QT_BEGIN_NAMESPACE
 
@@ -79,6 +79,6 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_QOBJECT && QT_NO_SCRIPT
+#endif // QT_NO_SCRIPT
 
 #endif

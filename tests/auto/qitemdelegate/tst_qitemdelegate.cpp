@@ -1156,7 +1156,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     QTimer::singleShot(100, &dialog, SLOT(close()));
     dialog.exec();
 
-    QTest::qWait(10);
+    QTest::qWait(100);
 
     QVERIFY(!editor);
 }

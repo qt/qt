@@ -925,6 +925,7 @@ void tst_QFile::copyAfterFail()
 
     QVERIFY(file1.open(QIODevice::ReadWrite) && "(test-precondition)");
     QVERIFY(file2.open(QIODevice::ReadWrite) && "(test-precondition)");
+    file2.close();
     QVERIFY(!QFile::exists("copied-file-1.txt") && "(test-precondition)");
     QVERIFY(!QFile::exists("copied-file-2.txt") && "(test-precondition)");
 

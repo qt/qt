@@ -756,7 +756,7 @@ void tst_QFileInfo::size()
 
 void tst_QFileInfo::systemFiles()
 {
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
     QSKIP("This is a Windows only test", SkipAll);
 #endif
     QFileInfo fi("c:\\pagefile.sys");
@@ -1097,7 +1097,13 @@ void tst_QFileInfo::isWritable()
 
     QVERIFY(QFileInfo("tst_qfileinfo.cpp").isWritable());
 #ifdef Q_OS_WIN
-    QVERIFY(!QFileInfo("c:\\pagefile.sys").isWritable());
+#ifdef Q_OS_WINCE
+    QFileInfo fi("\\Windows\\wince.nls");
+#else
+    QFileInfo fi("c:\\pagefile.sys");
+#endif
+    QVERIFY(fi.exists());
+    QVERIFY(!fi.isWritable());
 #endif
 #ifdef Q_OS_UNIX
     if (::getuid() == 0)

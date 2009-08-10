@@ -63,7 +63,7 @@ void q3InitNetworkProtocols()
 #ifndef QT_NO_NETWORKPROTOCOL_FTP
     Q3NetworkProtocol::registerNetworkProtocol( QLatin1String("ftp"), new Q3NetworkProtocolFactory< Q3Ftp > );
 #endif
-#ifndef QT_NO_NETWORKPROTOCOL_HTTP
+#ifndef QT_NO_HTTP
     Q3NetworkProtocol::registerNetworkProtocol( QLatin1String("http"), new Q3NetworkProtocolFactory< Q3Http > );
 #endif
 }
