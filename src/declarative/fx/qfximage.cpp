@@ -225,6 +225,19 @@ void QFxImage::setFillMode(FillMode mode)
 */
 
 /*!
+    \qmlproperty bool Image::smooth
+
+    Set this property if you want the image to be smoothly filtered when scaled or
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the image is displayed at its natural size, this property has no visual or
+    performance effect.
+
+    \note Generally scaling artifacts are only visible if the image is stationary on
+    the screen.  A common pattern when animating an image is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+*/
+
+/*!
     \qmlproperty url Image::source
 
     Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.

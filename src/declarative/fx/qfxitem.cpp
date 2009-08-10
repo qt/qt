@@ -1701,20 +1701,6 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
 }
 
 /*!
-    \qmlproperty bool Item::smooth
-
-    Set this property if you want the item to be smoothly scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
-    the item is displayed at its natural size, this property has no visual or
-    performance effect.
-    Currently, only the \c Image, \c Text , \c TextEdit and \c LineEdit items implement smooth filtering.
-
-    \note Generally scaling artifacts are only visible if the item is stationary on
-    the screen.  A common pattern when animating an item is to disable smooth
-    filtering at the beginning of the animation and reenable it at the conclusion.
- */
-
-/*!
     \property QFxItem::smooth
     \brief whether the item is smoothly transformed.
 

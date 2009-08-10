@@ -1010,11 +1010,24 @@ void QFxTextEdit::updateImgCache(const QRectF &r)
     emit update();
 }
 
+/*!
+    \qmlproperty bool TextEdit::smooth
+
+    Set this property if you want the text to be smoothly scaled or
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the item is displayed at its natural size, this property has no visual or
+    performance effect.
+
+    \note Generally scaling artifacts are only visible if the item is stationary on
+    the screen.  A common pattern when animating an item is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+*/
+
 void QFxTextEditPrivate::init()
 {
     Q_Q(QFxTextEdit);
 
-    q->setSmoothTransform(true);
+    q->setSmoothTransform(smooth);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QGraphicsItem::ItemHasNoContents, false);
     q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
