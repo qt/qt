@@ -56,6 +56,9 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QPaintEngine>
+#include <QSignalMapper>
+#include <QAction>
+
 
 #include <private/qwindowsurface_p.h>
 
@@ -96,8 +99,8 @@ public:
 
     OnScreenWidget(const QString &file, QWidget *parent = 0)
         : T(parent),
-          m_view_mode(RenderView),
-          m_filename(file)
+          m_filename(file),
+          m_view_mode(RenderView)
     {
         QSettings settings("Trolltech", "lance");
         for (int i=0; i<10; ++i) {
@@ -117,36 +120,36 @@ public:
         }
 
         if (m_baseline.isNull()) {
-            setWindowTitle("Rendering: '" + file + "'. No baseline available");
+            T::setWindowTitle("Rendering: '" + file + "'. No baseline available");
         } else {
-            setWindowTitle("Rendering: '" + file + "'. Shortcuts: 1=render, 2=baseline, 3=difference");
+            T::setWindowTitle("Rendering: '" + file + "'. Shortcuts: 1=render, 2=baseline, 3=difference");
 
             StupidWorkaround *workaround = new StupidWorkaround(this, &m_view_mode);
 
             QSignalMapper *mapper = new QSignalMapper(this);
-            connect(mapper, SIGNAL(mapped(int)), workaround, SLOT(setViewMode(int)));
-            connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setWindowTitle(QString)));
+            T::connect(mapper, SIGNAL(mapped(int)), workaround, SLOT(setViewMode(int)));
+            T::connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setWindowTitle(QString)));
 
             QAction *renderViewAction = new QAction("Render View", this);
             renderViewAction->setShortcut(Qt::Key_1);
-            connect(renderViewAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            T::connect(renderViewAction, SIGNAL(triggered()), mapper, SLOT(map()));
             mapper->setMapping(renderViewAction, RenderView);
             mapper->setMapping(renderViewAction, "Render View: " + file);
-            addAction(renderViewAction);
+            T::addAction(renderViewAction);
 
             QAction *baselineAction = new QAction("Baseline", this);
             baselineAction->setShortcut(Qt::Key_2);
-            connect(baselineAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            T::connect(baselineAction, SIGNAL(triggered()), mapper, SLOT(map()));
             mapper->setMapping(baselineAction, BaselineView);
             mapper->setMapping(baselineAction, "Baseline View: " + file);
-            addAction(baselineAction);
+            T::addAction(baselineAction);
 
             QAction *differenceAction = new QAction("Differenfe View", this);
             differenceAction->setShortcut(Qt::Key_3);
-            connect(differenceAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            T::connect(differenceAction, SIGNAL(triggered()), mapper, SLOT(map()));
             mapper->setMapping(differenceAction, DifferenceView);
             mapper->setMapping(differenceAction, "Difference View" + file);
-            addAction(differenceAction);
+            T::addAction(differenceAction);
 
         }
 
@@ -178,7 +181,7 @@ public:
         }
     }
 
-    void OnScreenWidget<T>::paintRenderView()
+    void paintRenderView()
     {
         QPainter pt;
         QPaintDevice *dev = this;
@@ -233,7 +236,7 @@ public:
         }
 
         if (m_render_view.isNull()) {
-            m_render_view = window()->windowSurface()->grabWidget(this);
+            m_render_view = T::window()->windowSurface()->grabWidget(this);
             m_render_view.save("renderView.png");
         }
     }
@@ -242,7 +245,7 @@ public:
         QPainter p(this);
 
         if (m_baseline.isNull()) {
-            p.drawText(rect(), Qt::AlignCenter,
+            p.drawText(T::rect(), Qt::AlignCenter,
                        "No baseline found\n"
                        "file '" + m_baseline_name + "' does not exist...");
             return;
@@ -258,7 +261,7 @@ public:
 
     QPixmap generateDifference()
     {
-        QImage img(size(), QImage::Format_RGB32);
+        QImage img(T::size(), QImage::Format_RGB32);
         img.fill(0);
 
         QPainter p(&img);
@@ -275,13 +278,13 @@ public:
     void paintDifferenceView() {
         QPainter p(this);
         if (m_baseline.isNull()) {
-            p.drawText(rect(), Qt::AlignCenter,
+            p.drawText(T::rect(), Qt::AlignCenter,
                        "No baseline found\n"
                        "file '" + m_baseline_name + "' does not exist...");
             return;
         }
 
-        p.fillRect(rect(), Qt::black);
+        p.fillRect(T::rect(), Qt::black);
         p.drawPixmap(0, 0, generateDifference());
     }
 

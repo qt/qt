@@ -293,7 +293,7 @@ QPinchGesture::QPinchGesture(QWidget *parent)
     : QGesture(*new QPinchGesturePrivate, parent)
 {
     if (parent) {
-        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         qAppPriv->widgetGestures[parent].pinch = this;
 #ifdef Q_WS_WIN
         qt_widget_private(parent)->winSetupGestures();
@@ -307,7 +307,7 @@ bool QPinchGesture::event(QEvent *event)
     switch (event->type()) {
     case QEvent::ParentAboutToChange:
         if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            getQApplicationPrivateInternal()->widgetGestures[w].pinch = 0;
+            QApplicationPrivate::instance()->widgetGestures[w].pinch = 0;
 #ifdef Q_WS_WIN
             qt_widget_private(w)->winSetupGestures();
 #endif
@@ -315,7 +315,7 @@ bool QPinchGesture::event(QEvent *event)
         break;
     case QEvent::ParentChange:
         if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            getQApplicationPrivateInternal()->widgetGestures[w].pinch = this;
+            QApplicationPrivate::instance()->widgetGestures[w].pinch = this;
 #ifdef Q_WS_WIN
             qt_widget_private(w)->winSetupGestures();
 #endif
@@ -333,7 +333,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
     Q_D(QPinchGesture);
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
-        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
         it = qAppPriv->widgetGestures.find(static_cast<QWidget*>(receiver));
         if (it == qAppPriv->widgetGestures.end())
