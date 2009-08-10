@@ -654,6 +654,12 @@ void QScriptContext::pushScope(const QScriptValue &object)
 {
     if (!object.isObject())
         return;
+    else if (object.engine() != engine()) {
+        qWarning("QScriptContext::pushScope() failed: "
+                 "cannot push an object created in "
+                 "a different engine");
+        return;
+    }
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     JSC::JSValue jscObject = QScript::scriptEngineFromExec(frame)->scriptValueToJSCValue(object);
     frame->setScopeChain(frame->scopeChain()->push(JSC::asObject(jscObject)));
