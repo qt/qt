@@ -48,7 +48,7 @@
     \image tabletexample.png
 
     When you use a tablet with Qt applications, \l{QTabletEvent}s are
-    genarated. You need to reimplement the
+    generated. You need to reimplement the
     \l{QWidget::}{tabletEvent()} event handler if you want to handle
     tablet events. Events are generated when the device used for
     drawing enters and leaves the proximity of the tablet (i.e., when
