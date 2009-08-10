@@ -1139,6 +1139,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             {
                 r = QLatin1String("NULL");
             }
+            break;
         case QVariant::String:
         {
             // Escape '\' characters
