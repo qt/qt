@@ -17,8 +17,8 @@ Item {
         }
         function toggleZoom() {
             if(WebBrowser.state == "ZoomedOut") {
-                Flick.centerX = WebView.mouseX;
-                Flick.centerY = WebView.mouseY;
+                Flick.centerX = MyWebView.mouseX;
+                Flick.centerY = MyWebView.mouseY;
                 WebBrowser.state = "Normal";
             } else {
                 zoomOut();
@@ -48,8 +48,8 @@ Item {
         RectSoftShadow {
             x: -Flick.xPosition
             y: -Flick.yPosition
-            width: WebView.width*WebView.scale
-            height: Flick.y+WebView.height*WebView.scale
+            width: MyWebView.width*MyWebView.scale
+            height: Flick.y+MyWebView.height*MyWebView.scale
         }
         Item {
             id: HeaderSpace
@@ -70,7 +70,7 @@ Item {
                 Text {
                     id: HeaderText
 
-                    text: WebView.title!='' || WebView.progress == 1.0 ? WebView.title : 'Loading...'
+                    text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
                     elide: "ElideRight"
 
                     color: "white"
@@ -111,7 +111,7 @@ Item {
                         Image {
                             id: UrlBoxhl
                             source: "content/pics/addressbar-filled.sci"
-                            width: parent.width*WebView.progress
+                            width: parent.width*MyWebView.progress
                             height: parent.height
                             opacity: 1-Header.progressOff
                             clip: true
@@ -132,7 +132,7 @@ Item {
                         TextEdit {
                             id: EditUrl
 
-                            text: WebView.url == '' ? ' ' : WebView.url
+                            text: MyWebView.url == '' ? ' ' : MyWebView.url
                             wrap: false
                             font.size: 11
                             color: "#555555"
@@ -151,12 +151,12 @@ Item {
                 states: [
                     State {
                         name: "Normal"
-                        when: WebView.progress == 1.0
+                        when: MyWebView.progress == 1.0
                         SetProperties { target: Header; progressOff: 1 }
                     },
                     State {
                         name: "ProgressShown"
-                        when: WebView.progress < 1.0
+                        when: MyWebView.progress < 1.0
                         SetProperties { target: Header; progressOff: 0; }
                     }
                 ]
@@ -175,8 +175,8 @@ Item {
         Flickable {
             id: Flick
             width: parent.width
-            viewportWidth: Math.max(parent.width,WebView.width*WebView.scale)
-            viewportHeight: Math.max(parent.height,WebView.height*WebView.scale)
+            viewportWidth: Math.max(parent.width,MyWebView.width*MyWebView.scale)
+            viewportHeight: Math.max(parent.height,MyWebView.height*MyWebView.scale)
             anchors.top: HeaderSpace.bottom
             anchors.bottom: Footer.top
             anchors.left: parent.left
@@ -186,7 +186,7 @@ Item {
             property real centerY : 0
 
             WebView {
-                id: WebView
+                id: MyWebView
                 cacheSize: 4000000
 
                 url: WebBrowser.url
@@ -207,7 +207,7 @@ Item {
                 id: WebViewTint
                 color: "black"
                 opacity: 0
-                anchors.fill: WebView
+                anchors.fill: MyWebView
                 MouseRegion {
                     anchors.fill: WebViewTint
                     onClicked: { proxy.focus=false }
@@ -246,13 +246,13 @@ Item {
                 states: [
                     State {
                         name: "Enabled"
-                        when: WebView.back.enabled==true
+                        when: MyWebView.back.enabled==true
                         SetProperties { target: back_e; opacity: 1 }
                         SetProperties { target: back_d; opacity: 0 }
                     },
                     State {
                         name: "Disabled"
-                        when: WebView.back.enabled==false
+                        when: MyWebView.back.enabled==false
                         SetProperties { target: back_e; opacity: 0 }
                         SetProperties { target: back_d; opacity: 1 }
                     }
@@ -268,7 +268,7 @@ Item {
                 ]
                 MouseRegion {
                     anchors.fill: back_e
-                    onClicked: { if (WebView.back.enabled) WebView.back.trigger() }
+                    onClicked: { if (MyWebView.back.enabled) MyWebView.back.trigger() }
                 }
             }
             Image {
@@ -279,7 +279,7 @@ Item {
             }
             MouseRegion {
                 anchors.fill: reload
-                onClicked: { WebView.reload.trigger() }
+                onClicked: { MyWebView.reload.trigger() }
             }
             Item {
                 id: forwardbutton
@@ -302,13 +302,13 @@ Item {
                 states: [
                     State {
                         name: "Enabled"
-                        when: WebView.forward.enabled==true
+                        when: MyWebView.forward.enabled==true
                         SetProperties { target: forward_e; opacity: 1 }
                         SetProperties { target: forward_d; opacity: 0 }
                     },
                     State {
                         name: "Disabled"
-                        when: WebView.forward.enabled==false
+                        when: MyWebView.forward.enabled==false
                         SetProperties { target: forward_e; opacity: 0 }
                         SetProperties { target: forward_d; opacity: 1 }
                     }
@@ -324,7 +324,7 @@ Item {
                 ]
                 MouseRegion {
                     anchors.fill: parent
-                    onClicked: { if (WebView.forward.enabled) WebView.forward.trigger() }
+                    onClicked: { if (MyWebView.forward.enabled) MyWebView.forward.trigger() }
                 }
             }
         }
@@ -332,26 +332,26 @@ Item {
     states: [
         State {
             name: "Normal"
-            SetProperties { target: WebView; zoomedOut: 0 }
-            SetProperties { target: Flick; explicit: true; xPosition: Math.min(WebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
-            SetProperties { target: Flick; explicit: true; yPosition: Math.min(WebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
+            SetProperties { target: MyWebView; zoomedOut: 0 }
+            SetProperties { target: Flick; explicit: true; xPosition: Math.min(MyWebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
+            SetProperties { target: Flick; explicit: true; yPosition: Math.min(MyWebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
         },
         State {
             name: "ZoomedOut"
-            SetProperties { target: WebView; zoomedOut: 1 }
+            SetProperties { target: MyWebView; zoomedOut: 1 }
         }
     ]
     transitions: [
         Transition {
             SequentialAnimation {
                 SetPropertyAction {
-                    target: WebView
+                    target: MyWebView
                     property: "smooth"
                     value: false
                 }
                 ParallelAnimation {
                     NumberAnimation {
-                        target: WebView
+                        target: MyWebView
                         properties: "zoomedOut"
                         easing: "easeInOutQuad"
                         duration: 200
@@ -364,7 +364,7 @@ Item {
                     }
                 }
                 SetPropertyAction {
-                    target: WebView
+                    target: MyWebView
                     property: "smooth"
                     value: !Flick.moving
                 }
