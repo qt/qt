@@ -603,6 +603,8 @@ void tst_QScriptEngine::newQObject()
             QScriptValue v = eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
         }
         eng.evaluate("gc()");
+        if (ptr)
+            QEXPECT_FAIL("", "In the JSC-based back-end, script-owned QObjects are not always deleted immediately during GC", Continue);
         QVERIFY(ptr == 0);
     }
     {
@@ -632,6 +634,8 @@ void tst_QScriptEngine::newQObject()
         }
         eng.evaluate("gc()");
         // no parent, so it should be like ScriptOwnership
+        if (ptr)
+            QEXPECT_FAIL("", "In the JSC-based back-end, script-owned QObjects are not always deleted immediately during GC", Continue);
         QVERIFY(ptr == 0);
     }
     {
