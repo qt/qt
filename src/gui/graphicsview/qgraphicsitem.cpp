@@ -577,7 +577,7 @@
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qevent.h>
-#include <QInputContext>
+#include <QtGui/qinputcontext.h>
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
@@ -8995,7 +8995,42 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
             return true;
         }
     }
-    return QGraphicsItem::sceneEvent(event);
+    bool result = QGraphicsItem::sceneEvent(event);
+
+    // Ensure input context is updated.
+    switch (event->type()) {
+    case QEvent::ContextMenu:
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+    case QEvent::GraphicsSceneDragEnter:
+    case QEvent::GraphicsSceneDragLeave:
+    case QEvent::GraphicsSceneDragMove:
+    case QEvent::GraphicsSceneDrop:
+    case QEvent::GraphicsSceneHoverEnter:
+    case QEvent::GraphicsSceneHoverLeave:
+    case QEvent::GraphicsSceneHoverMove:
+    case QEvent::GraphicsSceneMouseDoubleClick:
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMouseRelease:
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        // Reset the focus widget's input context, regardless
+        // of how this item gained or lost focus.
+        if (QWidget *fw = qApp->focusWidget()) {
+            if (QInputContext *qic = fw->inputContext()) {
+                if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
+                    qic->reset();
+                else
+                    qic->update();
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    return result;
 }
 
 /*!
@@ -9021,11 +9056,6 @@ void QGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9039,11 +9069,6 @@ void QGraphicsTextItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9072,14 +9097,7 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         QGraphicsItem::mouseReleaseEvent(event);
     }
     dd->clickCausedFocus = 0;
-
     dd->sendControlEvent(event);
-
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9098,11 +9116,6 @@ void QGraphicsTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9111,11 +9124,6 @@ void QGraphicsTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void QGraphicsTextItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9124,18 +9132,6 @@ void QGraphicsTextItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 void QGraphicsTextItem::keyPressEvent(QKeyEvent *event)
 {
     dd->sendControlEvent(event);
-    QList<QGraphicsView *> views = scene()->views();
-    for (int i = 0; i < views.size(); ++i) {
-        QGraphicsView *view = views.at(i);
-        Q_ASSERT(view->viewport());
-        if(view->viewport()->hasFocus()) {
-            QInputContext *qic = view->viewport()->inputContext();
-            if(qic){
-               qic->update();
-            }
-            break;
-        }
-    }
 }
 
 /*!
@@ -9144,18 +9140,6 @@ void QGraphicsTextItem::keyPressEvent(QKeyEvent *event)
 void QGraphicsTextItem::keyReleaseEvent(QKeyEvent *event)
 {
     dd->sendControlEvent(event);
-    QList<QGraphicsView *> views = scene()->views();
-    for (int i = 0; i < views.size(); ++i) {
-        QGraphicsView *view = views.at(i);
-        Q_ASSERT(view->viewport());
-        if(view->viewport()->hasFocus()) {
-            QInputContext *qic = view->viewport()->inputContext();
-            if(qic){
-               qic->update();
-            }
-            break;
-        }
-    }
 }
 
 /*!
@@ -9168,18 +9152,6 @@ void QGraphicsTextItem::focusInEvent(QFocusEvent *event)
         dd->clickCausedFocus = 1;
     }
     update();
-    QList<QGraphicsView *> views = scene()->views();
-    for (int i = 0; i < views.size(); ++i) {
-        QGraphicsView *view = views.at(i);
-        Q_ASSERT(view->viewport());
-        if(view->viewport()->hasFocus()) {
-            QInputContext *qic = view->viewport()->inputContext();
-            if(qic){
-               qic->reset();
-            }
-            break;
-        }
-    }
 }
 
 /*!
@@ -9189,18 +9161,6 @@ void QGraphicsTextItem::focusOutEvent(QFocusEvent *event)
 {
     dd->sendControlEvent(event);
     update();
-    QList<QGraphicsView *> views = scene()->views();
-    for (int i = 0; i < views.size(); ++i) {
-        QGraphicsView *view = views.at(i);
-        Q_ASSERT(view->viewport());
-        if(view->viewport()->hasFocus()) {
-            QInputContext *qic = view->viewport()->inputContext();
-            if(qic){
-               qic->reset();
-            }
-            break;
-        }
-    }
 }
 
 /*!
@@ -9209,11 +9169,6 @@ void QGraphicsTextItem::focusOutEvent(QFocusEvent *event)
 void QGraphicsTextItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9222,11 +9177,6 @@ void QGraphicsTextItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsTextItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9235,11 +9185,6 @@ void QGraphicsTextItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsTextItem::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9248,11 +9193,6 @@ void QGraphicsTextItem::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsTextItem::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9269,11 +9209,6 @@ void QGraphicsTextItem::inputMethodEvent(QInputMethodEvent *event)
 void QGraphicsTextItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9282,11 +9217,6 @@ void QGraphicsTextItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void QGraphicsTextItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
@@ -9295,11 +9225,6 @@ void QGraphicsTextItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 void QGraphicsTextItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     dd->sendControlEvent(event);
-    Q_ASSERT(event->widget());
-    QInputContext *qic = event->widget()->inputContext();
-    if(qic) {
-        qic->update();
-    }
 }
 
 /*!
