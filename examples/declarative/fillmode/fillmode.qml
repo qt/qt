@@ -10,11 +10,11 @@ Image {
         SetPropertyAction { value: "Stretch" }
         SetPropertyAction { target: Label; property: "text"; value: "Stretch" }
         PauseAnimation { duration: 1000 }
-        SetPropertyAction { value: "PreserveAspect" }
-        SetPropertyAction { target: Label; property: "text"; value: "PreserveAspect" }
+        SetPropertyAction { value: "PreserveAspectFit" }
+        SetPropertyAction { target: Label; property: "text"; value: "PreserveAspectFit" }
         PauseAnimation { duration: 1000 }
-        SetPropertyAction { value: "PreserveAspectFill" }
-        SetPropertyAction { target: Label; property: "text"; value: "PreserveAspectFill" }
+        SetPropertyAction { value: "PreserveAspectCrop" }
+        SetPropertyAction { target: Label; property: "text"; value: "PreserveAspectCrop" }
         PauseAnimation { duration: 1000 }
         SetPropertyAction { value: "Tile" }
         SetPropertyAction { target: Label; property: "text"; value: "Tile" }

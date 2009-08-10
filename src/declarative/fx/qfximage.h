@@ -63,7 +63,7 @@ public:
     QFxImage(QFxItem *parent=0);
     ~QFxImage();
 
-    enum FillMode { Stretch, PreserveAspect, PreserveAspectFill, Tile, TileVertically, TileHorizontally };
+    enum FillMode { Stretch, PreserveAspectFit, PreserveAspectCrop, Tile, TileVertically, TileHorizontally };
     FillMode fillMode() const;
     void setFillMode(FillMode);
 
