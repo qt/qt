@@ -652,9 +652,11 @@ void tst_QScriptClass::getAndSetProperty()
             QVERIFY(cls.lastQueryPropertyFlags() == QScriptClass::HandlesWriteAccess);
 
             // re-read property
+            // When a QScriptClass doesn't want to handle a property write,
+            // that property becomes a normal property and the QScriptClass
+            // shall not be queried about it again.
             cls.clearReceivedArgs();
             QVERIFY(o.property(s).strictlyEquals(num));
-            QEXPECT_FAIL("", "What's the purpose of this check?", Continue);
             QVERIFY(!cls.lastQueryPropertyObject().isValid());
         }
     }

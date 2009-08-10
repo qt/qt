@@ -89,6 +89,11 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
                                              const JSC::Identifier &propertyName,
                                              JSC::PropertySlot &slot)
 {
+    // for compatibility with the old back-end, normal JS properties
+    // are queried first.
+    if (QScriptObjectDelegate::getOwnPropertySlot(object, exec, propertyName, slot))
+        return true;
+
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QString name = qtStringFromJSCUString(propertyName.ustring());
@@ -101,7 +106,7 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
         slot.setValue(engine->scriptValueToJSCValue(value));
         return true;
     }
-    return QScriptObjectDelegate::getOwnPropertySlot(object, exec, propertyName, slot);
+    return false;
 }
 
 void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
