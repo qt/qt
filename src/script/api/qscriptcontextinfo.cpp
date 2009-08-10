@@ -44,6 +44,7 @@
 #include "qscriptcontext_p.h"
 #include "../bridge/qscriptqobject_p.h"
 #include <QtCore/qdatastream.h>
+#include <QtCore/qmetaobject.h>
 #include "CodeBlock.h"
 #include "JSFunction.h"
 
@@ -175,7 +176,15 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
         // lineNumber = codeBlock->expressionRangeForBytecodeOffset(...);
     } else if (callee && callee->isObject(&QScript::QtFunction::info)) {
         functionType = QScriptContextInfo::QtFunction;
+        // ### the slot can be overloaded -- need to get the particular overload from the context
         functionMetaIndex = static_cast<QScript::QtFunction*>(callee)->initialIndex();
+        const QMetaObject *meta = static_cast<QScript::QtFunction*>(callee)->metaObject();
+        if (meta != 0) {
+            QMetaMethod method = meta->method(functionMetaIndex);
+            QList<QByteArray> formals = method.parameterNames();
+            for (int i = 0; i < formals.count(); ++i)
+                parameterNames.append(QLatin1String(formals.at(i)));
+        }
     }
     else if (callee && callee->isObject(&QScript::QtPropertyFunction::info)) {
         functionType = QScriptContextInfo::QtPropertyFunction;
@@ -509,7 +518,36 @@ Q_SCRIPT_EXPORT QDataStream &operator>>(QDataStream &in, QScriptContextInfo &inf
         info.d_ptr->ref.ref();
     }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    in >> info.d_ptr->scriptId;
+
+    qint32 line;
+    in >> line;
+    info.d_ptr->lineNumber = line;
+
+    qint32 column;
+    in >> column;
+    info.d_ptr->columnNumber = column;
+
+    quint32 ftype;
+    in >> ftype;
+    info.d_ptr->functionType = QScriptContextInfo::FunctionType(ftype);
+
+    qint32 startLine;
+    in >> startLine;
+    info.d_ptr->functionStartLineNumber = startLine;
+
+    qint32 endLine;
+    in >> endLine;
+    info.d_ptr->functionEndLineNumber = endLine;
+
+    qint32 metaIndex;
+    in >> metaIndex;
+    info.d_ptr->functionMetaIndex = metaIndex;
+
+    in >> info.d_ptr->fileName;
+    in >> info.d_ptr->functionName;
+    in >> info.d_ptr->parameterNames;
+
     return in;
 }
 #endif

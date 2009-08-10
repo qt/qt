@@ -157,7 +157,6 @@ void tst_QScriptEngine::currentContext()
     QVERIFY(globalCtx->parentContext() == 0);
     QCOMPARE(globalCtx->engine(), &eng);
     QCOMPARE(globalCtx->argumentCount(), 0);
-    QEXPECT_FAIL("", "", Continue);
     QCOMPARE(globalCtx->backtrace().size(), 1);
     QVERIFY(!globalCtx->isCalledAsConstructor());
     QVERIFY(!globalCtx->callee().isValid());
@@ -178,7 +177,6 @@ void tst_QScriptEngine::pushPopContext()
     QVERIFY(!ctx->callee().isValid());
     QVERIFY(ctx->thisObject().strictlyEquals(eng.globalObject()));
     QCOMPARE(ctx->argumentCount(), 0);
-    QEXPECT_FAIL("", "Backtrace not implemented", Continue);
     QCOMPARE(ctx->backtrace().size(), 2);
     QCOMPARE(ctx->engine(), &eng);
     QCOMPARE(ctx->state(), QScriptContext::NormalState);
