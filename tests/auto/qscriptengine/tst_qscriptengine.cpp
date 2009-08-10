@@ -855,6 +855,7 @@ void tst_QScriptEngine::newQMetaObject()
 
 void tst_QScriptEngine::newActivationObject()
 {
+    QSKIP("internal function not implemented in JSC-based back-end", SkipAll);
     QScriptEngine eng;
     QScriptValue act = eng.newActivationObject();
     QEXPECT_FAIL("", "", Continue);
