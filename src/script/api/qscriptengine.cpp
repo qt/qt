@@ -777,6 +777,25 @@ JSC::JSValue stringProtoFuncArg(JSC::ExecState *exec, JSC::JSObject*, JSC::JSVal
 }
 
 
+#if !defined(QT_NO_QOBJECT) && !defined(QT_NO_LIBRARY)
+static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
+{
+    QString path = ctx->argument(0).toString();
+    QStringList components = path.split(QLatin1Char('.'));
+    QScriptValue o = eng->globalObject();
+    for (int i = 0; i < components.count(); ++i) {
+        QString name = components.at(i);
+        QScriptValue oo = o.property(name);
+        if (!oo.isValid()) {
+            oo = eng->newObject();
+            o.setProperty(name, oo);
+        }
+        o = oo;
+    }
+    return o;
+}
+#endif
+
 QScriptPushScopeHelper::QScriptPushScopeHelper(JSC::CallFrame *exec, bool calledAsConstructor)
 {
     engine = scriptEngineFromExec(exec);
@@ -844,7 +863,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     detachAllRegisteredScriptValues();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
-    qDeleteAll(contextForFrameHash);
     JSC::JSLock lock(false);
     globalData->heap.destroy();
     globalData->deref();
@@ -1024,6 +1042,15 @@ QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
     return reinterpret_cast<QScriptContext *>(frame);
 }
 
+JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *context)
+{
+    return reinterpret_cast<JSC::ExecState*>(context);
+}
+
+const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScriptContext *context)
+{
+    return reinterpret_cast<const JSC::ExecState*>(context);
+}
 
 JSC::JSGlobalObject *QScriptEnginePrivate::originalGlobalObject() const
 {
@@ -2937,27 +2964,11 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
         // initialize the extension in a new context
         QScriptContext *ctx = pushContext();
         ctx->setThisObject(globalObject());
-#if 0 // ### implement me
-        ctx->setActivationObject(newActivationObject());
-        QScriptObject *activation_data = ctx_p->m_activation.m_object_value;
-        activation_data->m_scope = globalObject();
-
-        activation_data->m_members.resize(4);
-        activation_data->m_values.resize(4);
-        activation_data->m_members[0].object(
-            nameId(QLatin1String("__extension__")), 0,
-            QScriptValue::ReadOnly | QScriptValue::Undeletable);
-        activation_data->m_values[0] = QScriptValueImpl(this, ext);
-        activation_data->m_members[1].object(
-            nameId(QLatin1String("__setupPackage__")), 1, 0);
-        activation_data->m_values[1] = createFunction(__setupPackage__, 0, 0);
-        activation_data->m_members[2].object(
-            nameId(QLatin1String("__all__")), 2, 0);
-        activation_data->m_values[2] = undefinedValue();
-        activation_data->m_members[3].object(
-            nameId(QLatin1String("__postInit__")), 3, 0);
-        activation_data->m_values[3] = undefinedValue();
-#endif
+        ctx->activationObject().setProperty(QLatin1String("__extension__"), ext,
+                                            QScriptValue::ReadOnly | QScriptValue::Undeletable);
+        ctx->activationObject().setProperty(QLatin1String("__setupPackage__"),
+                                            newFunction(QScript::__setupPackage__));
+        ctx->activationObject().setProperty(QLatin1String("__postInit__"), QScriptValue(QScriptValue::UndefinedValue));
 
         // the script is evaluated first
         if (!initjsContents.isEmpty()) {
@@ -2981,8 +2992,7 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
         }
 
         // if the __postInit__ function has been set, we call it
-        // ### enable once activationObject() works
-        QScriptValue postInit; // = ctx->activationObject().property(QLatin1String("__postInit__"));
+        QScriptValue postInit = ctx->activationObject().property(QLatin1String("__postInit__"));
         if (postInit.isFunction()) {
             postInit.call(globalObject());
             if (hasUncaughtException()) {

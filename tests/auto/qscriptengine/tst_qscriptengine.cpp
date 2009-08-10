@@ -1783,7 +1783,6 @@ void tst_QScriptEngine::importExtension()
         for (int x = 0; x < 2; ++x) {
             QCOMPARE(eng.globalObject().property("com").isValid(), x == 1);
             QScriptValue ret = eng.importExtension("com.trolltech");
-            QEXPECT_FAIL("", "", Abort);
             QCOMPARE(eng.hasUncaughtException(), false);
             QCOMPARE(ret.isUndefined(), true);
 
@@ -1840,9 +1839,10 @@ void tst_QScriptEngine::importExtension()
                 QVERIFY(eng.importedExtensions().isEmpty());
             QScriptValue ret = eng.importExtension("com.trolltech.syntaxerror");
             QVERIFY(eng.hasUncaughtException());
+            QEXPECT_FAIL("", "JSC throws syntax error eagerly", Continue);
             QCOMPARE(eng.uncaughtExceptionLineNumber(), 4);
             QVERIFY(ret.isError());
-            QCOMPARE(ret.property("message").toString(), QLatin1String("invalid assignment lvalue"));
+            QCOMPARE(ret.property("message").toString(), QLatin1String("Parse error"));
         }
         QStringList imp = eng.importedExtensions();
         QCOMPARE(imp.size(), 2);
