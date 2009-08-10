@@ -78,7 +78,8 @@ Item {
                 Text {
                     id: HeaderText
 
-                    text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
+                    //text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
+                    text: MyWebView.url
                     elide: "ElideRight"
 
                     color: "white"
@@ -114,12 +115,12 @@ Item {
                         clip: true
                         property bool mouseGrabbed: false
 
-                        Image {
+                        BorderImage {
                             source: "content/pics/addressbar.sci"
                             anchors.fill: UrlBox
                         }
                                                 
-                        Image {
+                        BorderImage {
                             id: UrlBoxhl
                             source: "content/pics/addressbar-filled.sci"
                             width: parent.width*MyWebView.progress
@@ -221,7 +222,7 @@ Item {
                 }*/
             }
         }
-        Image {
+        BorderImage {
             id: Footer
             source: "content/pics/footer.sci"
             width: parent.width
