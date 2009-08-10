@@ -878,7 +878,7 @@ JSValue Interpreter::execute(EvalNode* evalNode, CallFrame* callFrame, JSObject*
     return result;
 }
 
-NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHookID, int firstLine, int lastLine)
+NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHookID, int firstLine, int lastLine, int column)
 {
     Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
     if (!debugger)
@@ -892,7 +892,7 @@ NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHook
             debugger->returnEvent(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine);
             return;
         case WillExecuteStatement:
-            debugger->atStatement(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), firstLine);
+            debugger->atStatement(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), firstLine, column);
             return;
         case WillExecuteProgram:
             debugger->willExecuteProgram(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), firstLine);
@@ -901,7 +901,7 @@ NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHook
             debugger->didExecuteProgram(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine);
             return;
         case DidReachBreakpoint:
-            debugger->didReachBreakpoint(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine);
+            debugger->didReachBreakpoint(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine, column);
             return;
     }
 }
@@ -3824,7 +3824,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         int lastLine = (++vPC)->u.operand;
         int column = (++vPC)->u.operand;
 
-        debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine);
+        debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine, column);
 
         ++vPC;
         NEXT_INSTRUCTION();
