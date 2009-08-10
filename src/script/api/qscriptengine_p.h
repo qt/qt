@@ -143,7 +143,9 @@ public:
     JSC::JSValue defaultPrototype(int metaTypeId) const;
     void setDefaultPrototype(int metaTypeId, JSC::JSValue prototype);
 
-    QScriptContext *contextForFrame(JSC::ExecState *frame);
+    static QScriptContext *contextForFrame(JSC::ExecState *frame);
+    static JSC::ExecState *frameForContext(QScriptContext *context);
+    static const JSC::ExecState *frameForContext(const QScriptContext *context);
 
     JSC::JSGlobalObject *originalGlobalObject() const;
     JSC::JSObject *getOriginalGlobalObjectProxy();
@@ -207,7 +209,6 @@ public:
     JSC::JSGlobalData *globalData;
     JSC::JSObject *originalGlobalObjectProxy;
     JSC::ExecState *currentFrame;
-    QHash<JSC::ExecState*, QScriptContext*> contextForFrameHash;
 
     WTF::RefPtr<JSC::Structure> scriptObjectStructure;
 

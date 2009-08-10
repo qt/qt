@@ -42,6 +42,8 @@
 #include "qscriptcontextinfo.h"
 
 #include "qscriptcontext_p.h"
+#include "qscriptengine.h"
+#include "qscriptengine_p.h"
 #include "../bridge/qscriptqobject_p.h"
 #include <QtCore/qdatastream.h>
 #include <QtCore/qmetaobject.h>
@@ -156,7 +158,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     lineNumber = -1;
     columnNumber = -1;
 
-    const JSC::ExecState *frame = reinterpret_cast<const JSC::ExecState *>(context);
+    const JSC::ExecState *frame = QScriptEnginePrivate::frameForContext(context);
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->isObject(&JSC::InternalFunction::info))
         functionName = QScript::qtStringFromJSCUString(JSC::asInternalFunction(callee)->name(&frame->globalData()));

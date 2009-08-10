@@ -863,7 +863,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     detachAllRegisteredScriptValues();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
-    qDeleteAll(contextForFrameHash);
     JSC::JSLock lock(false);
     globalData->heap.destroy();
     globalData->deref();
@@ -1041,6 +1040,16 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
 QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
 {
     return reinterpret_cast<QScriptContext *>(frame);
+}
+
+JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *context)
+{
+    return reinterpret_cast<JSC::ExecState*>(context);
+}
+
+const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScriptContext *context)
+{
+    return reinterpret_cast<const JSC::ExecState*>(context);
 }
 
 JSC::JSGlobalObject *QScriptEnginePrivate::originalGlobalObject() const
