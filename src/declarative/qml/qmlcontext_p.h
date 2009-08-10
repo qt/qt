@@ -106,7 +106,6 @@ public:
 
     QmlExpressionPrivate *expressions;
 
-    QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;
 
     struct ContextGuard : public QGuard<QObject>
@@ -115,7 +114,7 @@ public:
         ContextGuard &operator=(QObject *obj) {
             (QGuard<QObject>&)*this = obj; return *this;
         }
-        void objectDestroyed(QObject *o) { priv->destroyed(this); }
+        void objectDestroyed(QObject *) { priv->destroyed(this); }
     };
     ContextGuard *idValues;
     int idValueCount;

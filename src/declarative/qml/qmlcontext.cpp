@@ -106,8 +106,6 @@ void QmlContextPrivate::init()
     else
         scopeChain = parent->d_func()->scopeChain;
     scopeChain.prepend(scopeObj);
-
-    contextData.context = q;
 }
 
 void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
@@ -291,13 +289,10 @@ QmlContext::~QmlContext()
 
     for (int ii = 0; ii < d->contextObjects.count(); ++ii) {
         QObjectPrivate *p = QObjectPrivate::get(d->contextObjects.at(ii));
-        QmlSimpleDeclarativeData *data = 
-            static_cast<QmlSimpleDeclarativeData *>(p->declarativeData);
-        if(data && (data->flags & QmlSimpleDeclarativeData::Extended)) {
+        QmlDeclarativeData *data = 
+            static_cast<QmlDeclarativeData *>(p->declarativeData);
+        if(data) 
             data->context = 0;
-        } else {
-            p->declarativeData = 0;
-        }
     }
     d->contextObjects.clear();
 

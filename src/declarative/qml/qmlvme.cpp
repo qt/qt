@@ -111,7 +111,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp, int start, int cou
 
 void QmlVME::runDeferred(QObject *object)
 {
-    QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object);
 
     if (!data || !data->context || !data->deferredComponent)
         return;
@@ -725,8 +725,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             {
                 if (instr.defer.deferCount) {
                     QObject *target = stack.top();
-                    QmlInstanceDeclarativeData *data = 
-                        QmlInstanceDeclarativeData::get(target, true);
+                    QmlDeclarativeData *data = 
+                        QmlDeclarativeData::get(target, true);
                     comp->addref();
                     data->deferredComponent = comp;
                     data->deferredIdx = ii;
