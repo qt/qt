@@ -57,6 +57,7 @@ class QmlDebugServer : public QObject
     Q_DISABLE_COPY(QmlDebugServer)
 public:
     static QmlDebugServer *instance();
+    void wait();
 
 private slots:
     void readyRead();
@@ -72,8 +73,9 @@ class QmlDebugServerPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlDebugServer)
 public:
     QmlDebugServerPrivate();
-    void init(int port);
+    void wait();
 
+    int port;
     QTcpSocket *connection;
     QPacketProtocol *protocol;
     QHash<QString, QmlDebugService *> plugins;
@@ -95,7 +97,7 @@ QmlDebugServerPrivate::QmlDebugServerPrivate()
 {
 }
 
-void QmlDebugServerPrivate::init(int port)
+void QmlDebugServerPrivate::wait()
 {
     Q_Q(QmlDebugServer);
     QTcpServer server;
@@ -151,17 +153,20 @@ QmlDebugServer *QmlDebugServer::instance()
             server = new QmlDebugServer(port);
     }
 
-    if (server && server->d_func()->connection)
-        return server;
-    else
-        return 0;
+    return server;
+}
+
+void QmlDebugServer::wait()
+{
+    Q_D(QmlDebugServer);
+    d->wait();
 }
 
 QmlDebugServer::QmlDebugServer(int port)
 : QObject(*(new QmlDebugServerPrivate))
 {
     Q_D(QmlDebugServer);
-    d->init(port);
+    d->port = port;
 }
 
 void QmlDebugServer::readyRead()
@@ -352,6 +357,11 @@ QString QmlDebugService::objectToString(QObject *obj)
                  QLatin1String(": ") + objectName;
 
     return rv;
+}
+
+void QmlDebugService::waitForClients()
+{
+    QmlDebugServer::instance()->wait();
 }
 
 void QmlDebugService::sendMessage(const QByteArray &message)

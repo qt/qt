@@ -164,6 +164,8 @@ void QmlEnginePrivate::init()
         qmlEngineDebugServer();
         isDebugging = true;
         QmlEngineDebugServer::addEngine(q);
+
+        qmlEngineDebugServer()->waitForClients();
     }
 }
 
