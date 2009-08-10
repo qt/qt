@@ -1133,7 +1133,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QVariant::Time:
 #ifndef QT_NO_DATESTRING
             if (field.value().toTime().isValid()) {
-                r = field.value().toTime().toString(Qt::ISODate);
+                r = QLatin1Char('\'') + field.value().toTime().toString(Qt::ISODate) + QLatin1Char('\'');
             } else
 #endif
             {
