@@ -1338,7 +1338,9 @@ RegisterID* DoWhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* 
     RefPtr<RegisterID> result = generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
+#ifndef QT_BUILD_SCRIPT_LIB
     generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
+#endif
     RegisterID* cond = generator.emitNode(m_expr);
     generator.emitJumpIfTrue(cond, topOfLoop.get());
 
@@ -1351,7 +1353,9 @@ RegisterID* DoWhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* 
 RegisterID* WhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
     RefPtr<LabelScope> scope = generator.newLabelScope(LabelScope::Loop);
-
+#ifdef QT_BUILD_SCRIPT_LIB
+    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
+#endif
     generator.emitJump(scope->continueTarget());
 
     RefPtr<Label> topOfLoop = generator.newLabel();
@@ -1360,7 +1364,9 @@ RegisterID* WhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
     generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
+#ifndef QT_BUILD_SCRIPT_LIB
     generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
+#endif
     RegisterID* cond = generator.emitNode(m_expr);
     generator.emitJumpIfTrue(cond, topOfLoop.get());
 
@@ -1393,7 +1399,9 @@ RegisterID* ForNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
     RefPtr<RegisterID> result = generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
+#ifndef QT_BUILD_SCRIPT_LIB
     generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+#endif
     if (m_expr3)
         generator.emitNode(generator.ignoredResult(), m_expr3);
 
@@ -1467,7 +1475,9 @@ RegisterID* ForInNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
     generator.emitLabel(scope->continueTarget());
     generator.emitNextPropertyName(propertyName, iter.get(), loopStart.get());
+#ifndef QT_BUILD_SCRIPT_LIB
     generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+#endif
     generator.emitLabel(scope->breakTarget());
     return dst;
 }
@@ -1741,7 +1751,9 @@ RegisterID* ThrowNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* TryNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
+#ifndef QT_BUILD_SCRIPT_LIB
     generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+#endif
 
     RefPtr<Label> tryStartLabel = generator.newLabel();
     RefPtr<Label> tryEndLabel = generator.newLabel();
