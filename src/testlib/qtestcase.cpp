@@ -353,6 +353,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \macro QBENCHMARK_ONCE
+    \since 4.6
 
     \relates QTest
 
