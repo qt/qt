@@ -960,7 +960,8 @@ void QAbstractItemView::reset()
     d->currentIndexSet = false;
     setState(NoState);
     setRootIndex(QModelIndex());
-    d->selectionModel->reset();
+    if (d->selectionModel)
+        d->selectionModel->reset();
 }
 
 /*!
@@ -2649,7 +2650,7 @@ void QAbstractItemView::keyboardSearch(const QString &search)
     if (search.isEmpty()
         || (d->keyboardInputTime.msecsTo(now) > QApplication::keyboardInputInterval())) {
         d->keyboardInput = search;
-        skipRow = true;
+        skipRow = currentIndex().isValid(); //if it is not valid we should really start at QModelIndex(0,0)
     } else {
         d->keyboardInput += search;
     }

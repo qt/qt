@@ -68,8 +68,6 @@
 #include <QtMultimedia/qaudioengine.h>
 
 
-static CRITICAL_SECTION waveInCriticalSection;
-
 class QAudioInputPrivate : public QAbstractAudioInput
 {
     Q_OBJECT

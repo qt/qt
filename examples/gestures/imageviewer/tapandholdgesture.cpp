@@ -43,6 +43,8 @@
 
 #include <QtGui/qevent.h>
 
+// #define TAPANDHOLD_USING_MOUSE
+
 /*!
     \class TapAndHoldGesture
     \since 4.6
@@ -95,6 +97,26 @@ bool TapAndHoldGesture::filterEvent(QEvent *event)
     case QEvent::TouchEnd:
         reset();
         break;
+#ifdef TAPANDHOLD_USING_MOUSE
+    case QEvent::MouseButtonPress: {
+        if (timer.isActive())
+            timer.stop();
+        timer.start(TapAndHoldGesture::iterationTimeout, this);
+        const QPoint p = static_cast<QMouseEvent*>(event)->pos();
+        position = startPosition = p;
+        break;
+    }
+    case QEvent::MouseMove: {
+        const QPoint startPos = startPosition;
+        const QPoint pos = static_cast<QMouseEvent*>(event)->pos();
+        if ((startPos - pos).manhattanLength() > 15)
+            reset();
+        break;
+    }
+    case QEvent::MouseButtonRelease:
+        reset();
+        break;
+#endif // TAPANDHOLD_USING_MOUSE
     default:
         break;
     }
@@ -108,11 +130,9 @@ void TapAndHoldGesture::timerEvent(QTimerEvent *event)
         return;
     if (iteration == TapAndHoldGesture::iterationCount) {
         timer.stop();
-        setState(Qt::GestureFinished);
-        emit triggered();
+        updateState(Qt::GestureFinished);
     } else {
-        setState(Qt::GestureStarted);
-        emit triggered();
+        updateState(Qt::GestureUpdated);
     }
     ++iteration;
 }
@@ -120,11 +140,10 @@ void TapAndHoldGesture::timerEvent(QTimerEvent *event)
 /*! \internal */
 void TapAndHoldGesture::reset()
 {
-    if (state() != Qt::NoGesture)
-        emit cancelled();
-    setState(Qt::NoGesture);
     timer.stop();
     iteration = 0;
+    position = startPosition = QPoint();
+    updateState(Qt::NoGesture);
 }
 
 /*!

@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
 QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
     :hbar(0), vbar(0), vbarpolicy(Qt::ScrollBarAsNeeded), hbarpolicy(Qt::ScrollBarAsNeeded),
      viewport(0), cornerWidget(0), left(0), top(0), right(0), bottom(0),
-     xoffset(0), yoffset(0), viewportFilter(0)
+     xoffset(0), yoffset(0), viewportFilter(0), panGesture(0)
 #ifdef Q_WS_WIN
      , singleFingerPanEnabled(false)
 #endif
@@ -294,33 +294,18 @@ void QAbstractScrollAreaPrivate::init()
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
+
+    panGesture = new QPanGesture(q);
+    QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
 }
 
-void QAbstractScrollAreaPrivate::setupGestures()
+#ifdef Q_WS_WIN
+void QAbstractScrollAreaPrivate::setSingleFingerPanEnabled(bool on)
 {
-#ifdef Q_OS_WIN
-    if (!viewport)
-        return;
-    QApplicationPrivate* getQApplicationPrivateInternal();
-    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
-    bool needh = (hbarpolicy == Qt::ScrollBarAlwaysOn
-                  || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
-
-    bool needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
-                  || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
-    if (qAppPriv->SetGestureConfig && (needh || needv)) {
-        GESTURECONFIG gc[1];
-        gc[0].dwID = GID_PAN;
-        gc[0].dwWant = GC_PAN;
-        gc[0].dwBlock = 0;
-        if (needv && singleFingerPanEnabled)
-            gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
-        if (needh && singleFingerPanEnabled)
-            gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
-        qAppPriv->SetGestureConfig(viewport->winId(), 0, 1, gc, sizeof(gc));
-    }
-#endif // Q_OS_WIN
+    singleFingerPanEnabled = on;
+    winSetupGestures();
 }
+#endif // Q_WS_WIN
 
 void QAbstractScrollAreaPrivate::layoutChildren()
 {
@@ -1267,7 +1252,11 @@ void QAbstractScrollAreaPrivate::_q_vslide(int y)
 void QAbstractScrollAreaPrivate::_q_showOrHideScrollBars()
 {
     layoutChildren();
-    setupGestures();
+#ifdef Q_OS_WIN
+    // Need to re-subscribe to gestures as the content changes to make sure we
+    // enable/disable panning when needed.
+    winSetupGestures();
+#endif // Q_OS_WIN
 }
 
 QPoint QAbstractScrollAreaPrivate::contentsOffset() const
@@ -1330,6 +1319,25 @@ QSize QAbstractScrollArea::sizeHint() const
 void QAbstractScrollArea::setupViewport(QWidget *viewport)
 {
     Q_UNUSED(viewport);
+}
+
+void QAbstractScrollAreaPrivate::_q_gestureTriggered()
+{
+    Q_Q(QAbstractScrollArea);
+    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+    if (!g)
+        return;
+    QScrollBar *hBar = q->horizontalScrollBar();
+    QScrollBar *vBar = q->verticalScrollBar();
+    QSize delta = g->lastOffset();
+    if (!delta.isNull()) {
+        if (QApplication::isRightToLeft())
+            delta.rwidth() *= -1;
+        int newX = hBar->value() - delta.width();
+        int newY = vBar->value() - delta.height();
+        hbar->setValue(newX);
+        vbar->setValue(newY);
+    }
 }
 
 QT_END_NAMESPACE

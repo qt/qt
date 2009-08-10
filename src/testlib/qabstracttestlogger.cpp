@@ -43,8 +43,11 @@
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/qtestassert.h"
 
+#include "QtCore/qbytearray.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #ifndef Q_OS_WIN
 #include <unistd.h>
@@ -104,6 +107,50 @@ void QAbstractTestLogger::stopLogging()
     if (QTest::stream != stdout)
         fclose(QTest::stream);
     QTest::stream = 0;
+}
+
+namespace QTest
+{
+
+extern void filter_unprintable(char *str);
+
+/*! \internal
+ */
+int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
+{
+    static const int MAXSIZE = 1024*1024*2;
+
+    Q_ASSERT(str);
+
+    int size = str->size();
+
+    va_list ap;
+    int res = 0;
+
+    for (;;) {
+        va_start(ap, format);
+        res = qvsnprintf(str->data(), size, format, ap);
+        va_end(ap);
+        str->data()[size - 1] = '\0';
+        if (res >= 0 && res < size) {
+            // We succeeded
+            break;
+        }
+        // buffer wasn't big enough, try again.
+        // Note, we're assuming that a result of -1 is always due to running out of space.
+        size *= 2;
+        if (size > MAXSIZE) {
+            break;
+        }
+        if (!str->reset(size))
+            break; // out of memory - take what we have
+    }
+
+    filter_unprintable(str->data());
+
+    return res;
+}
+
 }
 
 QT_END_NAMESPACE

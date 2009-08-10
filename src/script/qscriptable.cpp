@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_QOBJECT
-
 #include "qscriptable.h"
+
+#ifndef QT_NO_QOBJECT
 
 #ifndef QT_NO_SCRIPT
 

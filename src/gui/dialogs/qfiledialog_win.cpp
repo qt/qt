@@ -59,7 +59,8 @@
 #endif
 
 #include <shlobj.h>
-#if !defined(Q_WS_WINCE)
+//At some point we can hope that mingw will support that interface
+#if !defined(Q_WS_WINCE) && !defined(Q_CC_MINGW)
 #include <shobjidl.h>
 #endif
 #include <objbase.h>

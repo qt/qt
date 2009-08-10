@@ -50,10 +50,21 @@
 #include <QtCore/QStringList>
 #include <QtCore/QStack>
 
+#if (!defined(__GNUC__) || __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 3)) && !defined(__SUNPRO_CC)
+# define HAVE_TEMPLATE_CLASS_FRIENDS
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class ProFileEvaluator
 {
+#ifdef HAVE_TEMPLATE_CLASS_FRIENDS
+private:
+#else
+public:
+#endif
+    class Private;
+
 public:
     enum TemplateType {
         TT_Unknown = 0,
@@ -93,11 +104,11 @@ public:
     virtual void fileMessage(const QString &msg); // error() and message() from .pro file
 
 private:
-    class Private;
     Private *d;
 
-    // This doesn't help gcc 3.3 and sunpro ...
+#ifdef HAVE_TEMPLATE_CLASS_FRIENDS
     template<typename T> friend class QTypeInfo;
+#endif
 };
 
 QT_END_NAMESPACE

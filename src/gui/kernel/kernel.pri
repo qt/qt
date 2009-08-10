@@ -100,7 +100,8 @@ unix:x11 {
 	INCLUDEPATH += ../3rdparty/xorg
 	HEADERS += \
 		kernel/qx11embed_x11.h \
-		kernel/qx11info_x11.h
+		kernel/qx11info_x11.h \
+        kernel/qkde_p.h
 
 	SOURCES += \
 		kernel/qapplication_x11.cpp \
@@ -114,7 +115,8 @@ unix:x11 {
 		kernel/qwidgetcreate_x11.cpp \
 		kernel/qx11embed_x11.cpp \
 		kernel/qx11info_x11.cpp \
-		kernel/qkeymapper_x11.cpp
+		kernel/qkeymapper_x11.cpp \
+		kernel/qkde.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

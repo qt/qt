@@ -843,9 +843,9 @@ QObject::~QObject()
             if (senderLists)
                 senderLists->dirty = true;
 
+            node = node->next;
             if (needToUnlock)
                 m->unlock();
-            node = node->next;
         }
     }
 
