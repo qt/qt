@@ -178,6 +178,9 @@ Q_SIGNALS:
     void singleClick();
     void doubleClick();
 
+public Q_SLOTS:
+    QVariant evaluateJavaScript (const QString&); 
+
 private Q_SLOTS:
     void expandToWebPage();
     void paintPage(const QRect&);

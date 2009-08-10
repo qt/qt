@@ -416,6 +416,15 @@ void QFxWebView::setInteractive(bool i)
     emit interactiveChanged();
 }
 
+/*! 
+    Evaluates the \a scriptSource JavaScript inside the main frame 
+    context and returns the result of the last executed statement.
+*/  
+QVariant QFxWebView::evaluateJavaScript(const QString &scriptSource)
+{
+    return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
+}
+
 void QFxWebView::expandToWebPage()
 {
     Q_D(QFxWebView);
