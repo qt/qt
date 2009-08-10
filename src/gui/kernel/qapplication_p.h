@@ -527,7 +527,6 @@ public:
     static PtrCloseTouchInputHandle CloseTouchInputHandle;
 
     QHash<DWORD, int> touchInputIDToTouchPointID;
-    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
     bool translateTouchEvent(const MSG &msg);
 
     PtrGetGestureInfo GetGestureInfo;
