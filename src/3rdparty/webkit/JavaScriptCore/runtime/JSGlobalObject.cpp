@@ -340,7 +340,9 @@ void JSGlobalObject::reset(JSValue prototype)
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, d()->prototypeFunctionStructure.get(), 1, Identifier(exec, "encodeURI"), globalFuncEncodeURI), DontEnum);
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, d()->prototypeFunctionStructure.get(), 1, Identifier(exec, "encodeURIComponent"), globalFuncEncodeURIComponent), DontEnum);
 #ifndef NDEBUG
+#ifndef QT_BUILD_SCRIPT_LIB
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, d()->prototypeFunctionStructure.get(), 1, Identifier(exec, "jscprint"), globalFuncJSCPrint), DontEnum);
+#endif
 #endif
 
     resetPrototype(prototype);
