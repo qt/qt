@@ -2077,6 +2077,14 @@ void tst_QScriptValue::getSetProperty()
     object.setProperty("flagProperty", str, QScriptValue::UserRange);
     QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::UserRange);
 
+    // flags of property in the prototype
+    {
+        QScriptValue object2 = eng.newObject();
+        object2.setPrototype(object);
+        QCOMPARE(object2.propertyFlags("flagProperty", QScriptValue::ResolveLocal), 0);
+        QCOMPARE(object2.propertyFlags("flagProperty"), QScriptValue::UserRange);
+    }
+
     // using interned strings
     QScriptString foo = eng.toStringHandle("foo");
 

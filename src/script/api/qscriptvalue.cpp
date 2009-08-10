@@ -1964,10 +1964,14 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &nam
         return 0;
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->currentFrame;
+    JSC::JSObject *object = JSC::asObject(d->jscValue);
     JSC::Identifier id = name.d_ptr->identifier;
     unsigned attribs = 0;
-    if (!JSC::asObject(d->jscValue)->getPropertyAttributes(exec, id, attribs))
+    if (!object->getPropertyAttributes(exec, id, attribs)) {
+        if ((mode & QScriptValue::ResolvePrototype) && object->prototype())
+            return eng_p->scriptValueFromJSCValue(object->prototype()).propertyFlags(name, mode);
         return 0;
+    }
     QScriptValue::PropertyFlags result = 0;
     if (attribs & JSC::ReadOnly)
         result |= QScriptValue::ReadOnly;
@@ -1976,9 +1980,9 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &nam
     if (attribs & JSC::DontDelete)
         result |= QScriptValue::Undeletable;
     //We cannot rely on attribs JSC::Setter/Getter because they are not necesserly set by JSC (bug?)
-    if (attribs & JSC::Getter || !JSC::asObject(d->jscValue)->lookupGetter(exec, id).isUndefinedOrNull())
+    if (attribs & JSC::Getter || !object->lookupGetter(exec, id).isUndefinedOrNull())
         result |= QScriptValue::PropertyGetter;
-    if (attribs & JSC::Setter || !JSC::asObject(d->jscValue)->lookupSetter(exec, id).isUndefinedOrNull())
+    if (attribs & JSC::Setter || !object->lookupSetter(exec, id).isUndefinedOrNull())
         result |= QScriptValue::PropertySetter;
     if (attribs & QScript::QObjectMemberAttribute)
         result |= QScriptValue::QObjectMember;
