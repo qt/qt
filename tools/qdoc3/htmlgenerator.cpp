@@ -3420,6 +3420,14 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
             out() << "<p><b>Access functions:</b></p>\n";
             generateSectionList(section, node, marker, CodeMarker::Accessors);
         }
+
+        Section notifiers;
+        notifiers.members += property->notifiers();
+        
+        if (!notifiers.members.isEmpty()) {
+            out() << "<p><b>Notifier signal:</b></p>\n";
+            generateSectionList(notifiers, node, marker, CodeMarker::Accessors);
+        }
     }
     else if (node->type() == Node::Enum) {
         const EnumNode *enume = static_cast<const EnumNode *>(node);
