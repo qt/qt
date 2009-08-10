@@ -56,6 +56,8 @@ public slots:
     void toggleRecordingWithSelection();
     void ffmpegFinished(int code);
     void setSkin(const QString& skinDirectory);
+    void showProxySettings ();
+    void proxySettingsChanged ();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);

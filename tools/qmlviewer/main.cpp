@@ -60,6 +60,8 @@ int main(int argc, char ** argv)
 
     QApplication app(argc, argv);
     app.setApplicationName("viewer");
+    app.setOrganizationName("Nokia");
+    app.setOrganizationDomain("nokia.com");
 
     bool frameless = false;
     QString fileName;

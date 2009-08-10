@@ -43,6 +43,7 @@
 #include <QTimer>
 #include <QNetworkProxyFactory>
 #include <QKeyEvent>
+#include "proxysettings.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -355,6 +356,11 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     if (flatmenu) flatmenu->addSeparator();
 
+    QMenu *settingsMenu = flatmenu ? flatmenu : menu->addMenu(tr("S&ettings"));
+    QAction *proxyAction = new QAction(tr("Http &proxy..."), parent);
+    connect(proxyAction, SIGNAL(triggered()), this, SLOT(showProxySettings()));
+    settingsMenu->addAction(proxyAction);
+
     QMenu *helpMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Help"));
     QAction *aboutAction = new QAction(tr("&About Qt..."), parent);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -369,6 +375,21 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
         menu->setFixedHeight(menu->sizeHint().height());
         menu->setMinimumWidth(10);
     }
+}
+
+void QmlViewer::showProxySettings()
+{
+    ProxySettings settingsDlg (this);
+
+    connect (&settingsDlg, SIGNAL (accepted()), this, SLOT (proxySettingsChanged ()));
+
+    settingsDlg.exec();
+}
+
+void QmlViewer::proxySettingsChanged()
+{
+    setupProxy ();
+    reload ();
 }
 
 void QmlViewer::setScaleSkin()
@@ -899,13 +920,36 @@ void QmlViewer::setupProxy()
     public:
         virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
         {
+            QString protocolTag = query.protocolTag();
+            if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
+                QList<QNetworkProxy> ret;
+                ret << httpProxy;
+                return ret;
+            }
             return QNetworkProxyFactory::systemProxyForQuery(query);
         }
+        void setHttpProxy (QNetworkProxy proxy)
+        {
+            httpProxy = proxy;
+            httpProxyInUse = true;
+        }
+        void unsetHttpProxy ()
+        {
+            httpProxyInUse = false;
+        }
+    private:
+        bool httpProxyInUse;
+        QNetworkProxy httpProxy;
     };
 
     QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
-    nam->setProxyFactory(new SystemProxyFactory);
-}
+    SystemProxyFactory *proxyFactory = new SystemProxyFactory;
+    if (ProxySettings::httpProxyInUse())
+        proxyFactory->setHttpProxy(ProxySettings::httpProxy());
+    else
+        proxyFactory->unsetHttpProxy();
+    nam->setProxyFactory(proxyFactory);
+ }
 
 void QmlViewer::setNetworkCacheSize(int size)
 {
