@@ -36,6 +36,10 @@
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "SourcePoolQt.h"
+#endif
+
 namespace JSC {
 
     class ArgumentListNode;
@@ -1607,6 +1611,9 @@ namespace JSC {
         Identifier* m_parameters;
         size_t m_parameterCount;
         OwnPtr<CodeBlock> m_code;
+#ifdef QT_BUILD_SCRIPT_LIB
+        SourcePool::SourcePoolToken* sourceToken;
+#endif
     };
 
     class FuncExprNode : public ExpressionNode, public ParserArenaRefCounted {

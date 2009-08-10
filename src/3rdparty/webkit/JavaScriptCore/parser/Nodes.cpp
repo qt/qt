@@ -1997,6 +1997,9 @@ inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData)
     , m_parameters(0)
     , m_parameterCount(0)
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    sourceToken = globalData->scriptpool->objectRegister();
+#endif
 }
 
 inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData, SourceElements* children, VarStack* varStack, FunctionStack* funcStack, const SourceCode& sourceCode, CodeFeatures features, int numConstants)
@@ -2004,10 +2007,16 @@ inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData, SourceElemen
     , m_parameters(0)
     , m_parameterCount(0)
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    sourceToken = globalData->scriptpool->objectRegister();
+#endif
 }
 
 FunctionBodyNode::~FunctionBodyNode()
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    if (sourceToken) delete sourceToken;
+#endif
     for (size_t i = 0; i < m_parameterCount; ++i)
         m_parameters[i].~Identifier();
     fastFree(m_parameters);
