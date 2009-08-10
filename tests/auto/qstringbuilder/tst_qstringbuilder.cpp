@@ -86,19 +86,12 @@
 #endif
 
 #include <QtTest/QtTest>
+#include "tst_qstringbuilder.h"
 
 //TESTED_CLASS=QStringBuilder
 //TESTED_FILES=qstringbuilder.cpp
 
 #define LITERAL "some literal"
-
-class tst_QStringBuilder : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void scenario();
-};
 
 void tst_QStringBuilder::scenario()
 {
@@ -138,5 +131,3 @@ void tst_QStringBuilder::scenario()
 }
 
 QTEST_APPLESS_MAIN(tst_QStringBuilder)
-
-#include "tst_qstringbuilder.moc"
