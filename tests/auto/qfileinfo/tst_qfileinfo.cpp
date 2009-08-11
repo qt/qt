@@ -974,6 +974,9 @@ void tst_QFileInfo::isHidden_data()
     foreach (const QFileInfo& info, QDir::drives()) {
         QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
     }
+#if !defined(Q_OS_WIN)
+    QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
+#endif
 #ifdef Q_OS_MAC
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
     QTest::newRow("mac_private_etc") << QString::fromLatin1("/private/etc") << false;

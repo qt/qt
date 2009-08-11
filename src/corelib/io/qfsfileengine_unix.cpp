@@ -656,7 +656,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         ret |= LocalDiskFlag;
         if (exists)
             ret |= ExistsFlag;
-        if (fileName(BaseName)[0] == QLatin1Char('.')
+        QString baseName = fileName(BaseName);
+        if ((baseName.size() > 0 && baseName.at(0) == QLatin1Char('.'))
 #if !defined(QWS) && defined(Q_OS_MAC)
             || _q_isMacHidden(d->filePath)
 #endif
