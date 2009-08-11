@@ -99,6 +99,18 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDirIteratorPrivateIteratorStack : public QStack<QAbstractFileEngineIterator *>
+{
+public:
+    ~QDirIteratorPrivateIteratorStack();
+};
+
+QDirIteratorPrivateIteratorStack::~QDirIteratorPrivateIteratorStack()
+{
+    qDeleteAll(*this);
+}
+
+
 class QDirIteratorPrivate
 {
 public:
@@ -112,7 +124,7 @@ public:
     void checkAndPushDirectory(const QFileInfo &);
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
-    QAbstractFileEngine * const engine;
+    QScopedPointer<QAbstractFileEngine> engine;
 
     const QString path;
     const QStringList nameFilters;
@@ -123,7 +135,7 @@ public:
     QVector<QRegExp> nameRegExps;
 #endif
 
-    QStack<QAbstractFileEngineIterator *> fileEngineIterators;
+    QDirIteratorPrivateIteratorStack fileEngineIterators;
     QFileInfo currentFileInfo;
     QFileInfo nextFileInfo;
 
@@ -163,7 +175,6 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
 */
 QDirIteratorPrivate::~QDirIteratorPrivate()
 {
-    delete engine;
 }
 
 /*!
@@ -431,8 +442,6 @@ QDirIterator::QDirIterator(const QString &path, const QStringList &nameFilters,
 */
 QDirIterator::~QDirIterator()
 {
-    qDeleteAll(d->fileEngineIterators);
-    delete d;
 }
 
 /*!

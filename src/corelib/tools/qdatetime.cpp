@@ -1842,7 +1842,8 @@ QTime QTime::currentTime()
 #else
     t = localtime(&ltime);
 #endif
-
+    Q_CHECK_PTR(t);
+    
     ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec
              + tv.tv_usec / 1000;
 #else

@@ -175,7 +175,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
 #if defined(Q_OS_WIN)
     qWarning("### Windows returns 1 activation, Unix returns 2.");
-    QCOMPARE(tester.sequence, 1);
+    QCOMPARE(tester.getSequence(), 1);
 #else
     QCOMPARE(tester.getSequence(), 2);
 #endif

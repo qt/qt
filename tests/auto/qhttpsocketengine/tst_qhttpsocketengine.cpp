@@ -306,11 +306,11 @@ void tst_QHttpSocketEngine::simpleConnectToIMAP()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128));
 
-    QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(QtNetworkSettings::serverIP()));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
     QVERIFY(!socketDevice.localAddress().isNull());
     QVERIFY(socketDevice.localPort() > 0);
 
@@ -695,11 +695,11 @@ void tst_QHttpSocketEngine::passwordAuth()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128, "qsockstest", "password"));
 
-    QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(QtNetworkSettings::serverIP()));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());

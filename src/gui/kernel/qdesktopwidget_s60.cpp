@@ -126,7 +126,6 @@ QDesktopWidget::QDesktopWidget()
 
 QDesktopWidget::~QDesktopWidget()
 {
-    QDesktopWidgetPrivate::cleanup();
 }
 
 bool QDesktopWidget::isVirtualDesktop() const
