@@ -37,12 +37,10 @@
 **
 ****************************************************************************/
 #include <QString>
-
-/*
 #ifdef QT_NETWORK_LIB
 #include <QtNetwork/QHostInfo>
 #endif
-*/
+
 
 #ifdef Q_OS_SYMBIAN
 #include <sys/socket.h>
@@ -131,7 +129,9 @@ public:
         //return "qt-test-server.wildcard.dev." + serverDomainName();
         return "qttest.wildcard.dev." + serverDomainName();
     }
-    static const char *serverIP()
+    
+#ifdef QT_NETWORK_LIB
+    static QHostAddress serverIP()
     {
 #ifdef Q_OS_SYMBIAN
         loadTestSettings();
@@ -141,12 +141,13 @@ public:
             if(serverIp.isNull()) {
                 serverIp = entry->recordValue().toAscii();
             }
-            return serverIp.data();
+            return QHostAddress(serverIp.data());
         }
-#endif
-        return "10.10.14.172";
+#endif    
+        return QHostInfo::fromName(serverName()).addresses().first();
     }
-
+#endif    
+    
     static QByteArray expectedReplyIMAP()
     {
 #ifdef Q_OS_SYMBIAN
@@ -315,14 +316,6 @@ private:
     }
 #endif
 
-/*
-#ifdef QT_NETWORK_LIB
-    static QHostAddress serverIP()
-    {
-        return QHostInfo::fromName(serverName()).addresses().first();
-    }
-#endif
-*/
 
 };
 #ifdef Q_OS_SYMBIAN

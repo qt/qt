@@ -92,6 +92,8 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+const char * const lupinellaIp = "10.3.4.6";
+
 
 class tst_QHostInfo : public QObject
 {
@@ -216,8 +218,8 @@ void tst_QHostInfo::lookupIPv4_data()
 
 #ifdef Q_OS_SYMBIAN
     // Test server lookup
-    QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP() << int(QHostInfo::NoError);
-    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP() << QtNetworkSettings::serverIP() << int(QHostInfo::NoError);
+    QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
+    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
 #else
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
