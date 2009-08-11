@@ -96,9 +96,9 @@ public:
             return entry->recordValue();
         }
 #endif
-        return QString("qttest");
+        //return QString("qttest");
         //return QString("aspiriniks");
-        //return QString("qt-test-server");
+        return QString("qt-test-server");
     }
     static QString serverDomainName()
     {
@@ -110,8 +110,9 @@ public:
             return entry->recordValue();
         }
 #endif
-        return QString("it.local");
+        //return QString("it.local");
         //return QString("troll.no");
+        return QString("qt-test-net");
     }
     static QString serverName()
     {
@@ -126,8 +127,8 @@ public:
     }
     static QString wildcardServerName()
     {
-        //return "qt-test-server.wildcard.dev." + serverDomainName();
-        return "qttest.wildcard.dev." + serverDomainName();
+        return "qt-test-server.wildcard.dev." + serverDomainName();
+        //return "qttest.wildcard.dev." + serverDomainName();
     }
     
 #ifdef QT_NETWORK_LIB
