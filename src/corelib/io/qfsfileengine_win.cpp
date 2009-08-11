@@ -1481,25 +1481,25 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         //### what to do with permissions if we don't use NTFS
         // for now just add all permissions and what about exe missions ??
         // also qt_ntfs_permission_lookup is now not set by defualt ... should it ?
-            ret |= QAbstractFileEngine::ReadOtherPerm | QAbstractFileEngine::ReadGroupPerm
+        ret |= QAbstractFileEngine::ReadOtherPerm | QAbstractFileEngine::ReadGroupPerm
             | QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
             | QAbstractFileEngine::WriteUserPerm | QAbstractFileEngine::WriteOwnerPerm
             | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
-    }
 
-    if (doStat()) {
-        if (ret & (QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-            QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm)) {
-            if (fileAttrib & FILE_ATTRIBUTE_READONLY)
-                ret &= ~(QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-                QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm);
+        if (doStat()) {
+            if (ret & (QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
+                QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm)) {
+                if (fileAttrib & FILE_ATTRIBUTE_READONLY)
+                    ret &= ~(QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
+                             QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm);
+            }
+
+            QString ext = filePath.right(4).toLower();
+            if (ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
+                ext == QLatin1String(".pif") || ext == QLatin1String(".cmd") || (fileAttrib & FILE_ATTRIBUTE_DIRECTORY))
+                ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
+                       QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
         }
-
-        QString ext = filePath.right(4).toLower();
-        if (ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
-            ext == QLatin1String(".pif") || ext == QLatin1String(".cmd") || (fileAttrib & FILE_ATTRIBUTE_DIRECTORY))
-            ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
-            QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
     }
     return ret;
 }
