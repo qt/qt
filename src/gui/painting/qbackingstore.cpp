@@ -847,7 +847,7 @@ QWidgetBackingStore::~QWidgetBackingStore()
 void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
 {
     Q_Q(QWidget);
-    if (!q->isVisible())
+    if (!q->isVisible() || (dx == 0 && dy == 0))
         return;
 
     QWidget *tlw = q->window();
