@@ -550,7 +550,8 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
         }
     }
 
-    if (Debugger* debugger = callFrame->dynamicGlobalObject()->debugger()) {
+    Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
+    if (debugger) {
         DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
         debugger->exception(debuggerCallFrame, codeBlock->ownerNode()->sourceID(), codeBlock->lineNumberForBytecodeOffset(callFrame, bytecodeOffset));
     }
@@ -575,10 +576,18 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
 
     HandlerInfo* handler = 0;
     while (!(handler = codeBlock->handlerForBytecodeOffset(bytecodeOffset))) {
-        if (!unwindCallFrame(callFrame, exceptionValue, bytecodeOffset, codeBlock))
+        if (!unwindCallFrame(callFrame, exceptionValue, bytecodeOffset, codeBlock)) {
+#ifdef QT_BUILD_SCRIPT_LIB
+            if (debugger)
+                debugger->exceptionThrow(DebuggerCallFrame(callFrame, exceptionValue), codeBlock->ownerNode()->sourceID(),false);
+#endif
             return 0;
+        }
     }
-
+#ifdef QT_BUILD_SCRIPT_LIB
+    if (debugger)
+        debugger->exceptionThrow(DebuggerCallFrame(callFrame, exceptionValue), codeBlock->ownerNode()->sourceID(),true);
+#endif
     // Now unwind the scope chain within the exception handler's call frame.
 
     ScopeChainNode* scopeChain = callFrame->scopeChain();
@@ -3303,17 +3312,27 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
            register base to those of the calling function.
         */
 
+#ifdef QT_BUILD_SCRIPT_LIB
+        Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
+        intptr_t sourceId = callFrame->codeBlock()->source()->asID();
+#endif
+
         int result = (++vPC)->u.operand;
 
         if (callFrame->codeBlock()->needsFullScopeChain())
             callFrame->scopeChain()->deref();
 
         JSValue returnValue = callFrame->r(result).jsValue();
+#ifdef QT_BUILD_SCRIPT_LIB
+        if (debugger) {
+            debugger->functionExit(returnValue, sourceId);
+        }
+#endif
 
         vPC = callFrame->returnPC();
         int dst = callFrame->returnValueRegister();
         callFrame = callFrame->callerFrame();
-        
+
         if (callFrame->hasHostCallFrameFlag())
             return returnValue;
 
@@ -3674,6 +3693,16 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         */
         ASSERT(exceptionValue);
         ASSERT(!globalData->exception);
+
+#ifdef QT_BUILD_SCRIPT_LIB
+        CodeBlock* codeBlock = callFrame->codeBlock();
+        Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
+        if (debugger) {
+            DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
+            debugger->exceptionCatch(debuggerCallFrame, codeBlock->ownerNode()->sourceID());
+        }
+#endif
+
         int ex = (++vPC)->u.operand;
         callFrame->r(ex) = exceptionValue;
         exceptionValue = JSValue();

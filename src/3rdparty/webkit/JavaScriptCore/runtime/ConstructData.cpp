@@ -34,7 +34,29 @@
 
 #include "JSFunction.h"
 
+
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "Debugger.h"
+#include "DebuggerCallFrame.h"
+#endif
+
 namespace JSC {
+
+#ifdef QT_BUILD_SCRIPT_LIB
+JSObject* JSC::NativeConstrWrapper::operator() (ExecState* exec, JSObject* jsobj, const ArgList& argList) const
+{
+    Debugger* debugger = exec->lexicalGlobalObject()->debugger();
+    if (debugger)
+        debugger->callEvent(DebuggerCallFrame(exec), -1, -1);
+
+    JSObject* returnValue = ptr(exec, jsobj, argList);
+
+    if ((debugger) && (callDebuggerFunctionExit))
+        debugger->functionExit(JSValue(returnValue), -1);
+
+    return returnValue;
+}
+#endif
 
 JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType, const ConstructData& constructData, const ArgList& args)
 {

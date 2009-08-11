@@ -48,9 +48,31 @@ namespace JSC {
 
     typedef JSValue (JSC_HOST_CALL *NativeFunction)(ExecState*, JSObject*, JSValue thisValue, const ArgList&);
 
+#ifdef QT_BUILD_SCRIPT_LIB
+    class NativeFuncWrapper
+    {
+        NativeFunction ptr;
+    public:
+        inline NativeFuncWrapper& operator=(NativeFunction func)
+        {
+            ptr = func;
+            return *this;
+        }
+        inline operator NativeFunction() const {return ptr;}
+        inline operator bool() const {return ptr;}
+        inline bool operator==(int val) const {return (int)ptr==val;}
+       
+        JSValue operator()(ExecState* exec, JSObject* jsobj, JSValue thisValue, const ArgList& argList) const;
+    };
+#endif
+
     union CallData {
         struct {
+#ifndef QT_BUILD_SCRIPT_LIB
             NativeFunction function;
+#else
+            NativeFuncWrapper function;
+#endif
         } native;
         struct {
             FunctionBodyNode* functionBody;

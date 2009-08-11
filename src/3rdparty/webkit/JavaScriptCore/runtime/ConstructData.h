@@ -46,9 +46,38 @@ namespace JSC {
 
     typedef JSObject* (*NativeConstructor)(ExecState*, JSObject*, const ArgList&);
 
+#ifdef QT_BUILD_SCRIPT_LIB
+    class NativeConstrWrapper
+    {
+        NativeConstructor ptr;
+        //Hack. If this variable is true and if debugger is attached at the end of
+        //operator() execution functionExit event will be created (in most cases it will be default)
+        //This variable was created because of FunctionWrapper::proxyCall method that change result
+        //on fly. Event shuld be created with original value so the method should call it itself.
+        bool callDebuggerFunctionExit;
+    public:
+        inline NativeConstrWrapper& operator=(NativeConstructor func)
+        {
+            callDebuggerFunctionExit = true;
+            ptr = func;
+            return *this;
+        }
+        inline operator NativeConstructor() const {return ptr;}
+        inline operator bool() const {return ptr;}
+        inline bool operator==(int val) const {return (int)ptr==val;}
+
+        inline void doNotCallDebuggerFunctionExit() {callDebuggerFunctionExit = false;}
+        JSObject* operator()(ExecState*, JSObject*, const ArgList&) const;
+    };
+#endif
+
     union ConstructData {
         struct {
+#ifndef QT_BUILD_SCRIPT_LIB
             NativeConstructor function;
+#else
+            NativeConstrWrapper function;
+#endif
         } native;
         struct {
             FunctionBodyNode* functionBody;
