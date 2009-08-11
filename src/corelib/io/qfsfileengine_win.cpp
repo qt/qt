@@ -1494,7 +1494,8 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                              QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm);
             }
 
-            QString ext = filePath.right(4).toLower();
+            QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+            QString ext = fname.right(4).toLower();
             if (ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
                 ext == QLatin1String(".pif") || ext == QLatin1String(".cmd") || (fileAttrib & FILE_ATTRIBUTE_DIRECTORY))
                 ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
