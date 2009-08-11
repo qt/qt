@@ -16,7 +16,7 @@
 ** addition, as a special exception, Trolltech gives you certain
 ** additional rights. These rights are described in the Trolltech GPL
 ** Exception version 1.2, which can be found at
-** http://www.trolltech.com/products/qt/gplexception/ and in the file
+** http://qt.nokia.com/products/qt/gplexception/ and in the file
 ** GPL_EXCEPTION.txt in this package.
 **
 ** Please review the following information to ensure GNU General
@@ -305,7 +305,7 @@
                   </property>
                   <property name="text" >
                     <string>&lt;p>
-&lt;a href=&quot;http://www.trolltech.com&quot;>http://www.trolltech.com&lt;/a>
+&lt;a href=&quot;http://qt.nokia.com&quot;>http://www.trolltech.com&lt;/a>
 &lt;/p>
 &lt;p>
 &lt;a href=&quot;http://www.kde.org&quot;>http://www.kde.org&lt;/a>

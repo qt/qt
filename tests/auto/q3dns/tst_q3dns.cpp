@@ -206,7 +206,7 @@ void tst_Q3Dns::simpleLookup()
     int c = 0;
     char **v = 0;
     QCoreApplication a(c, v);
-    Q3Dns dns("www.trolltech.com");
+    Q3Dns dns("qt.nokia.com");
 
     QSignalSpy spy(&dns, SIGNAL(resultsReady()));
     connect(&dns, SIGNAL(resultsReady()), this, SLOT(simpleLookupDone()));

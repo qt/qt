@@ -281,20 +281,20 @@ void tst_QUrl::constructing()
     QCOMPARE(url.fragment(), QString::fromLatin1("top"));
 
     url.setScheme("http");
-    url.setHost("www.trolltech.com");
+    url.setHost("qt.nokia.com");
 
     QCOMPARE(url.toString(),
-            QString::fromLatin1("http://www.trolltech.com?type>login/name>åge nissemannsen"
+            QString::fromLatin1("http://qt.nokia.com?type>login/name>åge nissemannsen"
                           "/ole&du>anne+jørgen=sant/prosent>%#top"));
 
-    QUrl justHost("www.trolltech.com");
+    QUrl justHost("qt.nokia.com");
     QVERIFY(!justHost.isEmpty());
     QVERIFY(justHost.host().isEmpty());
-    QCOMPARE(justHost.path(), QString::fromLatin1("www.trolltech.com"));
+    QCOMPARE(justHost.path(), QString::fromLatin1("qt.nokia.com"));
 
-    QUrl hostWithSlashes("//www.trolltech.com");
+    QUrl hostWithSlashes("//qt.nokia.com");
     QVERIFY(hostWithSlashes.path().isEmpty());
-    QCOMPARE(hostWithSlashes.host(), QString::fromLatin1("www.trolltech.com"));
+    QCOMPARE(hostWithSlashes.host(), QString::fromLatin1("qt.nokia.com"));
 
 
     QUrl withHashInPath;
@@ -315,7 +315,7 @@ void tst_QUrl::constructing()
 
 void tst_QUrl::assignment()
 {
-    QUrl url("http://www.trolltech.com/");
+    QUrl url("http://qt.nokia.com/");
     QVERIFY(url.isValid());
 
     QUrl copy;
@@ -326,10 +326,10 @@ void tst_QUrl::assignment()
 
 void tst_QUrl::comparison()
 {
-    QUrl url1("http://www.trolltech.com/");
+    QUrl url1("http://qt.nokia.com/");
     QVERIFY(url1.isValid());
 
-    QUrl url2("http://www.trolltech.com/");
+    QUrl url2("http://qt.nokia.com/");
     QVERIFY(url2.isValid());
 
     QVERIFY(url1 == url2);
@@ -357,7 +357,7 @@ void tst_QUrl::comparison()
 
 void tst_QUrl::copying()
 {
-    QUrl url("http://www.trolltech.com/");
+    QUrl url("http://qt.nokia.com/");
     QVERIFY(url.isValid());
 
     QUrl copy(url);
@@ -1666,9 +1666,9 @@ void tst_QUrl::toString_constructed_data()
 
     QString n("");
 
-    QTest::newRow("data1") << n << n << n << QString::fromLatin1("www.trolltech.com") << -1 << QString::fromLatin1("index.html")
-	                << QByteArray() << n << QString::fromLatin1("//www.trolltech.com/index.html")
-			<< QByteArray("//www.trolltech.com/index.html");
+    QTest::newRow("data1") << n << n << n << QString::fromLatin1("qt.nokia.com") << -1 << QString::fromLatin1("index.html")
+	                << QByteArray() << n << QString::fromLatin1("//qt.nokia.com/index.html")
+			<< QByteArray("//qt.nokia.com/index.html");
     QTest::newRow("data2") << QString::fromLatin1("file") << n << n << n << -1 << QString::fromLatin1("/root") << QByteArray()
                         << n << QString::fromLatin1("file:///root") << QByteArray("file:///root");
 }
@@ -1784,22 +1784,22 @@ void tst_QUrl::compat_legacy()
     /* others
      */
     {
-	QUrl u( "http://www.trolltech.com/images/ban/pgs_front.jpg" );
+	QUrl u( "http://qt.nokia.com/images/ban/pgs_front.jpg" );
 	QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
-	QUrl tmp( "http://www.trolltech.com/images/ban/" );
+	QUrl tmp( "http://qt.nokia.com/images/ban/" );
 	QUrl u = tmp.resolved(QString("pgs_front.jpg"));
 	QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
 	QUrl tmp;
-	QUrl u = tmp.resolved(QString("http://www.trolltech.com/images/ban/pgs_front.jpg"));
+	QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
 	QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
 	QUrl tmp;
-	QUrl u = tmp.resolved(QString("http://www.trolltech.com/images/ban/pgs_front.jpg"));
+	QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
 	QFileInfo fi(u.path());
 	u.setPath(fi.path());
 	QCOMPARE( u.path(), QString("/images/ban") );
@@ -1881,11 +1881,11 @@ void tst_QUrl::compat_constructor_03_data()
     QTest::addColumn<QString>("res");
 
     //next we fill it with data
-    QTest::newRow( "protocol00" )  << QString( "http://www.trolltech.com/index.html" ) << QString( "http://www.trolltech.com/index.html" );
-    QTest::newRow( "protocol01" )  << QString( "http://www.trolltech.com" ) << QString( "http://www.trolltech.com" );
-    QTest::newRow( "protocol02" )  << QString( "http://www.trolltech.com/" ) << QString( "http://www.trolltech.com/" );
-    QTest::newRow( "protocol03" )  << QString( "http://www.trolltech.com/foo" ) << QString( "http://www.trolltech.com/foo" );
-    QTest::newRow( "protocol04" )  << QString( "http://www.trolltech.com/foo/" ) << QString( "http://www.trolltech.com/foo/" );
+    QTest::newRow( "protocol00" )  << QString( "http://qt.nokia.com/index.html" ) << QString( "http://www.trolltech.com/index.html" );
+    QTest::newRow( "protocol01" )  << QString( "http://qt.nokia.com" ) << QString( "http://www.trolltech.com" );
+    QTest::newRow( "protocol02" )  << QString( "http://qt.nokia.com/" ) << QString( "http://www.trolltech.com/" );
+    QTest::newRow( "protocol03" )  << QString( "http://qt.nokia.com/foo" ) << QString( "http://www.trolltech.com/foo" );
+    QTest::newRow( "protocol04" )  << QString( "http://qt.nokia.com/foo/" ) << QString( "http://www.trolltech.com/foo/" );
     QTest::newRow( "protocol05" )  << QString( "ftp://ftp.trolltech.com/foo/index.txt" ) << QString( "ftp://ftp.trolltech.com/foo/index.txt" );
 
     QTest::newRow( "local00" )  << QString( "/foo" ) << QString( "/foo" );
@@ -2008,7 +2008,7 @@ void tst_QUrl::compat_path_data()
     QTest::addColumn<QString>("url");
     QTest::addColumn<QString>("res");
 
-    QTest::newRow( "protocol00" ) << "http://www.trolltech.com/images/ban/pgs_front.jpg" << "/images/ban/pgs_front.jpg";
+    QTest::newRow( "protocol00" ) << "http://qt.nokia.com/images/ban/pgs_front.jpg" << "/images/ban/pgs_front.jpg";
 
 #if defined( Q_OS_WIN32 )
     QTest::newRow( "winShare00" ) << "//Anarki/homes" << "/homes";
@@ -2058,8 +2058,8 @@ void tst_QUrl::compat_decode_data()
     QTest::newRow("NormalString") << QByteArray("filename") << QString("filename");
     QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QString("file name");
     QTest::newRow("JustEncoded") << QByteArray("%20") << QString(" ");
-    QTest::newRow("HTTPUrl") << QByteArray("http://www.trolltech.com") << QString("http://www.trolltech.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://www%20trolltech%20com") << QString("http://www trolltech com");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QString("http://www.trolltech.com");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://www%20trolltech%20com") << QString("http://qt.nokia.com");
     QTest::newRow("EmptyString") << QByteArray("") << QString("");
     QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QString("Française");
 }
@@ -2080,8 +2080,8 @@ void tst_QUrl::compat_encode_data()
     QTest::newRow("NormalString") << QString("filename") << QByteArray("filename");
     QTest::newRow("NormalStringEncoded") << QString("file name") << QByteArray("file%20name");
     QTest::newRow("JustEncoded") << QString(" ") << QByteArray("%20");
-    QTest::newRow("HTTPUrl") << QString("http://www.trolltech.com") << QByteArray("http%3A//www.trolltech.com");
-    QTest::newRow("HTTPUrlEncoded") << QString("http://www trolltech com") << QByteArray("http%3A//www%20trolltech%20com");
+    QTest::newRow("HTTPUrl") << QString("http://qt.nokia.com") << QByteArray("http%3A//www.trolltech.com");
+    QTest::newRow("HTTPUrlEncoded") << QString("http://qt.nokia.com") << QByteArray("http%3A//www%20trolltech%20com");
     QTest::newRow("EmptyString") << QString("") << QByteArray("");
     QTest::newRow("Task27166") << QString::fromLatin1("Française") << QByteArray("Fran%C3%A7aise");
 }
@@ -2185,8 +2185,8 @@ void tst_QUrl::symmetry()
     QCOMPARE(url.allQueryItemValues("a").join("").toLatin1().constData(), "bdøf");
     QCOMPARE(url.fragment(), QString::fromLatin1("vræl"));
 
-    QUrl onlyHost("//www.trolltech.com");
-    QCOMPARE(onlyHost.toString(), QString::fromLatin1("//www.trolltech.com"));
+    QUrl onlyHost("//qt.nokia.com");
+    QCOMPARE(onlyHost.toString(), QString::fromLatin1("//qt.nokia.com"));
 
     {
         QString urlString = QString::fromLatin1("http://desktop:33326/upnp/{32f525a6-6f31-426e-91ca-01c2e6c2c57e}");
@@ -2288,7 +2288,7 @@ void tst_QUrl::isRelative_data()
     QTest::addColumn<QString>("url");
     QTest::addColumn<bool>("trueFalse");
 
-    QTest::newRow("not") << QString::fromLatin1("http://www.trolltech.com") << false;
+    QTest::newRow("not") << QString::fromLatin1("http://qt.nokia.com") << false;
     QTest::newRow("55288") << QString::fromLatin1("node64.html#fig:form:ana") << true;
 
     // kde
@@ -2491,32 +2491,32 @@ void tst_QUrl::invalidSchemeValidator()
 
     // test that if scheme does not start with an ALPHA, QUrl::isValid() returns false
     {
-        QUrl url("1http://www.trolltech.com", QUrl::StrictMode);
+        QUrl url("1http://qt.nokia.com", QUrl::StrictMode);
         qDebug() << url;
         QCOMPARE(url.isValid(), false);
     }
     {
-        QUrl url("http://www.trolltech.com");
-        url.setScheme("111http://www.trolltech.com");
+        QUrl url("http://qt.nokia.com");
+        url.setScheme("111http://qt.nokia.com");
         QCOMPARE(url.isValid(), false);
     }
     {
-        QUrl url = QUrl::fromEncoded("1http://www.trolltech.com", QUrl::StrictMode);
+        QUrl url = QUrl::fromEncoded("1http://qt.nokia.com", QUrl::StrictMode);
         QCOMPARE(url.isValid(), false);
     }
 
     // non-ALPHA character at other positions in the scheme are ok
     {
-        QUrl url("ht111tp://www.trolltech.com", QUrl::StrictMode);
+        QUrl url("ht111tp://qt.nokia.com", QUrl::StrictMode);
         QVERIFY(url.isValid());
     }
     {
-        QUrl url("http://www.trolltech.com");
-        url.setScheme("ht123tp://www.trolltech.com");
+        QUrl url("http://qt.nokia.com");
+        url.setScheme("ht123tp://qt.nokia.com");
         QVERIFY(url.isValid());
     }
     {
-        QUrl url = QUrl::fromEncoded("ht321tp://www.trolltech.com", QUrl::StrictMode);
+        QUrl url = QUrl::fromEncoded("ht321tp://qt.nokia.com", QUrl::StrictMode);
         QVERIFY(url.isValid());
     }
 }
@@ -3432,7 +3432,7 @@ void tst_QUrl::hosts_data()
 
     // normal hostnames
     QTest::newRow("normal") << QString("http://intern") << QString("intern");
-    QTest::newRow("normal2") << QString("http://www.trolltech.com") << QString("www.trolltech.com");
+    QTest::newRow("normal2") << QString("http://qt.nokia.com") << QString("www.trolltech.com");
 
     // IDN hostnames
     QTest::newRow("idn") << QString(QLatin1String("http://\345r.no")) << QString(QLatin1String("\345r.no"));

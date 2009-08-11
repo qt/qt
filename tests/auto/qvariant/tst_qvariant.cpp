@@ -2402,7 +2402,7 @@ void tst_QVariant::saveLoadCustomTypes()
 
 void tst_QVariant::url()
 {
-    QUrl url("http://www.trolltech.com");
+    QUrl url("http://qt.nokia.com");
 
     QVariant v(url);
 
