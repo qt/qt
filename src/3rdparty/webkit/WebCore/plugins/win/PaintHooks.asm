@@ -16,35 +16,35 @@
 ;    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ;    Boston, MA 02110-1301, USA.
 ;*/
- 
+
 ;HDC __stdcall _HBeginPaint(HWND hWnd, LPPAINTSTRUCT lpPaint);
 
-PUBLIC	_HBeginPaint
+PUBLIC  _HBeginPaint
 
-_TEXT	SEGMENT
+_TEXT   SEGMENT
 
 _HBeginPaint PROC
-	mov  r10,rcx 
-	mov  eax,1017h 
-	syscall          
-	ret 
+     mov  r10,rcx
+     mov  eax,1017h
+     syscall
+     ret
 _HBeginPaint ENDP
 
-_TEXT	ENDS
+_TEXT   ENDS
 
 ;BOOL __stdcall _HEndPaint(HWND hWnd, const PAINTSTRUCT* lpPaint);
 
-PUBLIC	_HEndPaint
+PUBLIC  _HEndPaint
 
-_TEXT	SEGMENT
+_TEXT   SEGMENT
 
 _HEndPaint PROC
-	mov  r10,rcx 
-	mov  eax,1019h 
-	syscall          
-	ret 
+    mov  r10,rcx
+    mov  eax,1019h
+    syscall
+    ret
 _HEndPaint ENDP
 
-_TEXT	ENDS
+_TEXT   ENDS
 
 END
