@@ -414,15 +414,15 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
                     if ((st.st_mode & S_IFMT) != S_IFDIR)
                         return false;
                 } else if (QT_MKDIR(chunk, 0777) != 0) {
-                        return false;
+                    return false;
                 }
             }
         }
         return true;
     }
 #if defined(Q_OS_DARWIN)  // Mac X doesn't support trailing /'s
-    if (dirName[dirName.length() - 1] == QLatin1Char('/'))
-        dirName = dirName.left(dirName.length() - 1);
+    if (dirName.endsWith(QLatin1Char('/')))
+        dirName.chop(1);
 #endif
     return (QT_MKDIR(QFile::encodeName(dirName), 0777) == 0);
 }
