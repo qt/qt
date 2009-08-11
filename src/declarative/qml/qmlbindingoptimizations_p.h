@@ -60,11 +60,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlBindingIdOptimization : public QmlAbstractExpression, 
-                                 public QmlAbstractBinding
+class QmlBinding_Id : public QmlAbstractExpression, 
+                      public QmlAbstractBinding
 {
 public:
-    QmlBindingIdOptimization(QObject *object, int propertyIdx,
+    QmlBinding_Id(QObject *object, int propertyIdx,
                              QmlContext *context, int id);
 
     // Inherited from QmlAbstractBinding
@@ -75,12 +75,37 @@ public:
     void reset();
 
 private:
-    QmlBindingIdOptimization **m_prev;
-    QmlBindingIdOptimization  *m_next;
+    QmlBinding_Id **m_prev;
+    QmlBinding_Id  *m_next;
 
     QObject *m_object;
     int m_propertyIdx;
     int m_id;
+};
+
+class QmlBinding_ObjProperty : public QObject,
+                               public QmlAbstractExpression,
+                               public QmlAbstractBinding
+{
+    Q_OBJECT
+public:
+    QmlBinding_ObjProperty(QObject *object, int propertyIdx,
+                           QObject *context, int contextIdx, int notifyIdx);
+
+    // Inherited from QmlAbstractBinding
+    virtual void setEnabled(bool);
+    virtual int propertyIndex();
+
+private slots:
+    virtual void update();
+
+private:
+    bool m_enabled;
+    QObject *m_object;
+    int m_propertyIdx;
+    QObject *m_context;
+    int m_contextIdx;
+    int m_notifyIdx;
 };
 
 QT_END_NAMESPACE

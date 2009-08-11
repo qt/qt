@@ -529,7 +529,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             }
             break;
 
-        case QmlInstruction::StoreCompiledBinding:
+        case QmlInstruction::StoreBinding:
             {
                 QObject *target = 
                     stack.at(stack.count() - 1 - instr.assignBinding.owner);
@@ -554,12 +554,28 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             {
                 QObject *target = stack.top();
 
-                QmlBindingIdOptimization *bind = 
-                    new QmlBindingIdOptimization(target, instr.assignIdOptBinding.property, ctxt, instr.assignIdOptBinding.id);
+                QmlBinding_Id *bind = 
+                    new QmlBinding_Id(target, instr.assignIdOptBinding.property,
+                                      ctxt, instr.assignIdOptBinding.id);
                 bindValues.append(bind);
                 // ### Need a mePtr
                 bind->addToObject(target);
             } 
+            break;
+
+        case QmlInstruction::StoreObjPropBinding:
+            {
+                QObject *target = stack.top();
+                QObject *context = 
+                    stack.at(stack.count() - 1 - instr.assignObjPropBinding.context);
+
+                QmlBinding_ObjProperty *bind =
+                    new QmlBinding_ObjProperty(target, instr.assignObjPropBinding.property, context, instr.assignObjPropBinding.contextIdx, instr.assignObjPropBinding.notifyIdx);
+
+                bindValues.append(bind);
+                // ### Need a mePtr
+                bind->addToObject(target);
+            }
             break;
 
         case QmlInstruction::StoreValueSource:

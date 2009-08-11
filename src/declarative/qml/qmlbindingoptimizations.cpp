@@ -44,17 +44,27 @@
 
 QT_BEGIN_NAMESPACE
 
+/*
+    The QmlBinding_Id optimization handles expressions of the type:
 
-QmlBindingIdOptimization::QmlBindingIdOptimization(QObject *object, 
-                                                   int propertyIdx,
-                                                   QmlContext *context, 
-                                                   int id)
+        property: id
+
+    where id is a local context id, and property is an object property.  
+    Coercian between id and property must be checked outside the QmlBinding_Id -
+    it assumes that they coerce successfully.
+
+    The QmlBinding_Id class avoids any signal slot connections, through the
+    special "bindings" linked list maintained in the 
+    QmlContextPrivate::ContextGuard instance for each id object.
+*/
+QmlBinding_Id::QmlBinding_Id(QObject *object, int propertyIdx,
+                             QmlContext *context, int id)
 : m_prev(0), m_next(0), m_object(object), m_propertyIdx(propertyIdx), m_id(id)
 {
     QmlAbstractExpression::setContext(context);
 }
 
-void QmlBindingIdOptimization::setEnabled(bool e)
+void QmlBinding_Id::setEnabled(bool e)
 {
     if (e) {
         addToObject(m_object);
@@ -64,12 +74,12 @@ void QmlBindingIdOptimization::setEnabled(bool e)
     }
 }
 
-int QmlBindingIdOptimization::propertyIndex()
+int QmlBinding_Id::propertyIndex()
 {
     return m_propertyIdx;
 }
 
-void QmlBindingIdOptimization::update()
+void QmlBinding_Id::update()
 {
     QmlContextPrivate *ctxtPriv = 
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context()));
@@ -91,7 +101,7 @@ void QmlBindingIdOptimization::update()
     } 
 }
 
-void QmlBindingIdOptimization::reset()
+void QmlBinding_Id::reset()
 {
     if (m_prev) {
         *m_prev = m_next;
@@ -104,6 +114,72 @@ void QmlBindingIdOptimization::reset()
     void *a[] = { &o, 0 };
     QMetaObject::metacall(m_object, QMetaObject::WriteProperty, 
                           m_propertyIdx, a);
+}
+
+/*
+    The QmlBinding_ObjectProperty optimization handles expressions of the type:
+
+        property: objectProperty
+
+    where both property and objectProperty are object properties on the target
+    object.  Coercian between the two must be checked outside the 
+    QmlBinding_ObjectProperty - it assumes that they coerce successfully.
+
+    Due to dot properties, property does not have to be on the same object as 
+    objectProperty.  For example:
+
+        anchors.fill: parent
+*/
+QmlBinding_ObjProperty::QmlBinding_ObjProperty(QObject *object, int propertyIdx,
+                                               QObject *context, int contextIdx,
+                                               int notifyIdx)
+: m_enabled(false), m_object(object), m_propertyIdx(propertyIdx), 
+  m_context(context), m_contextIdx(contextIdx), m_notifyIdx(notifyIdx)
+{
+}
+
+void QmlBinding_ObjProperty::setEnabled(bool e)
+{
+    m_enabled = e;
+    if (e) {
+        addToObject(m_object);
+        update();
+    } else {
+        removeFromObject();
+    }
+}
+
+int QmlBinding_ObjProperty::propertyIndex()
+{
+    return m_propertyIdx;
+}
+
+void QmlBinding_ObjProperty::update()
+{
+    if (!m_enabled)
+        return;
+
+    QObject *value = 0;
+    void *a[] = { &value, 0 };
+
+    // Read
+    QMetaObject::metacall(m_context, QMetaObject::ReadProperty, 
+                          m_contextIdx, a);
+
+    // Write
+    QMetaObject::metacall(m_object, QMetaObject::WriteProperty, 
+                          m_propertyIdx, a);
+
+    // Connect notify if needed.  Only need to connect once, so we set
+    // m_notifyIdx back to -1 afterwards
+    static int slotIdx = -1;
+    if (m_notifyIdx != -1) {
+        if (slotIdx == -1) 
+            slotIdx = QmlBinding_ObjProperty::staticMetaObject.indexOfMethod("update()");
+
+        QMetaObject::connect(m_context, m_notifyIdx, this, slotIdx);
+        m_notifyIdx = -1;
+    }
 }
 
 QT_END_NAMESPACE

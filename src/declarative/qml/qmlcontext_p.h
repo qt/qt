@@ -69,7 +69,7 @@ class QmlEngine;
 class QmlExpression;
 class QmlExpressionPrivate;
 class QmlAbstractExpression;
-class QmlBindingIdOptimization;
+class QmlBinding_Id;
 
 class QmlContextPrivate : public QObjectPrivate
 {
@@ -114,7 +114,7 @@ public:
     {
         ContextGuard() : priv(0), bindings(0) {}
         QmlContextPrivate *priv;
-        QmlBindingIdOptimization *bindings;
+        QmlBinding_Id *bindings;
         ContextGuard &operator=(QObject *obj) {
             (QGuard<QObject>&)*this = obj; return *this;
         }

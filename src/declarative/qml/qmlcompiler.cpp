@@ -2069,6 +2069,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     QmlBasicScript bs;
     if (ref.isBasicScript) 
         bs.load(ref.compiledData.constData() + sizeof(quint32));
+
     if (bs.isSingleIdFetch()) {
         int idIndex = bs.singleIdFetchIndex();
         QmlParser::Object *idObj = compileState.idIndexes.value(idIndex);
@@ -2079,9 +2080,26 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
             output->bytecode << store;
             return;
         }
+    } else if (bs.isSingleContextProperty()) {
+        int propIndex = bs.singleContextPropertyIndex();
+
+        QMetaProperty p = 
+            ref.bindingContext.object->metaObject()->property(propIndex);
+        if ((p.notifySignalIndex() != -1 || p.isConstant()) && 
+            canCoerce(prop->type, p.userType())) {
+
+            store.type = QmlInstruction::StoreObjPropBinding;
+            store.assignObjPropBinding.property = prop->index;
+            store.assignObjPropBinding.contextIdx = propIndex;
+            store.assignObjPropBinding.context = ref.bindingContext.stack;
+            store.assignObjPropBinding.notifyIdx = p.notifySignalIndex();
+
+            output->bytecode << store;
+            return;
+        }
     }
         
-    store.type = QmlInstruction::StoreCompiledBinding;
+    store.type = QmlInstruction::StoreBinding;
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
     store.assignBinding.context = ref.bindingContext.stack;
     store.assignBinding.owner = ref.bindingContext.owner;
@@ -2157,9 +2175,25 @@ bool QmlCompiler::completeComponentBuild()
 */
 bool QmlCompiler::canCoerce(int to, QmlParser::Object *from)
 {
-    const QMetaObject *toMo =
-        QmlMetaType::rawMetaObjectForType(to);
+    const QMetaObject *toMo = QmlMetaType::rawMetaObjectForType(to);
     const QMetaObject *fromMo = from->metaObject();
+
+    while (fromMo) {
+        if (fromMo == toMo)
+            return true;
+        fromMo = fromMo->superClass();
+    }
+    return false;
+}
+
+/*!
+    Returns true if from can be assigned to a (QObject) property of type
+    to.
+*/
+bool QmlCompiler::canCoerce(int to, int from)
+{
+    const QMetaObject *toMo = QmlMetaType::rawMetaObjectForType(to);
+    const QMetaObject *fromMo = QmlMetaType::rawMetaObjectForType(from);
 
     while (fromMo) {
         if (fromMo == toMo)
