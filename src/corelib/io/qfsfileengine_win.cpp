@@ -1542,12 +1542,13 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     if (type & FlagsMask) {
         if(d->doStat()) {
             ret |= QAbstractFileEngine::FileFlags(ExistsFlag | LocalDiskFlag);
-            if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN)
-                ret |= HiddenFlag;
             if (d->filePath == QLatin1String("/") || (d->filePath.at(0).isLetter() && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/"))
                 || isUncRoot(d->filePath)) {
                 ret |= RootFlag;
-                ret &= ~HiddenFlag;
+            } else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN) {
+                QString baseName = fileName(BaseName);
+                if (baseName != QLatin1String(".") && baseName != QLatin1String(".."))
+                    ret |= HiddenFlag;
             }
         }
     }
