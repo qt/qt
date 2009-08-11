@@ -226,6 +226,7 @@ private:
 
     static int findSignalByName(const QMetaObject *, const QByteArray &name);
     static bool canCoerce(int to, QmlParser::Object *from);
+    static bool canCoerce(int to, int from);
     static QmlType *toQmlType(QmlParser::Object *from);
 
     QStringList deferredProperties(QmlParser::Object *);
@@ -236,6 +237,7 @@ private:
         QmlParser::Variant expression;
         QmlParser::Property *property;
         QmlParser::Value *value;
+        bool isBasicScript;
         QByteArray compiledData;
         BindingContext bindingContext;
     };
@@ -247,6 +249,7 @@ private:
             : parserStatusCount(0), savedObjects(0), 
               pushedProperties(0), root(0) {}
         QHash<QString, QmlParser::Object *> ids;
+        QHash<int, QmlParser::Object *> idIndexes;
         int parserStatusCount;
         int savedObjects;
         int pushedProperties;

@@ -94,7 +94,6 @@ void QmlTransitionManagerPrivate::applyBindings()
     foreach(const Action &action, bindingsList) {
         if (action.toBinding) {
             action.property.setBinding(action.toBinding);
-            action.toBinding->forceUpdate();
         } else if (action.event) {
             if (action.reverseEvent)
                 action.event->reverse();
@@ -146,7 +145,6 @@ void QmlTransitionManager::transition(const QList<Action> &list,
             const Action &action = applyList.at(ii);
             if (action.toBinding) {
                 action.property.setBinding(action.toBinding);
-                action.toBinding->forceUpdate();
             } else if (!action.event) {
                 action.property.write(action.toValue);
             } else if (action.event->isReversable()) {

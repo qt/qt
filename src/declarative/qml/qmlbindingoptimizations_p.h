@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPONENT_P_H
-#define QMLCOMPONENT_P_H
+#ifndef QMLBINDINGOPTIMIZATIONS_P_H
+#define QMLBINDINGOPTIMIZATIONS_P_H
 
 //
 //  W A R N I N G
@@ -53,51 +53,64 @@
 // We mean it.
 //
 
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QList>
-#include <private/qobject_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qml.h>
+#include <private/qmlexpression_p.h>
+#include <QtDeclarative/qmlbinding.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlComponent;
-class QmlEngine;
-class QmlCompiledData;
-
-class QmlComponentPrivate : public QObjectPrivate
+class QmlBinding_Id : public QmlAbstractExpression, 
+                      public QmlAbstractBinding
 {
-    Q_DECLARE_PUBLIC(QmlComponent)
-        
 public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QmlBinding_Id(QObject *object, int propertyIdx,
+                             QmlContext *context, int id);
 
-    QmlCompositeTypeData *typeData;
-    void typeDataReady();
-    
-    void fromTypeData(QmlCompositeTypeData *data);
+    // Inherited from QmlAbstractBinding
+    virtual void setEnabled(bool);
+    virtual int propertyIndex();
+    virtual void update();
 
-    QList<QmlError> errors;
-    QUrl url;
+    void reset();
 
-    int start;
-    int count;
-    QmlCompiledData *cc;
+private:
+    QmlBinding_Id **m_prev;
+    QmlBinding_Id  *m_next;
 
-    QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
-    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
+    QObject *m_object;
+    int m_propertyIdx;
+    int m_id;
+};
 
-    bool completePending;
+class QmlBinding_ObjProperty : public QObject,
+                               public QmlAbstractExpression,
+                               public QmlAbstractBinding
+{
+    Q_OBJECT
+public:
+    QmlBinding_ObjProperty(QObject *object, int propertyIdx,
+                           QObject *context, int contextIdx, int notifyIdx);
 
-    QmlEngine *engine;
+    // Inherited from QmlAbstractBinding
+    virtual void setEnabled(bool);
+    virtual int propertyIndex();
 
-    void clear();
+private slots:
+    virtual void update();
+
+private:
+    bool m_enabled;
+    QObject *m_object;
+    int m_propertyIdx;
+    QObject *m_context;
+    int m_contextIdx;
+    int m_notifyIdx;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLCOMPONENT_P_H
+QT_END_HEADER
+
+#endif // QMLBINDINGOPTIMIZATIONS_P_H
+

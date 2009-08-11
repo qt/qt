@@ -65,6 +65,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <private/qmlbinding_p.h>
 #include <private/qmlcontext_p.h>
+#include <private/qmlbindingoptimizations_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -111,7 +112,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp, int start, int cou
 
 void QmlVME::runDeferred(QObject *object)
 {
-    QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object);
 
     if (!data || !data->context || !data->deferredComponent)
         return;
@@ -138,7 +139,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
     const QList<float> &floatData = comp->floatData;
 
 
-    QmlEnginePrivate::SimpleList<QmlBinding> bindValues;
+    QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
     QStack<ListInstance> qliststack;
@@ -154,7 +155,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
         case QmlInstruction::Init:
             {
                 if (instr.init.bindingsSize) 
-                    bindValues = QmlEnginePrivate::SimpleList<QmlBinding>(instr.init.bindingsSize);
+                    bindValues = QmlEnginePrivate::SimpleList<QmlAbstractBinding>(instr.init.bindingsSize);
                 if (instr.init.parserStatusSize)
                     parserStatus = QmlEnginePrivate::SimpleList<QmlParserStatus>(instr.init.parserStatusSize);
 
@@ -528,7 +529,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             }
             break;
 
-        case QmlInstruction::StoreCompiledBinding:
+        case QmlInstruction::StoreBinding:
             {
                 QObject *target = 
                     stack.at(stack.count() - 1 - instr.assignBinding.owner);
@@ -540,12 +541,38 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
                 QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, 0);
                 bindValues.append(bind);
-                QmlBindingPrivate *p = 
-                    static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bind));
-                p->mePtr = &bindValues.values[bindValues.count - 1];
-                QFx_setParent_noEvent(bind, target);
+                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
+                bind->addToObject(target);
 
                 bind->setTarget(mp);
+            }
+            break;
+
+        case QmlInstruction::StoreIdOptBinding:
+            {
+                QObject *target = stack.top();
+
+                QmlBinding_Id *bind = 
+                    new QmlBinding_Id(target, instr.assignIdOptBinding.property,
+                                      ctxt, instr.assignIdOptBinding.id);
+                bindValues.append(bind);
+                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
+                bind->addToObject(target);
+            } 
+            break;
+
+        case QmlInstruction::StoreObjPropBinding:
+            {
+                QObject *target = stack.top();
+                QObject *context = 
+                    stack.at(stack.count() - 1 - instr.assignObjPropBinding.context);
+
+                QmlBinding_ObjProperty *bind =
+                    new QmlBinding_ObjProperty(target, instr.assignObjPropBinding.property, context, instr.assignObjPropBinding.contextIdx, instr.assignObjPropBinding.notifyIdx);
+
+                bindValues.append(bind);
+                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
+                bind->addToObject(target);
             }
             break;
 
@@ -725,8 +752,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             {
                 if (instr.defer.deferCount) {
                     QObject *target = stack.top();
-                    QmlInstanceDeclarativeData *data = 
-                        QmlInstanceDeclarativeData::get(target, true);
+                    QmlDeclarativeData *data = 
+                        QmlDeclarativeData::get(target, true);
                     comp->addref();
                     data->deferredComponent = comp;
                     data->deferredIdx = ii;

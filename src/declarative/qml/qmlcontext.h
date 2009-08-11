@@ -89,7 +89,6 @@ private:
     friend class QmlComponent;
     friend class QmlScriptPrivate;
     friend class QmlBoundSignalProxy;
-    friend class QmlSimpleDeclarativeData;
     QmlContext(QmlContext *parent, QObject *objParent, bool);
     QmlContext(QmlEngine *, bool);
 };

@@ -51,6 +51,7 @@
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlengine.h>
 #include <private/qmlengine_p.h>
+#include <private/qmldeclarativedata_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -509,20 +510,21 @@ QMetaProperty QmlMetaProperty::property() const
     Returns the binding associated with this property, or 0 if no binding 
     exists.
 */
-QmlBinding *QmlMetaProperty::binding() const
+QmlAbstractBinding *QmlMetaProperty::binding() const
 {
     if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
-    const QObjectList &children = object()->children();
-    for (QObjectList::ConstIterator iter = children.begin();
-            iter != children.end(); ++iter) {
-        QObject *child = *iter;
-        if (child->metaObject() == &QmlBinding::staticMetaObject) {
-            QmlBinding *v = static_cast<QmlBinding *>(child);
-            if (v->property() == *this && v->enabled())
-                return v;
-        }
+    QmlDeclarativeData *data = QmlDeclarativeData::get(d->object);
+    if (!data) 
+        return 0;
+
+    QmlAbstractBinding *binding = data->bindings;
+    while (binding) {
+        // ### This wont work for value types
+        if (binding->propertyIndex() == d->coreIdx)
+            return binding; 
+        binding = binding->m_nextBinding;
     }
     return 0;
 }
@@ -534,40 +536,31 @@ QmlBinding *QmlMetaProperty::binding() const
     \a binding will be enabled, and the returned binding (if any) will be
     disabled.
 */
-QmlBinding *QmlMetaProperty::setBinding(QmlBinding *binding) const
+QmlAbstractBinding *
+QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
 {
     if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
-    const QObjectList &children = object()->children();
-    for (QObjectList::ConstIterator iter = children.begin();
-            iter != children.end(); ++iter) {
-        QObject *child = *iter;
-        if (child->metaObject() == &QmlBinding::staticMetaObject) {
-            QmlBinding *v = static_cast<QmlBinding *>(child);
-            if (v->property() == *this && v->enabled()) {
+    QmlDeclarativeData *data = QmlDeclarativeData::get(d->object, true);
 
-                v->setEnabled(false);
+    QmlAbstractBinding *binding = data->bindings;
+    while (binding) {
+        // ### This wont work for value types
+        if (binding->propertyIndex() == d->coreIdx) {
+            binding->setEnabled(false);
 
-                if (binding) {
-                    binding->setParent(object());
-                    binding->setTarget(*this);
-                    binding->setEnabled(true);
-                    binding->forceUpdate();
-                }
+            if (newBinding) 
+                newBinding->setEnabled(true);
 
-                return v;
-
-            }
+            return binding; // ### QmlAbstractBinding;
         }
+
+        binding = binding->m_nextBinding;
     }
 
-    if (binding) {
-        binding->setParent(object());
-        binding->setTarget(*this);
-        binding->setEnabled(true);
-        binding->forceUpdate();
-    }
+    if (newBinding)
+        newBinding->setEnabled(true);
 
     return 0;
 }

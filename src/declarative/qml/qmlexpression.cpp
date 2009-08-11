@@ -51,33 +51,23 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 QT_BEGIN_NAMESPACE
 
 QmlExpressionPrivate::QmlExpressionPrivate()
-: nextExpression(0), prevExpression(0), ctxt(0), expressionFunctionValid(false), expressionRewritten(false), me(0), trackChange(true), line(-1), guardList(0), guardListLength(0)
+: expressionFunctionValid(false), expressionRewritten(false), me(0), 
+  trackChange(true), line(-1), guardList(0), guardListLength(0)
 {
 }
 
 void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr, 
                                 QObject *me)
 {
-    Q_Q(QmlExpression);
-
     expression = expr;
 
-    this->ctxt = ctxt;
-    if (ctxt) {
-        QmlContextPrivate *cp = ctxt->d_func();
-        nextExpression = cp->expressions;
-        if (nextExpression) nextExpression->prevExpression = &nextExpression;
-        prevExpression = &cp->expressions;
-        cp->expressions = this;
-    }
+    QmlAbstractExpression::setContext(ctxt);
     this->me = me;
 }
 
 void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc, 
                                 QObject *me)
 {
-    Q_Q(QmlExpression);
-
     quint32 *data = (quint32 *)expr;
     Q_ASSERT(*data == BasicScriptEngineData || 
              *data == PreTransformedQtScriptData);
@@ -88,14 +78,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
         expressionRewritten = true;
     }
 
-    this->ctxt = ctxt;
-    if (ctxt) {
-        QmlContextPrivate *cp = ctxt->d_func();
-        nextExpression = cp->expressions;
-        if (nextExpression) nextExpression->prevExpression = &nextExpression;
-        prevExpression = &cp->expressions;
-        cp->expressions = this;
-    }
+    QmlAbstractExpression::setContext(ctxt);
     this->me = me;
 }
 
@@ -159,12 +142,6 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
 */
 QmlExpression::~QmlExpression()
 {
-    Q_D(QmlExpression);
-    if (d->prevExpression) {
-        *(d->prevExpression) = d->nextExpression;
-        if (d->nextExpression) 
-            d->nextExpression->prevExpression = d->prevExpression;
-    }
 }
 
 /*!
@@ -174,7 +151,7 @@ QmlExpression::~QmlExpression()
 QmlEngine *QmlExpression::engine() const
 {
     Q_D(const QmlExpression);
-    return d->ctxt?d->ctxt->engine():0;
+    return d->context()?d->context()->engine():0;
 }
 
 /*!
@@ -184,7 +161,7 @@ QmlEngine *QmlExpression::engine() const
 QmlContext *QmlExpression::context() const
 {
     Q_D(const QmlExpression);
-    return d->ctxt;
+    return d->context();
 }
 
 /*!
@@ -230,9 +207,7 @@ QVariant QmlExpressionPrivate::evalSSE()
     QFxPerfTimer<QFxPerf::BindValueSSE> perfsse;
 #endif
 
-    QmlContextPrivate *ctxtPriv = ctxt->d_func();
-
-    QVariant rv = sse.run(ctxt, me);
+    QVariant rv = sse.run(context(), me);
 
     return rv;
 }
@@ -243,8 +218,8 @@ QVariant QmlExpressionPrivate::evalQtScript()
     QFxPerfTimer<QFxPerf::BindValueQt> perfqt;
 #endif
 
-    QmlContextPrivate *ctxtPriv = ctxt->d_func();
-    QmlEngine *engine = ctxt->engine();
+    QmlContextPrivate *ctxtPriv = context()->d_func();
+    QmlEngine *engine = context()->engine();
 
     if (me)
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
@@ -347,7 +322,7 @@ QVariant QmlExpression::value()
     Q_D(QmlExpression);
 
     QVariant rv;
-    if (!d->ctxt || !engine() || (!d->sse.isValid() && d->expression.isEmpty()))
+    if (!d->context() || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -573,6 +548,53 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
     evaluated.  The expression must have been evaluated at least once (by
     calling QmlExpression::value()) before this signal will be emitted.
 */
+
+QmlAbstractExpression::QmlAbstractExpression()
+: m_context(0), m_prevExpression(0), m_nextExpression(0)
+{
+}
+
+QmlAbstractExpression::~QmlAbstractExpression()
+{
+    if (m_prevExpression) {
+        *m_prevExpression = m_nextExpression;
+        if (m_nextExpression) 
+            m_nextExpression->m_prevExpression = m_prevExpression;
+    }
+}
+
+QmlContext *QmlAbstractExpression::context() const
+{
+    return m_context;
+}
+
+void QmlAbstractExpression::setContext(QmlContext *context)
+{
+    if (m_prevExpression) {
+        *m_prevExpression = m_nextExpression;
+        if (m_nextExpression) 
+            m_nextExpression->m_prevExpression = m_prevExpression;
+        m_prevExpression = 0;
+        m_nextExpression = 0;
+    }
+
+    m_context = context;
+
+    if (m_context) {
+        QmlContextPrivate *cp = 
+            static_cast<QmlContextPrivate *>(QObjectPrivate::get(m_context));
+        m_nextExpression = cp->expressions;
+        if (m_nextExpression) 
+            m_nextExpression->m_prevExpression = &m_nextExpression;
+        m_prevExpression = &cp->expressions;
+        cp->expressions = this;
+    }
+}
+
+bool QmlAbstractExpression::isValid() const
+{
+    return m_context != 0;
+}
 
 QT_END_NAMESPACE
 

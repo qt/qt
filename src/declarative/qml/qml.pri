@@ -29,7 +29,8 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlenginedebug.cpp \
     qml/qmlrewrite.cpp \
     qml/qmlbasicscript.cpp \
-    qml/qmlvaluetype.cpp
+    qml/qmlvaluetype.cpp \
+    qml/qmlbindingoptimizations.cpp
 
 HEADERS += qml/qmlparser_p.h \
     qml/qmlinstruction_p.h \
@@ -75,7 +76,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlenginedebug_p.h \
     qml/qmlrewrite_p.h \
     qml/qpodvector_p.h \
-    qml/qmlvaluetype_p.h
+    qml/qmlvaluetype_p.h \
+    qml/qmlbindingoptimizations_p.h
 
 # for qtscript debugger
 contains(QT_CONFIG, scripttools):QT += scripttools
