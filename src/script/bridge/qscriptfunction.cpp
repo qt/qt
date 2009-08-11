@@ -44,9 +44,12 @@
 #include "private/qscriptengine_p.h"
 #include "qscriptcontext.h"
 #include "private/qscriptcontext_p.h"
+#include "private/qscriptvalue_p.h"
 #include "qscriptactivationobject_p.h"
 
 #include "JSGlobalObject.h"
+#include "DebuggerCallFrame.h"
+#include "Debugger.h"
 
 
 namespace JSC
@@ -77,6 +80,9 @@ FunctionWrapper::~FunctionWrapper()
 JSC::ConstructType FunctionWrapper::getConstructData(JSC::ConstructData& consData)
 {
     consData.native.function = proxyConstruct;
+#ifdef QT_BUILD_SCRIPT_LIB
+    consData.native.function.doNotCallDebuggerFunctionExit();
+#endif
     return JSC::ConstructTypeHost;
 }
 
@@ -108,7 +114,12 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
     QScriptPushScopeHelper scope(exec, true);
 
     QScriptValue defaultObject = ctx->thisObject();
+
     QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p));
+#ifdef QT_BUILD_SCRIPT_LIB
+    if (JSC::Debugger* debugger = exec->lexicalGlobalObject()->debugger())
+        debugger->functionExit(QScriptValuePrivate::get(result)->jscValue, -1);
+#endif
     if (!result.isObject())
         result = defaultObject;
 
