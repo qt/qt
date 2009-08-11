@@ -896,7 +896,7 @@ static inline bool rmDir(const QString &path)
 static inline bool isDirPath(const QString &dirPath, bool *existed)
 {
     QString path = dirPath;
-    if (path.length() == 2 &&path.at(1) == QLatin1Char(':'))
+    if (path.length() == 2 && path.at(1) == QLatin1Char(':'))
         path += QLatin1Char('\\');
 
     DWORD fileAttrib = ::GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16());
@@ -1523,9 +1523,10 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
             ret |= LinkType;
             QString l = readLink(d->filePath);
             if (!l.isEmpty()) {
-                if (isDirPath(l, 0))
+                bool existed = false;
+                if (isDirPath(l, &existed) && existed)
                     ret |= DirectoryType;
-                else
+                else if (existed)
                     ret |= FileType;
             }
         } else if (d->doStat()) {
