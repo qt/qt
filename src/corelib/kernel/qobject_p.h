@@ -113,12 +113,19 @@ public:
         int method;
         uint connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         QBasicAtomicPointer<int> argumentTypes;
+        // The next pointer for the singly-linked ConnectionList
+        Connection *nextConnectionList;
         //senders linked list
         Connection *next;
         Connection **prev;
         ~Connection();
     };
-    typedef QList<Connection *> ConnectionList;
+    // ConnectionList is a singly-linked list
+    struct ConnectionList {
+        ConnectionList() : first(0), last(0) {}
+        Connection *first;
+        Connection *last;
+    };
 
     struct Sender
     {
