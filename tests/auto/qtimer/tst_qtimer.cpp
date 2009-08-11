@@ -73,6 +73,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void zeroTimer();
     void singleShotTimeout();
     void timeout();
     void livelock_data();
@@ -127,6 +128,20 @@ void tst_QTimer::init()
 
 void tst_QTimer::cleanup()
 {
+}
+
+void tst_QTimer::zeroTimer()
+{
+    TimerHelper helper;
+    QTimer timer;
+    timer.setInterval(0);
+    timer.start();
+
+    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+
+    QCoreApplication::processEvents();
+
+    QCOMPARE(helper.count, 1);
 }
 
 void tst_QTimer::singleShotTimeout()
@@ -482,4 +497,3 @@ void tst_QTimer::restartedTimerFiresTooSoon()
 
 QTEST_MAIN(tst_QTimer)
 #include "tst_qtimer.moc"
-\
