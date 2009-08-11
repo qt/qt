@@ -3507,20 +3507,6 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
 
             ScopeChainNode* scopeChain = callFrame->scopeChain();
 
-            Structure* structure;
-            JSValue prototype = callFrame->r(proto).jsValue();
-            if (prototype.isObject())
-                structure = asObject(prototype)->inheritorID();
-            else
-                structure = scopeChain->globalObject()->emptyObjectStructure();
-#ifdef QT_BUILD_SCRIPT_LIB
-            // ### world-class hack
-            QScriptObject* newObject = new (globalData) QScriptObject(structure);
-#else
-            JSObject* newObject = new (globalData) JSObject(structure);
-#endif
-            callFrame[thisRegister] = JSValue(newObject); // "this" value
-
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
             newCallFrame->init(0, vPC + 7, scopeChain, callFrame, dst, argCount, asObject(v));
 

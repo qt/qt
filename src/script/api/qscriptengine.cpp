@@ -797,24 +797,6 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 }
 #endif
 
-QScriptPushScopeHelper::QScriptPushScopeHelper(JSC::CallFrame *exec, bool calledAsConstructor)
-{
-    engine = scriptEngineFromExec(exec);
-    previousFrame = engine->currentFrame;
-    engine->currentFrame = exec;
-    QScriptActivationObject *scope = new (exec) QScriptActivationObject(exec);
-    scope->d_ptr()->calledAsConstructor = calledAsConstructor;
-    exec->setScopeChain(exec->scopeChain()->copy()->push(scope));
-}
-
-QScriptPushScopeHelper::~QScriptPushScopeHelper()
-{
-    JSC::CallFrame *exec = engine->currentFrame;
-    exec->setScopeChain(exec->scopeChain()->pop());
-    exec->scopeChain()->deref();
-    engine->currentFrame = previousFrame;
-}
-
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
@@ -2269,25 +2251,54 @@ QScriptContext *QScriptEngine::currentContext() const
 QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
-    const int argCount = 1; // for 'this'
-    JSC::RegisterFile &registerFile = d->currentFrame->interpreter()->registerFile();
-    JSC::Register *const newEnd = registerFile.end() + JSC::RegisterFile::CallFrameHeaderSize + argCount;
-    if (!registerFile.grow(newEnd))
-        return 0;
 
-    JSC::CallFrame* previousFrame = d->currentFrame;
-    JSC::JSObject* scope = new (d->currentFrame) QScript::QScriptActivationObject(d->currentFrame);
+    JSC::CallFrame* newFrame = d->pushContext(d->currentFrame, d->currentFrame->globalData().dynamicGlobalObject,
+                                              JSC::ArgList(), /*callee = */0);
 
-    d->currentFrame = JSC::CallFrame::create(newEnd);
-    d->currentFrame->init(0, 0, previousFrame->scopeChain()->copy()->push(scope),
-                          previousFrame, 0, argCount, 0);
-    QScriptContext *ctx = d->contextForFrame(d->currentFrame);
-    ctx->setThisObject(globalObject());
-    
     if (agent())
         agent()->contextPush();
-    return ctx;
+
+    return d->contextForFrame(newFrame);
 }
+
+/*! \internal
+   push a context for a native function.
+   JSC native function doesn't have different stackframe or context. so we need to create one.
+
+   use popContext right after to go back to the previous context the context if no stack overflow has hapenned
+
+   exec is the current top frame.
+
+   return the new top frame. (might be the same as exec if a new stackframe was not needed) or 0 if stack overflow
+*/
+JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JSC::JSValue &thisObject,
+                                                  const JSC::ArgList& args, JSC::JSObject *callee, bool calledAsConstructor)
+{
+    JSC::CallFrame *newCallFrame = exec;
+    if (callee == 0 || !(exec->callee() == callee && exec->returnPC() != 0)) {
+        //We need to check if the Interpreter might have already created a frame for function called from JS.
+        JSC::Interpreter *interp = exec->interpreter();
+        JSC::Register *oldEnd = interp->registerFile().end();
+        int argc = args.size() + 1; //add "this"
+        JSC::Register *newEnd = oldEnd + argc + JSC::RegisterFile::CallFrameHeaderSize;
+        if (!interp->registerFile().grow(newEnd))
+            return 0; //### Stack overflow
+        newCallFrame = JSC::CallFrame::create(oldEnd);
+        newCallFrame[0] = thisObject;
+        int dst = 0;
+        JSC::ArgList::const_iterator it;
+        for (it = args.begin(); it != args.end(); ++it)
+            newCallFrame[++dst] = *it;
+        newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
+        newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, 0, argc, callee);
+    }
+    currentFrame = newCallFrame;
+    QScript::QScriptActivationObject *scope = new (newCallFrame) QScript::QScriptActivationObject(newCallFrame);
+    scope->d_ptr()->calledAsConstructor = calledAsConstructor;
+    newCallFrame->setScopeChain(newCallFrame->scopeChain()->copy()->push(scope));
+    return newCallFrame;
+}
+
 
 /*!
   Pops the current execution context and restores the previous one.
@@ -2305,11 +2316,26 @@ void QScriptEngine::popContext()
         qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
         return;
     }
-    JSC::RegisterFile &registerFile = d->currentFrame->interpreter()->registerFile();
-    JSC::Register *const newEnd = d->currentFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->currentFrame->argumentCount();
-    d->currentFrame->scopeChain()->pop()->deref();
-    d->currentFrame = d->currentFrame->callerFrame();
-    registerFile.shrink(newEnd);
+
+    d->popContext();
+}
+
+/*! \internal
+    counter part of QScriptEnginePrivate::pushContext
+ */
+void QScriptEnginePrivate::popContext()
+{
+    if (currentFrame->returnPC() == 0) { //normal case
+        JSC::RegisterFile &registerFile = currentFrame->interpreter()->registerFile();
+        JSC::Register *const newEnd = currentFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - currentFrame->argumentCount();
+        currentFrame->scopeChain()->pop()->deref();
+        currentFrame = currentFrame->callerFrame();
+        registerFile.shrink(newEnd);
+    } else { //the stack frame was created by the Interpreter, we don't need to rewind it.
+        currentFrame->setScopeChain(currentFrame->scopeChain()->pop());
+        currentFrame->scopeChain()->deref();
+    }
+
 }
 
 /*!

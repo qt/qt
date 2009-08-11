@@ -889,7 +889,6 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
         }
         nextPrototypeValue = nextPrototype->prototype();
     }
-
     JSC::asObject(d->jscValue)->setPrototype(other);
 }
 

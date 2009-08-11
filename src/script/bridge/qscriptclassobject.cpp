@@ -214,14 +214,16 @@ JSC::JSValue JSC_HOST_CALL ClassObjectDelegate::call(JSC::ExecState *exec, JSC::
     if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject))
         return JSC::throwError(exec, JSC::TypeError, "callee is not a ClassObject object");
 
-    //We might have nested eval inside our function so we should create another scope
-    QScriptPushScopeHelper scope(exec, true);
-
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
-    QScriptContext *ctx = eng_p->contextForFrame(exec);
+
+    JSC::ExecState *oldFrame = eng_p->currentFrame;
+    eng_p->pushContext(exec, thisValue, args, callee);
+    QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
     QScriptValue scriptObject = eng_p->scriptValueFromJSCValue(obj);
     QVariant result = scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx));
+    eng_p->popContext();
+    eng_p->currentFrame = oldFrame;
     return eng_p->jscValueFromVariant(result);
 }
 
@@ -241,11 +243,19 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptObjectDelegate *delegate = obj->delegate();
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
 
-    //We might have nested eval inside our function so we should create another scope
-    QScriptPushScopeHelper scope(exec, true);
+    JSC::Structure* structure;
+    JSC::JSValue prototype = JSC::asObject(callee)->get(exec, exec->propertyNames().prototype);
+    if (prototype.isObject())
+        structure = JSC::asObject(prototype)->inheritorID();
+    else
+        structure = exec->lexicalGlobalObject()->emptyObjectStructure();
+    JSC::JSObject* thisObject = new (exec) QScriptObject(structure);
 
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
-    QScriptContext *ctx = eng_p->contextForFrame(exec);
+    JSC::ExecState *oldFrame = eng_p->currentFrame;
+    eng_p->pushContext(exec, thisObject, args, callee, true);
+    QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
+
     QScriptValue defaultObject = ctx->thisObject();
     QScriptValue result = qvariant_cast<QScriptValue>(scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx)));
     if (!result.isObject())

@@ -1872,26 +1872,27 @@ static QScriptValue recurse2(QScriptContext *ctx, QScriptEngine *eng)
 
 void tst_QScriptEngine::infiniteRecursion()
 {
-    QSKIP("Can cause C stack overflow (task 241294)", SkipAll);
-
+    const QString stackOverflowError = QString::fromLatin1("RangeError: Maximum call stack size exceeded.");
     QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("function foo() { foo(); }; foo();");
         QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), QLatin1String("Error: call stack overflow"));
+        QCOMPARE(ret.toString(), stackOverflowError);
     }
+#if 0 //The native C++ stack overflow before the JS stack
     {
         QScriptValue fun = eng.newFunction(recurse);
         QScriptValue ret = fun.call();
         QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), QLatin1String("Error: call stack overflow"));
+        QCOMPARE(ret.toString(), stackOverflowError);
     }
     {
         QScriptValue fun = eng.newFunction(recurse2);
         QScriptValue ret = fun.construct();
         QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), QLatin1String("Error: call stack overflow"));
+        QCOMPARE(ret.toString(), stackOverflowError);
     }
+#endif
 }
 
 struct Bar {

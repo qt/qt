@@ -25,12 +25,6 @@
 
 #include "config.h"
 #include "ConstructData.h"
-#ifdef QT_BUILD_SCRIPT_LIB
-#include "ExceptionHelpers.h"
-#include "Interpreter.h"
-#include "JSGlobalObject.h"
-#include "bridge/qscriptobject_p.h"
-#endif
 
 #include "JSFunction.h"
 
@@ -60,39 +54,8 @@ JSObject* JSC::NativeConstrWrapper::operator() (ExecState* exec, JSObject* jsobj
 
 JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType, const ConstructData& constructData, const ArgList& args)
 {
-    if (constructType == ConstructTypeHost) {
-#ifdef QT_BUILD_SCRIPT_LIB
-        Structure* structure;
-        JSValue prototype = callee.get(exec, exec->propertyNames().prototype);
-        if (prototype.isObject())
-            structure = asObject(prototype)->inheritorID();
-        else
-            structure = exec->lexicalGlobalObject()->emptyObjectStructure();
-        JSObject* thisObj = new (exec) QScriptObject(structure);
-
-        ScopeChainNode* scopeChain = exec->scopeChain();
-        Interpreter *interp = exec->interpreter();
-        Register *oldEnd = interp->registerFile().end();
-        int argc = 1 + args.size(); // implicit "this" parameter
-        if (!interp->registerFile().grow(oldEnd + argc + RegisterFile::CallFrameHeaderSize))
-            return asObject(createStackOverflowError(exec));
-        CallFrame* newCallFrame = CallFrame::create(oldEnd);
-        size_t dst = 0;
-        newCallFrame[0] = JSValue(thisObj);
-        ArgList::const_iterator it;
-        for (it = args.begin(); it != args.end(); ++it)
-            newCallFrame[++dst] = *it;
-        newCallFrame += argc + RegisterFile::CallFrameHeaderSize;
-        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, 0, argc, asObject(callee));
-        JSObject *result = constructData.native.function(newCallFrame, asObject(callee), args);
-        if (!result)
-            result = thisObj;
-        interp->registerFile().shrink(oldEnd);
-        return result;
-#else
+    if (constructType == ConstructTypeHost)
         return constructData.native.function(exec, asObject(callee), args);
-#endif
-    }
     ASSERT(constructType == ConstructTypeJS);
     // FIXME: Can this be done more efficiently using the constructData?
     return asFunction(callee)->construct(exec, args);

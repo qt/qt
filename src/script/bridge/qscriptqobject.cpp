@@ -1837,8 +1837,9 @@ JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
         return throwError(exec, JSC::TypeError, "callee is not a QMetaObject");
     QMetaObjectWrapperObject *self =  static_cast<QMetaObjectWrapperObject*>(callee);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
-    eng_p->currentFrame = exec;
-    JSC::JSValue result = self->execute(exec, args, /*calledAsConstructor=*/false);
+    eng_p->pushContext(exec, thisValue, args, callee);
+    JSC::JSValue result = self->execute(eng_p->currentFrame, args, /*calledAsConstructor=*/false);
+    eng_p->popContext();
     eng_p->currentFrame = previousFrame;
     return result;
 }
@@ -1848,8 +1849,9 @@ JSC::JSObject* QMetaObjectWrapperObject::construct(JSC::ExecState *exec, JSC::JS
     QMetaObjectWrapperObject *self = static_cast<QMetaObjectWrapperObject*>(callee);
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
-    eng_p->currentFrame = exec;
-    JSC::JSValue result = self->execute(exec, args, /*calledAsConstructor=*/true);
+    eng_p->pushContext(exec, JSC::JSValue(), args, callee, true);
+    JSC::JSValue result = self->execute(eng_p->currentFrame, args, /*calledAsConstructor=*/true);
+    eng_p->popContext();
     eng_p->currentFrame = previousFrame;
     if (!result || !result.isObject())
         return 0;
@@ -1863,7 +1865,6 @@ JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
     if (data->ctor) {
         QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
         QScriptContext *ctx = eng_p->contextForFrame(exec);
-        QScriptPushScopeHelper scope(exec, calledAsConstructor);
         JSC::CallData callData;
         JSC::CallType callType = data->ctor.getCallData(callData);
         Q_ASSERT_X(callType == JSC::CallTypeHost, Q_FUNC_INFO, "script constructors not supported");

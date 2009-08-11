@@ -19,10 +19,6 @@
  */
 
 #include "config.h"
-#ifdef QT_BUILD_SCRIPT_LIB
-#include "ExceptionHelpers.h"
-#include "Interpreter.h"
-#endif
 #include "PropertySlot.h"
 
 #include "JSFunction.h"
@@ -39,25 +35,8 @@ JSValue PropertySlot::functionGetter(ExecState* exec, const Identifier&, const P
 
     CallData callData;
     CallType callType = slot.m_data.getterFunc->getCallData(callData);
-    if (callType == CallTypeHost) {
-#ifdef QT_BUILD_SCRIPT_LIB
-        ScopeChainNode* scopeChain = exec->scopeChain();
-        Interpreter *interp = exec->interpreter();
-        Register *oldEnd = interp->registerFile().end();
-        int argc = 1; // implicit "this" parameter
-        if (!interp->registerFile().grow(oldEnd + argc + RegisterFile::CallFrameHeaderSize))
-            return createStackOverflowError(exec);
-        JSC::CallFrame* newCallFrame = JSC::CallFrame::create(oldEnd);
-        newCallFrame[0] = slot.slotBase(); // this
-        newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
-        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, 0, argc, slot.m_data.getterFunc);
-        JSValue result = callData.native.function(newCallFrame, slot.m_data.getterFunc, slot.slotBase(), exec->emptyList());
-        interp->registerFile().shrink(oldEnd);
-        return result;
-#else
+    if (callType == CallTypeHost)
         return callData.native.function(exec, slot.m_data.getterFunc, slot.slotBase(), exec->emptyList());
-#endif
-    }
     ASSERT(callType == CallTypeJS);
     // FIXME: Can this be done more efficiently using the callData?
     return static_cast<JSFunction*>(slot.m_data.getterFunc)->call(exec, slot.slotBase(), exec->emptyList());

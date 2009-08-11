@@ -157,6 +157,10 @@ public:
     JSC::JSValue toUsableValue(JSC::JSValue value);
     static JSC::JSValue thisForContext(JSC::ExecState *frame);
 
+    JSC::CallFrame *pushContext(JSC::CallFrame *exec, const JSC::JSValue &thisObject, const JSC::ArgList& args,
+                                JSC::JSObject *callee, bool calledAsConstructor = false);
+    void popContext();
+
     void mark();
     bool isCollecting() const;
     void collectGarbage();
@@ -245,24 +249,6 @@ public:
     QScriptEngine *q_ptr;
 #endif
 };
-
-namespace QScript
-{
-/*! \internal
-  Helper class to create QScriptActivationObject.
-  To be used on the stack
-*/
-class QScriptPushScopeHelper
-{
-    public:
-        QScriptPushScopeHelper(JSC::CallFrame *newFrame, bool calledAsConstructor = false);
-        ~QScriptPushScopeHelper();
-    private:
-        QScriptEnginePrivate *engine;
-        JSC::CallFrame *previousFrame;
-};
-} // namespace QScript
-
 
 QT_END_NAMESPACE
 
