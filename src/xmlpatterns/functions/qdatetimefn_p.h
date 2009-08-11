@@ -66,7 +66,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-dateTime">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 5.2 A Special Constructor Function for xs:dateTime</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DateTimeFN : public FunctionCall
     {

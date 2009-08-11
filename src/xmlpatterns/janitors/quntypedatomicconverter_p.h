@@ -74,7 +74,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath20/#id-function-calls">XML Path
      * Language (XPath) 2.0, 3.1.5 Function Calls, in particular the
      * Function Conversion Rules</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class UntypedAtomicConverter : public SingleContainer,

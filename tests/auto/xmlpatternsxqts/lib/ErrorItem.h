@@ -101,7 +101,7 @@ namespace QPatternistSDK
      * can be displayed/used in Qt's model/view framework.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT ErrorItem : public TreeItem
     {

@@ -66,7 +66,7 @@ namespace QPatternist
      * kinds of compile-time type checking tasks.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TypeChecker
     {

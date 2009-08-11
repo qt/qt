@@ -76,7 +76,7 @@ namespace QPatternist
      * to be used in a blocking manner.
      *
      * @see AccelTreeResourceLoader::load()
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NetworkLoop : public QEventLoop
     {
@@ -109,7 +109,7 @@ namespace QPatternist
      * @short Handles requests for documents, and instantiates
      * them as AccelTree instances.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT AccelTreeResourceLoader : public DeviceResourceLoader
     {

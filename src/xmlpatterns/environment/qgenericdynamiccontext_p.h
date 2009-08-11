@@ -72,7 +72,7 @@ namespace QPatternist
      * a run and is always used. In addition, more contexts, such as
      * a Focus can be created.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GenericDynamicContext : public StackContextBase<DynamicContext>
     {

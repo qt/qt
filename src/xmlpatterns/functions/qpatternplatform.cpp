@@ -59,7 +59,7 @@ namespace QPatternist
      * to make the synthesized assignment operator and copy constructor work.
      *
      * @ingroup Patternist_utils
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class PatternFlag
     {

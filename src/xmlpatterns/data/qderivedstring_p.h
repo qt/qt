@@ -87,7 +87,7 @@ namespace QPatternist
      *   has been normalized according to the value of the whiteSpace facet of
      *   the simple type definition used in its validation."
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      * @todo Documentation is missing
      */

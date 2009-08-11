@@ -102,7 +102,7 @@
  * @short Contains testing utilities for Patternist, interfacing W3C's XQuery Test Suite.
  *
  * @see <a href="http://www.w3.org/XML/Query/test-suite/">XML Query Test Suite</a>
- * @author Frans Englich <fenglich@trolltech.com>
+ * @author Frans Englich <frans.englich@nokia.com>
  */
 QT_BEGIN_HEADER
 
@@ -114,7 +114,7 @@ namespace QPatternistSDK
      * @short Contains global constants.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT Global
     {

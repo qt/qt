@@ -76,7 +76,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:concat()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ConcatFN : public FunctionCall
     {
@@ -88,7 +88,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:string-join()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringJoinFN : public FunctionCall
     {
@@ -107,7 +107,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:substring()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SubstringFN : public FunctionCall
     {
@@ -119,7 +119,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:string-length()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringLengthFN : public FunctionCall
     {
@@ -131,7 +131,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:normalize-space()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NormalizeSpaceFN : public FunctionCall
     {
@@ -147,7 +147,7 @@ namespace QPatternist
      * reduce string work at runtime.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NormalizeUnicodeFN : public FunctionCall
     {
@@ -168,7 +168,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:upper-case()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class UpperCaseFN : public FunctionCall
     {
@@ -181,7 +181,7 @@ namespace QPatternist
      *
      * @short Implements the function <tt>fn:concat()</tt>.
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class LowerCaseFN : public FunctionCall
     {
@@ -193,7 +193,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:translate()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TranslateFN : public FunctionCall
     {
@@ -206,7 +206,7 @@ namespace QPatternist
      * function implementations.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class EncodeString : public FunctionCall
     {
@@ -234,7 +234,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:encode-for-uri()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class EncodeForURIFN : public EncodeString
     {
@@ -252,7 +252,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:iri-to-uri()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IriToURIFN : public EncodeString
     {
@@ -270,7 +270,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:escape-html-uri()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class EscapeHtmlURIFN : public EncodeString
     {

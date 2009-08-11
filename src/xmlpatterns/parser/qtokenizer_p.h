@@ -150,7 +150,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xquery-xpath-parsing/">Building a
      * Tokenizer for XPath or XQuery</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Tokenizer : public TokenSource
     {

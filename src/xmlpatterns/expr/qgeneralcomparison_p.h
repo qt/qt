@@ -71,7 +71,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xpath20/#id-general-comparisons">XML Path Language
      * (XPath) 2.0, 3.5.2 General Comparisons</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class GeneralComparison : public PairContainer,

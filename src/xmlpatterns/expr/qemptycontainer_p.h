@@ -63,7 +63,7 @@ namespace QPatternist
     /**
      * @short Base class for expressions that has no operands.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class Q_AUTOTEST_EXPORT EmptyContainer : public Expression

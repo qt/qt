@@ -68,7 +68,7 @@ namespace QPatternist
      * @short Base class for classes that performs arithmetic operations between atomic values.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT AtomicMathematician : public AtomicTypeVisitorResult
     {

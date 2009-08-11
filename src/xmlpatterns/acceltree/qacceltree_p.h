@@ -76,7 +76,7 @@ namespace QPatternist
      * the Accelerator scheme, so do check out the links. We don't implement any form
      * of staircase join, although that is only due to time constraints.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @see <a href="http://www.pathfinder-xquery.org/?q=research/xpath-accel">XPath
      * Accelerator</a>
      * @see <a href="http://www.pathfinder-xquery.org/files/xpath-accel.pdf">Accelerating
@@ -115,7 +115,7 @@ namespace QPatternist
          * BasicNodeData is internal to the Accel tree implementation, and is
          * only used by those classes.
          *
-         * @author Frans Englich <fenglich@trolltech.com>
+         * @author Frans Englich <frans.englich@nokia.com>
          * @todo Can't m_kind be coded somewhere else? If m_name is invalid,
          * its bits can be used to distinguish the node types that doesn't have
          * names, and for elements, attributes and processing instructions, we need

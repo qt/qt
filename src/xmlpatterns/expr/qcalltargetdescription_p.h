@@ -75,7 +75,7 @@ namespace QPatternist
      * can also be sub-classed which FunctionSignature do.
      *
      * @ingroup Patternist_expr
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT CallTargetDescription : public QSharedData
     {

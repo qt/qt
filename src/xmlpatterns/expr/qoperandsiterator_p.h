@@ -72,7 +72,7 @@ namespace QPatternist
      * The order is delivered in a defined way, from left to right and depth
      * first.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class OperandsIterator
     {

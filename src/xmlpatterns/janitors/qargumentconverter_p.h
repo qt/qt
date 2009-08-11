@@ -73,7 +73,7 @@ namespace QPatternist
      * ArgumentReference that has the static type @c item(), when atomic value are asked
      * for. At runtime it atomizes/let values through appropriately.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ArgumentConverter : public UntypedAtomicConverter

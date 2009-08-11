@@ -67,7 +67,7 @@ namespace QPatternist
      * that performs casting between two atomic values of specific types.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicCaster : public AtomicTypeVisitorResult
     {

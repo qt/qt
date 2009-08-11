@@ -66,7 +66,7 @@ namespace QPatternist
      * @short Generic namespace resolver which resolves lookups against entries in a QHash.
      *
      * @ingroup Patternist
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GenericNamespaceResolver : public NamespaceResolver
     {

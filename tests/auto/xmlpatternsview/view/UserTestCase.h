@@ -97,7 +97,7 @@ namespace QPatternistSDK
      * @short Displays a test case entered manually by the user.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class UserTestCase : public TestCase
     {

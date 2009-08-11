@@ -100,7 +100,7 @@ namespace QPatternistSDK
      * framework.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class XDTItemItem : public TreeItem
     {

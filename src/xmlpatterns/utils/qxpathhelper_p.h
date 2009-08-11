@@ -71,7 +71,7 @@ namespace QPatternist
      * goes away, and that functions are in more specific classes.
      *
      * @ingroup Patternist
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class XPathHelper
     {

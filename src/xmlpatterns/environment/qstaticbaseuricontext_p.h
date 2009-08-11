@@ -65,7 +65,7 @@ namespace QPatternist
      * of items.
      *
      * @since 4.5
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StaticBaseURIContext : public DelegatingStaticContext
     {

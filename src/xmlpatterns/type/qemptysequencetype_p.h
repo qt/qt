@@ -66,7 +66,7 @@ namespace QPatternist
      * @short Represents the <tt>empty-sequence()</tt> type.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class EmptySequenceType : public ItemType,
                               public SequenceType

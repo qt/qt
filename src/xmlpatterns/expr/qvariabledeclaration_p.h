@@ -71,7 +71,7 @@ namespace QPatternist
      * the compilation stage.
      *
      * @see FunctionArgument
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class VariableDeclaration : public QSharedData

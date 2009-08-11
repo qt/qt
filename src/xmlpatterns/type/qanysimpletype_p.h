@@ -68,7 +68,7 @@ namespace QPatternist
      * @ingroup Patternist_types
      * @see <a href="http://www.w3.org/TR/xmlschema-2/#dt-anySimpleType">XML Schema Part 2:
      * Datatypes Second Edition, The simple ur-type definition</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AnySimpleType : public AnyType
     {

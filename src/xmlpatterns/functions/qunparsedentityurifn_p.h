@@ -65,7 +65,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xslt20/#function-unparsed-entity-uri">XSL Transformations
      * (XSLT) Version 2.0, 16.6.2 unparsed-entity-uri</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_functions
      */
     class UnparsedEntityURIFN : public ContextNodeChecker

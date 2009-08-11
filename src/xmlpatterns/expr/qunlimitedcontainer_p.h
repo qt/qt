@@ -65,7 +65,7 @@ namespace QPatternist
     /**
      * @short Base class for expressions that has any amount of operands.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class UnlimitedContainer : public Expression

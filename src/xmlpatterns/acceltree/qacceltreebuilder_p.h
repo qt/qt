@@ -80,7 +80,7 @@ namespace QPatternist
      * events from an XML document, otherwise it is assumed the events
      * are from node constructor expressions.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<bool FromDocument>
     class AccelTreeBuilder : public NodeBuilder

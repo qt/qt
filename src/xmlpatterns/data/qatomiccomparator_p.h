@@ -72,7 +72,7 @@ namespace QPatternist
      * This class is also known as the AtomicParrot.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT AtomicComparator : public AtomicTypeVisitorResult
     {

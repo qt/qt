@@ -70,7 +70,7 @@ namespace QPatternist
     /**
      * @short Implements the value instance of the @c xs:dateTime type.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      */
     class DateTime : public AbstractDateTime

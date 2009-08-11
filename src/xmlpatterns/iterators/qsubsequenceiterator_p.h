@@ -75,7 +75,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-subsequence">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 15.1.10 fn:subsequence</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     class SubsequenceIterator : public Item::Iterator

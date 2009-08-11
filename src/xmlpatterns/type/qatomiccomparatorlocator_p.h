@@ -65,7 +65,7 @@ namespace QPatternist
      * @todo Docs missing
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicComparatorLocator : public ParameterizedAtomicTypeVisitor
     {

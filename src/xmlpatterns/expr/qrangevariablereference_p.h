@@ -68,7 +68,7 @@ namespace QPatternist
      * expression provides the binding and iteration. A @c for expression is
      * a good example.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class RangeVariableReference : public VariableReference

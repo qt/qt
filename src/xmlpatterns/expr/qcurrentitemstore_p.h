@@ -64,7 +64,7 @@ namespace QPatternist
      * @short Creates a DynamicContext which provides the focus item for the
      * function @c fn:current().
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      * @since 4.5
      */

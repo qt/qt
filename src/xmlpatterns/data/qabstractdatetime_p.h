@@ -74,7 +74,7 @@ namespace QPatternist
      * the international standard date and time notation, Markus Kuhn</a>
      * @see <a href="http://en.wikipedia.org/wiki/Iso_date">ISO 8601,
      * From Wikipedia, the free encyclopedia</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      */
     class AbstractDateTime : public AtomicValue
@@ -105,7 +105,7 @@ namespace QPatternist
          * and describes where certain fields in a QRegExp pattern can be found
          * for a particular W3C XML Schema date/time type.
          *
-         * @author Frans Englich <fenglich@trolltech.com>
+         * @author Frans Englich <frans.englich@nokia.com>
          * @ingroup Patternist_xdm
          */
         class CaptureTable

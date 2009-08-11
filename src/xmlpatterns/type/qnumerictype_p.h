@@ -66,7 +66,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xquery-semantics/#dt-fs_numeric">XQuery 1.0
      * and XPath 2.0 Formal Semantics, Definition: fs:numeric</a>
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NumericType : public AtomicType
     {

@@ -70,7 +70,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-index-of">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 15.1.3 fn:index-of</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     class IndexOfIterator : public Item::Iterator

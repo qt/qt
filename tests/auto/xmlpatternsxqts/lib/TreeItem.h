@@ -107,7 +107,7 @@ namespace QPatternistSDK
      *
      * TreeItem is a QObject in order to be able to be used with QPointer.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @see TreeModel
      * @ingroup PatternistSDK
      */

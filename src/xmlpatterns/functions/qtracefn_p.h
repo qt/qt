@@ -63,7 +63,7 @@ namespace QPatternist
     /**
      * @short Implements the function <tt>fn:trace()</tt>.
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TraceFN : public FunctionCall
     {

@@ -65,7 +65,7 @@ namespace QPatternist
      * an opportunity to optimize compares intended to be case insensitive.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ComparesCaseAware : public FunctionCall
     {

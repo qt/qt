@@ -102,7 +102,7 @@ namespace QPatternistSDK
      * by loading appropriate XML source files.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT ExternalSourceLoader : public QPatternist::ExternalVariableLoader
     {

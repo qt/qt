@@ -72,7 +72,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:contains()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ContainsFN : public ComparesCaseAware
     {
@@ -84,7 +84,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:starts-with()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StartsWithFN : public ComparesCaseAware
     {
@@ -96,7 +96,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:ends-with()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class EndsWithFN : public ComparesCaseAware
     {
@@ -108,7 +108,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:substring-before()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SubstringBeforeFN : public FunctionCall
     {
@@ -120,7 +120,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:substring-after()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SubstringAfterFN : public FunctionCall
     {

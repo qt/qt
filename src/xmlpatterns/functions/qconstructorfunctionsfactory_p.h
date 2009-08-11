@@ -68,7 +68,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xpath20/#id-constructor-functions">XML Path
      * Language (XPath) 2.0, 3.10.4 Constructor Functions</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_functions
      */
     class ConstructorFunctionsFactory : public AbstractFunctionFactory

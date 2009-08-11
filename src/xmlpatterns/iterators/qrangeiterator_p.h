@@ -72,7 +72,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath20/\#doc-xpath-RangeExpr">XML Path Language
      * (XPath) 2.0, 3.3 Sequence Expressions, RangeExpr</a>
      * @see RangeExpression
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      * @todo Documentation is missing
      */

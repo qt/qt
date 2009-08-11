@@ -67,7 +67,7 @@ namespace QPatternist
      * in memory that afterwards can be retrieved via builtNode()
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NodeBuilder : public QAbstractXmlReceiver
     {

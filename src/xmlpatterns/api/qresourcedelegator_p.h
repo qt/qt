@@ -71,7 +71,7 @@ namespace QPatternist
      * resource loader for the other query remains as is.
      *
      * @since 4.5
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ResourceDelegator : public DeviceResourceLoader
     {

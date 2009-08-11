@@ -70,7 +70,7 @@ namespace QPatternist
      * @see XSLTSimpleContentConstructor
      * @see <a href="http://www.w3.org/TR/xquery/#id-attributes">XQuery 1.0:
      * An XML Query Language, 3.7.1.1 Attributes</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class SimpleContentConstructor : public SingleContainer

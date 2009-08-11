@@ -68,7 +68,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xquery/#id-literals">XQuery 1.0: An XML Query Language,
      * 3.1.1 Literals</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class Literal : public EmptyContainer

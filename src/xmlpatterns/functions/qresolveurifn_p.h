@@ -64,7 +64,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:resolve-uri()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ResolveURIFN : public FunctionCall
     {

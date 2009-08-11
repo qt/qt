@@ -72,7 +72,7 @@ namespace QPatternist
      *
      * @note The nodes in the source list must be in document order.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     class DeduplicateIterator : public ListIterator<Item>

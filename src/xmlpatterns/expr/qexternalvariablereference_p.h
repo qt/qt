@@ -68,7 +68,7 @@ namespace QPatternist
      * uses DynamicContext::externalVariableLoader() for retrieving its value, while
      * a VariableReference sub-class uses slots in the DynamicContext.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ExternalVariableReference : public EmptyContainer

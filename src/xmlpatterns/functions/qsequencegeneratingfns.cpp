@@ -96,7 +96,7 @@ bool qIsForwardIteratorEnd(const QString &unit)
  * - Remove invalid @c NCName
  * - Split IDREFs into individual NCNames
  *
- * @author Frans Englich
+ * @author Frans Englich <frans.englich@nokia.com>
  */
 class StringSplitter : public QAbstractXmlForwardIterator<QString>
 {

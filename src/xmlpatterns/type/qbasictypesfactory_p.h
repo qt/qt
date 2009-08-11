@@ -75,7 +75,7 @@ namespace QPatternist
      * Version 2.0, 3.13 Built-in Types</a>
      * @see <a href="http://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes">XML Schema
      * Part 2: Datatypes Second Edition, 3.2 Primitive datatypes</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BasicTypesFactory : public SchemaTypeFactory
     {

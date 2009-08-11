@@ -72,7 +72,7 @@ namespace QPatternist
      *
      * Having to represent single items in Iterators is relatively common.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     template<typename T>

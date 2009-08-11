@@ -76,7 +76,7 @@ namespace QPatternist
      * source values.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SortTuple : public AtomicValue
     {

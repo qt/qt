@@ -109,7 +109,7 @@ namespace QPatternistSDK
      * main window usage, QSettings, and other central parts.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class MainWindow : public QMainWindow,
                        private Ui_MainWindow

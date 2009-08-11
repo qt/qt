@@ -66,7 +66,7 @@ namespace QPatternist
      *
      * @ingroup Patternist_types
      * @see BuiltinNodeType
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AnyNodeType : public ItemType
     {

@@ -63,7 +63,7 @@ namespace QPatternist
     /**
      * @short Contains common, standardized XML namespaces.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     namespace CommonNamespaces
     {

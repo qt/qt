@@ -64,7 +64,7 @@ namespace QPatternist
      * @short Evaluates its operand with an assigned DynamicContext, not
      * the one passed to one of the evaluation functions.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class DynamicContextStore : public SingleContainer

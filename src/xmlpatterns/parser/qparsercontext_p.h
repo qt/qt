@@ -82,7 +82,7 @@ namespace QPatternist
      * is passed to the scanner and parser. It holds all information that is
      * needed to create the expression.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ParserContext : public QSharedData
     {

@@ -70,7 +70,7 @@ namespace QPatternist
      * space is an @c NCName. The atomic value can be of any string type, such as @c xs:untypedAtomic
      * of @c xs:string.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class NCNameConstructor : public SingleContainer

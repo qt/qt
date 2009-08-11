@@ -104,7 +104,7 @@ namespace QPatternistSDK
      * and allows easy access to them.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT ErrorHandler : public QAbstractMessageHandler
     {

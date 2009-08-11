@@ -65,7 +65,7 @@ namespace QPatternist
      * @short Implements XSL-T's function <tt>fn:current()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @since 4.5
      */
     class CurrentFN : public FunctionCall

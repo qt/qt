@@ -43,7 +43,7 @@
  * @file qtokenlookup.cpp
  * @short This file is generated from TokenLookup.gperf and contains
  * TokenLookup, a class housing a perfect hash function class for XQuery's keywords.
- * @author Frans Englich <fenglich@trolltech.com>
+ * @author Frans Englich <frans.englich@nokia.com>
  */
 
 /**

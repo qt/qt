@@ -66,7 +66,7 @@ namespace QPatternist
      * another StaticContext.
      *
      * @since 4.5
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT StaticCurrentContext : public DelegatingStaticContext
     {

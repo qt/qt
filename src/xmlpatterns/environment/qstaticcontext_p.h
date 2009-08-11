@@ -83,7 +83,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xpath20/#static_context">XML Path
      * Language (XPath) 2.0, 2.1.1 Static Context</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StaticContext : public ReportContext
     {

@@ -75,7 +75,7 @@ namespace QPatternist
      * could append to that, instead of instansiating a SingleTokenContainer
      * all the time.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SingleTokenContainer : public TokenSource
     {
@@ -107,7 +107,7 @@ namespace QPatternist
      * XQuery code, slightly extended to handle the featuress specific to
      * XSL-T.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class XSLTTokenizer : public Tokenizer
                         , private MaintainingReader<XSLTTokenLookup>

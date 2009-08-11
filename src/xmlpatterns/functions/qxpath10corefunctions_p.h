@@ -68,7 +68,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath.html#corelib">XML Path Language (XPath)
      * Version 1.0, 4 Core Function Library</a>
      * @see XPath20CoreFunctions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class XPath10CoreFunctions : public AbstractFunctionFactory
     {

@@ -67,7 +67,7 @@ namespace QPatternist
      * HexBinary inherits from Base64Binary for implementation reasons. The two
      * classes are similar, and inheritance therefore save code.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      * @todo Documentation is missing
      */

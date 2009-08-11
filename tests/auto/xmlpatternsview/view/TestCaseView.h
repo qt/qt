@@ -99,7 +99,7 @@ namespace QPatternistSDK
      * @short Displays a test case.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TestCaseView : public QDockWidget,
                          public Ui_TestCaseViewCentralWidget

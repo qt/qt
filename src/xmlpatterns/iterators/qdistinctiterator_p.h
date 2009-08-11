@@ -77,7 +77,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-distinct-values">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 15.1.6 fn:distinct-values</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     class DistinctIterator : public Item::Iterator

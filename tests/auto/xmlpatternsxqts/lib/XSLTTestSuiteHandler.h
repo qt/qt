@@ -113,7 +113,7 @@ namespace QPatternistSDK
      * @see http://www.w3.org/XML/Group/xslt20-test/TestSuiteStagingArea/catalog.html
      * @see http://www.w3.org/XML/Group/xslt20-test/Documentation/XSLT2Test.htm
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT XSLTTestSuiteHandler : public QXmlDefaultHandler
     {

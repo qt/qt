@@ -72,7 +72,7 @@ namespace QPatternist
      * This is the base class of all data types in a W3C XML Schema.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SchemaType : public SchemaComponent
     {

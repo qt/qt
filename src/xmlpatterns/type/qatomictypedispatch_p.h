@@ -133,7 +133,7 @@ namespace QPatternist
      * @todo Docs missing
      *
      * @ingroup Patternist_types_dispatch
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicTypeVisitorResult : public QSharedData
     {
@@ -148,7 +148,7 @@ namespace QPatternist
      *
      * @see ParameterizedAtomicTypeVisitor
      * @ingroup Patternist_types_dispatch
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicTypeVisitor : public QSharedData
     {
@@ -211,7 +211,7 @@ namespace QPatternist
      *
      * @see AtomicTypeVisitor
      * @ingroup Patternist_types_dispatch
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ParameterizedAtomicTypeVisitor : public QSharedData
     {

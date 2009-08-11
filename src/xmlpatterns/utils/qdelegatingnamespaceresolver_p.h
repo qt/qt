@@ -69,7 +69,7 @@ namespace QPatternist
      * own.
      *
      * @ingroup Patternist
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DelegatingNamespaceResolver : public NamespaceResolver
     {

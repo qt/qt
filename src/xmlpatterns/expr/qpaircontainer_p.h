@@ -64,7 +64,7 @@ namespace QPatternist
     /**
      * @short Base class for expressions that has exactly two operands.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class PairContainer : public Expression

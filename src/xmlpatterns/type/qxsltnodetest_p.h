@@ -69,7 +69,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xslt20/#pattern-semantics">XSL
      * Transformations (XSLT) Version 2.0, 5.5.3 The Meaning of a Pattern</a>
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @since 4.5
      */
     class XSLTNodeTest : public AnyNodeType

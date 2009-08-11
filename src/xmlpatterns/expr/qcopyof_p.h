@@ -69,7 +69,7 @@ namespace QPatternist
      * that's not possible because we're always a child of ElementConstructor,
      * currently.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class CopyOf : public SingleContainer

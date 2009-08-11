@@ -104,7 +104,7 @@ namespace QPatternistSDK
      * returns the AST built the last time createExpression() was called.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT DebugExpressionFactory : public QPatternist::ExpressionFactory
     {

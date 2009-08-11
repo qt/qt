@@ -66,7 +66,7 @@ namespace QPatternist
      * @short Represents the complex W3C XML Schema type <tt>xs:untyped</tt>.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @see <a href="http://www.w3.org/TR/xpath-datamodel/#types-predefined">XQuery 1.0 and XPath 2.0
      * Data Model, 2.6.2 Predefined Types</a>
      */

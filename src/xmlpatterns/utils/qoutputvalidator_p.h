@@ -72,7 +72,7 @@ namespace QPatternist
      * nodes.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo Escape data
      */
     class OutputValidator : public QAbstractXmlReceiver

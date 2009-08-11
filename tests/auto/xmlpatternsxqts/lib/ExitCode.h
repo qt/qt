@@ -95,7 +95,7 @@ namespace QPatternistSDK
      * @short Houses program exit codes for PatternistSDK utilities.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT ExitCode
     {

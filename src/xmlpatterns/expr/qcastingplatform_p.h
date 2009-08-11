@@ -101,7 +101,7 @@ namespace QPatternist
      * function targetType() must be implemented such that CastingPlatform knows
      * what type it shall cast to.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     template<typename TSubClass, const bool issueError>

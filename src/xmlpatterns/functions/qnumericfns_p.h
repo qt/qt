@@ -74,7 +74,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:floor()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FloorFN : public Aggregator
     {
@@ -86,7 +86,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:abs()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbsFN : public Aggregator
     {
@@ -98,7 +98,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:round()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class RoundFN : public Aggregator
     {
@@ -110,7 +110,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:ceiling()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CeilingFN : public Aggregator
     {
@@ -124,7 +124,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-round-half-to-even">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 6.4.5 fn:round-half-to-even</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class RoundHalfToEvenFN : public Aggregator
     {

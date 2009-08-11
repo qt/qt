@@ -80,7 +80,7 @@ namespace QPatternist
      * word. All functions of this class can be called concurrently. This is
      * achieved by internal locking.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo Use QSubStrings, we can save very many heap allocations by that.
      * @todo Check limits
      */

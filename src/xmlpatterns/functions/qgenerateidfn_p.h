@@ -66,7 +66,7 @@ namespace QPatternist
      * @ingroup Patternist_functions
      * @see <a href="http://www.w3.org/TR/xslt20/#generate-id">XSL
      * Transformations (XSLT) Version 2.0, 16.6.4 generate-id</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @since 4.5
      */
     class GenerateIDFN : public FunctionCall

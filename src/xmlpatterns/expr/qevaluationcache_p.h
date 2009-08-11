@@ -89,7 +89,7 @@ namespace QPatternist
      * variable is only referenced once. In those cases EvaluationCache removes
      * itself as an optimization; implemented in compress().
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     template<bool IsForGlobal>

@@ -74,7 +74,7 @@ namespace QPatternist
      * and XPath 2.0 Functions and Operators</a>
      * @see <a href="http://www.w3.org/TR/xpath.html#corelib">XML Path Language (XPath)
      * Version 1.0, 4 Core Function Library</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_functions
      */
     class XPath20CoreFunctions : public AbstractFunctionFactory

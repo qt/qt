@@ -80,7 +80,7 @@ namespace QPatternist
      * of any type.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<TypeOfDerivedString DerivedType>
     class ToStringCaster : public AtomicCaster
@@ -102,7 +102,7 @@ namespace QPatternist
      * of any type. The implementation is similar to ToStringCaster.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToUntypedAtomicCaster : public AtomicCaster
     {
@@ -115,7 +115,7 @@ namespace QPatternist
      * @short Casts a string value to @c xs:anyURI.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToAnyURICaster : public AtomicCaster
     {
@@ -128,7 +128,7 @@ namespace QPatternist
      * @short Casts a @c xs:hexBinary atomic value to @c xs:base64Binary.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class HexBinaryToBase64BinaryCaster : public AtomicCaster
     {
@@ -141,7 +141,7 @@ namespace QPatternist
      * @short Casts a @c xs:base64Binary atomic value to @c xs:hexBinary.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Base64BinaryToHexBinaryCaster : public AtomicCaster
     {
@@ -154,7 +154,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:base64Binary.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToBase64BinaryCaster : public AtomicCaster
     {
@@ -167,7 +167,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:hexBinary.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToHexBinaryCaster : public AtomicCaster
     {
@@ -180,7 +180,7 @@ namespace QPatternist
      * @short Casts any @c numeric value to @c xs:boolean.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NumericToBooleanCaster : public AtomicCaster
     {
@@ -193,7 +193,7 @@ namespace QPatternist
      * @short Casts any string value, @c xs:string or @c xs:untypedAtomic, to @c xs:boolean.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToBooleanCaster : public AtomicCaster
     {
@@ -209,7 +209,7 @@ namespace QPatternist
      * castFrom() uses Numeric::toInteger() for doing the actual casting.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template <const bool IsInteger>
     class NumericToDecimalCaster : public AtomicCaster
@@ -252,7 +252,7 @@ namespace QPatternist
      * @short Casts a string value, @c xs:string or @c xs:untypedAtomic, to @c xs:decimal.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToDecimalCaster : public AtomicCaster
     {
@@ -265,7 +265,7 @@ namespace QPatternist
      * @short Casts a string value, @c xs:string or @c xs:untypedAtomic, to @c xs:integer.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToIntegerCaster : public AtomicCaster
     {
@@ -278,7 +278,7 @@ namespace QPatternist
      * @short Casts a value of type @c xs:boolean to @c xs:decimal.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BooleanToDecimalCaster : public AtomicCaster
     {
@@ -291,7 +291,7 @@ namespace QPatternist
      * @short Casts a value of type @c xs:boolean to @c xs:integer.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BooleanToIntegerCaster : public AtomicCaster
     {
@@ -310,7 +310,7 @@ namespace QPatternist
      * is this class need on a case-per-case base at evaluation time.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SelfToSelfCaster : public AtomicCaster
     {
@@ -327,7 +327,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:gYear.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToGYearCaster : public AtomicCaster
     {
@@ -340,7 +340,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:gDay.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToGDayCaster : public AtomicCaster
     {
@@ -353,7 +353,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:gMonth.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToGMonthCaster : public AtomicCaster
     {
@@ -366,7 +366,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:gYearMonth.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToGYearMonthCaster : public AtomicCaster
     {
@@ -379,7 +379,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:gYearMonth.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToGMonthDayCaster : public AtomicCaster
     {
@@ -392,7 +392,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:dateTime.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToDateTimeCaster : public AtomicCaster
     {
@@ -405,7 +405,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:time.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToTimeCaster : public AtomicCaster
     {
@@ -418,7 +418,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:date.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToDateCaster : public AtomicCaster
     {
@@ -431,7 +431,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:duration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToDurationCaster : public AtomicCaster
     {
@@ -444,7 +444,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:dayTimeDuration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToDayTimeDurationCaster : public AtomicCaster
     {
@@ -457,7 +457,7 @@ namespace QPatternist
      * @short Casts a @c xs:string or @c xs:untypedAtomic atomic value to @c xs:yearMonthDuration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToYearMonthDurationCaster : public AtomicCaster
     {
@@ -471,7 +471,7 @@ namespace QPatternist
      * @short Casts a @c xs:date or @c xs:dateTime atomic value to @c xs:gYear.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToGYearCaster : public AtomicCaster
     {
@@ -484,7 +484,7 @@ namespace QPatternist
      * @short Casts a @c xs:date or @c xs:dateTime atomic value to @c xs:gYearMonth.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToGYearMonthCaster : public AtomicCaster
     {
@@ -497,7 +497,7 @@ namespace QPatternist
      * @short Casts a @c xs:date or @c xs:dateTime atomic value to @c xs:gMonth.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToGMonthCaster : public AtomicCaster
     {
@@ -510,7 +510,7 @@ namespace QPatternist
      * @short Casts a @c xs:date or @c xs:dateTime atomic value to @c xs:gMonthDay.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToGMonthDayCaster : public AtomicCaster
     {
@@ -523,7 +523,7 @@ namespace QPatternist
      * @short Casts a @c xs:date or @c xs:dateTime atomic value to @c xs:gDay.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToGDayCaster : public AtomicCaster
     {
@@ -536,7 +536,7 @@ namespace QPatternist
      * @short Casts an AbstractDateTime instance to DateTime.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToDateTimeCaster : public AtomicCaster
     {
@@ -549,7 +549,7 @@ namespace QPatternist
      * @short Casts an AbstractDateTime instance to SchemaTime.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToDateCaster : public AtomicCaster
     {
@@ -562,7 +562,7 @@ namespace QPatternist
      * @short Casts an AbstractDateTime instance to SchemaTime.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeToTimeCaster : public AtomicCaster
     {
@@ -575,7 +575,7 @@ namespace QPatternist
      * @short Casts an AbstractDuration instance to Duration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDurationToDurationCaster : public AtomicCaster
     {
@@ -588,7 +588,7 @@ namespace QPatternist
      * @short Casts an AbstractDuration instance to DayTimeDuration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDurationToDayTimeDurationCaster : public AtomicCaster
     {
@@ -601,7 +601,7 @@ namespace QPatternist
      * @short Casts an AbstractDuration instance to YearMonthDuration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDurationToYearMonthDurationCaster : public AtomicCaster
     {
@@ -614,7 +614,7 @@ namespace QPatternist
      * @short Casts an @c xs:string instance to a derived type of @c xs:integer.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<TypeOfDerivedInteger type>
     class StringToDerivedIntegerCaster : public AtomicCaster
@@ -632,7 +632,7 @@ namespace QPatternist
      * @short Casts an @c xs:boolean instance to a derived type of @c xs:integer.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<TypeOfDerivedInteger type>
     class BooleanToDerivedIntegerCaster : public AtomicCaster
@@ -650,7 +650,7 @@ namespace QPatternist
      * @short Casts an @c xs:boolean instance to a derived type of @c xs:integer.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<TypeOfDerivedString type>
     class AnyToDerivedStringCaster : public AtomicCaster
@@ -668,7 +668,7 @@ namespace QPatternist
      * @short Casts any @c numeric instance to a derived type of @c xs:integer.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<TypeOfDerivedInteger type>
     class NumericToDerivedIntegerCaster : public AtomicCaster

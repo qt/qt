@@ -107,7 +107,7 @@ namespace QPatternistSDK
      * TestSuite contains the test suite's test cases and meta data.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT TestSuite : public TestContainer
     {

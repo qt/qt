@@ -74,7 +74,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:name()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NameFN : public FunctionCall
     {
@@ -86,7 +86,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:local-name()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class LocalNameFN : public FunctionCall
     {
@@ -98,7 +98,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:namespace-uri()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NamespaceURIFN : public FunctionCall
     {
@@ -112,7 +112,7 @@ namespace QPatternist
      * NumberFN uses CastingPlatform for performing the actual casting.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NumberFN : public FunctionCall,
                      public CastingPlatform<NumberFN, false>
@@ -141,7 +141,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:lang()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class LangFN : public FunctionCall
     {
@@ -156,7 +156,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:root()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class RootFN : public FunctionCall
     {

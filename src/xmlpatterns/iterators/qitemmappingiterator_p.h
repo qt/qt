@@ -85,7 +85,7 @@ namespace QPatternist
      * Declaring the mapToItem() function as inline, can be a good way to improve performance.
      *
      * @see SequenceMappingIterator
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     template<typename TResult, typename TSource, typename TMapper, typename Context = DynamicContext::Ptr>

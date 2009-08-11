@@ -63,7 +63,7 @@ namespace QPatternist
     /**
      * @short Base class for expressions that has exactly one operand.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class SingleContainer : public Expression

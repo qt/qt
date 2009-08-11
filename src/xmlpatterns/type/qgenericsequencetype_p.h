@@ -65,7 +65,7 @@ namespace QPatternist
      * @todo Documentation is missing.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GenericSequenceType : public SequenceType
     {

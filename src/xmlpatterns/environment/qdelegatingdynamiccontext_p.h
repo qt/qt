@@ -70,7 +70,7 @@ namespace QPatternist
      * the DynamicContext interface onto another DynamicContext instance,
      * allowing the sub-class to only implement what it needs to.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DelegatingDynamicContext : public DynamicContext
     {

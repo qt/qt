@@ -75,7 +75,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:codepoints-to-string()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CodepointsToStringFN : public FunctionCall
     {
@@ -87,7 +87,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:string-to-codepoints()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringToCodepointsFN : public FunctionCall
     {

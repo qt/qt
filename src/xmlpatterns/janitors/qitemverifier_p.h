@@ -65,7 +65,7 @@ namespace QPatternist
      * @short Verifies that the items in a sequence an Expression evaluates
      * is of a certain ItemType.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ItemVerifier : public SingleContainer

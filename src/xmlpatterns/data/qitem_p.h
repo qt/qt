@@ -114,7 +114,7 @@ namespace QPatternist
      * only the fromValue() function exist, and fromLexical() is omitted.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicValue : public QSharedData
                       , public CppCastingHelper<AtomicValue>
@@ -173,7 +173,7 @@ namespace QPatternist
      * makes a very strong distinction between a sequence of items and an atomized sequence.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Item
     {
