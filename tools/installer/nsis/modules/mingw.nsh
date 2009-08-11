@@ -57,7 +57,7 @@
   !error "MODULE_MINGW_ROOT not defined!"
 !endif
 !ifndef MODULE_MINGW_URL
-  !define MODULE_MINGW_URL "ftp://ftp.trolltech.com/misc"
+  !define MODULE_MINGW_URL "ftp://ftp.qt.nokia.com/misc"
 !endif
 !ifndef MODULE_MINGW_COMPILERVERSION
   !define MODULE_MINGW_COMPILERVERSION "3.4.2"

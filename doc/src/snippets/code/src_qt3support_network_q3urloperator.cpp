@@ -1,6 +1,6 @@
 //! [0]
 Q3UrlOperator *op = new Q3UrlOperator();
-op->copy( QString("ftp://ftp.trolltech.com/qt/source/qt-2.1.0.tar.gz"),
+op->copy( QString("ftp://ftp.qt.nokia.com/qt/source/qt-2.1.0.tar.gz"),
 	 "file:///tmp" );
 //! [0]
 

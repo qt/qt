@@ -15,17 +15,17 @@ Q3Url url( s );
 
 
 //! [2]
-Q3Url url( "ftp://ftp.trolltech.com/qt/source", "qt-2.1.0.tar.gz" );
+Q3Url url( "ftp://ftp.qt.nokia.com/qt/source", "qt-2.1.0.tar.gz" );
 //! [2]
 
 
 //! [3]
-Q3Url url( "ftp://ftp.trolltech.com/qt/source", "/usr/local" );
+Q3Url url( "ftp://ftp.qt.nokia.com/qt/source", "/usr/local" );
 //! [3]
 
 
 //! [4]
-Q3Url url( "ftp://ftp.trolltech.com/qt/source", "file:///usr/local" );
+Q3Url url( "ftp://ftp.qt.nokia.com/qt/source", "file:///usr/local" );
 //! [4]
 
 

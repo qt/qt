@@ -113,7 +113,7 @@ void tst_Q3Dns::destructor()
 	{
 	    QApplication a( argc, argv );
 	    Q3Socket *s = new Q3Socket( &a );
-	    s->connectToHost( "ftp.trolltech.com", 21 );
+	    s->connectToHost( "ftp.qt.nokia.com", 21 );
 	    return 0;
 	}
     */
@@ -121,7 +121,7 @@ void tst_Q3Dns::destructor()
     char **v = 0;
     QCoreApplication a(c, v);
     Q3Socket *s = new Q3Socket(&a);
-    s->connectToHost("ftp.trolltech.com", 21);
+    s->connectToHost("ftp.qt.nokia.com", 21);
 
     // dummy verify since this test only makes shure that it does not crash
     QVERIFY( TRUE );
