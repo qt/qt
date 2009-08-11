@@ -593,28 +593,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
     // update selectionsx
     QModelIndex tl = model->index(start, 0, parent);
     QModelIndex br = model->index(end, model->columnCount(parent) - 1, parent);
-    recursiveDeselect(QItemSelectionRange(tl, br));
+    q->select(QItemSelection(tl, br), QItemSelectionModel::Deselect);
     finalize();
-}
-
-void QItemSelectionModelPrivate::recursiveDeselect(const QItemSelectionRange &range)
-{
-    Q_Q(QItemSelectionModel);
-
-    QItemSelection sel(range.topLeft(), range.bottomRight());
-    q->select(sel, QItemSelectionModel::Deselect);
-
-    QModelIndexList idxList = range.indexes();
-    QModelIndexList::const_iterator it = idxList.begin();
-    for (; it != idxList.end(); ++it)
-    {
-        if (!model->hasChildren(*it))
-            continue;
-
-        const QModelIndex &firstChild = it->child(0,0);
-        const QModelIndex &lastChild = it->child(model->rowCount(*it) - 1, model->columnCount(*it) - 1);
-        recursiveDeselect(QItemSelectionRange(firstChild, lastChild));
-    }
 }
 
 /*!
