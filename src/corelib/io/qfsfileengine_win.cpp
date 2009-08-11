@@ -296,7 +296,7 @@ static bool isUncRoot(const QString &server)
 }
 
 #if !defined(Q_OS_WINCE)
-static bool isUncPath(const QString &path)
+static inline bool isUncPath(const QString &path)
 {
     // Starts with \\, but not \\.
     return (path.startsWith(QLatin1String("\\\\"))
@@ -304,7 +304,7 @@ static bool isUncPath(const QString &path)
 }
 #endif
 
-static bool isRelativePath(const QString &path)
+static inline bool isRelativePath(const QString &path)
 {
     return !(path.startsWith(QLatin1Char('/'))
            || (path.length() >= 2
@@ -338,7 +338,7 @@ static bool uncShareExists(const QString &server)
     return false;
 }
 
-static bool isDriveRoot(const QString &path)
+static inline bool isDriveRoot(const QString &path)
 {
     return (path.length() == 3
            && path.at(0).isLetter() && path.at(1) == QLatin1Char(':')
@@ -894,7 +894,7 @@ static inline bool rmDir(const QString &path)
     return ::RemoveDirectory((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16());
 }
 
-static inline bool isDirPath(const QString &dirPath, bool *existed)
+static bool isDirPath(const QString &dirPath, bool *existed)
 {
     QString path = dirPath;
     if (path.length() == 2 && path.at(1) == QLatin1Char(':'))

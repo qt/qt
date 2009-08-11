@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
     Returns the stdlib open string corresponding to a QIODevice::OpenMode.
 */
-static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &fileName = QString())
+static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &fileName)
 {
     QByteArray mode;
     if ((flags & QIODevice::ReadOnly) && !(flags & QIODevice::Truncate)) {
@@ -109,7 +109,7 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
 
     Returns the stdio open flags corresponding to a QIODevice::OpenMode.
 */
-static int openModeToOpenFlags(QIODevice::OpenMode mode)
+static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
 {
     int oflags = QT_OPEN_RDONLY;
 #ifdef QT_LARGEFILE_SUPPORT
@@ -138,7 +138,7 @@ static int openModeToOpenFlags(QIODevice::OpenMode mode)
     Sets the file descriptor to close on exec. That is, the file
     descriptor is not inherited by child processes.
 */
-static bool setCloseOnExec(int fd)
+static inline bool setCloseOnExec(int fd)
 {
     return fd != -1 && fcntl(fd, F_SETFD, FD_CLOEXEC) != -1;
 }
