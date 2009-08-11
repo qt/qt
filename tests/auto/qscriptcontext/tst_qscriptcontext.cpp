@@ -76,6 +76,7 @@ private slots:
     void toString();
     void calledAsConstructor();
     void argumentsObjectInNative();
+    void jsActivationObject();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -218,11 +219,17 @@ void tst_QScriptContext::arguments()
 
         {
             QScriptValue result = eng.evaluate(prefix+"get_argumentsObject(123)");
+            eng.evaluate("function nestedArg(x,y,z) { var w = get_argumentsObject('ABC' , x+y+z); return w; }");
+            QScriptValue result2 = eng.evaluate("nestedArg(1, 'a', 2)");
             QCOMPARE(result.isArray(), false);
             QVERIFY(result.isObject());
             QCOMPARE(result.property("length").toUInt32(), quint32(1));
             QCOMPARE(result.property("0").isNumber(), true);
             QCOMPARE(result.property("0").toNumber(), 123.0);
+            QVERIFY(result2.isObject());
+            QCOMPARE(result2.property("length").toUInt32(), quint32(2));
+            QCOMPARE(result2.property("0").toString(), QString::fromLatin1("ABC"));
+            QCOMPARE(result2.property("1").toString(), QString::fromLatin1("1a2"));
         }
 
         {
@@ -784,7 +791,6 @@ void tst_QScriptContext::toString()
                                     "    return parentContextToString();\n"
                                     "}; foo(1, 2, 3)", "script.qs");
     QVERIFY(ret.isString());
-    QEXPECT_FAIL("", "", Continue);
     QCOMPARE(ret.toString(), QString::fromLatin1("foo (first=1, second=2, third=3) at script.qs:2"));
 }
 
@@ -842,7 +848,7 @@ void tst_QScriptContext::calledAsConstructor()
 
 }
 
-static QScriptValue argumentsObjectInNative_test1(QScriptContext *ctx, QScriptEngine *)
+static QScriptValue argumentsObjectInNative_test1(QScriptContext *ctx, QScriptEngine *eng)
 {
 #define VERIFY(statement) \
     do {\
@@ -854,6 +860,10 @@ static QScriptValue argumentsObjectInNative_test1(QScriptContext *ctx, QScriptEn
     VERIFY(obj.isObject());
     VERIFY(obj.property(0).toUInt32() == 123);
     VERIFY(obj.property(1).toString() == QString::fromLatin1("456"));
+
+    obj.setProperty(0, "abc");
+    VERIFY(eng->evaluate("arguments[0]").toString() == QString::fromLatin1("abc") );
+
     return QString::fromLatin1("success");
 #undef VERIFY
 }
@@ -870,9 +880,6 @@ void tst_QScriptContext::argumentsObjectInNative()
         QVERIFY(!eng.hasUncaughtException());
         QCOMPARE(result.toString(), QString::fromLatin1("success"));
     }
-
-
-
     {
         QScriptEngine eng;
         QScriptValue fun = eng.newFunction(argumentsObjectInNative_test1);
@@ -881,7 +888,31 @@ void tst_QScriptContext::argumentsObjectInNative()
         QVERIFY(!eng.hasUncaughtException());
         QCOMPARE(result.toString(), QString::fromLatin1("success"));
     }
+}
 
+static QScriptValue get_jsActivationObject(QScriptContext *ctx, QScriptEngine *)
+{
+    return ctx->parentContext()->parentContext()->activationObject();
+}
+
+void tst_QScriptContext::jsActivationObject()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("get_jsActivationObject", eng.newFunction(get_jsActivationObject));
+    eng.evaluate("function f1() { var w = get_jsActivationObject('arg1');  return w; }");
+    eng.evaluate("function f2(x,y,z) { var v1 = 42;\n"
+                        //   "function foo() {};\n" //this would avoid JSC to optimize
+                        "var v2 = f1(); return v2; }");
+    eng.evaluate("function f3() { var v1 = 'nothing'; return f2(1,2,3); }");
+    QScriptValue result1 = eng.evaluate("f2('hello', 'useless', 'world')");
+    QScriptValue result2 = eng.evaluate("f3()");
+    QVERIFY(result1.isObject());
+    QEXPECT_FAIL("", "JSC optimize away the activation object", Abort);
+    QCOMPARE(result1.property("v1").toInt32() , 42);
+    QCOMPARE(result1.property("arguments").property(1).toString() , QString::fromLatin1("useless"));
+    QVERIFY(result2.isObject());
+    QCOMPARE(result2.property("v1").toInt32() , 42);
+    QCOMPARE(result2.property("arguments").property(1).toString() , QString::fromLatin1("2"));
 }
 
 QTEST_MAIN(tst_QScriptContext)
