@@ -39,14 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdebug.h"
 #include "qfsfileengine_iterator_p.h"
 #include "qfsfileengine_p.h"
 #include "qplatformdefs.h"
 
 #include <QtCore/qvariant.h>
-#include <QtCore/qmutex.h>
-#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,7 +53,7 @@ public:
     inline QFSFileEngineIteratorPlatformSpecificData()
         : uncShareIndex(-1), findFileHandle(INVALID_HANDLE_VALUE),
           done(false), uncFallback(false)
-    { }
+    {}
 
     QFSFileEngineIterator *it;
 
@@ -68,7 +65,6 @@ public:
     bool done;
     bool uncFallback;
 
-    void advance();
     void saveCurrentFileName();
 };
 
@@ -116,10 +112,10 @@ bool QFSFileEngineIterator::hasNext() const
 {
     if (platform->done)
         return false;
-    
+
     if (platform->uncFallback)
         return platform->uncShareIndex > 0 && platform->uncShareIndex <= platform->uncShares.size();
-    
+
     if (platform->findFileHandle == INVALID_HANDLE_VALUE) {
         QString path = this->path();
         // Local directory
@@ -151,7 +147,7 @@ bool QFSFileEngineIterator::hasNext() const
                     platform->done = true;
                 }
             } else {
-                platform->done = true;        
+                platform->done = true;
             }
         }
 

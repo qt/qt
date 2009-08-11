@@ -47,10 +47,6 @@
 
 #include "qfile.h"
 #include "qdir.h"
-#include "qtemporaryfile.h"
-#ifndef QT_NO_REGEXP
-# include "qregexp.h"
-#endif
 #include "private/qmutexpool_p.h"
 #include "qvarlengtharray.h"
 #include "qdatetime.h"
@@ -125,7 +121,7 @@ static TRUSTEE_W currentUserTrusteeW;
 
 typedef BOOL (WINAPI *PtrOpenProcessToken)(HANDLE, DWORD, PHANDLE );
 static PtrOpenProcessToken ptrOpenProcessToken = 0;
-typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)( HANDLE, LPWSTR, LPDWORD);
+typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
 typedef BOOL (WINAPI *PtrSetFilePointerEx)(HANDLE, LARGE_INTEGER, PLARGE_INTEGER, DWORD);
 static PtrSetFilePointerEx ptrSetFilePointerEx = 0;
@@ -266,7 +262,7 @@ bool QFSFileEnginePrivate::uncListSharesOnServer(const QString &server, QStringL
         do {
             res = ptrNetShareEnum((wchar_t*)server.utf16(), 1, (LPBYTE *)&BufPtr, DWORD(-1), &er, &tr, &resume);
             if (res == ERROR_SUCCESS || res == ERROR_MORE_DATA) {
-                p=BufPtr;
+                p = BufPtr;
                 for (i = 1; i <= er; ++i) {
                     if (list && p->shi1_type == 0)
                         list->append(QString::fromWCharArray(p->shi1_netname));
@@ -276,7 +272,6 @@ bool QFSFileEnginePrivate::uncListSharesOnServer(const QString &server, QStringL
             ptrNetApiBufferFree(BufPtr);
         } while (res==ERROR_MORE_DATA);
         return res == ERROR_SUCCESS;
-
     }
     return false;
 }
@@ -306,10 +301,11 @@ static inline bool isUncPath(const QString &path)
 
 static inline bool isRelativePath(const QString &path)
 {
+    // drive, e.g. "a:", or UNC root, e.q. "//"
     return !(path.startsWith(QLatin1Char('/'))
            || (path.length() >= 2
            && ((path.at(0).isLetter() && path.at(1) == QLatin1Char(':'))
-           || (path.at(0) == QLatin1Char('/') && path.at(1) == QLatin1Char('/'))))); // drive, e.g. a:
+           || (path.at(0) == QLatin1Char('/') && path.at(1) == QLatin1Char('/')))));
 }
 
 static QString fixIfRelativeUncPath(const QString &path)
@@ -328,12 +324,8 @@ static bool uncShareExists(const QString &server)
     QStringList parts = server.split(QLatin1Char('\\'), QString::SkipEmptyParts);
     if (parts.count()) {
         QStringList shares;
-        if (QFSFileEnginePrivate::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(0), &shares)) {
-            if (parts.count() >= 2)
-                return shares.contains(parts.at(1), Qt::CaseInsensitive);
-            else
-                return true;
-        }
+        if (QFSFileEnginePrivate::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(0), &shares))
+            return parts.count() >= 2 ? shares.contains(parts.at(1), Qt::CaseInsensitive) : true;
     }
     return false;
 }
@@ -400,8 +392,8 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
 */
 void QFSFileEnginePrivate::nativeInitFileName()
 {
-		QString path = longFileName(QDir::toNativeSeparators(fixIfRelativeUncPath(filePath)));
-		nativeFilePath = QByteArray((const char *)path.utf16(), path.size() * 2 + 1);
+    QString path = longFileName(QDir::toNativeSeparators(fixIfRelativeUncPath(filePath)));
+    nativeFilePath = QByteArray((const char *)path.utf16(), path.size() * 2 + 1);
 }
 
 /*
@@ -423,8 +415,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, FALSE };
 
     // WriteOnly can create files, ReadOnly cannot.
-    DWORD creationDisp = (openMode & QIODevice::WriteOnly)
-                         ? OPEN_ALWAYS : OPEN_EXISTING;
+    DWORD creationDisp = (openMode & QIODevice::WriteOnly) ? OPEN_ALWAYS : OPEN_EXISTING;
 
     // Create the file handle.
     fileHandle = CreateFile((const wchar_t*)nativeFilePath.constData(),
@@ -1145,10 +1136,10 @@ QFileInfoList QFSFileEngine::drives()
     char driveName[] = "A:/";
 
     while(driveBits) {
-	if(driveBits & 1)
-	    ret.append(QString::fromLatin1(driveName));
-	driveName[0]++;
-	driveBits = driveBits >> 1;
+        if(driveBits & 1)
+            ret.append(QString::fromLatin1(driveName));
+        driveName[0]++;
+        driveBits = driveBits >> 1;
     }
     return ret;
 #else
@@ -1501,7 +1492,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     Q_D(const QFSFileEngine);
     QAbstractFileEngine::FileFlags ret = 0;
     // Force a stat, so that we're guaranteed to get up-to-date results
-    if (type & QAbstractFileEngine::FileFlag(QAbstractFileEngine::Refresh)) {
+    if (type & Refresh) {
         d->tried_stat = 0;
     }
 
@@ -1647,10 +1638,11 @@ QString QFSFileEngine::fileName(FileName file) const
 bool QFSFileEngine::isRelativePath() const
 {
     Q_D(const QFSFileEngine);
+    // drive, e.g. "a:", or UNC root, e.q. "//"
     return !(d->filePath.startsWith(QLatin1Char('/'))
         || (d->filePath.length() >= 2
         && ((d->filePath.at(0).isLetter() && d->filePath.at(1) == QLatin1Char(':'))
-        || (d->filePath.at(0) == QLatin1Char('/') && d->filePath.at(1) == QLatin1Char('/')))));                // drive, e.g. a:
+        || (d->filePath.at(0) == QLatin1Char('/') && d->filePath.at(1) == QLatin1Char('/')))));
 }
 
 uint QFSFileEngine::ownerId(FileOwner /*own*/) const
@@ -1966,4 +1958,5 @@ void QFSFileEnginePrivate::mapHandleClose()
     }
 }
 #endif
+
 QT_END_NAMESPACE

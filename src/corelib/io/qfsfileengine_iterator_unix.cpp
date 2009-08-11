@@ -56,7 +56,7 @@ public:
 #if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
           , mt_file(0)
 #endif
-    { }
+    {}
 
     DIR *dir;
     dirent *dirEntry;

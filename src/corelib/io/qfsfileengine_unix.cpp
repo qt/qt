@@ -582,7 +582,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
 {
     Q_D(const QFSFileEngine);
     // Force a stat, so that we're guaranteed to get up-to-date results
-    if (type & QAbstractFileEngine::FileFlag(QAbstractFileEngine::Refresh)) {
+    if (type & Refresh) {
         d->tried_stat = 0;
         d->need_lstat = 1;
     }
@@ -777,7 +777,7 @@ QString QFSFileEngine::fileName(FileName file) const
                 s[len] = '\0';
                 ret += QFile::decodeName(QByteArray(s));
 #if defined(__GLIBC__) && !defined(PATH_MAX)
-		::free(s);
+                ::free(s);
 #endif
 
                 if (!ret.startsWith(QLatin1Char('/'))) {
