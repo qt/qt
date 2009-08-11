@@ -329,7 +329,7 @@ void QFxTextEdit::setHighlightColor(const QColor &color)
 QColor QFxTextEdit::highlightedTextColor() const
 {
     Q_D(const QFxTextEdit);
-    return d->highlightColor;
+    return d->highlightedTextColor;
 }
 
 void QFxTextEdit::setHighlightedTextColor(const QColor &color)

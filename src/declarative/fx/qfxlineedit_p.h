@@ -65,9 +65,8 @@ class QFxLineEditPrivate : public QFxPaintedItemPrivate
 public:
     QFxLineEditPrivate() : control(new QLineControl(QString())),
                  font(0), color((QRgb)0), style(QFxText::Normal),
-                 styleColor((QRgb)0),
-                 hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop),
-                 hscroll(0), oldScroll(0), focused(false)
+                 styleColor((QRgb)0), hAlign(QFxLineEdit::AlignLeft),
+                 hscroll(0), oldScroll(0), focused(false), cursorVisible(false)
     {
     }
 
@@ -82,10 +81,11 @@ public:
 
     QmlFont *font;
     QColor  color;
+    QColor  highlightColor;
+    QColor  highlightedTextColor;
     QFxText::TextStyle style;
     QColor  styleColor;
-    QFxText::HAlignment hAlign;
-    QFxText::VAlignment vAlign;
+    QFxLineEdit::HAlignment hAlign;
     QPointer<QmlComponent> cursorComponent;
     QPointer<QFxItem> cursorItem;
 
@@ -97,6 +97,7 @@ public:
     int hscroll;
     int oldScroll;
     bool focused;
+    bool cursorVisible;
 };
 
 QT_END_NAMESPACE
