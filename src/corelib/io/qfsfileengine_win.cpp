@@ -345,9 +345,9 @@ static inline bool isDriveRoot(const QString &path)
            && path.at(2) == QLatin1Char('/'));
 }
 
-static QString nativeAbsoluteFilePathCore(const QString &path)
+static QString nativeAbsoluteFilePath(const QString &path)
 {
-    QString ret;
+    QString absPath;
 #if !defined(Q_OS_WINCE)
     QVarLengthArray<wchar_t, MAX_PATH> buf(qMax(MAX_PATH, path.size() + 1));
     wchar_t *fileName = 0;
@@ -357,19 +357,13 @@ static QString nativeAbsoluteFilePathCore(const QString &path)
         retLen = GetFullPathName((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
     }
     if (retLen != 0)
-        ret = QString::fromWCharArray(buf.data(), retLen);
+        absPath = QString::fromWCharArray(buf.data(), retLen);
 #else
     if (path.startsWith(QLatin1Char('/')) || path.startsWith(QLatin1Char('\\')))
-        ret = QDir::toNativeSeparators(path);
+        absPath = QDir::toNativeSeparators(path);
     else
-        ret = QDir::toNativeSeparators(QDir::cleanPath(qfsPrivateCurrentDir + QLatin1Char('/') + path));
+        absPath = QDir::toNativeSeparators(QDir::cleanPath(qfsPrivateCurrentDir + QLatin1Char('/') + path));
 #endif
-    return ret;
-}
-
-static QString nativeAbsoluteFilePath(const QString &path)
-{
-    QString absPath = nativeAbsoluteFilePathCore(path);
     // This is really ugly, but GetFullPathName strips off whitespace at the end.
     // If you for instance write ". " in the lineedit of QFileDialog,
     // (which is an invalid filename) this function will strip the space off and viola,
