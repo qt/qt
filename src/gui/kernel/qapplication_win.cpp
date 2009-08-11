@@ -835,7 +835,7 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->SetGestureConfig =
             (PtrSetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
                                                    "SetGestureConfig");
-    priv->SetGestureConfig =
+    priv->GetGestureConfig =
             (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
                                                    "GetGestureConfig");
     priv->BeginPanningFeedback =
