@@ -1,6 +1,6 @@
   * index page on "O" and downwards?
   * flag types, e.g. QTextStream::NumberFlags
-  * example references doc.trolltech.com etc.
+  * example references qt.nokia.com/doc etc.
 
   * fix enum value table (e.g. QCoreApplication.Encoding.html)
   * check reimplementation of interface functions (e.g. QWidget::widthMM())

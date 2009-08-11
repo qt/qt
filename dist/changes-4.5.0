@@ -2,7 +2,7 @@ Qt 4.5 introduces many new features and improvements as well as bugfixes
 over the 4.4.x series. For more details, refer to the online documentation
 included in this distribution. The documentation is also available online:
 
-  http://doc.trolltech.com/4.5
+  http://qt.nokia.com/doc/4.5
 
 The Qt version 4.5 series is binary compatible with the 4.4.x series.
 Applications compiled for 4.4 will continue to run with 4.5.

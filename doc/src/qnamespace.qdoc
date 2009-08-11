@@ -2525,7 +2525,7 @@
     "\l{http://qt.nokia.com/careers/movingto/brisbane/}{http://qt.nok...ovingto/brisbane/}"),
     whereas Qt::ElideRight is appropriate
     for other strings (e.g.,
-    "\l{http://doc.trolltech.com/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
+    "\l{http://qt.nokia.com/doc/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
 
     \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag QTabBar::elideMode
 */

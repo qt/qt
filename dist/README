@@ -2,11 +2,11 @@ This is Qt version %VERSION%.
 
 Qt is a comprehensive cross-platform C++ application framework. Qt 4
 introduces new features and many improvements over the 3.x series. See
-http://doc.trolltech.com/latest/qt4-intro.html for details.
+http://qt.nokia.com/doc/latest/qt4-intro.html for details.
 
 The Qt 4.x series is not binary compatible or source compatible with
 the 3.x series. For more information on porting from Qt 3 to Qt 4, see
-http://doc.trolltech.com/latest/porting4.html.
+http://qt.nokia.com/doc/latest/porting4.html.
 
 
 INSTALLING Qt
@@ -37,7 +37,7 @@ The Qt reference documentation is available locally in Qt's doc/html
 directory. You can use Qt Assistant to view it; to launch Assistant,
 type 'assistant' on the command line or use the Start menu. On Mac OS
 X, you can find it in /Developer/Applications/Qt.  The latest
-documentation is available at http://doc.trolltech.com/.
+documentation is available at http://qt.nokia.com/doc/.
 
 
 SUPPORTED PLATFORMS
@@ -90,7 +90,7 @@ For this release, the following platforms have been tested:
   wincewm60standard-msvc2008
 
 For a complete list of supported platforms, see
-http://doc.trolltech.com/supported-platforms.html.
+http://qt.nokia.com/doc/supported-platforms.html.
 
 
 COMMERCIAL EDITIONS
@@ -103,7 +103,7 @@ the QtCore, QtGui (except QGraphicsView), QtTest, QtDBus and
 Qt3Support modules.
 
 For a full listing of the contents of each module, please refer to 
-http://doc.trolltech.com/4.4/modules.html.
+http://qt.nokia.com/doc/4.4/modules.html.
 
 
 HOW TO REPORT A BUG

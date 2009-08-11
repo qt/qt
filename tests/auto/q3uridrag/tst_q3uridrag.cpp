@@ -113,10 +113,10 @@ void tst_Q3UriDrag::decodeLocalFiles_data()
     
     QStringList mixOfLocalAndNonLocalFiles;
 #ifdef Q_WS_WIN
-    mixOfLocalAndNonLocalFiles << "http://www.trolltech.com" << "c:/main.cpp" << "ftp://doc.trolltech.com";
+    mixOfLocalAndNonLocalFiles << "http://www.trolltech.com" << "c:/main.cpp" << "ftp://qt.nokia.com/doc";
     QTest::newRow("mixOfLocalAndNonLocalFiles") << mixOfLocalAndNonLocalFiles << QStringList("c:/main.cpp");
 #else
-	mixOfLocalAndNonLocalFiles << "http://www.trolltech.com" << "/main.cpp" << "ftp://doc.trolltech.com";
+	mixOfLocalAndNonLocalFiles << "http://www.trolltech.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
     QTest::newRow("mixOfLocalAndNonLocalFiles") << mixOfLocalAndNonLocalFiles << QStringList("/main.cpp");
 #endif
 }
@@ -162,11 +162,11 @@ void tst_Q3UriDrag::decodeToUnicodeUris_data()
     QStringList mixOfLocalAndNonLocalUris;
 	QStringList mixOfLocalAndNonLocalUrisUU;
 #ifdef Q_WS_WIN
-    mixOfLocalAndNonLocalUris << "http://www.trolltech.com" << "c:/with space main.cpp" << "ftp://doc.trolltech.com";
-    mixOfLocalAndNonLocalUrisUU << "http://www.trolltech.com" << "c:/with space main.cpp" << "ftp://doc.trolltech.com";
+    mixOfLocalAndNonLocalUris << "http://www.trolltech.com" << "c:/with space main.cpp" << "ftp://qt.nokia.com/doc";
+    mixOfLocalAndNonLocalUrisUU << "http://www.trolltech.com" << "c:/with space main.cpp" << "ftp://qt.nokia.com/doc";
 #else
-	mixOfLocalAndNonLocalUris << "http://www.trolltech.com" << "/main.cpp" << "ftp://doc.trolltech.com";
-    mixOfLocalAndNonLocalUrisUU << "http://www.trolltech.com" << "/main.cpp" << "ftp://doc.trolltech.com";
+	mixOfLocalAndNonLocalUris << "http://www.trolltech.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
+    mixOfLocalAndNonLocalUrisUU << "http://www.trolltech.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
 #endif
 	QTest::newRow("mixOfLocalAndNonLocalUris") << mixOfLocalAndNonLocalUris << mixOfLocalAndNonLocalUrisUU;
 }

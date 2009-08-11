@@ -106,7 +106,7 @@ void InstallDialog::init()
     m_ui.statusLabel->setText(tr("Downloading documentation info..."));
     m_ui.progressBar->show();
     
-    QUrl url(QLatin1String("http://doc.trolltech.com/assistantdocs/docs.txt"));
+    QUrl url(QLatin1String("http://qt.nokia.com/doc/assistantdocs/docs.txt"));
     m_buffer = new QBuffer();
     m_buffer->open(QBuffer::ReadWrite);
 
@@ -214,7 +214,7 @@ void InstallDialog::downloadNextFile()
     m_ui.statusLabel->setText(tr("Downloading %1...").arg(fileName));
     m_ui.progressBar->show();
 
-    QLatin1String urlStr("http://doc.trolltech.com/assistantdocs/%1");
+    QLatin1String urlStr("http://qt.nokia.com/doc/assistantdocs/%1");
     QUrl url(QString(urlStr).arg(fileName));    
     
     m_httpAborted = false;

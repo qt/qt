@@ -150,7 +150,7 @@
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/supported-platforms.html
+    \externalpage http://qt.nokia.com/doc/supported-platforms.html
     \title Platform Support Policy
 */
 
@@ -160,7 +160,7 @@
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/supported-platforms.html
+    \externalpage http://qt.nokia.com/doc/supported-platforms.html
     \title Qt 4 Platforms Overview
 */
 
@@ -170,7 +170,7 @@
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/qq/
+    \externalpage http://qt.nokia.com/doc/qq/
     \title Qt Quarterly
 */
 
@@ -190,7 +190,7 @@
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/qtcanvas
+    \externalpage http://qt.nokia.com/doc/qtcanvas
     \title QtCanvas
 */
 
@@ -225,7 +225,7 @@
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/qq/qq21-portingcanvas.html
+    \externalpage http://qt.nokia.com/doc/qq/qq21-portingcanvas.html
     \title Porting to Qt 4.2's Graphics View
 */
 

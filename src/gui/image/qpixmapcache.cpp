@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
     (\e{width} * \e{height} * \e{depth})/8 bytes of memory.
 
     The \e{Qt Quarterly} article
-    \l{http://doc.trolltech.com/qq/qq12-qpixmapcache.html}{Optimizing
+    \l{http://qt.nokia.com/doc/qq/qq12-qpixmapcache.html}{Optimizing
     with QPixmapCache} explains how to use QPixmapCache to speed up
     applications by caching the results of painting.
 

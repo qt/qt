@@ -123,13 +123,13 @@ static void slashify( QString& s, bool allowMultiple = true )
 
     Example:
 
-    <tt>http://doc.trolltech.com/qdockarea.html#lines</tt>
+    <tt>http://qt.nokia.com/doc/qdockarea.html#lines</tt>
 
     \table
     \header \i Function	    \i Returns
     \row \i \l protocol()   \i "http"
-    \row \i \l host()	    \i "doc.trolltech.com"
-    \row \i \l fileName()   \i "qdockarea.html"
+    \row \i \l host()	    \i "qt.nokia.com"
+    \row \i \l fileName()   \i "doc/qdockarea.html"
     \row \i \l ref()	    \i "lines"
     \endtable
 

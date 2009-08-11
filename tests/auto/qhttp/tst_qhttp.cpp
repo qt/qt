@@ -317,8 +317,8 @@ void tst_QHttp::get_data()
 	QTest::newRow( QString("failprot_02_%1").arg(i).toLatin1() ) << QtNetworkSettings::serverName() << 80u
 	    << QString("qtest/rfc3252.txt") << 1 << 400 << QByteArray() << (bool)(i==1);
 
-  // doc.trolltech.com uses transfer-encoding=chunked
-    /* doc.trolltech.com no longer seams to be using chuncked encodig.
+  // qt.nokia.com/doc uses transfer-encoding=chunked
+    /* qt.nokia.com/doc no longer seams to be using chuncked encodig.
     QTest::newRow( QString("chunked_01_%1").arg(i).toLatin1() ) << QString("test.troll.no") << 80u
 	    << QString("/") << 1 << 200 << trolltech << (bool)(i==1);
     */
@@ -415,8 +415,8 @@ void tst_QHttp::head_data()
     QTest::newRow( "failprot_02" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("qtest/rfc3252.txt") << 1 << 400 << 0u;
 
-    /* doc.trolltech.com no longer seams to be using chuncked encodig.
-    QTest::newRow( "chunked_01" ) << QString("doc.trolltech.com") << 80u
+    /* qt.nokia.com/doc no longer seams to be using chuncked encodig.
+    QTest::newRow( "chunked_01" ) << QString("qt.nokia.com/doc") << 80u
 	<< QString("/index.html") << 1 << 200 << 0u;
     */
     QTest::newRow( "chunked_02" ) << QtNetworkSettings::serverName() << 80u
