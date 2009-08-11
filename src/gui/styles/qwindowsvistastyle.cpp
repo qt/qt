@@ -1094,7 +1094,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
             XPThemeData theme(widget, painter, QLatin1String("PROGRESS"), vertical ? PP_FILLVERT : PP_FILL);
             theme.rect = option->rect;
-            bool reverse = bar->direction == (Qt::LeftToRight && inverted) || (bar->direction == Qt::RightToLeft && !inverted);
+            bool reverse = (bar->direction == Qt::LeftToRight && inverted) || (bar->direction == Qt::RightToLeft && !inverted);
             QTime current = QTime::currentTime();
 
             if (isIndeterminate) {
