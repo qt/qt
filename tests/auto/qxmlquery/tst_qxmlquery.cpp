@@ -65,6 +65,10 @@
 #include "TestFundament.h"
 #include "../network-settings.h"
 
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR ""
+#endif
+
 /*!
  \class tst_QXmlQuery
  \internal
