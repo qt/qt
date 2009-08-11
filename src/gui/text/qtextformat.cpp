@@ -844,7 +844,8 @@ int QTextFormat::intProperty(int propertyId) const
 
 /*!
     Returns the value of the property specified by \a propertyId. If the
-    property isn't of QVariant::Double type, 0 is returned instead.
+    property isn't of QVariant::Double or QMetaType::Float type, 0 is
+    returned instead.
 
     \sa setProperty() boolProperty() intProperty() stringProperty() colorProperty() lengthProperty() lengthVectorProperty() Property
 */
@@ -853,9 +854,9 @@ qreal QTextFormat::doubleProperty(int propertyId) const
     if (!d)
         return 0.;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Double)
+    if (prop.type() != QVariant::Double && prop.type() != QMetaType::Float)
         return 0.;
-    return prop.toDouble(); // ####
+    return qVariantValue<qreal>(prop);
 }
 
 /*!
