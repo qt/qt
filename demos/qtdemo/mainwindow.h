@@ -98,7 +98,7 @@ private:
     QTime demoStartTime;
     QTime fpsTime;
     QPixmap background;
-    ImageItem *trolltechLogo;
+    ImageItem *companyLogo;
     ImageItem *qtLogo;
     bool doneAdapt;
     bool useTimer;

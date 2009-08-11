@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-// Most of the cp949 code was originally written by Joon-Kyu Park, and is included 
-// in Qt with the author's permission and the grateful thanks of the Trolltech team.
+// Most of the cp949 code was originally written by Joon-Kyu Park, and is included
+// in Qt with the author's permission and the grateful thanks of the Qt team.
 
 /*! \class QEucKrCodec
     \reentrant

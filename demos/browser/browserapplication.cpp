@@ -79,7 +79,7 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_localServer(0)
 {
-    QCoreApplication::setOrganizationName(QLatin1String("Trolltech"));
+    QCoreApplication::setOrganizationName(QLatin1String("Qt"));
     QCoreApplication::setApplicationName(QLatin1String("demobrowser"));
     QCoreApplication::setApplicationVersion(QLatin1String("0.1"));
 #ifdef Q_WS_QWS

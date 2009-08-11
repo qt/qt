@@ -64,8 +64,8 @@ GLWidget::GLWidget(QWidget *parent)
     yRot = 0;
     zRot = 0;
 
-    trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
-    trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
+    qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
+    qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
     animationTimer.setSingleShot(false);
     connect(&animationTimer, SIGNAL(timeout()), this, SLOT(animate()));
@@ -142,7 +142,7 @@ void GLWidget::paintEvent(QPaintEvent *event)
 //! [4]
 
 //! [6]
-    qglClearColor(trolltechPurple.dark());
+    qglClearColor(qtPurple.dark());
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -210,9 +210,9 @@ GLuint GLWidget::makeObject()
     glEnable(GL_NORMALIZE);
     glBegin(GL_QUADS);
 
-    static GLfloat logoDiffuseColor[4] = {trolltechGreen.red()/255.0,
-                                          trolltechGreen.green()/255.0,
-                                          trolltechGreen.blue()/255.0, 1.0};
+    static GLfloat logoDiffuseColor[4] = {qtGreen.red()/255.0,
+                                          qtGreen.green()/255.0,
+                                          qtGreen.blue()/255.0, 1.0};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, logoDiffuseColor);
 
     GLdouble x1 = +0.06;
@@ -281,7 +281,7 @@ void GLWidget::quad(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,
 
 void GLWidget::extrude(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2)
 {
-    qglColor(trolltechGreen.dark(250 + int(100 * x1)));
+    qglColor(qtGreen.dark(250 + int(100 * x1)));
 
     glNormal3d((x1 + x2)/2.0, (y1 + y2)/2.0, 0.0);
     glVertex3d(x1, y1, +0.05);

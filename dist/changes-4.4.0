@@ -11,7 +11,7 @@ run with 4.4.
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Task Tracker:
 
-  http://www.trolltech.com/developer/task-tracker
+  http://qt.nokia.com/developer/task-tracker
 
 Each of these identifiers can be entered in the task tracker to obtain
 more information about a particular change.
@@ -939,7 +939,7 @@ Third party components
       requested.
 
 - QPrintEngine
-    * [193986] Fixed the Trolltech copyright date on PDF files
+    * [193986] Fixed the copyright date on PDF files
 
 - QProcess
     * [162522] QProcess now emits stateChanged() consistently for all state

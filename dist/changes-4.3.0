@@ -34,7 +34,7 @@ General Improvements
 - Documentation and Examples
     * Added information about the TS file format used in Linguist.
     * Moved platform and compiler support information from
-      www.trolltech.com into the documentation.
+      Qt website into the documentation.
     * Added an Accessibility overview document.
     * Added new example to show usage of QCompleter with custom tree models.
 

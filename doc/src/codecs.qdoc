@@ -48,7 +48,7 @@
     The code was originally contributed by Ming-Che Chuang
     \<mingche@cobra.ee.ntu.edu.tw\> for the Big-5+ encoding, and was
     included in Qt with the author's permission, and the grateful
-    thanks of the Trolltech team. (Note: Ming-Che's code is QPL'd, as
+    thanks of the Qt team. (Note: Ming-Che's code is QPL'd, as
     per an mail to qt-info@nokia.com.)
 
     However, since Big-5+ was never formally approved, and was never
@@ -185,7 +185,7 @@
 
     Most of the code here was written by Serika Kurusugawa,
     a.k.a. Junji Takagi, and is included in Qt with the author's
-    permission and the grateful thanks of the Trolltech team. Here is
+    permission and the grateful thanks of the Qt team. Here is
     the copyright statement for that code:
 
     \legalese
@@ -228,7 +228,7 @@
 
     It was largely written by Mizi Research Inc. Here is the
     copyright statement for the code as it was at the point of
-    contribution. Trolltech's subsequent modifications are covered by
+    contribution. The subsequent modifications are covered by
     the usual copyright for Qt.
 
     \legalese
@@ -395,7 +395,7 @@
 
     Most of the code here was written by Serika Kurusugawa,
     a.k.a. Junji Takagi, and is included in Qt with the author's
-    permission and the grateful thanks of the Trolltech team. Here is
+    permission and the grateful thanks of the Qt team. Here is
     the copyright statement for that code:
 
     \legalese
@@ -442,9 +442,9 @@
 
     Most of the code here was written by Serika Kurusugawa, a.k.a.
     Junji Takagi, and is included in Qt with the author's permission
-    and the grateful thanks of the Trolltech team. Here is the
+    and the grateful thanks of the Qt team. Here is the
     copyright statement for the code as it was at the point of
-    contribution. Trolltech's subsequent modifications are covered by
+    contribution. The subsequent modifications are covered by
     the usual copyright for Qt.
 
     \legalese
@@ -498,8 +498,8 @@
 
     Most of the code was written by Hans Petter Bieker and is
     included in Qt with the author's permission and the grateful
-    thanks of the Trolltech team. Here is the copyright statement for
-    the code as it was at the point of contribution. Trolltech's
+    thanks of the Qt team. Here is the copyright statement for
+    the code as it was at the point of contribution. The
     subsequent modifications are covered by the usual copyright for
     Qt:
 

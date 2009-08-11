@@ -41,7 +41,7 @@
 
 // Most of the code here was originally written by Ming-Che Chuang and
 // is included in Qt with the author's permission, and the grateful
-// thanks of the Trolltech team.
+// thanks of the Qt team.
 
 #ifndef QBIG5CODEC_H
 #define QBIG5CODEC_H

@@ -1447,8 +1447,7 @@ QString QHttpRequestHeader::toString() const
 
     To make an HTTP request you must set up suitable HTTP headers. The
     following example demonstrates, how to request the main HTML page
-    from the Trolltech home page (i.e., the URL
-    \c http://qt.nokia.com/index.html):
+    from the Qt home page (i.e., the URL \c http://qt.nokia.com/index.html):
 
     \snippet doc/src/snippets/code/src_network_access_qhttp.cpp 2
 

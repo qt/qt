@@ -91,8 +91,8 @@ private:
     int yRot;
     int zRot;
     QPoint lastPos;
-    QColor trolltechGreen;
-    QColor trolltechPurple;
+    QColor qtGreen;
+    QColor qtPurple;
 };
 //! [3]
 
