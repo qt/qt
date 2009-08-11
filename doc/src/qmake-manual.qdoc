@@ -262,15 +262,20 @@
 
     Normally, variables are used to contain whitespace-separated lists
     of values. However, it is sometimes necessary to specify values containing
-    spaces. These must be quoted in the following way:
+    spaces. These must be quoted by using the
+    \l{qmake Function Reference#quote-string}{quote()} function in the following way:
 
     \snippet doc/src/snippets/qmake/quoting.pro 0
 
     The quoted text is treated as a single item in the list of values held by
-    the variable. This approach is used to deal with paths that contain spaces,
-    particularly on the Windows platform. See the documentation for the
+    the variable. A similar approach is used to deal with paths that contain
+    spaces, particularly when defining the
     \l{qmake Variable Reference#INCLUDEPATH}{INCLUDEPATH} and
-    \l{qmake Variable Reference#LIBS}{LIBS} variables for examples.
+    \l{qmake Variable Reference#LIBS}{LIBS} variables for the Windows platform.
+    In cases like these, the \l{qmake Function Reference#quote(string)}{quote()}
+    function can be used in the following way:
+
+    \snippet doc/src/snippets/qmake/spaces.pro quoting include paths with spaces
 
     \section2 Comments
 
@@ -1377,7 +1382,8 @@
     To specify a path containing spaces, quote the path using the technique
     mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
     document. For example, paths with spaces can be specified on Windows
-    and Unix platforms in the following way:
+    and Unix platforms by using the \l{qmake Function Reference#quote-string}{quote()}
+    function in the following way:
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting include paths with spaces
 
@@ -1437,7 +1443,8 @@
     To specify a path containing spaces, quote the path using the technique
     mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
     document. For example, paths with spaces can be specified on Windows
-    and Unix platforms in the following way:
+    and Unix platforms by using the \l{qmake Function Reference#quote-string}{quote()}
+    function in the following way:
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting library paths with spaces
 
