@@ -256,6 +256,31 @@ bool qt_wince_is_platform(const QString &platformString) {
     return false;
 }
 
+int qt_wince_get_build()
+{
+    OSVERSIONINFO osvi;
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    if (GetVersionEx(&osvi)) {
+        return osvi.dwBuildNumber;
+    } 
+    return 0;
+}
+
+int qt_wince_get_version()
+{
+    OSVERSIONINFO osvi;
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    if (GetVersionEx(&osvi)) {
+        return (osvi.dwMajorVersion * 10 + osvi.dwMinorVersion);
+    } 
+    return 0;
+}
+
+bool qt_wince_is_windows_mobile_65()
+{
+    return ((qt_wince_get_version() == 52) && (qt_wince_get_build() > 2000));
+}
+
 bool qt_wince_is_pocket_pc() {
     return qt_wince_is_platform(QString::fromLatin1("PocketPC"));
 }
