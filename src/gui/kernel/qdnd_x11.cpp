@@ -811,15 +811,16 @@ void QX11Data::xdndHandleEnter(QWidget *, const XEvent * xe, bool /*passive*/)
         Atom   type = XNone;
         int f;
         unsigned long n, a;
-        unsigned char *retval;
+        unsigned char *retval = 0;
         XGetWindowProperty(X11->display, qt_xdnd_dragsource_xid, ATOM(XdndTypelist), 0,
                            qt_xdnd_max_type, False, XA_ATOM, &type, &f,&n,&a,&retval);
-        Atom *data = (Atom *)retval;
-        for (; j<qt_xdnd_max_type && j < (int)n; j++) {
-            qt_xdnd_types[j] = data[j];
-        }
-        if (data)
+        if (retval) {
+            Atom *data = (Atom *)retval;
+            for (; j<qt_xdnd_max_type && j < (int)n; j++) {
+                qt_xdnd_types[j] = data[j];
+            }
             XFree((uchar*)data);
+        }
     } else {
         // get the types from the message
         int i;

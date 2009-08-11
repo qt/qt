@@ -89,7 +89,7 @@ const qint64 SEEK_BACKWARDS = 2000;
 const qint64 ALLOWED_TIME_FOR_SEEKING = 1500; // 1.5s
 const qint64 SEEKING_TOLERANCE = 250;
 #else 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC) 
 #define MEDIA_FILE "/sax.mp3"
 #define MEDIA_FILEPATH ":/media/sax.mp3"
 #else
