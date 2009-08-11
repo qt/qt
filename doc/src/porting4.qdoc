@@ -561,6 +561,21 @@
     \note Setting widget attributes to disable key features of Qt's widget
     rendering model may also cause other features to be disabled.
 
+    \section1 Compatibility Signals and Slots
+
+    When \c QT3_SUPPORT is defined, the default connection type for signals
+    and slots is the Qt::AutoCompatConnection type. This allows so-called
+    \e compatibility signals and slots (defined in Qt 3 support mode to provide
+    Qt 3 compatibility features) to be connected to other signals and
+    slots.
+
+    However, if Qt is compiled with debugging output enabled, and the
+    developer uses other connection types to connect to compatibility
+    signals and slots (perhaps by building their application without Qt 3
+    support enabled), then Qt will output warnings to the console to
+    indicate that compatibility connections are being made. This is intended
+    to be used as an aid in the process of porting a Qt 3 application to Qt 4.
+
     \section1 QAccel
 
     The \c QAccel class has been renamed Q3Accel and moved to the
