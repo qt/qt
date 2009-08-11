@@ -1015,7 +1015,7 @@
     current item as keyboard navigation, for example, requires a current item.
 
     The table below highlights the differences between current item and
-    selected items. 
+    selected items.
 
     \table
     \header
@@ -1432,7 +1432,7 @@
     \snippet doc/src/snippets/stringlistmodel/model.h 3
 
     \section2 Making the Model Editable
-    
+
     A delegate checks whether an item is editable before creating an
     editor. The model must let the delegate know that its items are
     editable. We do this by returning the correct flags for each item in
@@ -1468,7 +1468,7 @@
     is limited to just one model index.
 
     Also the data() function needs to be changed to add the Qt::EditRole test:
-    
+
     \snippet doc/src/snippets/stringlistmodel/model.cpp 1
 
     \section2 Inserting and Removing Rows
@@ -2481,4 +2481,3 @@
     {fetchMore()} must be reimplemented as their default implementation returns
     false and does nothing.
 */
-
