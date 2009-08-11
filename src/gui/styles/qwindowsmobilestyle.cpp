@@ -4114,7 +4114,7 @@ void QWindowsMobileStylePrivate::tintListViewHighlight(QColor color)
 void QWindowsMobileStylePrivate::setupWindowsMobileStyle65()
 {
 #ifdef Q_WS_WINCE_WM
-    wm65 = true;
+    wm65 = qt_wince_is_windows_mobile_65();
     if (wm65) {
         imageScrollbarHandleUp =  QImage(sbhandleup_xpm);
         imageScrollbarHandleDown = QImage(sbhandledown_xpm);
