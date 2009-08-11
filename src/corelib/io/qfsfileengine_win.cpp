@@ -337,6 +337,13 @@ static bool uncShareExists(const QString &server)
     return false;
 }
 
+static bool isDriveRoot(const QString &path)
+{
+    return (path.length() == 3
+           && path.at(0).isLetter() && path.at(1) == QLatin1Char(':')
+           && path.at(2) == QLatin1Char('/'));
+}
+
 static QString nativeAbsoluteFilePathCore(const QString &path)
 {
     QString ret;
@@ -1217,8 +1224,8 @@ bool QFSFileEnginePrivate::doStat() const
             could_stat = fileAttrib != INVALID_FILE_ATTRIBUTES;
             if (!could_stat) {
 #if !defined(Q_OS_WINCE)
-                if (!fname.isEmpty() && fname.at(0).isLetter() && fname.mid(1, fname.length()) == QLatin1String(":/")) {
-                    // an empty drive ??
+                if (isDriveRoot(fname)) {
+                    // a valid drive ??
                     DWORD drivesBitmask = ::GetLogicalDrives();
                     int drivebit = 1 << (fname.at(0).toUpper().unicode() - QLatin1Char('A').unicode());
                     if (drivesBitmask & drivebit) {
@@ -1543,8 +1550,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         ret |= LocalDiskFlag;
         if (d->doStat()) {
             ret |= ExistsFlag;
-            if (d->filePath == QLatin1String("/") || (d->filePath.at(0).isLetter() && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/"))
-                || isUncRoot(d->filePath)) {
+            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath)) {
                 ret |= RootFlag;
             } else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN) {
                 QString baseName = fileName(BaseName);
