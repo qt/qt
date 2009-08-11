@@ -153,14 +153,14 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(socketDevice.state() == QAbstractSocket::UnconnectedState);
 
-    const bool isConnected = socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    const bool isConnected = socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143);
     if (!isConnected) {
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
         QVERIFY(socketDevice.waitForWrite());
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
     }
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(QtNetworkSettings::serverIP()));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -592,7 +592,7 @@ void tst_QNativeSocketEngine::networkError()
 
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
-    const bool isConnected = client.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    const bool isConnected = client.connectToHost(QtNetworkSettings::serverIP(), 143);
     if (!isConnected) {
         QVERIFY(client.state() == QAbstractSocket::ConnectingState);
         QVERIFY(client.waitForWrite());
