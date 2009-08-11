@@ -302,12 +302,12 @@ inline QPointF &QPointF::operator*=(qreal c)
 
 inline bool operator==(const QPointF &p1, const QPointF &p2)
 {
-    return qFuzzyCompare(p1.xp, p2.xp) && qFuzzyCompare(p1.yp, p2.yp);
+    return qFuzzyIsNull(p1.xp - p2.xp) && qFuzzyIsNull(p1.yp - p2.yp);
 }
 
 inline bool operator!=(const QPointF &p1, const QPointF &p2)
 {
-    return !qFuzzyCompare(p1.xp, p2.xp) || !qFuzzyCompare(p1.yp, p2.yp);
+    return !qFuzzyIsNull(p1.xp - p2.xp) || !qFuzzyIsNull(p1.yp - p2.yp);
 }
 
 inline const QPointF operator+(const QPointF &p1, const QPointF &p2)
