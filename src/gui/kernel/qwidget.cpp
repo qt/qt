@@ -6863,9 +6863,12 @@ void QWidgetPrivate::hide_helper()
     widgets that are not visible.
 
 
-    Widgets are  hidden if they were created as independent
-    windows or as children of visible widgets, or if hide() or setVisible(false) was called.
-
+    Widgets are hidden if:
+    \list
+        \o they were created as independent windows,
+        \o they were created as children of visible widgets,
+        \o hide() or setVisible(false) was called.
+    \endlist
 */
 
 
