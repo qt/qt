@@ -3996,21 +3996,6 @@ QColor toHsl(QColor c)
     return QColor::fromHsvF(h, s, l);
 }
 
-void contrastImage(QImage *image)
-{
-    QVector<QRgb> colorTable = image->colorTable();
-    for (int i=2;i< colorTable.size();i++) {
-        QColor c(colorTable.at(i));
-        c.toHsv();
-        if (c.value() < 150)
-            c = Qt::black;
-        else
-            c = Qt::white;
-        colorTable[i] = c.rgb();
-    }
-    image->setColorTable(colorTable);
-}
-
 void tintColor(QColor &color, QColor tintColor, qreal _saturation)
 {
     tintColor = toHsl(tintColor);
@@ -4167,62 +4152,62 @@ void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOp
         return;
     }
 #endif //Q_WS_WINCE_WM
-                painter->save();
-                painter->setPen(tab->palette.shadow().color());
-                if (doubleControls) {
-                    QPen pen = painter->pen();
-                    pen.setWidth(2);
-                    pen.setCapStyle(Qt::FlatCap);
-                    painter->setPen(pen);
-                }
-                if(tab->shape == QTabBar::RoundedNorth) {
-                    if (tab->state & QStyle::State_Selected) {
-                        painter->fillRect(tab->rect, tab->palette.light());
-                        painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
-                    }
-                    else {
-                        painter->fillRect(tab->rect, tab->palette.button());
-                        painter->drawLine(tab->rect.bottomLeft() , tab->rect.bottomRight());
-                        painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
-                    }
-                }
-                else if(tab->shape == QTabBar::RoundedSouth) {
-                    if (tab->state & QStyle::State_Selected) {
-                        painter->fillRect(tab->rect.adjusted(0,-2,0,0), tab->palette.light());
-                        painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
-                    }
-                    else {
-                        painter->fillRect(tab->rect, tab->palette.button());
-                        if (doubleControls)
-                            painter->drawLine(tab->rect.topLeft() + QPoint(0,1), tab->rect.topRight() + QPoint(0,1));
-                        else
-                            painter->drawLine(tab->rect.topLeft(), tab->rect.topRight());
-                        painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
-                    }
-                }
-                else if(tab->shape == QTabBar::RoundedEast) {
-                    if (tab->state & QStyle::State_Selected) {
-                        painter->fillRect(tab->rect, tab->palette.light());
-                        painter->drawLine(tab->rect.topLeft(), tab->rect.topRight());
-                    }
-                    else {
-                        painter->fillRect(tab->rect, tab->palette.button());
-                        painter->drawLine(tab->rect.topLeft(), tab->rect.bottomLeft());
-                        painter->drawLine(tab->rect.topLeft(), tab->rect.topRight());
-                    }
-                }
-                else if(tab->shape == QTabBar::RoundedWest) {
-                    if (tab->state & QStyle::State_Selected) {
-                        painter->fillRect(tab->rect, tab->palette.light());
-                        painter->drawLine(tab->rect.bottomLeft(), tab->rect.bottomRight());
-                    }
-                    else {
-                        painter->fillRect(tab->rect, tab->palette.button());
-                        painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
-                        painter->drawLine(tab->rect.bottomLeft(), tab->rect.bottomRight());
-                    }
-                }
-                painter->restore();
+    painter->save();
+    painter->setPen(tab->palette.shadow().color());
+    if (doubleControls) {
+        QPen pen = painter->pen();
+        pen.setWidth(2);
+        pen.setCapStyle(Qt::FlatCap);
+        painter->setPen(pen);
+    }
+    if(tab->shape == QTabBar::RoundedNorth) {
+        if (tab->state & QStyle::State_Selected) {
+            painter->fillRect(tab->rect, tab->palette.light());
+            painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
+        }
+        else {
+            painter->fillRect(tab->rect, tab->palette.button());
+            painter->drawLine(tab->rect.bottomLeft() , tab->rect.bottomRight());
+            painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
+        }
+    }
+    else if(tab->shape == QTabBar::RoundedSouth) {
+        if (tab->state & QStyle::State_Selected) {
+            painter->fillRect(tab->rect.adjusted(0,-2,0,0), tab->palette.light());
+            painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
+        }
+        else {
+            painter->fillRect(tab->rect, tab->palette.button());
+            if (doubleControls)
+                painter->drawLine(tab->rect.topLeft() + QPoint(0,1), tab->rect.topRight() + QPoint(0,1));
+            else
+                painter->drawLine(tab->rect.topLeft(), tab->rect.topRight());
+            painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
+        }
+    }
+    else if(tab->shape == QTabBar::RoundedEast) {
+        if (tab->state & QStyle::State_Selected) {
+            painter->fillRect(tab->rect, tab->palette.light());
+            painter->drawLine(tab->rect.topLeft(), tab->rect.topRight());
+        }
+        else {
+            painter->fillRect(tab->rect, tab->palette.button());
+            painter->drawLine(tab->rect.topLeft(), tab->rect.bottomLeft());
+            painter->drawLine(tab->rect.topLeft(), tab->rect.topRight());
+        }
+    }
+    else if(tab->shape == QTabBar::RoundedWest) {
+        if (tab->state & QStyle::State_Selected) {
+            painter->fillRect(tab->rect, tab->palette.light());
+            painter->drawLine(tab->rect.bottomLeft(), tab->rect.bottomRight());
+        }
+        else {
+            painter->fillRect(tab->rect, tab->palette.button());
+            painter->drawLine(tab->rect.topRight(), tab->rect.bottomRight());
+            painter->drawLine(tab->rect.bottomLeft(), tab->rect.bottomRight());
+        }
+    }
+    painter->restore();
 }
 
 void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect)
@@ -4391,7 +4376,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
          }
         return ;
     }
-#endif .//Q_WS_WINCE_WM
+#endif //Q_WS_WINCE_WM
 
     QBrush fill = opt->palette.button();
     if (opt->state & QStyle::State_Sunken)
@@ -4448,7 +4433,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOpti
         }
         return ;
     }
-#endif .//Q_WS_WINCE_WM
+#endif //Q_WS_WINCE_WM
 
     QBrush fill = opt->palette.button();
     if (opt->state & QStyle::State_Sunken)
@@ -4491,14 +4476,14 @@ void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOpt
 {
 #ifdef Q_OS_WINCE_WM
     if (wm65) {
-        p->fillRect(opt->rect,QColor(231, 231, 231));
+        p->fillRect(opt->rect, QColor(231, 231, 231));
         return ;
     }
 #endif
             QBrush fill;
             if (smartphone) {
                 fill = opt->palette.light();
-                p->fillRect(opt->rect,fill);
+                p->fillRect(opt->rect, fill);
                 fill = opt->palette.button();
                 QImage image;
 #ifndef QT_NO_IMAGEFORMAT_XPM
@@ -4513,7 +4498,7 @@ void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOpt
             else {
               fill = opt->palette.light();
             }
-            p->fillRect(opt->rect,fill);
+            p->fillRect(opt->rect, fill);
 }
 
 QWindowsMobileStyle::QWindowsMobileStyle(QWindowsMobileStylePrivate &dd) : QWindowsStyle(dd) {
