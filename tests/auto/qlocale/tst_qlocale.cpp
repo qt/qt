@@ -2042,7 +2042,7 @@ void tst_QLocale::symbianSystemLocale()
     TBuf<50> s60FormattedDate;
     TRAPD(err, s60Date.FormatL(s60FormattedDate, s60DateFormat));
     QVERIFY(err == KErrNone);
-    QString s60FinalResult = qt_TDes2QStringL(s60FormattedDate);
+    QString s60FinalResult = qt_TDesC2QString(s60FormattedDate);
     QString finalResult = date.toString(dateFormat);
 
     QCOMPARE(finalResult, s60FinalResult);
