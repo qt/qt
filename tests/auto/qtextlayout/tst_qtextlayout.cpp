@@ -57,8 +57,6 @@
 
 #define TESTFONT_SIZE 12
 
-
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -164,12 +162,12 @@ void tst_QTextLayout::getSetCheck()
 }
 
 QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT bool qt_enable_test_font;
+extern void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
 tst_QTextLayout::tst_QTextLayout()
 {
-    qt_enable_test_font = true;
+    qt_setQtEnableTestFont(true);
 }
 
 tst_QTextLayout::~tst_QTextLayout()
