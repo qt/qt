@@ -791,7 +791,6 @@ void tst_QScriptContext::toString()
                                     "    return parentContextToString();\n"
                                     "}; foo(1, 2, 3)", "script.qs");
     QVERIFY(ret.isString());
-    QEXPECT_FAIL("", "", Continue);
     QCOMPARE(ret.toString(), QString::fromLatin1("foo (first=1, second=2, third=3) at script.qs:2"));
 }
 

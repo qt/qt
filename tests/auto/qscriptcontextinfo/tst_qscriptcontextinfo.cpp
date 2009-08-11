@@ -185,7 +185,6 @@ void tst_QScriptContextInfo::scriptFunction()
         QCOMPARE(info.functionType(), QScriptContextInfo::ScriptFunction);
         QVERIFY(info.scriptId() != -1);
         QCOMPARE(info.fileName(), fileName);
-        QEXPECT_FAIL("", "lineNumber doesn't work", Continue);
         QCOMPARE(info.lineNumber(), lineNumber + 1);
         QEXPECT_FAIL("", "columnNumber doesn't work", Continue);
         QCOMPARE(info.columnNumber(), 2);

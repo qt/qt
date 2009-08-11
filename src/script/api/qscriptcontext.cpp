@@ -273,8 +273,7 @@ QScriptValue QScriptContext::argument(int index) const
     if (index >= argumentCount())
         return QScriptValue(QScriptValue::UndefinedValue);
     JSC::Register* thisRegister = frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - frame->argumentCount();
-    if (frame->codeBlock() == 0)
-        ++index; // ### off-by-one issue with native functions
+    ++index; //skip the 'this' object
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(thisRegister[index].jsValue());
 }
 
@@ -370,9 +369,7 @@ bool QScriptContext::isCalledAsConstructor() const
 QScriptContext *QScriptContext::parentContext() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
-    JSC::CallFrame *callerFrame = frame->callerFrame();
-    if (callerFrame == (JSC::CallFrame*)(1)) // ### CallFrame::noCaller() is private
-        return 0;
+    JSC::CallFrame *callerFrame = frame->callerFrame()->removeHostCallFrameFlag();
     return reinterpret_cast<QScriptContext *>(callerFrame);
 }
 

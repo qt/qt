@@ -174,8 +174,6 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
         for (size_t i = 0; i < body->parameterCount(); ++i)
             parameterNames.append(QScript::qtStringFromJSCUString(params[i].ustring()));
         // ### get the function name from the AST
-        // ### don't know the PC, since it's not stored in the frame
-        // lineNumber = codeBlock->expressionRangeForBytecodeOffset(...);
     } else if (callee && callee->isObject(&QScript::QtFunction::info)) {
         functionType = QScriptContextInfo::QtFunction;
         // ### the slot can be overloaded -- need to get the particular overload from the context
@@ -191,6 +189,24 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     else if (callee && callee->isObject(&QScript::QtPropertyFunction::info)) {
         functionType = QScriptContextInfo::QtPropertyFunction;
         functionMetaIndex = static_cast<QScript::QtPropertyFunction*>(callee)->propertyIndex();
+    }
+
+    // get the lineNumber:
+    QScriptContext *rewindContext = context->engine()->currentContext();
+    if (rewindContext == context) {
+        //ignore native function
+    } else {
+        // rewind the stack from the top in order to find the frame from the caller where the returnPC is stored
+        while (rewindContext && rewindContext->parentContext() != context)
+            rewindContext = rewindContext->parentContext();
+        if (rewindContext) {
+            JSC::Instruction *returnPC = QScriptEnginePrivate::frameForContext(rewindContext)->returnPC();
+            JSC::CodeBlock *codeBlock = frame->codeBlock();
+            if (returnPC && codeBlock) {
+                lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame),
+                                                                    returnPC - codeBlock->instructions().begin());
+            }
+        }
     }
 }
 
