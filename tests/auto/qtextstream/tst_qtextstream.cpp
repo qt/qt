@@ -473,6 +473,8 @@ tst_QTextStream::tst_QTextStream()
     inBuffer = 0;
     inString = 0;
     file_is_empty = FALSE;
+
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QTextStream::~tst_QTextStream()
