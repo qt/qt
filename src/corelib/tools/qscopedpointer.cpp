@@ -207,4 +207,12 @@ QT_BEGIN_NAMESPACE
     Callers of this function take ownership of the pointer.
 */
 
+/*! \fn bool QScopedPointer::operator!() const
+
+    Returns \c true if the pointer referenced by this object is \c null, otherwise
+    returns \c false.
+
+    \sa isNull()
+*/
+
 QT_END_NAMESPACE

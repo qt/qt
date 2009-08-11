@@ -126,6 +126,9 @@ public:
     void _q_deleteSelected();
     void _q_textEdited(const QString &);
     void _q_cursorPositionChanged(int, int);
+#ifdef QT_KEYPAD_NAVIGATION
+    void _q_editFocusChange(bool);
+#endif
 
 #ifndef QT_NO_COMPLETER
     void _q_completionHighlighted(QString);

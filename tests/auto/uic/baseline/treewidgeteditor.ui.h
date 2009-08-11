@@ -41,12 +41,12 @@
 */
 
 /********************************************************************************
-** Form generated from reading ui file 'treewidgeteditor.ui'
+** Form generated from reading UI file 'treewidgeteditor.ui'
 **
 ** Created: Mon Jun 16 17:47:26 2008
 **      by: Qt User Interface Compiler version 4.5.0
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef TREEWIDGETEDITOR_H

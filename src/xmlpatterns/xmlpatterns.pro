@@ -22,10 +22,9 @@ include($$PWD/janitors/janitors.pri)
 include($$PWD/parser/parser.pri)
 include($$PWD/projection/projection.pri)
 include($$PWD/schema/schema.pri)
-include($$PWD/schematron/schematron.pri)
 include($$PWD/type/type.pri)
 include($$PWD/utils/utils.pri)
-include($$PWD/qobjectmodel/qobjectmodel.pri)
+include($$PWD/qobjectmodel/qobjectmodel.pri, "", true)
 
 wince*: {
    # The Microsoft MIPS compiler crashes if /Og is specified

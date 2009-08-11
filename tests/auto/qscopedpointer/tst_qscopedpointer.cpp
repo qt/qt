@@ -71,6 +71,7 @@ private Q_SLOTS:
     void isNull() const;
     void isNullSignature() const;
     void objectSize() const;
+    void comparison() const;
     // TODO instansiate on const object
 };
 
@@ -310,6 +311,32 @@ void tst_QScopedPointer::objectSize() const
 {
     /* The size of QScopedPointer should be the same as one pointer. */
     QCOMPARE(sizeof(QScopedPointer<int>), sizeof(void *));
+}
+
+void tst_QScopedPointer::comparison() const
+{
+    int *a = new int(42);
+    int *b = new int(43);
+
+    QScopedPointer<int> pa(a);
+    QScopedPointer<int> pa2(a);
+    QScopedPointer<int> pb(b);
+
+    // test equality on equal pointers
+    QVERIFY(pa == pa2);
+    QVERIFY(pa2 == pa);
+
+    // test unequality on equal pointers
+    QVERIFY(!(pa != pa2));
+    QVERIFY(!(pa2 != pa));
+
+    // test on unequal pointers
+    QVERIFY(!(pa == pb));
+    QVERIFY(!(pb == pa));
+    QVERIFY(pb != pa);
+    QVERIFY(pa != pb);
+
+    pa2.take();
 }
 
 QTEST_MAIN(tst_QScopedPointer)

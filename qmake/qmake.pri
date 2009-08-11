@@ -126,7 +126,7 @@ bootstrap { #Qt code
         SOURCES += qfsfileengine_unix.cpp qfsfileengine_iterator_unix.cpp
         mac {
           SOURCES += qcore_mac.cpp qsettings_mac.cpp
-          QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.3 #enables weak linking for 10.3 (exported)
+          QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
           LIBS += -framework ApplicationServices
         }
     } else:win32 {

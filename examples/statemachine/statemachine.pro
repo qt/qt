@@ -3,6 +3,7 @@ SUBDIRS       = \
                 eventtransitions \
                 factorial \
                 pingpong \
+                rogue \
                 trafficlight \
                 twowaybutton
 

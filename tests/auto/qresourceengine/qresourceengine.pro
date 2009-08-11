@@ -6,7 +6,7 @@ load(qttest_p4)
 load(resources)
 
 # Input
-SOURCES += tst_resourceengine.cpp
+SOURCES += tst_qresourceengine.cpp
 RESOURCES += testqrc/test.qrc
 
 symbian-sbsv2 {

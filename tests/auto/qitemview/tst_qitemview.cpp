@@ -173,8 +173,6 @@ public:
     }
 
     QModelIndex index( int row, int column, const QModelIndex & parent = QModelIndex() ) const {
-        Q_ASSERT(row >= 0 && row <= rowCount(parent));
-        Q_ASSERT(column >= 0 && column <= columnCount(parent));
         return QStandardItemModel::index(row, column, parent);
     };
 

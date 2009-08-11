@@ -224,10 +224,7 @@ void tst_QHostInfo::lookupIPv4_data()
 #else
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
-    QTest::newRow("lupinella_00") << "l" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_01") << "lupinella" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_02") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_03") << "lupinella.trolltech.com" << lupinellaIp << int(QHostInfo::NoError);
+    QTest::newRow("single_ip4") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
     QTest::newRow("literal_ip4") << lupinellaIp << lupinellaIp << int(QHostInfo::NoError);
 #endif

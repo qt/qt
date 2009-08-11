@@ -81,7 +81,7 @@ protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
     bool eventFilter(QObject*, QEvent*);
 
-    void setState(Qt::GestureState state);
+    void updateState(Qt::GestureState state);
 
 Q_SIGNALS:
     void started();

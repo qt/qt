@@ -682,7 +682,7 @@
     \header \o{1,2}          \o{2,1} Key lookup            \o{2,1} Insertion
     \header                  \o Average     \o Worst case  \o Average            \o Worst case
     \row    \o QMap<Key, T>  \o O(log \e n) \o O(log \e n) \o O(log \e n)        \o O(log \e n)
-    \row    \o QMultiMap<Key, T>  \o O((log \e n) \o O(log \e n) \o O(log \e n)   \o O(log \e n)
+    \row    \o QMultiMap<Key, T>  \o O(log \e n) \o O(log \e n) \o O(log \e n)   \o O(log \e n)
     \row    \o QHash<Key, T> \o Amort. O(1) \o O(\e n)     \o Amort. O(1)        \o O(\e n)
     \row    \o QSet<Key>     \o Amort. O(1) \o O(\e n)     \o Amort. O(1)        \o O(\e n)
     \endtable

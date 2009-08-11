@@ -2542,7 +2542,7 @@ void tst_QTableView::span_data()
       << 2 << 1
       << false;
 
-  /* This makes no sens. 
+  /* This makes no sens.
     QTest::newRow("top left 2x0")
       << 10 << 10
       << -1 << -1
@@ -2631,7 +2631,7 @@ void tst_QTableView::span()
     view.hideRow(hiddenRow);
     view.hideColumn(hiddenColumn);
     view.show();
-    
+
     QCOMPARE(view.rowSpan(row, column), expectedRowSpan);
     QCOMPARE(view.columnSpan(row, column), expectedColumnSpan);
 
@@ -3110,14 +3110,14 @@ void tst_QTableView::task227953_setRootIndex()
     }
 
     tableView.setModel(&model);
-    
+
     //show the first 10 rows of the first table
     QModelIndex root = model.indexFromItem(&item1);
 	tableView.setRootIndex(root);
 	for (int i = 10; i != 40; ++i) {
 		tableView.setRowHidden(i, true);
 	}
-	
+
     QCOMPARE(tableView.verticalHeader()->count(), 40);
     QCOMPARE(tableView.verticalHeader()->hiddenSectionCount(), 30);
 
@@ -3139,16 +3139,13 @@ void tst_QTableView::task240266_veryBigColumn()
     table.setColumnWidth(1, 100); //normal column
     table.setColumnWidth(2, 9000); //very big column
     table.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QTest::qWait(100);
 
     QScrollBar *scroll = table.horizontalScrollBar();
     QCOMPARE(scroll->minimum(), 0);
     QCOMPARE(scroll->maximum(), model.columnCount() - 1);
     QCOMPARE(scroll->singleStep(), 1);
-    
+
     //1 is not always a very correct value for pageStep. Ideally this should be dynamic.
     //Maybe something for Qt 5 ;-)
     QCOMPARE(scroll->pageStep(), 1);

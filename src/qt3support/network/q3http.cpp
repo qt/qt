@@ -42,7 +42,7 @@
 #include <qplatformdefs.h>
 #include "q3http.h"
 
-#ifndef QT_NO_NETWORKPROTOCOL_HTTP
+#ifndef QT_NO_HTTP
 
 #include "q3socket.h"
 #include "qtextstream.h"

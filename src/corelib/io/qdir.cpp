@@ -86,7 +86,7 @@ class QDirPrivate
     QDir *q_ptr;
     Q_DECLARE_PUBLIC(QDir)
 
-    friend class QScopedPointerDeleter<QDirPrivate>;
+    friend struct QScopedPointerDeleter<QDirPrivate>;
 protected:
     QDirPrivate(QDir*, const QDir *copy=0);
     ~QDirPrivate();

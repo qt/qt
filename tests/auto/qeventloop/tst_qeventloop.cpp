@@ -222,6 +222,7 @@ void tst_QEventLoop::init()
 void tst_QEventLoop::cleanup()
 { }
 
+#ifdef Q_OS_SYMBIAN
 class OnlySymbianActiveScheduler_helper : public QObject
 {
     Q_OBJECT
@@ -243,10 +244,8 @@ public slots:
         // Let all the events occur twice so we know they reactivated after
         // each occurrence.
         if (++timerCount >= 2) {
-#ifdef Q_OS_SYMBIAN
             // This will hopefully run last, so stop the active scheduler.
             CActiveScheduler::Stop();
-#endif
         }
     }
     void zeroTimerSlot()
@@ -270,6 +269,7 @@ private:
     int zeroTimerCount;
     int notifierCount;
 };
+#endif
 
 void tst_QEventLoop::onlySymbianActiveScheduler() {
 #ifndef Q_OS_SYMBIAN

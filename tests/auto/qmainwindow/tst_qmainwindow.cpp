@@ -550,6 +550,9 @@ void tst_QMainWindow::menuBar()
         mw.setMenuBar(mb1);
         QVERIFY(mw.menuBar() != 0);
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb1);
+#ifdef Q_WS_WINCE_WM
+        QSKIP("With native menubar integration the menubar is not a child", SkipSingle);
+#endif
         QCOMPARE(mb1->parentWidget(), (QWidget *)&mw);
 
         mw.setMenuBar(0);

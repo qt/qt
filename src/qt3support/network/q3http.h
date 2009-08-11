@@ -52,8 +52,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Qt3Support)
-
-#ifndef QT_NO_NETWORKPROTOCOL_HTTP
+#ifndef QT_NO_HTTP
 
 class Q3Socket;
 class QTimerEvent;
@@ -269,7 +268,7 @@ private:
     friend class Q3HttpPGHRequest;
 };
 
-#endif // QT_NO_NETWORKPROTOCOL_HTTP
+#endif // QT_NO_HTTP
 
 QT_END_NAMESPACE
 

@@ -14,7 +14,7 @@ win32 {
 
 
 wince*: {
-   addFiles.sources = ../bin/*.dll
+   addFiles.sources = $$OUT_PWD/../bin/*.dll
    addFiles.path = bin
    DEPLOYMENT += addFiles
 }

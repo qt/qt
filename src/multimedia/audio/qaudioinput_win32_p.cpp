@@ -55,6 +55,7 @@
 
 //#define DEBUG_AUDIO 1
 
+static CRITICAL_SECTION waveInCriticalSection;
 
 QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
     settings(audioFormat)

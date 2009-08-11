@@ -257,6 +257,7 @@ void QLineControl::setSelection(int start, int length)
         m_cursor = m_selstart;
     }
     emit selectionChanged();
+    emitCursorPositionChanged();
 }
 
 void QLineControl::_q_clipboardChanged()
@@ -1704,8 +1705,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
                         if (passwordEchoEditing())
                             updatePasswordEchoEditing(false);
 
-                        // ### TODO this needs to be fixed.
-                        // setEditFocus(false);
+                        emit editFocusChange(false);
                     } else if (!m_deleteAllTimer) {
                         m_deleteAllTimer = startTimer(750);
                     }

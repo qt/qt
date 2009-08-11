@@ -47,7 +47,7 @@
 #define SRCDIR "."
 #endif
 
-class tst_ResourceEngine: public QObject
+class tst_QResourceEngine: public QObject
 {
     Q_OBJECT
 
@@ -70,7 +70,7 @@ private:
 Q_DECLARE_METATYPE(QLocale)
 Q_DECLARE_METATYPE(qlonglong)
 
-void tst_ResourceEngine::initTestCase()
+void tst_QResourceEngine::initTestCase()
 {
     QVERIFY(QResource::registerResource("runtime_resource.rcc"));
     QVERIFY(QResource::registerResource("runtime_resource.rcc", "/secondary_root/"));
@@ -83,7 +83,7 @@ void tst_ResourceEngine::initTestCase()
     }
 }
 
-void tst_ResourceEngine::cleanupTestCase()
+void tst_QResourceEngine::cleanupTestCase()
 {
     if (!builddir.isEmpty()) {
         QDir::setCurrent(builddir);
@@ -94,7 +94,7 @@ void tst_ResourceEngine::cleanupTestCase()
     QVERIFY(QResource::unregisterResource("runtime_resource.rcc", "/secondary_root/"));
 }
 
-void tst_ResourceEngine::checkStructure_data()
+void tst_QResourceEngine::checkStructure_data()
 {
     QTest::addColumn<QString>("pathName");
     QTest::addColumn<QString>("contents");
@@ -310,7 +310,7 @@ void tst_ResourceEngine::checkStructure_data()
     }
 }
 
-void tst_ResourceEngine::checkStructure()
+void tst_QResourceEngine::checkStructure()
 {
     QFETCH(QString, pathName);
     QFETCH(QString, contents);
@@ -380,7 +380,7 @@ void tst_ResourceEngine::checkStructure()
     QLocale::setDefault(QLocale::system());
 }
 
-void tst_ResourceEngine::searchPath_data()
+void tst_QResourceEngine::searchPath_data()
 {
     QTest::addColumn<QString>("searchPath");
     QTest::addColumn<QString>("file");
@@ -400,7 +400,7 @@ void tst_ResourceEngine::searchPath_data()
                          << QByteArray("path2\n");
 }
 
-void tst_ResourceEngine::searchPath()
+void tst_QResourceEngine::searchPath()
 {
     QFETCH(QString, searchPath);
     QFETCH(QString, file);
@@ -418,7 +418,7 @@ void tst_ResourceEngine::searchPath()
     qf.close();
 }
 
-void tst_ResourceEngine::checkUnregisterResource_data()
+void tst_QResourceEngine::checkUnregisterResource_data()
 {
     QTest::addColumn<QString>("rcc_file");
     QTest::addColumn<QString>("root");
@@ -430,7 +430,7 @@ void tst_ResourceEngine::checkUnregisterResource_data()
                                     << (int)QFileInfo("testqrc/currentdir.txt").size();
 }
 
-void tst_ResourceEngine::checkUnregisterResource()
+void tst_QResourceEngine::checkUnregisterResource()
 {
     QFETCH(QString, rcc_file);
     QFETCH(QString, root);
@@ -454,12 +454,13 @@ void tst_ResourceEngine::checkUnregisterResource()
     QCOMPARE((int)fileInfo.size(), size);
 }
 
-void tst_ResourceEngine::doubleSlashInRoot()
+void tst_QResourceEngine::doubleSlashInRoot()
 {
     QVERIFY(QFile::exists(":/secondary_root/runtime_resource/search_file.txt"));
     QVERIFY(QFile::exists("://secondary_root/runtime_resource/search_file.txt"));
 }
 
-QTEST_MAIN(tst_ResourceEngine)
+QTEST_MAIN(tst_QResourceEngine)
 
-#include "tst_resourceengine.moc"
+#include "tst_qresourceengine.moc"
+

@@ -512,6 +512,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         dialog = popup = false;                        // force these flags off
         data.crect.setRect(0, 0, sw, sh);
     } else if (topLevel && !q->testAttribute(Qt::WA_Resized)) {
+        QDesktopWidget *desktopWidget = qApp->desktop();
+        if (desktopWidget->isVirtualDesktop()) {
+            QRect r = desktopWidget->screenGeometry();
+            sw = r.width();
+            sh = r.height();
+        }
+
         int width = sw / 2;
         int height = 4 * sh / 10;
         if (extra) {

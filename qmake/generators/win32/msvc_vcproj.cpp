@@ -1261,7 +1261,13 @@ void VcprojGenerator::initDeploymentTool()
                 searchPath = info.absoluteFilePath();
             } else {
                 nameFilter = source.split('\\').last();
-                searchPath = info.absolutePath();
+                if (source.contains('*')) {                    
+                    source = source.split('*').first();                    
+                    info = QFileInfo(source);
+                 }
+                 searchPath = info.absolutePath();
+                 if (!info.exists())
+                    fprintf(stderr, "Deployment file is missing %s\n", source.toLatin1().constData());
             }
 
             int pathSize = searchPath.size();
