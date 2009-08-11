@@ -73,8 +73,12 @@ static QString systemThemeName()
     QString result;
 #ifdef Q_WS_X11
     if (X11->desktopEnvironment == DE_GNOME) {
+#if defined(QT_NO_STYLE_GTK)
+        result = QLatin1String("gnome");
+#else	
         result = QGtk::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"),
                                       QLatin1String("gnome"));
+#endif
     } else if (X11->desktopEnvironment == DE_KDE) {
         QString kdeDefault = X11->desktopVersion >= 4 ?
                              QString::fromLatin1("oxygen") :
