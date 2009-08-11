@@ -52,7 +52,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,BorderImage,QFxBorderImage)
 
 /*!
     \qmlclass BorderImage QFxBorderImage
-    \brief The BorderImage element allows you to add an image used as a border to a scene.
+    \brief The BorderImage element allows you use an image as a border.
     \inherits Item
 
     Example:
@@ -237,21 +237,21 @@ void QFxBorderImage::setSource(const QUrl &url)
 
     \target ImagexmlpropertiesscaleGrid
 
-    A scale grid uses 4 grid lines (2 horizontal and 2 vertical) to break an image into 9 sections, as shown below:
+    The 4 border lines (2 horizontal and 2 vertical) break an image into 9 sections, as shown below:
 
     \image declarative-scalegrid.png
 
     When the image is scaled:
     \list
     \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i the middle (section 5) is scaled both horizontally and vertically
-    \i sections 2 and 8 are scaled horizontally
-    \i sections 4 and 6 are scaled vertically
+    \i the middle (section 5) is scaled according to BorderImage::horizontalTileMode and BorderImage::verticalTileMode
+    \i sections 2 and 8 are scaled according to BorderImage::horizontalTileMode
+    \i sections 4 and 6 are scaled according to BorderImage::verticalTileMode
     \endlist
 
-    Each scale grid property (left, right, top, and bottom) specifies an offset from the respective side. For example, \c{border.bottom: 10} sets the bottom scale grid line 10 pixels up from the bottom of the image.
+    Each border line (left, right, top, and bottom) specifies an offset from the respective side. For example, \c{border.bottom: 10} sets the bottom line 10 pixels up from the bottom of the image.
 
-    A scale grid can also be specified using a
+    The border lines can also be specified using a
     \l {BorderImage::source}{.sci file}.
 */
 

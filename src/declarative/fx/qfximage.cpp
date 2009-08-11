@@ -176,13 +176,15 @@ void QFxImage::setPixmap(const QPixmap &pix)
 
     \list
     \o Stretch - the image is scaled to fit
-    \o PreserveAspect - the image is scaled uniformly to fit
+    \o PreserveAspectFit - the image is scaled uniformly to fit without cropping
+    \o PreserveAspectCrop - the image is scaled uniformly to fill, cropping if necessary
     \o Tile - the image is duplicated horizontally and vertically
     \o TileVertically - the image is stretched horizontally and tiled vertically
     \o TileHorizontally - the image is stretched vertically and tiled horizontally
     \endlist
 
     \image declarative-image_fillMode.gif
+    \sa examples/declarative/fillmode
     \sa examples/declarative/aspectratio
 */
 QFxImage::FillMode QFxImage::fillMode() const
@@ -301,13 +303,21 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
             QTransform scale;
 
-            if (d->fillMode == PreserveAspect) {
+            if (d->fillMode == PreserveAspectFit) {
                 if (widthScale < heightScale) {
                     heightScale = widthScale;
                     scale.translate(0, (height() - heightScale * pix.height()) / 2);
                 } else if(heightScale < widthScale) {
                     widthScale = heightScale;
                     scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                }
+            } else if (d->fillMode == PreserveAspectCrop) {
+                if (widthScale < heightScale) {
+                    widthScale = heightScale;
+                    scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                } else if(heightScale < widthScale) {
+                    heightScale = widthScale;
+                    scale.translate(0, (height() - heightScale * pix.height()) / 2);
                 }
             }
 
