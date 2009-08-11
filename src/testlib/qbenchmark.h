@@ -76,7 +76,7 @@ public:
 }
 
 #define QBENCHMARK \
-    for (QTest::QBenchmarkIterationController __iteration_controller(); \
+    for (QTest::QBenchmarkIterationController __iteration_controller; \
             __iteration_controller.isDone() == false; __iteration_controller.next())
 
 #define QBENCHMARK_ONCE \
