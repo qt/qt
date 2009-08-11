@@ -938,6 +938,17 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         parent->itemChange(QGraphicsItem::ItemChildRemovedChange, thisPointerVariant);
     }
 
+    // Auto-update focus proxy. Any ancestor that has this as focus proxy 
+    //needs to be nulled.
+    QGraphicsItem *p = parent;
+    while (p) {
+        if ((p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) &&
+            (p->focusProxy() == q)) {
+            p->setFocusProxy(0);
+        }
+        p = p->d_ptr->parent;
+    }
+
     // Update toplevelitem list. If this item is being deleted, its parent
     // will be 0 but we don't want to register/unregister it in the TLI list.
     if (scene && !inDestructor) {
@@ -1016,7 +1027,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     // Auto-update focus proxy. The closest parent that detects
     // focus proxies is updated as the proxy gains or loses focus.
-    QGraphicsItem *p = newParent;
+    p = newParent;
     while (p) {
         if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
             p->setFocusProxy(q);
@@ -9092,10 +9103,13 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (event->button() == Qt::LeftButton && qApp->autoSipEnabled()
             && (!dd->clickCausedFocus || qApp->autoSipOnMouseFocus())) {
         QEvent _event(QEvent::RequestSoftwareInputPanel);
-        QApplication::sendEvent(event->widget(), &_event);
-    } else {
-        QGraphicsItem::mouseReleaseEvent(event);
+        QWidget *receiver = event->widget();
+        if(receiver) {
+            QApplication::sendEvent(receiver, &_event);
+        } 
     }
+    QGraphicsItem::mouseReleaseEvent(event);
+
     dd->clickCausedFocus = 0;
     dd->sendControlEvent(event);
 }

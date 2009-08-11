@@ -160,6 +160,7 @@ public slots:
     void init();
 
 private slots:
+    void explicitDeleteAutoFocusProxy();
     void construction();
     void constructionWithParent();
     void destruction();
@@ -7514,6 +7515,29 @@ void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
     QGraphicsScene scene;
     scene.addItem(text);
     QVERIFY(text2->hasFocus());
+}
+
+void tst_QGraphicsItem::explicitDeleteAutoFocusProxy()
+{
+    QGraphicsTextItem *text = new QGraphicsTextItem;
+    text->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+
+    QGraphicsTextItem *text2 = new QGraphicsTextItem;
+    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text2->setFocus();
+    QVERIFY(!text2->hasFocus());
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
+    text2->setParentItem(text);
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+
+    QGraphicsScene scene;
+    scene.addItem(text);
+    QVERIFY(text2->hasFocus());
+
+    delete text2;
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
