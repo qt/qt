@@ -250,8 +250,8 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
         QRadialGradient shadowGradient(shadowRect.center().x(),
                                        shadowRect.center().y(), shadowRect.width()/2.0,
                                        shadowRect.center().x(), shadowRect.center().y());
-        shadowGradient.setColorAt(0.91, QColor(0, 0, 0, 40));
-        shadowGradient.setColorAt(1.0, Qt::transparent);
+        shadowGradient.setColorAt(qreal(0.91), QColor(0, 0, 0, 40));
+        shadowGradient.setColorAt(qreal(1.0), Qt::transparent);
         p->setBrush(shadowGradient);
         p->setPen(Qt::NoPen);
         p->translate(shadowSize, shadowSize);
@@ -263,8 +263,8 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
                                  br.width()*1.3, br.center().x(),
                                  br.center().y() - br.height()/2);
         gradient.setColorAt(0, buttonColor.lighter(110));
-        gradient.setColorAt(0.5, buttonColor);
-        gradient.setColorAt(0.501, buttonColor.darker(102));
+        gradient.setColorAt(qreal(0.5), buttonColor);
+        gradient.setColorAt(qreal(0.501), buttonColor.darker(102));
         gradient.setColorAt(1, buttonColor.darker(115));
         p->setBrush(gradient);
     } else {
@@ -290,21 +290,21 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 
     END_STYLE_PIXMAPCACHE
 
-    QPointF dp = calcRadialPos(option, 0.70);
+    QPointF dp = calcRadialPos(option, qreal(0.70));
     buttonColor = buttonColor.lighter(104);
-    buttonColor.setAlphaF(0.8);
-    const qreal ds = r/7.0;
+    buttonColor.setAlphaF(qreal(0.8));
+    const qreal ds = r/qreal(7.0);
     QRectF dialRect(dp.x() - ds, dp.y() - ds, 2*ds, 2*ds);
     QRadialGradient dialGradient(dialRect.center().x() + dialRect.width()/2,
                                  dialRect.center().y() + dialRect.width(),
                                  dialRect.width()*2,
                                  dialRect.center().x(), dialRect.center().y());
     dialGradient.setColorAt(1, buttonColor.darker(140));
-    dialGradient.setColorAt(0.4, buttonColor.darker(120));
+    dialGradient.setColorAt(qreal(0.4), buttonColor.darker(120));
     dialGradient.setColorAt(0, buttonColor.darker(110));
     if (penSize > 3.0) {
         painter->setPen(QPen(QColor(0, 0, 0, 25), penSize));
-        painter->drawLine(calcRadialPos(option, 0.90), calcRadialPos(option, 0.96));
+        painter->drawLine(calcRadialPos(option, qreal(0.90)), calcRadialPos(option, qreal(0.96)));
     }
 
     painter->setBrush(dialGradient);
