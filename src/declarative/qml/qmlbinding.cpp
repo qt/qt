@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 
 QmlBindingPrivate::QmlBindingPrivate()
-: updating(false), enabled(false), mePtr(0)
+: updating(false), enabled(false)
 {
 }
 
@@ -75,9 +75,6 @@ QmlBinding::QmlBinding(const QString &str, QObject *obj, QmlContext *ctxt, QObje
 
 QmlBinding::~QmlBinding()
 {
-    Q_D(QmlBinding);
-    if(d->mePtr)
-        *(d->mePtr) = 0;
 }
 
 void QmlBinding::setTarget(const QmlMetaProperty &prop)
@@ -153,12 +150,13 @@ void QmlBinding::setEnabled(bool e)
     setTrackChange(e);
 
     if (e) {
-        d->mePtr = 0;
         addToObject(d->property.object());
         update();
     } else {
         removeFromObject();
     }
+
+    QmlAbstractBinding::setEnabled(e);
 }
 
 int QmlBinding::propertyIndex()
@@ -180,13 +178,15 @@ QString QmlBinding::expression() const
 }
 
 QmlAbstractBinding::QmlAbstractBinding()
-: m_prevBinding(0), m_nextBinding(0)
+: m_mePtr(0), m_prevBinding(0), m_nextBinding(0)
 {
 }
 
 QmlAbstractBinding::~QmlAbstractBinding()
 {
     removeFromObject();
+    if (m_mePtr)
+        *m_mePtr = 0;
 }
 
 void QmlAbstractBinding::addToObject(QObject *object)
@@ -215,6 +215,11 @@ void QmlAbstractBinding::removeFromObject()
 QString QmlAbstractBinding::expression() const
 {
     return QLatin1String("<Unknown>");
+}
+
+void QmlAbstractBinding::setEnabled(bool e)
+{
+    if (e) m_mePtr = 0;
 }
 
 QT_END_NAMESPACE

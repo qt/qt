@@ -69,8 +69,6 @@ public:
     bool enabled:1;
 
     QmlMetaProperty property;
-
-    QmlAbstractBinding **mePtr;
 };
 
 QT_END_NAMESPACE

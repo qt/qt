@@ -72,6 +72,8 @@ void QmlBinding_Id::setEnabled(bool e)
     } else {
         removeFromObject();
     }
+
+    QmlAbstractBinding::setEnabled(e);
 }
 
 int QmlBinding_Id::propertyIndex()
@@ -147,6 +149,8 @@ void QmlBinding_ObjProperty::setEnabled(bool e)
     } else {
         removeFromObject();
     }
+
+    QmlAbstractBinding::setEnabled(e);
 }
 
 int QmlBinding_ObjProperty::propertyIndex()

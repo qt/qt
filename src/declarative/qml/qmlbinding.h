@@ -73,7 +73,9 @@ public:
 private:
     friend class QmlDeclarativeData;
     friend class QmlMetaProperty;
+    friend class QmlVME;
 
+    QmlAbstractBinding **m_mePtr;
     QmlAbstractBinding **m_prevBinding;
     QmlAbstractBinding  *m_nextBinding;
 };

@@ -541,9 +541,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
                 QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, 0);
                 bindValues.append(bind);
-                QmlBindingPrivate *p = 
-                    static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bind));
-                p->mePtr = &bindValues.values[bindValues.count - 1];
+                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->addToObject(target);
 
                 bind->setTarget(mp);
@@ -558,7 +556,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                     new QmlBinding_Id(target, instr.assignIdOptBinding.property,
                                       ctxt, instr.assignIdOptBinding.id);
                 bindValues.append(bind);
-                // ### Need a mePtr
+                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->addToObject(target);
             } 
             break;
@@ -573,7 +571,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                     new QmlBinding_ObjProperty(target, instr.assignObjPropBinding.property, context, instr.assignObjPropBinding.contextIdx, instr.assignObjPropBinding.notifyIdx);
 
                 bindValues.append(bind);
-                // ### Need a mePtr
+                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->addToObject(target);
             }
             break;
