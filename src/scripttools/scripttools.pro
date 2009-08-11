@@ -8,5 +8,6 @@ DEFINES   += QT_NO_USING_NAMESPACE
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtScript
 
 include(../qbase.pri)
+include(../script/webkit.pri)
 
 include(debugging/debugging.pri)

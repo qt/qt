@@ -9,4 +9,6 @@ DEFINES   += QLALR_NO_QSCRIPTGRAMMAR_DEBUG_INFO
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
+include(webkit.pri)
 include(script.pri)
+
