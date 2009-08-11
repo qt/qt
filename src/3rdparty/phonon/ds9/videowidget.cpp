@@ -118,6 +118,8 @@ namespace Phonon
 
             void paintEvent(QPaintEvent *e)
             {
+                if (!updatesEnabled())
+                    return; //this avoids repaint from native events
                 checkCurrentRenderingMode();
                 m_currentRenderer->repaintCurrentFrame(this, e->rect());
             }
