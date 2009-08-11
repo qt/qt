@@ -75,8 +75,9 @@
 #ifdef Q_WS_WINCE
 #include "qt_windows.h"
 #include "qguifunctions_wince.h"
-extern bool qt_wince_is_high_dpi();   //defined in qguifunctions_wince.cpp
-extern bool qt_wince_is_smartphone(); //defined in qguifunctions_wince.cpp
+extern bool qt_wince_is_high_dpi();          //defined in qguifunctions_wince.cpp
+extern bool qt_wince_is_smartphone();        //defined in qguifunctions_wince.cpp
+extern bool qt_wince_is_windows_mobile_65(); //defined in qguifunctions_wince.cpp
 #endif // Q_WS_WINCE
 
 QT_BEGIN_NAMESPACE
@@ -4410,7 +4411,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
         p->drawLine(r.topRight(), r.bottomRight());
         if (doubleControls)
             arrowOpt.rect.adjust(0, -2 ,0, -2);
-        q_func()->drawPrimitive(QStyle::PE_IndicatorArrowLeft, &arrowOpt, p, 0);
+        q_func()->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowLeft, &arrowOpt, p, 0);
     } else {
         p->fillRect(opt->rect,fill);
         QRect r = opt->rect.adjusted(0, 0, 0, 1);
@@ -4421,7 +4422,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
             arrowOpt.rect.adjust(0, -4 , 0, -4);
         if (completeFrame && doubleControls)
             arrowOpt.rect.adjust(2, 0, 2, 0);
-        q_func()->drawPrimitive(QStyle::PE_IndicatorArrowUp, &arrowOpt, p, 0);
+        q_func()->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowUp, &arrowOpt, p, 0);
     }
 }
 
@@ -4469,7 +4470,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOpti
             p->drawLine(r.topRight(), r.bottomRight());
         if (doubleControls)
             arrowOpt.rect.adjust(0, 4, 0, 4 );
-        q_func()->drawPrimitive(QStyle::PE_IndicatorArrowRight, &arrowOpt, p, 0);
+        q_func()->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowRight, &arrowOpt, p, 0);
     } else {
         p->fillRect(opt->rect,fill);
         QRect r = opt->rect.adjusted(0, -1, 0, -1);
@@ -4482,7 +4483,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOpti
             arrowOpt.rect.adjust(1, 0, 1, 0 );
         if (completeFrame && doubleControls)
             arrowOpt.rect.adjust(1, 0, 1, 0);
-        q_func()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &arrowOpt, p, 0);
+        q_func()->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &arrowOpt, p, 0);
     }
 }
 
@@ -5001,7 +5002,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
    case PE_IndicatorSpinPlus:
    case PE_IndicatorSpinMinus: {
        QRect r = option->rect;
-       int fw = pixelMetric(PM_DefaultFrameWidth, option, widget)+2;
+       int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget)+2;
        QRect br = r.adjusted(fw, fw, -fw, -fw);
        int offset = (option->state & State_Sunken) ? 1 : 0;
        int step = (br.width() + 4) / 5;
@@ -5038,8 +5039,8 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                 break;
             }
             if (option->state & State_Sunken)
-                painter->translate(pixelMetric(PM_ButtonShiftHorizontal),
-                pixelMetric(PM_ButtonShiftVertical));
+                painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal),
+                proxy()->pixelMetric(PM_ButtonShiftVertical));
             if (option->state & State_Enabled) {
                 painter->translate(option->rect.x() + option->rect.width() / 2,
                                    option->rect.y() + option->rect.height() / 2);
@@ -5301,7 +5302,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                 }
 
                 if (vopt->state & QStyle::State_Selected) {
-                    QRect textRect = subElementRect(QStyle::SE_ItemViewItemText,  option, widget);
+                    QRect textRect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  option, widget);
                     d->drawPanelItemViewSelected(painter, vopt, textRect);
                 }
             }
@@ -5403,25 +5404,25 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
    case CE_PushButtonBevel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             QRect br = button->rect;
-            int dbi = pixelMetric(PM_ButtonDefaultIndicator, button, widget);
+            int dbi = proxy()->pixelMetric(PM_ButtonDefaultIndicator, button, widget);
 
             if (button->features & QStyleOptionButton::AutoDefaultButton)
                 br.setCoords(br.left() + dbi, br.top() + dbi, br.right() - dbi, br.bottom() - dbi);
             QStyleOptionButton tmpBtn = *button;
             tmpBtn.rect = br;
-            drawPrimitive(PE_PanelButtonCommand, &tmpBtn, painter, widget);
+            proxy()->drawPrimitive(PE_PanelButtonCommand, &tmpBtn, painter, widget);
             if (button->features & QStyleOptionButton::HasMenu) {
-                int mbi = pixelMetric(PM_MenuButtonIndicator, button, widget);
+                int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, button, widget);
                 QRect ir = button->rect;
                 QStyleOptionButton newButton = *button;
                 if (d->doubleControls)
                     newButton.rect = QRect(ir.right() - mbi, ir.height() - 30, mbi, ir.height() - 4);
                 else
                     newButton.rect = QRect(ir.right() - mbi, ir.height() - 20, mbi, ir.height() - 4);
-                drawPrimitive(PE_IndicatorArrowDown, &newButton, painter, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newButton, painter, widget);
             }
             if (button->features & QStyleOptionButton::DefaultButton)
-                drawPrimitive(PE_FrameDefaultButton, option, painter, widget);
+                proxy()->drawPrimitive(PE_FrameDefaultButton, option, painter, widget);
         }
         break;
    case CE_RadioButton:
@@ -5429,19 +5430,19 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
            bool isRadio = (element == CE_RadioButton);
            QStyleOptionButton subopt = *button;
-           subopt.rect = subElementRect(isRadio ? SE_RadioButtonIndicator
+           subopt.rect = proxy()->subElementRect(isRadio ? SE_RadioButtonIndicator
                : SE_CheckBoxIndicator, button, widget);
-           drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox,
+           proxy()->drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox,
                &subopt, painter, widget);
-           subopt.rect = subElementRect(isRadio ? SE_RadioButtonContents
+           subopt.rect = proxy()->subElementRect(isRadio ? SE_RadioButtonContents
                : SE_CheckBoxContents, button, widget);
-           drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, painter, widget);
+           proxy()->drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, painter, widget);
            if (button->state & State_HasFocus) {
                QStyleOptionFocusRect fropt;
                fropt.QStyleOption::operator=(*button);
-               fropt.rect = subElementRect(isRadio ? SE_RadioButtonFocusRect
+               fropt.rect = proxy()->subElementRect(isRadio ? SE_RadioButtonFocusRect
                    : SE_CheckBoxFocusRect, button, widget);
-               drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+               proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
            }
        }
        break;
@@ -5455,7 +5456,7 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
            QRect textRect = button->rect;
            if (!button->icon.isNull()) {
                pix = button->icon.pixmap(button->iconSize, button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
-               drawItemPixmap(painter, button->rect, alignment, pix);
+               proxy()->drawItemPixmap(painter, button->rect, alignment, pix);
                if (button->direction == Qt::RightToLeft)
                    textRect.setRight(textRect.right() - button->iconSize.width() - 4);
                else
@@ -5463,10 +5464,10 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
            }
            if (!button->text.isEmpty()){
                if (button->state & State_Enabled)
-                   drawItemText(painter, textRect, alignment | Qt::TextShowMnemonic,
+                   proxy()->drawItemText(painter, textRect, alignment | Qt::TextShowMnemonic,
                    button->palette, false, button->text, QPalette::WindowText);
                else
-                   drawItemText(painter, textRect, alignment | Qt::TextShowMnemonic,
+                   proxy()->drawItemText(painter, textRect, alignment | Qt::TextShowMnemonic,
                    button->palette, false, button->text, QPalette::Mid);
            }
        }
@@ -5482,8 +5483,8 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
 #ifndef QT_NO_TABBAR
     case CE_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-            drawControl(CE_TabBarTabShape, tab, painter, widget);
-            drawControl(CE_TabBarTabLabel, tab, painter, widget);
+            proxy()->drawControl(CE_TabBarTabShape, tab, painter, widget);
+            proxy()->drawControl(CE_TabBarTabLabel, tab, painter, widget);
         }
         break;
     case CE_TabBarTabShape:
@@ -5522,17 +5523,17 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QRegion clipRegion = painter->clipRegion();
             painter->setClipRect(option->rect);
-            drawControl(CE_HeaderSection, header, painter, widget);
+            proxy()->drawControl(CE_HeaderSection, header, painter, widget);
             QStyleOptionHeader subopt = *header;
-            subopt.rect = subElementRect(SE_HeaderLabel, header, widget);
+            subopt.rect = proxy()->subElementRect(SE_HeaderLabel, header, widget);
             if (header->state & State_Sunken) 
                 subopt.palette.setColor(QPalette::ButtonText, header->palette.brightText().color());
             subopt.state |= QStyle::State_On;
             if (subopt.rect.isValid())
-                drawControl(CE_HeaderLabel, &subopt, painter, widget);
+                proxy()->drawControl(CE_HeaderLabel, &subopt, painter, widget);
             if (header->sortIndicator != QStyleOptionHeader::None) {
-                subopt.rect = subElementRect(SE_HeaderArrow, option, widget);
-                drawPrimitive(PE_IndicatorHeaderArrow, &subopt, painter, widget);
+                subopt.rect = proxy()->subElementRect(SE_HeaderArrow, option, widget);
+                proxy()->drawPrimitive(PE_IndicatorHeaderArrow, &subopt, painter, widget);
             }
             painter->setClipRegion(clipRegion);
         }
@@ -5677,14 +5678,14 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
                 painter->setFont(newFont);
                 QPalette palette = dwOpt->palette;
                 palette.setColor(QPalette::Window, inactiveCaptionTextColor);
-                QRect titleRect = subElementRect(SE_DockWidgetTitleBarText, option, widget);
+                QRect titleRect = proxy()->subElementRect(SE_DockWidgetTitleBarText, option, widget);
                 if (verticalTitleBar) {
                     titleRect = QRect(r.left() + rect.bottom()
                                         - titleRect.bottom(),
                                     r.top() + titleRect.left() - rect.left(),
                                     titleRect.height(), titleRect.width());
                 }
-                drawItemText(painter, titleRect,
+                proxy()->drawItemText(painter, titleRect,
                             Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, palette,
                             dwOpt->state & State_Enabled, dwOpt->title,
                             floating ? (active ? QPalette::BrightText : QPalette::Window) : QPalette::WindowText);
@@ -5734,7 +5735,7 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
                     point.rx() += pixw;
 
                 if ((button->state & (State_On | State_Sunken)) && button->direction == Qt::RightToLeft)
-                    point.rx() -= pixelMetric(PM_ButtonShiftHorizontal, option, widget) * 2;
+                    point.rx() -= proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget) * 2;
 
                 painter->drawPixmap(visualPos(button->direction, button->rect, point), pixmap);
 
@@ -5750,9 +5751,9 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
                 tf |= Qt::AlignHCenter;
             }
             if (button->state & State_Enabled)
-                drawItemText(painter, ir, tf, button->palette, true, button->text, colorRole);
+                proxy()->drawItemText(painter, ir, tf, button->palette, true, button->text, colorRole);
             else
-            drawItemText(painter, ir, tf, button->palette, true, button->text, QPalette::Mid);
+            proxy()->drawItemText(painter, ir, tf, button->palette, true, button->text, QPalette::Mid);
             painter->restore();
         }
         break;
@@ -5772,11 +5773,11 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int thickness  = pixelMetric(PM_SliderControlThickness, slider, widget);
-            int len        = pixelMetric(PM_SliderLength, slider, widget);
+            int thickness  = proxy()->pixelMetric(PM_SliderControlThickness, slider, widget);
+            int len        = proxy()->pixelMetric(PM_SliderLength, slider, widget);
             int ticks = slider->tickPosition;
-            QRect groove = subControlRect(CC_Slider, slider, SC_SliderGroove, widget);
-            QRect handle = subControlRect(CC_Slider, slider, SC_SliderHandle, widget);
+            QRect groove = proxy()->subControlRect(CC_Slider, slider, SC_SliderGroove, widget);
+            QRect handle = proxy()->subControlRect(CC_Slider, slider, SC_SliderHandle, widget);
 
             if ((slider->subControls & SC_SliderGroove) && groove.isValid()) {
                 int mid = thickness / 2;
@@ -5827,8 +5828,8 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 if (slider->state & State_HasFocus) {
                     QStyleOptionFocusRect fropt;
                     fropt.QStyleOption::operator=(*slider);
-                    fropt.rect = subElementRect(SE_SliderFocusRect, slider, widget);
-                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                    fropt.rect = proxy()->subElementRect(SE_SliderFocusRect, slider, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
                 }
                 if ((tickAbove && tickBelow) || (!tickAbove && !tickBelow)) {
                     Qt::BGMode oldMode = painter->backgroundMode();
@@ -5986,7 +5987,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                     saveFlags |= State_Enabled;
                 if (scrollbar->subControls & SC_ScrollBarSubLine) {
                     newScrollbar.state = saveFlags;
-                    newScrollbar.rect = subControlRect(control, &newScrollbar, SC_ScrollBarSubLine, widget);
+                    newScrollbar.rect = proxy()->subControlRect(control, &newScrollbar, SC_ScrollBarSubLine, widget);
                     if (newScrollbar.rect.isValid()) {
                         if (!(scrollbar->activeSubControls & SC_ScrollBarSubLine))
                             newScrollbar.state &= ~(State_Sunken | State_MouseOver);
@@ -5996,7 +5997,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 if (scrollbar->subControls & SC_ScrollBarAddLine) {
                     newScrollbar.rect = scrollbar->rect;
                     newScrollbar.state = saveFlags;
-                    newScrollbar.rect = subControlRect(control, &newScrollbar, SC_ScrollBarAddLine, widget);
+                    newScrollbar.rect = proxy()->subControlRect(control, &newScrollbar, SC_ScrollBarAddLine, widget);
                     if (newScrollbar.rect.isValid()) {
                         if (!(scrollbar->activeSubControls & SC_ScrollBarAddLine))
                             newScrollbar.state &= ~(State_Sunken | State_MouseOver);
@@ -6007,7 +6008,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
 
                       newScrollbar.rect = scrollbar->rect;
                       newScrollbar.state = saveFlags;
-                      newScrollbar.rect = subControlRect(control, &newScrollbar, SC_ScrollBarSlider, widget);
+                      newScrollbar.rect = proxy()->subControlRect(control, &newScrollbar, SC_ScrollBarSlider, widget);
 
                       if (newScrollbar.rect.isValid()) {
                           if (!(scrollbar->activeSubControls & SC_ScrollBarSlider))
@@ -6030,8 +6031,8 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                     isTabWidget = (qobject_cast<QTabWidget *>(parent->parentWidget()));
 #endif //QT_NO_TABWIDGET
 
-            button = subControlRect(control, toolbutton, SC_ToolButton, widget);
-            menuarea = subControlRect(control, toolbutton, SC_ToolButtonMenu, widget);
+            button = proxy()->subControlRect(control, toolbutton, SC_ToolButton, widget);
+            menuarea = proxy()->subControlRect(control, toolbutton, SC_ToolButtonMenu, widget);
             State buttonFlags = toolbutton->state;
             if (buttonFlags & State_AutoRaise) {
                 if (!(buttonFlags & State_MouseOver)) {
@@ -6048,7 +6049,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
             if (toolbutton->subControls & SC_ToolButton) {
                     tool.rect = button;
                     tool.state = buttonFlags;
-                    drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
             }
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.rect = menuarea;
@@ -6057,7 +6058,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 toolMenu = *toolbutton;
                 toolMenu.state = menuFlags;
                 if (buttonFlags & State_Sunken)
-                  drawPrimitive(PE_PanelButtonTool, &toolMenu, painter, widget);
+                  proxy()->drawPrimitive(PE_PanelButtonTool, &toolMenu, painter, widget);
                 QStyleOption arrowOpt(0);
                 arrowOpt.rect = tool.rect;
                 arrowOpt.palette = tool.palette;
@@ -6069,25 +6070,25 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                     painter->fillRect(menuarea, option->palette.shadow());
                 }
                 arrowOpt.state = flags;
-                drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
             }
             if (toolbutton->state & State_HasFocus) {
                 QStyleOptionFocusRect focusRect;
                 focusRect.QStyleOption::operator=(*toolbutton);
                 focusRect.rect.adjust(3, 3, -3, -3);
                 if (toolbutton->features & QStyleOptionToolButton::Menu)
-                    focusRect.rect.adjust(0, 0, -pixelMetric(QStyle::PM_MenuButtonIndicator,
+                    focusRect.rect.adjust(0, 0, -proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator,
                                                          toolbutton, widget), 0);
-                drawPrimitive(PE_FrameFocusRect, &focusRect, painter, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &focusRect, painter, widget);
             }
             QStyleOptionToolButton label = *toolbutton;
             if (isTabWidget)
                 label.state = toolbutton->state;
             else
               label.state = toolbutton->state & State_Enabled;
-            int fw = pixelMetric(PM_DefaultFrameWidth, option, widget);
+            int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
             label.rect = button.adjusted(fw, fw, -fw, -fw);
-            drawControl(CE_ToolButtonLabel, &label, painter, widget);
+            proxy()->drawControl(CE_ToolButtonLabel, &label, painter, widget);
         }
         break;
 
@@ -6101,15 +6102,15 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
             painter->setFont(font);
             QStyleOptionGroupBox groupBoxFont = *groupBox;
             groupBoxFont.fontMetrics = QFontMetrics(font);
-            QRect textRect = subControlRect(CC_GroupBox, &groupBoxFont, SC_GroupBoxLabel, widget);
-            QRect checkBoxRect = subControlRect(CC_GroupBox, option, SC_GroupBoxCheckBox, widget).adjusted(0,0,0,0);
+            QRect textRect = proxy()->subControlRect(CC_GroupBox, &groupBoxFont, SC_GroupBoxLabel, widget);
+            QRect checkBoxRect = proxy()->subControlRect(CC_GroupBox, option, SC_GroupBoxCheckBox, widget).adjusted(0,0,0,0);
             if (groupBox->subControls & QStyle::SC_GroupBoxFrame) {
                 QStyleOptionFrameV2 frame;
                 frame.QStyleOption::operator=(*groupBox);
                 frame.features = groupBox->features;
                 frame.lineWidth = groupBox->lineWidth;
                 frame.midLineWidth = groupBox->midLineWidth;
-                frame.rect = subControlRect(CC_GroupBox, option, SC_GroupBoxFrame, widget);
+                frame.rect = proxy()->subControlRect(CC_GroupBox, option, SC_GroupBoxFrame, widget);
                 painter->save();
                 QRegion region(groupBox->rect);
                 if (!groupBox->text.isEmpty()) {
@@ -6119,7 +6120,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                         finalRect.adjust(ltr ? -4 : 0, 0, ltr ? 0 : 4, 0);
                     region -= finalRect;
                 }
-                drawPrimitive(PE_FrameGroupBox, &frame, painter, widget);
+                proxy()->drawPrimitive(PE_FrameGroupBox, &frame, painter, widget);
                 painter->restore();
             }
              // Draw checkbox
@@ -6127,7 +6128,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 QStyleOptionButton box;
                 box.QStyleOption::operator=(*groupBox);
                 box.rect = checkBoxRect;
-                drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
+                proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
             }
             // Draw title
             if ((groupBox->subControls & QStyle::SC_GroupBoxLabel) && !groupBox->text.isEmpty()) {
@@ -6143,17 +6144,17 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                     alignment |= Qt::TextHideMnemonic;
 
                 if (groupBox->state & State_Enabled)
-                    drawItemText(painter, textRect,  Qt::TextShowMnemonic | Qt::AlignHCenter | alignment,
+                    proxy()->drawItemText(painter, textRect,  Qt::TextShowMnemonic | Qt::AlignHCenter | alignment,
                     groupBox->palette, true, groupBox->text,
                     textColor.isValid() ? QPalette::NoRole : QPalette::Link);
                 else
-                    drawItemText(painter, textRect,  Qt::TextShowMnemonic | Qt::AlignHCenter | alignment,
+                    proxy()->drawItemText(painter, textRect,  Qt::TextShowMnemonic | Qt::AlignHCenter | alignment,
                     groupBox->palette, true, groupBox->text, QPalette::Mid);
                 if (groupBox->state & State_HasFocus) {
                     QStyleOptionFocusRect fropt;
                     fropt.QStyleOption::operator=(*groupBox);
                     fropt.rect = textRect;
-                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
                 }
             }
             painter->restore();
@@ -6166,11 +6167,11 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             QBrush editBrush = cmb->palette.brush(QPalette::Base);
             if ((cmb->subControls & SC_ComboBoxFrame) && cmb->frame)
-                qDrawPlainRect(painter, option->rect, option->palette.shadow().color(), pixelMetric(PM_ComboBoxFrameWidth, option, widget), &editBrush);
+                qDrawPlainRect(painter, option->rect, option->palette.shadow().color(), proxy()->pixelMetric(PM_ComboBoxFrameWidth, option, widget), &editBrush);
             else
                 painter->fillRect(option->rect, editBrush);
                 State flags = State_None;
-                QRect ar = subControlRect(CC_ComboBox, cmb, SC_ComboBoxArrow, widget);
+                QRect ar = proxy()->subControlRect(CC_ComboBox, cmb, SC_ComboBoxArrow, widget);
                 if ((option->state & State_On)) {
                   painter->fillRect(ar.adjusted(0, 0, 1, 1),cmb->palette.brush(QPalette::Shadow));
                 }
@@ -6186,9 +6187,9 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 arrowOpt.rect = ar;
                 arrowOpt.palette = cmb->palette;
                 arrowOpt.state = flags;
-                drawPrimitive(PrimitiveElement(PE_IndicatorArrowDownBig), &arrowOpt, painter, widget);
+                proxy()->drawPrimitive(PrimitiveElement(PE_IndicatorArrowDownBig), &arrowOpt, painter, widget);
             if (cmb->subControls & SC_ComboBoxEditField) {
-                QRect re = subControlRect(CC_ComboBox, cmb, SC_ComboBoxEditField, widget);
+                QRect re = proxy()->subControlRect(CC_ComboBox, cmb, SC_ComboBoxEditField, widget);
                 if (cmb->state & State_HasFocus && !cmb->editable)
                     painter->fillRect(re.x(), re.y(), re.width(), re.height(),
                  cmb->palette.brush(QPalette::Highlight));
@@ -6202,11 +6203,11 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                  if (cmb->state & State_HasFocus && !cmb->editable) {
                     QStyleOptionFocusRect focus;
                     focus.QStyleOption::operator=(*cmb);
-                    focus.rect = subElementRect(SE_ComboBoxFocusRect, cmb, widget);
+                    focus.rect = proxy()->subElementRect(SE_ComboBoxFocusRect, cmb, widget);
                     focus.state |= State_FocusAtBorder;
                     focus.backgroundColor = cmb->palette.highlight().color();
                     if ((option->state & State_On))
-                      drawPrimitive(PE_FrameFocusRect, &focus, painter, widget);
+                      proxy()->drawPrimitive(PE_FrameFocusRect, &focus, painter, widget);
                }
             }
         }
@@ -6222,8 +6223,8 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
             int primitiveElement;
 
             if (spinBox->frame && (spinBox->subControls & SC_SpinBoxFrame)) {
-                QRect r = subControlRect(CC_SpinBox, spinBox, SC_SpinBoxFrame, widget);
-                qDrawPlainRect(painter, r, option->palette.shadow().color(),pixelMetric(PM_SpinBoxFrameWidth, option, widget),0);
+                QRect r = proxy()->subControlRect(CC_SpinBox, spinBox, SC_SpinBoxFrame, widget);
+                qDrawPlainRect(painter, r, option->palette.shadow().color(), proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget),0);
             }
             QPalette shadePal(option->palette);
             shadePal.setColor(QPalette::Button, option->palette.light().color());
@@ -6245,13 +6246,13 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 }
                 primitiveElement = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus ? PE_IndicatorArrowUpBig
                     : PE_IndicatorArrowUpBig);
-                copy.rect = subControlRect(CC_SpinBox, spinBox, SC_SpinBoxUp, widget);
+                copy.rect = proxy()->subControlRect(CC_SpinBox, spinBox, SC_SpinBoxUp, widget);
                 if (copy.state & (State_Sunken | State_On))
-                    qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(),pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Shadow));
+                    qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(), proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Shadow));
                 else
-                  qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(),pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Base));
-                copy.rect.adjust(pixelMetric(PM_SpinBoxFrameWidth, option, widget), 0, -pixelMetric(PM_SpinBoxFrameWidth, option, widget), 0);
-                drawPrimitive(PrimitiveElement(primitiveElement), &copy, painter, widget);
+                  qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(), proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Base));
+                copy.rect.adjust(proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget), 0, -pixelMetric(PM_SpinBoxFrameWidth, option, widget), 0);
+                proxy()->drawPrimitive(PrimitiveElement(primitiveElement), &copy, painter, widget);
             }
             if (spinBox->subControls & SC_SpinBoxDown) {
                 copy.subControls = SC_SpinBoxDown;
@@ -6271,23 +6272,23 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 }
                 primitiveElement = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus ? PE_IndicatorArrowDownBig
                                                                        : PE_IndicatorArrowDownBig);
-                copy.rect = subControlRect(CC_SpinBox, spinBox, SC_SpinBoxDown, widget);
-                qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(),pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Base));
+                copy.rect = proxy()->subControlRect(CC_SpinBox, spinBox, SC_SpinBoxDown, widget);
+                qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(), proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Base));
                 if (copy.state & (State_Sunken | State_On))
-                    qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(),pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Shadow));
+                    qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(), proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Shadow));
                 else
-                    qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(),pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Base));
+                    qDrawPlainRect(painter, copy.rect, option->palette.shadow().color(), proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget), &copy.palette.brush(QPalette::Base));
                 copy.rect.adjust(3, 0, -4, 0);
                 if (primitiveElement == PE_IndicatorArrowUp || primitiveElement == PE_IndicatorArrowDown) {
-                    int frameWidth = pixelMetric(PM_SpinBoxFrameWidth, option, widget);
+                    int frameWidth = proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget);
                     copy.rect = copy.rect.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
-                    drawPrimitive(PrimitiveElement(primitiveElement), &copy, painter, widget);
+                    proxy()->drawPrimitive(PrimitiveElement(primitiveElement), &copy, painter, widget);
                 }
                 else {
-                    drawPrimitive(PrimitiveElement(primitiveElement), &copy, painter, widget);
+                    proxy()->drawPrimitive(PrimitiveElement(primitiveElement), &copy, painter, widget);
                 }
                 if (spinBox->frame && (spinBox->subControls & SC_SpinBoxFrame)) {
-                    QRect r = subControlRect(CC_SpinBox, spinBox, SC_SpinBoxEditField, widget);
+                    QRect r = proxy()->subControlRect(CC_SpinBox, spinBox, SC_SpinBoxEditField, widget);
                 }
             }
         }
@@ -6312,7 +6313,7 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
                 h = newSize.height();
             int defwidth = 0;
             if (button->features & QStyleOptionButton::AutoDefaultButton)
-                defwidth = 2 * pixelMetric(PM_ButtonDefaultIndicator, button, widget);
+                defwidth = 2 * proxy()->pixelMetric(PM_ButtonDefaultIndicator, button, widget);
             if (w < 75 + defwidth && button->icon.isNull())
                 w = 75 + defwidth;
             if (h < 23 + defwidth)
@@ -6335,9 +6336,9 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             bool isRadio = (type == CT_RadioButton);
             QRect irect = visualRect(button->direction, button->rect,
-                                     subElementRect(isRadio ? SE_RadioButtonIndicator
+                                     proxy()->subElementRect(isRadio ? SE_RadioButtonIndicator
                                                             : SE_CheckBoxIndicator, button, widget));
-            int h = pixelMetric(isRadio ? PM_ExclusiveIndicatorHeight
+            int h = proxy()->pixelMetric(isRadio ? PM_ExclusiveIndicatorHeight
                                         : PM_IndicatorHeight, button, widget);
             int margins = (!button->icon.isNull() && button->text.isEmpty()) ? 0 : 10;
              if (d_func()->doubleControls)
@@ -6349,7 +6350,7 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
 #ifndef QT_NO_COMBOBOX
     case CT_ComboBox:
         if (const QStyleOptionComboBox *comboBox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            int fw = comboBox->frame ? pixelMetric(PM_ComboBoxFrameWidth, option, widget) * 2 : 0;
+            int fw = comboBox->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, option, widget) * 2 : 0;
             newSize = QSize(newSize.width() + fw + 9, newSize.height() + fw-4); //Nine is a magic Number - See CommonStyle for real magic (23)
         }
         break;
@@ -6357,7 +6358,7 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
 #ifndef QT_NO_SPINBOX
     case CT_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            int fw = spinBox->frame ? pixelMetric(PM_SpinBoxFrameWidth, option, widget) * 2 : 0;
+            int fw = spinBox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget) * 2 : 0;
             newSize = QSize(newSize.width() + fw-5, newSize.height() + fw-6);
         }
         break;
@@ -6451,7 +6452,7 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int sliderButtonExtent = pixelMetric(PM_ScrollBarExtent, scrollbar, widget);
+            int sliderButtonExtent = proxy()->pixelMetric(PM_ScrollBarExtent, scrollbar, widget);
             float stretchFactor = 1.4f;
             int sliderButtonExtentDir = int (sliderButtonExtent * stretchFactor);
 
@@ -6473,7 +6474,7 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
                 uint range = scrollbar->maximum - scrollbar->minimum;
                 sliderlen = (qint64(scrollbar->pageStep) * maxlen) / (range + scrollbar->pageStep);
 
-                int slidermin = pixelMetric(PM_ScrollBarSliderMin, scrollbar, widget);
+                int slidermin = proxy()->pixelMetric(PM_ScrollBarSliderMin, scrollbar, widget);
                 if (sliderlen < slidermin || range > INT_MAX / 2)
                     sliderlen = slidermin;
                 if (sliderlen > maxlen)
@@ -6568,7 +6569,7 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
 #ifndef QT_NO_TOOLBUTTON
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolButton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            int mbi = pixelMetric(PM_MenuButtonIndicator, toolButton, widget);
+            int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolButton, widget);
             rect = toolButton->rect;
             switch (subControl) {
             case SC_ToolButton:
@@ -6594,12 +6595,12 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
 #ifndef QT_NO_SLIDER
         case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int tickOffset = pixelMetric(PM_SliderTickmarkOffset, slider, widget);
-            int thickness = pixelMetric(PM_SliderControlThickness, slider, widget);
+            int tickOffset = proxy()->pixelMetric(PM_SliderTickmarkOffset, slider, widget);
+            int thickness = proxy()->pixelMetric(PM_SliderControlThickness, slider, widget);
             switch (subControl) {
             case SC_SliderHandle: {
                 int sliderPos = 0;
-                int len = pixelMetric(PM_SliderLength, slider, widget);
+                int len = proxy()->pixelMetric(PM_SliderLength, slider, widget);
                 bool horizontal = slider->orientation == Qt::Horizontal;
                 sliderPos = sliderPositionFromValue(slider->minimum, slider->maximum,
                                                     slider->sliderPosition,
@@ -6652,7 +6653,7 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QSize bs;
-            int fw = spinBox->frame ? pixelMetric(PM_SpinBoxFrameWidth, spinBox, widget) : 0;
+            int fw = spinBox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinBox, widget) : 0;
             bs.setHeight(qMax(d->doubleControls ? 28 : 14, (spinBox->rect.height())));
             // 1.6 -approximate golden mean
             bs.setWidth(qMax(d->doubleControls ? 28 : 14, qMin((bs.height()*7/8), (spinBox->rect.width() / 8))));
@@ -6663,7 +6664,7 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
             rx = x - fw;
             switch (subControl) {
             case SC_SpinBoxUp:
-                rect = QRect(x+pixelMetric(PM_SpinBoxFrameWidth, option, widget), 0 , bs.width(), bs.height());
+                rect = QRect(x + proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget), 0 , bs.width(), bs.height());
                 break;
             case SC_SpinBoxDown:
                 rect = QRect(x + bs.width(), 0, bs.width(), bs.height());
@@ -6709,7 +6710,7 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
                 }
                 int frameWidth = 0;
                 if (groupBox->text.size()) {
-                    frameWidth = pixelMetric(PM_DefaultFrameWidth, groupBox, widget);
+                    frameWidth = proxy()->pixelMetric(PM_DefaultFrameWidth, groupBox, widget);
                     rect = frameRect.adjusted(frameWidth, frameWidth + topHeight + labelMargin, -frameWidth, -frameWidth);
                 }
                 else {
@@ -6730,8 +6731,8 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
                     rect.setHeight(h);
                 else
                   rect.setHeight(0);
-                int indicatorWidth = pixelMetric(PM_IndicatorWidth, option, widget);
-                int indicatorSpace = pixelMetric(PM_CheckBoxLabelSpacing, option, widget) - 1;
+                int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
+                int indicatorSpace = proxy()->pixelMetric(PM_CheckBoxLabelSpacing, option, widget) - 1;
                 bool hasCheckBox = groupBox->subControls & QStyle::SC_GroupBoxCheckBox;
                 int checkBoxSize = hasCheckBox ? (indicatorWidth + indicatorSpace) : 0;
 
@@ -6745,7 +6746,7 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
                     int left = 2;
                     // Adjust for check box
                     if (subControl == SC_GroupBoxCheckBox) {
-                        int indicatorHeight = pixelMetric(PM_IndicatorHeight, option, widget);
+                        int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, option, widget);
                         left = ltr ? totalRect.left() : (totalRect.right() - indicatorWidth);
                         int top = totalRect.top() + (fontMetrics.height() - indicatorHeight) / 2;
                         totalRect.setRect(left, top, indicatorWidth, indicatorHeight);
@@ -6941,7 +6942,6 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
       case PM_RadioButtonLabelSpacing:
         ret = d->doubleControls ? 6 * 2 : 6;
         break;
-        break;
         // Returns the number of pixels to use for the business part of the
         // slider (i.e., the non-tickmark portion). The remaining space is shared
         // equally between the tickmark regions.
@@ -6960,7 +6960,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
             }
             int thick = 8;
             if (ticks != QSlider::TicksBothSides && ticks != QSlider::NoTicks)
-                thick += pixelMetric(PM_SliderLength, sl, widget) / 4;
+                thick += proxy()->pixelMetric(PM_SliderLength, sl, widget) / 4;
 
             space -= thick;
             if (space > 0)
@@ -6982,7 +6982,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
         d->doubleControls ? ret = 64 : ret = 32;
         break;
     case PM_IconViewIconSize:
-        ret = pixelMetric(PM_LargeIconSize, opt, widget);
+        ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
         break;
     case PM_ToolBarIconSize:
         d->doubleControls ? ret = 2 * windowsMobileIconSize : ret = windowsMobileIconSize;
