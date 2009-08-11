@@ -349,7 +349,7 @@ static QString nativeAbsoluteFilePathCore(const QString &path)
 {
     QString ret;
 #if !defined(Q_OS_WINCE)
-    QVarLengthArray<wchar_t, MAX_PATH> buf(MAX_PATH);
+    QVarLengthArray<wchar_t, MAX_PATH> buf(qMax(MAX_PATH, path.size() + 1));
     wchar_t *fileName = 0;
     DWORD retLen = GetFullPathName((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
     if (retLen > (DWORD)buf.size()) {
@@ -375,15 +375,8 @@ static QString nativeAbsoluteFilePath(const QString &path)
     // (which is an invalid filename) this function will strip the space off and viola,
     // the file is later reported as existing. Therefore, we re-add the whitespace that
     // was at the end of path in order to keep the filename invalid.
-    int i = path.size() - 1;
-    while (i >= 0 && path.at(i) == QLatin1Char(' ')) --i;
-    int extraws = path.size() - 1 - i;
-    if (extraws >= 0) {
-        while (extraws) {
-            absPath.append(QLatin1Char(' '));
-            --extraws;
-        }
-    }
+    if (!path.isEmpty() && path.at(path.size() - 1) == QLatin1Char(' '))
+        absPath.append(QLatin1Char(' '));
     return absPath;
 }
 
