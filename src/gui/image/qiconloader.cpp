@@ -53,6 +53,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QDir>
 #include <QtCore/QSettings>
+#include <QtGui/QPainter>
 
 #ifdef Q_WS_MAC
 #include <private/qt_cocoa_helpers_mac_p.h>
