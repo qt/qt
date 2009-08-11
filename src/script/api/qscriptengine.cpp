@@ -44,6 +44,7 @@
 #include "qnumeric.h"
 
 #include "qscriptengine_p.h"
+#include "qscriptengineagent_p.h"
 #include "qscriptcontext_p.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
@@ -2252,11 +2253,10 @@ QScriptContext *QScriptEngine::pushContext()
                           previousFrame, 0, argCount, 0);
     QScriptContext *ctx = d->contextForFrame(d->currentFrame);
     ctx->setThisObject(globalObject());
+    
+    if (agent())
+        agent()->contextPush();
     return ctx;
-
-#ifndef Q_SCRIPT_NO_EVENT_NOTIFY
-//    notifyContextPush(); TODO
-#endif
 }
 
 /*!
@@ -2267,6 +2267,8 @@ QScriptContext *QScriptEngine::pushContext()
 */
 void QScriptEngine::popContext()
 {
+    if (agent())
+        agent()->contextPop();
     Q_D(QScriptEngine);
     if (d->currentFrame->returnPC() != 0 || d->currentFrame->codeBlock() != 0
         || d->currentFrame->returnValueRegister() != 0 || !currentContext()->parentContext()) {
@@ -2278,9 +2280,6 @@ void QScriptEngine::popContext()
     d->currentFrame->scopeChain()->pop()->deref();
     d->currentFrame = d->currentFrame->callerFrame();
     registerFile.shrink(newEnd);
-#ifndef Q_SCRIPT_NO_EVENT_NOTIFY
-//    notifyContextPop(); TODO
-#endif
 }
 
 /*!
@@ -3530,9 +3529,11 @@ QT_END_INCLUDE_NAMESPACE
 */
 void QScriptEngine::setAgent(QScriptEngineAgent *agent)
 {
-    qWarning("QScriptEngine::setAgent() not implemented");
     Q_D(QScriptEngine);
+    if (d->agent)
+        QScriptEngineAgentPrivate::get(d->agent)->detach();
     d->agent = agent;
+    QScriptEngineAgentPrivate::get(d->agent)->attach();
 }
 
 /*!

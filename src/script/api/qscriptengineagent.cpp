@@ -40,6 +40,10 @@
 ****************************************************************************/
 
 #include "qscriptengineagent.h"
+#include "qscriptengineagent_p.h"
+
+#include "CodeBlock.h"
+#include "Instruction.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -122,28 +126,50 @@ QT_BEGIN_NAMESPACE
   \sa extension()
 */
 
-class QScriptEngineAgent;
-class Q_SCRIPT_EXPORT QScriptEngineAgentPrivate
+
+void QScriptEngineAgentPrivate::attach()
 {
-    Q_DECLARE_PUBLIC(QScriptEngineAgent)
-public:
-    QScriptEngineAgentPrivate();
-    virtual ~QScriptEngineAgentPrivate();
+    QScriptEnginePrivate *d = QScriptEnginePrivate::get(engine);
+    if (d->originalGlobalObject()->debugger())
+        d->originalGlobalObject()->setDebugger(0);
+    JSC::Debugger::attach(d->originalGlobalObject());
+}
 
-    QScriptEngine *engine;
+void QScriptEngineAgentPrivate::detach()
+{
+    JSC::Debugger::detach(QScriptEnginePrivate::get(engine)->originalGlobalObject());
+}
 
-    QScriptEngineAgent *q_ptr;
+void QScriptEngineAgentPrivate::exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler)
+{
+    QScriptValue value(QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(frame.exception()));
+    q_ptr->exceptionThrow(sourceID, value, hasHandler);
 };
 
-QScriptEngineAgentPrivate::QScriptEngineAgentPrivate()
+void QScriptEngineAgentPrivate::exceptionCatch(const JSC::DebuggerCallFrame& frame, intptr_t sourceID)
 {
+    QScriptValue value(QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(frame.exception()));
+    q_ptr->exceptionCatch(sourceID, value);
 }
 
-QScriptEngineAgentPrivate::~QScriptEngineAgentPrivate()
+void QScriptEngineAgentPrivate::atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column)
 {
-// ###    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-// ###    eng_p->agentDeleted(q_ptr);
+    q_ptr->positionChange(sourceID, lineno, column);
 }
+
+void QScriptEngineAgentPrivate::functionExit(const JSC::JSValue& returnValue, intptr_t sourceID)
+{
+    QScriptValue result = QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(returnValue);
+    q_ptr->functionExit(sourceID, result);
+    q_ptr->contextPop();
+}
+
+void QScriptEngineAgentPrivate::evaluateStop(const JSC::JSValue& returnValue, intptr_t sourceID)
+{
+    QScriptValue result = QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(returnValue);
+    q_ptr->functionExit(sourceID, result);
+}
+
 
 /*!
     Constructs a QScriptEngineAgent object for the given \a engine.
@@ -154,10 +180,13 @@ QScriptEngineAgentPrivate::~QScriptEngineAgentPrivate()
     agent.
 */
 QScriptEngineAgent::QScriptEngineAgent(QScriptEngine *engine)
-    : d_ptr(new QScriptEngineAgentPrivate)
+        : d_ptr(new QScriptEngineAgentPrivate())
 {
-    d_ptr->q_ptr = this;
     d_ptr->engine = engine;
+    d_ptr->q_ptr = this;
+    if (engine) {
+        d_ptr->engine->setAgent(this);
+    }
 }
 
 /*!

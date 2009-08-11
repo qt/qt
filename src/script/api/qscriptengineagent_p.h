@@ -54,21 +54,78 @@
 //
 
 #include <QtCore/qobjectdefs.h>
+#include "Debugger.h"
+#include "qscriptengineagent.h"
+#include "qscriptengine.h"
+#include "qscriptengine_p.h"
+
+#include "CallFrame.h"
+#include "SourceCode.h"
+#include "UString.h"
+#include "DebuggerCallFrame.h"
 
 QT_BEGIN_NAMESPACE
 
 class QScriptEngine;
 
 class QScriptEngineAgent;
-class Q_SCRIPT_EXPORT QScriptEngineAgentPrivate
+class Q_SCRIPT_EXPORT QScriptEngineAgentPrivate : public JSC::Debugger
 {
     Q_DECLARE_PUBLIC(QScriptEngineAgent)
 public:
-    QScriptEngineAgentPrivate();
-    virtual ~QScriptEngineAgentPrivate();
+    static QScriptEngineAgent* get(QScriptEngineAgentPrivate* p) {return p->q_func();}
+    static QScriptEngineAgentPrivate* get(QScriptEngineAgent* p) {return p->d_func();}
+
+    QScriptEngineAgentPrivate(){}
+    virtual ~QScriptEngineAgentPrivate(){};
+
+    void attach();
+    void detach();
+
+    //scripts
+    virtual void sourceParsed(JSC::ExecState*, const JSC::SourceCode&, int /*errorLine*/, const JSC::UString& /*errorMsg*/) {};
+    virtual void scriptUnload(qint64 id)
+    {
+        q_ptr->scriptUnload(id);
+    };
+    virtual void scriptLoad(qint64 id, const JSC::UString &program,
+                         const JSC::UString &fileName, int baseLineNumber)
+    {
+        q_ptr->scriptLoad(id,program.toQString(), fileName.toQString(), baseLineNumber);
+    };
+
+    //exceptions
+    virtual void exception(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno) {};
+    virtual void exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler);
+    virtual void exceptionCatch(const JSC::DebuggerCallFrame& frame, intptr_t sourceID);
+
+    //statements
+    virtual void atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column);
+    virtual void callEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int /*lineno*/)
+    {
+        q_ptr->contextPush();
+        q_ptr->functionEntry(sourceID);
+    };
+    virtual void returnEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int /*lineno*/) {}
+    virtual void willExecuteProgram(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno) {};
+    virtual void didExecuteProgram(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno) {};
+    virtual void functionExit(const JSC::JSValue& returnValue, intptr_t sourceID);
+    //others
+    virtual void didReachBreakpoint(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column)
+    {
+        QList<QVariant> args;
+        args << sourceID << lineno << column;
+        if (q_ptr->supportsExtension(QScriptEngineAgent::DebuggerInvocationRequest))
+            q_ptr->extension(QScriptEngineAgent::DebuggerInvocationRequest, args);
+    };
+
+    virtual void evaluateStart(intptr_t sourceID)
+    {
+        q_ptr->functionEntry(sourceID);
+    }
+    virtual void evaluateStop(const JSC::JSValue& returnValue, intptr_t sourceID);
 
     QScriptEngine *engine;
-
     QScriptEngineAgent *q_ptr;
 };
 
