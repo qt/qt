@@ -169,7 +169,7 @@
     remember which state was the last state to which we transitioned. 
 
     \snippet examples/animation/moveblocks/main.cpp 11
-    
+
     We select the next state we are going to transition to, and post a
     \c StateSwitchEvent, which we know will trigger the \c
     StateSwitchTransition to the selected state.
@@ -198,8 +198,8 @@
     \section1 The StateSwitchEvent Class
 
     \c StateSwitchEvent inherits QEvent, and holds a number that has
-    been assigned to a state and state switch transition by \c
-    StateSwitcher. We have already seen how it is used to trigger \c
+    been assigned to a state and state switch transition by
+    \c StateSwitcher. We have already seen how it is used to trigger
     \c{StateSwitchTransition}s in \c StateSwitcher.
 
     \snippet examples/animation/moveblocks/main.cpp 15
