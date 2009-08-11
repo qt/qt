@@ -1540,8 +1540,9 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         }
     }
     if (type & FlagsMask) {
-        if(d->doStat()) {
-            ret |= QAbstractFileEngine::FileFlags(ExistsFlag | LocalDiskFlag);
+        ret |= LocalDiskFlag;
+        if (d->doStat()) {
+            ret |= ExistsFlag;
             if (d->filePath == QLatin1String("/") || (d->filePath.at(0).isLetter() && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/"))
                 || isUncRoot(d->filePath)) {
                 ret |= RootFlag;
