@@ -274,7 +274,7 @@ void tst_QStateMachine::transitionToRootState()
     QAbstractTransition *trans = initialState->addTransition(new EventTransition(QEvent::User, &machine));
     QVERIFY(trans != 0);
     QCOMPARE(trans->sourceState(), initialState);
-    QCOMPARE(trans->targetState(), &machine);
+    QCOMPARE(trans->targetState(), static_cast<QAbstractState *>(&machine));
 
     machine.start();
     QCoreApplication::processEvents();
@@ -295,9 +295,9 @@ void tst_QStateMachine::transitionFromRootState()
     QState *root = &machine;
     QState *s1 = new QState(root);
     EventTransition *trans = new EventTransition(QEvent::User, s1);
-    QCOMPARE(root->addTransition(trans), trans);
+    QCOMPARE(root->addTransition(trans), static_cast<QAbstractTransition *>(trans));
     QCOMPARE(trans->sourceState(), root);
-    QCOMPARE(trans->targetState(), s1);
+    QCOMPARE(trans->targetState(), static_cast<QAbstractState *>(s1));
 }
 
 void tst_QStateMachine::transitionEntersParent()
@@ -1024,11 +1024,11 @@ void tst_QStateMachine::rootState()
     QCOMPARE(machine.machine(), (QStateMachine*)0);
 
     QState *s1 = new QState(&machine);
-    QCOMPARE(s1->parentState(), &machine);
+    QCOMPARE(s1->parentState(), static_cast<QState*>(&machine));
 
     QState *s2 = new QState();
     s2->setParent(&machine);
-    QCOMPARE(s2->parentState(), &machine);
+    QCOMPARE(s2->parentState(), static_cast<QState*>(&machine));
 }
 
 void tst_QStateMachine::addAndRemoveState()
@@ -1045,8 +1045,8 @@ void tst_QStateMachine::addAndRemoveState()
     QCOMPARE(s1->parentState(), (QState*)0);
     QCOMPARE(s1->machine(), (QStateMachine*)0);
     machine.addState(s1);
-    QCOMPARE(s1->machine(), &machine);
-    QCOMPARE(s1->parentState(), &machine);
+    QCOMPARE(s1->machine(), static_cast<QStateMachine*>(&machine));
+    QCOMPARE(s1->parentState(), static_cast<QState*>(&machine));
     QCOMPARE(root_d->childStates().size(), 1);
     QCOMPARE(root_d->childStates().at(0), (QAbstractState*)s1);
 
@@ -1056,7 +1056,7 @@ void tst_QStateMachine::addAndRemoveState()
     QState *s2 = new QState();
     QCOMPARE(s2->parentState(), (QState*)0);
     machine.addState(s2);
-    QCOMPARE(s2->parentState(), &machine);
+    QCOMPARE(s2->parentState(), static_cast<QState*>(&machine));
     QCOMPARE(root_d->childStates().size(), 2);
     QCOMPARE(root_d->childStates().at(0), (QAbstractState*)s1);
     QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s2);
