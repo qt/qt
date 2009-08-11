@@ -192,8 +192,11 @@ namespace Phonon
 
             HRESULT hr = S_OK;
 
-            m_currentRender = w.graph;
-			m_currentRenderId = w.id;
+            {
+                QMutexLocker locker(&m_currentMutex);
+                m_currentRender = w.graph;
+			    m_currentRenderId = w.id;
+            }
             if (w.task == ReplaceGraph) {
                 int index = -1;
                 for(int i = 0; i < FILTER_COUNT; ++i) {
@@ -217,9 +220,6 @@ namespace Phonon
                     m_graphHandle[index].handle = h;
                 }
             } else if (w.task == Render) {
-                //we need to unlock here because the use might trigger a call to abort
-                //which uses the same mutex
-                locker.unlock();
                 if (w.filter) {
                     //let's render pins
                     w.graph->AddFilter(w.filter, 0);
@@ -238,7 +238,6 @@ namespace Phonon
                 if (hr != E_ABORT) {
                     emit asyncRenderFinished(w.id, hr, w.graph);
                 }
-                locker.relock();
             } else if (w.task == Seek) {
                 //that's a seekrequest
                 ComPointer<IMediaSeeking> mediaSeeking(w.graph, IID_IMediaSeeking);
@@ -311,12 +310,22 @@ namespace Phonon
                 }
             }
 
-            m_currentRender = Graph();
-            m_currentRenderId = 0;
+            {
+                QMutexLocker locker(&m_currentMutex);
+                m_currentRender = Graph();
+                m_currentRenderId = 0;
+            }
         }
 
         void WorkerThread::abortCurrentRender(qint16 renderId)
         {
+            {
+                QMutexLocker locker(&m_currentMutex);
+                if (m_currentRender && m_currentRenderId == renderId) {
+                    m_currentRender->Abort();
+                }
+            }
+
             QMutexLocker locker(&m_mutex);
             bool found = false;
             for(int i = 0; !found && i < m_queue.size(); ++i) {
@@ -324,11 +333,10 @@ namespace Phonon
                 if (w.id == renderId) {
                     found = true;
                     m_queue.removeAt(i);
+                    if (m_queue.isEmpty()) {
+                        m_waitCondition.reset();
+                    }
                 }
-            }
-
-            if (m_currentRender && m_currentRenderId == renderId) {
-                m_currentRender->Abort();
             }
         }
 

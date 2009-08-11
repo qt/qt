@@ -143,7 +143,8 @@ namespace Phonon
             bool m_finished;
             quint16 m_currentWorkId;
             QWinWaitCondition m_waitCondition;
-            QMutex m_mutex;
+            QMutex m_mutex; // mutex for the m_queue, m_finished and m_currentWorkId
+            QMutex m_currentMutex; //mutex for current renderer and id
 
             //this is for WaitForMultipleObjects
             struct
