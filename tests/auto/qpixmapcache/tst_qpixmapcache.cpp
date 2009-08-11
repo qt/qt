@@ -392,14 +392,19 @@ void tst_QPixmapCache::clear()
     QPixmap p1(10, 10);
     p1.fill(Qt::red);
 
-    for (int i = 0; i < 20000; ++i)
+#ifdef Q_OS_WINCE
+    const int numberOfKeys = 10000;
+#else
+    const int numberOfKeys = 20000;
+#endif
+    for (int i = 0; i < numberOfKeys; ++i)
         QVERIFY(QPixmapCache::find("x" + QString::number(i)) == 0);
 
-    for (int j = 0; j < 20000; ++j)
+    for (int j = 0; j < numberOfKeys; ++j)
         QPixmapCache::insert(QString::number(j), p1);
 
     int num = 0;
-    for (int k = 0; k < 20000; ++k) {
+    for (int k = 0; k < numberOfKeys; ++k) {
         if (QPixmapCache::find(QString::number(k), p1))
             ++num;
     }
@@ -407,7 +412,7 @@ void tst_QPixmapCache::clear()
 
     QPixmapCache::clear();
 
-    for (int k = 0; k < 20000; ++k)
+    for (int k = 0; k < numberOfKeys; ++k)
         QVERIFY(QPixmapCache::find(QString::number(k)) == 0);
 
     //The int part of the API
@@ -415,12 +420,12 @@ void tst_QPixmapCache::clear()
     p2.fill(Qt::red);
 
     QList<QPixmapCache::Key> keys;
-    for (int k = 0; k < 20000; ++k)
+    for (int k = 0; k < numberOfKeys; ++k)
         keys.append(QPixmapCache::insert(p2));
 
     QPixmapCache::clear();
 
-    for (int k = 0; k < 20000; ++k) {
+    for (int k = 0; k < numberOfKeys; ++k) {
         QVERIFY(QPixmapCache::find(keys.at(k), &p1) == 0);
         QCOMPARE(getPrivate(keys[k])->isValid, false);
     }
