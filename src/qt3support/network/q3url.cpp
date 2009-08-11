@@ -109,12 +109,12 @@ static void slashify( QString& s, bool allowMultiple = true )
 
     Example:
 
-    <tt>http://qtsoftware.com:80/cgi-bin/test%20me.pl?cmd=Hello%20you</tt>
+    <tt>http://example.com:80/cgi-bin/test%20me.pl?cmd=Hello%20you</tt>
 
     \table
     \header \i Function	    \i Returns
     \row \i \l protocol()   \i "http"
-    \row \i \l host()	    \i "qtsoftware.com"
+    \row \i \l host()	    \i "example.com"
     \row \i \l port()	    \i 80
     \row \i \l path()	    \i "/cgi-bin/test&nbsp;me.pl"
     \row \i \l fileName()   \i "test&nbsp;me.pl"

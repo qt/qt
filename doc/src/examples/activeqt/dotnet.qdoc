@@ -325,7 +325,7 @@
     any of our datatypes into a QObject subclass to make its API
     available to .NET. This has the positive side effect that the same
     API is automatically available in
-    \l{http://qtsoftware.com/products/qsa/}{QSA}, the cross platform
+    \l{http://qt.nokia.com/products/qsa/}{QSA}, the cross platform
     scripting solution for Qt applications, and to COM clients in general.
 
     When using the "IJW" method, in priciple the only limitation is the

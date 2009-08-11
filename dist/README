@@ -90,10 +90,7 @@ For this release, the following platforms have been tested:
   wincewm60standard-msvc2008
 
 For a complete list of supported platforms, see
-http://www.qtsoftware.com/developer/supported-platforms/supported-platforms/
-
-For a description of Qt's platform support policy, see
-http://www.qtsoftware.com/support-services/support/platform-support-policy
+http://doc.trolltech.com/supported-platforms.html.
 
 
 COMMERCIAL EDITIONS
@@ -113,8 +110,8 @@ HOW TO REPORT A BUG
 
 If you think you have found a bug in Qt, we would like to hear about
 it so that we can fix it. Before reporting a bug, please check
-http://qtsoftware.com/developer/faqs/ and
-http://qtsoftware.com/products/appdev/platform/platforms/ to see if
+http://qt.nokia.com/developer/faqs/ and
+http://qt.nokia.com/products/appdev/platform/platforms/ to see if
 the issue is already known.
 
 Always include the following information in your bug report: the name
@@ -128,7 +125,7 @@ such a program can be created with some minor changes to one of the
 many example programs in Qt's examples directory. Please submit the
 bug report using the Task Tracker on the Trolltech website:
 
-http://qtsoftware.com/developer/task-tracker
+http://qt.nokia.com/developer/task-tracker
 
 
 Qt is a trademark of Nokia Corporation and/or its subsidiary(-ies).

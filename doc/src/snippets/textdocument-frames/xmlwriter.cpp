@@ -47,7 +47,7 @@ QDomDocument *XmlWriter::toXml()
 {
     QDomImplementation implementation;
     QDomDocumentType docType = implementation.createDocumentType(
-        "scribe-document", "scribe", "qtsoftware.com/scribe");
+        "scribe-document", "scribe", "qt,nokia.com/scribe");
 
     document = new QDomDocument(docType);
 

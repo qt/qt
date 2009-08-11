@@ -68,7 +68,7 @@ QDomElement element4 = document.createElement("MyElement");
 
 
 //! [7]
-<link href="http://qtsoftware.com" color="red" />
+<link href="http://qt.nokia.com" color="red" />
 //! [7]
 
 
@@ -76,7 +76,7 @@ QDomElement element4 = document.createElement("MyElement");
 QDomElement e = //...
 //...
 QDomAttr a = e.attributeNode("href");
-cout << a.value() << endl;                // prints "http://qtsoftware.com"
+cout << a.value() << endl;                // prints "http://qt.nokia.com"
 a.setValue("http://doc.trolltech.com"); // change the node's attribute
 QDomAttr a2 = e.attributeNode("href");
 cout << a2.value() << endl;               // prints "http://doc.trolltech.com"

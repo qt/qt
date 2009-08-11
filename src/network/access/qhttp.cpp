@@ -1448,7 +1448,7 @@ QString QHttpRequestHeader::toString() const
     To make an HTTP request you must set up suitable HTTP headers. The
     following example demonstrates, how to request the main HTML page
     from the Trolltech home page (i.e., the URL
-    \c http://qtsoftware.com/index.html):
+    \c http://qt.nokia.com/index.html):
 
     \snippet doc/src/snippets/code/src_network_access_qhttp.cpp 2
 
@@ -2161,7 +2161,7 @@ int QHttp::setProxy(const QNetworkProxy &proxy)
     as specified in the constructor.
 
     \a path must be a absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html and
+    absolute URI like \c http://qt.nokia.com/index.html and
     must be encoded with either QUrl::toPercentEncoding() or
     QUrl::encodedPath().
 
@@ -2200,7 +2200,7 @@ int QHttp::get(const QString &path, QIODevice *to)
     as specified in the constructor.
 
     \a path must be an absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html and
+    absolute URI like \c http://qt.nokia.com/index.html and
     must be encoded with either QUrl::toPercentEncoding() or
     QUrl::encodedPath().
 
@@ -2251,7 +2251,7 @@ int QHttp::post(const QString &path, const QByteArray &data, QIODevice *to)
     or as specified in the constructor.
 
     \a path must be an absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html.
+    absolute URI like \c http://qt.nokia.com/index.html.
 
     The function does not block; instead, it returns immediately. The request
     is scheduled, and its execution is performed asynchronously. The
