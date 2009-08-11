@@ -333,7 +333,7 @@ bool QScriptContext::isCalledAsConstructor() const
     JSC::ScopeChainNode *node = frame->scopeChain();
     JSC::ScopeChainIterator it(node);
     for (it = node->begin(); it != node->end(); ++it) {
-        if ((*it)->isVariableObject()) {
+        if ((*it) && (*it)->isVariableObject()) {
             if ((*it)->inherits(&QScript::QScriptActivationObject::info)) {
                 return static_cast<QScript::QScriptActivationObject *>(*it)->d_ptr()->calledAsConstructor;
             }
@@ -436,7 +436,7 @@ QScriptValue QScriptContext::activationObject() const
         JSC::ScopeChainNode *node = frame->scopeChain();
         JSC::ScopeChainIterator it(node);
         for (it = node->begin(); it != node->end(); ++it) {
-            if ((*it)->isVariableObject()) {
+            if ((*it) && (*it)->isVariableObject()) {
                 result = *it;
                 break;
             }
@@ -484,7 +484,7 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
     // replace the first activation object in the scope chain
     JSC::ScopeChainNode *node = frame->scopeChain();
     while (node != 0) {
-        if (node->object->isVariableObject()) {
+        if (node->object && node->object->isVariableObject()) {
             node->object = object;
             break;
         }
@@ -631,11 +631,14 @@ QString QScriptContext::toString() const
 QScriptValueList QScriptContext::scopeChain() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+    QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
     QScriptValueList result;
     JSC::ScopeChainNode *node = frame->scopeChain();
     JSC::ScopeChainIterator it(node);
-    for (it = node->begin(); it != node->end(); ++it)
-        result.append(QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(*it));
+    for (it = node->begin(); it != node->end(); ++it) {
+        if (*it)
+            result.append(engine->scriptValueFromJSCValue(*it));
+    }
     return result;
 }
 
@@ -659,7 +662,12 @@ void QScriptContext::pushScope(const QScriptValue &object)
     }
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     JSC::JSValue jscObject = QScript::scriptEngineFromExec(frame)->scriptValueToJSCValue(object);
-    frame->setScopeChain(frame->scopeChain()->push(JSC::asObject(jscObject)));
+    JSC::ScopeChainNode *scope = frame->scopeChain();
+    Q_ASSERT(scope != 0);
+    if (!scope->object) // pushing to an "empty" chain
+        scope->object = JSC::asObject(jscObject);
+    else
+        frame->setScopeChain(scope->push(JSC::asObject(jscObject)));
 }
 
 /*!
@@ -675,8 +683,16 @@ void QScriptContext::pushScope(const QScriptValue &object)
 QScriptValue QScriptContext::popScope()
 {
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
-    QScriptValue result = QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(frame->scopeChain()->object);
-    frame->setScopeChain(frame->scopeChain()->pop());
+    JSC::ScopeChainNode *scope = frame->scopeChain();
+    Q_ASSERT(scope != 0);
+    QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    QScriptValue result = engine->scriptValueFromJSCValue(scope->object);
+    if (!scope->next) {
+        // We cannot have a null scope chain, so just zap the object pointer.
+        scope->object = 0;
+    } else {
+        frame->setScopeChain(scope->pop());
+    }
     return result;
 }
 

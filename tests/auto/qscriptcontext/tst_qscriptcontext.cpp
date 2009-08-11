@@ -674,19 +674,19 @@ void tst_QScriptContext::pushAndPopScope()
     ctx->pushScope(QScriptValue());
     QCOMPARE(ctx->scopeChain().size(), 1);
 
-    qWarning("Popping the top-level scope causes crash");
-#if 0
     QVERIFY(ctx->popScope().strictlyEquals(eng.globalObject()));
     QVERIFY(ctx->scopeChain().isEmpty());
-#endif
 
     ctx->pushScope(obj);
-    QCOMPARE(ctx->scopeChain().size(), 2);
+    QCOMPARE(ctx->scopeChain().size(), 1);
     QVERIFY(ctx->scopeChain().at(0).strictlyEquals(obj));
     QVERIFY(!obj.property("foo").isValid());
+#if 0 // ### CRASHES, JSC expects last scope object to always be the Global Object
     eng.evaluate("function foo() {}");
     // function declarations should always end up in the activation object (ECMA-262, chapter 13)
     QVERIFY(!obj.property("foo").isValid());
+#endif
+    QEXPECT_FAIL("", "JSC requires last object in scope chain to be the Global Object", Continue);
     QVERIFY(ctx->activationObject().property("foo").isFunction());
 
     QScriptEngine eng2;
@@ -695,10 +695,8 @@ void tst_QScriptContext::pushAndPopScope()
     ctx->pushScope(obj2);
 
     QVERIFY(ctx->popScope().strictlyEquals(obj));
-    QEXPECT_FAIL("", "This should work once the above crash issue has been fixed", Continue);
     QVERIFY(ctx->scopeChain().isEmpty());
 
-    QSKIP("Crashes", SkipAll);
     QVERIFY(!ctx->popScope().isValid());
 }
 
