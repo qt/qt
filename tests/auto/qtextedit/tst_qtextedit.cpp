@@ -1917,7 +1917,7 @@ void tst_QTextEdit::setText()
 }
 
 QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT bool qt_enable_test_font;
+extern void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
 void tst_QTextEdit::fullWidthSelection_data()
@@ -1964,7 +1964,7 @@ void tst_QTextEdit::fullWidthSelection()
     cursor.setBlockFormat(bf1);
 
     // use the test font so we always know where stuff will end up.
-    qt_enable_test_font = true;
+    qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
     testFont.setPixelSize(12);
@@ -2012,7 +2012,7 @@ void tst_QTextEdit::fullWidthSelection2()
     QTextCursor cursor = widget.textCursor();
 
     // use the test font so we always know where stuff will end up.
-    qt_enable_test_font = true;
+    qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
     testFont.setPixelSize(12);
