@@ -76,10 +76,14 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
     if ((flags & QIODevice::ReadOnly) && !(flags & QIODevice::Truncate)) {
         mode = "rb";
         if (flags & QIODevice::WriteOnly) {
-            if (!fileName.isEmpty() &&QFile::exists(fileName))
-                mode = "rb+";
-            else
+            QT_STATBUF statBuf;
+            if (!fileName.isEmpty()
+                && QT_STAT(QFile::encodeName(fileName), &statBuf) == 0
+                && (statBuf.st_mode & S_IFMT) == S_IFREG) {
+                mode += "+";
+            } else {
                 mode = "wb+";
+            }
         }
     } else if (flags & QIODevice::WriteOnly) {
         mode = "wb";
