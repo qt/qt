@@ -42,6 +42,7 @@
 
 #include <QtGui/QtGui>
 #include <QtTest/QtTest>
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -177,6 +178,7 @@ private slots:
     void task227953_setRootIndex();
     void task240266_veryBigColumn();
     void task248688_autoScrollNavigation();
+    void task259308_scrollVerticalHeaderSwappedSections();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3253,6 +3255,37 @@ void tst_QTableView::addColumnWhileEditing()
     QCOMPARE(editor->geometry(), view.visualRect(last));
 }
 
+void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
+{
+    QStandardItemModel model;
+    model.setRowCount(50);
+    model.setColumnCount(2);
+    for (int row = 0; row < model.rowCount(); ++row)
+        for (int col = 0; col < model.columnCount(); ++col) {
+            const QModelIndex &idx = model.index(row, col);
+            model.setData(idx, QVariant(row), Qt::EditRole);
+        }
+
+    QTableView tv;
+    tv.setModel(&model);
+    tv.show();
+    tv.verticalHeader()->swapSections(0, model.rowCount() - 1);
+
+    QTest::qWait(60);
+    QTest::keyClick(&tv, Qt::Key_PageUp);   // PageUp won't scroll when at top
+    QTRY_COMPARE(tv.rowAt(0), tv.verticalHeader()->logicalIndex(0));
+
+    int newRow = tv.rowAt(tv.viewport()->height());
+    if (newRow == tv.rowAt(tv.viewport()->height() - 1)) // Overlapping row
+        newRow++;
+    QTest::keyClick(&tv, Qt::Key_PageDown); // Scroll down and check current
+    QTRY_COMPARE(tv.currentIndex().row(), newRow);
+
+    tv.setCurrentIndex(model.index(0, 0));
+    QTest::qWait(60);
+    QTest::keyClick(&tv, Qt::Key_PageDown); // PageDown won't scroll when at the bottom
+    QTRY_COMPARE(tv.rowAt(tv.viewport()->height() - 1), tv.verticalHeader()->logicalIndex(model.rowCount() - 1));
+}
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

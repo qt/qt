@@ -1197,17 +1197,16 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
             visualRow = bottom;
         break;
     case MovePageUp: {
-        int top = 0;
-        while (top < bottom && d->isVisualRowHiddenOrDisabled(top, visualColumn))
-            ++top;
-        int newRow = qMax(rowAt(visualRect(current).top() - d->viewport->height()), top);
-        return d->model->index(qBound(0, newRow, bottom), current.column(), d->root);
+        int newRow = rowAt(visualRect(current).top() - d->viewport->height());
+        if (newRow == -1)
+            newRow = d->logicalRow(0);
+        return d->model->index(newRow, current.column(), d->root);
     }
     case MovePageDown: {
-        int newRow = qMin(rowAt(visualRect(current).bottom() + d->viewport->height()), bottom);
-        if (newRow < 0)
-            newRow = bottom;
-        return d->model->index(qBound(0, newRow, bottom), current.column(), d->root);
+        int newRow = rowAt(visualRect(current).bottom() + d->viewport->height());
+        if (newRow == -1)
+            newRow = d->logicalRow(bottom);
+        return d->model->index(newRow, current.column(), d->root);
     }}
 
     int logicalRow = d->logicalRow(visualRow);
