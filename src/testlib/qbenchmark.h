@@ -65,6 +65,7 @@ class Q_TESTLIB_EXPORT QBenchmarkIterationController
 {
 public:
     enum RunMode { RepeatUntilValidMeasurement, RunOnce };
+    QBenchmarkIterationController();
     QBenchmarkIterationController(RunMode runMode);
     ~QBenchmarkIterationController();
     bool isDone();
@@ -75,7 +76,7 @@ public:
 }
 
 #define QBENCHMARK \
-    for (QTest::QBenchmarkIterationController __iteration_controller(QTest::QBenchmarkIterationController::RepeatUntilValidMeasurement); \
+    for (QTest::QBenchmarkIterationController __iteration_controller(); \
             __iteration_controller.isDone() == false; __iteration_controller.next())
 
 #define QBENCHMARK_ONCE \
