@@ -524,18 +524,19 @@ QFileInfoList QFSFileEngine::drives()
 
 bool QFSFileEnginePrivate::doStat() const
 {
-    if (tried_stat == 0) {
-        QFSFileEnginePrivate *that = const_cast<QFSFileEnginePrivate*>(this);
+    if (!tried_stat) {
+        tried_stat = true;
+        could_stat = false;
+
         if (fh && nativeFilePath.isEmpty()) {
             // ### actually covers two cases: d->fh and when the file is not open
-            that->could_stat = (QT_FSTAT(fileno(fh), &st) == 0);
+            could_stat = (QT_FSTAT(QT_FILENO(fh), &st) == 0);
         } else if (fd == -1) {
             // ### actually covers two cases: d->fh and when the file is not open
-            that->could_stat = (QT_STAT(nativeFilePath.constData(), &st) == 0);
+            could_stat = (QT_STAT(nativeFilePath.constData(), &st) == 0);
         } else {
-            that->could_stat = (QT_FSTAT(fd, &st) == 0);
+            could_stat = (QT_FSTAT(fd, &st) == 0);
         }
-	that->tried_stat = 1;
     }
     return could_stat;
 }
@@ -543,10 +544,10 @@ bool QFSFileEnginePrivate::doStat() const
 bool QFSFileEnginePrivate::isSymlink() const
 {
     if (need_lstat) {
-        QFSFileEnginePrivate *that = const_cast<QFSFileEnginePrivate *>(this);
-        that->need_lstat = false;
+        need_lstat = false;
+
         QT_STATBUF st;          // don't clobber our main one
-        that->is_link = (QT_LSTAT(nativeFilePath.constData(), &st) == 0) ? S_ISLNK(st.st_mode) : false;
+        is_link = (QT_LSTAT(nativeFilePath.constData(), &st) == 0) ? S_ISLNK(st.st_mode) : false;
     }
     return is_link;
 }
