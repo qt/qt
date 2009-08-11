@@ -295,13 +295,14 @@ static bool isUncRoot(const QString &server)
     return localPath.isEmpty();
 }
 
+#if !defined(Q_OS_WINCE)
 static bool isUncPath(const QString &path)
 {
-    // Starts with // or \\, but not \\. or //.
-    return (path.startsWith(QLatin1String("//"))
-            || path.startsWith(QLatin1String("\\\\")))
-        && (path.size() > 2 && path.at(2) != QLatin1Char('.'));
+    // Starts with \\, but not \\.
+    return (path.startsWith(QLatin1String("\\\\"))
+            && path.size() > 2 && path.at(2) != QLatin1Char('.'));
 }
+#endif
 
 static bool isRelativePath(const QString &path)
 {
@@ -398,7 +399,7 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
 #if !defined(Q_OS_WINCE)
     QString prefix = QLatin1String("\\\\?\\");
     if (isUncPath(absPath)) {
-        prefix = QLatin1String("\\\\?\\UNC\\");
+        prefix.append(QLatin1String("UNC\\")); // "\\\\?\\UNC\\"
         absPath.remove(0, 2);
     }
     return prefix + absPath;
