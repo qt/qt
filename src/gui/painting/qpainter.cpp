@@ -7480,10 +7480,9 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     if (!painter)
         tf |= Qt::TextDontPrint;
 
-    int maxUnderlines = 0;
+    uint maxUnderlines = 0;
     int numUnderlines = 0;
-    int underlinePositionStack[32];
-    int *underlinePositions = underlinePositionStack;
+    QVarLengthArray<int, 32> underlinePositions(1);
 
     QFontMetricsF fm(fnt);
     QString text = str;
@@ -7492,54 +7491,46 @@ start_lenghtVariant:
     bool hasMoreLenghtVariants = false;
     // compatible behaviour to the old implementation. Replace
     // tabs by spaces
-    QChar *chr = text.data() + offset;
-    QChar *end = text.data() + text.length();
     bool has_tab = false;
-    while (chr != end) {
-        if (*chr == QLatin1Char('\r') || (singleline && *chr == QLatin1Char('\n'))) {
-            *chr = QLatin1Char(' ');
-        } else if (*chr == QLatin1Char('\n')) {
-            *chr = QChar::LineSeparator;
-        } else if (*chr == QLatin1Char('&')) {
+    int old_offset = offset;
+    for (; offset < text.length(); offset++) {
+        QChar chr = text.at(offset);
+        if (chr == QLatin1Char('\r') || (singleline && chr == QLatin1Char('\n'))) {
+            text[offset] = QLatin1Char(' ');
+        } else if (chr == QLatin1Char('\n')) {
+            chr = QChar::LineSeparator;
+        } else if (chr == QLatin1Char('&')) {
             ++maxUnderlines;
-        } else if (*chr == QLatin1Char('\t')) {
+        } else if (chr == QLatin1Char('\t')) {
+            if (!expandtabs) {
+                text[offset] = QLatin1Char(' ');
+            } else if (!tabarraylen && !tabstops) {
+                tabstops = qRound(fm.width(QLatin1Char('x'))*8);
+            }
             has_tab = true;
-        } else if (*chr == QChar(ushort(0x9c))) {
+        } else if (chr == QChar(ushort(0x9c))) {
             // string with multiple length variants
-            end = chr;
             hasMoreLenghtVariants = true;
             break;
         }
-        ++chr;
-    }
-    if (has_tab) {
-        if (!expandtabs) {
-            chr = text.data() + offset;
-            while (chr != end) {
-                if (*chr == QLatin1Char('\t'))
-                    *chr = QLatin1Char(' ');
-                ++chr;
-            }
-        } else if (!tabarraylen && !tabstops) {
-            tabstops = qRound(fm.width(QLatin1Char('x'))*8);
-        }
     }
 
-    QChar *cout = end;
-    if (hidemnmemonic || showmnemonic) {
-        if (maxUnderlines > 32)
-            underlinePositions = new int[maxUnderlines];
-        cout = text.data() + offset;
+    int length = offset - old_offset;
+    if ((hidemnmemonic || showmnemonic) && maxUnderlines > 0) {
+        underlinePositions.resize(maxUnderlines + 1);
+
+        QChar *cout = text.data() + old_offset;
         QChar *cin = cout;
-        int l = end - cout;
+        int l = length;
         while (l) {
             if (*cin == QLatin1Char('&')) {
                 ++cin;
+                --length;
                 --l;
                 if (!l)
                     break;
                 if (*cin != QLatin1Char('&') && !hidemnmemonic)
-                    underlinePositions[numUnderlines++] = cout - text.unicode();
+                    underlinePositions[numUnderlines++] =  cout - text.data() - old_offset;
             }
             *cout = *cin;
             ++cout;
@@ -7556,7 +7547,7 @@ start_lenghtVariant:
     qreal height = 0;
     qreal width = 0;
 
-    QString finalText = text.mid(offset, cout - (text.data() + offset));
+    QString finalText = text.mid(old_offset, length);
     QStackTextEngine engine(finalText, fnt);
     if (option) {
         engine.option = *option;
@@ -7575,7 +7566,7 @@ start_lenghtVariant:
         engine.forceJustification = true;
     QTextLayout textLayout(&engine);
     textLayout.setCacheEnabled(true);
-    textLayout.engine()->underlinePositions = underlinePositions;
+    textLayout.engine()->underlinePositions = underlinePositions.data();
 
     if (finalText.isEmpty()) {
         height = fm.height();
@@ -7644,7 +7635,7 @@ start_lenghtVariant:
     QRectF bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
 
     if (hasMoreLenghtVariants && !(tf & Qt::TextLongestVariant) && !r.contains(bounds)) {
-        offset = end - text.data() + 1;
+        offset++;
         goto start_lenghtVariant;
     }
     if (brect)
@@ -7673,9 +7664,6 @@ start_lenghtVariant:
             painter->restore();
         }
     }
-
-    if (underlinePositions != underlinePositionStack)
-        delete [] underlinePositions;
 }
 
 /*!
