@@ -267,9 +267,9 @@ static inline void _q_adjustRect(QRectF *rect)
 {
     Q_ASSERT(rect);
     if (!rect->width())
-        rect->adjust(-0.00001, 0, 0.00001, 0);
+        rect->adjust(qreal(-0.00001), 0, qreal(0.00001), 0);
     if (!rect->height())
-        rect->adjust(0, -0.00001, 0, 0.00001);
+        rect->adjust(0, qreal(-0.00001), 0, qreal(0.00001));
 }
 
 static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)

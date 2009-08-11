@@ -147,6 +147,9 @@ private slots:
     void isBundle_data();
     void isBundle();
 
+    void isLocalFs_data();
+    void isLocalFs();
+
     void refresh();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -974,6 +977,22 @@ void tst_QFileInfo::isHidden_data()
     foreach (const QFileInfo& info, QDir::drives()) {
         QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
     }
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QTest::newRow("C:/RECYCLER") << QString::fromLatin1("C:/RECYCLER") << true;
+    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << false;
+    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << false;
+#endif
+#if defined(Q_OS_UNIX)
+    QTest::newRow("~/.qt") << QDir::homePath() + QString("/.qt") << true;
+    QTest::newRow("~/.qt/.") << QDir::homePath() + QString("/.qt/.") << false;
+    QTest::newRow("~/.qt/..") << QDir::homePath() + QString("/.qt/..") << false;
+#endif
+
+#if !defined(Q_OS_WIN)
+    QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
+#endif
+
 #ifdef Q_OS_MAC
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
     QTest::newRow("mac_private_etc") << QString::fromLatin1("/private/etc") << false;
@@ -1006,6 +1025,29 @@ void tst_QFileInfo::isBundle()
     QFETCH(bool, isBundle);
     QFileInfo fi(path);
     QCOMPARE(fi.isBundle(), isBundle);
+}
+
+void tst_QFileInfo::isLocalFs_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isLocalFs");
+
+    QTest::newRow("local root") << QString::fromLatin1("/") << true;
+    QTest::newRow("local non-existent file") << QString::fromLatin1("/abrakadabra.boo") << true;
+
+    QTest::newRow("qresource root") << QString::fromLatin1(":/") << false;
+}
+
+void tst_QFileInfo::isLocalFs()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isLocalFs);
+
+    QFileInfo info(path);
+    QFileInfoPrivate *privateInfo = getPrivate(info);
+    QVERIFY(privateInfo->data->fileEngine);
+    QCOMPARE(bool(privateInfo->data->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
+                  & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
 }
 
 void tst_QFileInfo::refresh()

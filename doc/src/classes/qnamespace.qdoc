@@ -490,6 +490,7 @@
     \omitvalue WordBreak
     \omitvalue TextForceLeftToRight
     \omitvalue TextForceRightToLeft
+    \omitvalue TextLongestVariant Always use the longest variant when computing the size of a multi-variant string
 
     You can use as many modifier flags as you want, except that
     Qt::TextSingleLine and Qt::TextWordWrap cannot be combined.
