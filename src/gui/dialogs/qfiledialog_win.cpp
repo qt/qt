@@ -63,6 +63,7 @@
 #if !defined(Q_WS_WINCE) && !defined(Q_CC_MINGW)
 #include <shobjidl.h>
 #endif
+
 #include <objbase.h>
 
 #if defined(__IFileDialog_INTERFACE_DEFINED__) \

@@ -2,30 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de">
 <context>
-    <name></name>
-    <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+647"/>
-        <source>&lt;object&gt;</source>
-        <translation>&lt;Objekt&gt;</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>&lt;signal&gt;</source>
-        <translation>&lt;Signal&gt;</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>&lt;slot&gt;</source>
-        <translation>&lt;Slot&gt;</translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/components/propertyeditor/previewframe.cpp" line="+73"/>
-        <source>The moose in the noose
-ate the goose who was loose.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>AbstractFindWidget</name>
     <message>
         <location filename="../tools/shared/findwidget/abstractfindwidget.cpp" line="+127"/>
@@ -199,34 +175,6 @@ ate the goose who was loose.</source>
         <location line="+9"/>
         <source>Unable to launch assistant (%1).</source>
         <translation>Das Programm Assistant kann nicht gestartet werden (%1).</translation>
-    </message>
-</context>
-<context>
-    <name>BrushManagerProxy</name>
-    <message>
-        <location filename="../tools/designer/src/components/formeditor/brushmanagerproxy.cpp" line="+221"/>
-        <source>The element &apos;%1&apos; is missing the required attribute &apos;%2&apos;.</source>
-        <translation>Bei dem Element fehlt das erforderliche Attribut &apos;%2&apos;.</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Empty brush name encountered.</source>
-        <translation>Fehlender Name bei der Brush-Definition.</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>An unexpected element &apos;%1&apos; was encountered.</source>
-        <translation>Ein ungültiges Element &apos;%1&apos; wurde festgestellt.</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>An error occurred when reading the brush definition file &apos;%1&apos; at line line %2, column %3: %4</source>
-        <translation>Fehler beim Lesen der Brush-Datei &apos;%1&apos; bei Zeile %2, Spalte %3: %4</translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>An error occurred when reading the resource file &apos;%1&apos; at line %2, column %3: %4</source>
-        <translation>Fehler beim Lesen der Ressourcen-Datei &apos;%1&apos; bei Zeile %2, Spalte %3: %4</translation>
     </message>
 </context>
 <context>
@@ -565,7 +513,7 @@ ate the goose who was loose.</source>
         <translation>Werkzeugleiste löschen</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1161"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1195"/>
         <source>Set action text</source>
         <translation>Text der Aktion setzen</translation>
     </message>
@@ -576,12 +524,12 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <location line="+89"/>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+891"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+905"/>
         <source>Move action</source>
         <translation>Aktion verschieben</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-404"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-424"/>
         <source>Change Title</source>
         <translation>Titel ändern</translation>
     </message>
@@ -626,7 +574,7 @@ ate the goose who was loose.</source>
         <translation>Tabellarisches Layout vereinfachen</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+225"/>
+        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+221"/>
         <source>Create button group</source>
         <translation>Buttons gruppieren</translation>
     </message>
@@ -680,7 +628,7 @@ ate the goose who was loose.</source>
         <translation>Skript ändern</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1209"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1213"/>
         <source>Changed &apos;%1&apos; of &apos;%2&apos;</source>
         <translation>&apos;%1&apos; von &apos;%2&apos; geändert</translation>
     </message>
@@ -759,6 +707,24 @@ ate the goose who was loose.</source>
     </message>
 </context>
 <context>
+    <name>ConnectionDelegate</name>
+    <message>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+643"/>
+        <source>&lt;object&gt;</source>
+        <translation>&lt;Objekt&gt;</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>&lt;signal&gt;</source>
+        <translation>&lt;Signal&gt;</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>&lt;slot&gt;</source>
+        <translation>&lt;Slot&gt;</translation>
+    </message>
+</context>
+<context>
     <name>DPI_Chooser</name>
     <message>
         <location filename="../tools/designer/src/components/formeditor/dpi_chooser.cpp" line="+69"/>
@@ -782,7 +748,7 @@ ate the goose who was loose.</source>
 <context>
     <name>Designer</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+439"/>
+        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+449"/>
         <source>Qt Designer</source>
         <translation>Qt Designer</translation>
     </message>
@@ -807,17 +773,7 @@ ate the goose who was loose.</source>
         <translation>Haben Sie ein Layout eingefügt?</translation>
     </message>
     <message>
-        <location line="+173"/>
-        <source>Invalid ui file: The root element &lt;ui&gt; is missing.</source>
-        <translation>Fehler beim Lesen der ui-Datei: Das Wurzelelement &lt;ui&gt; fehlt.</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>An error has occurred while reading the ui file at line %1, column %2: %3</source>
-        <translation>Fehler beim Lesen der ui-Datei bei Zeile %1, Spalte %2: %3</translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location line="+205"/>
         <source>This file cannot be read because it was created using %1.</source>
         <translation>Die Datei kann nicht gelesen werden, da sie mit %1 erzeugt wurde.</translation>
     </message>
@@ -827,17 +783,27 @@ ate the goose who was loose.</source>
         <translation>Die Datei kann nicht gelesen werden, da sie mit dem Designer der Version %1 erzeugt wurde.</translation>
     </message>
     <message>
-        <location line="+102"/>
+        <location line="+82"/>
         <source>This file cannot be read because the extra info extension failed to load.</source>
         <translation>Die Datei kann nicht gelesen werden (Fehler beim Laden der Daten der ExtraInfoExtension).</translation>
     </message>
     <message>
-        <location line="-72"/>
+        <location line="-52"/>
         <source>The converted file could not be read.</source>
         <translation>Die konvertierte Datei konnte nicht gelesen werden.</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-76"/>
+        <source>Invalid UI file: The root element &lt;ui&gt; is missing.</source>
+        <translation>Fehler beim Lesen der ui-Datei: Das Wurzelelement &lt;ui&gt; fehlt.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>An error has occurred while reading the UI file at line %1, column %2: %3</source>
+        <translation>Fehler beim Lesen der ui-Datei bei Zeile %1, Spalte %2: %3</translation>
+    </message>
+    <message>
+        <location line="+74"/>
         <source>This file was created using Designer from Qt-%1 and will be converted to a new form by Qt Designer.</source>
         <translation>Die Datei wurde mit dem Designer der Version %1 erzeugt und wird zu einem neuen Formular konvertiert.</translation>
     </message>
@@ -859,7 +825,7 @@ ate the goose who was loose.</source>
         <translation>Bitte wandeln Sie sie mit dem Befehl &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt; zum Format von Qt 4.</translation>
     </message>
     <message>
-        <location line="+746"/>
+        <location filename="../tools/designer/src/lib/shared/qsimpleresource.cpp" line="+337"/>
         <source>Custom Widgets</source>
         <translation>Benutzerdefinierte Widgets</translation>
     </message>
@@ -993,7 +959,7 @@ ate the goose who was loose.</source>
 <context>
     <name>EmbeddedOptionsControl</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/embeddedoptionspage.cpp" line="+311"/>
+        <location filename="../tools/designer/src/components/formeditor/embeddedoptionspage.cpp" line="+307"/>
         <source>&lt;html&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Font&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%1, %2&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Style&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Resolution&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4 x %5&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/html&gt;</source>
         <extracomment>Format embedded device profile description</extracomment>
         <translation>&lt;html&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Font&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%1, %2&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Stil&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Auflösung&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4 x %5&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/html&gt;</translation>
@@ -1068,7 +1034,7 @@ ate the goose who was loose.</source>
 <context>
     <name>FormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+351"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+359"/>
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values</extracomment>
         <translation>Ungültiger Stretch-Wert für &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1150,7 +1116,7 @@ ate the goose who was loose.</source>
 <context>
     <name>FormWindow</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1705"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1701"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <translation>Ungültiges Element &lt;%1&gt;</translation>
     </message>
@@ -1241,14 +1207,6 @@ ate the goose who was loose.</source>
     </message>
 </context>
 <context>
-    <name>LanguageResourceDialog</name>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="-235"/>
-        <source>Choose Resource</source>
-        <translation>Ressource auswählen</translation>
-    </message>
-</context>
-<context>
     <name>MainWindowBase</name>
     <message>
         <location filename="../tools/designer/src/designer/mainwindow.cpp" line="+119"/>
@@ -1336,17 +1294,9 @@ ate the goose who was loose.</source>
     </message>
 </context>
 <context>
-    <name>NewFormWidget</name>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/newformwidget.cpp" line="+495"/>
-        <source>Unable to open the form template file &apos;%1&apos;: %2</source>
-        <translation>Die Formularvorlage %1 konnte nicht geöffnet werden: %2</translation>
-    </message>
-</context>
-<context>
     <name>ObjectInspectorModel</name>
     <message>
-        <location filename="../tools/designer/src/components/objectinspector/objectinspectormodel.cpp" line="+364"/>
+        <location filename="../tools/designer/src/components/objectinspector/objectinspectormodel.cpp" line="+360"/>
         <source>Object</source>
         <translation>Objekt</translation>
     </message>
@@ -1369,7 +1319,7 @@ ate the goose who was loose.</source>
 <context>
     <name>ObjectNameDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_taskmenu.cpp" line="+162"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_taskmenu.cpp" line="+158"/>
         <source>Change Object Name</source>
         <translation>Objektnamen bearbeiten</translation>
     </message>
@@ -1389,7 +1339,7 @@ ate the goose who was loose.</source>
     <message>
         <location/>
         <source>1</source>
-        <translation type="unfinished">1</translation>
+        <translation>1</translation>
     </message>
 </context>
 <context>
@@ -1402,21 +1352,6 @@ ate the goose who was loose.</source>
 </context>
 <context>
     <name>PreviewConfigurationWidget</name>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.cpp" line="+155"/>
-        <source>Default</source>
-        <translation>Vorgabe</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>None</source>
-        <translation>Kein</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Browse...</source>
-        <translation>Durchsuchen...</translation>
-    </message>
     <message>
         <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.ui"/>
         <source>Form</source>
@@ -1451,7 +1386,7 @@ ate the goose who was loose.</source>
 <context>
     <name>PromotionModel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/promotionmodel.cpp" line="+116"/>
+        <location filename="../tools/designer/src/lib/shared/promotionmodel.cpp" line="+112"/>
         <source>Not used</source>
         <extracomment>Usage of promoted widgets</extracomment>
         <translation>Nicht verwendet</translation>
@@ -1475,12 +1410,12 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <location line="+5"/>
-        <source>An error has occurred while reading the ui file at line %1, column %2: %3</source>
+        <source>An error has occurred while reading the UI file at line %1, column %2: %3</source>
         <translation>Fehler beim Lesen der ui-Datei bei Zeile %1, Spalte %2: %3</translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>Invalid ui file: The root element &lt;ui&gt; is missing.</source>
+        <source>Invalid UI file: The root element &lt;ui&gt; is missing.</source>
         <translation>Fehler beim Lesen der ui-Datei: Das Wurzelelement &lt;ui&gt; fehlt.</translation>
     </message>
     <message>
@@ -1489,7 +1424,7 @@ ate the goose who was loose.</source>
         <translation>Es konnte kein Widget der Klasse &apos;%1&apos; erzeugt werden.</translation>
     </message>
     <message>
-        <location line="+295"/>
+        <location line="+296"/>
         <source>Attempt to add child that is not of class QWizardPage to QWizard.</source>
         <translation>Es wurde versucht, einem Objekt der Klasse  QWizard eine Seite hinzuzufügen, die nicht vom Typ QWizardPage ist.</translation>
     </message>
@@ -1505,7 +1440,7 @@ This indicates an inconsistency in the ui-file.</source>
         <translation>Leeres Widget-Item in %1 &apos;%2&apos;.</translation>
     </message>
     <message>
-        <location line="+684"/>
+        <location line="+680"/>
         <source>Flags property are not supported yet.</source>
         <translation>Eigenschaften des Typs &quot;Flag&quot; werden nicht unterstützt.</translation>
     </message>
@@ -1676,22 +1611,17 @@ Script: %3</source>
         <translation>Einstellungen...</translation>
     </message>
     <message>
-        <location line="+293"/>
+        <location line="+298"/>
         <source>Clear &amp;Menu</source>
         <translation>Menü &amp;löschen</translation>
     </message>
     <message>
-        <location line="-232"/>
+        <location line="-233"/>
         <source>CTRL+SHIFT+S</source>
         <translation>CTRL+SHIFT+S</translation>
     </message>
     <message>
-        <location line="+27"/>
-        <source>CTRL+Q</source>
-        <translation>CTRL+Q</translation>
-    </message>
-    <message>
-        <location line="+85"/>
+        <location line="+113"/>
         <source>CTRL+R</source>
         <translation>CTRL+R</translation>
     </message>
@@ -1745,7 +1675,7 @@ Script: %3</source>
         <translation>Designer-UI-Dateien (*.%1);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location line="-615"/>
+        <location line="-620"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>Die Datei %1 existiert bereits.
@@ -1757,7 +1687,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Das Formular %1 wurde gespeichert...</translation>
     </message>
     <message>
-        <location line="+366"/>
+        <location line="+371"/>
         <source>&amp;Recent Forms</source>
         <translation>&amp;Zuletzt bearbeitete Formulare</translation>
     </message>
@@ -1841,7 +1771,7 @@ Möchten Sie einen anderen Namen eingeben oder ein neues Formular erzeugen?</tra
         <translation>Vorschau &amp;schließen</translation>
     </message>
     <message>
-        <location line="-893"/>
+        <location line="-898"/>
         <source>Save &amp;Image...</source>
         <translation>&amp;Vorschaubild speichern...</translation>
     </message>
@@ -1856,7 +1786,7 @@ Möchten Sie einen anderen Namen eingeben oder ein neues Formular erzeugen?</tra
         <translation>&amp;Zusätzliche Schriftarten...</translation>
     </message>
     <message>
-        <location line="+646"/>
+        <location line="+651"/>
         <source>The file %1 could not be opened.
 Reason: %2
 Would you like to retry or select a different file?</source>
@@ -1890,7 +1820,7 @@ Möchten Sie es noch einmal versuchen?</translation>
         <translation>Die Datei %1 konnte nicht geschrieben werden.</translation>
     </message>
     <message>
-        <location line="-1158"/>
+        <location line="-1163"/>
         <source>&amp;New...</source>
         <translation>&amp;Neu...</translation>
     </message>
@@ -1921,17 +1851,17 @@ Möchten Sie es noch einmal versuchen?</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+896"/>
+        <location line="+901"/>
         <source>&amp;Close</source>
         <translation>&amp;Schließen</translation>
     </message>
     <message>
-        <location line="-891"/>
+        <location line="-896"/>
         <source>View &amp;Code...</source>
         <translation>&amp;Code anzeigen...</translation>
     </message>
     <message>
-        <location line="+419"/>
+        <location line="+424"/>
         <location line="+248"/>
         <source>Save Form As</source>
         <translation>Formular unter einem anderen Namen speichern</translation>
@@ -1963,7 +1893,7 @@ Möchten Sie es noch einmal versuchen?</translation>
         <translation>%1 wurde gedruckt.</translation>
     </message>
     <message>
-        <location line="-1148"/>
+        <location line="-1149"/>
         <source>ALT+CTRL+S</source>
         <translation>ALT+CTRL+S</translation>
     </message>
@@ -2062,7 +1992,7 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerMenu</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1160"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1181"/>
         <source>Type Here</source>
         <translation>Geben Sie Text ein</translation>
     </message>
@@ -2072,7 +2002,7 @@ Möchten Sie es noch einmal versuchen?</translation>
         <translation>Trenner hinzufügen</translation>
     </message>
     <message>
-        <location line="+372"/>
+        <location line="+371"/>
         <source>Insert separator</source>
         <translation>Trenner einfügen</translation>
     </message>
@@ -2088,12 +2018,12 @@ Möchten Sie es noch einmal versuchen?</translation>
     </message>
     <message>
         <location line="+27"/>
-        <location line="+628"/>
+        <location line="+650"/>
         <source>Add separator</source>
         <translation>Trenner hinzufügen</translation>
     </message>
     <message>
-        <location line="-326"/>
+        <location line="-348"/>
         <source>Insert action</source>
         <translation>Aktion einfügen</translation>
     </message>
@@ -2101,12 +2031,12 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerMenuBar</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-381"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-375"/>
         <source>Type Here</source>
         <translation>Geben Sie Text ein</translation>
     </message>
     <message>
-        <location line="+304"/>
+        <location line="+298"/>
         <source>Remove Menu &apos;%1&apos;</source>
         <translation>Menü &apos;%1&apos; öschen</translation>
     </message>
@@ -2124,12 +2054,27 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerPluginManager</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/pluginmanager.cpp" line="+249"/>
+        <location filename="../tools/designer/src/lib/shared/pluginmanager.cpp" line="+271"/>
         <source>An XML error was encountered when parsing the XML of the custom widget %1: %2</source>
         <translation>Fehler beim Auswerten des XML des benutzerdefinierten Widgets %1: %2</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+5"/>
+        <source>A required attribute (&apos;%1&apos;) is missing.</source>
+        <translation>Bei dem Element fehlt ein erforderliches Attribut (&apos;%1&apos;).</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>An invalid property specification (&apos;%1&apos;) was encountered. Supported types: %2</source>
+        <translation>&apos;%1&apos; ist keine gültige Spezifikation einer Eigenschaft. Die folgenden Typen werden unterstützt: %2</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>&apos;%1&apos; is not a valid string property specification.</source>
+        <translation>&apos;%1&apos; ist keine gültige Spezifikation einer Zeichenketten-Eigenschaft.</translation>
+    </message>
+    <message>
+        <location line="+40"/>
         <source>The XML of the custom widget %1 does not contain any of the elements &lt;widget&gt; or &lt;ui&gt;.</source>
         <translation>Der XML-Code für das Widget %1 enthält kein gültiges Wurzelelement (&lt;widget&gt;, &lt;ui&gt;).</translation>
     </message>
@@ -2155,12 +2100,12 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerResource</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="-246"/>
+        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+492"/>
         <source>The layout type &apos;%1&apos; is not supported, defaulting to grid.</source>
         <translation>Der Layout-Typ &apos;%1&apos; wird nicht unterstützt; es wurde ein Grid-Layout erzeugt.</translation>
     </message>
     <message>
-        <location line="+342"/>
+        <location line="+243"/>
         <source>The container extension of the widget &apos;%1&apos; (%2) returned a widget not managed by Designer &apos;%3&apos; (%4) when queried for page #%5.
 Container pages should only be added by specifying them in XML returned by the domXml() method of the custom widget.</source>
         <translation>Die Container-Extension des Widgets &apos;%1&apos; (%2) gab für Seite %5 ein Widget &apos;%3&apos; (%4) zurück, was nicht von Designer verwaltet wird.
@@ -2228,30 +2173,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
     <message>
         <location line="+41"/>
         <source>Widget Box</source>
-        <translation>Widgetbox</translation>
-    </message>
-</context>
-<context>
-    <name>QDesignerWidgetBox</name>
-    <message>
-        <location filename="../tools/designer/src/components/widgetbox/widgetboxtreewidget.cpp" line="+349"/>
-        <source>An error has been encountered at line %1 of %2: %3</source>
-        <translation>Fehler bei Zeile %1 von %2: %3</translation>
-    </message>
-    <message>
-        <location line="+139"/>
-        <source>Unexpected element &lt;%1&gt; encountered when parsing for &lt;widget&gt; or &lt;ui&gt;</source>
-        <translation>Es wurde ein Element &lt;%1&gt; gefunden; (anstatt &lt;widget&gt; or &lt;ui&gt;)</translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Unexpected end of file encountered when parsing widgets.</source>
-        <translation>Vorzeitiges Dateiende beim Lesen der Widget-Box-Konfiguration.</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>A widget element could not be found.</source>
-        <translation>Es fehlt das Widget-Element.</translation>
+        <translation>Widget-Box</translation>
     </message>
 </context>
 <context>
@@ -2292,12 +2214,12 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>Werkzeugleisten</translation>
     </message>
     <message>
-        <location line="+464"/>
+        <location line="+465"/>
         <source>Save Forms?</source>
         <translation>Formulare speichern?</translation>
     </message>
     <message>
-        <location line="-493"/>
+        <location line="-494"/>
         <source>&amp;View</source>
         <translation>&amp;Ansicht</translation>
     </message>
@@ -2307,7 +2229,12 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>&amp;Einstellungen</translation>
     </message>
     <message>
-        <location line="+495"/>
+        <location line="+204"/>
+        <source>Widget Box</source>
+        <translation>Widgetbox</translation>
+    </message>
+    <message>
+        <location line="+292"/>
         <source>If you do not review your documents, all your changes will be lost.</source>
         <translation>Die Änderungen gehen verloren, wenn Sie sich die Formulare nicht noch einmal ansehen.</translation>
     </message>
@@ -2338,7 +2265,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
     </message>
     <message>
         <location line="+46"/>
-        <source>The file &lt;b&gt;%1&lt;/b&gt; is not a valid Designer ui file.</source>
+        <source>The file &lt;b&gt;%1&lt;/b&gt; is not a valid Designer UI file.</source>
         <translation>Die Datei &lt;b&gt;%1&lt;/b&gt; ist keine gültige Designer-Datei.</translation>
     </message>
     <message numerus="yes">
@@ -2353,7 +2280,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+160"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+163"/>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method</extracomment>
         <translation>Der Methode %1 wurde ein leerer Klassennamen übergeben (Name &apos;%2&apos;).</translation>
@@ -2369,7 +2296,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>QFormBuilder konnte kein Objekt der Klasse &apos;%1&apos; erzeugen.</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+61"/>
         <source>The layout type `%1&apos; is not supported.</source>
         <translation>Layouts des Typs `%1&apos; werden nicht unterstützt.</translation>
     </message>
@@ -2392,16 +2319,6 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <location line="+266"/>
         <source>The property %1 could not be written. The type %2 is not supported yet.</source>
         <translation>Die Eigenschaft %1 konnte nicht geschrieben werden, da der Typ %2 nicht unterstützt wird.</translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/lib/uilib/properties_p.h" line="+132"/>
-        <source>The enumeration-value &apos;%1&apos; is invalid. The default value &apos;%2&apos; will be used instead.</source>
-        <translation>Der Aufzählungswert &apos;%1&apos; ist ungültig. Der Vorgabewert &apos;%2&apos; wird verwendet.</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>The flag-value &apos;%1&apos; is invalid. Zero will be used instead.</source>
-        <translation>Der Maskenwert &apos;%1&apos; ist ungültig. Es wird 0 verwendet.</translation>
     </message>
 </context>
 <context>
@@ -2447,7 +2364,8 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>Seite %1 von %2</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+10"/>
+        <location line="+4"/>
         <source>Insert Page</source>
         <translation>Seite einfügen</translation>
     </message>
@@ -2455,7 +2373,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QStackedWidgetPreviewEventFilter</name>
     <message>
-        <location line="-150"/>
+        <location line="-153"/>
         <source>Go to previous page of %1 &apos;%2&apos; (%3/%4).</source>
         <translation>Gehe zur vorigen Seite von %1 &apos;%2&apos; (%3/%4).</translation>
     </message>
@@ -2488,7 +2406,8 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>Seite %1 von %2</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+10"/>
+        <location line="+4"/>
         <source>Insert Page</source>
         <translation>Seite einfügen</translation>
     </message>
@@ -2759,7 +2678,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtGradientEditor</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.cpp" line="+435"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.cpp" line="+431"/>
         <source>Start X</source>
         <translation>Anfangswert X</translation>
     </message>
@@ -2809,6 +2728,36 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <location line="+16"/>
         <source>Angle</source>
         <translation>Winkel</translation>
+    </message>
+    <message>
+        <location line="+289"/>
+        <source>Linear</source>
+        <translation>Linear</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Radial</source>
+        <translation>Radial</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Conical</source>
+        <translation>Konisch</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Pad</source>
+        <translation>Auffüllen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Repeat</source>
+        <translation>Wiederholen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reflect</source>
+        <translation>Spiegeln</translation>
     </message>
     <message>
         <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.ui"/>
@@ -3087,31 +3036,31 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>Möchten Sie den ausgewählten Gradienten löschen?</translation>
     </message>
     <message>
-        <location line="+74"/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientview.ui"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+74"/>
         <source>New...</source>
         <translation>Neu...</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientview.ui"/>
+        <location/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+1"/>
         <source>Edit...</source>
         <translation>Ändern...</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientview.ui"/>
+        <location/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+1"/>
         <source>Rename</source>
         <translation>Umbenennen</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientview.ui"/>
+        <location/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+1"/>
         <source>Remove</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientview.ui"/>
+        <location/>
         <source>Gradient View</source>
         <translation>Gradientenanzeige</translation>
     </message>
@@ -3119,7 +3068,6 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtGradientViewDialog</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.h" line="+62"/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.ui"/>
         <source>Select Gradient</source>
         <translation>Gradienten auswählen</translation>
@@ -3545,24 +3493,24 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtResourceView</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+435"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+566"/>
         <source>Size: %1 x %2
 %3</source>
         <translation>Größe: %1 x %2
 %3</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+20"/>
         <source>Edit Resources...</source>
         <translation>Ressourcen bearbeiten...</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Reload</source>
         <translation>Neu laden</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Copy Path</source>
         <translation>Pfad kopieren</translation>
     </message>
@@ -3570,7 +3518,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtResourceViewDialog</name>
     <message>
-        <location line="+247"/>
+        <location line="+252"/>
         <source>Select Resource</source>
         <translation>Ressource auswählen</translation>
     </message>
@@ -3834,7 +3782,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>ScriptErrorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/scripterrordialog.cpp" line="+63"/>
+        <location filename="../tools/designer/src/lib/shared/scripterrordialog.cpp" line="+59"/>
         <source>An error occurred while running the scripts for &quot;%1&quot;:
 </source>
         <translation>Bei der Ausführung der Skripte für &quot;%1&quot; sind Fehler aufgetreten:
@@ -3978,8 +3926,8 @@ Möchten Sie sie überschreiben?</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <location line="+2"/>
+        <source>%1&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3994,7 +3942,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::ActionEditor</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/actioneditor.cpp" line="+143"/>
+        <location filename="../tools/designer/src/lib/shared/actioneditor.cpp" line="+139"/>
         <source>Actions</source>
         <translation>Aktionen</translation>
     </message>
@@ -4009,7 +3957,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location line="+307"/>
+        <location line="+313"/>
         <source>New action</source>
         <translation>Neue Aktion</translation>
     </message>
@@ -4019,7 +3967,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Aktion ändern</translation>
     </message>
     <message>
-        <location line="-411"/>
+        <location line="-417"/>
         <source>Edit...</source>
         <translation>Ändern...</translation>
     </message>
@@ -4049,7 +3997,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Alles auswählen</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+62"/>
         <source>Icon View</source>
         <translation>Icon-Ansicht</translation>
     </message>
@@ -4059,7 +4007,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Detaillierte Ansicht</translation>
     </message>
     <message>
-        <location line="+412"/>
+        <location line="+413"/>
         <source>Remove actions</source>
         <translation> Aktionen löschen</translation>
     </message>
@@ -4074,7 +4022,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Verwendet in</translation>
     </message>
     <message>
-        <location line="-607"/>
+        <location line="-608"/>
         <source>Configure Action Editor</source>
         <translation>Aktionseditor konfigurieren</translation>
     </message>
@@ -4113,9 +4061,37 @@ Möchten Sie sie überschreiben?</translation>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::BrushManagerProxy</name>
+    <message>
+        <location filename="../tools/designer/src/components/formeditor/brushmanagerproxy.cpp" line="+221"/>
+        <source>The element &apos;%1&apos; is missing the required attribute &apos;%2&apos;.</source>
+        <translation>Bei dem Element fehlt das erforderliche Attribut &apos;%2&apos;.</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Empty brush name encountered.</source>
+        <translation>Fehlender Name bei der Brush-Definition.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>An unexpected element &apos;%1&apos; was encountered.</source>
+        <translation>Ein ungültiges Element &apos;%1&apos; wurde festgestellt.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>An error occurred when reading the brush definition file &apos;%1&apos; at line line %2, column %3: %4</source>
+        <translation>Fehler beim Lesen der Brush-Datei &apos;%1&apos; bei Zeile %2, Spalte %3: %4</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>An error occurred when reading the resource file &apos;%1&apos; at line %2, column %3: %4</source>
+        <translation>Fehler beim Lesen der Ressourcen-Datei &apos;%1&apos; bei Zeile %2, Spalte %3: %4</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::BuddyEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor.cpp" line="+265"/>
+        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor.cpp" line="+261"/>
         <source>Add buddy</source>
         <translation>Buddy hinzufügen</translation>
     </message>
@@ -4149,7 +4125,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::BuddyEditorPlugin</name>
     <message>
-        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_plugin.cpp" line="+77"/>
+        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_plugin.cpp" line="+73"/>
         <source>Edit Buddies</source>
         <translation>Buddies bearbeiten</translation>
     </message>
@@ -4157,7 +4133,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::BuddyEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_tool.cpp" line="+60"/>
+        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_tool.cpp" line="+56"/>
         <source>Edit Buddies</source>
         <translation>Buddies bearbeiten</translation>
     </message>
@@ -4211,7 +4187,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::CodeDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/codedialog.cpp" line="+99"/>
+        <location filename="../tools/designer/src/lib/shared/codedialog.cpp" line="+95"/>
         <source>Save...</source>
         <translation>Speichern...</translation>
     </message>
@@ -4269,7 +4245,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::ColorAction</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/richtexteditor.cpp" line="+250"/>
+        <location filename="../tools/designer/src/lib/shared/richtexteditor.cpp" line="+246"/>
         <source>Text Color</source>
         <translation>Schriftfarbe</translation>
     </message>
@@ -4277,7 +4253,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::ComboBoxTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/combobox_taskmenu.cpp" line="+72"/>
+        <location filename="../tools/designer/src/components/taskmenu/combobox_taskmenu.cpp" line="+68"/>
         <source>Edit Items...</source>
         <translation>Einträge ändern...</translation>
     </message>
@@ -4369,7 +4345,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::ContainerWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/containerwidget_taskmenu.cpp" line="+112"/>
+        <location filename="../tools/designer/src/components/taskmenu/containerwidget_taskmenu.cpp" line="+107"/>
         <source>Insert Page Before Current Page</source>
         <translation>Seite davor einfügen</translation>
     </message>
@@ -4432,7 +4408,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::DesignerPropertyManager</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="+644"/>
+        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="+647"/>
         <location line="+6"/>
         <source>AlignLeft</source>
         <translation>Linksbündig ausrichten</translation>
@@ -4773,7 +4749,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Fehler beim Einfügen</translation>
     </message>
     <message>
-        <location line="+442"/>
+        <location line="+445"/>
         <source>Lay out</source>
         <translation>Layout</translation>
     </message>
@@ -4784,7 +4760,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Widget einfügen</translation>
     </message>
     <message numerus="yes">
-        <location line="-1055"/>
+        <location line="-1058"/>
         <source>Paste %n action(s)</source>
         <translation>
             <numerusform>Eine Aktion einfügen</numerusform>
@@ -4820,7 +4796,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Bitte lösen Sie das Layout des gewünschten Containers auf und wählen Sie ihn erneut aus, um die Widgets einzufügen.</translation>
     </message>
     <message>
-        <location line="+405"/>
+        <location line="+408"/>
         <source>Select Ancestor</source>
         <translation>Übergeordnetes Widget auswählen</translation>
     </message>
@@ -4830,7 +4806,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Ein auf QMainWindow basierendes Formular enthält kein zentrales Widget.</translation>
     </message>
     <message>
-        <location line="-794"/>
+        <location line="-797"/>
         <source>Raise widgets</source>
         <translation>Widgets nach vorn bringen</translation>
     </message>
@@ -4843,7 +4819,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::FormWindowBase</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+397"/>
+        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+393"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
@@ -4856,7 +4832,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::FormWindowManager</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+368"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+364"/>
         <source>Cu&amp;t</source>
         <translation>&amp;Ausschneiden</translation>
     </message>
@@ -4958,7 +4934,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Ordnet die ausgewählten Objekte senkrecht an</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
         <source>Lay Out in a &amp;Grid</source>
         <translation>Objekte &amp;tabellarisch anordnen</translation>
     </message>
@@ -5008,12 +4984,12 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Vorschau des Formulars</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+15"/>
         <source>Form &amp;Settings...</source>
         <translation>Formular&amp;einstellungen...</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+92"/>
         <source>Break Layout</source>
         <translation>Layout auflösen</translation>
     </message>
@@ -5034,7 +5010,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Formulareinstellungen - %1</translation>
     </message>
     <message>
-        <location line="-510"/>
+        <location line="-525"/>
         <source>Removes empty columns and rows</source>
         <translation>Entfernt unbesetzte Zeilen und Spalten</translation>
     </message>
@@ -5108,7 +5084,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::GroupBoxTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/groupbox_taskmenu.cpp" line="+86"/>
+        <location filename="../tools/designer/src/components/taskmenu/groupbox_taskmenu.cpp" line="+82"/>
         <source>Change title...</source>
         <translation>Titel ändern...</translation>
     </message>
@@ -5124,7 +5100,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::IconSelector</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="+211"/>
+        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="-24"/>
         <source>The pixmap file &apos;%1&apos; cannot be read.</source>
         <translation>Die Pixmap-Datei &apos;%1&apos; kann nicht gelesen werden.</translation>
     </message>
@@ -5222,13 +5198,13 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Eigenschaften &amp;&lt;&lt;</translation>
     </message>
     <message>
-        <location line="+2"/>
         <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.ui"/>
+        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.cpp" line="+2"/>
         <source>Properties &amp;&gt;&gt;</source>
         <translation>Eigenschaften &amp;&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.ui"/>
+        <location/>
         <source>Items List</source>
         <translation>Liste der Elemente</translation>
     </message>
@@ -5276,7 +5252,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::LabelTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/label_taskmenu.cpp" line="+89"/>
+        <location filename="../tools/designer/src/components/taskmenu/label_taskmenu.cpp" line="+85"/>
         <source>Change rich text...</source>
         <translation>Formatierbaren Text ändern...</translation>
     </message>
@@ -5287,9 +5263,17 @@ Möchten Sie sie überschreiben?</translation>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::LanguageResourceDialog</name>
+    <message>
+        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="-259"/>
+        <source>Choose Resource</source>
+        <translation>Ressource auswählen</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::LineEditTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/lineedit_taskmenu.cpp" line="+84"/>
+        <location filename="../tools/designer/src/components/taskmenu/lineedit_taskmenu.cpp" line="+80"/>
         <source>Change text...</source>
         <translation>Text ändern...</translation>
     </message>
@@ -5297,7 +5281,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::ListWidgetEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/listwidgeteditor.cpp" line="+105"/>
+        <location filename="../tools/designer/src/components/taskmenu/listwidgeteditor.cpp" line="+101"/>
         <source>Edit List Widget</source>
         <translation>List-Widget ändern</translation>
     </message>
@@ -5315,7 +5299,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::ListWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/listwidget_taskmenu.cpp" line="+71"/>
+        <location filename="../tools/designer/src/components/taskmenu/listwidget_taskmenu.cpp" line="+67"/>
         <source>Edit Items...</source>
         <translation> Elemente ändern...</translation>
     </message>
@@ -5351,7 +5335,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::MenuTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/menutaskmenu.cpp" line="+60"/>
+        <location filename="../tools/designer/src/components/taskmenu/menutaskmenu.cpp" line="+56"/>
         <source>Remove</source>
         <translation>Löschen</translation>
     </message>
@@ -5451,7 +5435,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::NewFormWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/newformwidget.cpp" line="-391"/>
+        <location filename="../tools/designer/src/lib/shared/newformwidget.cpp" line="+104"/>
         <source>Default size</source>
         <translation>Vorgabe</translation>
     </message>
@@ -5497,7 +5481,12 @@ Please select another name.</source>
         <translation>Das Formular konnte nicht geladen werden</translation>
     </message>
     <message>
-        <location line="+312"/>
+        <location line="+244"/>
+        <source>Unable to open the form template file &apos;%1&apos;: %2</source>
+        <translation>Die Formularvorlage &apos;%1&apos; konnte nicht geöffnet werden: %2</translation>
+    </message>
+    <message>
+        <location line="+67"/>
         <source>Internal error: No template selected.</source>
         <translation>Interner Fehler: Es ist keine Vorlage selektiert.</translation>
     </message>
@@ -5530,7 +5519,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::NewPromotedClassPanel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_promotiondialog.cpp" line="+96"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_promotiondialog.cpp" line="+92"/>
         <source>Add</source>
         <translation>Hinzufügen</translation>
     </message>
@@ -5568,23 +5557,20 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::ObjectInspector</name>
     <message>
-        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+758"/>
+        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+316"/>
+        <source>Change Current Page</source>
+        <translation>Seite wechseln</translation>
+    </message>
+    <message>
+        <location line="+438"/>
         <source>&amp;Find in Text...</source>
         <translation>&amp;Suchen...</translation>
     </message>
 </context>
 <context>
-    <name>qdesigner_internal::ObjectInspector::ObjectInspectorPrivate</name>
-    <message>
-        <location line="-438"/>
-        <source>Change Current Page</source>
-        <translation>Seite wechseln</translation>
-    </message>
-</context>
-<context>
     <name>qdesigner_internal::OrderDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/orderdialog.cpp" line="+113"/>
+        <location filename="../tools/designer/src/lib/shared/orderdialog.cpp" line="+109"/>
         <source>Index %1 (%2)</source>
         <translation>Position %1 (%2)</translation>
     </message>
@@ -5665,7 +5651,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PaletteEditorButton</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/paletteeditorbutton.cpp" line="+61"/>
+        <location filename="../tools/designer/src/components/propertyeditor/paletteeditorbutton.cpp" line="+57"/>
         <source>Change Palette</source>
         <translation>Palette ändern</translation>
     </message>
@@ -5673,7 +5659,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PaletteModel</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/paletteeditor.cpp" line="+381"/>
+        <location filename="../tools/designer/src/components/propertyeditor/paletteeditor.cpp" line="+374"/>
         <source>Color Role</source>
         <translation>Farbrolle</translation>
     </message>
@@ -5725,7 +5711,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PlainTextEditorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/plaintexteditor.cpp" line="+69"/>
+        <location filename="../tools/designer/src/lib/shared/plaintexteditor.cpp" line="+65"/>
         <source>Edit text</source>
         <translation>Text bearbeiten</translation>
     </message>
@@ -5767,10 +5753,6 @@ Please select another name.</source>
         <source>New custom widget plugins have been found.</source>
         <translation>Es wurden neuinstallierten Plugins mit benutzerdefinierten Widgets gefunden.</translation>
     </message>
-    <message>
-        <source>1</source>
-        <translation type="obsolete">1</translation>
-    </message>
 </context>
 <context>
     <name>qdesigner_internal::PreviewActionGroup</name>
@@ -5781,9 +5763,24 @@ Please select another name.</source>
     </message>
 </context>
 <context>
-    <name>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate</name>
+    <name>qdesigner_internal::PreviewConfigurationWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.cpp" line="+118"/>
+        <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.cpp" line="+139"/>
+        <source>Default</source>
+        <translation>Vorgabe</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>None</source>
+        <translation>Kein</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Browse...</source>
+        <translation>Durchsuchen...</translation>
+    </message>
+    <message>
+        <location line="+118"/>
         <source>Load Custom Device Skin</source>
         <translation>Benutzerdefinierten Geräte-Skin laden </translation>
     </message>
@@ -5818,7 +5815,24 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PreviewDeviceSkin</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/previewmanager.cpp" line="+218"/>
+        <location filename="../tools/designer/src/lib/shared/previewmanager.cpp" line="+259"/>
+        <source>&amp;Portrait</source>
+        <translation>&amp;Hochformat</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Landscape (&amp;CCW)</source>
+        <extracomment>Rotate form preview counter-clockwise</extracomment>
+        <translation>Querformat (&amp;entgegen Uhrzeigersinn)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Landscape (CW)</source>
+        <extracomment>Rotate form preview clockwise</extracomment>
+        <translation>Querformat (im &amp;Uhrzeigersinn)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>&amp;Close</source>
         <translation>&amp;Schließen</translation>
     </message>
@@ -5826,9 +5840,19 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PreviewManager</name>
     <message>
-        <location line="+345"/>
+        <location line="+426"/>
         <source>%1 - [Preview]</source>
         <translation>%1 - [Vorschau]</translation>
+    </message>
+</context>
+<context>
+    <name>qdesigner_internal::PreviewMdiArea</name>
+    <message>
+        <location filename="../tools/designer/src/components/propertyeditor/previewframe.cpp" line="+72"/>
+        <source>The moose in the noose
+ate the goose who was loose.</source>
+        <extracomment>Palette editor background</extracomment>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5943,7 +5967,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PropertyEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+188"/>
+        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+183"/>
         <source>Add Dynamic Property...</source>
         <translation>Dynamische Eigenschaft hinzufügen...</translation>
     </message>
@@ -6178,7 +6202,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::QDesignerWidgetBox</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_widgetbox.cpp" line="+127"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_widgetbox.cpp" line="+123"/>
         <location line="+13"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <translation>Ungültiges Element &lt;%1&gt;</translation>
@@ -6196,44 +6220,31 @@ Klasse: %2</translation>
 %2</source>
         <translation>Der XML-Code für das Widget %1 enthält keine Widgets.%2</translation>
     </message>
-</context>
-<context>
-    <name>qdesigner_internal::QtGradientEditor</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.cpp" line="+289"/>
-        <source>Linear</source>
-        <translation>Linear</translation>
+        <location filename="../tools/designer/src/components/widgetbox/widgetboxtreewidget.cpp" line="+349"/>
+        <source>An error has been encountered at line %1 of %2: %3</source>
+        <translation>Fehler bei Zeile %1 von %2: %3</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Radial</source>
-        <translation>Radial</translation>
+        <location line="+139"/>
+        <source>Unexpected element &lt;%1&gt; encountered when parsing for &lt;widget&gt; or &lt;ui&gt;</source>
+        <translation>An Stelle des erwarteten &lt;widget&gt;- oder &lt;ui&gt;-Elementes wurde &lt;%1&gt; gefunden</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Conical</source>
-        <translation>Konisch</translation>
+        <location line="+19"/>
+        <source>Unexpected end of file encountered when parsing widgets.</source>
+        <translation>Vorzeitiges Dateiende beim Lesen der Widget-Box-Konfiguration.</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <source>Pad</source>
-        <translation>Auffüllen</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Repeat</source>
-        <translation>Wiederholen</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Reflect</source>
-        <translation>Spiegeln</translation>
+        <location line="+9"/>
+        <source>A widget element could not be found.</source>
+        <translation>Es fehlt das Widget-Element.</translation>
     </message>
 </context>
 <context>
     <name>qdesigner_internal::QtGradientStopsController</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientstopscontroller.cpp" line="+177"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientstopscontroller.cpp" line="+173"/>
         <source>H</source>
         <translation>H</translation>
     </message>
@@ -6408,7 +6419,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::ScriptDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/scriptdialog.cpp" line="+68"/>
+        <location filename="../tools/designer/src/lib/shared/scriptdialog.cpp" line="+64"/>
         <source>Edit script</source>
         <translation>Skript bearbeiten</translation>
     </message>
@@ -6458,7 +6469,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::SignalSlotEditorPlugin</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_plugin.cpp" line="+76"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_plugin.cpp" line="+72"/>
         <source>Edit Signals/Slots</source>
         <translation>Signale und Slots bearbeiten</translation>
     </message>
@@ -6471,7 +6482,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::SignalSlotEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_tool.cpp" line="+62"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_tool.cpp" line="+58"/>
         <source>Edit Signals/Slots</source>
         <translation>Signale und Slots bearbeiten</translation>
     </message>
@@ -6479,7 +6490,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::StatusBarTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/toolbar_taskmenu.cpp" line="+85"/>
+        <location filename="../tools/designer/src/components/taskmenu/toolbar_taskmenu.cpp" line="+81"/>
         <source>Remove</source>
         <translation>Löschen</translation>
     </message>
@@ -6487,7 +6498,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::StringListEditorButton</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/stringlisteditorbutton.cpp" line="+60"/>
+        <location filename="../tools/designer/src/components/propertyeditor/stringlisteditorbutton.cpp" line="+56"/>
         <source>Change String List</source>
         <translation>Zeichenkettenliste ändern</translation>
     </message>
@@ -6495,7 +6506,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::StyleSheetEditorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/stylesheeteditor.cpp" line="+101"/>
+        <location filename="../tools/designer/src/lib/shared/stylesheeteditor.cpp" line="+97"/>
         <source>Edit Style Sheet</source>
         <translation>Stylesheet bearbeiten</translation>
     </message>
@@ -6562,7 +6573,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TabOrderEditorPlugin</name>
     <message>
-        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_plugin.cpp" line="+77"/>
+        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_plugin.cpp" line="+73"/>
         <source>Edit Tab Order</source>
         <translation>Tabulatorreihenfolge bearbeiten</translation>
     </message>
@@ -6570,7 +6581,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TabOrderEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_tool.cpp" line="+61"/>
+        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_tool.cpp" line="+57"/>
         <source>Edit Tab Order</source>
         <translation>Tabulatorreihenfolge bearbeiten</translation>
     </message>
@@ -6578,7 +6589,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TableWidgetEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.cpp" line="+71"/>
+        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.cpp" line="+67"/>
         <source>New Column</source>
         <translation>Neue Spalte</translation>
     </message>
@@ -6603,13 +6614,13 @@ Klasse: %2</translation>
         <translation>Eigenschaften &amp;&lt;&lt;</translation>
     </message>
     <message>
-        <location line="+2"/>
         <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.ui"/>
+        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.cpp" line="+2"/>
         <source>Properties &amp;&gt;&gt;</source>
         <translation>Eigenschaften &amp;&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.ui"/>
+        <location/>
         <source>Edit Table Widget</source>
         <translation>Table Widget ändern</translation>
     </message>
@@ -6627,7 +6638,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TableWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/tablewidget_taskmenu.cpp" line="+68"/>
+        <location filename="../tools/designer/src/components/taskmenu/tablewidget_taskmenu.cpp" line="+64"/>
         <source>Edit Items...</source>
         <translation>Elemente ändern...</translation>
     </message>
@@ -6658,7 +6669,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TextEditTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/textedit_taskmenu.cpp" line="+63"/>
+        <location filename="../tools/designer/src/components/taskmenu/textedit_taskmenu.cpp" line="+59"/>
         <source>Change HTML...</source>
         <translation>HTML ändern...</translation>
     </message>
@@ -6681,7 +6692,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TextEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="-201"/>
+        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="-204"/>
         <source>Choose Resource...</source>
         <translation>Ressource auswählen...</translation>
     </message>
@@ -6691,12 +6702,12 @@ Klasse: %2</translation>
         <translation>Datei auswählen...</translation>
     </message>
     <message>
-        <location line="+120"/>
+        <location line="+123"/>
         <source>Choose a File</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-115"/>
+        <location line="-118"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -6704,7 +6715,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::ToolBarEventFilter</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbar.cpp" line="+239"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbar.cpp" line="+234"/>
         <source>Insert Separator</source>
         <translation>Trenner einfügen</translation>
     </message>
@@ -6732,7 +6743,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TreeWidgetEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+80"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+76"/>
         <source>&amp;Columns</source>
         <translation>&amp;Spalten</translation>
     </message>
@@ -6747,24 +6758,24 @@ Klasse: %2</translation>
         <translation>Gemeinsame Eigenschaften</translation>
     </message>
     <message>
-        <location line="+53"/>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+53"/>
         <source>New Item</source>
         <translation>Neues Element</translation>
     </message>
     <message>
-        <location line="+194"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+194"/>
         <source>Properties &amp;&lt;&lt;</source>
         <translation>Eigenschaften &amp;&lt;&lt;</translation>
     </message>
     <message>
-        <location line="+2"/>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+2"/>
         <source>Properties &amp;&gt;&gt;</source>
         <translation>Eigenschaften &amp;&gt;&gt;</translation>
     </message>
     <message>
-        <location line="-327"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="-327"/>
         <source>New Column</source>
         <translation>Neue Spalte</translation>
     </message>
@@ -6784,13 +6795,13 @@ Klasse: %2</translation>
         <translation>Elemente</translation>
     </message>
     <message>
+        <location/>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+150"/>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
         <source>New Subitem</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
+        <location/>
         <source>New &amp;Subitem</source>
         <translation>Neues &amp;untergeordnetes Element</translation>
     </message>
@@ -6858,7 +6869,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::TreeWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidget_taskmenu.cpp" line="+67"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidget_taskmenu.cpp" line="+63"/>
         <source>Edit Items...</source>
         <translation>Elemente ändern...</translation>
     </message>
@@ -6866,7 +6877,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::WidgetBox</name>
     <message>
-        <location filename="../tools/designer/src/components/widgetbox/widgetbox_dnditem.cpp" line="+113"/>
+        <location filename="../tools/designer/src/components/widgetbox/widgetbox_dnditem.cpp" line="+115"/>
         <source>Warning: Widget creation failed in the widget box. This could be caused by invalid custom widget XML.</source>
         <translation>Warnung: Die Erzeugung des Widgets in der Widget-Box schlug fehl. Das könnte durch fehlerhaften XML-Code benutzerdefinierter Widgets verursacht worden sein.</translation>
     </message>
@@ -6884,7 +6895,7 @@ Klasse: %2</translation>
         <translation>Benutzerdefinierte Widgets</translation>
     </message>
     <message>
-        <location line="+260"/>
+        <location line="+263"/>
         <source>Expand all</source>
         <translation>Alles aufklappen</translation>
     </message>
@@ -6925,7 +6936,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::WidgetEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/tool_widgeteditor.cpp" line="+71"/>
+        <location filename="../tools/designer/src/components/formeditor/tool_widgeteditor.cpp" line="+67"/>
         <source>Edit Widgets</source>
         <translation>Widgets bearbeiten</translation>
     </message>
@@ -6933,7 +6944,7 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::WidgetFactory</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/widgetfactory.cpp" line="+267"/>
+        <location filename="../tools/designer/src/lib/shared/widgetfactory.cpp" line="+263"/>
         <source>The custom widget factory registered for widgets of class %1 returned 0.</source>
         <translation>Die Factory für benutzerdefinierte Widgets der Klasse %1 gab einen 0-Zeiger zurück.</translation>
     </message>
@@ -6984,6 +6995,14 @@ This indicates an inconsistency in the ui-file.</source>
         <source>%1 %</source>
         <extracomment>Zoom factor</extracomment>
         <translation>%1 %</translation>
+    </message>
+</context>
+<context>
+    <name>qdesigner_internal::ZoomablePreviewDeviceSkin</name>
+    <message>
+        <location filename="../tools/designer/src/lib/shared/previewmanager.cpp" line="-270"/>
+        <source>&amp;Zoom</source>
+        <translation>&amp;Vergrößern</translation>
     </message>
 </context>
 </TS>

@@ -192,11 +192,18 @@ void QBenchmarkTestMethodData::setResult(qint64 value)
 */
 QTest::QBenchmarkIterationController::QBenchmarkIterationController(RunMode runMode)
 {
-    QTest::beginBenchmarkMeasurement();
     i = 0;
     if (runMode == RunOnce)
         QBenchmarkTestMethodData::current->runOnce = true;    
+    QTest::beginBenchmarkMeasurement();
 }
+
+QTest::QBenchmarkIterationController::QBenchmarkIterationController()
+{
+    i = 0;
+    QTest::beginBenchmarkMeasurement();
+}
+
 /*! \internal
 */
 QTest::QBenchmarkIterationController::~QBenchmarkIterationController()

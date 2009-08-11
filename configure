@@ -850,7 +850,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2200,6 +2200,8 @@ if [ -z "$MAKE" ]; then
         echo >&2 "Cannot proceed."
         exit 1
     fi
+    # export MAKE, we need it later in the config.tests
+    export MAKE
 fi
 
 fi ### help
@@ -5951,7 +5953,9 @@ fi
 if [ "$CFG_INOTIFY" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG inotify"
 fi
-if [ "$CFG_LIBJPEG" = "system" ]; then
+if [ "$CFG_LIBJPEG" = "no" ]; then
+    CFG_JPEG="no"
+elif [ "$CFG_LIBJPEG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-jpeg"
 fi
 if [ "$CFG_JPEG" = "no" ]; then
@@ -5959,7 +5963,9 @@ if [ "$CFG_JPEG" = "no" ]; then
 elif [ "$CFG_JPEG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG jpeg"
 fi
-if [ "$CFG_LIBMNG" = "system" ]; then
+if [ "$CFG_LIBMNG" = "no" ]; then
+    CFG_MNG="no"
+elif [ "$CFG_LIBMNG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-mng"
 fi
 if [ "$CFG_MNG" = "no" ]; then
@@ -5983,7 +5989,9 @@ if [ "$CFG_GIF" = "no" ]; then
 elif [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
-if [ "$CFG_LIBTIFF" = "system" ]; then
+if [ "$CFG_LIBTIFF" = "no" ]; then
+    CFG_TIFF="no"
+elif [ "$CFG_LIBTIFF" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-tiff"
 fi
 if [ "$CFG_TIFF" = "no" ]; then

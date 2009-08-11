@@ -158,7 +158,7 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
 class QPSQLResultPrivate
 {
 public:
-    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1) {}
+    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *driver;

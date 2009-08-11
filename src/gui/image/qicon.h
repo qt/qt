@@ -97,6 +97,16 @@ public:
 
     QList<QSize> availableSizes(Mode mode = Normal, State state = Off) const;
 
+    static QIcon fromTheme(const QString &name, const QIcon &fallback = QIcon());
+    static bool hasThemeIcon(const QString &name);
+
+    static QStringList themeSearchPaths();
+    static void setThemeSearchPaths(const QStringList &searchpath);
+
+    static QString themeName();
+    static void setThemeName(const QString &path);
+
+
 #ifdef QT3_SUPPORT
     enum Size { Small, Large, Automatic = Small };
     static QT3_SUPPORT void setPixmapSize(Size which, const QSize &size);

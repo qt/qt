@@ -216,6 +216,7 @@ public:
     static QString openDirectory(QWidget *parent, const QString &caption, const QString &dir, QFileDialog::Options options);
     static QStringList openFilenames(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                                     QString *selectedFilter, QFileDialog::Options options);
+    static QString getGConfString(const QString &key, const QString &fallback = QString());
 
     static Ptr_gtk_container_forall gtk_container_forall;
     static Ptr_gtk_init gtk_init;

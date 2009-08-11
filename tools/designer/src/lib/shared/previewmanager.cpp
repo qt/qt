@@ -257,7 +257,9 @@ void PreviewDeviceSkin::slotPopupMenu()
         connect(directionGroup, SIGNAL(triggered(QAction*)), this, SLOT(slotDirection(QAction*)));
         directionGroup->setExclusive(true);
         m_directionUpAction = createCheckableActionIntData(tr("&Portrait"), DirectionUp, m_direction, directionGroup, this);
+	//: Rotate form preview counter-clockwise
         m_directionLeftAction = createCheckableActionIntData(tr("Landscape (&CCW)"), DirectionLeft, m_direction, directionGroup, this);
+        //: Rotate form preview clockwise
         m_directionRightAction = createCheckableActionIntData(tr("&Landscape (CW)"), DirectionRight, m_direction, directionGroup, this);
         m_closeAction = new QAction(tr("&Close"), this);
         connect(m_closeAction, SIGNAL(triggered()), parentWidget(), SLOT(close()));

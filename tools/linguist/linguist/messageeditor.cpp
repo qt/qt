@@ -710,7 +710,7 @@ void MessageEditor::setEditingEnabled(int model, bool enabled)
     updateCanPaste();
 }
 
-void MessageEditor::setLenghtVariants(bool on)
+void MessageEditor::setLengthVariants(bool on)
 {
     m_lengthVariants = on;
     foreach (const MessageEditorData &ed, m_editors)

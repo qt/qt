@@ -1,4 +1,4 @@
-/*******    *********************************************************************
+/****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
@@ -3239,6 +3239,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
     return newSize;
 }
 
+
 /*! \reimp */
 QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                   const QWidget *widget) const
@@ -3271,64 +3272,79 @@ QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
     }
     break;
 
-    case SP_DialogDiscardButton: {
+    case SP_DialogDiscardButton:
         return QGtkPainter::getIcon(GTK_STOCK_DELETE);
-    }
-
-    case SP_DialogOkButton: {
+    case SP_DialogOkButton:
         return QGtkPainter::getIcon(GTK_STOCK_OK);
-    }
-
-    case SP_DialogCancelButton: {
+    case SP_DialogCancelButton:
         return QGtkPainter::getIcon(GTK_STOCK_CANCEL);
-    }
-
-    case SP_DialogYesButton: {
+    case SP_DialogYesButton:
         return QGtkPainter::getIcon(GTK_STOCK_YES);
-    }
-
-    case SP_DialogNoButton: {
+    case SP_DialogNoButton:
         return QGtkPainter::getIcon(GTK_STOCK_NO);
-    }
-
-    case SP_DialogOpenButton: {
+    case SP_DialogOpenButton:
         return QGtkPainter::getIcon(GTK_STOCK_OPEN);
-    }
-
-    case SP_DialogCloseButton: {
+    case SP_DialogCloseButton:
         return QGtkPainter::getIcon(GTK_STOCK_CLOSE);
-    }
-
-    case SP_DialogApplyButton: {
+    case SP_DialogApplyButton:
         return QGtkPainter::getIcon(GTK_STOCK_APPLY);
-    }
-
-    case SP_DialogSaveButton: {
+    case SP_DialogSaveButton:
         return QGtkPainter::getIcon(GTK_STOCK_SAVE);
-    }
-
-    case SP_MessageBoxWarning: {
+    case SP_MessageBoxWarning:
         return QGtkPainter::getIcon(GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
-    }
-
-    case SP_MessageBoxQuestion: {
+    case SP_MessageBoxQuestion:
         return QGtkPainter::getIcon(GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
-    }
-
-    case SP_MessageBoxInformation: {
+    case SP_MessageBoxInformation:
         return QGtkPainter::getIcon(GTK_STOCK_DIALOG_INFO, GTK_ICON_SIZE_DIALOG);
-    }
-
-    case SP_MessageBoxCritical: {
+    case SP_MessageBoxCritical:
         return QGtkPainter::getIcon(GTK_STOCK_DIALOG_ERROR, GTK_ICON_SIZE_DIALOG);
-    }
-
     default:
         return QCleanlooksStyle::standardPixmap(sp, option, widget);
     }
-
-    return QPixmap();
+    return pixmap;
 }
+
+/*!
+    \internal
+*/
+QIcon QGtkStyle::standardIconImplementation(StandardPixmap standardIcon,
+                                                  const QStyleOption *option,
+                                                  const QWidget *widget) const
+{
+    if (!QGtk::isThemeAvailable())
+        return QCleanlooksStyle::standardIconImplementation(standardIcon, option, widget);
+    switch (standardIcon) {
+    case SP_DialogDiscardButton:
+        return QGtkPainter::getIcon(GTK_STOCK_DELETE);
+    case SP_DialogOkButton:
+        return QGtkPainter::getIcon(GTK_STOCK_OK);
+    case SP_DialogCancelButton:
+        return QGtkPainter::getIcon(GTK_STOCK_CANCEL);
+    case SP_DialogYesButton:
+        return QGtkPainter::getIcon(GTK_STOCK_YES);
+    case SP_DialogNoButton:
+        return QGtkPainter::getIcon(GTK_STOCK_NO);
+    case SP_DialogOpenButton:
+        return QGtkPainter::getIcon(GTK_STOCK_OPEN);
+    case SP_DialogCloseButton:
+        return QGtkPainter::getIcon(GTK_STOCK_CLOSE);
+    case SP_DialogApplyButton:
+        return QGtkPainter::getIcon(GTK_STOCK_APPLY);
+    case SP_DialogSaveButton:
+        return QGtkPainter::getIcon(GTK_STOCK_SAVE);
+    case SP_MessageBoxWarning:
+        return QGtkPainter::getIcon(GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
+    case SP_MessageBoxQuestion:
+        return QGtkPainter::getIcon(GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
+    case SP_MessageBoxInformation:
+        return QGtkPainter::getIcon(GTK_STOCK_DIALOG_INFO, GTK_ICON_SIZE_DIALOG);
+    case SP_MessageBoxCritical:
+        return QGtkPainter::getIcon(GTK_STOCK_DIALOG_ERROR, GTK_ICON_SIZE_DIALOG);
+    default:
+        return QCleanlooksStyle::standardIconImplementation(standardIcon, option, widget);
+    }
+}
+
 
 /*! \reimp */
 QRect QGtkStyle::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const

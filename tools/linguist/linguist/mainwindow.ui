@@ -116,7 +116,7 @@
     <addaction name="actionResetSorting"/>
     <addaction name="actionDisplayGuesses"/>
     <addaction name="actionStatistics"/>
-    <addaction name="actionLenghtVariants"/>
+    <addaction name="actionLengthVariants"/>
     <addaction name="separator"/>
     <addaction name="menuToolbars"/>
     <addaction name="menuViewViews"/>
@@ -878,12 +878,12 @@
     <string>Ctrl+W</string>
    </property>
   </action>
-  <action name="actionLenghtVariants">
+  <action name="actionLengthVariants">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Lenght Variants</string>
+    <string>Length Variants</string>
    </property>
   </action>
  </widget>

@@ -1209,7 +1209,7 @@ void tst_Moc::warnOnVirtualSignal()
 #endif
 }
 
-QTEST_MAIN(tst_Moc)
+QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
 
 

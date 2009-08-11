@@ -524,6 +524,9 @@ void tst_Q3SqlCursor::unicode()
     if ( !db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
 	 QSKIP( "DBMS not Unicode capable", SkipSingle );
     }
+    // ascii in the data storage, can't transliterate properly. invalid test.
+    if(db.driverName().startsWith("QIBASE") && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
+        QSKIP("Can't transliterate extended unicode to ascii", SkipSingle);
 
     Q3SqlCursor cur( qTableName( "qtest_unicode" ), true, db );
     QSqlRecord* irec = cur.primeInsert();

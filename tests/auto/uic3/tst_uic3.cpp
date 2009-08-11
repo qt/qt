@@ -45,6 +45,7 @@
 #include <QtCore/QProcess>
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
+#include <QtCore/QLibraryInfo>
 
 #ifndef Q_OS_WINCE
 
@@ -72,7 +73,7 @@ private:
 
 tst_uic3::tst_uic3()
     : uic3Exists(true)
-    , command(QLatin1String("uic3"))
+    , command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic3"))
 {
 }
 
@@ -183,7 +184,7 @@ QString tst_uic3::workingDir() const
     return QDir::cleanPath(SRCDIR);
 }
 
-QTEST_MAIN(tst_uic3)
+QTEST_APPLESS_MAIN(tst_uic3)
 #include "tst_uic3.moc"
 #else
 QTEST_NOOP_MAIN

@@ -78,6 +78,7 @@
 #include <private/qcrashhandler_p.h>
 #include <private/qcolor_p.h>
 #include <private/qcursor_p.h>
+#include <private/qiconloader_p.h>
 #include "qstyle.h"
 #include "qmetaobject.h"
 #include "qtimer.h"
@@ -870,28 +871,32 @@ bool QApplicationPrivate::x11_apply_settings()
     }
 
     // ### Fix properly for 4.6
-    if (!(QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle"))) {
+    bool usingGtkSettings = QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle");
+    if (!usingGtkSettings) {
         if (groupCount == QPalette::NColorGroups)
             QApplicationPrivate::setSystemPalette(pal);
     }
 
     if (!appFont) {
-        QFont font(QApplication::font());
-        QString fontDescription;
-        // Override Qt font if KDE4 settings can be used
-        if (X11->desktopEnvironment == DE_KDE && X11->desktopVersion >= 4) {
-            QSettings kdeSettings(QKde::kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-            fontDescription = kdeSettings.value(QLatin1String("font")).toString();
-            if (fontDescription.isEmpty()) {
-                // KDE stores fonts without quotes
-                fontDescription = kdeSettings.value(QLatin1String("font")).toStringList().join(QLatin1String(","));
+        // ### Fix properly for 4.6
+        if (!usingGtkSettings) {
+            QFont font(QApplication::font());
+            QString fontDescription;
+            // Override Qt font if KDE4 settings can be used
+            if (X11->desktopVersion == 4) {
+                QSettings kdeSettings(QKde::kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+                fontDescription = kdeSettings.value(QLatin1String("font")).toString();
+                if (fontDescription.isEmpty()) {
+                    // KDE stores fonts without quotes
+                    fontDescription = kdeSettings.value(QLatin1String("font")).toStringList().join(QLatin1String(","));
+                }
             }
-        }
-        if (fontDescription.isEmpty())
-            fontDescription = settings.value(QLatin1String("font")).toString();
-        if (!fontDescription .isEmpty()) {
-            font.fromString(fontDescription );
-            QApplicationPrivate::setSystemFont(font);
+            if (fontDescription.isEmpty())
+                fontDescription = settings.value(QLatin1String("font")).toString();
+            if (!fontDescription .isEmpty()) {
+                font.fromString(fontDescription );
+                QApplicationPrivate::setSystemFont(font);
+            }
         }
     }
 
@@ -1087,7 +1092,6 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
     if (QApplication::desktopSettingsAware()) {
         // first, read from settings
         QApplicationPrivate::x11_apply_settings();
-
         // the call to QApplication::style() below creates the system
         // palette, which breaks the logic after the RESOURCE_MANAGER
         // loop... so I have to save this value to be able to use it later
@@ -1328,6 +1332,8 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         QApplication::setEffectEnabled(Qt::UI_AnimateToolBox,
                                        effects.contains(QLatin1String("animatetoolbox")));
     }
+
+    QIconLoader::instance()->updateSystemTheme();
 }
 
 

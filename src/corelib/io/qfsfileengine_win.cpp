@@ -1525,6 +1525,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
                     ret |= FileType;
             }
         } else if (d->doStat()) {
+            if (d->fileAttrib & FILE_ATTRIBUTE_REPARSE_POINT)
+                ret |= LinkType;
             if (d->fileAttrib & FILE_ATTRIBUTE_DIRECTORY) {
                 ret |= DirectoryType;
             } else {
