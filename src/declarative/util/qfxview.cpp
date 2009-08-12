@@ -63,6 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
+DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
+
 static QVariant stringToPixmap(const QString &str)
 {
     //XXX need to use correct paths
@@ -98,6 +100,7 @@ public:
 
     QSize initialSize;
     bool resizable;
+    QTime frameTimer;
 
     void init();
 
@@ -490,6 +493,19 @@ void QFxView::resizeEvent(QResizeEvent *e)
     }
     setSceneRect(rect());
     QGraphicsView::resizeEvent(e);
+}
+
+/*!
+    \reimp
+*/
+void QFxView::paintEvent(QPaintEvent *event)
+{
+    int time = 0;
+    if (frameRateDebug())
+        time = d->frameTimer.restart();
+    QGraphicsView::paintEvent(event);
+    if (frameRateDebug())
+        qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;
 }
 
 /*! \fn void QFxView::focusInEvent(QFocusEvent *e)
