@@ -61,10 +61,10 @@ class Q_DECLARATIVE_EXPORT QFxScaleGrid : public QObject
     Q_OBJECT
     Q_ENUMS(TileRule)
 
-    Q_PROPERTY(int left READ left WRITE setLeft)
-    Q_PROPERTY(int top READ top WRITE setTop)
-    Q_PROPERTY(int right READ right WRITE setRight)
-    Q_PROPERTY(int bottom READ bottom WRITE setBottom)
+    Q_PROPERTY(int left READ left WRITE setLeft NOTIFY borderChanged)
+    Q_PROPERTY(int top READ top WRITE setTop NOTIFY borderChanged)
+    Q_PROPERTY(int right READ right WRITE setRight NOTIFY borderChanged)
+    Q_PROPERTY(int bottom READ bottom WRITE setBottom NOTIFY borderChanged)
 
 public:
     QFxScaleGrid();
@@ -83,6 +83,9 @@ public:
 
     int  bottom() const { return _bottom; }
     void setBottom(int);
+
+Q_SIGNALS:
+    void borderChanged();
 
 private:
     int _left;

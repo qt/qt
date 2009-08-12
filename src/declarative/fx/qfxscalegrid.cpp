@@ -93,7 +93,10 @@ bool QFxScaleGrid::isNull() const
 */
 void QFxScaleGrid::setLeft(int pos)
 {
-    _left = pos;
+    if (_left != pos) {
+        _left = pos;
+        emit borderChanged();
+    }
 }
 
 /*!
@@ -102,7 +105,10 @@ void QFxScaleGrid::setLeft(int pos)
 */
 void QFxScaleGrid::setTop(int pos)
 {
-    _top = pos;
+    if (_top != pos) {
+        _top = pos;
+        emit borderChanged();
+    }
 }
 
 /*!
@@ -111,7 +117,10 @@ void QFxScaleGrid::setTop(int pos)
 */
 void QFxScaleGrid::setRight(int pos)
 {
-    _right = pos;
+    if (_right != pos) {
+        _right = pos;
+        emit borderChanged();
+    }
 }
 
 /*!
@@ -120,8 +129,17 @@ void QFxScaleGrid::setRight(int pos)
 */
 void QFxScaleGrid::setBottom(int pos)
 {
-    _bottom = pos;
+    if (_bottom != pos) {
+        _bottom = pos;
+        emit borderChanged();
+    }
 }
+
+/*!
+    \fn void QFxScaleGrid::borderChanged()
+
+    This signal is emitted when one of the border properties is changed.
+*/
 
 QFxGridScaledImage::QFxGridScaledImage()
 : _l(-1), _r(-1), _t(-1), _b(-1),
