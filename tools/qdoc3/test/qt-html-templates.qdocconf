@@ -26,7 +26,12 @@ HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0
 			  "<input type=\"submit\" name=\"sa\" value=\"Search\" />" \
 			  "</div>" \
 			  "</form>" \
-			  "<script type=\"text/javascript\" src=\"http://www.google.com/coop/cse/brand?form=cse-search-box;lang=en\"></script>" \
+			  \
+			  "<script type=\"text/javascript\" src=\"http://www.google.com/jsapi\"></script>" \
+			  "<script type=\"text/javascript\">google.load(\"elements\", \"1\", {packages: \"transliteration\"});</script>" \
+			  "<script type=\"text/javascript\" src=\"http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en\"></script>" \
+			  \
+			  "<script type=\"text/javascript\" src=\"http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en\"></script>"\
 			  "</td>\n" \
                           "</tr></table>"
 
