@@ -109,7 +109,7 @@ namespace QPatternistSDK
      * @short A generic abstract base class for test cases.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT TestCase : public TestItem
     {

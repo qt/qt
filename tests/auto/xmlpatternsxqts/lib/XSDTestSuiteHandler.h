@@ -68,7 +68,7 @@ namespace QPatternistSDK
      * the XML is invalid.
      *
      * @ingroup PatternistSDK
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT XSDTestSuiteHandler : public QXmlDefaultHandler
     {

@@ -88,7 +88,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-signatures">XQuery 1.0 and
      * XPath 2.0 Functions and Operators, 1.4 Function Signatures and Descriptions</a>
      * @see <a href="http://en.wikipedia.org/wiki/Arity">Wikipedia, the free encyclopedia, Arity</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT FunctionSignature : public CallTargetDescription
     {

@@ -71,7 +71,7 @@ namespace QPatternist
      *
      * EmptyIterator's constructor is protected, instances is retrieved from CommonValues.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     template<typename T> class EmptyIterator : public QAbstractXmlForwardIterator<T>

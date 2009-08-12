@@ -69,7 +69,7 @@ namespace QPatternist
      * 2: Datatypes Second Edition, 3.2.6 duration</a>
      * @see <a href="http://www.w3.org/TR/xpath-datamodel/#dates-and-times">XQuery
      * 1.0 and XPath 2.0 Data Model (XDM), 3.3.2 Dates and Times</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      * @todo Documentation is missing/incomplete
      */
@@ -88,7 +88,7 @@ namespace QPatternist
          * and describes where certain fields in a QRegExp pattern can be found
          * for a particular W3C XML Schema duration type.
          *
-         * @author Frans Englich <fenglich@trolltech.com>
+         * @author Frans Englich <frans.englich@nokia.com>
          * @ingroup Patternist_xdm
          */
         class CaptureTable

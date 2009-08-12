@@ -86,7 +86,7 @@ namespace QPatternist
      * and returns object representation as XsdSchema.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaParser : public MaintainingReader<XsdSchemaToken, XsdTagScope::Type>
     {

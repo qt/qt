@@ -111,7 +111,7 @@ void TestSuiteResult::toXML(XMLWriter &receiver) const
     const QString organizationName          (QLatin1String("K Desktop Environment(KDE)"));
     const QString organizationWebsite       (QLatin1String("http://www.kde.org/"));
     const QString submittorName             (QLatin1String("Frans Englich"));
-    const QString submittorEmail            (QLatin1String("fenglich@trolltech.com"));
+    const QString submittorEmail            (QLatin1String("frans.englich@nokia.com"));
     const QString implementationVersion     (QLatin1String("0.1"));
     const QString implementationName        (QLatin1String("Patternist"));
     const QString implementationDescription (QLatin1String(

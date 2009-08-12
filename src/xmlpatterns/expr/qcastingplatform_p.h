@@ -103,7 +103,7 @@ namespace QPatternist
      * what type it shall cast to.
      *
      * @see ValueFactory
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     template<typename TSubClass, const bool issueError>

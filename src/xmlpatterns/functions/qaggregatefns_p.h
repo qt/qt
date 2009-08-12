@@ -78,7 +78,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:count()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CountFN : public FunctionCall
     {
@@ -103,7 +103,7 @@ namespace QPatternist
      * @short Base class for the implementations of the <tt>fn:avg()</tt> and <tt>fn:sum()</tt> function.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AddingAggregate : public FunctionCall
     {
@@ -118,7 +118,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:avg()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AvgFN : public AddingAggregate
     {
@@ -137,7 +137,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:sum()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SumFN : public AddingAggregate
     {

@@ -69,7 +69,7 @@ namespace QPatternist
      * which case it continues to populate the cache as well as deliver on its
      * own from a source QAbstractXmlForwardIterator.
      *
-     * @author Frans Englich <frans.fenglich@trolltech.com>
+     * @author Frans Englich <frans.frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     class CachingIterator : public Item::Iterator

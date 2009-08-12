@@ -103,7 +103,7 @@ namespace QPatternistSDK
      * @image html TreeSortFilter.png "TreeSortFilter in action on a QTreeView."
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TreeSortFilter : public QSortFilterProxyModel
     {

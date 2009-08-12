@@ -76,7 +76,7 @@ namespace QPatternist
      * For instance, it can have a null pointer, the empty sequence, and that
      * can be the value of its cache.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ItemCacheCell
     {
@@ -106,7 +106,7 @@ namespace QPatternist
      * also carried an QAbstractXmlForwardIterator which is the source, such
      * that it can continue to populate the cache when it runs out.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ItemSequenceCacheCell
     {

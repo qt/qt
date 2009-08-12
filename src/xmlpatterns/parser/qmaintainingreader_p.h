@@ -76,7 +76,7 @@ namespace QPatternist
      * arguments for functions that takes a local name and a namespace. Be wary
      * of this.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @since 4.5
      */
     template<typename TokenLookupClass,
@@ -104,7 +104,7 @@ namespace QPatternist
      * different interpretations depending on context, the lookup key is hence
      * not equal element name.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @since 4.5
      */
     template<typename TokenLookupClass,

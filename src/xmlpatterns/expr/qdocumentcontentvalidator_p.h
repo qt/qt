@@ -67,7 +67,7 @@ namespace QPatternist
      * before sending them on to a second QAbstractXmlReceiver.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo Escape data
      */
     class DocumentContentValidator : public QAbstractXmlReceiver

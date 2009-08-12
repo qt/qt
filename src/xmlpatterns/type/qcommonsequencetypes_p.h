@@ -65,7 +65,7 @@ namespace QPatternist
      * @short Provides access to singleton instances of SequenceType sub-classes.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT CommonSequenceTypes
     {

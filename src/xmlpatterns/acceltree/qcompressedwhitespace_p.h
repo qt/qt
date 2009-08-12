@@ -82,7 +82,7 @@ namespace QPatternist
      *
      * The compression scheme originates from Saxon, by Michael Kay.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CompressedWhitespace
     {

@@ -64,7 +64,7 @@ namespace QPatternist
     /**
      * @short Used for signalling casting errors.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      */
     class ValidationError : public AtomicValue

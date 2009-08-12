@@ -85,7 +85,7 @@ namespace QPatternist
      * announceExternalVariable() is called.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT ExternalVariableLoader : public QSharedData
     {

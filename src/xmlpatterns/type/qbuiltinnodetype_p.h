@@ -68,7 +68,7 @@ namespace QPatternist
      * of <tt>node()</tt>, such as <tt>processing-instruction()</tt>.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template <const QXmlNodeModelIndex::NodeKind kind>
     class BuiltinNodeType : public AnyNodeType

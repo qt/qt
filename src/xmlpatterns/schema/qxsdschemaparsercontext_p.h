@@ -153,7 +153,7 @@ namespace QPatternist
      * nedded for parsing and compiling the XML schema.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaParserContext : public QSharedData
     {

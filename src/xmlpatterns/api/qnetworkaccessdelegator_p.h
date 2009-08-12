@@ -81,7 +81,7 @@ namespace QPatternist
      *
      * @since 4.5
      * @see AccelTreeResourceLoader::load()
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT NetworkAccessDelegator : public QObject
                                                    , public QSharedData

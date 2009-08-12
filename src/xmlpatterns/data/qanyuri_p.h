@@ -76,7 +76,7 @@ namespace QPatternist
      * fromLexical(), isValid(), and resolveURI().
      *
      * @see QUrl
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      */
     class AnyURI : public AtomicString

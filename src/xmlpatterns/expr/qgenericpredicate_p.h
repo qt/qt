@@ -66,7 +66,7 @@ namespace QPatternist
      *
      * @see FirstItemPredicate
      * @see TruthPredicate
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class GenericPredicate : public PairContainer

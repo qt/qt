@@ -69,7 +69,7 @@ namespace QPatternist
      * @short Helper class for keeping track of all existing IDs in a schema.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdIdCache : public QSharedData
     {

@@ -69,7 +69,7 @@ namespace QPatternist
      * high-level API.
      *
      * @see CastingPlatform
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_schema
      */
     class ValueFactory

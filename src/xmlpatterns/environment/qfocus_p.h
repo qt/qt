@@ -70,7 +70,7 @@ namespace QPatternist
      * via the context item expression, <tt>.</tt>(the dot),
      * and whose size is retrievable via the function <tt>fn:last()</tt>.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Focus : public DelegatingDynamicContext
     {

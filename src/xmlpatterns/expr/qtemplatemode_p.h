@@ -67,7 +67,7 @@ namespace QPatternist
      *
      * @see Template
      * @see TemplatePattern
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      * @since 4.5
      */

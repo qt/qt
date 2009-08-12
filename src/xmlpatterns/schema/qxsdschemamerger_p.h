@@ -68,7 +68,7 @@ namespace QPatternist
      * via xsi:schemaLocation or xsi:noNamespaceSchema location.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaMerger : public QSharedData
     {

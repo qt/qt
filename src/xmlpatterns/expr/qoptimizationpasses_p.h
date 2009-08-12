@@ -65,7 +65,7 @@ namespace QPatternist
     /**
      * @short Contains a set of common OptimizerPass instances.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     namespace OptimizationPasses
@@ -119,7 +119,7 @@ namespace QPatternist
          * This class is not supposed to be instantiated, but to be used via its init()
          * function. In fact, this class cannot be instantiated.
          *
-         * @author Frans englich <fenglich@trolltech.com>
+         * @author Frans englich <frans.englich@nokia.com>
          */
         class Coordinator
         {

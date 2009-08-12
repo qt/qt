@@ -64,7 +64,7 @@ namespace QPatternist
      * @short De-duplicates and sorts in document order the content that its
      * operand returns.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class NodeSortExpression : public SingleContainer

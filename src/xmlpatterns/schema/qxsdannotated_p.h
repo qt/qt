@@ -64,7 +64,7 @@ namespace QPatternist
      * @short Base class for all XSD components with annotation content.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdAnnotated
     {

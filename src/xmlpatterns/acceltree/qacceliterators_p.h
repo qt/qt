@@ -65,7 +65,7 @@ namespace QPatternist
      * @short Abstract base class for Iterators for the AccelTree, that
      * contains common functions and members.
      *
-     * @author Frans Englich<fenglich@trolltech.com>
+     * @author Frans Englich<frans.englich@nokia.com>
      */
     class AccelIterator : public QXmlNodeModelIndex::Iterator
     {
@@ -110,7 +110,7 @@ namespace QPatternist
     /**
      * @short Iterates along the @c ancestor or @c ancestor-or-self axis in an AccelTree.
      *
-     * @author Frans Englich<fenglich@trolltech.com>
+     * @author Frans Englich<frans.englich@nokia.com>
      */
     template<const bool IncludeSelf>
     class AncestorIterator : public AccelIterator
@@ -151,7 +151,7 @@ namespace QPatternist
     /**
      * @short Iterates along the @c child axis in an AccelTree.
      *
-     * @author Frans Englich<fenglich@trolltech.com>
+     * @author Frans Englich<frans.englich@nokia.com>
      */
     class ChildIterator : public AccelIterator
     {
@@ -190,7 +190,7 @@ namespace QPatternist
     /**
      * @short Iterates along the sibling axes in an AccelTree.
      *
-     * @author Frans Englich<fenglich@trolltech.com>
+     * @author Frans Englich<frans.englich@nokia.com>
      */
     template<const bool IsFollowing>
     class SiblingIterator : public AccelIterator
@@ -262,7 +262,7 @@ namespace QPatternist
      * @short Implements axis @c descendant and @c descendant-or-self for the
      * AccelTree.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<const bool IncludeSelf>
     class DescendantIterator : public AccelIterator
@@ -342,7 +342,7 @@ namespace QPatternist
     /**
      * @short Implements axis @c following for the AccelTree.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FollowingIterator : public AccelIterator
     {
@@ -362,7 +362,7 @@ namespace QPatternist
     /**
      * @short Implements axis @c preceding for the AccelTree.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class PrecedingIterator : public AccelIterator
     {
@@ -387,7 +387,7 @@ namespace QPatternist
     /**
      * @short Implements axis @c attribute for the AccelTree.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AttributeIterator : public AccelIterator
     {

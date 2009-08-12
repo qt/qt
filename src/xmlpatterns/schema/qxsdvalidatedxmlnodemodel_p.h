@@ -73,7 +73,7 @@ namespace QPatternist
      * information that has been assigned during validation.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdValidatedXmlNodeModel : public QAbstractXmlNodeModel
     {

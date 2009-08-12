@@ -68,7 +68,7 @@ namespace QPatternist
      * @short Represents a XSD assertion object.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      * @see <a href="http://www.w3.org/TR/xmlschema11-1/#cAssertions">Assertion Definition</a>
      */
     class XsdAssertion : public NamedSchemaComponent, public XsdAnnotated

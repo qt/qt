@@ -64,7 +64,7 @@ namespace QPatternist
      * @short Constructs a namespace on an element, and naturally only appears
      * as a child of ElementConstructor.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class NamespaceConstructor : public EmptyContainer

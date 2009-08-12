@@ -64,7 +64,7 @@ namespace QPatternist
      * @short A reference to an @c at variable, declared with the
      * <tt>for</tt>-part in XQuery's FLWOR expression.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class PositionalVariableReference : public VariableReference

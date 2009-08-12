@@ -65,7 +65,7 @@ namespace QPatternist
      * @short Implements @c xsl:call-template.
      *
      * @since 4.5
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class CallTemplate : public TemplateInvoker

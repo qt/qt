@@ -100,7 +100,7 @@ namespace QPatternistSDK
      * @short Displays the result of running a test case.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TestResultView : public QDockWidget,
                            public Ui_TestResultViewCentralWidget

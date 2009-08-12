@@ -61,7 +61,7 @@ namespace QPatternist
      * an Expression sub class, can't modify its members, but MappingCallback
      * does not have this limitation since it's created on a per evaluation basis.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TraceCallback : public QSharedData
     {

@@ -72,7 +72,7 @@ namespace QPatternist
      * <tt>return</tt> expression, and the ExpressionVariableReference will
      * handle the evaluation of the variable.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class LetClause : public PairContainer

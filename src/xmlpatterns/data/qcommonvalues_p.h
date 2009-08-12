@@ -66,7 +66,7 @@ namespace QPatternist
     /**
      * @short A collection of common values.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      * @todo Documentation is missing/incomplete
      */

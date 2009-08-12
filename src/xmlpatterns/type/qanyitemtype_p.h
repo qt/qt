@@ -65,7 +65,7 @@ namespace QPatternist
      * @short Represents the <tt>item()</tt> item type.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AnyItemType : public ItemType
     {

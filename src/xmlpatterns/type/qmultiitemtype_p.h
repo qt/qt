@@ -73,7 +73,7 @@ namespace QPatternist
      * For example, xdtTypeMatches() returns @c true if any of the represented types matches.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class MultiItemType : public ItemType
     {

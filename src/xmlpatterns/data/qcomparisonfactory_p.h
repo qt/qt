@@ -71,7 +71,7 @@ namespace QPatternist
      * high-level API.
      *
      * @see ComparisonPlatform
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_schema
      */
     class ComparisonFactory

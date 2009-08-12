@@ -70,7 +70,7 @@ namespace QPatternist
      * information.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdInstanceReader
     {

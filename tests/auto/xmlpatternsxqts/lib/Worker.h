@@ -102,7 +102,7 @@ namespace QPatternistSDK
      * @short Gets notified when the ResultThreader threads are
      * finished, and output summaries and adjusts a baseline.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup PatternistSDK
      */
     class Q_PATTERNISTSDK_EXPORT Worker : public QObject

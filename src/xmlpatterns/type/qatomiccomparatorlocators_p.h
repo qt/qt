@@ -68,7 +68,7 @@ namespace QPatternist
 {
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DoubleComparatorLocator : public AtomicComparatorLocator
     {
@@ -88,7 +88,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FloatComparatorLocator : public AtomicComparatorLocator
     {
@@ -108,7 +108,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DecimalComparatorLocator : public AtomicComparatorLocator
     {
@@ -128,7 +128,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IntegerComparatorLocator : public AtomicComparatorLocator
     {
@@ -148,7 +148,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BooleanComparatorLocator : public AtomicComparatorLocator
     {
@@ -159,7 +159,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Base64BinaryComparatorLocator : public AtomicComparatorLocator
     {
@@ -170,7 +170,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class HexBinaryComparatorLocator : public AtomicComparatorLocator
     {
@@ -181,7 +181,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class QNameComparatorLocator : public AtomicComparatorLocator
     {
@@ -192,7 +192,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringComparatorLocator : public AtomicComparatorLocator
     {
@@ -210,7 +210,7 @@ namespace QPatternist
 
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GYearComparatorLocator : public AtomicComparatorLocator
     {
@@ -221,7 +221,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GMonthComparatorLocator : public AtomicComparatorLocator
     {
@@ -232,7 +232,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GYearMonthComparatorLocator : public AtomicComparatorLocator
     {
@@ -243,7 +243,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GMonthDayComparatorLocator : public AtomicComparatorLocator
     {
@@ -254,7 +254,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GDayComparatorLocator : public AtomicComparatorLocator
     {
@@ -265,7 +265,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DateTimeComparatorLocator : public AtomicComparatorLocator
     {
@@ -276,7 +276,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SchemaTimeComparatorLocator : public AtomicComparatorLocator
     {
@@ -287,7 +287,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DateComparatorLocator : public AtomicComparatorLocator
     {
@@ -298,7 +298,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DurationComparatorLocator : public AtomicComparatorLocator
     {
@@ -315,7 +315,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DayTimeDurationComparatorLocator : public AtomicComparatorLocator
     {
@@ -332,7 +332,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class YearMonthDurationComparatorLocator : public AtomicComparatorLocator
     {

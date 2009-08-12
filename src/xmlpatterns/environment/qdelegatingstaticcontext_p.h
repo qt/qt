@@ -68,7 +68,7 @@ namespace QPatternist
      * @short Delegates all members to a second instance. Used for
      * sub-classing.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT DelegatingStaticContext : public StaticContext
     {

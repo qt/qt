@@ -70,7 +70,7 @@ namespace QPatternist
      * expressions, range variables, template parameters but notably continues
      * to delegate global caches.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<typename TSuperClass>
     class StackContextBase : public TSuperClass

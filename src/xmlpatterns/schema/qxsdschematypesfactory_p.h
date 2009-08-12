@@ -66,7 +66,7 @@ namespace QPatternist
      * @short Factory for creating schema types for the types defined in XSD.
      *
      * @ingroup Patternist_types
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaTypesFactory : public SchemaTypeFactory
     {

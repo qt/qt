@@ -68,7 +68,7 @@ namespace QPatternist
      * @short A factory creating schema types.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SchemaTypeFactory : public QSharedData
     {

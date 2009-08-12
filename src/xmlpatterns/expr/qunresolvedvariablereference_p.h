@@ -66,7 +66,7 @@ namespace QPatternist
      *
      * This can not appear in XQuery, but can in XSL-T.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      * @since 4.5
      */

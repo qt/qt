@@ -71,7 +71,7 @@ namespace QPatternist
      *
      * @see UserFunctionCall
      * @see ArgumentReference
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class UserFunction : public QSharedData

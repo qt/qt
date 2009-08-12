@@ -65,7 +65,7 @@ namespace QPatternist
     /**
      * @short Baseclass for classes being references to variables.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class VariableReference : public EmptyContainer

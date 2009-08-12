@@ -103,7 +103,7 @@ namespace QPatternistSDK
      * value or operator, can be retrieved via the member variable second.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT ExpressionInfo : public QPatternist::ExpressionVisitorResult
                                                 , public QPair<QString, QString>

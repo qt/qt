@@ -69,7 +69,7 @@ namespace QPatternist
      * line the API it is now gone and hence the node performs exactly the same
      * as AxisStep.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ParentNodeAxis : public EmptyContainer

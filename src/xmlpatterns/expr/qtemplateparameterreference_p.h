@@ -63,7 +63,7 @@ namespace QPatternist
     /**
      * @short A reference to a template parameter declared with @c xsl:param.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      * @since 4.5
      */

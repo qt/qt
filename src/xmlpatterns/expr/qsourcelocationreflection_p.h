@@ -76,7 +76,7 @@ namespace QPatternist
      * If sourceLocation() returns a non-null object, it will be used instead
      * of looking up via actualReflection().
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class Q_AUTOTEST_EXPORT SourceLocationReflection

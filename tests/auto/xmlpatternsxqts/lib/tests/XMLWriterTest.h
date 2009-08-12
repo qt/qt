@@ -93,7 +93,7 @@ namespace QPatternistSDK
      * @short QTestLib test for XMLWriter.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class XMLWriterTest : public QObject
     {

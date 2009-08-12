@@ -64,7 +64,7 @@ namespace QPatternist
     /**
      * @short Implements the value instance of the @c xs:QName type.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      * @see QNameConstructor::expandQName()
      * @see XPathHelper::isQName()

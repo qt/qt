@@ -322,7 +322,7 @@ namespace QPatternist
      * @short Represents instances of derived @c xs:integer types, such as @c
      * xs:byte.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      */
     template<TypeOfDerivedInteger DerivedType>

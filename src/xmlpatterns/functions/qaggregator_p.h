@@ -74,7 +74,7 @@ namespace QPatternist
      *
      * @see Piper
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Aggregator : public FunctionCall
     {

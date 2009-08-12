@@ -66,7 +66,7 @@ namespace QPatternist
      * FirstItemPredicate corresponds exactly to the predicate
      * in the expression <tt>input[1]</tt>.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class FirstItemPredicate : public SingleContainer

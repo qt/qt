@@ -71,7 +71,7 @@ namespace QPatternist
      * @short A hand-written tokenizer which tokenizes XQuery 1.0 & XPath 2.0,
      * and delivers tokens to the Bison generated parser.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class XQueryTokenizer : public Tokenizer
     {

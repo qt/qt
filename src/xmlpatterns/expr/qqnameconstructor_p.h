@@ -69,7 +69,7 @@ namespace QPatternist
      *
      * @see QQNameValue
      * @see QXmlUtils
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class QNameConstructor : public SingleContainer

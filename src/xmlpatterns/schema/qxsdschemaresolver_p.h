@@ -84,7 +84,7 @@ namespace QPatternist
      * one can start the resolve process by calling resolve().
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaResolver : public QSharedData
     {

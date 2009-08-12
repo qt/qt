@@ -63,7 +63,7 @@ namespace QPatternist
     /**
      * @short A DynamicContext that has a specialized QAbstractXmlReceiver.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ReceiverDynamicContext : public DelegatingDynamicContext
     {

@@ -65,7 +65,7 @@ namespace QPatternist
     /**
      * @short Represents a namespace binding: a prefix, and a namespace URI.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NamespaceBinding
     {

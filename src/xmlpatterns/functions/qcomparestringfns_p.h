@@ -74,7 +74,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:codepoint-equal()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CodepointEqualFN : public ComparesCaseAware
     {
@@ -86,7 +86,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:compare()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CompareFN : public ComparesCaseAware
     {

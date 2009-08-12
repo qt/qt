@@ -68,7 +68,7 @@ namespace QPatternist
      * @note the order of adding function libraries is significant.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT FunctionFactoryCollection: public FunctionFactory
                                                      , public FunctionFactory::List

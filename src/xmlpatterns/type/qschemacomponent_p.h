@@ -65,7 +65,7 @@ namespace QPatternist
      * @short Base class for all constructs that can appear in a W3C XML Schema.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SchemaComponent : public virtual QSharedData
     {

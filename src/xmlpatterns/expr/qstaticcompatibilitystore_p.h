@@ -65,7 +65,7 @@ namespace QPatternist
      * Used for XSL-T 2.0's backwards compatibility mode.
      *
      * @see StaticCompatibilityContext
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      * @since 4.5
      */

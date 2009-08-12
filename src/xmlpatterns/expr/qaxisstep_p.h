@@ -65,7 +65,7 @@ namespace QPatternist
      * @short A step in a path expression that with an axis and a node test evaluates
      * to a sequence of nodes from the context item.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class Q_AUTOTEST_EXPORT AxisStep : public EmptyContainer

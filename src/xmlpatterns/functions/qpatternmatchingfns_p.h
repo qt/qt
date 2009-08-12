@@ -73,7 +73,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:matches()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class MatchesFN : public PatternPlatform
     {
@@ -86,7 +86,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:replace()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ReplaceFN : public PatternPlatform
     {
@@ -118,7 +118,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:tokenize()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TokenizeFN : public PatternPlatform
     {

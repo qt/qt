@@ -76,7 +76,7 @@ namespace QPatternist
      * and XPath 2.0 Functions and Operators</a>
      * @see <a href="http://www.w3.org/TR/xpath20/#dt-function-signature">XML Path
      * Language (XPath) 2.0, Definition: Function signatures</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FunctionFactory : public QSharedData
     {

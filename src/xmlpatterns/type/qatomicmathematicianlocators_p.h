@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 namespace QPatternist
 {
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class DoubleMathematicianLocator : public AtomicMathematicianLocator
@@ -89,7 +89,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class FloatMathematicianLocator : public AtomicMathematicianLocator
@@ -110,7 +110,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class DecimalMathematicianLocator : public AtomicMathematicianLocator
@@ -131,7 +131,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class IntegerMathematicianLocator : public AtomicMathematicianLocator
@@ -152,7 +152,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class DateMathematicianLocator : public AtomicMathematicianLocator
@@ -167,7 +167,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class SchemaTimeMathematicianLocator : public AtomicMathematicianLocator
@@ -180,7 +180,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class DateTimeMathematicianLocator : public AtomicMathematicianLocator
@@ -194,7 +194,7 @@ namespace QPatternist
                                                    const SourceLocationReflection *const r) const;
     };
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class DayTimeDurationMathematicianLocator : public AtomicMathematicianLocator
@@ -219,7 +219,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo docs
      */
     class YearMonthDurationMathematicianLocator : public AtomicMathematicianLocator

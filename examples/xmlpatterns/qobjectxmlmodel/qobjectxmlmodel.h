@@ -58,7 +58,7 @@ class PropertyToAtomicValue;
  * represents a property of the QObject. That is, if the QXmlNodeModelIndex is
  * an attribute.
  *
- * @author Frans Englich <fenglich@trolltech.com>
+ * @author Frans Englich <frans.englich@nokia.com>
  */
 class QObjectXmlModel : public QSimpleXmlNodeModel
 {

@@ -66,7 +66,7 @@ namespace QPatternist
      * @short Base class for all named components that can appear in a W3C XML Schema.
      *
      * @ingroup Patternist_types
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class NamedSchemaComponent : public SchemaComponent
     {

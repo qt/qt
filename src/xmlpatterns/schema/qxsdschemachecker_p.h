@@ -76,7 +76,7 @@ namespace QPatternist
      * @short Encapsulates the checking of schema valitity after reference resolving has finished.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaChecker : public QSharedData
     {

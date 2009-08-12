@@ -75,7 +75,7 @@ namespace QPatternist
      * objects.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdAttributeReference : public XsdAttributeUse
     {

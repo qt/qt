@@ -64,7 +64,7 @@ namespace QPatternist
      * @short A predicate which is optimized for filter expressions that
      * are of type @c xs:boolean.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class TruthPredicate : public GenericPredicate

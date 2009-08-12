@@ -74,7 +74,7 @@ namespace QPatternist
      * validates it against a given xml schema.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdValidatingInstanceReader : public XsdInstanceReader
     {

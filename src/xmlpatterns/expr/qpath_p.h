@@ -66,7 +66,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xquery/#id-path-expressions">XQuery 1.0: An
      * XML Query Language, 3.2 Path Expressions</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class Path : public PairContainer

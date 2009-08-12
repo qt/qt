@@ -70,7 +70,7 @@ namespace QPatternist
      *
      * @ingroup Patternist_functions
      * @see VariableDeclaration
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FunctionArgument : public QSharedData
     {

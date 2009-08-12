@@ -67,7 +67,7 @@ namespace QPatternist
      * @short A helper class to check validity of particles.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdParticleChecker
     {

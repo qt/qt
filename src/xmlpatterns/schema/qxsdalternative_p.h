@@ -69,7 +69,7 @@ namespace QPatternist
      * @short Represents a XSD alternative object.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdAlternative : public NamedSchemaComponent, public XsdAnnotated
     {

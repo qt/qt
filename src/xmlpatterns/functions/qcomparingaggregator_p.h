@@ -82,7 +82,7 @@ namespace QPatternist
      * @see MaxFN
      * @see MinFN
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template <AtomicComparator::Operator oper, AtomicComparator::ComparisonResult result>
     class ComparingAggregator : public Aggregator,

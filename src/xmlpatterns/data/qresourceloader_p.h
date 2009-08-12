@@ -101,7 +101,7 @@ namespace QPatternist
      * be able to load resources.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT ResourceLoader : public QSharedData
     {

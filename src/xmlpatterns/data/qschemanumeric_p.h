@@ -83,7 +83,7 @@ namespace QPatternist
      * and XPath 2.0 Functions and Operators, 6 Functions and Operators on Numerics</a>
      * @see <a href="http://www.w3.org/TR/xquery-operators/#func-overloading">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 1.2 Function Overloading</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      * @todo discuss data hierarchy the non existatnt number data type
      */

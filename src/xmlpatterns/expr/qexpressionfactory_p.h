@@ -72,7 +72,7 @@ namespace QPatternist
      * @short The central entry point for compiling expressions.
      *
      * @ingroup Patternist_expressions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT ExpressionFactory : public QSharedData
     {

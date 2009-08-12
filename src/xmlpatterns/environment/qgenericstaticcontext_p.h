@@ -68,7 +68,7 @@ namespace QPatternist
     /**
      * @short Provides setters and getters for the properties defined in StaticContext.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GenericStaticContext : public StaticContext
     {

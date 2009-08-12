@@ -69,7 +69,7 @@ namespace QPatternist
      * @short Base class for namespace resolvers.
      *
      * @ingroup Patternist
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NamespaceResolver : public QSharedData
     {

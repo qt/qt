@@ -98,7 +98,7 @@ namespace QPatternistSDK
      * the XQuery/XPath implementation.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FunctionSignaturesView : public QDockWidget,
                                    public Ui_FunctionSignaturesViewCentralWidget

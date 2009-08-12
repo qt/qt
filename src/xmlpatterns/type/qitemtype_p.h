@@ -77,7 +77,7 @@ namespace QPatternist
      * similar to how inference rules in the specification are written.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ItemType : public virtual QSharedData
     {

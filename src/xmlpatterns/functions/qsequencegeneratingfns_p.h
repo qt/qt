@@ -75,7 +75,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:id()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IdFN : public ContextNodeChecker
     {
@@ -100,7 +100,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:idref()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IdrefFN : public ContextNodeChecker
     {
@@ -112,7 +112,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:doc()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DocFN : public StaticBaseUriContainer
     {
@@ -140,7 +140,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:doc-available()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DocAvailableFN : public StaticBaseUriContainer
     {
@@ -152,7 +152,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:collection()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CollectionFN : public FunctionCall
     {

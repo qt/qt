@@ -73,7 +73,7 @@ namespace QPatternist
      * and XPath 2.0 Functions and Operators, 7 Casting</a>
      * @see <a href="http://www.w3.org/TR/xpath20/#id-cast">XML Path Language
      * (XPath) 2.0, 3.10.2 Cast</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class CastAs : public SingleContainer,

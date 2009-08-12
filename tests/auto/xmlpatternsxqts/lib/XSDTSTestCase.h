@@ -61,7 +61,7 @@ namespace QPatternistSDK
      * case catalog.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT XSDTSTestCase : public TestCase
     {

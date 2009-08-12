@@ -64,7 +64,7 @@ namespace QPatternist
      * @short A StaticContext that carries a specified namespace resolver
      * for the context item, but otherwise delegates to another StaticContext.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT StaticNamespaceContext : public DelegatingStaticContext
     {

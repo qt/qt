@@ -75,7 +75,7 @@ namespace QPatternist
      * @see SequenceType
      * @see <a href="http://www.w3.org/TR/xpath20/#prod-xpath-SequenceType">XML Path Language
      * (XPath) 2.0, The EBNF grammar for SequenceType</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Cardinality
     {

@@ -78,7 +78,7 @@ namespace QPatternist
      * both, the parser and the validator.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaContext : public ReportContext
     {

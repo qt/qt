@@ -66,7 +66,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:deep-equal()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DeepEqualFN : public FunctionCall,
                         public ComparisonPlatform<DeepEqualFN, false>

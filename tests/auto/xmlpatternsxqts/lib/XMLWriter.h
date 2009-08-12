@@ -148,7 +148,7 @@ namespace QPatternistSDK
      * Language (XML) 1.0 (Third Edition)</a>
      * @see <a href="http://www.w3.org/TR/REC-xml-names/">Namespaces in XML</a>
      * @todo Replace this class with QXmlStreamWriter
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup PatternistSDK
      */
     class Q_PATTERNISTSDK_EXPORT XMLWriter : public QXmlContentHandler

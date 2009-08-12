@@ -66,7 +66,7 @@ namespace QPatternist
      * store the static base URI for use at runtime.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StaticBaseUriContainer : public FunctionCall
     {

@@ -66,7 +66,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xquery/#combining_seq">XQuery 1.0: An XML Query
      * Language, 3.3.3 Combining QXmlNodeModelIndex Sequences</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class Q_AUTOTEST_EXPORT CombineNodes : public PairContainer

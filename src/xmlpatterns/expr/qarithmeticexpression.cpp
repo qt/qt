@@ -89,7 +89,7 @@ Item ArithmeticExpression::evaluateSingleton(const DynamicContext::Ptr &context)
  * evaluates to an invalid representation for @c xs:double.
  *
  * @since 4.5
- * @author Frans Englich <fenglich@trolltech.com>
+ * @author Frans Englich <frans.englich@nokia.com>
  */
 class DelegatingReflectionExpression : public Literal
 {

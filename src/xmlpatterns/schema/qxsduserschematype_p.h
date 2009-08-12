@@ -72,7 +72,7 @@ namespace QPatternist
      * NamedSchemaComponent class without explicit inheritance.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     template<typename TSuperClass>
     class XsdUserSchemaType : public TSuperClass, public NamedSchemaComponent, public XsdAnnotated

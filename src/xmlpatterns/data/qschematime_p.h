@@ -66,7 +66,7 @@ namespace QPatternist
      * The header file for this class was orignally called Time.h, but this
      * clashed with a system header on MinGW.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      */
     class SchemaTime : public AbstractDateTime

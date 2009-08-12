@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 namespace QPatternist
 {
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicCasterLocator : public AtomicTypeVisitor
     {

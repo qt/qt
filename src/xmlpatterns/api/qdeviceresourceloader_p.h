@@ -65,7 +65,7 @@ namespace QPatternist
     /**
      * @short Base class for resource loaders that manage device variables.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @since 4.5
      */
     class DeviceResourceLoader : public ResourceLoader

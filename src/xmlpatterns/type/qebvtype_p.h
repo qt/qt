@@ -71,7 +71,7 @@ namespace QPatternist
      * checking for expressions such as IfThenClause and AndExpression.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class EBVType : public ItemType,
                     public SequenceType

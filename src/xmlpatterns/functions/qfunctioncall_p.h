@@ -68,7 +68,7 @@ namespace QPatternist
      * However, it doesn't handle user declared functions.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FunctionCall : public UnlimitedContainer
     {

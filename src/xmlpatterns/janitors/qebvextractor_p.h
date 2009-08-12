@@ -69,7 +69,7 @@ namespace QPatternist
      * There is code-duplication going on with BooleanFN.
      *
      * @see BooleanFN
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class EBVExtractor : public SingleContainer

@@ -99,7 +99,7 @@ namespace QPatternistSDK
      * @short Reads XML in the @c XQTSResult.xsd format, and provides access to
      * the reported results.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup PatternistSDK
      */
     class Q_PATTERNISTSDK_EXPORT TestResultHandler : public QXmlDefaultHandler

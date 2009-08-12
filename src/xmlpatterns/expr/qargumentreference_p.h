@@ -66,7 +66,7 @@ namespace QPatternist
      * This is in other words a variable reference in side a function
      * body, that references a function argument.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ArgumentReference : public VariableReference

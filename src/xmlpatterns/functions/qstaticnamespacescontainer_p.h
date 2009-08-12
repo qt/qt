@@ -73,7 +73,7 @@ namespace QPatternist
      *
      * This class must be subclassed.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_functions
      */
     class StaticNamespacesContainer : public FunctionCall

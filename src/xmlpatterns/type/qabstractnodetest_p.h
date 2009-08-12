@@ -64,7 +64,7 @@ namespace QPatternist
      * @short A name test that is of the type <tt>prefix:ncName</tt>.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractNodeTest : public AnyNodeType
     {

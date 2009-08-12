@@ -75,7 +75,7 @@ namespace QPatternist
      * atomic values.
      *
      * @since 4.5
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ApplyTemplate : public TemplateInvoker

@@ -71,7 +71,7 @@ namespace QPatternist
      * @short Contains helper methods that are used by XsdSchemaParser, XsdSchemaResolver and XsdSchemaChecker.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdSchemaHelper
     {

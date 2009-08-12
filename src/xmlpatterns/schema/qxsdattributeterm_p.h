@@ -68,7 +68,7 @@ namespace QPatternist
      * common base class for XsdAttribute and XsdAttributeReference.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdAttributeTerm : public NamedSchemaComponent, public XsdAnnotated
     {

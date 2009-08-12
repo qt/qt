@@ -67,7 +67,7 @@ namespace QPatternist
      * ReturnOrderBy evaluates the sort keys and values, and hands it over to
      * OrderBy, which is an AST ancestor, using SortTuples.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ReturnOrderBy : public UnlimitedContainer

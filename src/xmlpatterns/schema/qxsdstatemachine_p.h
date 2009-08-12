@@ -70,7 +70,7 @@ namespace QPatternist
      * @short A state machine used for evaluation.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     template <typename TransitionType>
     class XsdStateMachine

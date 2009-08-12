@@ -70,7 +70,7 @@ namespace QPatternist
      * file was called String.h. However, this broke building on OS X, which
      * looks up file names case insensitively, and therefore found string.h.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      * @todo Documentation is missing/incomplete
      */

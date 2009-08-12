@@ -68,7 +68,7 @@ namespace QPatternist
      * uses regular expressions.
      *
      * @ingroup Patternist_utils
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class PatternPlatform : public FunctionCall
     {

@@ -70,7 +70,7 @@ namespace QPatternist
      * This AST node is only used up until the typeCheck() stage. Therefore it
      * has no functions for evaluation, such as evaluateSequence().
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ExpressionVariableReference : public VariableReference

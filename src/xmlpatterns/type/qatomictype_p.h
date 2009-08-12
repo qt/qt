@@ -75,7 +75,7 @@ namespace QPatternist
      * base class for classes that implement atomic types, such as @c xs:anyAtomicType.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicType : public ItemType,
                        public AnySimpleType

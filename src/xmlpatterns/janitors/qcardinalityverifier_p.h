@@ -66,7 +66,7 @@ namespace QPatternist
      *
      * @see <a href="http://www.w3.org/TR/xpath-functions/#cardinality-funcs">XQuery 1.0 and
      * XPath 2.0 Functions and Operators, 15.2 Functions That Test the Cardinality of Sequences</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class CardinalityVerifier : public SingleContainer
