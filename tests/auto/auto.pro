@@ -105,8 +105,6 @@ SUBDIRS += \
            qdate \
            qdatetime \
            qdatetimeedit \
-	   qdbuspendingcall \
-	   qdbuspendingreply \
            qdebug \
            qdesktopservices \
            qdesktopwidget \
@@ -426,7 +424,9 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusmarshall \
            qdbusmetaobject \
            qdbusmetatype \
-	   qdbusperformance \
+           qdbuspendingcall \
+           qdbuspendingreply \
+           qdbusperformance \
            qdbusreply \
            qdbusthreading \
            qdbusxmlparser
