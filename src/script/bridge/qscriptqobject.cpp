@@ -1028,7 +1028,9 @@ JSC::JSValue JSC_HOST_CALL QtFunction::call(JSC::ExecState *exec, JSC::JSObject 
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
-    JSC::JSValue result = qfun->execute(exec, thisValue, args);
+    eng_p->pushContext(exec, thisValue, args, callee);
+    JSC::JSValue result = qfun->execute(eng_p->currentFrame, thisValue, args);
+    eng_p->popContext();
     eng_p->currentFrame = previousFrame;
     return result;
 }
@@ -1065,7 +1067,9 @@ JSC::JSValue JSC_HOST_CALL QtPropertyFunction::call(
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->currentFrame = exec;
-    JSC::JSValue result = qfun->execute(exec, thisValue, args);
+    eng_p->pushContext(exec, thisValue, args, callee);
+    JSC::JSValue result = qfun->execute(eng_p->currentFrame, thisValue, args);
+    eng_p->popContext();
     eng_p->currentFrame = previousFrame;
     return result;
 }
