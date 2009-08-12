@@ -101,7 +101,7 @@ public:
 
     inline bool shouldEnableInputMethod() const
     {
-        return !control->isReadOnly() && (control->echoMode() == QLineEdit::Normal || control->echoMode() == QLineEdit::PasswordEchoOnEdit);
+        return !control->isReadOnly();
     }
 
     QPoint tripleClick;
