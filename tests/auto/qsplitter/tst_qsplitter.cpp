@@ -57,6 +57,10 @@
 #include <qdebug.h> // for file error messages
 #include "../../shared/util.h"
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 

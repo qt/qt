@@ -186,7 +186,6 @@ SUBDIRS += \
            qitemmodel \
            qitemselectionmodel \
            qitemview \
-           qkeyevent \
            qkeysequence \
            qlabel \
            qlayout \

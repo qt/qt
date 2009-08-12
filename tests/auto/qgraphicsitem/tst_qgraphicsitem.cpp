@@ -597,7 +597,7 @@ void tst_QGraphicsItem::destruction()
         child->setParentItem(parent);
         parent->setVisible(false);
         scene->addItem(parent);
-        QCOMPARE(child->parentItem(), parent);
+        QCOMPARE(child->parentItem(), static_cast<QGraphicsItem*>(parent));
         delete scene;
         QCOMPARE(itemDeleted, 110);
     }

@@ -775,7 +775,9 @@ QFont::QFont()
     Constructs a font object with the specified \a family, \a
     pointSize, \a weight and \a italic settings.
 
-    If \a pointSize is <= 0, it is set to 12.
+    If \a pointSize is zero or negative, the point size of the font
+    is set to a system-dependent default value. Generally, this is
+    12 points, except on Symbian where it is 7 points.
 
     The \a family name may optionally also include a foundry name,
     e.g. "Helvetica [Cronyx]". If the \a family is

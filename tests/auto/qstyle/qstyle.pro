@@ -3,7 +3,7 @@ TARGET.EPOCHEAPSIZE = 0x200000 0x800000
 SOURCES  += tst_qstyle.cpp
 
 wince*|symbian*: {
-   DEFINES += SRCDIR=\\\".\\\"
+   !symbian:DEFINES += SRCDIR=\\\".\\\"
    addPixmap.sources = task_25863.png
    addPixmap.path = .
    DEPLOYMENT += addPixmap

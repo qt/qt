@@ -242,18 +242,6 @@ public:
 };
 
 /*!
-    Constructs a QNetworkRequest object with empty QUrl.
-
-    \sa url(), setUrl()
-*/
-QNetworkRequest::QNetworkRequest()
-    : d(new QNetworkRequestPrivate)
-{
-    d->url = QUrl();
-}
-
-
-/*!
     Constructs a QNetworkRequest object with \a url as the URL to be
     requested.
 

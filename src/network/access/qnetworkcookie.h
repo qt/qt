@@ -67,9 +67,7 @@ public:
         Full
     };
 
-    QNetworkCookie();
-    QNetworkCookie(const QByteArray &name );
-    QNetworkCookie(const QByteArray &name, const QByteArray &value );
+    QNetworkCookie(const QByteArray &name = QByteArray(), const QByteArray &value = QByteArray());
     QNetworkCookie(const QNetworkCookie &other);
     ~QNetworkCookie();
     QNetworkCookie &operator=(const QNetworkCookie &other);
