@@ -2300,6 +2300,10 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JS
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
         newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, 0, argc, callee);
+    } else if (calledAsConstructor) {
+        //update the new created this
+        JSC::Register* thisRegister = newCallFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - newCallFrame->argumentCount();
+        *thisRegister = thisObject;
     }
     currentFrame = newCallFrame;
     QScript::QScriptActivationObject *scope = new (newCallFrame) QScript::QScriptActivationObject(newCallFrame);
