@@ -60,6 +60,7 @@
 #include <qthreadstorage.h>
 #include <private/qthread_p.h>
 #include <qlibraryinfo.h>
+#include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
 
@@ -1353,13 +1354,10 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
     // for this object.
     if (receiver && !receiver->d_func()->postedEvents)
         return;
-    QCoreApplicationPrivate::removePostedEvents_unlocked(receiver, eventType, data);
-}
 
-void QCoreApplicationPrivate::removePostedEvents_unlocked(QObject *receiver,
-                                                          int eventType,
-                                                          QThreadData *data)
-{
+    //we will collect all the posted events for the QObject
+    //and we'll delete after the mutex was unlocked
+    QVarLengthArray<QEvent*> events;
     int n = data->postEventList.size();
     int j = 0;
 
@@ -1374,7 +1372,7 @@ void QCoreApplicationPrivate::removePostedEvents_unlocked(QObject *receiver,
                 pe.receiver->d_func()->removePendingChildInsertedEvents(0);
 #endif
             pe.event->posted = false;
-            delete pe.event;
+            events.append(pe.event);
             const_cast<QPostEvent &>(pe).event = 0;
         } else if (!data->postEventList.recursion) {
             if (i != j)
@@ -1393,8 +1391,12 @@ void QCoreApplicationPrivate::removePostedEvents_unlocked(QObject *receiver,
         // truncate list
         data->postEventList.erase(data->postEventList.begin() + j, data->postEventList.end());
     }
-}
 
+    locker.unlock();
+    for (int i = 0; i < events.count(); ++i) {
+        delete events[i];
+    }
+}
 
 /*!
   Removes \a event from the queue of posted events, and emits a

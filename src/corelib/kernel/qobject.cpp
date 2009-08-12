@@ -896,10 +896,7 @@ QObject::~QObject()
 
     qt_removeObject(this);
 
-    QMutexLocker locker2(&d->threadData->postEventList.mutex);
-    if (d->postedEvents > 0)
-        QCoreApplicationPrivate::removePostedEvents_unlocked(this, 0, d->threadData);
-    locker2.unlock();
+    QCoreApplication::removePostedEvents(this);
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);

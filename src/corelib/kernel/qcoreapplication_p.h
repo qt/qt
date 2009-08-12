@@ -90,7 +90,6 @@ public:
     static QThread *mainThread();
     static bool checkInstance(const char *method);
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
-    static void removePostedEvents_unlocked(QObject *receiver, int type, QThreadData *data);
 
 #if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD)
     void checkReceiverThread(QObject *receiver);
