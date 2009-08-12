@@ -17,13 +17,18 @@
    <string notr="true">* { 
 	background: yellow;
 	padding: 2px;
+	border-radius: 4px;
 }
 
-QAbstractButton, QAbstractSlider {
+QGroupBox {
+	border: 1px solid gray;
+}
+
+QAbstractButton {
 	background: cyan;
 }
 
-QFrame {
+QFrame, QMenuBar {
 	background: magenta;
 }
 
@@ -32,23 +37,19 @@ QLineEdit, QSpinBox {
 }
 
 #gb1 * {
-	border-radius: 4px;
 }
 
 #gb2 * {
 	border: 1px solid blue;
-	border-radius: 4px;
 }
 
 #gb3 * {
 	border: 0px solid blue;
-	border-radius: 4px;
 }
 
 #gb4 * {
 	border-image: url(&quot;images/pushbutton.png&quot;) 6 6 6 6;
 	border-width:6px;
-	border-radius: 4px;
 }
 </string>
   </property>
@@ -96,12 +97,18 @@ QLineEdit, QSpinBox {
           <item>
            <widget class="QLineEdit" name="lineEdit">
             <property name="text">
-             <string/>
+             <string>LineEdit</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox"/>
+           <widget class="QComboBox" name="comboBox">
+            <item>
+             <property name="text">
+              <string>ComboBox</string>
+             </property>
+            </item>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -180,12 +187,18 @@ QLineEdit, QSpinBox {
           <item>
            <widget class="QLineEdit" name="lineEdit_2">
             <property name="text">
-             <string/>
+             <string>LineEdit</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_2"/>
+           <widget class="QComboBox" name="comboBox_2">
+            <item>
+             <property name="text">
+              <string>ComboBox</string>
+             </property>
+            </item>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -264,12 +277,18 @@ QLineEdit, QSpinBox {
           <item>
            <widget class="QLineEdit" name="lineEdit_4">
             <property name="text">
-             <string/>
+             <string>LineEdit</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_4"/>
+           <widget class="QComboBox" name="comboBox_4">
+            <item>
+             <property name="text">
+              <string>ComboBox</string>
+             </property>
+            </item>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -348,12 +367,18 @@ QLineEdit, QSpinBox {
           <item>
            <widget class="QLineEdit" name="lineEdit_3">
             <property name="text">
-             <string/>
+             <string>LineEdit</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_3"/>
+           <widget class="QComboBox" name="comboBox_3">
+            <item>
+             <property name="text">
+              <string>ComboBox</string>
+             </property>
+            </item>
+           </widget>
           </item>
          </layout>
         </widget>
