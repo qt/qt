@@ -111,7 +111,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     resize(pixmapItem->boundingRect().width(),pixmapItem->boundingRect().height());
     setTransformOriginPoint(boundingRect().center());
 
-    graphicsRotation = new QGraphicsRotation3D(this);
+    graphicsRotation = new QGraphicsRotation(this);
     graphicsRotation->setAxis(QVector3D(0, 1, 0));
     graphicsRotation->setOrigin(QPointF(size().width()/2, size().height()/2));
     QList<QGraphicsTransform *> r;
