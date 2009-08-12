@@ -3426,6 +3426,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         
         if (!notifiers.members.isEmpty()) {
             out() << "<p><b>Notifier signal:</b></p>\n";
+            //out() << "<p>This signal is emitted when the property value is changed.</p>\n";
             generateSectionList(notifiers, node, marker, CodeMarker::Accessors);
         }
     }

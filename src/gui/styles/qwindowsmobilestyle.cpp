@@ -4041,6 +4041,8 @@ void tintImage(QImage *image, QColor color, qreal saturation)
 
 enum QSliderDirection { SliderUp, SliderDown, SliderLeft, SliderRight };
 
+#ifdef Q_WS_WINCE_WM
+
 void QWindowsMobileStylePrivate::tintImagesButton(QColor color)
 {
        if (currentTintButton == color)
@@ -4095,6 +4097,8 @@ void QWindowsMobileStylePrivate::tintListViewHighlight(QColor color)
          imageListViewHighlightMiddle = imageListViewHighlightMiddle.scaledToHeight(height);
      }
 }
+
+#endif //Q_WS_WINCE_WM
 
 void QWindowsMobileStylePrivate::setupWindowsMobileStyle65()
 {
@@ -6443,13 +6447,11 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
 
 #ifdef Q_WS_WINCE_WM
             if (d->wm65)
-#else
-            if (false)
-#endif //Q_WS_WINCE_WM
             {
                 sliderButtonExtent = d->imageScrollbarHandleUp.width();
                 sliderButtonExtentDir = d->imageScrollbarHandleUp.height();
             }
+#endif //Q_WS_WINCE_WM
 
             int sliderlen;
             int maxlen = ((scrollbar->orientation == Qt::Horizontal) ?
