@@ -56,7 +56,7 @@
 #include <QTimer>
 
 #if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
+# define SRCDIR "."
 #endif
 
 typedef QMap<QString, QString> QStringMap;
