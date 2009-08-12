@@ -30,6 +30,14 @@ public:
             return column.key();
         }
 
+        inline Vertex *from() const {
+            return row.key();
+        }
+
+        inline Vertex *to() const {
+            return column.key();
+        }
+
         inline bool operator==(const const_iterator &o) const { return !(*this != o); }
         inline bool operator!=(const const_iterator &o) const {
            if (row ==  g->m_graph.end()) {
@@ -83,6 +91,15 @@ public:
     void createEdge(Vertex *first, Vertex *second, EdgeData *data)
     {
         // Creates a bidirectional edge
+#if 0
+        qDebug("Graph::createEdge(): %s",
+               qPrintable(QString::fromAscii("%1-%2")
+                          .arg(first->toString()).arg(second->toString())));
+#endif
+        if (edgeData(first, second)) {
+            qWarning(qPrintable(QString::fromAscii("%1-%2 already has an edge")
+                            .arg(first->toString()).arg(second->toString())));
+        }
         createDirectedEdge(first, second, data);
         createDirectedEdge(second, first, data);
     }
@@ -90,6 +107,11 @@ public:
     void removeEdge(Vertex *first, Vertex *second)
     {
         // Removes a bidirectional edge
+#if 0
+        qDebug("Graph::removeEdge(): %s",
+               qPrintable(QString::fromAscii("%1-%2")
+                          .arg(first->toString()).arg(second->toString())));
+#endif
         EdgeData *data = edgeData(first, second);
         removeDirectedEdge(first, second);
         removeDirectedEdge(second, first);
@@ -98,6 +120,11 @@ public:
 
     EdgeData *takeEdge(Vertex* first, Vertex* second)
     {
+#if 0
+        qDebug("Graph::takeEdge(): %s",
+               qPrintable(QString::fromAscii("%1-%2")
+                          .arg(first->toString()).arg(second->toString())));
+#endif
         // Removes a bidirectional edge
         EdgeData *data = edgeData(first, second);
         if (data) {
@@ -127,6 +154,19 @@ public:
             setOfVertices.insert(*it);
         }
         return setOfVertices;
+    }
+
+    QList<QPair<Vertex*, Vertex*> > connections() const {
+        QList<QPair<Vertex*, Vertex*> > conns;
+        for (const_iterator it = constBegin(); it != constEnd(); ++it) {
+            Vertex *from = it.from();
+            Vertex *to = it.to();
+            // do not return (from,to) *and* (to,from)
+            if (from < to) {
+                conns.append(qMakePair(from, to));
+            }
+        }
+        return conns;
     }
 
     QString serializeToDot() {   // traversal
