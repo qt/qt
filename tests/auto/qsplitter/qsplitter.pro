@@ -8,7 +8,7 @@ wince*|symbian*: {
    addFiles.sources = extradata.txt setSizes3.dat
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\"./\\\"
+   !symbian:DEFINES += SRCDIR=\\\"./\\\"
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
