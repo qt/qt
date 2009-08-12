@@ -413,6 +413,54 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
     }
 }
 
+static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g,
+                                    AnchorData *edge,
+                                    AnchorVertex *before,
+                                    AnchorVertex *after)
+{
+    Q_ASSERT(edge->type != AnchorData::Normal);
+#if 0
+    static const char *anchortypes[] = {"Normal",
+                                        "Sequential",
+                                        "Parallel"};
+    qDebug("Restoring %s edge.", anchortypes[int(edge->type)]);
+#endif
+    if (edge->type == AnchorData::Sequential) {
+        SequentialAnchorData* seqEdge = static_cast<SequentialAnchorData*>(edge);
+        // restore the sequential anchor
+        AnchorVertex *prev = before;
+        AnchorVertex *last = after;
+        if (edge->origin != prev)
+            qSwap(last, prev);
+
+        for (int i = 0; i < seqEdge->m_edges.count(); ++i) {
+            AnchorVertex *v1 = (i < seqEdge->m_children.count()) ? seqEdge->m_children.at(i) : last;
+            AnchorData *data = seqEdge->m_edges.at(i);
+            if (data->type != AnchorData::Normal) {
+                restoreSimplifiedAnchor(g, data, prev, v1);
+            } else {
+                g.createEdge(prev, v1, data);
+            }
+            prev = v1;
+        }
+        g.removeEdge(before, after);
+    } else if (edge->type == AnchorData::Parallel) {
+        ParallelAnchorData* parallelEdge = static_cast<ParallelAnchorData*>(edge);
+        AnchorData *parallelEdges[2] = {parallelEdge->firstEdge,
+                                          parallelEdge->secondEdge};
+        // must remove the old anchor first
+        g.removeEdge(before, after);
+        for (int i = 0; i < 2; ++i) {
+            AnchorData *data = parallelEdges[i];
+            if (data->type != AnchorData::Normal) {
+                restoreSimplifiedAnchor(g, data, before, after);
+            } else {
+                g.createEdge(before, after, data);
+            }
+        }
+    }
+}
+
 void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientation)
 {
     Q_Q(QGraphicsAnchorLayout);
@@ -438,33 +486,9 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
             if (visited.contains(next))
                 continue;
 
-            QQueue<AnchorData*> queue;
-            queue.enqueue(g.edgeData(v, next));
-            while (!queue.isEmpty()) {
-                AnchorData *edge = queue.dequeue();
-                if (edge->type == AnchorData::Sequential) {
-                    SequentialAnchorData* seqEdge = static_cast<SequentialAnchorData*>(edge);
-                    // restore the sequential anchor
-                    AnchorVertex *prev = v;
-                    AnchorVertex *last = next;
-                    if (edge->origin != prev)
-                        qSwap(last, prev);
-
-                    for (int i = 0; i < seqEdge->m_edges.count(); ++i) {
-                        AnchorVertex *v1 = (i < seqEdge->m_children.count()) ? seqEdge->m_children.at(i) : last;
-                        AnchorData *data = seqEdge->m_edges.at(i);
-                        g.createEdge(prev, v1, data);
-                        prev = v1;
-                    }
-                    g.removeEdge(v, next);
-                } else if (edge->type == AnchorData::Parallel) {
-                    ParallelAnchorData* parallelEdge = static_cast<ParallelAnchorData*>(edge);
-                    queue.enqueue(parallelEdge->firstEdge);
-                    queue.enqueue(parallelEdge->secondEdge);
-                    g.removeEdge(v, next);
-                }
-            }
-            stack.push(next);
+            AnchorData *edge = g.edgeData(v, next);
+            if (edge->type != AnchorData::Normal)
+                restoreSimplifiedAnchor(g, edge, v, next);
         }
         visited.insert(v);
     }
