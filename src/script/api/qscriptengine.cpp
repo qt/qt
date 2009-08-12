@@ -3533,7 +3533,8 @@ void QScriptEngine::setAgent(QScriptEngineAgent *agent)
     if (d->agent)
         QScriptEngineAgentPrivate::get(d->agent)->detach();
     d->agent = agent;
-    QScriptEngineAgentPrivate::get(d->agent)->attach();
+    if (agent)
+        QScriptEngineAgentPrivate::get(d->agent)->attach();
 }
 
 /*!
