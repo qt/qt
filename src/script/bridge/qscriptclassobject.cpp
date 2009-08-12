@@ -243,17 +243,9 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptObjectDelegate *delegate = obj->delegate();
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
 
-    JSC::Structure* structure;
-    JSC::JSValue prototype = JSC::asObject(callee)->get(exec, exec->propertyNames().prototype);
-    if (prototype.isObject())
-        structure = JSC::asObject(prototype)->inheritorID();
-    else
-        structure = exec->lexicalGlobalObject()->emptyObjectStructure();
-    JSC::JSObject* thisObject = new (exec) QScriptObject(structure);
-
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *oldFrame = eng_p->currentFrame;
-    eng_p->pushContext(exec, thisObject, args, callee, true);
+    eng_p->pushContext(exec, JSC::JSValue(), args, callee, true);
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
 
     QScriptValue defaultObject = ctx->thisObject();

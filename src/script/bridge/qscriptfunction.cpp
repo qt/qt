@@ -109,19 +109,11 @@ JSC::JSValue FunctionWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObject *cal
 JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObject *callee,
                                                const JSC::ArgList &args)
 {
-    JSC::Structure* structure;
-    JSC::JSValue prototype = JSC::asObject(callee)->get(exec, exec->propertyNames().prototype);
-    if (prototype.isObject())
-        structure = JSC::asObject(prototype)->inheritorID();
-    else
-        structure = exec->lexicalGlobalObject()->emptyObjectStructure();
-    JSC::JSObject* thisObject = new (exec) QScriptObject(structure);
-
     FunctionWrapper *self = static_cast<FunctionWrapper*>(callee);
     QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
 
     JSC::ExecState *oldFrame = eng_p->currentFrame;
-    eng_p->pushContext(exec, thisObject, args, callee, true);
+    eng_p->pushContext(exec, JSC::JSValue(), args, callee, true);
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
 
     QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p));
@@ -179,19 +171,11 @@ JSC::JSValue FunctionWithArgWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObje
 JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObject *callee,
                                                       const JSC::ArgList &args)
 {
-    JSC::Structure* structure;
-    JSC::JSValue prototype = JSC::asObject(callee)->get(exec, exec->propertyNames().prototype);
-    if (prototype.isObject())
-        structure = JSC::asObject(prototype)->inheritorID();
-    else
-        structure = exec->lexicalGlobalObject()->emptyObjectStructure();
-    JSC::JSObject* thisObject = new (exec) QScriptObject(structure);
-
     FunctionWithArgWrapper *self = static_cast<FunctionWithArgWrapper*>(callee);
     QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
 
     JSC::ExecState *oldFrame = eng_p->currentFrame;
-    eng_p->pushContext(exec, thisObject, args, callee, true);
+    eng_p->pushContext(exec, JSC::JSValue(), args, callee, true);
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
 
     QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p) , self->data->arg);

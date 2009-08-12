@@ -2271,9 +2271,18 @@ QScriptContext *QScriptEngine::pushContext()
 
    return the new top frame. (might be the same as exec if a new stackframe was not needed) or 0 if stack overflow
 */
-JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JSC::JSValue &thisObject,
+JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JSC::JSValue &_thisObject,
                                                   const JSC::ArgList& args, JSC::JSObject *callee, bool calledAsConstructor)
 {
+    JSC::JSValue thisObject = _thisObject;
+    if (calledAsConstructor) {
+        //JSC doesn't create default created object for native functions. so we do it
+        JSC::JSValue prototype = callee->get(exec, exec->propertyNames().prototype);
+        JSC::Structure *structure = prototype.isObject() ? JSC::asObject(prototype)->inheritorID()
+                                                         : exec->lexicalGlobalObject()->emptyObjectStructure();
+        thisObject = new (exec) QScriptObject(structure);
+    }
+
     JSC::CallFrame *newCallFrame = exec;
     if (callee == 0 || !(exec->callee() == callee && exec->returnPC() != 0)) {
         //We need to check if the Interpreter might have already created a frame for function called from JS.
