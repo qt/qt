@@ -102,10 +102,11 @@ Item {
         targets: [keyActions,textEdit]
     }
 
-    KeyActions {
+    Item {
         id: keyActions
-        keyReturn: "confirm()"
-        enter: "confirm()"
+        Keys.onEnterPressed: confirm()
+        Keys.onReturnPressed: confirm()
+        Keys.onEscapePressed: reset()
     }
 
     MouseRegion {
