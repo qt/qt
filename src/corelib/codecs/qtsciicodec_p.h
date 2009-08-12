@@ -41,7 +41,7 @@
 
 // Most of the code here was originally written by Hans Petter Bieker,
 // and is included in Qt with the author's permission, and the grateful
-// thanks of the Trolltech team.
+// thanks of the Qt team.
 
 /*
  * Copyright (C) 2000 Hans Petter Bieker. All rights reserved.

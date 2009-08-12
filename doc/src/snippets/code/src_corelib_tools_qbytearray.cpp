@@ -246,16 +246,16 @@ QByteArray z = x.mid(5);        // z == "pineapples"
 
 
 //! [30]
-QByteArray x("TROlltECH");
+QByteArray x("Qt by NOKIA");
 QByteArray y = x.toLower();
-// y == "trolltech"
+// y == "qt by nokia"
 //! [30]
 
 
 //! [31]
-QByteArray x("TROlltECH");
+QByteArray x("Qt by NOKIA");
 QByteArray y = x.toUpper();
-// y == "TROLLTECH"
+// y == "QT BY NOKIA"
 //! [31]
 
 

@@ -1343,7 +1343,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     Some commands, e.g. list(), emit additional signals to report
     their results.
 
-    Example: If you want to download the INSTALL file from Trolltech's
+    Example: If you want to download the INSTALL file from the Qt
     FTP server, you would write this:
 
     \snippet doc/src/snippets/code/src_network_access_qftp.cpp 1

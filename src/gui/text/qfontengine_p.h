@@ -107,7 +107,7 @@ public:
         // Apple Mac OS types
         Mac,
 
-        // Trolltech QWS types
+        // QWS types
         Freetype,
         QPF1,
         QPF2,

@@ -2245,7 +2245,7 @@ void QWidgetPrivate::createWindow_sys()
 
     OSWindowRef windowRef = qt_mac_create_window(q, topExtra->wclass, wattr, data.crect);
     if (windowRef == 0)
-        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Trolltech and include the\n"
+        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Qt Support and include the\n"
                 "      WidgetFlags used in creating the widget.", __FILE__, __LINE__);
 #ifndef QT_MAC_USE_COCOA
     finishCreateWindow_sys_Carbon(windowRef);

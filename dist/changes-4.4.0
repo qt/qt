@@ -939,7 +939,7 @@ Third party components
       requested.
 
 - QPrintEngine
-    * [193986] Fixed the Trolltech copyright date on PDF files
+    * [193986] Fixed the copyright date on PDF files
 
 - QProcess
     * [162522] QProcess now emits stateChanged() consistently for all state

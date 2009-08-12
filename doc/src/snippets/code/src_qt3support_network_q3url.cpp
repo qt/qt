@@ -32,12 +32,12 @@ Q3Url url( "ftp://ftp.qt.nokia.com/qt/source", "file:///usr/local" );
 //! [5]
 QString url = http://qt.nokia.com
 Q3Url::encode( url );
-// url is now "http%3A//www%20trolltech%20com"
+// url is now "http%3A//qt%20nokia%20com"
 //! [5]
 
 
 //! [6]
-QString url = "http%3A//www%20trolltech%20com"
+QString url = "http%3A//qt%20nokia%20com"
 Q3Url::decode( url );
 // url is now "http://qt.nokia.com"
 //! [6]

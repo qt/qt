@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /* The following copyright notice pertains to the code as contributed
-to Trolltech, not to Trolltech's modifications. It is replicated
+to Qt, not to Nokia's modifications. It is replicated
 in doc/dnd.doc, where the documentation system can see it. */
 
 /* Copyright 1996 Daniel Dardailler.

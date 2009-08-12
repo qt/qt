@@ -407,7 +407,7 @@
     On X11, Qt also supports drops via the Motif Drag & Drop Protocol. The
     implementation incorporates some code that was originally written by
     Daniel Dardailler, and adapted for Qt by Matt Koss <koss@napri.sk>
-    and Trolltech. Here is the original copyright notice:
+    and Nokia. Here is the original copyright notice:
 
     \legalese
     Copyright 1996 Daniel Dardailler.

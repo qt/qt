@@ -103,8 +103,8 @@ private:
     int yRot;
     int zRot;
     QPoint lastPos;
-    QColor trolltechGreen;
-    QColor trolltechPurple;
+    QColor qtGreen;
+    QColor qtPurple;
 //! [4]
     QList<Bubble*> bubbles;
     QTimer animationTimer;

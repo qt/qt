@@ -55,8 +55,8 @@ GLWidget::GLWidget(QWidget *parent)
     yRot = 0;
     zRot = 0;
 
-    trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
-    trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
+    qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
+    qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 }
 //! [0]
 
@@ -118,7 +118,7 @@ void GLWidget::setZRotation(int angle)
 //! [6]
 void GLWidget::initializeGL()
 {
-    qglClearColor(trolltechPurple.dark());
+    qglClearColor(qtPurple.dark());
     object = makeObject();
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
@@ -234,7 +234,7 @@ GLuint GLWidget::makeObject()
 void GLWidget::quad(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,
                     GLdouble x3, GLdouble y3, GLdouble x4, GLdouble y4)
 {
-    qglColor(trolltechGreen);
+    qglColor(qtGreen);
 
     glVertex3d(x1, y1, -0.05);
     glVertex3d(x2, y2, -0.05);
@@ -249,7 +249,7 @@ void GLWidget::quad(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,
 
 void GLWidget::extrude(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2)
 {
-    qglColor(trolltechGreen.dark(250 + int(100 * x1)));
+    qglColor(qtGreen.dark(250 + int(100 * x1)));
 
     glVertex3d(x1, y1, +0.05);
     glVertex3d(x2, y2, +0.05);

@@ -801,8 +801,8 @@ void Widget::toLongLongFunction()
 void Widget::toLowerFunction()
 {
 //! [75]
-    QString str = "TROlltECH";
-    str = str.toLower();        // str == "trolltech"
+    QString str = "Qt by NOKIA";
+    str = str.toLower();        // str == "qy by nokia"
 //! [75]
 }
 
