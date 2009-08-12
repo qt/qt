@@ -114,7 +114,7 @@ public:
     virtual void didReachBreakpoint(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column)
     {
         QList<QVariant> args;
-        args << sourceID << lineno << column;
+        args << qint64(sourceID) << lineno << column;
         if (q_ptr->supportsExtension(QScriptEngineAgent::DebuggerInvocationRequest))
             q_ptr->extension(QScriptEngineAgent::DebuggerInvocationRequest, args);
     };
