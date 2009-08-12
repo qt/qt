@@ -60,25 +60,12 @@ Completion evaluate(ExecState* exec, ScopeChain& scopeChain, const SourceCode& s
     JSLock lock(exec);
     
     intptr_t sourceId = source.provider()->asID();
-#ifdef QT_BUILD_SCRIPT_LIB
-    Debugger* debugger = exec->lexicalGlobalObject()->debugger();
-    exec->globalData().scriptpool->startEvaluating(source);
-    if (debugger)
-        debugger->evaluateStart(sourceId);
-#endif
     int errLine;
     UString errMsg;
     RefPtr<ProgramNode> programNode = exec->globalData().parser->parse<ProgramNode>(exec, exec->dynamicGlobalObject()->debugger(), source, &errLine, &errMsg);
 
     if (!programNode) {
         JSValue error = Error::create(exec, SyntaxError, errMsg, errLine, sourceId, source.provider()->url());
-#ifdef QT_BUILD_SCRIPT_LIB
-        if (debugger) {
-            debugger->exceptionThrow(DebuggerCallFrame(exec, error), sourceId, false);
-            debugger->evaluateStop(error, sourceId);
-        }
-        exec->globalData().scriptpool->stopEvaluating(source);
-#endif
         return Completion(Throw, error);
     }
 
@@ -88,21 +75,11 @@ Completion evaluate(ExecState* exec, ScopeChain& scopeChain, const SourceCode& s
     JSValue result = exec->interpreter()->execute(programNode.get(), exec, scopeChain.node(), thisObj, &exception);
 
     if (exception) {
-#ifdef QT_BUILD_SCRIPT_LIB
-        if (debugger)
-            debugger->evaluateStop(exception, sourceId);
-        exec->globalData().scriptpool->stopEvaluating(source);
-#endif
         if (exception.isObject() && asObject(exception)->isWatchdogException())
             return Completion(Interrupted, exception);
         return Completion(Throw, exception);
     }
 
-#ifdef QT_BUILD_SCRIPT_LIB
-    if (debugger)
-        debugger->evaluateStop(result, sourceId);
-    exec->globalData().scriptpool->stopEvaluating(source);
-#endif
     return Completion(Normal, result);
 }
 
