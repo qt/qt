@@ -149,6 +149,8 @@ struct AnchorData : public QSimplexVariable {
 
     virtual void refreshSizeHints() { };
 
+    void dump(int indent = 2);
+
     inline QString toString() const;
     QString name;
 

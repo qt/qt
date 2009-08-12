@@ -92,6 +92,24 @@ void SequentialAnchorData::refreshSizeHints()
     }
 }
 
+void AnchorData::dump(int indent) {
+    if (type == Parallel) {
+        qDebug("%*s type: parallel:", indent, "");
+        ParallelAnchorData *p = static_cast<ParallelAnchorData *>(this);
+        p->firstEdge->dump(indent+2);
+        p->secondEdge->dump(indent+2);
+    } else if (type == Sequential) {
+        SequentialAnchorData *s = static_cast<SequentialAnchorData *>(this);
+        int kids = s->m_edges.count();
+        qDebug("%*s type: sequential(%d):", indent, "", kids);
+        for (int i = 0; i < kids; ++i) {
+            s->m_edges.at(i)->dump(indent+2);
+        }
+    } else {
+        qDebug("%*s type: Normal:", indent, "");
+    }
+}
+
 QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
 {
     // Calculate
