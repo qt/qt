@@ -300,7 +300,7 @@ public:
     void deleteLayoutEdges();
     void createItemEdges(QGraphicsLayoutItem *item);
     void createCenterAnchors(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge);
-    void removeCenterAnchors(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge);
+    void removeCenterAnchors(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge, bool substitute = true);
     void removeCenterConstraints(QGraphicsLayoutItem *item, Orientation orientation);
 
     // helper function used by the 4 API functions
@@ -323,6 +323,8 @@ public:
                       QGraphicsAnchorLayout::Edge secondEdge);
 
     void removeAnchors(QGraphicsLayoutItem *item);
+
+    void removeVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
 
     void correctEdgeDirection(QGraphicsLayoutItem *&firstItem,
                               QGraphicsAnchorLayout::Edge &firstEdge,
