@@ -6,10 +6,8 @@ import "fieldtext"
 Item {
     id: WebBrowser
 
-    property string url : "http://www.qtsoftware.com/"
+    property string urlString : "http://www.qtsoftware.com/"
 
-    width: 640
-    height: 480
     state: "Normal"
 
     Script {
@@ -78,8 +76,8 @@ Item {
                 Text {
                     id: HeaderText
 
-                    //text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
-                    text: MyWebView.url
+                    text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
+                    //text: MyWebView.url
                     elide: "ElideRight"
 
                     color: "white"
@@ -140,9 +138,9 @@ Item {
                             color: "#555555"
                             focusOnPress: true
                             =======*/
-                            text: WebBrowser.url
+                            text: WebBrowser.urlString
                             label: "url:"
-                            onConfirmed: { print ('OnConfirmed: '+EditUrl.text); WebBrowser.url = EditUrl.text; print (EditUrl.text); MyWebView.focus=true }
+                            onConfirmed: { print ('OnConfirmed: '+EditUrl.text); WebBrowser.urlString = EditUrl.text; print (EditUrl.text); MyWebView.focus=true }
                             onCancelled: { MyWebView.focus=true }
                             onStartEdit: { print (EditUrl.text); MyWebView.focus=false }
 
@@ -197,16 +195,17 @@ Item {
                 id: MyWebView
                 cacheSize: 4000000
 
-                url: WebBrowser.url
+                url: WebBrowser.urlString
                 smooth: !Flick.moving
                 fillColor: "white"
                 focus: true
+                interactive: true
 
                 idealWidth: Flick.width
                 idealHeight: Flick.height/scale
                 scale: (width > 0) ? Flick.width/width*zoomedOut+(1-zoomedOut) : 1
 
-                onUrlChanged: { print ('OnUrlChanged: '+url); WebBrowser.url = url.toString(); print ('Moved to url: ' + WebBrowser.url) }
+                onUrlChanged: { print ('OnUrlChanged: '+url.toString()); WebBrowser.urlString = url.toString(); print ('Moved to url: ' + WebBrowser.urlString) }
                 onDoubleClick: { toggleZoom() }
 
                 property real zoomedOut : 1
