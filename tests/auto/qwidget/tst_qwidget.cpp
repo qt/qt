@@ -5309,6 +5309,7 @@ void tst_QWidget::moveChild()
 void tst_QWidget::showAndMoveChild()
 {
     QWidget parent(0, Qt::FramelessWindowHint);
+    parent.move(qApp->desktop()->availableGeometry().topLeft());
     parent.resize(300, 300);
     parent.setPalette(Qt::red);
     parent.show();
