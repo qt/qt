@@ -77,9 +77,9 @@ QDomElement e = //...
 //...
 QDomAttr a = e.attributeNode("href");
 cout << a.value() << endl;                // prints "http://qt.nokia.com"
-a.setValue("http://doc.trolltech.com"); // change the node's attribute
+a.setValue("http://qt.nokia.com/doc"); // change the node's attribute
 QDomAttr a2 = e.attributeNode("href");
-cout << a2.value() << endl;               // prints "http://doc.trolltech.com"
+cout << a2.value() << endl;               // prints "http://qt.nokia.com/doc"
 //! [8]
 
 

@@ -535,7 +535,7 @@ bool Q3IconDragData::operator==(const Q3IconDragData &i) const
 
     The data in Q3IconDragItems is stored in a QByteArray and is
     mime-typed (see QMimeSource and the
-    \link http://doc.trolltech.com/dnd.html Drag and Drop\endlink
+    \link http://qt.nokia.com/doc/dnd.html Drag and Drop\endlink
     overview). If you want to use your own mime-types derive a class
     from Q3IconDrag and reimplement format(), encodedData() and
     canDecode().

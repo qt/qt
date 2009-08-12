@@ -2,7 +2,7 @@
 
 project                 = qlalr
 description             = qlalr Reference Documentation
-url                     = http://doc.trolltech.com/
+url                     = http://qt.nokia.com/doc/
 
 language                = Cpp
 

@@ -215,7 +215,7 @@ QUrlInfo::QUrlInfo(const QUrl &url, int permissions, const QString &owner,
 
 /*!
     Sets the name of the URL to \a name. The name is the full text,
-    for example, "http://doc.trolltech.com/qurlinfo.html".
+    for example, "http://qt.nokia.com/doc/qurlinfo.html".
 
     If you call this function for an invalid URL info, this function
     turns it into a valid one.
