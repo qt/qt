@@ -8973,6 +8973,7 @@ void tst_QWidget::inputFocus_task257832()
     if (!context)
         QSKIP("No input context", SkipSingle);
     widget->setFocus();
+    widget->winId();    // make sure, widget has been created
     context->setFocusWidget(widget);
     QCOMPARE(context->focusWidget(), widget);
     widget->setReadOnly(true);
