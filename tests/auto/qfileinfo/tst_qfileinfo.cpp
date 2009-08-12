@@ -725,7 +725,9 @@ void tst_QFileInfo::permission()
     QFETCH(QString, file);
     QFETCH(int, perms);
     QFETCH(bool, expected);
-    QEXPECT_FAIL("data0", "No user based rights in Symbian OS - SOS needs platform security tests instead", Abort);
+#ifdef Q_OS_SYMBIAN
+    QSKIP("No user based rights in Symbian OS - SOS needs platform security tests instead", SkipAll);
+#endif
     QFileInfo fi(file);
     QCOMPARE(fi.permission(QFile::Permissions(perms)), expected);
 }
