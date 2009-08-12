@@ -63,6 +63,10 @@ QmlValueType *QmlValueTypeFactory::valueType(int t)
         return new QmlPointValueType;
     case QVariant::PointF:
         return new QmlPointFValueType;
+    case QVariant::Size:
+        return new QmlSizeValueType;
+    case QVariant::SizeF:
+        return new QmlSizeFValueType;
     case QVariant::Rect:
         return new QmlRectValueType;
     case QVariant::RectF:
@@ -151,6 +155,80 @@ void QmlPointValueType::setX(int x)
 void QmlPointValueType::setY(int y)
 {
     point.setY(y);
+}
+
+QmlSizeFValueType::QmlSizeFValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
+
+void QmlSizeFValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &size, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlSizeFValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &size, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+qreal QmlSizeFValueType::width() const
+{
+    return size.width();
+}
+
+qreal QmlSizeFValueType::height() const
+{
+    return size.height();
+}
+
+void QmlSizeFValueType::setWidth(qreal w)
+{
+    size.setWidth(w);
+}
+
+void QmlSizeFValueType::setHeight(qreal h)
+{
+    size.setHeight(h);
+}
+
+QmlSizeValueType::QmlSizeValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
+
+void QmlSizeValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &size, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlSizeValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &size, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+int QmlSizeValueType::width() const
+{
+    return size.width();
+}
+
+int QmlSizeValueType::height() const
+{
+    return size.height();
+}
+
+void QmlSizeValueType::setWidth(int w)
+{
+    size.setWidth(w);
+}
+
+void QmlSizeValueType::setHeight(int h)
+{
+    size.setHeight(h);
 }
 
 QmlRectFValueType::QmlRectFValueType(QObject *parent)

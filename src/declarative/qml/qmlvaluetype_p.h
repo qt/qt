@@ -120,6 +120,46 @@ private:
     QPoint point;
 };
 
+class QmlSizeFValueType : public QmlValueType
+{
+    Q_PROPERTY(qreal width READ width WRITE setWidth);
+    Q_PROPERTY(qreal height READ height WRITE setHeight);
+    Q_OBJECT
+public:
+    QmlSizeFValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    qreal width() const;
+    qreal height() const;
+    void setWidth(qreal);
+    void setHeight(qreal);
+
+private:
+    QSizeF size;
+};
+
+class QmlSizeValueType : public QmlValueType
+{
+    Q_PROPERTY(int width READ width WRITE setWidth);
+    Q_PROPERTY(int height READ height WRITE setHeight);
+    Q_OBJECT
+public:
+    QmlSizeValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    int width() const;
+    int height() const;
+    void setWidth(int);
+    void setHeight(int);
+
+private:
+    QSize size;
+};
+
 class QmlRectFValueType : public QmlValueType
 {
     Q_PROPERTY(qreal x READ x WRITE setX);
