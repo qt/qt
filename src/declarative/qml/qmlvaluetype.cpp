@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmlvaluetype_p.h"
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,6 +74,8 @@ QmlValueType *QmlValueTypeFactory::valueType(int t)
         return new QmlRectFValueType;
     case QVariant::Vector3D:
         return new QmlVector3DValueType;
+    case QVariant::Font:
+        return new QmlFontValueType;
     default:
         return 0;
     }
@@ -390,6 +393,88 @@ void QmlVector3DValueType::setY(qreal y)
 void QmlVector3DValueType::setZ(qreal z)
 {
     vector.setZ(z);
+}
+
+QmlFontValueType::QmlFontValueType(QObject *parent)
+: QmlValueType(parent), hasPixelSize(false)
+{
+}
+
+void QmlFontValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &font, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlFontValueType::write(QObject *obj, int idx)
+{
+    void *a[] = { &font, 0 };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QString QmlFontValueType::family() const
+{
+    return font.family();
+}
+
+void QmlFontValueType::setFamily(const QString &family)
+{
+    font.setFamily(family);
+}
+
+bool QmlFontValueType::bold() const
+{
+    return font.bold();
+}
+
+void QmlFontValueType::setBold(bool b)
+{
+    font.setBold(b);
+}
+
+bool QmlFontValueType::italic() const
+{
+    return font.italic();
+}
+
+void QmlFontValueType::setItalic(bool b)
+{
+    font.setItalic(b);
+}
+
+bool QmlFontValueType::underline() const
+{
+    return font.underline();
+}
+
+void QmlFontValueType::setUnderline(bool b)
+{
+    font.setUnderline(b);
+}
+
+qreal QmlFontValueType::pointSize() const
+{
+    return font.pointSizeF();
+}
+
+void QmlFontValueType::setPointSize(qreal size)
+{
+    if (hasPixelSize) {
+        qWarning() << "Both point size and pixel size set. Using pixel size.";
+        return;
+    }
+    font.setPointSizeF(size);
+}
+
+int QmlFontValueType::pixelSize() const
+{
+    return font.pixelSize();
+}
+
+void QmlFontValueType::setPixelSize(int size)
+{
+    font.setPixelSize(size);
+    hasPixelSize = true;
 }
 
 QT_END_NAMESPACE

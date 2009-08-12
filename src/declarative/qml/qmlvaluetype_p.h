@@ -57,6 +57,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qvector3d.h>
+#include <QtGui/qfont.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -235,6 +236,44 @@ public:
 
 private:
     QVector3D vector;
+};
+
+class QmlFontValueType : public QmlValueType
+{
+    Q_OBJECT
+    Q_PROPERTY(QString family READ family WRITE setFamily)
+    Q_PROPERTY(bool bold READ bold WRITE setBold)
+    Q_PROPERTY(bool italic READ italic WRITE setItalic)
+    Q_PROPERTY(bool underline READ underline WRITE setUnderline)
+    Q_PROPERTY(qreal pointSize READ pointSize WRITE setPointSize)
+    Q_PROPERTY(int pixelSize READ pixelSize WRITE setPixelSize)
+public:
+    QmlFontValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int);
+
+    QString family() const;
+    void setFamily(const QString &);
+
+    bool bold() const;
+    void setBold(bool b);
+
+    bool italic() const;
+    void setItalic(bool b);
+
+    bool underline() const;
+    void setUnderline(bool b);
+
+    qreal pointSize() const;
+    void setPointSize(qreal size);
+
+    int pixelSize() const;
+    void setPixelSize(int size);
+
+private:
+    QFont font;
+    bool hasPixelSize;
 };
 
 QT_END_NAMESPACE
