@@ -47,6 +47,7 @@
 #include <qplaintextedit.h>
 #include <qlayout.h>
 #include <qradiobutton.h>
+#include <qwindowsstyle.h>
 
 class tst_QInputContext : public QObject
 {
@@ -122,8 +123,37 @@ void tst_QInputContext::filterMouseEvents()
     le.setInputContext(0);
 }
 
+class RequestSoftwareInputPanelStyle : public QWindowsStyle
+{
+public:
+    RequestSoftwareInputPanelStyle()
+        : m_rsipBehavior(RSIP_OnMouseClickAndAlreadyFocused)
+    {
+    }
+    ~RequestSoftwareInputPanelStyle()
+    {
+    }
+
+    int styleHint(StyleHint hint, const QStyleOption *opt = 0,
+                  const QWidget *widget = 0, QStyleHintReturn* returnData = 0) const
+    {
+        if (hint == SH_RequestSoftwareInputPanel) {
+            return m_rsipBehavior;
+        } else {
+            return QWindowsStyle::styleHint(hint, opt, widget, returnData);
+        }
+    }
+
+    RequestSoftwareInputPanel m_rsipBehavior;
+};
+
 void tst_QInputContext::requestSoftwareInputPanel()
 {
+    QStyle *oldStyle = qApp->style();
+    oldStyle->setParent(this); // Prevent it being deleted.
+    RequestSoftwareInputPanelStyle *newStyle = new RequestSoftwareInputPanelStyle;
+    qApp->setStyle(newStyle);
+
     QWidget w;
     QLayout *layout = new QVBoxLayout;
     QLineEdit *le1, *le2;
@@ -143,13 +173,13 @@ void tst_QInputContext::requestSoftwareInputPanel()
     QApplication::setActiveWindow(&w);
 
     // Testing single click panel activation.
-    qApp->setAutoSipOnMouseFocus(true);
+    newStyle->m_rsipBehavior = QStyle::RSIP_OnMouseClick;
     QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
     QVERIFY(ic2->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
     ic2->lastTypes.clear();
 
     // Testing double click panel activation.
-    qApp->setAutoSipOnMouseFocus(false);
+    newStyle->m_rsipBehavior = QStyle::RSIP_OnMouseClickAndAlreadyFocused;
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
     QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
@@ -159,6 +189,9 @@ void tst_QInputContext::requestSoftwareInputPanel()
     // Testing right mouse button
     QTest::mouseClick(le1, Qt::RightButton, Qt::NoModifier, QPoint(5, 5));
     QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
+
+    qApp->setStyle(oldStyle);
+    oldStyle->setParent(qApp);
 }
 
 void tst_QInputContext::closeSoftwareInputPanel()

@@ -61,6 +61,7 @@
 #include "QtGui/qregion.h"
 #include "QtGui/qsizepolicy.h"
 #include "QtGui/qstyle.h"
+#include "QtGui/qapplication.h"
 
 #ifdef Q_WS_WIN
 #include "QtCore/qt_windows.h"
@@ -460,6 +461,19 @@ public:
     }
 
     QSize adjustedSize() const;
+
+    inline void handleSoftwareInputPanel(Qt::MouseButton button, bool clickCausedFocus)
+    {
+        Q_Q(QWidget);
+        if (button == Qt::LeftButton && qApp->autoSipEnabled()) {
+            QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
+                    q->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
+            if (!clickCausedFocus || behavior == QStyle::RSIP_OnMouseClick) {
+                QEvent event(QEvent::RequestSoftwareInputPanel);
+                QApplication::sendEvent(q, &event);
+            }
+        }
+    }
 
 #ifndef Q_WS_QWS // Almost cross-platform :-)
     void setWSGeometry(bool dontShow=false, const QRect &oldRect = QRect());

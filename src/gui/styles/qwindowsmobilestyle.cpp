@@ -3404,6 +3404,9 @@ int QWindowsMobileStyle::styleHint(StyleHint hint, const QStyleOption *opt, cons
     case SH_MenuBar_AltKeyNavigation:
         ret = false;
         break;
+    case SH_RequestSoftwareInputPanel:
+        ret = RSIP_OnMouseClick;
+        break;
     default:
           ret = QWindowsStyle::styleHint(hint, opt, widget, returnData);
        break;

@@ -1932,11 +1932,7 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->ensureCursorVisible();
     }
 
-    if (e->button() == Qt::LeftButton && qApp->autoSipEnabled()
-            && (!d->clickCausedFocus || qApp->autoSipOnMouseFocus())) {
-        QEvent event(QEvent::RequestSoftwareInputPanel);
-        QApplication::sendEvent(this, &event);
-    }
+    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 
