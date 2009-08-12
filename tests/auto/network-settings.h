@@ -96,8 +96,6 @@ public:
             return entry->recordValue();
         }
 #endif
-        //return QString("qttest");
-        //return QString("aspiriniks");
         return QString("qt-test-server");
     }
     static QString serverDomainName()
@@ -110,8 +108,6 @@ public:
             return entry->recordValue();
         }
 #endif
-        //return QString("it.local");
-        //return QString("troll.no");
         return QString("qt-test-net");
     }
     static QString serverName()
