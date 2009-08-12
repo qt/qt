@@ -96,6 +96,63 @@ public:
     }
 };
 
+class tst_QTouchEventGraphicsItem : public QGraphicsItem
+{
+public:
+    QList<QTouchEvent::TouchPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
+    bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
+    bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
+
+    tst_QTouchEventGraphicsItem()
+        : QGraphicsItem()
+    {
+        reset();
+    }
+
+    void reset()
+    {
+        touchBeginPoints.clear();
+        touchUpdatePoints.clear();
+        touchEndPoints.clear();
+        seenTouchBegin = seenTouchUpdate = seenTouchEnd = false;
+        acceptTouchBegin = acceptTouchUpdate = acceptTouchEnd = true;
+    }
+
+    QRectF boundingRect() const { return QRectF(0, 0, 10, 10); }
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) { }
+
+    bool sceneEvent(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::TouchBegin:
+            if (seenTouchBegin) qWarning("TouchBegin: already seen a TouchBegin");
+            if (seenTouchUpdate) qWarning("TouchBegin: TouchUpdate cannot happen before TouchBegin");
+            if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
+            seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
+            touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            event->setAccepted(acceptTouchBegin);
+            break;
+        case QEvent::TouchUpdate:
+            if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
+            if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
+            seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
+            touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            event->setAccepted(acceptTouchUpdate);
+            break;
+        case QEvent::TouchEnd:
+            if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
+            if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
+            seenTouchEnd = seenTouchBegin && !seenTouchEnd;
+            touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            event->setAccepted(acceptTouchEnd);
+            break;
+        default:
+            return QGraphicsItem::sceneEvent(event);
+        }
+        return true;
+    }
+};
+
 class tst_QTouchEvent : public QObject
 {
     Q_OBJECT
@@ -115,139 +172,348 @@ private slots:
 
 void tst_QTouchEvent::touchDisabledByDefault()
 {
-    // the widget attribute is not enabled by default
-    QWidget widget;
-    QVERIFY(!widget.testAttribute(Qt::WA_AcceptTouchEvents));
+    // QWidget
+    {
+        // the widget attribute is not enabled by default
+        QWidget widget;
+        QVERIFY(!widget.testAttribute(Qt::WA_AcceptTouchEvents));
 
-    // events should not be accepted since they are not enabled
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    touchPoints.append(QTouchEvent::TouchPoint(0));
-    QTouchEvent touchEvent(QEvent::TouchBegin,
-                           QTouchEvent::TouchScreen,
-                           Qt::NoModifier,
-                           Qt::TouchPointPressed,
-                           touchPoints);
-    bool res = QApplication::sendEvent(&widget, &touchEvent);
-    QVERIFY(!res);
-    QVERIFY(!touchEvent.isAccepted());
+        // events should not be accepted since they are not enabled
+        QList<QTouchEvent::TouchPoint> touchPoints;
+        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QTouchEvent touchEvent(QEvent::TouchBegin,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointPressed,
+                               touchPoints);
+        bool res = QApplication::sendEvent(&widget, &touchEvent);
+        QVERIFY(!res);
+        QVERIFY(!touchEvent.isAccepted());
+    }
+
+    // QGraphicsView
+    {
+        QGraphicsScene scene;
+        tst_QTouchEventGraphicsItem item;
+        QGraphicsView view(&scene);
+        scene.addItem(&item);
+        item.setPos(100, 100);
+        view.resize(200, 200);
+        view.fitInView(scene.sceneRect());
+
+        // touch events are not accepted by default
+        QVERIFY(!item.acceptTouchEvents());
+
+        // compose an event to the scene that is over the item
+        QTouchEvent::TouchPoint touchPoint(0);
+        touchPoint.setState(Qt::TouchPointPressed);
+        touchPoint.setPos(view.mapFromScene(item.mapToScene(item.boundingRect().center())));
+        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.pos().toPoint()));
+        touchPoint.setScenePos(view.mapToScene(touchPoint.pos().toPoint()));
+        QTouchEvent touchEvent(QEvent::TouchBegin,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointPressed,
+                               (QList<QTouchEvent::TouchPoint>() << touchPoint));
+        bool res = QApplication::sendEvent(view.viewport(), &touchEvent);
+        QVERIFY(!res);
+        QVERIFY(!touchEvent.isAccepted());
+        QVERIFY(!item.seenTouchBegin);
+    }
 }
 
 void tst_QTouchEvent::touchEventAcceptedByDefault()
 {
-    // enabling touch events should automatically accept touch events
-    QWidget widget;
-    widget.setAttribute(Qt::WA_AcceptTouchEvents);
+    // QWidget
+    {
+        // enabling touch events should automatically accept touch events
+        QWidget widget;
+        widget.setAttribute(Qt::WA_AcceptTouchEvents);
 
-    // QWidget handles touch event by converting them into a mouse event, so the event is both
-    // accepted and handled (res == true)
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    touchPoints.append(QTouchEvent::TouchPoint(0));
-    QTouchEvent touchEvent(QEvent::TouchBegin,
-                           QTouchEvent::TouchScreen,
-                           Qt::NoModifier,
-                           Qt::TouchPointPressed,
-                           touchPoints);
-    bool res = QApplication::sendEvent(&widget, &touchEvent);
-    QVERIFY(res);
-    QVERIFY(touchEvent.isAccepted());
+        // QWidget handles touch event by converting them into a mouse event, so the event is both
+        // accepted and handled (res == true)
+        QList<QTouchEvent::TouchPoint> touchPoints;
+        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QTouchEvent touchEvent(QEvent::TouchBegin,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointPressed,
+                               touchPoints);
+        bool res = QApplication::sendEvent(&widget, &touchEvent);
+        QVERIFY(res);
+        QVERIFY(touchEvent.isAccepted());
 
-    // tst_QTouchEventWidget does handle, sending succeeds
-    tst_QTouchEventWidget touchWidget;
-    touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
-    touchEvent.ignore();
-    res = QApplication::sendEvent(&touchWidget, &touchEvent);
-    QVERIFY(res);
-    QVERIFY(touchEvent.isAccepted());
+        // tst_QTouchEventWidget does handle, sending succeeds
+        tst_QTouchEventWidget touchWidget;
+        touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+        touchEvent.ignore();
+        res = QApplication::sendEvent(&touchWidget, &touchEvent);
+        QVERIFY(res);
+        QVERIFY(touchEvent.isAccepted());
+    }
+
+    // QGraphicsView
+    {
+        QGraphicsScene scene;
+        tst_QTouchEventGraphicsItem item;
+        QGraphicsView view(&scene);
+        scene.addItem(&item);
+        item.setPos(100, 100);
+        view.resize(200, 200);
+        view.fitInView(scene.sceneRect());
+
+        // enabling touch events on the item also enables events on the viewport
+        item.setAcceptTouchEvents(true);
+        QVERIFY(view.viewport()->testAttribute(Qt::WA_AcceptTouchEvents));
+
+        // compose an event to the scene that is over the item
+        QTouchEvent::TouchPoint touchPoint(0);
+        touchPoint.setState(Qt::TouchPointPressed);
+        touchPoint.setPos(view.mapFromScene(item.mapToScene(item.boundingRect().center())));
+        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.pos().toPoint()));
+        touchPoint.setScenePos(view.mapToScene(touchPoint.pos().toPoint()));
+        QTouchEvent touchEvent(QEvent::TouchBegin,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointPressed,
+                               (QList<QTouchEvent::TouchPoint>() << touchPoint));
+        bool res = QApplication::sendEvent(view.viewport(), &touchEvent);
+        QVERIFY(res);
+        QVERIFY(touchEvent.isAccepted());
+        QVERIFY(item.seenTouchBegin);
+    }
 }
 
 void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
 {
-    tst_QTouchEventWidget window, child, grandchild;
-    child.setParent(&window);
-    grandchild.setParent(&child);
+    // QWidget
+    {
+        tst_QTouchEventWidget window, child, grandchild;
+        child.setParent(&window);
+        grandchild.setParent(&child);
 
-    // all widgets accept touch events, grandchild ignores, so child sees the event, but not window
-    window.setAttribute(Qt::WA_AcceptTouchEvents);
-    child.setAttribute(Qt::WA_AcceptTouchEvents);
-    grandchild.setAttribute(Qt::WA_AcceptTouchEvents);
-    grandchild.acceptTouchBegin = false;
+        // all widgets accept touch events, grandchild ignores, so child sees the event, but not window
+        window.setAttribute(Qt::WA_AcceptTouchEvents);
+        child.setAttribute(Qt::WA_AcceptTouchEvents);
+        grandchild.setAttribute(Qt::WA_AcceptTouchEvents);
+        grandchild.acceptTouchBegin = false;
 
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    touchPoints.append(QTouchEvent::TouchPoint(0));
-    QTouchEvent touchEvent(QEvent::TouchBegin,
-                           QTouchEvent::TouchScreen,
-                           Qt::NoModifier,
-                           Qt::TouchPointPressed,
-                           touchPoints);
-    bool res = QApplication::sendEvent(&grandchild, &touchEvent);
-    QVERIFY(res);
-    QVERIFY(touchEvent.isAccepted());
-    QVERIFY(grandchild.seenTouchBegin);
-    QVERIFY(child.seenTouchBegin);
-    QVERIFY(!window.seenTouchBegin);
+        QList<QTouchEvent::TouchPoint> touchPoints;
+        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QTouchEvent touchEvent(QEvent::TouchBegin,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointPressed,
+                               touchPoints);
+        bool res = QApplication::sendEvent(&grandchild, &touchEvent);
+        QVERIFY(res);
+        QVERIFY(touchEvent.isAccepted());
+        QVERIFY(grandchild.seenTouchBegin);
+        QVERIFY(child.seenTouchBegin);
+        QVERIFY(!window.seenTouchBegin);
 
-    // disable touch on grandchild. even though it doesn't accept it, child should still get the
-    // TouchBegin
-    grandchild.reset();
-    child.reset();
-    window.reset();
-    grandchild.setAttribute(Qt::WA_AcceptTouchEvents, false);
+        // disable touch on grandchild. even though it doesn't accept it, child should still get the
+        // TouchBegin
+        grandchild.reset();
+        child.reset();
+        window.reset();
+        grandchild.setAttribute(Qt::WA_AcceptTouchEvents, false);
 
-    touchEvent.ignore();
-    res = QApplication::sendEvent(&grandchild, &touchEvent);
-    QVERIFY(res);
-    QVERIFY(touchEvent.isAccepted());
-    QVERIFY(!grandchild.seenTouchBegin);
-    QVERIFY(child.seenTouchBegin);
-    QVERIFY(!window.seenTouchBegin);
+        touchEvent.ignore();
+        res = QApplication::sendEvent(&grandchild, &touchEvent);
+        QVERIFY(res);
+        QVERIFY(touchEvent.isAccepted());
+        QVERIFY(!grandchild.seenTouchBegin);
+        QVERIFY(child.seenTouchBegin);
+        QVERIFY(!window.seenTouchBegin);
+    }
+
+    // QGraphicsView
+    {
+        QGraphicsScene scene;
+        tst_QTouchEventGraphicsItem root, child, grandchild;        
+        QGraphicsView view(&scene);
+        scene.addItem(&root);
+        root.setPos(100, 100);
+        child.setParentItem(&root);
+        grandchild.setParentItem(&child);
+        view.resize(200, 200);
+        view.fitInView(scene.sceneRect());
+
+        // all items accept touch events, grandchild ignores, so child sees the event, but not root
+        root.setAcceptTouchEvents(true);
+        child.setAcceptTouchEvents(true);
+        grandchild.setAcceptTouchEvents(true);
+        grandchild.acceptTouchBegin = false;
+
+        // compose an event to the scene that is over the grandchild
+        QTouchEvent::TouchPoint touchPoint(0);
+        touchPoint.setState(Qt::TouchPointPressed);
+        touchPoint.setPos(view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center())));
+        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.pos().toPoint()));
+        touchPoint.setScenePos(view.mapToScene(touchPoint.pos().toPoint()));
+        QTouchEvent touchEvent(QEvent::TouchBegin,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointPressed,
+                               (QList<QTouchEvent::TouchPoint>() << touchPoint));
+        bool res = QApplication::sendEvent(view.viewport(), &touchEvent);
+        QVERIFY(res);
+        QVERIFY(touchEvent.isAccepted());
+        QVERIFY(grandchild.seenTouchBegin);
+        QVERIFY(child.seenTouchBegin);
+        QVERIFY(!root.seenTouchBegin);
+    }
+
+    // QGraphicsView
+    {
+        QGraphicsScene scene;
+        tst_QTouchEventGraphicsItem root, child, grandchild;
+        QGraphicsView view(&scene);
+        scene.addItem(&root);
+        root.setPos(100, 100);
+        child.setParentItem(&root);
+        grandchild.setParentItem(&child);
+        view.resize(200, 200);
+        view.fitInView(scene.sceneRect());
+
+        // leave touch disabled on grandchild. even though it doesn't accept it, child should
+        // still get the TouchBegin
+        root.setAcceptTouchEvents(true);
+        child.setAcceptTouchEvents(true);
+
+        // compose an event to the scene that is over the grandchild
+        QTouchEvent::TouchPoint touchPoint(0);
+        touchPoint.setState(Qt::TouchPointPressed);
+        touchPoint.setPos(view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center())));
+        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.pos().toPoint()));
+        touchPoint.setScenePos(view.mapToScene(touchPoint.pos().toPoint()));
+        QTouchEvent touchEvent(QEvent::TouchBegin,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointPressed,
+                               (QList<QTouchEvent::TouchPoint>() << touchPoint));
+        bool res = QApplication::sendEvent(view.viewport(), &touchEvent);
+        QVERIFY(res);
+        QVERIFY(touchEvent.isAccepted());
+        QVERIFY(!grandchild.seenTouchBegin);
+        QVERIFY(child.seenTouchBegin);
+        QVERIFY(!root.seenTouchBegin);
+    }
 }
 
 void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
 {
-    tst_QTouchEventWidget window, child;
-    child.setParent(&window);
+    // QWidget
+    {
+        tst_QTouchEventWidget window, child;
+        child.setParent(&window);
 
-    window.setAttribute(Qt::WA_AcceptTouchEvents);
-    child.setAttribute(Qt::WA_AcceptTouchEvents);
-    child.acceptTouchUpdate = false;
-    child.acceptTouchEnd = false;
+        window.setAttribute(Qt::WA_AcceptTouchEvents);
+        child.setAttribute(Qt::WA_AcceptTouchEvents);
+        child.acceptTouchUpdate = false;
+        child.acceptTouchEnd = false;
 
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    touchPoints.append(QTouchEvent::TouchPoint(0));
-    QTouchEvent touchBeginEvent(QEvent::TouchBegin,
-                                QTouchEvent::TouchScreen,
-                                Qt::NoModifier,
-                                Qt::TouchPointPressed,
-                                touchPoints);
-    bool res = QApplication::sendEvent(&child, &touchBeginEvent);
-    QVERIFY(res);
-    QVERIFY(touchBeginEvent.isAccepted());
-    QVERIFY(child.seenTouchBegin);
-    QVERIFY(!window.seenTouchBegin);
+        QList<QTouchEvent::TouchPoint> touchPoints;
+        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QTouchEvent touchBeginEvent(QEvent::TouchBegin,
+                                    QTouchEvent::TouchScreen,
+                                    Qt::NoModifier,
+                                    Qt::TouchPointPressed,
+                                    touchPoints);
+        bool res = QApplication::sendEvent(&child, &touchBeginEvent);
+        QVERIFY(res);
+        QVERIFY(touchBeginEvent.isAccepted());
+        QVERIFY(child.seenTouchBegin);
+        QVERIFY(!window.seenTouchBegin);
 
-    // send the touch update to the child, but ignore it, it doesn't propagate
-    QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
-                                 QTouchEvent::TouchScreen,
-                                 Qt::NoModifier,
-                                 Qt::TouchPointMoved,
-                                 touchPoints);
-    res = QApplication::sendEvent(&child, &touchUpdateEvent);
-    QVERIFY(res);
-    QVERIFY(!touchUpdateEvent.isAccepted());
-    QVERIFY(child.seenTouchUpdate);
-    QVERIFY(!window.seenTouchUpdate);
+        // send the touch update to the child, but ignore it, it doesn't propagate
+        QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
+                                     QTouchEvent::TouchScreen,
+                                     Qt::NoModifier,
+                                     Qt::TouchPointMoved,
+                                     touchPoints);
+        res = QApplication::sendEvent(&child, &touchUpdateEvent);
+        QVERIFY(res);
+        QVERIFY(!touchUpdateEvent.isAccepted());
+        QVERIFY(child.seenTouchUpdate);
+        QVERIFY(!window.seenTouchUpdate);
 
-    // send the touch end, same thing should happen as with touch update
-    QTouchEvent touchEndEvent(QEvent::TouchEnd,
-                              QTouchEvent::TouchScreen,
-                              Qt::NoModifier,
-                              Qt::TouchPointReleased,
-                              touchPoints);
-    res = QApplication::sendEvent(&child, &touchEndEvent);
-    QVERIFY(res);
-    QVERIFY(!touchEndEvent.isAccepted());
-    QVERIFY(child.seenTouchEnd);
-    QVERIFY(!window.seenTouchEnd);
+        // send the touch end, same thing should happen as with touch update
+        QTouchEvent touchEndEvent(QEvent::TouchEnd,
+                                  QTouchEvent::TouchScreen,
+                                  Qt::NoModifier,
+                                  Qt::TouchPointReleased,
+                                  touchPoints);
+        res = QApplication::sendEvent(&child, &touchEndEvent);
+        QVERIFY(res);
+        QVERIFY(!touchEndEvent.isAccepted());
+        QVERIFY(child.seenTouchEnd);
+        QVERIFY(!window.seenTouchEnd);
+    }
+
+    // QGraphicsView
+    {
+        QGraphicsScene scene;
+        tst_QTouchEventGraphicsItem root, child, grandchild;
+        QGraphicsView view(&scene);
+        scene.addItem(&root);
+        root.setPos(100, 100);
+        child.setParentItem(&root);
+        grandchild.setParentItem(&child);
+        view.resize(200, 200);
+        view.fitInView(scene.sceneRect());
+
+        root.setAcceptTouchEvents(true);
+        child.setAcceptTouchEvents(true);
+        child.acceptTouchUpdate = false;
+        child.acceptTouchEnd = false;
+
+        // compose an event to the scene that is over the child
+        QTouchEvent::TouchPoint touchPoint(0);
+        touchPoint.setState(Qt::TouchPointPressed);
+        touchPoint.setPos(view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center())));
+        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.pos().toPoint()));
+        touchPoint.setScenePos(view.mapToScene(touchPoint.pos().toPoint()));
+        QTouchEvent touchBeginEvent(QEvent::TouchBegin,
+                                    QTouchEvent::TouchScreen,
+                                    Qt::NoModifier,
+                                    Qt::TouchPointPressed,
+                                    (QList<QTouchEvent::TouchPoint>() << touchPoint));
+        bool res = QApplication::sendEvent(view.viewport(), &touchBeginEvent);
+        QVERIFY(res);
+        QVERIFY(touchBeginEvent.isAccepted());
+        QVERIFY(child.seenTouchBegin);
+        QVERIFY(!root.seenTouchBegin);
+
+        // send the touch update to the child, but ignore it, it doesn't propagate
+        touchPoint.setState(Qt::TouchPointMoved);
+        QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
+                                     QTouchEvent::TouchScreen,
+                                     Qt::NoModifier,
+                                     Qt::TouchPointMoved,
+                                     (QList<QTouchEvent::TouchPoint>() << touchPoint));
+        res = QApplication::sendEvent(view.viewport(), &touchUpdateEvent);
+        QVERIFY(res);
+        // the scene accepts the event, since it found an item to send the event to
+        QVERIFY(touchUpdateEvent.isAccepted());
+        QVERIFY(child.seenTouchUpdate);
+        QVERIFY(!root.seenTouchUpdate);
+
+        // send the touch end, same thing should happen as with touch update
+        touchPoint.setState(Qt::TouchPointReleased);
+        QTouchEvent touchEndEvent(QEvent::TouchEnd,
+                                  QTouchEvent::TouchScreen,
+                                  Qt::NoModifier,
+                                  Qt::TouchPointReleased,
+                                  (QList<QTouchEvent::TouchPoint>() << touchPoint));
+        res = QApplication::sendEvent(view.viewport(), &touchEndEvent);
+        QVERIFY(res);
+        // the scene accepts the event, since it found an item to send the event to
+        QVERIFY(touchEndEvent.isAccepted());
+        QVERIFY(child.seenTouchEnd);
+        QVERIFY(!root.seenTouchEnd);
+    }
 }
 
 QPointF normalized(const QPointF &pos, const QRectF &rect)
