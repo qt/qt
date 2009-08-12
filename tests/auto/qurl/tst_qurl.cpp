@@ -1814,8 +1814,8 @@ void tst_QUrl::compat_constructor_01_data()
     //next we fill it with data
     QTest::newRow( "data0" )  << QString("Makefile") << QString("Makefile"); // nolonger add file by defualt
     QTest::newRow( "data1" )  << QString("Makefile") << QString("Makefile");
-    QTest::newRow( "data2" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.trolltech.com/qt/INSTALL");
-    QTest::newRow( "data3" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.trolltech.com/qt/INSTALL");
+    QTest::newRow( "data2" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
+    QTest::newRow( "data3" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
 }
 
 void tst_QUrl::compat_constructor_01()
@@ -1855,8 +1855,8 @@ void tst_QUrl::compat_constructor_02_data()
     QTest::addColumn<QString>("res");
 
     //next we fill it with data
-    QTest::newRow( "data0" )  << QString("ftp://ftp.qt.nokia.com/qt") << QString("INSTALL") << QString("ftp://ftp.trolltech.com/INSTALL");
-    QTest::newRow( "data1" )  << QString("ftp://ftp.qt.nokia.com/qt/") << QString("INSTALL") << QString("ftp://ftp.trolltech.com/qt/INSTALL");
+    QTest::newRow( "data0" )  << QString("ftp://ftp.qt.nokia.com/qt") << QString("INSTALL") << QString("ftp://ftp.qt.nokia.com/INSTALL");
+    QTest::newRow( "data1" )  << QString("ftp://ftp.qt.nokia.com/qt/") << QString("INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
 }
 
 void tst_QUrl::compat_constructor_02()
@@ -1881,12 +1881,12 @@ void tst_QUrl::compat_constructor_03_data()
     QTest::addColumn<QString>("res");
 
     //next we fill it with data
-    QTest::newRow( "protocol00" )  << QString( "http://qt.nokia.com/index.html" ) << QString( "http://www.trolltech.com/index.html" );
-    QTest::newRow( "protocol01" )  << QString( "http://qt.nokia.com" ) << QString( "http://www.trolltech.com" );
-    QTest::newRow( "protocol02" )  << QString( "http://qt.nokia.com/" ) << QString( "http://www.trolltech.com/" );
-    QTest::newRow( "protocol03" )  << QString( "http://qt.nokia.com/foo" ) << QString( "http://www.trolltech.com/foo" );
-    QTest::newRow( "protocol04" )  << QString( "http://qt.nokia.com/foo/" ) << QString( "http://www.trolltech.com/foo/" );
-    QTest::newRow( "protocol05" )  << QString( "ftp://ftp.qt.nokia.com/foo/index.txt" ) << QString( "ftp://ftp.trolltech.com/foo/index.txt" );
+    QTest::newRow( "protocol00" )  << QString( "http://www.qt.nokia.com/index.html" ) << QString( "http://www.qt.nokia.com/index.html" );
+    QTest::newRow( "protocol01" )  << QString( "http://www.qt.nokia.com" ) << QString( "http://www.qt.nokia.com" );
+    QTest::newRow( "protocol02" )  << QString( "http://www.qt.nokia.com/" ) << QString( "http://www.qt.nokia.com/" );
+    QTest::newRow( "protocol03" )  << QString( "http://www.qt.nokia.com/foo" ) << QString( "http://www.qt.nokia.com/foo" );
+    QTest::newRow( "protocol04" )  << QString( "http://www.qt.nokia.com/foo/" ) << QString( "http://www.qt.nokia.com/foo/" );
+    QTest::newRow( "protocol05" )  << QString( "ftp://ftp.qt.nokia.com/foo/index.txt" ) << QString( "ftp://ftp.qt.nokia.com/foo/index.txt" );
 
     QTest::newRow( "local00" )  << QString( "/foo" ) << QString( "/foo" );
     QTest::newRow( "local01" )  << QString( "/foo/" ) << QString( "/foo/" );
@@ -2058,8 +2058,8 @@ void tst_QUrl::compat_decode_data()
     QTest::newRow("NormalString") << QByteArray("filename") << QString("filename");
     QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QString("file name");
     QTest::newRow("JustEncoded") << QByteArray("%20") << QString(" ");
-    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QString("http://www.trolltech.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://www%20trolltech%20com") << QString("http://qt.nokia.com");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QString("http://qt.nokia.com");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QString("http://qt nokia com");
     QTest::newRow("EmptyString") << QByteArray("") << QString("");
     QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QString("Française");
 }
@@ -2080,8 +2080,8 @@ void tst_QUrl::compat_encode_data()
     QTest::newRow("NormalString") << QString("filename") << QByteArray("filename");
     QTest::newRow("NormalStringEncoded") << QString("file name") << QByteArray("file%20name");
     QTest::newRow("JustEncoded") << QString(" ") << QByteArray("%20");
-    QTest::newRow("HTTPUrl") << QString("http://qt.nokia.com") << QByteArray("http%3A//www.trolltech.com");
-    QTest::newRow("HTTPUrlEncoded") << QString("http://qt.nokia.com") << QByteArray("http%3A//www%20trolltech%20com");
+    QTest::newRow("HTTPUrl") << QString("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
+    QTest::newRow("HTTPUrlEncoded") << QString("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
     QTest::newRow("EmptyString") << QString("") << QByteArray("");
     QTest::newRow("Task27166") << QString::fromLatin1("Française") << QByteArray("Fran%C3%A7aise");
 }
@@ -3432,7 +3432,7 @@ void tst_QUrl::hosts_data()
 
     // normal hostnames
     QTest::newRow("normal") << QString("http://intern") << QString("intern");
-    QTest::newRow("normal2") << QString("http://qt.nokia.com") << QString("www.trolltech.com");
+    QTest::newRow("normal2") << QString("http://qt.nokia.com") << QString("qt.nokia.com");
 
     // IDN hostnames
     QTest::newRow("idn") << QString(QLatin1String("http://\345r.no")) << QString(QLatin1String("\345r.no"));
