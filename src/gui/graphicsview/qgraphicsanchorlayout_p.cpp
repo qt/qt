@@ -55,6 +55,15 @@ void ParallelAnchorData::updateChildrenSizes()
     secondEdge->updateChildrenSizes();
 }
 
+void ParallelAnchorData::refreshSizeHints()
+{
+    firstEdge->refreshSizeHints();
+    secondEdge->refreshSizeHints();
+    minSize = qMax(firstEdge->minSize, secondEdge->minSize);
+    prefSize = qMin(firstEdge->prefSize, secondEdge->prefSize);
+    maxSize = qMin(firstEdge->maxSize, secondEdge->maxSize);
+}
+
 void SequentialAnchorData::updateChildrenSizes()
 {
     qreal minFactor = sizeAtMinimum / minSize;
@@ -66,6 +75,20 @@ void SequentialAnchorData::updateChildrenSizes()
         m_edges[i]->sizeAtPreferred = m_edges[i]->prefSize * prefFactor;
         m_edges[i]->sizeAtMaximum = m_edges[i]->maxSize * maxFactor;
         m_edges[i]->updateChildrenSizes();
+    }
+}
+
+void SequentialAnchorData::refreshSizeHints()
+{
+    minSize = 0;
+    prefSize = 0;
+    maxSize = 0;
+    for (int i = 0; i < m_edges.count(); ++i) {
+        AnchorData *edge = m_edges.at(i);
+        edge->refreshSizeHints();
+        minSize += edge->minSize;
+        prefSize += edge->prefSize;
+        maxSize += edge->maxSize;
     }
 }
 
@@ -1057,7 +1080,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     setAnchorSizeHintsFromItems(orientation);
 
     // Reset the nominal sizes of each anchor based on the current item sizes
-    setAnchorSizeHintsFromDefaults(orientation);
+    //setAnchorSizeHintsFromDefaults(orientation);
 
     // Simplify the graph
     // ### Ideally we would like to do that if, and only if, anchors had
@@ -1276,6 +1299,11 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromDefaults(Orientation or
 */
 void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orientation)
 {
+    Q_Q(QGraphicsAnchorLayout);
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    QList<QPair<AnchorVertex*, AnchorVertex*> > conns = g.connections();
+    QGraphicsAnchorLayout::Edge centerEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
+
     QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> beginningKey;
     QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> centerKey;
     QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> endKey;
@@ -1290,34 +1318,33 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
         endKey.second = QGraphicsAnchorLayout::Bottom;
     }
 
-    foreach (QGraphicsLayoutItem *item, items) {
-        AnchorVertex *beginning, *center, *end;
+    for (int i = 0; i < conns.count(); ++i) {
+        AnchorVertex *from = conns.at(i).first;
+        AnchorVertex *to = conns.at(i).second;
+
+        QGraphicsLayoutItem *item = from->m_item;
         qreal min, pref, max;
 
-        beginningKey.first = item;
-        centerKey.first = item;
-        endKey.first = item;
+        AnchorData *data = g.edgeData(from, to);
+        Q_ASSERT(data);
+        // Internal item anchor
+        if (item != q && item == to->m_item) {
+            // internal item anchor: get size from sizeHint
+            if (orientation == Horizontal) {
+                min = item->minimumWidth();
+                pref = item->preferredWidth();
+                max = item->maximumWidth();
+            } else {
+                min = item->minimumHeight();
+                pref = item->preferredHeight();
+                max = item->maximumHeight();
+            }
 
-        beginning = internalVertex(beginningKey);
-        center = internalVertex(centerKey);
-        end = internalVertex(endKey);
-
-        if (orientation == Horizontal) {
-            min = item->minimumWidth();
-            pref = item->preferredWidth();
-            max = item->maximumWidth();
-        } else {
-            min = item->minimumHeight();
-            pref = item->preferredHeight();
-            max = item->maximumHeight();
-        }
-
-        // To support items that are represented by a single anchor as well as
-        // those that have been divided into two halfs, we must do this check.
-        AnchorData *data;
-        if (center == 0) {
-            data = graph[orientation].edgeData(beginning, end);
-            Q_ASSERT(data);
+            if (from->m_edge == centerEdge || to->m_edge == centerEdge) {
+                min /= 2;
+                pref /= 2;
+                max /= 2;
+            }
             // Set the anchor nominal sizes to those of the corresponding item
             data->minSize = min;
             data->prefSize = pref;
@@ -1333,29 +1360,19 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
             data->sizeAtMinimum = pref;
             data->sizeAtPreferred = pref;
             data->sizeAtMaximum = pref;
+        } else if (data->type != AnchorData::Normal) {
+            data->refreshSizeHints();
         } else {
-            min = min / 2;
-            pref = pref / 2;
-            max = max / 2;
-
-            // Same as above, for each half
-            data = graph[orientation].edgeData(beginning, center);
-            Q_ASSERT(data);
-            data->minSize = min;
-            data->prefSize = pref;
-            data->maxSize = max;
-            data->sizeAtMinimum = pref;
-            data->sizeAtPreferred = pref;
-            data->sizeAtMaximum = pref;
-
-            data = graph[orientation].edgeData(center, end);
-            Q_ASSERT(data);
-            data->minSize = min;
-            data->prefSize = pref;
-            data->maxSize = max;
-            data->sizeAtMinimum = pref;
-            data->sizeAtPreferred = pref;
-            data->sizeAtMaximum = pref;
+            // anchors between items, their sizes may depend on the style.
+            if (!data->hasSize) {
+                qreal s = effectiveSpacing(orientation);
+                data->minSize = s;
+                data->prefSize = s;
+                data->maxSize = s;
+                data->sizeAtMinimum = s;
+                data->sizeAtPreferred = s;
+                data->sizeAtMaximum = s;
+            }
         }
     }
 }
