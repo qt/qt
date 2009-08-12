@@ -48,7 +48,7 @@ FtpWindow::FtpWindow(QWidget *parent)
     : QDialog(parent), ftp(0)
 {
     ftpServerLabel = new QLabel(tr("Ftp &server:"));
-    ftpServerLineEdit = new QLineEdit("ftp.trolltech.com");
+    ftpServerLineEdit = new QLineEdit("ftp.qt.nokia.com");
     ftpServerLabel->setBuddy(ftpServerLineEdit);
 
     statusLabel = new QLabel(tr("Please enter the name of an FTP server."));

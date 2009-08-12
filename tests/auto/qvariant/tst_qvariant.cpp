@@ -2532,7 +2532,7 @@ void tst_QVariant::saveLoadCustomTypes()
 
 void tst_QVariant::url()
 {
-    QString str("http://www.trolltech.com");
+    QString str("http://qt.nokia.com");
     QUrl url(str);
 
     QVariant v(url); //built with a QUrl

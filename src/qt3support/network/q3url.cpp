@@ -228,7 +228,7 @@ bool Q3Url::isRelativeUrl( const QString &url )
 
     On the other hand,
     \snippet doc/src/snippets/code/src_qt3support_network_q3url.cpp 3
-    will result in a new URL, "ftp://ftp.trolltech.com/usr/local",
+    will result in a new URL, "ftp://ftp.qt.nokia.com/usr/local",
     because "/usr/local" isn't relative.
 
     Similarly,

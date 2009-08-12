@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
         std::cout << "  'outputfile' is the prefix of the image files to be generated" << std::endl;
         std::cout << std::endl;
         std::cout << "Example: " << std::endl;
-        std::cout << "  framecapture www.trolltech.com trolltech.png" << std::endl;
+        std::cout << "  framecapture qt.nokia.com trolltech.png" << std::endl;
         std::cout << std::endl;
         std::cout << "Result:" << std::endl;
         std::cout << "  trolltech.png (full page)" << std::endl;

@@ -372,7 +372,7 @@ class LookupThread : public QThread
 protected:
     inline void run()
     {
-         QHostInfo info = QHostInfo::fromName("www.trolltech.com");
+         QHostInfo info = QHostInfo::fromName("qt.nokia.com");
          QCOMPARE(info.addresses().at(0).toString(), QString("87.238.50.178"));
     }
 };

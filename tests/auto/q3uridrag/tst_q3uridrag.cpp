@@ -109,14 +109,14 @@ void tst_Q3UriDrag::decodeLocalFiles_data()
 #endif
     QTest::newRow("multipleFilesWithAbsPaths") << multipleFilesWithAbsPaths << multipleFilesWithAbsPaths;
 
-    QTest::newRow("nonLocalFile") << QStringList("http://www.trolltech.com") << QStringList();
+    QTest::newRow("nonLocalFile") << QStringList("http://qt.nokia.com") << QStringList();
     
     QStringList mixOfLocalAndNonLocalFiles;
 #ifdef Q_WS_WIN
-    mixOfLocalAndNonLocalFiles << "http://www.trolltech.com" << "c:/main.cpp" << "ftp://qt.nokia.com/doc";
+    mixOfLocalAndNonLocalFiles << "http://qt.nokia.com" << "c:/main.cpp" << "ftp://qt.nokia.com/doc";
     QTest::newRow("mixOfLocalAndNonLocalFiles") << mixOfLocalAndNonLocalFiles << QStringList("c:/main.cpp");
 #else
-	mixOfLocalAndNonLocalFiles << "http://www.trolltech.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
+	mixOfLocalAndNonLocalFiles << "http://qt.nokia.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
     QTest::newRow("mixOfLocalAndNonLocalFiles") << mixOfLocalAndNonLocalFiles << QStringList("/main.cpp");
 #endif
 }
@@ -157,16 +157,16 @@ void tst_Q3UriDrag::decodeToUnicodeUris_data()
 #endif
     QTest::newRow("multipleFiles") << multipleFiles << multipleFilesUU;
 
-    QTest::newRow("nonLocalUris") << QStringList("http://www.trolltech.com") << QStringList("http://www.trolltech.com");
+    QTest::newRow("nonLocalUris") << QStringList("http://qt.nokia.com") << QStringList("http://qt.nokia.com");
     
     QStringList mixOfLocalAndNonLocalUris;
 	QStringList mixOfLocalAndNonLocalUrisUU;
 #ifdef Q_WS_WIN
-    mixOfLocalAndNonLocalUris << "http://www.trolltech.com" << "c:/with space main.cpp" << "ftp://qt.nokia.com/doc";
-    mixOfLocalAndNonLocalUrisUU << "http://www.trolltech.com" << "c:/with space main.cpp" << "ftp://qt.nokia.com/doc";
+    mixOfLocalAndNonLocalUris << "http://qt.nokia.com" << "c:/with space main.cpp" << "ftp://qt.nokia.com/doc";
+    mixOfLocalAndNonLocalUrisUU << "http://qt.nokia.com" << "c:/with space main.cpp" << "ftp://qt.nokia.com/doc";
 #else
-	mixOfLocalAndNonLocalUris << "http://www.trolltech.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
-    mixOfLocalAndNonLocalUrisUU << "http://www.trolltech.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
+	mixOfLocalAndNonLocalUris << "http://qt.nokia.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
+    mixOfLocalAndNonLocalUrisUU << "http://qt.nokia.com" << "/main.cpp" << "ftp://qt.nokia.com/doc";
 #endif
 	QTest::newRow("mixOfLocalAndNonLocalUris") << mixOfLocalAndNonLocalUris << mixOfLocalAndNonLocalUrisUU;
 }
@@ -177,7 +177,7 @@ void tst_Q3UriDrag::decodeToUnicodeUris()
     //
     // Possible AbsoluteURIs are:
     //
-    //	    http://www.trolltech.com
+    //	    http://qt.nokia.com
     //	    c:/main.cpp
     //
 
@@ -210,7 +210,7 @@ void tst_Q3UriDrag::uriToLocalFile_data()
     QTest::newRow("fileSchemelocalFileWindowsNetworkPath") << QString("file://somehost/somefile") << QString("//somehost/somefile");
 #endif
     QTest::newRow("fileSchemelocalFileEncoding") << QString("file:///Fran%e7ois") << QString::fromUtf8("/François");
-    QTest::newRow("nonLocalFile") << QString("http://www.trolltech.com") << QString();
+    QTest::newRow("nonLocalFile") << QString("http://qt.nokia.com") << QString();
 }
 
 void tst_Q3UriDrag::uriToLocalFile()
