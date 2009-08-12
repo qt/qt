@@ -461,19 +461,16 @@ static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g,
             }
             prev = v1;
         }
-        g.removeEdge(before, after);
     } else if (edge->type == AnchorData::Parallel) {
         ParallelAnchorData* parallelEdge = static_cast<ParallelAnchorData*>(edge);
         AnchorData *parallelEdges[2] = {parallelEdge->firstEdge,
-                                          parallelEdge->secondEdge};
-        // must remove the old anchor first
-        g.removeEdge(before, after);
+                                        parallelEdge->secondEdge};
         for (int i = 0; i < 2; ++i) {
             AnchorData *data = parallelEdges[i];
-            if (data->type != AnchorData::Normal) {
-                restoreSimplifiedAnchor(g, data, before, after);
-            } else {
+            if (data->type == AnchorData::Normal) {
                 g.createEdge(before, after, data);
+            } else {
+                restoreSimplifiedAnchor(g, data, before, after);
             }
         }
     }
@@ -483,32 +480,17 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
 {
     Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    AnchorVertex *v = g.rootVertex();
 
-    if (!v)
-        return;
-    QSet<AnchorVertex*> visited;
-    QStack<AnchorVertex *> stack;
-    stack.push(v);
-
-    QGraphicsAnchorLayout::Edge layoutCenterEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
-    // walk depth-first.
-    while (!stack.isEmpty()) {
-        v = stack.pop();
-        QList<AnchorVertex *> vertices = g.adjacentVertices(v);
-        const int count = vertices.count();
-        for (int i = 0; i < count; ++i) {
-            AnchorVertex *next = vertices.at(i);
-            if (next->m_item == q && next->m_edge == layoutCenterEdge)
-                continue;
-            if (visited.contains(next))
-                continue;
-
-            AnchorData *edge = g.edgeData(v, next);
-            if (edge->type != AnchorData::Normal)
-                restoreSimplifiedAnchor(g, edge, v, next);
+    QList<QPair<AnchorVertex*, AnchorVertex*> > connections = g.connections();
+    for (int i = 0; i < connections.count(); ++i) {
+        AnchorVertex *v1 = connections.at(i).first;
+        AnchorVertex *v2 = connections.at(i).second;
+        AnchorData *edge = g.edgeData(v1, v2);
+        if (edge->type != AnchorData::Normal) {
+            AnchorData *oldEdge = g.takeEdge(v1, v2);
+            restoreSimplifiedAnchor(g, edge, v1, v2);
+            delete oldEdge;
         }
-        visited.insert(v);
     }
 }
 
