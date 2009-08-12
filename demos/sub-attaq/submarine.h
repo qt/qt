@@ -76,7 +76,7 @@ public:
 
     virtual int type() const;
 
-    QGraphicsRotation3D *rotation3d() const { return graphicsRotation; }
+    QGraphicsRotation *rotation() const { return graphicsRotation; }
 
 signals:
     void subMarineDestroyed();
@@ -90,7 +90,7 @@ private:
     int speed;
     Movement direction;
     PixmapItem *pixmapItem;
-    QGraphicsRotation3D *graphicsRotation;
+    QGraphicsRotation *graphicsRotation;
 };
 
 #endif //__SUBMARINE__H__

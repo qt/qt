@@ -193,7 +193,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     int exsty = WS_EX_NOPARENTNOTIFY;
 
     if (topLevel) {
-        if (!(flags & Qt::FramelessWindowHint) && !tool)
+        if (!(flags & Qt::FramelessWindowHint) && !tool && !q->testAttribute(Qt::WA_DontShowOnScreen))
           style = (WS_OVERLAPPED) | WS_SYSMENU;
         else
           style = WS_POPUP;

@@ -2851,7 +2851,7 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
     QWidget *receiver = candidate;
 
     if (!mouseGrabber)
-        mouseGrabber = buttonDown ? buttonDown : alienWidget;
+        mouseGrabber = (buttonDown && !isBlockedByModal(buttonDown)) ? buttonDown : alienWidget;
 
     if (mouseGrabber && mouseGrabber != candidate) {
         receiver = mouseGrabber;

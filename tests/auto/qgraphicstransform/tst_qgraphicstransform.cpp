@@ -57,6 +57,7 @@ public slots:
 private slots:
     void scale();
     void rotation();
+    void rotation3d_data();
     void rotation3d();
 };
 
@@ -112,6 +113,11 @@ void tst_QGraphicsTransform::scale()
 void tst_QGraphicsTransform::rotation()
 {
     QGraphicsRotation rotation;
+    QCOMPARE(rotation.axis().x(), (qreal)0);
+    QCOMPARE(rotation.axis().y(), (qreal)0);
+    QCOMPARE(rotation.axis().z(), (qreal)1);
+    QCOMPARE(rotation.angle(), (qreal)0);
+
     rotation.setOrigin(QPointF(10, 10));
 
     QTransform t;
@@ -134,46 +140,59 @@ void tst_QGraphicsTransform::rotation()
     QCOMPARE(rotation.transform().map(QPointF(20, 10)), QPointF(10, 20));
 }
 
+Q_DECLARE_METATYPE(Qt::Axis);
+void tst_QGraphicsTransform::rotation3d_data()
+{
+    QTest::addColumn<Qt::Axis>("axis");
+    QTest::addColumn<qreal>("angle");
+
+    for (int angle = 0; angle <= 360; angle++) {
+        QTest::newRow("test rotation on X") << Qt::XAxis << qreal(angle);
+        QTest::newRow("test rotation on Y") << Qt::YAxis << qreal(angle);
+        QTest::newRow("test rotation on Z") << Qt::ZAxis << qreal(angle);
+    }
+}
+
 void tst_QGraphicsTransform::rotation3d()
 {
-    QGraphicsRotation3D rotation;
-    QCOMPARE(rotation.axis().x(), (qreal)0);
-    QCOMPARE(rotation.axis().y(), (qreal)0);
-    QCOMPARE(rotation.axis().z(), (qreal)1);
-    QCOMPARE(rotation.angle(), (qreal)0);
+    QFETCH(Qt::Axis, axis);
+    QFETCH(qreal, angle);
+
+    QGraphicsRotation rotation;
+    rotation.setAxis(axis);
 
     QTransform t;
     rotation.applyTo(&t);
 
-    QCOMPARE(t, QTransform());
-    QCOMPARE(rotation.transform(), QTransform());
+    QVERIFY(t.isIdentity());
+    QVERIFY(rotation.transform().isIdentity());
 
-    rotation.setAngle(180);
+    rotation.setAngle(angle);
 
-    QTransform t180;
-    t180.rotate(180.0f);
+    QTransform expected;
+    expected.rotate(angle, axis);
 
-    QCOMPARE(t, QTransform());
-    QVERIFY(qFuzzyCompare(rotation.transform(), t180));
+    QVERIFY(qFuzzyCompare(rotation.transform(), expected));
 
+    //now let's check that a null vector will not change the transform
     rotation.setAxis(QVector3D(0, 0, 0));
     rotation.setOrigin(QPointF(10, 10));
 
-    t = QTransform();
+    t.reset();
     rotation.applyTo(&t);
 
-    QCOMPARE(t, QTransform());
-    QCOMPARE(rotation.transform(), QTransform());
+    QVERIFY(t.isIdentity());
+    QVERIFY(rotation.transform().isIdentity());
 
-    rotation.setAngle(180);
+    rotation.setAngle(angle);
 
-    QCOMPARE(t, QTransform());
-    QCOMPARE(rotation.transform(), QTransform());
+    QVERIFY(t.isIdentity());
+    QVERIFY(rotation.transform().isIdentity());
 
     rotation.setOrigin(QPointF(0, 0));
 
-    QCOMPARE(t, QTransform());
-    QCOMPARE(rotation.transform(), QTransform());
+    QVERIFY(t.isIdentity());
+    QVERIFY(rotation.transform().isIdentity());
 }
 
 

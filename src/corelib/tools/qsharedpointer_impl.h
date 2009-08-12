@@ -121,6 +121,13 @@ namespace QtSharedPointer {
         typedef T *Basic:: *RestrictedBool;
     public:
         typedef T Type;
+        typedef T element_type;
+        typedef T value_type;
+        typedef value_type *pointer;
+        typedef const value_type *const_pointer;
+        typedef value_type &reference;
+        typedef const value_type &const_reference;
+        typedef ptrdiff_t difference_type;
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
@@ -490,6 +497,14 @@ class QWeakPointer
     typedef QtSharedPointer::ExternalRefCountData Data;
 
 public:
+    typedef T element_type;
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+    typedef value_type &reference;
+    typedef const value_type &const_reference;
+    typedef ptrdiff_t difference_type;
+
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
     inline bool operator !() const { return isNull(); }
@@ -632,6 +647,12 @@ template <class T, class X>
 bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
 {
     return ptr2 != ptr1;
+}
+
+template <class T, class X>
+Q_INLINE_TEMPLATE typename T::difference_type operator-(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1.data() - ptr2.data();
 }
 
 template <class T>

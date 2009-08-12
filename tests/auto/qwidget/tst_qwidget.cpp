@@ -5827,7 +5827,9 @@ void tst_QWidget::setToolTip()
     QCOMPARE(widget.toolTip(), QString());
     QCOMPARE(spy.count(), 2);
 
-
+#ifdef Q_OS_WINCE_WM
+    QSKIP("Mouse over doesn't work on Windows mobile.", SkipAll);
+#endif
 
     for (int pass = 0; pass < 2; ++pass) {
         QWidget *popup = new QWidget(0, Qt::Popup);

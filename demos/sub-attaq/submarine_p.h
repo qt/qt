@@ -109,7 +109,8 @@ class ReturnState : public QAnimationState
 public:
     ReturnState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
     {
-        returnAnimation = new QPropertyAnimation(submarine->rotation3d(), "angle");
+        returnAnimation = new QPropertyAnimation(submarine->rotation(), "angle");
+        returnAnimation->setDuration(500);
         AnimationManager::self()->registerAnimation(returnAnimation);
         setAnimation(returnAnimation);
         this->submarine = submarine;
@@ -119,9 +120,7 @@ protected:
     void onEntry(QEvent *e)
     {
         returnAnimation->stop();
-        returnAnimation->setStartValue(submarine->rotation3d()->angle());
         returnAnimation->setEndValue(submarine->currentDirection() == SubMarine::Right ? 360. : 180.);
-        returnAnimation->setDuration(500);
         QAnimationState::onEntry(e);
     }
 
