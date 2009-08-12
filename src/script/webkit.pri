@@ -1,28 +1,39 @@
 # disable JIT for now
 DEFINES += ENABLE_JIT=0
 # FIXME: shared the statically built JavaScriptCore
-include($$PWD/../3rdparty/webkit/JavaScriptCore/JavaScriptCore.pri)
 
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/parser
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/bytecompiler
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/debugger
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/runtime
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/wtf
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/unicode
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/interpreter
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/jit
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/profiler
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/wrec
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/API
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/bytecode
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/assembler
-INCLUDEPATH += $$PWD/../3rdparty/webkit/JavaScriptCore/generated
+# Fetch the base WebKit directory from the WEBKITDIR environment variable;
+# fall back to src/3rdparty otherwise
+WEBKITDIR = $$(WEBKITDIR)
+isEmpty(WEBKITDIR) {
+    WEBKITDIR = $$PWD/../3rdparty/webkit
 
+    # FIXME: not needed once JSCBISON works
+    # TODO: or leave it like this since the generated file is available anyway?
+    SOURCES += $$WEBKITDIR/JavaScriptCore/generated/Grammar.cpp
+} else {
+    CONFIG += building-libs
+    CONFIG -= QTDIR_build
+    include($$WEBKITDIR/WebKit.pri)
+}
 
-# FIXME: not needed once JSCBISON works
-# TODO: or leave it like this since the generated file is available anyway?
-SOURCES += $$PWD/../3rdparty/webkit/JavaScriptCore/generated/Grammar.cpp
+include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
+
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/parser
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/bytecompiler
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/debugger
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/runtime
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/wtf
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/unicode
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/interpreter
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/jit
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/profiler
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/wrec
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/API
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/bytecode
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/assembler
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/generated
 
 DEFINES += BUILDING_QT__=1
 DEFINES += USE_SYSTEM_MALLOC
