@@ -133,7 +133,6 @@ excluded_directories="$excluded_directories WebCore/accessibility/win"
 excluded_directories="$excluded_directories WebCore/accessibility/wx"
 
 excluded_directories="$excluded_directories WebCore/storage/wince"
-excluded_directories="$excluded_directories WebCore/svg/graphics/wince"
 
 excluded_directories="$excluded_directories WebCore/platform/wx"
 excluded_directories="$excluded_directories WebKit/gtk"
