@@ -58,6 +58,7 @@ public slots:
     void setSkin(const QString& skinDirectory);
     void showProxySettings ();
     void proxySettingsChanged ();
+    void setScaleView();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -65,13 +66,12 @@ protected:
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
 private slots:
-    void setScaleSkin();
-    void setScaleView();
     void autoStartRecording();
     void autoStopRecording();
     void recordFrame();
     void chooseRecordingOptions();
     void pickRecordingFile();
+    void setScaleSkin();
 
 private:
     void setupProxy();
