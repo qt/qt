@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -627,7 +627,7 @@ QEventDispatcherUNIX::~QEventDispatcherUNIX()
 int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                  timeval *timeout)
 {
-    return ::qt_safe_select(nfds, readfds, writefds, exceptfds, timeout);
+    return qt_safe_select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
 /*!

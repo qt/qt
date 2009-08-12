@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1737,6 +1737,9 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
             property->setDesignable(value.toLower() == "true");
         else if (key == "RESET")
             tre->addPropertyFunction(property, value, PropertyNode::Resetter);
+        else if (key == "NOTIFY") {
+            tre->addPropertyFunction(property, value, PropertyNode::Notifier);
+        }
     }
     match(Tok_RightParen);
     return true;

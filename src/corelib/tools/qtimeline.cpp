@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,7 +69,6 @@ public:
     int currentLoopCount;
 
     int currentTime;
-    int elapsedTime;
     int timerId;
     QTime timer;
 
@@ -212,7 +211,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     applies an interpolation algorithm to generate these value. You can choose
     from a set of predefined timeline algorithms by calling
     setCurveShape().
-   
+
     Note that by default, QTimeLine uses the EaseInOut curve shape,
     which provides a value that grows slowly, then grows steadily, and
     finally grows slowly. For a custom timeline, you can reimplement
@@ -549,7 +548,7 @@ void QTimeLine::setCurveShape(CurveShape shape)
     case CosineCurve:
         setEasingCurve(QEasingCurve(QEasingCurve::CosineCurve));
         break;
-    } 
+    }
 }
 
 /*!
@@ -559,7 +558,7 @@ void QTimeLine::setCurveShape(CurveShape shape)
 
     Specifies the easing curve that the timeline will use.
     If both easing curve and curveShape are set, the last set property will
-    override the previous one. (If valueForTime() is reimplemented it will 
+    override the previous one. (If valueForTime() is reimplemented it will
     override both)
 */
 

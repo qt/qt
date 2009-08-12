@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -114,7 +114,9 @@ namespace QTest
 
 extern void filter_unprintable(char *str);
 
-/*! \internal
+/*!
+    \fn int QTest::qt_asprintf(QTestCharBuffer *buf, const char *format, ...);
+    \internal
  */
 int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
 {

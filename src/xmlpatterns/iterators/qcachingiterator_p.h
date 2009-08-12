@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,7 +69,7 @@ namespace QPatternist
      * which case it continues to populate the cache as well as deliver on its
      * own from a source QAbstractXmlForwardIterator.
      *
-     * @author Frans Englich <frans.fenglich@trolltech.com>
+     * @author Frans Englich <frans.frans.englich@nokia.com>
      * @ingroup Patternist_iterators
      */
     class CachingIterator : public Item::Iterator

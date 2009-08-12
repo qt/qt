@@ -46,4 +46,3 @@ contains(DEFINES,QT_EVAL):include($$QT_SOURCE_TREE/src/corelib/eval.pri)
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
 
 DEFINES += Q_INTERNAL_QAPP_SRC
-

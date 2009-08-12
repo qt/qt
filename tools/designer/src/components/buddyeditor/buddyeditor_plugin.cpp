@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,8 +72,9 @@ void BuddyEditorPlugin::initialize(QDesignerFormEditorInterface *core)
 
     m_action = new QAction(tr("Edit Buddies"), this);
     m_action->setObjectName(QLatin1String("__qt_edit_buddies_action"));
-    m_action->setIcon(QIcon(core->resourceLocation() + QLatin1String("/buddytool.png")));
-    m_action->setIcon(QIcon(core->resourceLocation() + QLatin1String("/buddytool.png")));
+    QIcon buddyIcon = QIcon::fromTheme("designer-edit-buddy",
+                                       QIcon(core->resourceLocation() + QLatin1String("/buddytool.png")));
+    m_action->setIcon(buddyIcon);
     m_action->setEnabled(false);
 
     setParent(core);

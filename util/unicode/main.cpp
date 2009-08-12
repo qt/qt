@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,7 @@ static struct AgeMap {
 };
 #define CURRENT_UNICODE_VERSION "QChar::Unicode_5_0"
 
-static const char *grapheme_break_string = 
+static const char *grapheme_break_string =
     "    enum GraphemeBreak {\n"
     "        GraphemeBreakOther, \n"
     "        GraphemeBreakCR,\n"
@@ -80,15 +80,15 @@ static const char *grapheme_break_string =
     "    };\n\n";
 
 enum GraphemeBreak {
-    GraphemeBreakOther, 
+    GraphemeBreakOther,
     GraphemeBreakCR,
     GraphemeBreakLF,
     GraphemeBreakControl,
-    GraphemeBreakExtend, 
-    GraphemeBreakL, 
-    GraphemeBreakV, 
-    GraphemeBreakT, 
-    GraphemeBreakLV, 
+    GraphemeBreakExtend,
+    GraphemeBreakL,
+    GraphemeBreakV,
+    GraphemeBreakT,
+    GraphemeBreakLV,
     GraphemeBreakLVT
 };
 
@@ -100,16 +100,16 @@ static void initGraphemeBreak()
         GraphemeBreak brk;
         const char *name;
     } breaks[] = {
-        { GraphemeBreakOther, "Other" }, 
-        { GraphemeBreakCR, "CR" }, 
-        { GraphemeBreakLF, "LF" }, 
-        { GraphemeBreakControl, "Control" }, 
-        { GraphemeBreakExtend, "Extend" }, 
-        { GraphemeBreakL, "L" }, 
-        { GraphemeBreakV, "V" }, 
-        { GraphemeBreakT, "T" }, 
-        { GraphemeBreakLV, "LV" }, 
-        { GraphemeBreakLVT, "LVT" }, 
+        { GraphemeBreakOther, "Other" },
+        { GraphemeBreakCR, "CR" },
+        { GraphemeBreakLF, "LF" },
+        { GraphemeBreakControl, "Control" },
+        { GraphemeBreakExtend, "Extend" },
+        { GraphemeBreakL, "L" },
+        { GraphemeBreakV, "V" },
+        { GraphemeBreakT, "T" },
+        { GraphemeBreakLV, "LV" },
+        { GraphemeBreakLVT, "LVT" },
         { GraphemeBreakOther, 0 }
     };
     GraphemeBreakList *d = breaks;
@@ -119,7 +119,7 @@ static void initGraphemeBreak()
     }
 }
 
-const char *word_break_string =    
+const char *word_break_string =
     "    enum WordBreak {\n"
     "        WordBreakOther,\n"
     "        WordBreakFormat,\n"
@@ -132,7 +132,7 @@ const char *word_break_string =
     "    };\n\n";
 
 enum WordBreak {
-    WordBreakOther, 
+    WordBreakOther,
     WordBreakFormat,
     WordBreakKatakana,
     WordBreakALetter,
@@ -158,7 +158,7 @@ static void initWordBreak()
         { WordBreakMidLetter, "MidLetter" },
         { WordBreakMidNum, "MidNum" },
         { WordBreakNumeric, "Numeric" },
-        { WordBreakExtendNumLet, "ExtendNumLet" }, 
+        { WordBreakExtendNumLet, "ExtendNumLet" },
         { WordBreakFormat,  0 }
     };
     WordBreakList *d = breaks;
@@ -183,7 +183,7 @@ static const char *sentence_break_string =
     "        SentenceBreakSTerm,\n"
     "        SentenceBreakClose\n"
     "    };\n\n";
-    
+
 enum SentenceBreak {
     SentenceBreakOther,
     SentenceBreakSep,
@@ -217,7 +217,7 @@ static void initSentenceBreak()
         { SentenceBreakNumeric, "Numeric" },
         { SentenceBreakATerm, "ATerm" },
         { SentenceBreakSTerm, "STerm" },
-        { SentenceBreakClose, "Close" }, 
+        { SentenceBreakClose, "Close" },
         { SentenceBreakOther,  0 }
     };
     SentenceBreakList *d = breaks;
@@ -2502,7 +2502,7 @@ int main(int, char **)
         "** met: http://www.gnu.org/copyleft/gpl.html.\n"
         "**\n"
         "** If you are unsure which license is appropriate for your use, please\n"
-        "** contact the sales department at http://www.qtsoftware.com/contact.\n"
+        "** contact the sales department at http://qt.nokia.com/contact.\n"
         "** $QT_END_LICENSE$\n"
         "**\n"
         "****************************************************************************/\n\n"

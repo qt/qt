@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,7 @@ FtpWindow::FtpWindow(QWidget *parent)
     : QDialog(parent), ftp(0)
 {
     ftpServerLabel = new QLabel(tr("Ftp &server:"));
-    ftpServerLineEdit = new QLineEdit("ftp.trolltech.com");
+    ftpServerLineEdit = new QLineEdit("ftp.qt.nokia.com");
     ftpServerLabel->setBuddy(ftpServerLineEdit);
 
     statusLabel = new QLabel(tr("Please enter the name of an FTP server."));

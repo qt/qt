@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -235,6 +235,7 @@ typedef struct tagGESTUREINFO
 #  define GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY      0x00000004
 
 #  define GC_ZOOM                                     0x00000001
+#  define GC_ROTATE                                   0x00000001
 
 typedef struct tagGESTURECONFIG
 {
@@ -242,6 +243,8 @@ typedef struct tagGESTURECONFIG
     DWORD dwWant;
     DWORD dwBlock;
 } GESTURECONFIG;
+
+#  define GID_ROTATE_ANGLE_FROM_ARGUMENT(arg) ((((double)(arg) / 65535.0) * 4.0 * 3.14159265) - 2.0*3.14159265)
 
 #endif // WM_GESTURE
 
@@ -524,7 +527,6 @@ public:
     static PtrCloseTouchInputHandle CloseTouchInputHandle;
 
     QHash<DWORD, int> touchInputIDToTouchPointID;
-    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
     bool translateTouchEvent(const MSG &msg);
 
     PtrGetGestureInfo GetGestureInfo;

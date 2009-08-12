@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2734,6 +2734,9 @@ void QStyleSheetStyle::polish(QWidget *w)
 #ifndef QT_NO_MDIAREA
               || qobject_cast<QMdiSubWindow *>(w)
 #endif
+#ifndef QT_NO_MENUBAR
+              || qobject_cast<QMenuBar *>(w)
+#endif
               || qobject_cast<QDialog *>(w)) {
             w->setAttribute(Qt::WA_StyledBackground, true);
         }
@@ -3456,6 +3459,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_MenuEmptyArea:
     case CE_MenuBarEmptyArea:
         if (rule.hasDrawable()) {
+            // Drawn by PE_Widget
             return;
         }
         break;
@@ -3606,6 +3610,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 subRule.drawRule(p, opt->rect);
                 QCommonStyle::drawControl(ce, &mi, p, w);
             } else {
+                if (rule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
+                    // So that the menu bar background is not hidden by the items
+                    mi.palette.setColor(QPalette::Window, Qt::transparent);
+                    mi.palette.setColor(QPalette::Button, Qt::transparent);
+                }
                 baseStyle()->drawControl(ce, &mi, p, w);
             }
         }
@@ -4189,12 +4198,18 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 #endif
     //fall tghought
     case PE_PanelMenu:
-    case PE_PanelMenuBar:
     case PE_PanelStatusBar:
         if(rule.hasDrawable()) {
             rule.drawRule(p, opt->rect);
             return;
         }
+    break;
+
+    case PE_PanelMenuBar:
+    if (rule.hasDrawable()) {
+        // Drawn by PE_Widget
+        return;
+    }
     break;
 
     case PE_IndicatorToolBarSeparator:

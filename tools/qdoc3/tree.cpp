@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -485,6 +485,7 @@ void Tree::resolveProperties()
         QString getterName = (*propEntry)[PropertyNode::Getter];
         QString setterName = (*propEntry)[PropertyNode::Setter];
         QString resetterName = (*propEntry)[PropertyNode::Resetter];
+        QString notifierName = (*propEntry)[PropertyNode::Notifier];
 
         NodeList::ConstIterator c = parent->childNodes().begin();
         while (c != parent->childNodes().end()) {
@@ -499,6 +500,8 @@ void Tree::resolveProperties()
                         property->addFunction(function, PropertyNode::Setter);
                     } else if (function->name() == resetterName) {
                         property->addFunction(function, PropertyNode::Resetter);
+                    } else if (function->name() == notifierName) {
+                        property->addFunction(function, PropertyNode::Notifier);
                     }
                 }
             }

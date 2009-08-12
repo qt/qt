@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,7 +74,7 @@ namespace QPatternist
      * the international standard date and time notation, Markus Kuhn</a>
      * @see <a href="http://en.wikipedia.org/wiki/Iso_date">ISO 8601,
      * From Wikipedia, the free encyclopedia</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_xdm
      */
     class AbstractDateTime : public AtomicValue
@@ -105,7 +105,7 @@ namespace QPatternist
          * and describes where certain fields in a QRegExp pattern can be found
          * for a particular W3C XML Schema date/time type.
          *
-         * @author Frans Englich <fenglich@trolltech.com>
+         * @author Frans Englich <frans.englich@nokia.com>
          * @ingroup Patternist_xdm
          */
         class CaptureTable

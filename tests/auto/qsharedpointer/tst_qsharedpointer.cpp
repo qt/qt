@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1373,7 +1373,9 @@ void tst_QSharedPointer::threadStressTest_data()
     QTest::newRow("5+10") << 5 << 10;
     QTest::newRow("5+30") << 5 << 30;
 
+#ifndef Q_OS_WINCE
     QTest::newRow("100+100") << 100 << 100;
+#endif
 }
 
 void tst_QSharedPointer::threadStressTest()

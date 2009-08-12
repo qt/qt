@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1160,6 +1160,8 @@ void QWidgetPrivate::show_sys()
             data.window_state |= Qt::WindowMaximized;
     }
 
+    winSetupGestures();
+
     invalidateBuffer(q->rect());
 }
 #endif //Q_WS_WINCE
@@ -2058,8 +2060,11 @@ void QWidgetPrivate::winSetupGestures()
     Q_Q(QWidget);
     if (!q)
         return;
-    extern QApplicationPrivate* getQApplicationPrivateInternal();
-    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+    q->setAttribute(Qt::WA_DontCreateNativeAncestors);
+    q->setAttribute(Qt::WA_NativeWindow);
+    if (!q->isVisible())
+        return;
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
     bool needh = false;
     bool needv = false;
     bool singleFingerPanEnabled = false;
@@ -2072,34 +2077,43 @@ void QWidgetPrivate::winSetupGestures()
         QScrollBar *vbar = asa->verticalScrollBar();
         Qt::ScrollBarPolicy hbarpolicy = asa->horizontalScrollBarPolicy();
         Qt::ScrollBarPolicy vbarpolicy = asa->verticalScrollBarPolicy();
-        needh = (hbarpolicy == Qt::ScrollBarAlwaysOn
-                 || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
-        needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
-                 || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
+        needh = (hbarpolicy == Qt::ScrollBarAlwaysOn ||
+                 (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
+        needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
+                 (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
     } else {
         winid = q->winId();
     }
     if (qAppPriv->SetGestureConfig) {
-        GESTURECONFIG gc[2];
+        GESTURECONFIG gc[3];
+        memset(gc, 0, sizeof(gc));
         gc[0].dwID = GID_PAN;
-        if (gestures.pan || needh || needv) {
+        if (gestures.pan) {
             gc[0].dwWant = GC_PAN;
-            gc[0].dwBlock = 0;
             if (needv && singleFingerPanEnabled)
                 gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
+            else
+                gc[0].dwBlock |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
             if (needh && singleFingerPanEnabled)
                 gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+            else
+                gc[0].dwBlock |= GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
         } else {
-            gc[0].dwWant = 0;
             gc[0].dwBlock = GC_PAN;
         }
 
         gc[1].dwID = GID_ZOOM;
-        if (gestures.pinch) {
+        if (gestures.pinch)
             gc[1].dwWant = GC_ZOOM;
-            gc[1].dwBlock = 0;
-        }
+        else
+            gc[1].dwBlock = GC_ZOOM;
+        gc[2].dwID = GID_ROTATE;
+        if (gestures.pinch)
+            gc[2].dwWant = GC_ROTATE;
+        else
+            gc[2].dwBlock = GC_ROTATE;
+
         Q_ASSERT(winid);
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }

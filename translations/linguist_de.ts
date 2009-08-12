@@ -2,24 +2,9 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de">
 <context>
-    <name></name>
-    <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+59"/>
-        <source>(New Entry)</source>
-        <translation>(Neuer Eintrag)</translation>
-    </message>
-</context>
-<context>
-    <name>@default</name>
-    <message>
-        <source>(New Phrase)</source>
-        <translation type="obsolete">(Neue Phrase)</translation>
-    </message>
-</context>
-<context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1359"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -76,11 +61,6 @@
     </message>
     <message>
         <location/>
-        <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked.</source>
-        <translation>Beachten Sie, dass die geänderten Einträge in den Status &apos;unerledigt&apos; zurückgesetzt werden, wenn &apos;Übersetzung als erledigt markieren&apos; deaktiviert ist.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Translate also finished entries</source>
         <translation>Erledigte Einträge übersetzen</translation>
     </message>
@@ -101,11 +81,6 @@
     </message>
     <message>
         <location/>
-        <source>The batch translator will search through the selected phrase books in the order given above.</source>
-        <translation>Der automatische Übersetzer wird in der angegebenen Reihenfolge durch die ausgewählten Wörterbücher gehen.</translation>
-    </message>
-    <message>
-        <location/>
         <source>&amp;Run</source>
         <translation>&amp;Ausführen</translation>
     </message>
@@ -113,6 +88,16 @@
         <location/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked</source>
+        <translation>Geänderte Einträge werden als unerledigt gekennzeichnet, wenn die obige Einstellung &apos;Übersetzung als erledigt markieren&apos; nicht aktiviert ist</translation>
+    </message>
+    <message>
+        <location/>
+        <source>The batch translator will search through the selected phrase books in the order given above</source>
+        <translation>Der automatische Übersetzer wird in der angegebenen Reihenfolge durch die ausgewählten Wörterbücher gehen</translation>
     </message>
 </context>
 <context>
@@ -156,61 +141,6 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     </message>
 </context>
 <context>
-    <name>EditorPage</name>
-    <message>
-        <source>Source text</source>
-        <translation type="obsolete">Ursprungstext</translation>
-    </message>
-    <message>
-        <source>This area shows the source text.</source>
-        <translation type="obsolete">Dieser Bereich zeigt den Ursprungstext.</translation>
-    </message>
-    <message>
-        <source>This area shows a comment that may guide you, and the context in which the text occurs.</source>
-        <translation type="obsolete">Dieser Bereich zeigt eventuelle Kommentare und den Kontext, in dem der Text auftritt.</translation>
-    </message>
-    <message>
-        <source>Existing %1 translation</source>
-        <translation type="obsolete">Existierende Übersetzung %1</translation>
-    </message>
-    <message>
-        <source>Translation</source>
-        <translation type="obsolete">Übersetzung</translation>
-    </message>
-    <message>
-        <source>%1 translation</source>
-        <translation type="obsolete">Übersetzung %1</translation>
-    </message>
-    <message>
-        <source>%1 translation (%2)</source>
-        <translation type="obsolete">Übersetzung %1 (%2)</translation>
-    </message>
-    <message>
-        <source>This is where you can enter or modify the translation of some source text.</source>
-        <translation type="obsolete">Hier können Sie die Übersetzung des Ursprungstextes eingeben bzw. ändern.</translation>
-    </message>
-    <message>
-        <source>German</source>
-        <translation type="obsolete">Deutsch</translation>
-    </message>
-    <message>
-        <source>Japanese</source>
-        <translation type="obsolete">Japanisch</translation>
-    </message>
-    <message>
-        <source>French</source>
-        <translation type="obsolete">Französisch</translation>
-    </message>
-    <message>
-        <source>Polish</source>
-        <translation type="obsolete">Polnisch</translation>
-    </message>
-    <message>
-        <source>Chinese</source>
-        <translation type="obsolete">Chinesisch</translation>
-    </message>
-</context>
-<context>
     <name>ErrorsView</name>
     <message>
         <location filename="../tools/linguist/linguist/errorsview.cpp" line="+76"/>
@@ -251,17 +181,9 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
 <context>
     <name>FindDialog</name>
     <message>
-        <source>Qt Linguist</source>
-        <translation type="obsolete">Qt Linguist</translation>
-    </message>
-    <message>
         <location filename="../tools/linguist/linguist/finddialog.ui"/>
         <source>This window allows you to search for some text in the translation source file.</source>
         <translation>Dieses Fenster erlaubt die Suche in der Übersetzungsdatei.</translation>
-    </message>
-    <message>
-        <source>Find what:</source>
-        <translation type="obsolete">Suchen nach:</translation>
     </message>
     <message>
         <location/>
@@ -279,17 +201,9 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <translation>Wenn aktiviert, wird in den Ursprungstexten gesucht.</translation>
     </message>
     <message>
-        <source>Source texts</source>
-        <translation type="obsolete">Ursprungsstexte</translation>
-    </message>
-    <message>
         <location/>
         <source>Translations are searched when checked.</source>
         <translation>Wenn ausgewählt, wird in den Übersetzungen gesucht.</translation>
-    </message>
-    <message>
-        <source>Translations</source>
-        <translation type="obsolete">Übersetzungen</translation>
     </message>
     <message>
         <location/>
@@ -297,17 +211,9 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <translation>Wenn aktiviert, werden Texte wie &apos;TeX&apos; und &apos;tex&apos; als unterschiedlich betrachtet.</translation>
     </message>
     <message>
-        <source>Match case</source>
-        <translation type="obsolete">Groß-/Kleinschreibung beachten</translation>
-    </message>
-    <message>
         <location/>
         <source>Comments and contexts are searched when checked.</source>
         <translation>Wenn ausgewählt, werden Kommentare und Kontextnamen durchsucht.</translation>
-    </message>
-    <message>
-        <source>Comments</source>
-        <translation type="obsolete">Kommentare</translation>
     </message>
     <message>
         <location/>
@@ -365,10 +271,6 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <source>Ignore accelerators</source>
-        <translation type="obsolete">Kurztasten ignorieren</translation>
-    </message>
-    <message>
         <location filename="../tools/linguist/linguist/finddialog.cpp" line="+12"/>
         <source></source>
         <comment>Choose Edit|Find from the menu bar or press Ctrl+F to pop up the Find dialog</comment>
@@ -376,16 +278,56 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     </message>
 </context>
 <context>
-    <name>FormHolder</name>
+    <name>FormMultiWidget</name>
     <message>
-        <source>Preview Form</source>
-        <translation type="obsolete">Vorschau</translation>
+        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+296"/>
+        <source>Alt+Delete</source>
+        <extracomment>translate, but don&apos;t change</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Shift+Alt+Insert</source>
+        <extracomment>translate, but don&apos;t change</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Alt+Insert</source>
+        <extracomment>translate, but don&apos;t change</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+131"/>
+        <source>Confirmation - Qt Linguist</source>
+        <translation>Bestätigung - Qt Linguist</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete non-empty length variant?</source>
+        <translation>Soll die ausgefüllte Längenvariante gelöscht werden?</translation>
     </message>
 </context>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+715"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+747"/>
+        <source>Dropped %n message(s) which had no ID.</source>
+        <translation>
+            <numerusform>Es wurde ein Eintrag ohne Bezeichner gelöscht.</numerusform>
+            <numerusform>Es wurde %n Einträge ohne Bezeichner gelöscht.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+4"/>
+        <source>Excess context/disambiguation dropped from %n message(s).</source>
+        <translation>
+            <numerusform>Es wurde überflüssiger Kontext beziehungsweise überflüssige Infomation zur Unterscheidung bei einem Eintrag entfernt.</numerusform>
+            <numerusform>Es wurde überflüssiger Kontext beziehungsweise überflüssige Infomation zur Unterscheidung bei %n Einträgen entfernt.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+8"/>
         <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
 </source>
         <translation>
@@ -405,89 +347,6 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
             <numerusform>    %n nicht übersetzte Texte wurden ignoriert
 </numerusform>
         </translation>
-    </message>
-</context>
-<context>
-    <name>LanguagesDialog</name>
-    <message>
-        <source>Open Translation File</source>
-        <translation type="obsolete">Öffne Übersetzungsdatei</translation>
-    </message>
-    <message>
-        <source>Qt translation sources (%1);;Qt translation sources (*.ts);;XLIFF localization files (*.xlf);;All files (*)</source>
-        <translation type="obsolete">Qt Übersetzungsdateien (%1);;Qt Übersetzungsdateien (*.ts);;XLIFF Lokalisierungsdateien (*.xlf);;Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>Auxiliary Languages</source>
-        <translation type="obsolete">Unterstützende Sprachen</translation>
-    </message>
-    <message>
-        <source>Locale</source>
-        <translation type="obsolete">Regionalschema</translation>
-    </message>
-    <message>
-        <source>File</source>
-        <translation type="obsolete">Datei</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Move selected language up&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Bewege ausgewählte Sprache herauf&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>up</source>
-        <translation type="obsolete">Hoch</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;Move selected language down&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;Bewege ausgewählte Sprache herunter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>down</source>
-        <translation type="obsolete">Herunter</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Remove selected language&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Entferne ausgewählte Sprache&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>remove</source>
-        <translation type="obsolete">Entfernen</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Open auxiliary language files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Öffne unterstützende Sprachen&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="obsolete">...</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
     </message>
 </context>
 <context>
@@ -538,10 +397,6 @@ p, li { white-space: pre-wrap; }
         <translation>&amp;Werkzeugleisten</translation>
     </message>
     <message>
-        <source>Too&amp;ls</source>
-        <translation type="obsolete">&amp;Werkzeuge</translation>
-    </message>
-    <message>
         <location/>
         <source>&amp;Help</source>
         <translation>&amp;Hilfe</translation>
@@ -557,17 +412,9 @@ p, li { white-space: pre-wrap; }
         <translation>&amp;Datei</translation>
     </message>
     <message>
-        <source>Re&amp;cently Opened Files</source>
-        <translation type="obsolete">&amp;Zuletzt geöffnete Dateien</translation>
-    </message>
-    <message>
         <location/>
         <source>&amp;Edit</source>
         <translation>&amp;Bearbeiten</translation>
-    </message>
-    <message>
-        <source>&amp;New</source>
-        <translation type="obsolete">&amp;Neu</translation>
     </message>
     <message>
         <location/>
@@ -612,18 +459,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location/>
-        <source>Previous unfinished item.</source>
-        <translation>Vorheriger unerledigter Eintrag.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Move to the previous unfinished item.</source>
         <translation>Zum vorherigen unerledigten Eintrag gehen.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Next unfinished item.</source>
-        <translation>Nächster unerledigter Eintrag.</translation>
     </message>
     <message>
         <location/>
@@ -632,28 +469,13 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location/>
-        <source>Move to previous item.</source>
-        <translation>Zum vorigen Eintrag gehen.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Move to the previous item.</source>
         <translation>Zum vorigen Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
-        <source>Next item.</source>
-        <translation>Nächster Eintrag.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Move to the next item.</source>
         <translation>Zum nächsten Eintrag gehen.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Mark item as done and move to the next unfinished item.</source>
-        <translation>Eintrag als erledigt markieren und zum nächsten unerledigten Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
@@ -667,18 +489,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location/>
-        <source>Toggle the validity check of accelerators.</source>
-        <translation>Prüfung der Tastenkürzel ein- bzw. ausschalten.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
         <translation>Die Prüfung der Tastenkürzel, das heißt, die Übereinstimmung der kaufmännischen Und-Zeichen in Quelle und Übersetzung ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle the validity check of ending punctuation.</source>
-        <translation>Prüfung der Satzendezeichen am Ende des Textes ein- bzw. ausschalten.</translation>
     </message>
     <message>
         <location/>
@@ -689,11 +501,6 @@ p, li { white-space: pre-wrap; }
         <location/>
         <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
         <translation>Die Prüfung der Verwendung der Wörterbuchvorschläge ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle the validity check of place markers.</source>
-        <translation>Prüfung der Platzhalter ein- bzw. ausschalten.</translation>
     </message>
     <message>
         <location/>
@@ -716,14 +523,14 @@ p, li { white-space: pre-wrap; }
         <translation>Ctrl+S</translation>
     </message>
     <message>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-14"/>
         <location line="+11"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Save &amp;As...</source>
         <translation>Speichern &amp;unter...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
         <source>Save As...</source>
         <translation>Speichern unter ...</translation>
     </message>
@@ -748,10 +555,6 @@ p, li { white-space: pre-wrap; }
         <translation>&amp;Drucken ...</translation>
     </message>
     <message>
-        <source>Print a list of all the phrases in the current Qt translation source file.</source>
-        <translation type="obsolete">Drucke die Liste aller Übersetzungen in der aktuellen Qt Übersetzungsdatei.</translation>
-    </message>
-    <message>
         <location/>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
@@ -760,10 +563,6 @@ p, li { white-space: pre-wrap; }
         <location/>
         <source>&amp;Undo</source>
         <translation>&amp;Rückgängig</translation>
-    </message>
-    <message>
-        <source>Undo the last editing operation performed on the translation.</source>
-        <translation type="obsolete">Mache die letzte Änderung an der Übersetzung rückgängig.</translation>
     </message>
     <message>
         <location/>
@@ -916,10 +715,6 @@ p, li { white-space: pre-wrap; }
         <translation>Ctrl+W</translation>
     </message>
     <message>
-        <source>Moves to the previous unfinished item.</source>
-        <translation type="obsolete">Gehe zum letzten unerledigten Eintrag.</translation>
-    </message>
-    <message>
         <location/>
         <source>Ctrl+K</source>
         <translation>Ctrl+K</translation>
@@ -930,21 +725,9 @@ p, li { white-space: pre-wrap; }
         <translation>&amp;Nächster Unerledigter</translation>
     </message>
     <message>
-        <source>Moves to the next unfinished item.</source>
-        <translation type="obsolete">Gehe zum nächsten unerledigten Eintrag.</translation>
-    </message>
-    <message>
-        <source>Ctrl+L</source>
-        <translation type="obsolete">Ctrl+L</translation>
-    </message>
-    <message>
         <location/>
         <source>P&amp;rev</source>
         <translation>V&amp;orheriger</translation>
-    </message>
-    <message>
-        <source>Moves to the previous item.</source>
-        <translation type="obsolete">Gehe zum letzten Eintrag.</translation>
     </message>
     <message>
         <location/>
@@ -957,25 +740,9 @@ p, li { white-space: pre-wrap; }
         <translation>Nä&amp;chster</translation>
     </message>
     <message>
-        <source>Moves to the next item.</source>
-        <translation type="obsolete">Gehe zum nächsten Eintrag.</translation>
-    </message>
-    <message>
-        <source>Ctrl+Shift+L</source>
-        <translation type="obsolete">Ctrl+Shift+L</translation>
-    </message>
-    <message>
         <location/>
         <source>&amp;Done and Next</source>
         <translation>&amp;Fertig und Nächster</translation>
-    </message>
-    <message>
-        <source>Marks this item as done and moves to the next unfinished item.</source>
-        <translation type="obsolete">Markiere diesen Eintrag als erledigt und gehe zum nächsten unerledigten Eintrg.</translation>
-    </message>
-    <message>
-        <source>&amp;Begin from source</source>
-        <translation type="obsolete">Übernehme &amp;Ursprungstext</translation>
     </message>
     <message>
         <location/>
@@ -993,17 +760,9 @@ p, li { white-space: pre-wrap; }
         <translation>&amp;Kurzbefehle</translation>
     </message>
     <message>
-        <source>Toggle validity checks of accelerators.</source>
-        <translation type="obsolete">Aktiviere/Deaktiviere Validitätsprüfung für Kurztasten.</translation>
-    </message>
-    <message>
         <location/>
         <source>&amp;Ending Punctuation</source>
         <translation>&amp;Punktierung am Ende</translation>
-    </message>
-    <message>
-        <source>Toggle validity checks of ending punctuation.</source>
-        <translation type="obsolete">Aktiviere/Deaktiviere Validitätsprüfung für Punktierung am Ende des Textes.</translation>
     </message>
     <message>
         <location/>
@@ -1012,17 +771,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location/>
-        <source>Toggle checking that phrase suggestions are used.</source>
-        <translation>Überprüfung, ob Wörterbucheinträge benutzt werden, aktivieren/deaktivieren.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Place &amp;Marker Matches</source>
         <translation>Platz&amp;halter</translation>
-    </message>
-    <message>
-        <source>Toggle validity checks of place markers.</source>
-        <translation type="obsolete">Aktiviere/Deaktiviere Validitätsprüfung für Platzhalter .</translation>
     </message>
     <message>
         <location/>
@@ -1140,36 +890,31 @@ p, li { white-space: pre-wrap; }
         <translation>Die Übersetzung aller Einträge ersetzen, die dem Suchtext entsprechen.</translation>
     </message>
     <message>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+21"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>&amp;Batch Translation...</source>
         <translation>&amp;Automatische Übersetzung ...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
         <source>Batch translate all entries using the information in the phrase books.</source>
         <translation>Alle Einträge automatisch mit Hilfe des Wörterbuchs übersetzen.</translation>
     </message>
     <message>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-34"/>
         <location line="+10"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Release As...</source>
         <translation>Freigeben unter ...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</source>
-        <translation>Eine Qt-Nachrichtendatei aus der aktuellen Übersetzungsdatei erzeugen. Der Dateiname wird automatisch aus dem Namen der TS-Datei abgeleitet.</translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2006"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+195"/>
+        <location line="+188"/>
         <source>Source text</source>
         <translation>Ursprungstext</translation>
     </message>
@@ -1181,17 +926,17 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location line="-2"/>
-        <location line="+61"/>
+        <location line="+62"/>
         <source>Context</source>
         <translation>Kontext</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-61"/>
         <source>Items</source>
         <translation>Einträge</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+78"/>
         <source>This panel lists the source contexts.</source>
         <translation>Dieser Bereich zeigt die Kontexte an.</translation>
     </message>
@@ -1219,10 +964,10 @@ p, li { white-space: pre-wrap; }
         <location line="+59"/>
         <source> MOD </source>
         <comment>status bar: file(s) modified</comment>
-        <translation type="unfinished"></translation>
+        <translation>Geändert</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+130"/>
         <source>Loading...</source>
         <translation>Lade ...</translation>
     </message>
@@ -1275,14 +1020,19 @@ Soll die erstgenannte Datei übersprungen werden?</translation>
         <translation>Datei gespeichert.</translation>
     </message>
     <message>
-        <location line="+15"/>
-        <location line="+1164"/>
+        <location line="+526"/>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-511"/>
+        <location line="+1167"/>
         <source>Release</source>
         <translation>Freigeben</translation>
     </message>
     <message>
-        <location line="-1163"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1166"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation>Qt-Nachrichtendateien (*.qm)
@@ -1295,7 +1045,7 @@ Alle Dateien (*)</translation>
         <translation>Datei erzeugt.</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+34"/>
         <location line="+355"/>
         <source>Printing...</source>
         <translation>Drucke ...</translation>
@@ -1346,7 +1096,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+17"/>
         <location line="+278"/>
-        <location line="+40"/>
+        <location line="+36"/>
         <location line="+24"/>
         <location line="+22"/>
         <location line="+516"/>
@@ -1358,17 +1108,10 @@ Alle Dateien (*)</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1204"/>
+        <location line="-1200"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation>Kann Zeichenkette &apos;%1&apos; nicht finden.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Translated %n entries to &apos;%1&apos;</source>
-        <translation type="obsolete">
-            <numerusform>Ein Eintrag wurde mit &apos;%1&apos; übersetzt</numerusform>
-            <numerusform>%n Einträge wurden mit &apos;%1&apos; übersetzt</numerusform>
-        </translation>
     </message>
     <message>
         <location line="-82"/>
@@ -1463,16 +1206,7 @@ Alle Dateien (*)</translation>
         <translation>Version %1</translation>
     </message>
     <message>
-        <source> Open Source Edition</source>
-        <translation type="obsolete">Open Source Edition</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist ist ein Werkzeug zum Übersetzen von Qt-Anwendungen.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <location line="+41"/>
+        <location line="+43"/>
         <source>Do you want to save the modified files?</source>
         <translation>Möchten Sie die geänderten Dateien speichern?</translation>
     </message>
@@ -1559,13 +1293,13 @@ Alle Dateien (*)</translation>
         <translation>Alles speichern</translation>
     </message>
     <message>
-        <location line="+1"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>&amp;Release All</source>
         <translation>Alles f&amp;reigeben</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>Close All</source>
         <translation>Alle schließen</translation>
     </message>
@@ -1590,37 +1324,37 @@ Alle Dateien (*)</translation>
         <translation>Suchen und &amp;übersetzen ...</translation>
     </message>
     <message>
-        <location line="+51"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+51"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+7"/>
         <source>Edit</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+6"/>
         <source>Translation</source>
         <translation>Übersetzung</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+6"/>
         <source>Validation</source>
         <translation>Validierung</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+7"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
     <message>
-        <location line="+84"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+84"/>
         <source>Cannot read from phrase book &apos;%1&apos;.</source>
         <translation>Wörterbuch &apos;%1&apos; kann nicht gelesen werden.</translation>
     </message>
@@ -1650,7 +1384,7 @@ Alle Dateien (*)</translation>
         <translation>Möchten Sie das Wörterbuch &apos;%1&apos; speichern?</translation>
     </message>
     <message>
-        <location line="+314"/>
+        <location line="+323"/>
         <source>All</source>
         <translation>Alle</translation>
     </message>
@@ -1670,21 +1404,13 @@ Alle Dateien (*)</translation>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-527"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-536"/>
         <source>Translation File &amp;Settings...</source>
         <translation>E&amp;instellungen ...</translation>
     </message>
     <message>
-        <source>Other &amp;Languages...</source>
-        <translation type="obsolete">A&amp;ndere Sprachen...</translation>
-    </message>
-    <message>
-        <source>Edit which other languages to show.</source>
-        <translation type="obsolete">Welche anderen Sprachen sollen dargestellt werden.</translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
         <source>&amp;Add to Phrase Book</source>
         <translation>Zum Wörterbuch &amp;hinzufügen</translation>
     </message>
@@ -1703,11 +1429,82 @@ Alle Dateien (*)</translation>
         <source>Ctrl+Shift+J</source>
         <translation>Ctrl+Shift+J</translation>
     </message>
+    <message>
+        <location/>
+        <source>Previous unfinished item</source>
+        <translation>Vorheriger unerledigter Eintrag</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Next unfinished item</source>
+        <translation>Nächster unerledigter Eintrag</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move to previous item</source>
+        <translation>Zum vorigen Eintrag gehen</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Next item</source>
+        <translation>Nächster Eintrag</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Mark item as done and move to the next unfinished item</source>
+        <translation>Eintrag als erledigt markieren und zum nächsten unerledigten Eintrag gehen</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Copies the source text into the translation field</source>
+        <translation>Kopiert den Ursprungstext in das Übersetzungsfeld</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of accelerators</source>
+        <translation>Prüfung der Tastenkürzel ein- bzw. ausschalten</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of ending punctuation</source>
+        <translation>Prüfung der Satzendezeichen am Ende des Textes ein- bzw. ausschalten</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle checking that phrase suggestions are used</source>
+        <translation>Überprüfung, ob Wörterbucheinträge benutzt werden, aktivieren/deaktivieren</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of place markers</source>
+        <translation>Prüfung der Platzhalter ein- bzw. ausschalten&apos;</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the TS file.</source>
+        <translation>Eine Qt-Nachrichtendatei aus der aktuellen Übersetzungsdatei erzeugen. Der Dateiname wird automatisch aus dem Namen der TS-Datei abgeleitet.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Length Variants</source>
+        <translation>Längenvarianten</translation>
+    </message>
 </context>
 <context>
     <name>MessageEditor</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+72"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+42"/>
+        <source></source>
+        <comment>This is the right panel of the main window.</comment>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Russian</source>
+        <translation>Russisch</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>German</source>
         <translation>Deutsch</translation>
     </message>
@@ -1732,7 +1529,7 @@ Alle Dateien (*)</translation>
         <translation>Chinesisch</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+53"/>
         <source>This whole panel allows you to view and edit the translation of some source text.</source>
         <translation>Dieser Bereich erlaubt die Darstellung und Änderung der Übersetzung eines Textes.</translation>
     </message>
@@ -1747,7 +1544,7 @@ Alle Dateien (*)</translation>
         <translation>Dieser Bereich zeigt den Ursprungstext.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Source text (Plural)</source>
         <translation>Ursprungstext (Plural)</translation>
     </message>
@@ -1757,7 +1554,7 @@ Alle Dateien (*)</translation>
         <translation>Dieser Bereich zeigt die Pluralform des Ursprungstexts.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Developer comments</source>
         <translation>Hinweise des Entwicklers</translation>
     </message>
@@ -1772,12 +1569,12 @@ Alle Dateien (*)</translation>
         <translation>Hier können Sie Hinweise für den eigenen Gebrauch eintragen. Diese haben keinen Einflusse auf die Übersetzung.</translation>
     </message>
     <message>
-        <location line="+205"/>
+        <location line="+232"/>
         <source>%1 translation (%2)</source>
         <translation>Übersetzung %1 (%2)</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+9"/>
         <source>This is where you can enter or modify the translation of the above source text.</source>
         <translation>Hier können Sie die Übersetzung des Ursprungstextes eingeben bzw. ändern.</translation>
     </message>
@@ -1792,55 +1589,15 @@ Alle Dateien (*)</translation>
         <translation>%1 Hinweise des Übersetzers</translation>
     </message>
     <message>
-        <location line="+138"/>
+        <location line="+157"/>
         <source>&apos;%1&apos;
 Line: %2</source>
         <translation>&apos;%1&apos;
 Zeile: %2</translation>
     </message>
-    <message>
-        <source>%1 Translation (%2)</source>
-        <translation type="obsolete">Übersetzung %1 (%2)</translation>
-    </message>
-    <message>
-        <source>bell</source>
-        <translation type="obsolete">bell</translation>
-    </message>
-    <message>
-        <source>backspace</source>
-        <translation type="obsolete">Rücktaste</translation>
-    </message>
-    <message>
-        <source>new page</source>
-        <translation type="obsolete">Neue Seite</translation>
-    </message>
-    <message>
-        <source>new line</source>
-        <translation type="obsolete">Neue Zeile</translation>
-    </message>
-    <message>
-        <source>carriage return</source>
-        <translation type="obsolete">Carriage Return</translation>
-    </message>
-    <message>
-        <source>tab</source>
-        <translation type="obsolete">Tab</translation>
-    </message>
 </context>
 <context>
     <name>MessageModel</name>
-    <message>
-        <source>Context</source>
-        <translation type="obsolete">Kontext</translation>
-    </message>
-    <message>
-        <source>Items</source>
-        <translation type="obsolete">Einträge</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation type="obsolete">Index</translation>
-    </message>
     <message>
         <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+832"/>
         <source>Completion status for %1</source>
@@ -1863,16 +1620,9 @@ Zeile: %2</translation>
     </message>
 </context>
 <context>
-    <name>MessagesTreeView</name>
-    <message>
-        <source>Done</source>
-        <translation type="obsolete">Done</translation>
-    </message>
-</context>
-<context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-572"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-614"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
         <translation></translation>
@@ -1881,17 +1631,18 @@ Zeile: %2</translation>
 <context>
     <name>PhraseBookBox</name>
     <message>
-        <source>%1 - %2[*]</source>
-        <translation type="obsolete">%1 - %2[*]</translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="-47"/>
+        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+12"/>
         <source></source>
         <comment>Go to Phrase &gt; Edit Phrase Book... The dialog that pops up is a PhraseBookBox.</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+54"/>
+        <source>(New Entry)</source>
+        <translation>(Neuer Eintrag)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>%1[*] - Qt Linguist</source>
         <translation>%1[*] - Qt Linguist</translation>
     </message>
@@ -1909,10 +1660,6 @@ Zeile: %2</translation>
         <location filename="../tools/linguist/linguist/phrasebookbox.ui"/>
         <source>Edit Phrase Book</source>
         <translation>Wörterbuch bearbeiten</translation>
-    </message>
-    <message>
-        <source>This window allows you to add, modify, or delete phrases in a phrase book.</source>
-        <translation type="obsolete">Dieses Fenster erlaubt das Hinzufügen, Ändern und Entfernen von Einträgen aus dem Wörterbuch.</translation>
     </message>
     <message>
         <location/>
@@ -1975,18 +1722,6 @@ Zeile: %2</translation>
         <translation>&amp;Einstellungen ...</translation>
     </message>
     <message>
-        <source>&amp;New Phrase</source>
-        <translation type="obsolete">&amp;Neuer Eintrag</translation>
-    </message>
-    <message>
-        <source>Click here to remove the phrase from the phrase book.</source>
-        <translation type="obsolete">Entferne den Eintrag aus dem Wörterbuch.</translation>
-    </message>
-    <message>
-        <source>&amp;Remove Phrase</source>
-        <translation type="obsolete">&amp;Entferne Eintrag</translation>
-    </message>
-    <message>
         <location/>
         <source>Click here to save the changes made.</source>
         <translation>Änderungen speichern.</translation>
@@ -2028,7 +1763,7 @@ Zeile: %2</translation>
 <context>
     <name>PhraseView</name>
     <message>
-        <location filename="../tools/linguist/linguist/phraseview.cpp" line="+121"/>
+        <location filename="../tools/linguist/linguist/phraseview.cpp" line="+122"/>
         <source>Insert</source>
         <translation>Einfügen</translation>
     </message>
@@ -2056,7 +1791,7 @@ Zeile: %2</translation>
         <translation>Kompilierte Qt-Übersetzungen</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1279"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1282"/>
         <source>Translation files (%1);;</source>
         <translation>Übersetzungsdateien (%1);;</translation>
     </message>
@@ -2077,24 +1812,9 @@ Zeile: %2</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/cpp.cpp" line="+1072"/>
-        <source>C++ source files</source>
-        <translation>C++-Quelltextdateien</translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/shared/java.cpp" line="+646"/>
-        <source>Java source files</source>
-        <translation>Java-Quelltextdateien</translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+651"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+658"/>
         <source>GNU Gettext localization files</source>
         <translation>GNU-Gettext-Übersetzungsdateien</translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/shared/qscript.cpp" line="+2399"/>
-        <source>Qt Script source files</source>
-        <translation>Qt-Skript-Quelltextdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ts.cpp" line="+752"/>
@@ -2112,58 +1832,14 @@ Zeile: %2</translation>
         <translation>Qt-Übersetzungsdateien (aktuelles Format)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>
-        <source>Qt Designer form files</source>
-        <translation>Formulardateien für Qt Designer</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Qt Jambi form files</source>
-        <translation>Formulardateien für Qt Jambi</translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+817"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+820"/>
         <source>XLIFF localization files</source>
         <translation>XLIFF-Übersetzungsdateien</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/qph.cpp" line="+192"/>
+        <location filename="../tools/linguist/shared/qph.cpp" line="+183"/>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
         <translation>Qt-Linguist-Wörterbuch</translation>
-    </message>
-</context>
-<context>
-    <name>QtWindowListMenu</name>
-    <message>
-        <source>Tile</source>
-        <translation type="obsolete">Teilen</translation>
-    </message>
-    <message>
-        <source>Cascade</source>
-        <translation type="obsolete">Kaskadieren</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">Schließen</translation>
-    </message>
-    <message>
-        <source>Close All</source>
-        <translation type="obsolete">Alle schließen</translation>
-    </message>
-</context>
-<context>
-    <name>SortedMessagesModel</name>
-    <message>
-        <source>Source text</source>
-        <translation type="obsolete">Ursprungstext</translation>
-    </message>
-    <message>
-        <source>Translation</source>
-        <translation type="obsolete">Übersetzung</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation type="obsolete">Index</translation>
     </message>
 </context>
 <context>
@@ -2190,10 +1866,6 @@ Zeile: %2</translation>
         <location filename="../tools/linguist/linguist/statistics.ui"/>
         <source>Statistics</source>
         <translation>Statistiken</translation>
-    </message>
-    <message>
-        <source>&amp;Close</source>
-        <translation type="obsolete">&amp;Schließen</translation>
     </message>
     <message>
         <location/>
@@ -2232,405 +1904,7 @@ Zeile: %2</translation>
     </message>
 </context>
 <context>
-    <name>TrPreviewTool</name>
-    <message>
-        <source>&lt;No Translation&gt;</source>
-        <translation type="obsolete">&lt;Keine Übersetzung&gt;</translation>
-    </message>
-    <message>
-        <source>Open Forms</source>
-        <translation type="obsolete">Öffne Maske</translation>
-    </message>
-    <message>
-        <source>User interface form files (*.ui);;All files (*.*)</source>
-        <translation type="obsolete">User Interface Masken Dateien (*.ui);;Alle Dateien (*.*)</translation>
-    </message>
-    <message>
-        <source>Could not load form file(s):
-</source>
-        <translation type="obsolete">Könnte Quelldateien nicht laden:
-</translation>
-    </message>
-    <message>
-        <source>Load Translation</source>
-        <translation type="obsolete">Lade Übersetzung</translation>
-    </message>
-    <message>
-        <source>Translation files (*.qm);;All files (*.*)</source>
-        <translation type="obsolete">Übersetzungsdateien (*.qm);;Alle Dateien (*.*)</translation>
-    </message>
-    <message>
-        <source>Could not load translation file:
-</source>
-        <translation type="obsolete">Konnte Übersetzungsdatei nicht laden:
-</translation>
-    </message>
-    <message>
-        <source>Could not reload translation file(s):
-</source>
-        <translation type="obsolete">Konnte Übersetzungsdateien nicht erneut laden:
-</translation>
-    </message>
-    <message>
-        <source>Qt Translation Preview Tool: Warning</source>
-        <translation type="obsolete">Qt Vorschau: Warnung</translation>
-    </message>
-    <message>
-        <source>About </source>
-        <translation type="obsolete">Info</translation>
-    </message>
-    <message>
-        <source>Could not load form file:
-%1.</source>
-        <translation type="obsolete">Konnte Maskendatei nicht laden.
-%1.</translation>
-    </message>
-</context>
-<context>
-    <name>TrPreviewToolClass</name>
-    <message>
-        <source>Qt Translation Preview Tool</source>
-        <translation type="obsolete">Qt Vorschau Tool</translation>
-    </message>
-    <message>
-        <source>&amp;View</source>
-        <translation type="obsolete">&amp;Ansicht</translation>
-    </message>
-    <message>
-        <source>&amp;Views</source>
-        <translation type="obsolete">&amp;Ansichten</translation>
-    </message>
-    <message>
-        <source>&amp;Help</source>
-        <translation type="obsolete">&amp;Hilfe</translation>
-    </message>
-    <message>
-        <source>&amp;File</source>
-        <translation type="obsolete">&amp;Datei</translation>
-    </message>
-    <message>
-        <source>Forms</source>
-        <translation type="obsolete">Masken</translation>
-    </message>
-    <message>
-        <source>&amp;Open Form...</source>
-        <translation type="obsolete">&amp;Öffne Maske...</translation>
-    </message>
-    <message>
-        <source>&amp;Load Translation...</source>
-        <translation type="obsolete">&amp;Lade Übersetzung...</translation>
-    </message>
-    <message>
-        <source>&amp;Reload Translations</source>
-        <translation type="obsolete">Lade Übersetzungen &amp;neu</translation>
-    </message>
-    <message>
-        <source>F5</source>
-        <translation type="obsolete">F5</translation>
-    </message>
-    <message>
-        <source>&amp;Close</source>
-        <translation type="obsolete">&amp;Schließen</translation>
-    </message>
-    <message>
-        <source>About</source>
-        <translation type="obsolete">Info</translation>
-    </message>
-    <message>
-        <source>About Qt</source>
-        <translation type="obsolete">Über Qt</translation>
-    </message>
-</context>
-<context>
-    <name>TrWindow</name>
-    <message>
-        <source>Context</source>
-        <translation type="obsolete">Kontext</translation>
-    </message>
-    <message>
-        <source>This panel lists the source contexts.</source>
-        <translation type="obsolete">Dieser Bereich zeigt die Kontexte an.</translation>
-    </message>
-    <message>
-        <source>Strings</source>
-        <translation type="obsolete">Zeichenketten</translation>
-    </message>
-    <message>
-        <source>Phrases and guesses</source>
-        <translation type="obsolete">Wörterbuch und Vorschläge</translation>
-    </message>
-    <message>
-        <source>Source code</source>
-        <translation type="obsolete">Quelltext</translation>
-    </message>
-    <message>
-        <source>Warnings</source>
-        <translation type="obsolete">Warnungen</translation>
-    </message>
-    <message>
-        <source>MOD</source>
-        <translation type="obsolete">MOD</translation>
-    </message>
-    <message>
-        <source>Loading...</source>
-        <translation type="obsolete">Lade...</translation>
-    </message>
-    <message>
-        <source>Qt Linguist</source>
-        <translation type="obsolete">Qt Linguist</translation>
-    </message>
-    <message>
-        <source>Cannot open &apos;%1&apos;.</source>
-        <translation type="obsolete">Kann &apos;%1&apos; nicht öffnen.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n source phrase(s) loaded.</source>
-        <translation type="obsolete">
-            <numerusform>Einen Ursprungstext geladen.</numerusform>
-            <numerusform>%n Ursprungstexte geladen.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Open Translation File</source>
-        <translation type="obsolete">Öffne Übersetzungsdatei</translation>
-    </message>
-    <message>
-        <source>Qt translation sources (*.ts);;XLIFF localization files (*.xlf);;All files (*)</source>
-        <translation type="obsolete">Qt Übersetzungsdateien (*.ts);;Qt Übersetzungsdateien (*.ts);;Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>File saved.</source>
-        <translation type="obsolete">Datei gespeichert.</translation>
-    </message>
-    <message>
-        <source>Cannot save &apos;%1&apos;.</source>
-        <translation type="obsolete">Kann &apos;%1&apos; nicht speichern.</translation>
-    </message>
-    <message>
-        <source>Qt translation source (*.ts)
-XLIFF localization file (*.xlf)
-All files (*)</source>
-        <translation type="obsolete">Qt Übersetzungsdateien (*.ts)
-Qt Übersetzungsdateien (*.ts)
-Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>Release</source>
-        <translation type="obsolete">Freigeben</translation>
-    </message>
-    <message>
-        <source>Qt message files for released applications (*.qm)
-All files (*)</source>
-        <translation type="obsolete">Qt Nachrichtendateien (*.qm)
-Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>File created.</source>
-        <translation type="obsolete">Datei erzeugt.</translation>
-    </message>
-    <message>
-        <source>Printing...</source>
-        <translation type="obsolete">Drucke...</translation>
-    </message>
-    <message>
-        <source>Context: %1</source>
-        <translation type="obsolete">Kontext: %1</translation>
-    </message>
-    <message>
-        <source>finished</source>
-        <translation type="obsolete">erledigt</translation>
-    </message>
-    <message>
-        <source>unresolved</source>
-        <translation type="obsolete">ungelöst</translation>
-    </message>
-    <message>
-        <source>obsolete</source>
-        <translation type="obsolete">veraltet</translation>
-    </message>
-    <message>
-        <source>Printing... (page %1)</source>
-        <translation type="obsolete">Drucke... (Seite %1)</translation>
-    </message>
-    <message>
-        <source>Printing completed</source>
-        <translation type="obsolete">Drucken beendet</translation>
-    </message>
-    <message>
-        <source>Printing aborted</source>
-        <translation type="obsolete">Drucken abgebrochen</translation>
-    </message>
-    <message>
-        <source>Search wrapped.</source>
-        <translation type="obsolete">Suche beginnt von oben.</translation>
-    </message>
-    <message>
-        <source>Cannot find the string &apos;%1&apos;.</source>
-        <translation type="obsolete">Kann Zeichenkette &apos;%1&apos; nicht finden.</translation>
-    </message>
-    <message>
-        <source>Translate</source>
-        <translation type="obsolete">Übersetzungen</translation>
-    </message>
-    <message numerus="yes">
-        <source>Translated %n entries to &apos;%1&apos;</source>
-        <translation type="obsolete">
-            <numerusform>Ein Eintrag wurde mit &apos;%1&apos; übersetzt</numerusform>
-            <numerusform>%n Einträge wurden mit &apos;%1&apos; übersetzt</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Create New Phrase Book</source>
-        <translation type="obsolete">Erzeugen eines neuen Wörterbuchs</translation>
-    </message>
-    <message>
-        <source>Qt phrase books (*.qph)
-All files (*)</source>
-        <translation type="obsolete">Qt Wörterbücher (*.qph)
-Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>A file called &apos;%1&apos; already exists.  Please choose another name.</source>
-        <translation type="obsolete">Die Datei &apos;%1&apos; existiert schon.  Bitte wählen Sie einen anderen Namen.</translation>
-    </message>
-    <message>
-        <source>Phrase book created.</source>
-        <translation type="obsolete">Wörterbuch erzeugt.</translation>
-    </message>
-    <message>
-        <source>Open Phrase Book</source>
-        <translation type="obsolete">Öffne Wörterbuch</translation>
-    </message>
-    <message>
-        <source>Qt phrase books (*.qph);;All files (*)</source>
-        <translation type="obsolete">Qt Wörterbücher (*.qph);;Alle Dateien (*)</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n phrase(s) loaded.</source>
-        <translation type="obsolete">
-            <numerusform>Ein Wörterbucheintrag geladen.</numerusform>
-            <numerusform>%n Wörterbucheinträge geladen.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Add to phrase book</source>
-        <translation type="obsolete">Hinzufügen zum Wörterbuch</translation>
-    </message>
-    <message>
-        <source>Adding phrase to phrasebook %1</source>
-        <translation type="obsolete">Eintrag zu Wörterbuch %1 hinzufügen</translation>
-    </message>
-    <message>
-        <source>Select phrase book to add to</source>
-        <translation type="obsolete">Zu welchem Wörterbuch soll der Eintrag hinzugefügt werden?</translation>
-    </message>
-    <message>
-        <source>Unable to launch Qt Assistant (%1)</source>
-        <translation type="obsolete">Kann Qt Assistant nicht starten (%1)</translation>
-    </message>
-    <message>
-        <source>Version %1</source>
-        <translation type="obsolete">Version %1</translation>
-    </message>
-    <message>
-        <source> Open Source Edition</source>
-        <translation type="obsolete">Open Source Edition</translation>
-    </message>
-    <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist ist ein Werkzeug zum Übersetzen von Qt Anwendungen.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Do you want to save &apos;%1&apos;?</source>
-        <translation type="obsolete">Wollen Sie &apos;%1&apos; speichern?</translation>
-    </message>
-    <message>
-        <source>Qt Linguist by Trolltech[*]</source>
-        <translation type="obsolete">Qt Linguist von Trolltech[*]</translation>
-    </message>
-    <message>
-        <source>%1 - %2[*]</source>
-        <translation type="obsolete">%1 - %2[*]</translation>
-    </message>
-    <message>
-        <source>Qt Linguist by Trolltech</source>
-        <translation type="obsolete">Qt Linguist von Trolltech</translation>
-    </message>
-    <message>
-        <source>No untranslated phrases left.</source>
-        <translation type="obsolete">Alle Einträge sind übersetzt.</translation>
-    </message>
-    <message>
-        <source>&amp;Window</source>
-        <translation type="obsolete">&amp;Fenster</translation>
-    </message>
-    <message>
-        <source>Minimize</source>
-        <translation type="obsolete">Minimieren</translation>
-    </message>
-    <message>
-        <source>Ctrl+M</source>
-        <translation type="obsolete">Ctrl+M</translation>
-    </message>
-    <message>
-        <source>Display the manual for %1.</source>
-        <translation type="obsolete">Zeige Handbuch für %1 an.</translation>
-    </message>
-    <message>
-        <source>Display information about %1.</source>
-        <translation type="obsolete">Zeige Informationen über %1 an.</translation>
-    </message>
-    <message>
-        <source>File</source>
-        <translation type="obsolete">Datei</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="obsolete">Bearbeiten</translation>
-    </message>
-    <message>
-        <source>Translation</source>
-        <translation type="obsolete">Übersetzung</translation>
-    </message>
-    <message>
-        <source>Validation</source>
-        <translation type="obsolete">Validierung</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation type="obsolete">Hilfe</translation>
-    </message>
-    <message>
-        <source>Cannot read from phrase book &apos;%1&apos;.</source>
-        <translation type="obsolete">Kann Wörterbuch &apos;%1&apos; nicht lesen.</translation>
-    </message>
-    <message>
-        <source>Close this phrase book.</source>
-        <translation type="obsolete">Schließe dieses Wörterbuch.</translation>
-    </message>
-    <message>
-        <source>Allow you to add, modify, or delete phrases of this phrase book.</source>
-        <translation type="obsolete">Erlaubt das Hinzufügen, Ändern und Entfernen von Einträgen aus dem Wörterbuch.</translation>
-    </message>
-    <message>
-        <source>Print the entries of the phrase book.</source>
-        <translation type="obsolete">Drucke die Einträge des Wörterbuchs.</translation>
-    </message>
-    <message>
-        <source>Cannot create phrase book &apos;%1&apos;.</source>
-        <translation type="obsolete">Kann Wörterbuch &apos;%1&apos; nicht erzeugen.</translation>
-    </message>
-    <message>
-        <source>Do you want to save phrasebook &apos;%1&apos;?</source>
-        <translation type="obsolete">Wollen Sie das Wörterbuch &apos;%1&apos; speichern?</translation>
-    </message>
-</context>
-<context>
     <name>TranslateDialog</name>
-    <message>
-        <source>Qt Linguist</source>
-        <translation type="obsolete">Qt Linguist</translation>
-    </message>
     <message>
         <location filename="../tools/linguist/linguist/translatedialog.ui"/>
         <source>This window allows you to search for some text in the translation source file.</source>
@@ -2703,25 +1977,6 @@ Alle Dateien (*)</translation>
     </message>
 </context>
 <context>
-    <name>TranslationSettings</name>
-    <message>
-        <source>Qt Linguist - Translation file settings</source>
-        <translation type="obsolete">Qt Linguist - Einstellungen der Übersetzungsdatei</translation>
-    </message>
-    <message>
-        <source>Target language</source>
-        <translation type="obsolete">Zielsprache</translation>
-    </message>
-    <message>
-        <source>Language</source>
-        <translation type="obsolete">Sprache</translation>
-    </message>
-    <message>
-        <source>Country/Region</source>
-        <translation type="obsolete">Land/Region</translation>
-    </message>
-</context>
-<context>
     <name>TranslationSettingsDialog</name>
     <message>
         <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
@@ -2753,49 +2008,6 @@ Alle Dateien (*)</translation>
         <location/>
         <source>Target language</source>
         <translation>Zielsprache</translation>
-    </message>
-</context>
-<context>
-    <name>databaseTranslationDialog</name>
-    <message>
-        <source>Qt Linguist - Batch Translation</source>
-        <translation type="obsolete">Qt Linguist - Automatische Übersetzung</translation>
-    </message>
-    <message>
-        <source>Options</source>
-        <translation type="obsolete">Optionen</translation>
-    </message>
-    <message>
-        <source>Only translate entries with no translation</source>
-        <translation type="obsolete">Übersetze nur Einträge ohne bisherige Übersetzung</translation>
-    </message>
-    <message>
-        <source>Set translated entries to finished</source>
-        <translation type="obsolete">Markiere Übersetzung als erledigt</translation>
-    </message>
-    <message>
-        <source>Phrase book preference</source>
-        <translation type="obsolete">Wörterbücher</translation>
-    </message>
-    <message>
-        <source>Move up</source>
-        <translation type="obsolete">Nach oben</translation>
-    </message>
-    <message>
-        <source>Move down</source>
-        <translation type="obsolete">Nach unten</translation>
-    </message>
-    <message>
-        <source>The batch translator will search through the selected phrasebooks in the order given above.</source>
-        <translation type="obsolete">Der automatische Übersetzer wird in der angegebenen Reihenfolge durch die ausgewählten Wörterbücher gehen.</translation>
-    </message>
-    <message>
-        <source>&amp;Run</source>
-        <translation type="obsolete">&amp;Ausführen</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation type="obsolete">&amp;Abbrechen</translation>
     </message>
 </context>
 </TS>
