@@ -61,18 +61,32 @@
 
 QT_BEGIN_NAMESPACE
 
+class QmlAbstractExpression
+{
+public:
+    QmlAbstractExpression();
+    virtual ~QmlAbstractExpression();
+
+    bool isValid() const;
+
+    QmlContext *context() const;
+    void setContext(QmlContext *);
+
+private:
+    friend class QmlContext;
+    QmlContext *m_context;
+    QmlAbstractExpression **m_prevExpression;
+    QmlAbstractExpression  *m_nextExpression;
+};
+
 class QmlExpression;
 class QString;
-class QmlExpressionPrivate : public QObjectPrivate
+class QmlExpressionPrivate : public QObjectPrivate, public QmlAbstractExpression
 {
     Q_DECLARE_PUBLIC(QmlExpression)
 public:
     QmlExpressionPrivate();
     ~QmlExpressionPrivate();
-
-    // Forms the QmlContext "expressions" linked list
-    QmlExpressionPrivate *nextExpression;
-    QmlExpressionPrivate **prevExpression;
 
     enum CompiledDataType {
         BasicScriptEngineData = 1,
@@ -82,21 +96,19 @@ public:
     void init(QmlContext *, const QString &, QObject *);
     void init(QmlContext *, void *, QmlRefCount *, QObject *);
 
-    QmlContext *ctxt;
     QString expression;
     bool expressionFunctionValid:1;
     bool expressionRewritten:1;
     QScriptValue expressionFunction;
 
     QmlBasicScript sse;
-    void *sseData;
     QObject *me;
     bool trackChange;
 
     QString fileName;
     int line;
 
-    QVariant evalSSE(QmlBasicScript::CacheState &cacheState);
+    QVariant evalSSE();
     QVariant evalQtScript();
 
     struct SignalGuard : public QGuard<QObject> {

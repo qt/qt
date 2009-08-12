@@ -140,13 +140,66 @@ void QFxLineEdit::setColor(const QColor &c)
     d->color = c;
 }
 
-QFxText::HAlignment QFxLineEdit::hAlign() const
+
+/*!
+    \qmlproperty color LineEdit::highlightColor
+
+    The text highlight color, used behind selections.
+*/
+
+/*!
+    \property QFxLineEdit::highlightColor
+    \brief the line edit's default text highlight color
+*/
+QColor QFxLineEdit::highlightColor() const
+{
+    Q_D(const QFxLineEdit);
+    return d->highlightColor;
+}
+
+void QFxLineEdit::setHighlightColor(const QColor &color)
+{
+    Q_D(QFxLineEdit);
+    if (d->highlightColor == color)
+        return;
+
+    d->highlightColor = color;
+    //TODO: implement
+}
+
+/*!
+    \qmlproperty color LineEdit::highlightedTextColor
+
+    The highlighted text color, used in selections.
+*/
+
+/*!
+    \property QFxLineEdit::highlightedTextColor
+    \brief the line edit's default highlighted text color
+*/
+QColor QFxLineEdit::highlightedTextColor() const
+{
+    Q_D(const QFxLineEdit);
+    return d->highlightedTextColor;
+}
+
+void QFxLineEdit::setHighlightedTextColor(const QColor &color)
+{
+    Q_D(QFxLineEdit);
+    if (d->highlightedTextColor == color)
+        return;
+
+    d->highlightedTextColor = color;
+    //TODO: implement
+}
+
+QFxLineEdit::HAlignment QFxLineEdit::hAlign() const
 {
     Q_D(const QFxLineEdit);
     return d->hAlign;
 }
 
-void QFxLineEdit::setHAlign(QFxText::HAlignment align)
+void QFxLineEdit::setHAlign(HAlignment align)
 {
     Q_D(QFxLineEdit);
     d->hAlign = align;
@@ -174,6 +227,29 @@ void QFxLineEdit::setMaxLength(int ml)
 {
     Q_D(QFxLineEdit);
     d->control->setMaxLength(ml);
+}
+
+/*!
+    \qmlproperty LineEdit::cursorVisible
+    \brief If true the text edit shows a cursor.
+
+    This property is set and unset when the line edit gets focus, but it can also
+    be set directly (useful, for example, if a KeyProxy might forward keys to it).
+*/
+bool QFxLineEdit::isCursorVisible() const
+{
+    Q_D(const QFxLineEdit);
+    return d->cursorVisible;
+}
+
+void QFxLineEdit::setCursorVisible(bool on)
+{
+    Q_D(QFxLineEdit);
+    if (d->cursorVisible == on)
+        return;
+    d->cursorVisible = on;
+    d->control->setCursorBlinkPeriod(on?QApplication::cursorFlashTime():0);
+    updateAll();//TODO: Only update cursor rect
 }
 
 /*!
@@ -380,20 +456,6 @@ void QFxLineEdit::moveCursor()
     d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
-/*
-int QFxLineEdit::scrollDuration() const
-{
-    Q_D(const QFxLineEdit);
-    return d->scrollDur;
-}
-
-void QFxLineEdit::setScrollDuration(int s)
-{
-    Q_D(QFxLineEdit);
-    d->scrollDur = s;
-    //Need to update cur anims as well
-}
-*/
 int QFxLineEdit::xToPos(int x)
 {
     Q_D(const QFxLineEdit);
@@ -403,14 +465,8 @@ int QFxLineEdit::xToPos(int x)
 void QFxLineEdit::focusChanged(bool hasFocus)
 {
     Q_D(QFxLineEdit);
-    if(d->focused && !hasFocus){
-        d->focused = false;
-        d->control->setCursorBlinkPeriod(0);
-        updateAll();//Only need the cursor rect
-    }else{
-        d->focused = hasFocus;
-        updateAll();//Only need the cursor rect
-    }
+    d->focused = hasFocus;
+    setCursorVisible(hasFocus);
 }
 
 void QFxLineEdit::keyPressEvent(QKeyEvent* ev)
@@ -424,8 +480,8 @@ void QFxLineEdit::keyPressEvent(QKeyEvent* ev)
 void QFxLineEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxLineEdit);
-    setFocus(true);
-    d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+    setFocus(true);//###Should we make 'focusOnPress' be optional like TextEdit?
+    setCursorVisible(true);
     d->focused = true;
     d->control->processEvent(event);
     //event->accept();
@@ -459,7 +515,7 @@ void QFxLineEdit::drawContents(QPainter *p, const QRect &r)
     p->save();
     p->setPen(QPen(d->color));
     int flags = QLineControl::DrawText;
-    if(!isReadOnly() && d->focused && !d->cursorItem)
+    if(!isReadOnly() && d->cursorVisible && !d->cursorItem)
         flags |= QLineControl::DrawCursor;
     if (d->control->hasSelectedText())
             flags |= QLineControl::DrawSelections;
@@ -469,13 +525,26 @@ void QFxLineEdit::drawContents(QPainter *p, const QRect &r)
     p->restore();
 }
 
+/*!
+    \qmlproperty bool LineEdit::smooth
+
+    Set this property if you want the text to be smoothly scaled or
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the item is displayed at its natural size, this property has no visual or
+    performance effect.
+
+    \note Generally scaling artifacts are only visible if the item is stationary on
+    the screen.  A common pattern when animating an item is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+*/
+
 void QFxLineEditPrivate::init()
 {
         Q_Q(QFxLineEdit);
         control->setCursorWidth(1);
         control->setPasswordCharacter(QLatin1Char('*'));
         control->setLayoutDirection(Qt::LeftToRight);
-        q->setSmoothTransform(true);
+        q->setSmoothTransform(smooth);
         q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setFlag(QGraphicsItem::ItemHasNoContents, false);
         q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);

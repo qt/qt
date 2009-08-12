@@ -243,12 +243,7 @@ struct QmlBasicScriptCompiler
     To see if the QmlBasicScript engine can handle a binding, call compile()
     and check the return value, or isValid() afterwards.
 
-    To evaluate the binding, the QmlBasicScript instance needs some memory in
-    which to cache state.  This may be allocated by calling newScriptState()
-    and destroyed by calling deleteScriptState().  The state data is then passed
-    to the run() method when evaluating the binding.
-
-    To further accelerate binding, QmlBasicScript can return a precompiled
+    To accelerate binding, QmlBasicScript can return a precompiled
     version of itself that can be saved for future use.  Call compileData() to
     get an opaque pointer to the compiled state, and compileDataSize() for the
     size of this data in bytes.  This data can be saved and passed to future
@@ -317,22 +312,6 @@ void QmlBasicScript::clear()
     d = 0;
     rc = 0;
     flags = 0;
-}
-
-/*!
-    Return the script state memory for this script instance.  This memory should
-    only be destroyed by calling deleteScriptState().
- */
-void *QmlBasicScript::newScriptState()
-{
-    return 0;
-}
-
-/*!
-    Delete the \a data previously allocated by newScriptState().
- */
-void QmlBasicScript::deleteScriptState(void *)
-{
 }
 
 /*!
@@ -635,23 +614,10 @@ bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
 }
 
 /*!
-    \enum QmlBasicScript::CacheState
-    \value NoChange The query has not change.  Any previous monitoring is still
-    valid.
-    \value Incremental The query has been incrementally changed.  Any previous
-    monitoring is still valid, but needs to have the fresh properties added to
-    it.
-    \value Reset The entire query has been reset from the beginning.  Any previous
-    monitoring is now invalid.
-*/
-
-/*!
-    Run the script in \a context and return the result.  \a voidCache should
-    contain state memory previously acquired from newScript.
+    Run the script in \a context and return the result.  
  */
-QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *cached)
+QVariant QmlBasicScript::run(QmlContext *context, QObject *me)
 {
-    Q_UNUSED(voidCache);
     if (!isValid())
         return QVariant();
 
@@ -659,8 +625,6 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
     QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(context->engine());
 
     QStack<QVariant> stack;
-
-    CacheState state = NoChange;
 
     for (int idx = 0; idx < d->instructionCount; ++idx) {
         const ScriptInstruction &instr = d->instructions()[idx];
@@ -671,11 +635,19 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 stack.push(QVariant::fromValue(contextPrivate->idValues[instr.fetch.idx].data()));
                 enginePrivate->capturedProperties <<
                     QmlEnginePrivate::CapturedProperty(context, -1, contextPrivate->notifyIndex + instr.fetch.idx);
-                state = Reset;
             }
                 break;
 
             case ScriptInstruction::FetchContextConstant:
+            {
+                stack.push(fetch_value(me, instr.constant.idx, instr.constant.type));
+                if (me && instr.constant.notify != 0)
+                    enginePrivate->capturedProperties <<
+                        QmlEnginePrivate::CapturedProperty(me, instr.constant.idx, instr.constant.notify);
+            }
+                break;
+
+            case ScriptInstruction::FetchRootConstant:
             {
                 QObject *obj = contextPrivate->defaultObjects.at(0);
 
@@ -683,19 +655,6 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
                         QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify);
-                state = Reset;
-            }
-                break;
-
-            case ScriptInstruction::FetchRootConstant:
-            {
-                QObject *obj = contextPrivate->defaultObjects.at(1);
-
-                stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                if (obj && instr.constant.notify != 0)
-                    enginePrivate->capturedProperties <<
-                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify);
-                state = Reset;
             }
                 break;
 
@@ -708,7 +667,6 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
                         QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify);
-                state = Reset;
             }
                 break;
 
@@ -733,12 +691,44 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
         }
     }
 
-    *cached = Reset;
-
     if (stack.isEmpty())
         return QVariant();
     else
         return stack.top();
+}
+
+bool QmlBasicScript::isSingleIdFetch() const
+{
+    if (!isValid())
+        return false;
+
+    return d->instructionCount == 1 && 
+           d->instructions()[0].type == ScriptInstruction::LoadIdObject;
+}
+
+int QmlBasicScript::singleIdFetchIndex() const
+{
+    if (!isSingleIdFetch())
+        return -1;
+
+    return d->instructions()[0].fetch.idx;
+}
+
+bool QmlBasicScript::isSingleContextProperty() const
+{
+    if (!isValid())
+        return false;
+
+    return d->instructionCount == 1 && 
+           d->instructions()[0].type == ScriptInstruction::FetchContextConstant;
+}
+
+int QmlBasicScript::singleContextPropertyIndex() const
+{
+    if (!isSingleContextProperty())
+        return -1;
+
+    return d->instructions()[0].constant.idx;
 }
 
 /*!

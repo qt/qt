@@ -39,65 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPONENT_P_H
-#define QMLCOMPONENT_P_H
+#ifndef QFXIMAGEBASE_H
+#define QFXIMAGEBASE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qfxitem.h>
 
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QList>
-#include <private/qobject_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qml.h>
-
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QmlComponent;
-class QmlEngine;
-class QmlCompiledData;
-
-class QmlComponentPrivate : public QObjectPrivate
+class QFxImageBasePrivate;
+class QFxImageBase : public QFxItem
 {
-    Q_DECLARE_PUBLIC(QmlComponent)
-        
+    Q_OBJECT
+    Q_ENUMS(Status)
+
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+
 public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QFxImageBase(QFxItem *parent = 0);
+    ~QFxImageBase();
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+    qreal progress() const;
 
-    QmlCompositeTypeData *typeData;
-    void typeDataReady();
-    
-    void fromTypeData(QmlCompositeTypeData *data);
+    QUrl source() const;
+    virtual void setSource(const QUrl &url);
 
-    QList<QmlError> errors;
-    QUrl url;
+Q_SIGNALS:
+    void sourceChanged(const QUrl &);
+    void statusChanged(Status);
+    void progressChanged(qreal progress);
 
-    int start;
-    int count;
-    QmlCompiledData *cc;
+protected:
+    QFxImageBase(QFxImageBasePrivate &dd, QFxItem *parent);
 
-    QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
-    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
+private Q_SLOTS:
+    virtual void requestFinished();
+    void requestProgress(qint64,qint64);
 
-    bool completePending;
-
-    QmlEngine *engine;
-
-    void clear();
+private:
+    Q_DISABLE_COPY(QFxImageBase)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImageBase)
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
-#endif // QMLCOMPONENT_P_H
+#endif // QFXIMAGEBASE_H

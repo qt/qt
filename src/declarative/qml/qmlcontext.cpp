@@ -47,6 +47,7 @@
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
+#include <private/qmlbindingoptimizations_p.h>
 
 // 6-bits
 #define MAXIMUM_DEFAULT_OBJECTS 63
@@ -82,6 +83,9 @@ void QmlContextPrivate::destroyed(ContextGuard *guard)
     if (parent && QObjectPrivate::get(parent)->wasDeleted) 
         return;
 
+    while(guard->bindings) 
+        guard->bindings->reset();
+
     for (int ii = 0; ii < idValueCount; ++ii) {
         if (&idValues[ii] == guard) {
             QMetaObject::activate(q, ii + notifyIndex, 0);
@@ -106,8 +110,6 @@ void QmlContextPrivate::init()
     else
         scopeChain = parent->d_func()->scopeChain;
     scopeChain.prepend(scopeObj);
-
-    contextData.context = q;
 }
 
 void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
@@ -278,26 +280,23 @@ QmlContext::~QmlContext()
         (*iter)->d_func()->parent = 0;
     }
 
-    QmlExpressionPrivate *expression = d->expressions;
+    QmlAbstractExpression *expression = d->expressions;
     while (expression) {
-        QmlExpressionPrivate *nextExpression = expression->nextExpression;
+        QmlAbstractExpression *nextExpression = expression->m_nextExpression;
 
-        expression->ctxt = 0;
-        expression->prevExpression = 0;
-        expression->nextExpression = 0;
+        expression->m_context = 0;
+        expression->m_prevExpression = 0;
+        expression->m_nextExpression = 0;
 
         expression = nextExpression;
     }
 
     for (int ii = 0; ii < d->contextObjects.count(); ++ii) {
         QObjectPrivate *p = QObjectPrivate::get(d->contextObjects.at(ii));
-        QmlSimpleDeclarativeData *data = 
-            static_cast<QmlSimpleDeclarativeData *>(p->declarativeData);
-        if(data && (data->flags & QmlSimpleDeclarativeData::Extended)) {
+        QmlDeclarativeData *data = 
+            static_cast<QmlDeclarativeData *>(p->declarativeData);
+        if(data) 
             data->context = 0;
-        } else {
-            p->declarativeData = 0;
-        }
     }
     d->contextObjects.clear();
 

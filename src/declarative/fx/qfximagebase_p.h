@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPONENT_P_H
-#define QMLCOMPONENT_P_H
+#ifndef QFXIMAGEBASE_P_H
+#define QFXIMAGEBASE_P_H
 
 //
 //  W A R N I N G
@@ -53,51 +53,30 @@
 // We mean it.
 //
 
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QList>
-#include <private/qobject_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qml.h>
+#include "qfxitem_p.h"
+#include <QtCore/QPointer>
 
 QT_BEGIN_NAMESPACE
 
-class QmlComponent;
-class QmlEngine;
-class QmlCompiledData;
-
-class QmlComponentPrivate : public QObjectPrivate
+class QNetworkReply;
+class QFxImageBasePrivate : public QFxItemPrivate
 {
-    Q_DECLARE_PUBLIC(QmlComponent)
-        
+    Q_DECLARE_PUBLIC(QFxImageBase)
+
 public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QFxImageBasePrivate()
+      : status(QFxImageBase::Null),
+        progress(0.0)
+    {
+    }
 
-    QmlCompositeTypeData *typeData;
-    void typeDataReady();
-    
-    void fromTypeData(QmlCompositeTypeData *data);
-
-    QList<QmlError> errors;
+    QPixmap pix;
+    QFxImageBase::Status status;
     QUrl url;
-
-    int start;
-    int count;
-    QmlCompiledData *cc;
-
-    QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
-    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
-
-    bool completePending;
-
-    QmlEngine *engine;
-
-    void clear();
+    QPointer<QNetworkReply> reply;
+    qreal progress;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLCOMPONENT_P_H
+#endif

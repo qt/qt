@@ -12,7 +12,7 @@ Item {
 
     id: Container
     width: 240; height: 240
-    Image {
+    BorderImage {
         x: Container.width / 2 - width / 2
         y: Container.height / 2 - height / 2
         width: SequentialAnimation {
@@ -26,11 +26,11 @@ Item {
             NumberAnimation { from: Container.maxHeight; to: Container.minHeight; duration: 2000; easing: "easeInOutQuad" }
         }
         source: Container.source
-        scaleGrid.horizontalTileRule: Container.horizontalMode
-        scaleGrid.verticalTileRule: Container.verticalMode
-        scaleGrid.top: Container.margin
-        scaleGrid.left: Container.margin
-        scaleGrid.bottom: Container.margin
-        scaleGrid.right: Container.margin
+        horizontalTileMode: Container.horizontalMode
+        verticalTileMode: Container.verticalMode
+        border.top: Container.margin
+        border.left: Container.margin
+        border.bottom: Container.margin
+        border.right: Container.margin
     }
 }

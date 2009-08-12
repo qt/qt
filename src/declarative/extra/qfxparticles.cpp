@@ -53,6 +53,7 @@
 #include <qfxpixmap.h>
 #include <private/qfxperf_p.h>
 #include <private/qmlanimation_p.h>
+#include <QNetworkReply>
 
 #include "qfxparticles.h"
 #include <QPainter>
@@ -404,6 +405,7 @@ public:
     bool emitting;
     QFxParticleMotion *motion;
     QFxParticlesPainter *paintItem;
+    QPointer<QNetworkReply> reply;
 
     QList<QFxParticle> particles;
     QTickAnimationProxy<QFxParticlesPrivate, &QFxParticlesPrivate::tick> clock;
@@ -636,7 +638,7 @@ QUrl QFxParticles::source() const
 void QFxParticles::imageLoaded()
 {
     Q_D(QFxParticles);
-    d->image = QFxPixmap(d->url);
+    QFxPixmap::find(d->url, &d->image);
     d->paintItem->updateSize();
     d->paintItem->update();
 }
@@ -645,7 +647,7 @@ void QFxParticles::setSource(const QUrl &name)
 {
     Q_D(QFxParticles);
 
-    if (name == d->url)
+    if ((d->url.isEmpty() == name.isEmpty()) && name == d->url)
         return;
 
     if (!d->url.isEmpty())
@@ -658,7 +660,14 @@ void QFxParticles::setSource(const QUrl &name)
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(imageLoaded()));
+        d->reply = QFxPixmap::get(qmlEngine(this), d->url, &d->image);
+        if (d->reply)
+            connect(d->reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
+        else {
+            //### unify with imageLoaded
+            d->paintItem->updateSize();
+            d->paintItem->update();
+        }
     }
 }
 

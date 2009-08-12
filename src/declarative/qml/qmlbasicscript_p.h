@@ -95,12 +95,14 @@ public:
     void clear();
 
     void dump();
-    void *newScriptState();
-    void deleteScriptState(void *);
 
-    enum CacheState { NoChange, Incremental, Reset };
-    QVariant run(QmlContext *, void *, CacheState *);
+    QVariant run(QmlContext *, QObject *);
 
+    bool isSingleIdFetch() const;
+    int singleIdFetchIndex() const;
+
+    bool isSingleContextProperty() const;
+    int singleContextPropertyIndex() const;
 private:
     int flags;
     QmlBasicScriptPrivate *d;

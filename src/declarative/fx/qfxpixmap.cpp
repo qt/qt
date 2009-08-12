@@ -81,14 +81,7 @@ public:
     }
 };
 
-class QFxPixmapPrivate
-{
-public:
-    QFxPixmapPrivate() {}
-
-    QPixmap pixmap;
-
-    bool readImage(QIODevice *dev)
+static bool readImage(QIODevice *dev, QPixmap *pixmap)
     {
         QImageReader imgio(dev);
 
@@ -114,13 +107,12 @@ public:
             if (!sz.isValid())
                 img = img.scaled(limit,Qt::KeepAspectRatio);
 #endif
-            pixmap = QPixmap::fromImage(img);
+            *pixmap = QPixmap::fromImage(img);
             return true;
         } else {
             return false;
         }
     }
-};
 
 /*!
     \internal
@@ -131,25 +123,26 @@ public:
     This class is NOT reentrant.
     The pixmap cache will grow indefinately.
  */
-QFxPixmap::QFxPixmap()
-: d(new QFxPixmapPrivate)
-{
-}
 
-QFxPixmap::QFxPixmap(const QUrl &url)
-: d(new QFxPixmapPrivate)
+
+bool QFxPixmap::find(const QUrl& url, QPixmap *pixmap)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::PixmapLoad> perf;
 #endif
+
     QString key = url.toString();
-    if (!QPixmapCache::find(key,&d->pixmap)) {
+    if (!QPixmapCache::find(key,pixmap)) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
         if (url.scheme()==QLatin1String("file")) {
             QFile f(url.toLocalFile());
-            if (f.open(QIODevice::ReadOnly))
-                if (!d->readImage(&f))
+            if (f.open(QIODevice::ReadOnly)) {
+                if (!readImage(&f, pixmap)) {
                     qWarning() << "Format error loading" << url;
+                    *pixmap = QPixmap();
+                }
+            } else
+                *pixmap = QPixmap();
         } else
 #endif
         {
@@ -158,53 +151,20 @@ QFxPixmap::QFxPixmap(const QUrl &url)
                 // API usage error
                 qWarning() << "QFxPixmap: URL not loaded" << url;
             } else {
-                if ((*iter)->reply->error())
+                if ((*iter)->reply->error()) {
                     qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
-                else
-                    if (!d->readImage((*iter)->reply))
+                    *pixmap = QPixmap();
+                } else
+                    if (!readImage((*iter)->reply, pixmap)) {
                         qWarning() << "Format error loading" << url;
+                        *pixmap = QPixmap();
+                    }
                 (*iter)->release();
             }
         }
-        QPixmapCache::insert(key, d->pixmap);
+        QPixmapCache::insert(key, *pixmap);
     }
-}
-
-QFxPixmap::QFxPixmap(const QFxPixmap &o)
-: d(new QFxPixmapPrivate)
-{
-    d->pixmap = o.d->pixmap;
-}
-
-QFxPixmap::~QFxPixmap()
-{
-    delete d;
-}
-
-QFxPixmap &QFxPixmap::operator=(const QFxPixmap &o)
-{
-    d->pixmap = o.d->pixmap;
-    return *this;
-}
-
-bool QFxPixmap::isNull() const
-{
-    return d->pixmap.isNull();
-}
-
-int QFxPixmap::width() const
-{
-    return d->pixmap.width();
-}
-
-int QFxPixmap::height() const
-{
-    return d->pixmap.height();
-}
-
-QFxPixmap::operator const QPixmap &() const
-{
-    return d->pixmap;
+    return true;
 }
 
 /*!
@@ -215,20 +175,28 @@ QFxPixmap::operator const QPixmap &() const
     Returns a QNetworkReply if the image is not immediately available, otherwise
     returns 0.  The QNetworkReply must not be stored - it may be destroyed at any time.
 */
-QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, const char* slot)
+QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
 {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (url.scheme()==QLatin1String("file")) {
-        QObject dummy;
-        QObject::connect(&dummy, SIGNAL(destroyed()), obj, slot);
+        QString key = url.toString();
+        if (!QPixmapCache::find(key,pixmap)) {
+            QFile f(url.toLocalFile());
+            if (f.open(QIODevice::ReadOnly)) {
+                if (!readImage(&f, pixmap)) {
+                    qWarning() << "Format error loading" << url;
+                    *pixmap = QPixmap();
+                }
+            } else
+                *pixmap = QPixmap();
+            QPixmapCache::insert(key, *pixmap);
+        }
         return 0;
     }
 #endif
 
     QString key = url.toString();
-    if (QPixmapCache::find(key,0)) {
-        QObject dummy;
-        QObject::connect(&dummy, SIGNAL(destroyed()), obj, slot);
+    if (QPixmapCache::find(key,pixmap)) {
         return 0;
     }
 
@@ -242,7 +210,6 @@ QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, 
         (*iter)->addRef();
     }
 
-    QObject::connect((*iter)->reply, SIGNAL(finished()), obj, slot);
     return (*iter)->reply;
 }
 

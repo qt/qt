@@ -168,8 +168,7 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                 QmlContextPrivate *ctxtPriv = 
                     (QmlContextPrivate *)QObjectPrivate::get(ctxt);
 
-                QObject *target = 
-                    *(QObject **)ctxtPriv->propertyValues[d->contextIdx].data();
+                QObject *target = ctxtPriv->idValues[d->contextIdx].data();
                 if (!target) return -1;
 
                 if (c == QMetaObject::ReadProperty && !aConnected.testBit(id)) {

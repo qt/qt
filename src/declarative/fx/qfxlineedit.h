@@ -58,28 +58,42 @@ class QValidator;
 class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
 {
     Q_OBJECT
+    Q_ENUMS(HAlignment)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QmlFont *font READ font CONSTANT)
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QFxText::HAlignment hAlign READ hAlign WRITE setHAlign)
+    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor)
+    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor)
+    Q_PROPERTY(QmlFont *font READ font CONSTANT)
+    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
 
-    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly);
-    Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength);
-    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged);
+    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
+    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
+    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QmlComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
     Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
-    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged);
+    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
 
-    Q_PROPERTY(QObject* validator READ validator WRITE setValidator);
-    Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask);
-    Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged);
-    Q_PROPERTY(uint echoMode READ echoMode WRITE setEchoMode);
+    Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength)
+    Q_PROPERTY(QObject* validator READ validator WRITE setValidator)
+    Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask)
+    Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
+    Q_PROPERTY(uint echoMode READ echoMode WRITE setEchoMode)
 
-    Q_PROPERTY(QmlComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate);
 public:
     QFxLineEdit(QFxItem* parent=0);
     ~QFxLineEdit();
+
+    enum HAlignment {
+        AlignLeft = Qt::AlignLeft,
+        AlignRight = Qt::AlignRight,
+        AlignHCenter = Qt::AlignHCenter
+    };
+
+    //### Should we have this function, x based properties,
+    //### or copy TextEdit with x instead of QTextCursor?
+    Q_INVOKABLE int xToPos(int x);
 
     QString text() const;
     void setText(const QString &);
@@ -89,17 +103,20 @@ public:
     QColor color() const;
     void setColor(const QColor &c);
 
-    //### Should we have this function or x variants of properties?
-    Q_INVOKABLE int xToPos(int x);
+    QColor highlightColor() const;
+    void setHighlightColor(const QColor &c);
 
-    QFxText::HAlignment hAlign() const;
-    void setHAlign(QFxText::HAlignment align);
+    QColor highlightedTextColor() const;
+    void setHighlightedTextColor(const QColor &c);
+
+    HAlignment hAlign() const;
+    void setHAlign(HAlignment align);
 
     bool isReadOnly() const;
     void setReadOnly(bool);
 
-    int maxLength() const;
-    void setMaxLength(int ml);
+    bool isCursorVisible() const;
+    void setCursorVisible(bool on);
 
     int cursorPosition() const;
     void setCursorPosition(int cp);
@@ -111,6 +128,9 @@ public:
     void setSelectionEnd(int);
 
     QString selectedText() const;
+
+    int maxLength() const;
+    void setMaxLength(int ml);
 
     QObject * validator() const;
     void setValidator(QObject* v);

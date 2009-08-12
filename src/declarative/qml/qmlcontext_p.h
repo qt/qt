@@ -68,6 +68,8 @@ class QmlExpression;
 class QmlEngine;
 class QmlExpression;
 class QmlExpressionPrivate;
+class QmlAbstractExpression;
+class QmlBinding_Id;
 
 class QmlContextPrivate : public QObjectPrivate
 {
@@ -104,18 +106,19 @@ public:
     void invalidateEngines();
     QSet<QmlContext *> childContexts;
 
-    QmlExpressionPrivate *expressions;
+    QmlAbstractExpression *expressions;
 
-    QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;
 
     struct ContextGuard : public QGuard<QObject>
     {
+        ContextGuard() : priv(0), bindings(0) {}
         QmlContextPrivate *priv;
+        QmlBinding_Id *bindings;
         ContextGuard &operator=(QObject *obj) {
             (QGuard<QObject>&)*this = obj; return *this;
         }
-        void objectDestroyed(QObject *o) { priv->destroyed(this); }
+        void objectDestroyed(QObject *) { priv->destroyed(this); }
     };
     ContextGuard *idValues;
     int idValueCount;

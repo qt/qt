@@ -65,13 +65,10 @@ class QmlBindingPrivate : public QmlExpressionPrivate
 public:
     QmlBindingPrivate();
 
-    bool inited:1;
     bool updating:1;
     bool enabled:1;
 
     QmlMetaProperty property;
-
-    QmlBinding **mePtr;
 };
 
 QT_END_NAMESPACE

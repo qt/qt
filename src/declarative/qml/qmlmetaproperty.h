@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QObject;
-class QmlBinding;
+class QmlAbstractBinding;
 class QStringList;
 class QVariant;
 struct QMetaObject;
@@ -122,8 +122,8 @@ public:
 
     QMetaProperty property() const;
 
-    QmlBinding *binding() const;
-    QmlBinding *setBinding(QmlBinding *) const;
+    QmlAbstractBinding *binding() const;
+    QmlAbstractBinding *setBinding(QmlAbstractBinding *) const;
 
     static QmlMetaProperty createProperty(QObject *, const QString &);
 

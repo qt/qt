@@ -47,6 +47,8 @@
 #include <QVariant>
 #include <private/qfxperf_p.h>
 #include <QtCore/qdebug.h>
+#include <private/qmlcontext_p.h>
+#include <private/qmldeclarativedata_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -55,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 
 QmlBindingPrivate::QmlBindingPrivate()
-: inited(false), updating(false), enabled(true), mePtr(0)
+: updating(false), enabled(false)
 {
 }
 
@@ -73,9 +75,6 @@ QmlBinding::QmlBinding(const QString &str, QObject *obj, QmlContext *ctxt, QObje
 
 QmlBinding::~QmlBinding()
 {
-    Q_D(QmlBinding);
-    if(d->mePtr)
-        *(d->mePtr) = 0;
 }
 
 void QmlBinding::setTarget(const QmlMetaProperty &prop)
@@ -92,25 +91,6 @@ QmlMetaProperty QmlBinding::property() const
    return d->property; 
 }
 
-void QmlBinding::init()
-{
-    Q_D(QmlBinding);
-
-    if (d->inited)
-        return;
-    d->inited = true;
-    update();
-}
-
-void QmlBinding::forceUpdate()
-{
-    Q_D(QmlBinding);
-    if (!d->inited)
-        init();
-    else
-        update();
-}
-
 void QmlBinding::update()
 {
     Q_D(QmlBinding);
@@ -118,7 +98,7 @@ void QmlBinding::update()
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindableValueUpdate> bu;
 #endif
-    if (!d->inited || !d->enabled)
+    if (!d->enabled)
         return;
 
     if (!d->updating) {
@@ -168,6 +148,21 @@ void QmlBinding::setEnabled(bool e)
     Q_D(QmlBinding);
     d->enabled = e;
     setTrackChange(e);
+
+    if (e) {
+        addToObject(d->property.object());
+        update();
+    } else {
+        removeFromObject();
+    }
+
+    QmlAbstractBinding::setEnabled(e);
+}
+
+int QmlBinding::propertyIndex()
+{
+    Q_D(QmlBinding);
+    return d->property.coreIndex();
 }
 
 bool QmlBinding::enabled() const
@@ -175,6 +170,56 @@ bool QmlBinding::enabled() const
     Q_D(const QmlBinding);
 
     return d->enabled;
+}
+
+QString QmlBinding::expression() const
+{
+    return QmlExpression::expression();
+}
+
+QmlAbstractBinding::QmlAbstractBinding()
+: m_mePtr(0), m_prevBinding(0), m_nextBinding(0)
+{
+}
+
+QmlAbstractBinding::~QmlAbstractBinding()
+{
+    removeFromObject();
+    if (m_mePtr)
+        *m_mePtr = 0;
+}
+
+void QmlAbstractBinding::addToObject(QObject *object)
+{
+    removeFromObject();
+
+    if (object) {
+        QmlDeclarativeData *data = QmlDeclarativeData::get(object, true);
+        m_nextBinding = data->bindings;
+        if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
+        m_prevBinding = &data->bindings;
+        data->bindings = this;
+    }
+}
+
+void QmlAbstractBinding::removeFromObject()
+{
+    if (m_prevBinding) {
+        *m_prevBinding = m_nextBinding;
+        if (m_nextBinding) m_nextBinding->m_prevBinding = m_prevBinding;
+        m_prevBinding = 0;
+        m_nextBinding = 0;
+    }
+}
+
+QString QmlAbstractBinding::expression() const
+{
+    return QLatin1String("<Unknown>");
+}
+
+void QmlAbstractBinding::setEnabled(bool e)
+{
+    if (e) m_mePtr = 0;
 }
 
 QT_END_NAMESPACE

@@ -122,9 +122,11 @@ public:
         // Unresolved single assignment
         //
         AssignSignalObject,       /* assignSignalObject */
-        AssignCustomType,          /* assignCustomType */
+        AssignCustomType,         /* assignCustomType */
 
-        StoreCompiledBinding,     /* assignBinding */
+        StoreBinding,             /* assignBinding */
+        StoreIdOptBinding,        /* assignIdOptBinding */
+        StoreObjPropBinding,      /* assignObjPropBinding */
         StoreValueSource,         /* assignValueSource */
 
         BeginObject,              /* begin */
@@ -187,6 +189,16 @@ public:
             short context;
             short owner;
         } assignBinding;
+        struct {
+            int property;
+            int id;
+        } assignIdOptBinding;
+        struct {
+            int property;
+            int contextIdx;
+            short context;
+            short notifyIdx;
+        } assignObjPropBinding;
         struct {
             int property;
         } fetch;

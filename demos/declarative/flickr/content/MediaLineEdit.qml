@@ -47,14 +47,14 @@ Item {
     ]
 
 
-    Image {
+    BorderImage {
         id: Image
         source: "pics/button.sci"
         anchors.left: Container.left
         anchors.right: Container.right
     }
 
-    Image {
+    BorderImage {
         id: Pressed
         source: "pics/button-pressed.sci"
         opacity: 0

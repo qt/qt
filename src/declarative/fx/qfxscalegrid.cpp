@@ -74,8 +74,7 @@ QT_BEGIN_NAMESPACE
 */
 QML_DEFINE_NOCREATE_TYPE(QFxScaleGrid)
 
-QFxScaleGrid::QFxScaleGrid() : QObject(), _left(0), _top(0), _right(0), _bottom(0),
-    _horizontalTileRule(Stretch), _verticalTileRule(Stretch)
+QFxScaleGrid::QFxScaleGrid() : QObject(), _left(0), _top(0), _right(0), _bottom(0)
 {
 }
 
@@ -124,20 +123,9 @@ void QFxScaleGrid::setBottom(int pos)
     _bottom = pos;
 }
 
-void QFxScaleGrid::setHorizontalTileRule(TileRule r)
-{
-    _horizontalTileRule = r;
-}
-
-void QFxScaleGrid::setVerticalTileRule(TileRule r)
-{
-    _verticalTileRule = r;
-}
-
-
 QFxGridScaledImage::QFxGridScaledImage()
 : _l(-1), _r(-1), _t(-1), _b(-1),
-  _h(QFxScaleGrid::Stretch), _v(QFxScaleGrid::Stretch)
+  _h(QFxBorderImage::Stretch), _v(QFxBorderImage::Stretch)
 {
 }
 
@@ -159,7 +147,7 @@ QFxGridScaledImage &QFxGridScaledImage::operator=(const QFxGridScaledImage &o)
 }
 
 QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
-: _l(-1), _r(-1), _t(-1), _b(-1), _h(QFxScaleGrid::Stretch), _v(QFxScaleGrid::Stretch)
+: _l(-1), _r(-1), _t(-1), _b(-1), _h(QFxBorderImage::Stretch), _v(QFxBorderImage::Stretch)
 {
     int l = -1;
     int r = -1;
@@ -203,17 +191,17 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
     _pix = imgFile;
 }
 
-QFxScaleGrid::TileRule QFxGridScaledImage::stringToRule(const QString &s)
+QFxBorderImage::TileMode QFxGridScaledImage::stringToRule(const QString &s)
 {
     if (s == QLatin1String("Stretch"))
-        return QFxScaleGrid::Stretch;
+        return QFxBorderImage::Stretch;
     if (s == QLatin1String("Repeat"))
-        return QFxScaleGrid::Repeat;
+        return QFxBorderImage::Repeat;
     if (s == QLatin1String("Round"))
-        return QFxScaleGrid::Round;
+        return QFxBorderImage::Round;
 
     qWarning() << "Unknown tile rule specified. Using Stretch";
-    return QFxScaleGrid::Stretch;
+    return QFxBorderImage::Stretch;
 }
 
 bool QFxGridScaledImage::isValid() const

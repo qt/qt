@@ -121,16 +121,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
         clear(parserStatus[ii]);
 }
 
-void QmlEnginePrivate::clear(SimpleList<QmlBinding> &bvs)
+void QmlEnginePrivate::clear(SimpleList<QmlAbstractBinding> &bvs)
 {
-    for (int ii = 0; ii < bvs.count; ++ii) {
-        QmlBinding *bv = bvs.at(ii);
-        if(bv) {
-            QmlBindingPrivate *p =
-                static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bv));
-            p->mePtr = 0;
-        }
-    }
     bvs.clear();
 }
 
@@ -427,8 +419,8 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
 
     QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
 
-    QmlSimpleDeclarativeData *data =
-        static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+    QmlDeclarativeData *data =
+        static_cast<QmlDeclarativeData *>(priv->declarativeData);
 
     return data?data->context:0;
 }
@@ -444,8 +436,8 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 {
     QObjectPrivate *priv = QObjectPrivate::get(object);
 
-    QmlSimpleDeclarativeData *data =
-        static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+    QmlDeclarativeData *data =
+        static_cast<QmlDeclarativeData *>(priv->declarativeData);
 
     if (data && data->context) {
         qWarning("QmlEngine::setContextForObject(): Object already has a QmlContext");
@@ -453,7 +445,7 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     }
 
     if (!data) {
-        priv->declarativeData = &context->d_func()->contextData;
+        priv->declarativeData = new QmlDeclarativeData(context);
     } else {
         data->context = context;
     }
@@ -463,7 +455,7 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 
 void qmlExecuteDeferred(QObject *object)
 {
-    QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
         QmlVME vme;
@@ -487,10 +479,9 @@ QmlEngine *qmlEngine(const QObject *obj)
 
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool create)
 {
-    QmlExtendedDeclarativeData *edata =
-        QmlExtendedDeclarativeData::get(const_cast<QObject *>(object), true);
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object);
 
-    QObject *rv = edata->attachedProperties.value(id);
+    QObject *rv = data->attachedProperties?data->attachedProperties->value(id):0;
     if (rv || !create)
         return rv;
 
@@ -500,23 +491,38 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 
     rv = pf(const_cast<QObject *>(object));
 
-    if (rv)
-        edata->attachedProperties.insert(id, rv);
+    if (rv) {
+        if (!data->attachedProperties)
+            data->attachedProperties = new QHash<int, QObject *>();
+        data->attachedProperties->insert(id, rv);
+    }
 
     return rv;
 }
 
-void QmlSimpleDeclarativeData::destroyed(QObject *object)
+QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
+: context(ctxt), bindings(0), deferredComponent(0), attachedProperties(0)
 {
-    if (context)
-        context->d_func()->contextObjects.removeAll(object);
 }
 
-void QmlInstanceDeclarativeData::destroyed(QObject *object)
+void QmlDeclarativeData::destroyed(QObject *object)
 {
-    QmlSimpleDeclarativeData::destroyed(object);
     if (deferredComponent)
         deferredComponent->release();
+    if (attachedProperties)
+        delete attachedProperties;
+    if (context)
+        static_cast<QmlContextPrivate *>(QObjectPrivate::get(context))->contextObjects.removeAll(object);
+
+    QmlAbstractBinding *binding = bindings;
+    while (binding) {
+        QmlAbstractBinding *next = binding->m_nextBinding;
+        binding->m_prevBinding = 0;
+        binding->m_nextBinding = 0;
+        delete binding;
+        binding = next;
+    }
+
     delete this;
 }
 

@@ -42,30 +42,20 @@
 #ifndef QFXIMAGE_H
 #define QFXIMAGE_H
 
-#include <QtDeclarative/qfxitem.h>
 #include <QtNetwork/qnetworkreply.h>
-
+#include "qfximagebase.h"
 
 QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxImagePrivate;
-class QFxScaleGrid;
-class QFxGridScaledImage;
 
-class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
+class QFxImagePrivate;
+class Q_DECLARATIVE_EXPORT QFxImage : public QFxImageBase
 {
     Q_OBJECT
-    Q_ENUMS(Status)
     Q_ENUMS(FillMode)
 
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
-
-    Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
     Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged);
 
@@ -73,48 +63,28 @@ public:
     QFxImage(QFxItem *parent=0);
     ~QFxImage();
 
-    enum FillMode { Stretch, PreserveAspect, Tile, TileVertically, TileHorizontally };
+    enum FillMode { Stretch, PreserveAspectFit, PreserveAspectCrop, Tile, TileVertically, TileHorizontally };
     FillMode fillMode() const;
     void setFillMode(FillMode);
 
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &);
 
-    enum Status { Null, Ready, Loading, Error };
-    Status status() const;
-    qreal progress() const;
-
-    QUrl source() const;
-    virtual void setSource(const QUrl &url);
-
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:
-    void sourceChanged(const QUrl &);
-    void statusChanged(Status);
-    void progressChanged(qreal progress);
     void fillModeChanged();
 
 protected:
     QFxImage(QFxImagePrivate &dd, QFxItem *parent);
-    virtual void componentComplete();
-
-private Q_SLOTS:
-    void requestFinished();
-    void sciRequestFinished();
-    void requestProgress(qint64,qint64);
 
 private:
     Q_DISABLE_COPY(QFxImage)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
-    void setGridScaledImage(const QFxGridScaledImage& sci);
-    QFxScaleGrid *scaleGrid();
 };
 
 QT_END_NAMESPACE
-
 QML_DECLARE_TYPE(QFxImage)
-
 QT_END_HEADER
 
 #endif // QFXIMAGE_H

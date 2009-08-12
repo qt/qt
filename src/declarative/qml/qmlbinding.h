@@ -54,9 +54,36 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QmlAbstractBinding 
+{
+public:
+    QmlAbstractBinding();
+    virtual ~QmlAbstractBinding();
+
+    virtual QString expression() const;
+
+    virtual void setEnabled(bool) = 0;
+    virtual int propertyIndex() = 0;
+
+    virtual void update() = 0;
+
+    void addToObject(QObject *);
+    void removeFromObject();
+
+private:
+    friend class QmlDeclarativeData;
+    friend class QmlMetaProperty;
+    friend class QmlVME;
+
+    QmlAbstractBinding **m_mePtr;
+    QmlAbstractBinding **m_prevBinding;
+    QmlAbstractBinding  *m_nextBinding;
+};
+
 class QmlContext;
 class QmlBindingPrivate;
-class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression
+class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression, 
+                                        public QmlAbstractBinding
 {
 Q_OBJECT
 public:
@@ -67,11 +94,12 @@ public:
     void setTarget(const QmlMetaProperty &);
     QmlMetaProperty property() const;
 
-    void init();
-    void forceUpdate();
-
-    void setEnabled(bool);
     bool enabled() const;
+
+    // Inherited from  QmlAbstractBinding
+    virtual void setEnabled(bool);
+    virtual int propertyIndex();
+    virtual QString expression() const;
 
 public Q_SLOTS:
     void update();

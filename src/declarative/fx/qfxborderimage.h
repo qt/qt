@@ -39,65 +39,63 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPONENT_P_H
-#define QMLCOMPONENT_P_H
+#ifndef QFXBORDERIMAGE_H
+#define QFXBORDERIMAGE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtNetwork/qnetworkreply.h>
+#include "qfximagebase.h"
 
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QList>
-#include <private/qobject_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qml.h>
-
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QmlComponent;
-class QmlEngine;
-class QmlCompiledData;
+QT_MODULE(Declarative)
 
-class QmlComponentPrivate : public QObjectPrivate
+class QFxScaleGrid;
+class QFxGridScaledImage;
+class QFxBorderImagePrivate;
+class Q_DECLARATIVE_EXPORT QFxBorderImage : public QFxImageBase
 {
-    Q_DECLARE_PUBLIC(QmlComponent)
-        
+    Q_OBJECT
+    Q_ENUMS(TileMode)
+
+    Q_PROPERTY(QFxScaleGrid *border READ border CONSTANT)
+    Q_PROPERTY(TileMode horizontalTileMode READ horizontalTileMode WRITE setHorizontalTileMode)
+    Q_PROPERTY(TileMode verticalTileMode READ verticalTileMode WRITE setVerticalTileMode)
+
 public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QFxBorderImage(QFxItem *parent=0);
+    ~QFxBorderImage();
 
-    QmlCompositeTypeData *typeData;
-    void typeDataReady();
-    
-    void fromTypeData(QmlCompositeTypeData *data);
+    QFxScaleGrid *border();
 
-    QList<QmlError> errors;
-    QUrl url;
+    enum TileMode { Stretch = Qt::Stretch, Repeat = Qt::Repeat, Round = Qt::Round };
 
-    int start;
-    int count;
-    QmlCompiledData *cc;
+    TileMode horizontalTileMode() const;
+    void setHorizontalTileMode(TileMode);
 
-    QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
-    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
+    TileMode verticalTileMode() const;
+    void setVerticalTileMode(TileMode);
 
-    bool completePending;
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+    void setSource(const QUrl &url);
 
-    QmlEngine *engine;
+protected:
+    QFxBorderImage(QFxBorderImagePrivate &dd, QFxItem *parent);
 
-    void clear();
+private:
+    void setGridScaledImage(const QFxGridScaledImage& sci);
+
+private Q_SLOTS:
+    void requestFinished();
+    void sciRequestFinished();
+
+private:
+    Q_DISABLE_COPY(QFxBorderImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBorderImage)
 };
 
 QT_END_NAMESPACE
+QML_DECLARE_TYPE(QFxBorderImage)
+QT_END_HEADER
 
-#endif // QMLCOMPONENT_P_H
+#endif // QFXBORDERIMAGE_H

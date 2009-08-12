@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPONENT_P_H
-#define QMLCOMPONENT_P_H
+#ifndef QFXBORDERIMAGE_P_H
+#define QFXBORDERIMAGE_P_H
 
 //
 //  W A R N I N G
@@ -53,51 +53,42 @@
 // We mean it.
 //
 
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QList>
-#include <private/qobject_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qml.h>
+#include "qfximagebase_p.h"
+#include "qfxscalegrid_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlComponent;
-class QmlEngine;
-class QmlCompiledData;
-
-class QmlComponentPrivate : public QObjectPrivate
+class QNetworkReply;
+class QFxBorderImagePrivate : public QFxImageBasePrivate
 {
-    Q_DECLARE_PUBLIC(QmlComponent)
-        
+    Q_DECLARE_PUBLIC(QFxBorderImage)
+
 public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QFxBorderImagePrivate()
+      : border(0), sciReply(0),
+        horizontalTileMode(QFxBorderImage::Stretch),
+        verticalTileMode(QFxBorderImage::Stretch)
+    {
+    }
 
-    QmlCompositeTypeData *typeData;
-    void typeDataReady();
-    
-    void fromTypeData(QmlCompositeTypeData *data);
+    ~QFxBorderImagePrivate()
+    {
+    }
 
-    QList<QmlError> errors;
-    QUrl url;
+    QFxScaleGrid *getScaleGrid()
+    {
+        if (!border)
+            border = new QFxScaleGrid;
+        return border;
+    }
 
-    int start;
-    int count;
-    QmlCompiledData *cc;
-
-    QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
-    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
-
-    bool completePending;
-
-    QmlEngine *engine;
-
-    void clear();
+    QFxScaleGrid *border;
+    QUrl sciurl;
+    QNetworkReply *sciReply;
+    QFxBorderImage::TileMode horizontalTileMode;
+    QFxBorderImage::TileMode verticalTileMode;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLCOMPONENT_P_H
+#endif // QFXBORDERIMAGE_P_H

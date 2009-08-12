@@ -86,6 +86,7 @@ class QmlValueTypeScriptClass;
 class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
+class QmlAbstractBinding;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -160,10 +161,10 @@ public:
         }
     };
 
-    static void clear(SimpleList<QmlBinding> &);
+    static void clear(SimpleList<QmlAbstractBinding> &);
     static void clear(SimpleList<QmlParserStatus> &);
 
-    QList<SimpleList<QmlBinding> > bindValues;
+    QList<SimpleList<QmlAbstractBinding> > bindValues;
     QList<SimpleList<QmlParserStatus> > parserStatus;
 
     QmlComponent *rootComponent;
