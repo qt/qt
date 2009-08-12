@@ -51,6 +51,7 @@
 #include <QtGui/qgraphicstransform.h>
 
 #include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlopenmetaobject.h>
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
 
@@ -219,6 +220,517 @@ void QFxContents::setItem(QFxItem *item)
 }
 
 /*!
+    \qmlclass Keys
+    \brief The Keys attached property provides key handling to Items.
+
+    All visual primitives support key handling via the \e Keys
+    attached property.  Keys can be handled via the \e onPressed
+    and \e onReleased signal properties.
+
+    The signal properties have a \l KeyEvent parameter, named
+    \e event which contains details of the event.  If a key is
+    handled \e event.accepted should be set to true to prevent the
+    event from propagating up the item heirarchy.
+
+    \code
+    Item {
+        focus: true
+        Keys.onPressed: {
+            if (event.key == Qt.Key_Left) {
+                print("move left");
+                event.accepted = true;
+            }
+        }
+    }
+    \endcode
+
+    Some keys may alternatively be handled via specific signal properties,
+    for example \e onSelectPressed.  These handlers automatically set
+    \e event.accepted to true.
+
+    \code
+    Item {
+        focus: true
+        key.onLeftPressed: print("move left")
+    }
+    \endcode
+
+    See \l {Qt::Key}{Qt.Key} for the list of keyboard codes.
+
+    \sa KeyEvent
+*/
+
+/*!
+    \qmlproperty bool Keys::enabled
+
+    This flags enables key handling if true (default); otherwise
+    no key handlers will be called.
+*/
+
+/*!
+    \qmlsignal Keys::onPressed(event)
+
+    This handler is called when a key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onReleased(event)
+
+    This handler is called when a key has been released. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit0Pressed(event)
+
+    This handler is called when the digit '0' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit1Pressed(event)
+
+    This handler is called when the digit '1' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit2Pressed(event)
+
+    This handler is called when the digit '2' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit3Pressed(event)
+
+    This handler is called when the digit '3' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit4Pressed(event)
+
+    This handler is called when the digit '4' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit5Pressed(event)
+
+    This handler is called when the digit '5' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit6Pressed(event)
+
+    This handler is called when the digit '6' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit7Pressed(event)
+
+    This handler is called when the digit '7' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit8Pressed(event)
+
+    This handler is called when the digit '8' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDigit9Pressed(event)
+
+    This handler is called when the digit '9' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onLeftPressed(event)
+
+    This handler is called when the Left arrow has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onRightPressed(event)
+
+    This handler is called when the Right arrow has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onUpPressed(event)
+
+    This handler is called when the Up arrow has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDownPressed(event)
+
+    This handler is called when the Down arrow has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onAsteriskPressed(event)
+
+    This handler is called when the Asterisk '*' has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onEscapePressed(event)
+
+    This handler is called when the Escape key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onReturnPressed(event)
+
+    This handler is called when the Return key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onEnterPressed(event)
+
+    This handler is called when the Enter key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onDeletePressed(event)
+
+    This handler is called when the Delete key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onSpacePressed(event)
+
+    This handler is called when the Space key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onBackPressed(event)
+
+    This handler is called when the Back key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onCancelPressed(event)
+
+    This handler is called when the Cancel key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onSelectPressed(event)
+
+    This handler is called when the Select key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onYesPressed(event)
+
+    This handler is called when the Yes key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onNoPressed(event)
+
+    This handler is called when the No key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onContext1Pressed(event)
+
+    This handler is called when the Context1 key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onContext2Pressed(event)
+
+    This handler is called when the Context2 key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onContext3Pressed(event)
+
+    This handler is called when the Context3 key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onContext4Pressed(event)
+
+    This handler is called when the Context4 key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onCallPressed(event)
+
+    This handler is called when the Call key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onHangupPressed(event)
+
+    This handler is called when the Hangup key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onFlipPressed(event)
+
+    This handler is called when the Flip key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onMenuPressed(event)
+
+    This handler is called when the Menu key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onVolumeUpPressed(event)
+
+    This handler is called when the VolumeUp key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onVolumeDownPressed(event)
+
+    This handler is called when the VolumeDown key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+class QFxKeysAttachedPrivate : public QObjectPrivate
+{
+public:
+    QFxKeysAttachedPrivate() : QObjectPrivate(), enabled(true) {}
+
+    bool isConnected(int idx);
+
+    bool enabled;
+};
+
+class QFxKeysAttached : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QFxKeysAttached);
+
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
+public:
+    QFxKeysAttached(QObject *parent=0);
+    ~QFxKeysAttached();
+
+    bool enabled() const { Q_D(const QFxKeysAttached); return d->enabled; }
+    void setEnabled(bool enabled) {
+        Q_D(QFxKeysAttached);
+        if (enabled != d->enabled) {
+            d->enabled = enabled;
+            emit enabledChanged();
+        }
+    }
+
+    static QFxKeysAttached *qmlAttachedProperties(QObject *);
+
+signals:
+    void enabledChanged();
+    void pressed(QFxKeyEvent *event);
+    void released(QFxKeyEvent *event);
+    void digit0Pressed(QFxKeyEvent *event);
+    void digit1Pressed(QFxKeyEvent *event);
+    void digit2Pressed(QFxKeyEvent *event);
+    void digit3Pressed(QFxKeyEvent *event);
+    void digit4Pressed(QFxKeyEvent *event);
+    void digit5Pressed(QFxKeyEvent *event);
+    void digit6Pressed(QFxKeyEvent *event);
+    void digit7Pressed(QFxKeyEvent *event);
+    void digit8Pressed(QFxKeyEvent *event);
+    void digit9Pressed(QFxKeyEvent *event);
+
+    void leftPressed(QFxKeyEvent *event);
+    void rightPressed(QFxKeyEvent *event);
+    void upPressed(QFxKeyEvent *event);
+    void downPressed(QFxKeyEvent *event);
+
+    void asteriskPressed(QFxKeyEvent *event);
+    void escapePressed(QFxKeyEvent *event);
+    void returnPressed(QFxKeyEvent *event);
+    void enterPressed(QFxKeyEvent *event);
+    void deletePressed(QFxKeyEvent *event);
+    void spacePressed(QFxKeyEvent *event);
+    void backPressed(QFxKeyEvent *event);
+    void cancelPressed(QFxKeyEvent *event);
+    void selectPressed(QFxKeyEvent *event);
+    void yesPressed(QFxKeyEvent *event);
+    void noPressed(QFxKeyEvent *event);
+    void context1Pressed(QFxKeyEvent *event);
+    void context2Pressed(QFxKeyEvent *event);
+    void context3Pressed(QFxKeyEvent *event);
+    void context4Pressed(QFxKeyEvent *event);
+    void callPressed(QFxKeyEvent *event);
+    void hangupPressed(QFxKeyEvent *event);
+    void flipPressed(QFxKeyEvent *event);
+    void menuPressed(QFxKeyEvent *event);
+    void volumeUpPressed(QFxKeyEvent *event);
+    void volumeDownPressed(QFxKeyEvent *event);
+
+private:
+    void keyPressed(QKeyEvent *event);
+    void keyReleased(QKeyEvent *event);
+
+    const char *keyToSignal(int key) {
+        QByteArray keySignal;
+        if (key >= Qt::Key_0 && key <= Qt::Key_9) {
+            keySignal = "digit0Pressed";
+            keySignal[5] = '0' + (key - Qt::Key_0);
+        } else {
+            int i = 0;
+            while (sigMap[i].key && sigMap[i].key != key)
+                ++i;
+            keySignal = sigMap[i].sig;
+        }
+        return keySignal;
+    }
+
+    struct SigMap {
+        int key;
+        const char *sig;
+    };
+
+    static const SigMap sigMap[];
+    static QHash<QObject*, QFxKeysAttached*> attachedProperties;
+    friend class QFxItem;
+};
+
+const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
+    { Qt::Key_Left, "leftPressed" },
+    { Qt::Key_Right, "rightPressed" },
+    { Qt::Key_Up, "upPressed" },
+    { Qt::Key_Down, "downPressed" },
+    { Qt::Key_Asterisk, "asteriskPressed" },
+    { Qt::Key_Escape, "escapePressed" },
+    { Qt::Key_Return, "returnPressed" },
+    { Qt::Key_Enter, "enterPressed" },
+    { Qt::Key_Delete, "deletePressed" },
+    { Qt::Key_Space, "spacePressed" },
+    { Qt::Key_Back, "backPressed" },
+    { Qt::Key_Cancel, "cancelPressed" },
+    { Qt::Key_Select, "selectPressed" },
+    { Qt::Key_Yes, "yesPressed" },
+    { Qt::Key_No, "noPressed" },
+    { Qt::Key_Context1, "context1Pressed" },
+    { Qt::Key_Context2, "context2Pressed" },
+    { Qt::Key_Context3, "context3Pressed" },
+    { Qt::Key_Context4, "context4Pressed" },
+    { Qt::Key_Call, "callPressed" },
+    { Qt::Key_Hangup, "hangupPressed" },
+    { Qt::Key_Flip, "flipPressed" },
+    { Qt::Key_Menu, "menuPressed" },
+    { Qt::Key_VolumeUp, "volumeUpPressed" },
+    { Qt::Key_VolumeDown, "volumeDownPressed" },
+    { 0, 0 }
+};
+
+QHash<QObject*, QFxKeysAttached*> QFxKeysAttached::attachedProperties;
+
+bool QFxKeysAttachedPrivate::isConnected(int idx)
+{
+    if (idx < 32) {
+        quint32 mask = 1 << idx;
+        return connectedSignals[0] & mask;
+    } else if (idx < 64) {
+        quint32 mask = 1 << (idx-32);
+        return connectedSignals[1] & mask;
+    }
+    return false;
+}
+
+QFxKeysAttached::QFxKeysAttached(QObject *parent)
+    : QObject(*(new QFxKeysAttachedPrivate), parent)
+{
+    if (QFxItem *item = qobject_cast<QFxItem*>(parent))
+        item->setKeyHandler(this);
+}
+
+QFxKeysAttached::~QFxKeysAttached()
+{
+    if (QFxItem *item = qobject_cast<QFxItem*>(parent()))
+        item->setKeyHandler(0);
+}
+
+void QFxKeysAttached::keyPressed(QKeyEvent *event)
+{
+    Q_D(QFxKeysAttached);
+    if (!d->enabled) {
+        event->ignore();
+        return;
+    }
+
+    QFxKeyEvent ke(*event);
+    QByteArray keySignal = keyToSignal(event->key());
+    if (!keySignal.isEmpty()) {
+        keySignal += "(QFxKeyEvent*)";
+        int idx = QFxKeysAttached::staticMetaObject.indexOfSignal(keySignal);
+        if (d->isConnected(idx)) {
+            // If we specifically handle a key then default to accepted
+            ke.setAccepted(true);
+            metaObject()->method(idx).invoke(this, Q_ARG(QFxKeysAttached, &ke));
+        }
+    }
+    if (!ke.isAccepted())
+        emit pressed(&ke);
+    event->setAccepted(ke.isAccepted());
+}
+
+void QFxKeysAttached::keyReleased(QKeyEvent *event)
+{
+    Q_D(QFxKeysAttached);
+    if (!d->enabled) {
+        event->ignore();
+        return;
+    }
+    QFxKeyEvent ke(*event);
+    emit released(&ke);
+    event->setAccepted(ke.isAccepted());
+}
+
+QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
+{
+    QFxKeysAttached *rv = attachedProperties.value(obj);
+    if (!rv) {
+        rv = new QFxKeysAttached(obj);
+        attachedProperties.insert(obj, rv);
+    }
+    return rv;
+}
+
+
+/*!
     \qmlclass Item QFxItem
     \brief The Item is the most basic of all visual items in QML.
  */
@@ -231,7 +743,7 @@ void QFxContents::setItem(QFxItem *item)
     All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
     has no visual appearance, it defines all the properties that are
     common across visual items - like the x and y position, and the
-    width and height.
+    width and height. \l {Keys}{Key handling} is also provided by Item.
 
     QFxItem is also useful for grouping items together.
 
@@ -255,6 +767,7 @@ void QFxContents::setItem(QFxItem *item)
         }
     }
     \endqml
+
     \endqmltext
 
     \ingroup group_coreitems
@@ -315,34 +828,6 @@ void QFxContents::setItem(QFxItem *item)
     This signal is emitted when the \a state of the item changes.
 
     \sa states-transitions
-*/
-
-/*!
-    \qmlsignal Item::onKeyPress(event)
-
-    This handler is called when a key is pressed.
-
-    The key event is available via the KeyEvent \a event.
-
-    \qml
-    Item {
-        onKeyPress: { if (event.key == Qt.Key_Enter) state='Enter' }
-    }
-    \endqml
-*/
-
-/*!
-    \qmlsignal Item::onKeyRelease(event)
-
-    This handler is called when a key is released.
-
-    The key event is available in via the KeyEvent \a event.
-
-    \qml
-    Item {
-        onKeyRelease: { if (event.key == Qt.Key_Enter) state='Enter' }
-    }
-    \endqml
 */
 
 /*!
@@ -904,22 +1389,22 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     }
 }
 
-/*! \fn void QFxItem::keyPress(QFxKeyEvent *event)
-  This signal is emitted by keyPressEvent() for the \a event.
- */
-
-/*! \fn void QFxItem::keyRelease(QFxKeyEvent *event)
-  This signal is emitted by keyReleaseEvent() for the \a event.
- */
+void QFxItem::setKeyHandler(QFxKeysAttached *handler)
+{
+    Q_D(QFxItem);
+    d->keyHandler = handler;
+}
 
 /*!
   \reimp
 */
 void QFxItem::keyPressEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(*event);
-    emit keyPress(&ke);
-    event->setAccepted(ke.isAccepted());
+    Q_D(QFxItem);
+    if (d->keyHandler)
+        d->keyHandler->keyPressed(event);
+    else
+        event->ignore();
 }
 
 /*!
@@ -927,9 +1412,11 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
 */
 void QFxItem::keyReleaseEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(*event);
-    emit keyRelease(&ke);
-    event->setAccepted(ke.isAccepted());
+    Q_D(QFxItem);
+    if (d->keyHandler)
+        d->keyHandler->keyReleased(event);
+    else
+        event->ignore();
 }
 
 /*!
@@ -1903,5 +2390,8 @@ QDebug operator<<(QDebug debug, QFxItem *item)
 
 QT_END_NAMESPACE
 
-#include "moc_qfxitem.cpp"
+QML_DECLARE_TYPE(QFxKeysAttached)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QFxKeysAttached)
 
+#include "moc_qfxitem.cpp"
+#include "qfxitem.moc"

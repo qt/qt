@@ -473,6 +473,8 @@ void QFxLineEdit::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QFxLineEdit);
     d->control->processKeyEvent(ev);
+    if (!ev->isAccepted())
+        QFxPaintedItem::keyPressEvent(ev);
 }
 
 void QFxLineEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)

@@ -82,7 +82,7 @@ public:
 
     QmlList<QGraphicsLayoutItem *> *children() { return &_children; }
 
-    static QObject *qmlAttachedProperties(QObject *);
+    static LinearLayoutAttached *qmlAttachedProperties(QObject *);
 
 private Q_SLOTS:
     void updateStretch(QGraphicsLayoutItem*,int);
@@ -124,6 +124,7 @@ private:
 //      -fixed/min/max/preferred width
 //      -spacing
 //      -stretch
+class GridLayoutAttached;
 class QGraphicsGridLayoutObject : public QObject, public QGraphicsGridLayout
 {
     Q_OBJECT
@@ -142,7 +143,7 @@ public:
 
     qreal spacing() const;
 
-    static QObject *qmlAttachedProperties(QObject *);
+    static GridLayoutAttached *qmlAttachedProperties(QObject *);
 
 private:
     friend class GraphicsLayoutAttached;

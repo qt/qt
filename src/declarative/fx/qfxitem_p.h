@@ -67,6 +67,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
+class QFxKeysAttached;
 
 class QFxItemPrivate : public QGraphicsItemPrivate
 {
@@ -76,10 +77,12 @@ public:
     QFxItemPrivate()
     : _anchors(0), _contents(0),
       _baselineOffset(0),
-      _componentComplete(true), _keepMouse(false),
       _anchorLines(0),
       _stateGroup(0), origin(QFxItem::TopLeft),
-      widthValid(false), heightValid(false), width(0), height(0), smooth(false)
+      widthValid(false), heightValid(false),
+      _componentComplete(true), _keepMouse(false),
+      smooth(false), keyHandler(0),
+      width(0), height(0)
     {}
     ~QFxItemPrivate()
     { delete _anchors; }
@@ -152,9 +155,6 @@ public:
 
     QmlNullableValue<qreal> _baselineOffset;
 
-    bool _componentComplete:1;
-    bool _keepMouse:1;
-
     struct AnchorLines {
         AnchorLines(QFxItem *);
         QFxAnchorLine left;
@@ -179,10 +179,14 @@ public:
     QFxItem::TransformOrigin origin:4;
     bool widthValid:1;
     bool heightValid:1;
+    bool _componentComplete:1;
+    bool _keepMouse:1;
+    bool smooth:1;
+
+    QFxKeysAttached *keyHandler;
 
     qreal width;
     qreal height;
-    bool smooth;
 
     QPointF computeTransformOrigin() const;
 

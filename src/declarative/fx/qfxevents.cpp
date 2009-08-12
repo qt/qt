@@ -51,14 +51,9 @@ QT_BEGIN_NAMESPACE
     \qml
 Item {
     focus: true
-    onKeyPress: { if (event.key == Qt.Key_Enter) state = 'ShowDetails'; }
+    Keys.onPressed: { if (event.key == Qt.Key_Enter) state = 'ShowDetails'; }
 }
     \endqml
-
-    The \l KeyActions object could also be used to achieve the above with
-    a clearer syntax.
-
-    \sa KeyActions
 */
 
 /*!

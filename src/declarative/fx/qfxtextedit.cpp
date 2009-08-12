@@ -836,13 +836,6 @@ Handles the given key \a event.
 void QFxTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxTextEdit);
-    //### experiment with allowing 'overrides' to key events
-    QFxKeyEvent ke(*event);
-    emit keyPress(&ke);
-    event->setAccepted(ke.isAccepted());
-    if (event->isAccepted())
-        return;
-
     //### this causes non-standard cursor behavior in some cases.
     //     is it still needed?
     /*QTextCursor c = textCursor();
@@ -865,6 +858,9 @@ void QFxTextEdit::keyPressEvent(QKeyEvent *event)
         event->ignore();
     else*/
         d->control->processEvent(event, QPointF(0, 0));
+
+    if (!event->isAccepted())
+        QFxPaintedItem::keyPressEvent(event);
 }
 
 /*!
@@ -874,14 +870,9 @@ Handles the given key \a event.
 void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QFxTextEdit);
-    //### experiment with allowing 'overrides' to key events
-    QFxKeyEvent ke(*event);
-    emit keyRelease(&ke);
-    event->setAccepted(ke.isAccepted());
-    if (event->isAccepted())
-        return;
-
     d->control->processEvent(event, QPointF(0, 0));
+    if (!event->isAccepted())
+        QFxPaintedItem::keyReleaseEvent(event);
 }
 
 /*!

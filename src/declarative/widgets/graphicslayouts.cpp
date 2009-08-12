@@ -148,7 +148,7 @@ void QGraphicsLinearLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt:
 }
 
 QHash<QGraphicsLayoutItem*, QObject*> QGraphicsLinearLayoutObject::attachedProperties;
-QObject *QGraphicsLinearLayoutObject::qmlAttachedProperties(QObject *obj)
+LinearLayoutAttached *QGraphicsLinearLayoutObject::qmlAttachedProperties(QObject *obj)
 {
     // ### This is not allowed - you must attach to any object
     if (!qobject_cast<QGraphicsLayoutItem*>(obj))
@@ -308,7 +308,7 @@ qreal QGraphicsGridLayoutObject::spacing() const
 }
 
 QHash<QGraphicsLayoutItem*, QObject*> QGraphicsGridLayoutObject::attachedProperties;
-QObject *QGraphicsGridLayoutObject::qmlAttachedProperties(QObject *obj)
+GridLayoutAttached *QGraphicsGridLayoutObject::qmlAttachedProperties(QObject *obj)
 {
     // ### This is not allowed - you must attach to any object
     if (!qobject_cast<QGraphicsLayoutItem*>(obj))
