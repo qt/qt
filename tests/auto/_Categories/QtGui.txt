@@ -1,6 +1,6 @@
 exceptionsafety_objects
-gestures
-languagechange
+#gestures  This test is incomplete and also missing from auto.pro -> disabled for now
+#languagechange  Uses unexported method QThreadData::current() and also missing from auto.pro -> disabled for now
 math3d
 modeltest
 qabstractbutton
@@ -38,7 +38,7 @@ qdesktopwidget
 qdial
 qdialog
 qdialogbuttonbox
-qdirectpainter cetest-subdir: test
+#qdirectpainter cetest-subdir: test TEST IS FOR EMBEDDED LINUX ONLY
 qdirmodel
 qdockwidget
 qdoublespinbox
@@ -87,7 +87,6 @@ qitemeditorfactory
 qitemmodel
 qitemselectionmodel
 qitemview
-qkeyevent
 qkeysequence
 qlabel
 qlayout
@@ -118,7 +117,6 @@ qpixmap
 qpixmapcache
 qpixmapfilter
 qplaintextedit
-qpointarray
 #qprinter NO PRINTING SUPPORT ON SYMBIAN YET
 #qprinterinfo
 qprogressbar

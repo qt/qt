@@ -467,7 +467,7 @@ void tst_QGroupBox::propagateFocus()
     box.show();
     box.setFocus();
     QTest::qWait(250);
-    QCOMPARE(qApp->focusWidget(), &lineEdit);
+    QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
 }
 
 QTEST_MAIN(tst_QGroupBox)

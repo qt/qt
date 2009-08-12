@@ -10,7 +10,7 @@ wince*|symbian*: {
    DEPLOYMENT += addFiles
 
    DEPLOYMENT_PLUGIN += qcncodecs qjpcodecs qkrcodecs qtwcodecs
-    DEFINES += SRCDIR=\\\"\\\"
+   !symbian:DEFINES += SRCDIR=\\\"\\\"
 }
 else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"

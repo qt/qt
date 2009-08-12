@@ -1100,7 +1100,7 @@ void QApplication::symbianResourceChange(int type)
             s60Style = qobject_cast<QS60Style*>(QApplication::style());
 
         if (s60Style)
-            s60Style->handleDynamicLayoutVariantSwitch();
+            s60Style->d_func()->handleDynamicLayoutVariantSwitch();
 #endif
         }
         break;
@@ -1108,7 +1108,7 @@ void QApplication::symbianResourceChange(int type)
 #ifndef QT_NO_STYLE_S60
     case KAknsMessageSkinChange:
         if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
-            s60Style->handleSkinChange();
+            s60Style->d_func()->handleSkinChange();
         break;
 #endif
 #endif // Q_WS_S60

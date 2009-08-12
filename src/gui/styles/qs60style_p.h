@@ -455,6 +455,11 @@ public:
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap backgroundTexture();
 
+#ifdef Q_WS_S60
+    void handleDynamicLayoutVariantSwitch();
+    void handleSkinChange();
+#endif // Q_WS_S60
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);

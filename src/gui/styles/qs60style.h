@@ -89,12 +89,6 @@ public:
     bool saveS60ThemeToBlob(const QString &blobFile) const;
 #endif // !Q_WS_S60
 
-#ifdef Q_WS_S60
-public Q_SLOTS:
-    void handleDynamicLayoutVariantSwitch();
-    void handleSkinChange();
-#endif // Q_WS_S60
-
 protected Q_SLOTS:
     QIcon standardIconImplementation(
             StandardPixmap standardIcon, const QStyleOption * option = 0, const QWidget * widget = 0 ) const;
@@ -102,6 +96,7 @@ protected Q_SLOTS:
 private:
     Q_DISABLE_COPY(QS60Style)
     friend class QStyleFactory;
+    friend class QApplication;
 };
 
 #endif // QT_NO_STYLE_S60

@@ -1358,26 +1358,24 @@ QS60Style::QS60Style()
 {
 }
 
-void QS60Style::handleDynamicLayoutVariantSwitch()
+void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
 {
-    Q_D(QS60Style);
-    d->clearCaches(QS60StylePrivate::CC_LayoutChange);
-    d->setActiveLayout();
-    d->refreshUI();
-    d->setBackgroundTexture(qApp);
+    clearCaches(QS60StylePrivate::CC_LayoutChange);
+    setActiveLayout();
+    refreshUI();
+    setBackgroundTexture(qApp);
     foreach (QWidget *widget, QApplication::allWidgets())
         widget->ensurePolished();
 }
 
-void QS60Style::handleSkinChange()
+void QS60StylePrivate::handleSkinChange()
 {
-    Q_D(QS60Style);
-    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
-    d->setThemePalette(qApp);
+    clearCaches(QS60StylePrivate::CC_ThemeChange);
+    setThemePalette(qApp);
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
         QEvent e(QEvent::StyleChange);
         QApplication::sendEvent(topLevelWidget, &e);
-        d->setThemePalette(topLevelWidget);
+        setThemePalette(topLevelWidget);
         topLevelWidget->ensurePolished();
     }
 }
