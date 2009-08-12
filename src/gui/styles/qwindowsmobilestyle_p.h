@@ -114,15 +114,15 @@ public:
     void tintImagesHigh(QColor color);
     void tintImagesButton(QColor color);
     void tintListViewHighlight(QColor color);
-    void drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect = QRect());
+
+#endif //Q_WS_WINCE_WM
 
     void drawScrollbarHandleUp(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);
     void drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);
     void drawScrollbarGroove(QPainter *p, const QStyleOptionSlider *opt);
     void drawScrollbarGrip(QPainter *p, QStyleOptionSlider *newScrollbar, const QStyleOptionComplex *option, bool drawCompleteFrame);
     void drawTabBarTab(QPainter *p, const QStyleOptionTab *tab);
-
-#endif //Q_WS_WINCE_WM
+    void drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect = QRect());
 
 };
 
