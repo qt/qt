@@ -14,7 +14,7 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
+** General Public License version 2.1 as published by  Free Software
 ** Foundation and appearing in the file LICENSE.LGPL included in the
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
@@ -219,7 +219,7 @@ void tst_QHostInfo::lookupIPv4_data()
 #ifdef Q_OS_SYMBIAN
     // Test server lookup
     QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
-    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
+    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP().toString() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
 #else
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);

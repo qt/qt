@@ -1,4 +1,4 @@
-_networkselftest
+networkselftest
 #qsocketnotifier
 qabstractnetworkcache
 qabstractsocket
