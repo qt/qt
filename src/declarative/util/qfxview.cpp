@@ -65,18 +65,6 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
 
-static QVariant stringToPixmap(const QString &str)
-{
-    //XXX need to use correct paths
-    return QVariant(QPixmap(str));
-}
-
-static QVariant stringToIcon(const QString &str)
-{
-    //XXX need to use correct paths
-    return QVariant(QIcon(str));
-}
-
 static QVariant stringToKeySequence(const QString &str)
 {
     return QVariant::fromValue(QKeySequence(str));
@@ -143,9 +131,6 @@ QFxView::QFxView(QWidget *parent)
 void QFxViewPrivate::init()
 {
     // XXX: These need to be put in a central location for this kind of thing
-
-    QmlMetaType::registerCustomStringConverter(QVariant::Pixmap, &stringToPixmap);
-    QmlMetaType::registerCustomStringConverter(QVariant::Icon, &stringToIcon);
     QmlMetaType::registerCustomStringConverter(QVariant::KeySequence, &stringToKeySequence);
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
