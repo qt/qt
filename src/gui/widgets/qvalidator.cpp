@@ -90,7 +90,7 @@ QT_BEGIN_NAMESPACE
     Intermediate, and "asdf" and 1114 is \l Invalid.
 
     \i For an editable combobox that accepts URLs, any well-formed URL
-    is \l Acceptable, "http://qtsoftware.com/," is \l Intermediate
+    is \l Acceptable, "http://example.com/," is \l Intermediate
     (it might be a cut and paste action that accidentally took in a
     comma at the end), the empty string is \l Intermediate (the user
     might select and delete all of the text in preparation for entering
@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
 
     \i For a spin box that accepts lengths, "11cm" and "1in" are \l
     Acceptable, "11" and the empty string are \l Intermediate, and
-    "http://qtsoftware.com" and "hour" are \l Invalid.
+    "http://example.com" and "hour" are \l Invalid.
 
     \endlist
 

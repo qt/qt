@@ -40,202 +40,202 @@
 ****************************************************************************/
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qt
+    \externalpage http://qt.nokia.com/
     \title Qt website
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/bugreport-form
-    \title Bug Report Form
-*/
-
-/*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products/add-on-products/
-    \title Third-Party Tools
-*/
-
-/*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products
-    \title Qt Solutions
-*/
-
-/*!
-    \externalpage http://www.qtsoftware.com/developer/documentation/books
-    \title Books about Qt Programming
-*/
-
-/*!
-    \externalpage http://www.qtsoftware.com/products/qt/qt3/book
-    \title GUI Programming with Qt 3
-*/
-
-/*!
-    \externalpage http://www.qtsoftware.com/products/qt/
+    \externalpage http://qt.nokia.com/
     \title Qt Homepage
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qt
+    \externalpage http://qt.nokia.com/bugreport-form
+    \title Bug Report Form
+*/
+
+/*!
+    \externalpage http://qt.nokia.com/products/add-on-products/add-on-products/
+    \title Third-Party Tools
+*/
+
+/*!
+    \externalpage http://qt.nokia.com/products/add-on-products
+    \title Qt Solutions
+*/
+
+/*!
+    \externalpage http://qt.nokia.com/developer/books
+    \title Books about Qt Programming
+*/
+
+/*!
+    \externalpage http://qt.nokia.com/developer/books/3
+    \title GUI Programming with Qt 3
+*/
+
+/*!
+    \externalpage http://qt.nokia.com/about
     \title About Qt
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qt/indepth/vs-integration
+    \externalpage http://qt.nokia.com/products/developer-tools
     \title Visual Studio Integration
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products/catalog/4/Widgets/qtcalendarwidget/
+    \externalpage http://qt.nokia.com/products/add-on-products/catalog/4/Widgets/qtcalendarwidget/
     \title Calendar Widget
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products/catalog/4/Widgets/qtwizard/
+    \externalpage http://qt.nokia.com/products/add-on-products/catalog/4/Widgets/qtwizard/
     \title QtWizard
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products/catalog/4/Utilities/qtcorba/
+    \externalpage http://qt.nokia.com/products/add-on-products/catalog/4/Utilities/qtcorba/
     \title CORBA Framework
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products/catalog/4/Widgets/qtwindowlistmenu/
+    \externalpage http://qt.nokia.com/products/add-on-products/catalog/4/Widgets/qtwindowlistmenu/
     \title Window Menu
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/customers/casestories
+    \externalpage http://qt.nokia.com/qt-in-use
     \title Customer Success Stories
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer
+    \externalpage http://qt.nokia.com/developer
     \title Developer Zone
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/downloads
+    \externalpage http://qt.nokia.com/downloads
     \title Downloads
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/faqs/
+    \externalpage http://qt.nokia.com/developer/faqs/
     \title FAQs
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/faqs/licensing
+    \externalpage http://qt.nokia.com/developer/faqs/licensing/
     \title License FAQ
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/downloads/freesoftware
+    \externalpage http://qt.nokia.com/products/licensing/
     \title Free Software and Contributions
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qt/licenses/licensing/
+    \externalpage http://qt.nokia.com/products/licensing/
     \title Qt Licensing Overview
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qt/licenses/pricing/
+    \externalpage http://qt.nokia.com/products/pricing/
     \title Qt License Pricing
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qt/orderform
+    \externalpage http://qt.nokia.com/contact
     \title How to Order
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/support-services/support/platform-support-policy
+    \externalpage http://qt.nokia.com/doc/supported-platforms.html
     \title Platform Support Policy
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/
+    \externalpage http://qt.nokia.com/products/
     \title Product Overview
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/supported-platforms/supported-platforms/
+    \externalpage http://qt.nokia.com/doc/supported-platforms.html
     \title Qt 4 Platforms Overview
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qtopia/
+    \externalpage http://qt.nokia.com/products/qtopia/
     \title Qt Extended
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/qq/
+    \externalpage http://qt.nokia.com/doc/qq/
     \title Qt Quarterly
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/task-tracker
+    \externalpage http://qt.nokia.com/developer/task-tracker
     \title Task Tracker
 */
 
 /*!
-    \externalpage http://lists.trolltech.com
+    \externalpage http://qt.nokia.com/lists
     \title Qt Mailing Lists
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/qt/learnmore/whitepapers
+    \externalpage http://qt.nokia.com/products/files/pdf/
     \title Whitepapers
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/qtcanvas
+    \externalpage http://qt.nokia.com/doc/qtcanvas
     \title QtCanvas
 */
 
 /*!
-    \externalpage http://labs.trolltech.com/page/Projects/Itemview/Modeltest
+    \externalpage http://labs.qt.nokia.com/page/Projects/Itemview/Modeltest
     \title ModelTest
 */
 
 /*!
-    \externalpage http://labs.trolltech.com/page/Projects/Accessibility/QDBusBridge
+    \externalpage http://labs.qt.nokia.com/page/Projects/Accessibility/QDBusBridge
     \title D-Bus Accessibility Bridge
 */
 
 /*!
-    \externalpage http://labs.trolltech.com/blogs/2008/12/05/qtestlib-now-with-nice-graphs-pointing-upwards/
+    \externalpage http://labs.qt.nokia.com/blogs/2008/12/05/qtestlib-now-with-nice-graphs-pointing-upwards/
     \title qtestlib-tools Announcement
 */
 
 /*!
-    \externalpage http://labs.trolltech.com/gitweb?p=qtestlib-tools;a=summary
+    \externalpage http://labs.qt.nokia.com/gitweb?p=qtestlib-tools;a=summary
     \title qtestlib-tools
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/downloads/qt/qsa
+    \externalpage http://qt.nokia.com/products/library/modular-class-library#info_scripting
     \title Qt Script for Applications (QSA)
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products/catalog/4/Utilities/qtsharedmemory/
+    \externalpage http://qt.nokia.com/products/add-on-products/catalog/4/Utilities/qtsharedmemory/
     \title QtSharedMemory
 */
 
 /*!
-    \externalpage http://doc.trolltech.com/qq/qq21-portingcanvas.html
+    \externalpage http://qt.nokia.com/qq/qq21-portingcanvas.html
     \title Porting to Qt 4.2's Graphics View
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/products/add-on-products/catalog/4/Windows/qtwinforms/
+    \externalpage http://qt.nokia.com/products/add-on-products/catalog/4/Windows/qtwinforms/
     \title QtWinForms Solution
 */
 
 /*!
-    \externalpage http://www.qtsoftware.com/developer/faqs/qt/installation
+    \externalpage http://qt.nokia.com/developer/faqs/qt/installation
     \title Installation FAQ
 */
 

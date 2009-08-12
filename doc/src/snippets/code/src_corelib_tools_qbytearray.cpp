@@ -218,7 +218,7 @@ if (url.startsWith("ftp:"))
 
 
 //! [26]
-QByteArray url("http://qtsoftware.com/index.html");
+QByteArray url("http://qt.nokia.com/index.html");
 if (url.endsWith(".html"))
     ...
 //! [26]

@@ -248,7 +248,7 @@
     With Visual Studio 2005 Service Pack 1 a bug was introduced which
     causes Qt not to compile, this has been fixed with a hotfix available
     from Microsoft. See this
-    \l{http://www.qtsoftware.com/developer/faqs/faq.2006-12-18.3281869860}{Knowledge Base entry}
+    \l{http://qt.nokia.com/developer/faqs/faq.2006-12-18.3281869860}{Knowledge Base entry}
     for more information.
 
     \section1 IBM xlC (AIX)

@@ -1249,7 +1249,7 @@ bool QAbstractSocket::isValid() const
 
     \a hostName may be an IP address in string form (e.g.,
     "43.195.83.32"), or it may be a host name (e.g.,
-    "qtsoftware.com"). QAbstractSocket will do a lookup only if
+    "example.com"). QAbstractSocket will do a lookup only if
     required. \a port is in native byte order.
 
     \sa state(), peerName(), peerAddress(), peerPort(), waitForConnected()

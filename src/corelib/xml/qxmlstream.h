@@ -60,7 +60,7 @@ QT_MODULE(Core)
 // keep binary compatibility
 //
 // The list of supported platforms is in:
-//   http://qtsoftware.com/developer/notes/supported_platforms
+//   http://qt.nokia.com/doc/supported_platforms.html
 //
 // These platforms do not support symbol moving nor duplication
 // (because duplicate symbols cause warnings when linking):

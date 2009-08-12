@@ -3149,7 +3149,7 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
 {
     const QXmlSimpleReaderPrivate *d = d_func();
 
-    // Qt5 ###: Change these strings to qtsoftware.com
+    // Qt5 ###: Change these strings to qt.nokia.com
     if (ok != 0)
         *ok = true;
     if (name == QLatin1String("http://xml.org/sax/features/namespaces")) {
@@ -3204,7 +3204,7 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
 void QXmlSimpleReader::setFeature(const QString& name, bool enable)
 {
     Q_D(QXmlSimpleReader);
-    // Qt5 ###: Change these strings to qtsoftware.com
+    // Qt5 ###: Change these strings to qt.nokia.com
     if (name == QLatin1String("http://xml.org/sax/features/namespaces")) {
         d->useNamespaces = enable;
     } else if (name == QLatin1String("http://xml.org/sax/features/namespace-prefixes")) {
@@ -3222,7 +3222,7 @@ void QXmlSimpleReader::setFeature(const QString& name, bool enable)
 */
 bool QXmlSimpleReader::hasFeature(const QString& name) const
 {
-    // Qt5 ###: Change these strings to qtsoftware.com
+    // Qt5 ###: Change these strings to qt.nokia.com
     if (name == QLatin1String("http://xml.org/sax/features/namespaces")
         || name == QLatin1String("http://xml.org/sax/features/namespace-prefixes")
         || name == QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData") // Shouldn't change in Qt 4

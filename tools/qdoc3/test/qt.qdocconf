@@ -8,7 +8,7 @@ project                 = Qt
 versionsym              =
 version                 = %VERSION%
 description             = Qt Reference Documentation
-url                     = http://doc.qtsoftware.com/4.6
+url                     = http://qt.nokia.com/doc/4.6
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
                           QtXmlPatterns QtTest

@@ -47,7 +47,7 @@
 !include "includes\global.nsh"
 
 !define PRODUCT_PUBLISHER "Nokia Corporation and/or its subsidiary(-ies)"
-!define PRODUCT_WEB_SITE "http://qtsoftware.com"
+!define PRODUCT_WEB_SITE "http://qt.nokia.com"
 
 !define INSTALL_ICON "images\install.ico"
 !define WELCOME_PAGE_ICON "images\qt-wizard.bmp"
@@ -214,7 +214,7 @@ Section -CommonSection
   WriteRegStr SHCTX "$PRODUCT_UNIQUE_KEY" "Publisher" "${PRODUCT_PUBLISHER}"
 
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
-  CreateShortCut "$SMPROGRAMS\$STARTMENU_STRING\QtSoftware.com.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_STRING\qt.nokia.com.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_STRING\Uninstall ${PRODUCT_NAME} ${PRODUCT_VERSION}.lnk" "$INSTDIR\uninst.exe"
   SetOutPath "$INSTDIR"
 SectionEnd
@@ -405,7 +405,7 @@ Section Uninstall
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
   Delete "$SMPROGRAMS\$STARTMENU_STRING\Uninstall ${PRODUCT_NAME} ${PRODUCT_VERSION}.lnk"
-  Delete "$SMPROGRAMS\$STARTMENU_STRING\QtSoftware.com.lnk"
+  Delete "$SMPROGRAMS\$STARTMENU_STRING\qt.nokia.com.lnk"
 
   RMDir "$SMPROGRAMS\$STARTMENU_STRING"
   RMDir "$INSTDIR"

@@ -1604,7 +1604,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \fn void QTextCharFormat::setAnchorHref(const QString &value)
 
     Sets the hypertext link for the text format to the given \a value.
-    This is typically a URL like "http://qtsoftware.com/index.html".
+    This is typically a URL like "http://example.com/index.html".
 
     The anchor will be displayed with the \a value as its display text;
     if you want to display different text call setAnchorNames().

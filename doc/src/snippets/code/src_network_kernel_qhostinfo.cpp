@@ -1,6 +1,6 @@
 //! [0]
-// To find the IP address of qtsoftware.com
-QHostInfo::lookupHost("qtsoftware.com",
+// To find the IP address of qt.nokia.com
+QHostInfo::lookupHost("qt.nokia.com",
                       this, SLOT(printResults(QHostInfo)));
 
 // To find the host name for 4.2.2.1
@@ -10,7 +10,7 @@ QHostInfo::lookupHost("4.2.2.1",
 
 
 //! [1]
-QHostInfo info = QHostInfo::fromName("qtsoftware.com");
+QHostInfo info = QHostInfo::fromName("qt.nokia.com");
 //! [1]
 
 

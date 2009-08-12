@@ -162,7 +162,7 @@
     \endlist
 
     For more information about improvements in each Qt release, see
-    the \l{http://www.qtsoftware.com/developer/changes/}
+    the \l{http://qt.nokia.com/developer/changes/}
     {detailed lists of changes}.
 
     \section1 Significant Improvements
@@ -444,13 +444,13 @@
 
     A comprehensive list of changes between Qt 4.4 and Qt 4.5 is included
     in the \c changes-4.5.0 file
-    \l{http://www.qtsoftware.com/developer/changes/changes-4.5.0}{available online}.
+    \l{http://qt.nokia.com/developer/changes/changes-4.5.0}{available online}.
     A \l{Known Issues in %VERSION%}{list of known issues} for this release is also
     available.
 
     Changes between this release and the previous release are provided
     in the \c{changes-%VERSION%} file (also
-    \l{http://www.qtsoftware.com/developer/changes/changes-%VERSION%}{available online}).
+    \l{http://qt.nokia.com/developer/changes/changes-%VERSION%}{available online}).
 
     A list of other Qt 4 features can be found on the
     \bold{\l{What's New in Qt 4}} page.

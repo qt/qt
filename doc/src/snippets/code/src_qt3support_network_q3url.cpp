@@ -1,15 +1,15 @@
 //! [0]
-Q3Url url( "http://qtsoftware.com" );
+Q3Url url( "http://qt.nokia.com" );
 // or
 Q3Url url( "file:///home/myself/Mail", "Inbox" );
 //! [0]
 
 
 //! [1]
-Q3Url url( "http://qtsoftware.com" );
+Q3Url url( "http://qt.nokia.com" );
 QString s = url;
 // or
-QString s( "http://qtsoftware.com" );
+QString s( "http://qt.nokia.com" );
 Q3Url url( s );
 //! [1]
 
@@ -30,7 +30,7 @@ Q3Url url( "ftp://ftp.trolltech.com/qt/source", "file:///usr/local" );
 
 
 //! [5]
-QString url = http://qtsoftware.com
+QString url = http://qt.nokia.com
 Q3Url::encode( url );
 // url is now "http%3A//www%20trolltech%20com"
 //! [5]
@@ -39,5 +39,5 @@ Q3Url::encode( url );
 //! [6]
 QString url = "http%3A//www%20trolltech%20com"
 Q3Url::decode( url );
-// url is now "http://qtsoftware.com"
+// url is now "http://qt.nokia.com"
 //! [6]

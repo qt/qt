@@ -737,13 +737,13 @@ void tst_QHttp::proxy_data()
     QTest::addColumn<QString>("proxypass");
 
     QTest::newRow("qt-test-server") << QtNetworkSettings::serverName() << 3128
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/")
                                  << QString::fromLatin1("") << QString::fromLatin1("");
     QTest::newRow("qt-test-server pct") << QtNetworkSettings::serverName() << 3128
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/%64eveloper")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/%64eveloper")
                                  << QString::fromLatin1("") << QString::fromLatin1("");
     QTest::newRow("qt-test-server-basic") << QtNetworkSettings::serverName() << 3129
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/")
                                  << QString::fromLatin1("qsockstest") << QString::fromLatin1("password");
 
 #if 0
@@ -751,7 +751,7 @@ void tst_QHttp::proxy_data()
     // the tst_QHttp class is too strict to handle the byte counts sent by dataSendProgress
     // So don't run this test:
     QTest::newRow("qt-test-server-ntlm") << QtNetworkSettings::serverName() << 3130
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/")
                                  << QString::fromLatin1("qsockstest") << QString::fromLatin1("password");
 #endif
 }

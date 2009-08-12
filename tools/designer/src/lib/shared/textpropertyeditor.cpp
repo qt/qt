@@ -278,7 +278,7 @@ namespace qdesigner_internal {
                 urlCompletions.push_back(QLatin1String("about:blank"));
                 urlCompletions.push_back(QLatin1String("http://"));
                 urlCompletions.push_back(QLatin1String("http://www."));
-                urlCompletions.push_back(QLatin1String("http://qtsoftware.com/"));
+                urlCompletions.push_back(QLatin1String("http://qt.nokia.com/"));
                 urlCompletions.push_back(QLatin1String("file://"));
                 urlCompletions.push_back(QLatin1String("ftp://"));
                 urlCompletions.push_back(QLatin1String("data:"));
