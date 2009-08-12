@@ -2312,6 +2312,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         case SH_UnderlineShortcut:
             retValue = 0;
             break;
+        case SH_RequestSoftwareInputPanel:
+            retValue = RSIP_OnMouseClickAndAlreadyFocused;
+            break;
         default:
             break;
     }
