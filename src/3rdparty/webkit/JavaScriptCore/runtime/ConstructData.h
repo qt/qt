@@ -64,7 +64,6 @@ namespace JSC {
         }
         inline operator NativeConstructor() const {return ptr;}
         inline operator bool() const {return ptr;}
-        inline bool operator==(int val) const {return (int)ptr==val;}
 
         inline void doNotCallDebuggerFunctionExit() {callDebuggerFunctionExit = false;}
         JSObject* operator()(ExecState*, JSObject*, const ArgList&) const;

@@ -60,7 +60,6 @@ namespace JSC {
         }
         inline operator NativeFunction() const {return ptr;}
         inline operator bool() const {return ptr;}
-        inline bool operator==(int val) const {return (int)ptr==val;}
        
         JSValue operator()(ExecState* exec, JSObject* jsobj, JSValue thisValue, const ArgList& argList) const;
     };
