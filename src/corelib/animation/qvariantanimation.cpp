@@ -248,15 +248,22 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
                 }
             }
         } else if (it == keyValues.constBegin()) {
-            if (it->first == progress || it->first == 0) {
+            if (it+1 != keyValues.constEnd() && (it->first == progress || it->first == 0)) {
                 //the item pointed to by it is the start element in the range
                 //we also test if the current element is for progress 0 (ie the real start) because
                 //some easing curves might get the progress below 0.
                 currentInterval.start = *it;
                 currentInterval.end = *(it+1);
-            } else if (direction == QVariantAnimation::Forward && defaultStartValue.isValid()) {
-                currentInterval.start = qMakePair(qreal(0), defaultStartValue);
-                currentInterval.end = *it;
+            } else if (defaultStartValue.isValid()) {
+                if (direction == QVariantAnimation::Forward) {
+                    //we should have an end value
+                    currentInterval.start = qMakePair(qreal(0), defaultStartValue);
+                    currentInterval.end = *it;
+                } else {
+                    //we should have a start value
+                    currentInterval.start = *it;
+                    currentInterval.end = qMakePair(qreal(1), defaultStartValue);
+                }
             } else {
                 ///this should not happen
             }
