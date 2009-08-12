@@ -49,6 +49,10 @@
 #include <qstandarditemmodel.h>
 #include <QtCore/qnumeric.h>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QObjectList)
 
