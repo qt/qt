@@ -653,4 +653,4 @@ void tst_Compiler::staticConstUnionWithInitializerList() const
 }
 
 QTEST_MAIN(tst_Compiler)
-#include "tst_compile.moc"
+#include "tst_compiler.moc"
