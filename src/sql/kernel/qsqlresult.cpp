@@ -53,9 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 struct QHolder {
-    QHolder(): holderName(QString()), holderPos(-1) {}
-    QHolder(const QString& hldr): holderName(hldr), holderPos(-1) {}
-    QHolder(const QString& hldr, int index): holderName(hldr), holderPos(index) {}
+    QHolder(const QString& hldr = QString(), int index = -1): holderName(hldr), holderPos(index) {}
     bool operator==(const QHolder& h) const { return h.holderPos == holderPos && h.holderName == holderName; }
     bool operator!=(const QHolder& h) const { return h.holderPos != holderPos || h.holderName != holderName; }
     QString holderName;

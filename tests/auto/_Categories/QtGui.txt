@@ -38,7 +38,7 @@ qdesktopwidget
 qdial
 qdialog
 qdialogbuttonbox
-qdirectpainter cetest-subdir: test
+#qdirectpainter cetest-subdir: test TEST IS FOR EMBEDDED LINUX ONLY
 qdirmodel
 qdockwidget
 qdoublespinbox

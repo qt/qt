@@ -237,7 +237,6 @@ void tst_QFileInfo::copy()
 
 tst_QFileInfo::tst_QFileInfo()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 void tst_QFileInfo::isFile_data()
@@ -331,6 +330,9 @@ void tst_QFileInfo::isRoot_data()
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
     QTest::newRow("drive 3") << "p:/" << false;
+#endif
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("unc 1") << "//"  + QtNetworkSettings::winServerName() << true;
     QTest::newRow("unc 2") << "//"  + QtNetworkSettings::winServerName() + "/" << true;
     QTest::newRow("unc 3") << "//"  + QtNetworkSettings::winServerName() + "/testshare" << false;
@@ -485,6 +487,8 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+#  if !defined(Q_OS_SYMBIAN)
+    // Symbian doesn't support links to directories
     {
         const QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo");
         QFile::remove(link);
@@ -516,6 +520,7 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+#  endif
 #endif
 
 }
@@ -725,7 +730,9 @@ void tst_QFileInfo::permission()
     QFETCH(QString, file);
     QFETCH(int, perms);
     QFETCH(bool, expected);
-    QEXPECT_FAIL("data0", "No user based rights in Symbian OS - SOS needs platform security tests instead", Abort);
+#ifdef Q_OS_SYMBIAN
+    QSKIP("No user based rights in Symbian OS - SOS needs platform security tests instead", SkipAll);
+#endif
     QFileInfo fi(file);
     QCOMPARE(fi.permission(QFile::Permissions(perms)), expected);
 }
