@@ -87,7 +87,6 @@ qitemeditorfactory
 qitemmodel
 qitemselectionmodel
 qitemview
-qkeyevent
 qkeysequence
 qlabel
 qlayout
@@ -118,7 +117,6 @@ qpixmap
 qpixmapcache
 qpixmapfilter
 qplaintextedit
-qpointarray
 #qprinter NO PRINTING SUPPORT ON SYMBIAN YET
 #qprinterinfo
 qprogressbar
